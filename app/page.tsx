@@ -1,468 +1,206 @@
 import Link from "next/link"
-import Image from "next/image"
+import { MapPin, Clock, Shield, Calendar, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { TestimonialCarousel } from "@/components/testimonial-carousel"
-import { FAQAccordion } from "@/components/faq-accordion"
-import { CTABanner } from "@/components/cta-banner"
-import { ProcessTimeline } from "@/components/process-timeline"
-import { ServiceComparisonTable } from "@/components/service-comparison-table"
-import { testimonials } from "@/data/testimonials"
-import { generalFaqs } from "@/data/faqs"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  CheckCircle,
-  Clock,
-  MapPin,
-  DollarSign,
-  CalendarClock,
-  ArrowRight,
-  Home,
-  Building,
-  Briefcase,
-} from "lucide-react"
-import ClientMap from "@/components/client-map"
-import { ServiceCard } from "@/components/service-card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import TestimonialCarousel from "@/components/testimonial-carousel"
+import ServiceAreaMap from "@/components/service-area-map"
+import ServiceAreaLegend from "@/components/service-area-legend"
 
-export default function HomePage() {
-  // Only show 4 FAQs on the home page
-  const featuredFaqs = generalFaqs.slice(0, 4)
-
-  // Define process steps
-  const processSteps = [
-    {
-      title: "Book Your Appointment",
-      description: "Schedule online, by phone, or email. Choose a date and time that works for you.",
-    },
-    {
-      title: "Confirmation",
-      description: "We'll confirm your appointment and provide an estimated arrival time.",
-    },
-    {
-      title: "Notarization",
-      description: "Our notary arrives at your location with all necessary supplies to perform the notarization.",
-    },
-    {
-      title: "Payment & Completion",
-      description: "Pay for the service and receive your notarized documents, ready for use.",
-    },
-  ]
-
+export default function Home() {
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="section bg-gradient-to-br from-primary-500/10 to-accent-500/5 overflow-hidden relative">
-        <div className="absolute inset-0 bg-grid opacity-30"></div>
-        <div className="container relative">
-          <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16">
-            <div className="flex-1 space-y-6">
-              <div className="section-tag">Professional Mobile Notary</div>
-              <h1 className="text-balance">Notary Services That Come To You</h1>
-              <p className="text-xl text-muted-foreground">
-                We bring notary services directly to you. Convenient, reliable, and professional notarization when and
-                where you need it.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Button asChild size="lg" className="btn-primary gap-2">
-                  <Link href="/booking">
-                    <CalendarClock className="h-5 w-5" />
-                    Book an Appointment
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" size="lg" className="btn-outline">
-                  <Link href="/services">Learn More</Link>
-                </Button>
-              </div>
-            </div>
-            <div className="flex-1 relative">
-              <div className="relative rounded-lg overflow-hidden shadow-xl border border-border">
-                <Image
-                  src="/placeholder.svg?height=500&width=500"
-                  alt="Mobile notary service"
-                  width={500}
-                  height={500}
-                  className="rounded-lg"
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-primary-500/20 to-transparent"></div>
-              </div>
-            </div>
+      <section className="relative bg-[#002147] text-white">
+        <div className="container mx-auto px-4 py-20 md:py-24 flex flex-col items-center text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">Houston Mobile Notary Pros</h1>
+          <p className="text-xl md:text-2xl mb-8 max-w-2xl">Professional Notary Services Day & Evening</p>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
+              <Link href="/booking">Book Appointment</Link>
+            </Button>
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147]">
+              View Services
+            </Button>
           </div>
+          <div className="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-white to-transparent"></div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="section section-alt">
-        <div className="container">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <div className="section-tag">Why Choose Us</div>
-            <h2 className="section-title">Houston Mobile Notary Pros</h2>
-            <p className="section-subtitle">
-              We provide professional, convenient, and reliable notary services throughout the Houston area.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="card-base card-hover h-full">
-              <CardHeader className="pb-2">
-                <Clock className="feature-icon" />
-                <CardTitle>Convenient & Flexible</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>We come to your location at a time that works for you, including evenings and weekends.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="card-base card-hover h-full">
-              <CardHeader className="pb-2">
-                <MapPin className="feature-icon" />
-                <CardTitle>Mobile Service</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>
-                  No need to travel or wait in line. We bring notary services directly to your home, office, or
-                  preferred location.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="card-base card-hover h-full">
-              <CardHeader className="pb-2">
-                <CheckCircle className="feature-icon" />
-                <CardTitle>Professional & Reliable</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Our notaries are experienced, background-checked, and committed to providing excellent service.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="card-base card-hover h-full">
-              <CardHeader className="pb-2">
-                <DollarSign className="feature-icon" />
-                <CardTitle>Transparent Pricing</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Clear, upfront pricing with no hidden fees. Know exactly what you'll pay before booking.</p>
-              </CardContent>
-            </Card>
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12 text-[#002147]">
+            Why Choose Houston Mobile Notary Pros?
+          </h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="flex flex-col items-center text-center">
+              <div className="bg-[#91A3B0]/20 p-4 rounded-full mb-4">
+                <Clock className="h-10 w-10 text-[#A52A2A]" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Fast Response Times</h3>
+              <p className="text-gray-600">Priority service with 2-hour response time available 7am-9pm daily.</p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <div className="bg-[#91A3B0]/20 p-4 rounded-full mb-4">
+                <MapPin className="h-10 w-10 text-[#A52A2A]" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Mobile Service</h3>
+              <p className="text-gray-600">We come to you within a 30-mile radius of ZIP 77591.</p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <div className="bg-[#91A3B0]/20 p-4 rounded-full mb-4">
+                <Shield className="h-10 w-10 text-[#A52A2A]" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Fully Insured</h3>
+              <p className="text-gray-600">$100k E&O Insurance for your peace of mind.</p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Services Section */}
-      <section className="section">
-        <div className="container">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <div className="section-tag">Our Services</div>
-            <h2 className="section-title">Professional Notary Solutions</h2>
-            <p className="section-subtitle">We offer a range of notary services to meet your specific needs.</p>
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12 text-[#002147]">Our Services</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="shadow-lg">
+              <CardHeader className="bg-[#002147] text-white">
+                <CardTitle>Essential Package</CardTitle>
+                <CardDescription className="text-gray-200">Perfect for general notarizations</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <p className="text-3xl font-bold mb-4">$75</p>
+                <ul className="space-y-2">
+                  <li className="flex items-start">
+                    <span className="text-[#A52A2A] mr-2">✓</span>
+                    <span>1 signer, 2 documents</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-[#A52A2A] mr-2">✓</span>
+                    <span>15-mile radius travel</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-[#A52A2A] mr-2">✓</span>
+                    <span>Mon-Fri, 9am-5pm</span>
+                  </li>
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Button className="w-full bg-[#002147] hover:bg-[#001a38]">
+                  <Link href="/booking">Book Now</Link>
+                </Button>
+              </CardFooter>
+            </Card>
+
+            <Card className="shadow-lg border-[#A52A2A] border-2">
+              <CardHeader className="bg-[#A52A2A] text-white">
+                <CardTitle>Priority Package</CardTitle>
+                <CardDescription className="text-gray-200">For urgent notarization needs</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <p className="text-3xl font-bold mb-4">$100</p>
+                <ul className="space-y-2">
+                  <li className="flex items-start">
+                    <span className="text-[#A52A2A] mr-2">✓</span>
+                    <span>2-hour response time</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-[#A52A2A] mr-2">✓</span>
+                    <span>Up to 5 documents, 2 signers</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-[#A52A2A] mr-2">✓</span>
+                    <span>7am-9pm daily service</span>
+                  </li>
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Button className="w-full bg-[#A52A2A] hover:bg-[#8B0000]">
+                  <Link href="/booking">Book Now</Link>
+                </Button>
+              </CardFooter>
+            </Card>
+
+            <Card className="shadow-lg">
+              <CardHeader className="bg-[#002147] text-white">
+                <CardTitle>Loan Signing</CardTitle>
+                <CardDescription className="text-gray-200">Specialized for real estate</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <p className="text-3xl font-bold mb-4">$150</p>
+                <ul className="space-y-2">
+                  <li className="flex items-start">
+                    <span className="text-[#A52A2A] mr-2">✓</span>
+                    <span>Unlimited documents</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-[#A52A2A] mr-2">✓</span>
+                    <span>Up to 4 signers</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-[#A52A2A] mr-2">✓</span>
+                    <span>Title company shipping</span>
+                  </li>
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Button className="w-full bg-[#002147] hover:bg-[#001a38]">
+                  <Link href="/booking">Book Now</Link>
+                </Button>
+              </CardFooter>
+            </Card>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <ServiceCard
-              title="Essential Mobile Package"
-              description="Standard mobile notary service for general documents."
-              price="$75"
-              priceDescription="Starting price"
-              imageSrc="/placeholder.svg?height=200&width=400"
-              href="/services/essential-mobile"
-              features={[
-                "Travel to your location",
-                "General document notarization",
-                "Professional service",
-                "Flexible scheduling",
-              ]}
-            />
-
-            <ServiceCard
-              title="Loan Signing Services"
-              description="Specialized service for mortgage closings and refinances."
-              price="$150"
-              priceDescription="Starting price"
-              imageSrc="/placeholder.svg?height=200&width=400"
-              href="/services/loan-signing"
-              features={[
-                "Certified Loan Signing Agent",
-                "Complete loan document handling",
-                "Thorough explanation of documents",
-                "Efficient closing process",
-              ]}
-              highlighted={true}
-            />
-
-            <ServiceCard
-              title="Priority Service"
-              description="Same-day and urgent notarization services."
-              price="$100"
-              priceDescription="Starting price"
-              imageSrc="/placeholder.svg?height=200&width=400"
-              href="/services/priority-service"
-              features={["Same-day service", "Urgent appointments", "Expedited processing", "After-hours availability"]}
-            />
-          </div>
-
           <div className="text-center mt-8">
-            <Button asChild className="btn-primary">
-              <Link href="/services">
-                View All Services <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+            <Link href="/services">
+              <Button variant="outline" className="border-[#002147] text-[#002147]">
+                View All Services & Fees
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Tabbed Content Section */}
-      <section className="section section-alt">
-        <div className="container">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <div className="section-tag">How We Can Help</div>
-            <h2 className="section-title">Notary Services For Every Need</h2>
-            <p className="section-subtitle">Explore our specialized services for different situations</p>
-          </div>
-
-          <Tabs defaultValue="individuals" className="max-w-4xl mx-auto">
-            <TabsList className="grid w-full grid-cols-3 mb-8 bg-background">
-              <TabsTrigger
-                value="individuals"
-                className="text-sm sm:text-base data-[state=active]:bg-primary-500 data-[state=active]:text-white"
-              >
-                <Home className="h-4 w-4 mr-2 hidden sm:inline" />
-                For Individuals
-              </TabsTrigger>
-              <TabsTrigger
-                value="businesses"
-                className="text-sm sm:text-base data-[state=active]:bg-primary-500 data-[state=active]:text-white"
-              >
-                <Building className="h-4 w-4 mr-2 hidden sm:inline" />
-                For Businesses
-              </TabsTrigger>
-              <TabsTrigger
-                value="realestate"
-                className="text-sm sm:text-base data-[state=active]:bg-primary-500 data-[state=active]:text-white"
-              >
-                <Briefcase className="h-4 w-4 mr-2 hidden sm:inline" />
-                Real Estate
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="individuals" className="card-base p-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-xl font-semibold mb-4">Individual Services</h3>
-                  <p className="text-muted-foreground mb-4">
-                    We provide convenient notary services for all your personal document needs, including:
-                  </p>
-                  <ul className="space-y-2">
-                    <li className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-accent-500 mr-2 shrink-0" />
-                      <span>Power of Attorney documents</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-accent-500 mr-2 shrink-0" />
-                      <span>Affidavits and sworn statements</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-accent-500 mr-2 shrink-0" />
-                      <span>Medical authorizations</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-accent-500 mr-2 shrink-0" />
-                      <span>Consent forms and permission slips</span>
-                    </li>
-                  </ul>
-                  <Button asChild className="mt-6 btn-primary">
-                    <Link href="/services">Learn More</Link>
-                  </Button>
-                </div>
-                <div className="relative h-64 md:h-auto rounded-lg overflow-hidden">
-                  <Image
-                    src="/placeholder.svg?height=300&width=400"
-                    alt="Individual notary services"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="businesses" className="card-base p-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-xl font-semibold mb-4">Business Services</h3>
-                  <p className="text-muted-foreground mb-4">
-                    We help businesses with all their notarization needs, including:
-                  </p>
-                  <ul className="space-y-2">
-                    <li className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-accent-500 mr-2 shrink-0" />
-                      <span>Corporate documents and contracts</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-accent-500 mr-2 shrink-0" />
-                      <span>Board resolutions and meeting minutes</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-accent-500 mr-2 shrink-0" />
-                      <span>Business formation documents</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-accent-500 mr-2 shrink-0" />
-                      <span>Commercial lease agreements</span>
-                    </li>
-                  </ul>
-                  <Button asChild className="mt-6 btn-primary">
-                    <Link href="/services/corporate">Learn More</Link>
-                  </Button>
-                </div>
-                <div className="relative h-64 md:h-auto rounded-lg overflow-hidden">
-                  <Image
-                    src="/placeholder.svg?height=300&width=400"
-                    alt="Business notary services"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="realestate" className="card-base p-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-xl font-semibold mb-4">Real Estate Services</h3>
-                  <p className="text-muted-foreground mb-4">Our specialized real estate notary services include:</p>
-                  <ul className="space-y-2">
-                    <li className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-accent-500 mr-2 shrink-0" />
-                      <span>Mortgage loan closings</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-accent-500 mr-2 shrink-0" />
-                      <span>Refinance transactions</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-accent-500 mr-2 shrink-0" />
-                      <span>Deed transfers and property documents</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-accent-500 mr-2 shrink-0" />
-                      <span>Reverse mortgages</span>
-                    </li>
-                  </ul>
-                  <Button asChild className="mt-6 btn-primary">
-                    <Link href="/services/loan-signing">Learn More</Link>
-                  </Button>
-                </div>
-                <div className="relative h-64 md:h-auto rounded-lg overflow-hidden">
-                  <Image
-                    src="/placeholder.svg?height=300&width=400"
-                    alt="Real estate notary services"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </section>
-
-      {/* Service Comparison Section */}
-      <section className="section">
-        <div className="container">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <div className="section-tag">Service Comparison</div>
-            <h2 className="section-title">Find Your Perfect Service</h2>
-            <p className="section-subtitle">Find the right notary service for your specific needs</p>
-          </div>
-
-          <ServiceComparisonTable />
-        </div>
-      </section>
-
-      {/* Process Section */}
-      <section className="section section-alt">
-        <div className="container">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <div className="section-tag">Our Process</div>
-            <h2 className="section-title">How It Works</h2>
-            <p className="section-subtitle">Our simple process makes getting your documents notarized quick and easy</p>
-          </div>
-
-          <div className="max-w-3xl mx-auto">
-            <ProcessTimeline steps={processSteps} />
+      {/* Service Area Map */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-6 text-[#002147]">Our Service Area</h2>
+          <p className="text-center mb-8 max-w-2xl mx-auto text-gray-600">
+            We provide mobile notary services within a 30-mile radius of ZIP 77591, covering Houston and surrounding
+            areas. Travel within 20 miles is free, with a small fee for extended distances.
+          </p>
+          <div className="max-w-4xl mx-auto">
+            <ServiceAreaMap height="450px" />
+            <ServiceAreaLegend />
           </div>
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <section className="section section-gradient">
-        <div className="container">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <div className="section-tag">Testimonials</div>
-            <h2 className="section-title">What Our Clients Say</h2>
-            <p className="section-subtitle">
-              Don't just take our word for it — hear from some of our satisfied clients
-            </p>
-          </div>
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <TestimonialCarousel />
+        </div>
+      </section>
 
-          <TestimonialCarousel testimonials={testimonials} />
-
-          <div className="text-center mt-8">
-            <Button asChild variant="outline" className="btn-outline">
-              <Link href="/testimonials">
-                View All Testimonials <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
+      {/* Call to Action */}
+      <section className="py-16 bg-[#91A3B0]/20">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-6 text-[#002147]">Ready to Book Your Notary Service?</h2>
+          <p className="text-xl mb-8 max-w-2xl mx-auto">
+            Schedule an appointment today and have a professional mobile notary come to your location.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000]">
+              <Calendar className="mr-2 h-5 w-5" />
+              <Link href="/booking">Book Appointment</Link>
+            </Button>
+            <Button size="lg" variant="outline" className="border-[#002147] text-[#002147]">
+              <Phone className="mr-2 h-5 w-5" />
+              Contact Us
             </Button>
           </div>
         </div>
       </section>
-
-      {/* FAQ Section */}
-      <section className="section section-alt">
-        <div className="container">
-          <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-12">
-              <div className="section-tag">FAQs</div>
-              <h2 className="section-title">Frequently Asked Questions</h2>
-              <p className="section-subtitle">Find answers to common questions about our notary services</p>
-            </div>
-
-            <FAQAccordion faqs={featuredFaqs} />
-
-            <div className="text-center mt-8">
-              <Button asChild variant="outline" className="btn-outline">
-                <Link href="/faq">
-                  View All FAQs <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Service Area Section */}
-      <section className="section">
-        <div className="container">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <div className="section-tag">Service Area</div>
-            <h2 className="section-title">Where We Serve</h2>
-            <p className="section-subtitle">
-              We proudly serve the Greater Houston area. See the map below for our primary service locations.
-            </p>
-          </div>
-          <div className="border rounded-lg overflow-hidden shadow-lg">
-            <ClientMap />
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="section section-accent">
-        <div className="container">
-          <CTABanner />
-        </div>
-      </section>
-    </>
+    </div>
   )
 }
-

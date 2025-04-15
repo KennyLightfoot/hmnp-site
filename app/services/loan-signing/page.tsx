@@ -1,368 +1,354 @@
-import type { Metadata } from "next"
 import Link from "next/link"
+import { ChevronLeft, Check, FileText, Users, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { CheckCircle2, ChevronRight, AlertCircle, Clock, MapPin, FileText } from "lucide-react"
-import { ServiceSchema } from "@/components/structured-data"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-// Loan Signing Service data
-const SERVICE_DATA = {
-  title: "Loan Signing Service",
-  description:
-    "Professional loan signing service for real estate transactions, mortgage refinancing, and other loan documents with certified notary signing agents.",
-  slug: "loan-signing",
-  price: "150",
-  priceLabel: "Flat fee",
-  heroImage: "/placeholder.svg?height=800&width=800",
-  heroAlt: "Loan Signing Service",
-  introText:
-    "Our Loan Signing Service provides professional notarization for all types of loan documents. Our certified notary signing agents are experienced in handling real estate transactions, mortgage refinancing, and other loan documents with precision and care.",
-  features: [
-    {
-      title: "Unlimited Documents",
-      description: "We handle all documents in your loan package, no matter how many pages.",
-    },
-    {
-      title: "Up to 4 Signers",
-      description: "Service includes notarization for up to 4 signers at the same location.",
-    },
-    {
-      title: "Color Printing",
-      description: "We provide color printing of all necessary documents if needed.",
-    },
-    {
-      title: "Professional Closing Binder",
-      description: "Your documents are organized in a professional binder for easy reference.",
-    },
-    {
-      title: "90-Minute Signing Session",
-      description: "We allocate ample time to thoroughly explain and process all documents.",
-    },
-  ],
-  documentTypes: [
-    "Mortgage Notes",
-    "Deeds of Trust",
-    "Closing Disclosures",
-    "Loan Estimates",
-    "Affidavits",
-    "Riders",
-    "HELOC Agreements",
-    "Refinance Documents",
-  ],
-  pricing: {
-    base: "150",
-    includes: [
-      "Unlimited documents",
-      "Up to 4 signers",
-      "Color printing service",
-      "Professional closing binder",
-      "Title company shipping",
-      "90-minute signing session",
-    ],
-    addons: [
-      {
-        name: "Overnight document handling",
-        price: "+$35",
-      },
-      {
-        name: "Additional signers (beyond 4)",
-        price: "+$10 each",
-      },
-      {
-        name: "Extended signing session (beyond 90 min)",
-        price: "+$25/30 min",
-      },
-    ],
-  },
-  benefits: [
-    {
-      icon: Clock,
-      title: "Efficient Closings",
-      description: "Our experienced signing agents ensure smooth, efficient closings with no delays.",
-    },
-    {
-      icon: MapPin,
-      title: "Convenient Location",
-      description: "We come to your preferred location - home, office, or coffee shop.",
-    },
-    {
-      icon: FileText,
-      title: "Document Expertise",
-      description: "Our agents understand loan documents and can answer basic procedural questions.",
-    },
-  ],
-  process: [
-    {
-      title: "Schedule",
-      description: "Book your appointment online or by phone.",
-    },
-    {
-      title: "Prepare",
-      description: "Have valid ID ready for all signers.",
-    },
-    {
-      title: "Sign",
-      description: "Our agent guides you through all documents.",
-    },
-    {
-      title: "Complete",
-      description: "Documents are returned to the title company or lender.",
-    },
-  ],
-  faqs: [
-    {
-      question: "What is a loan signing agent?",
-      answer:
-        "A loan signing agent is a notary public who specializes in facilitating mortgage and loan document signings. They are trained to understand loan documents and guide signers through the signing process.",
-    },
-    {
-      question: "How long does a typical loan signing take?",
-      answer:
-        "A typical loan signing takes about 60-90 minutes, depending on the number of documents and signers. We allocate a full 90 minutes to ensure there's plenty of time to answer questions and complete all documents properly.",
-    },
-    {
-      question: "Can you explain the loan documents to me?",
-      answer:
-        "While our signing agents are knowledgeable about loan documents, they cannot provide legal advice or explain the legal implications of what you're signing. They can explain where to sign and answer procedural questions about the documents.",
-    },
-    {
-      question: "What do I need to have ready for my loan signing?",
-      answer:
-        "All signers must have valid, government-issued photo identification. You should also have any information requested by your lender, such as insurance information or cashier's checks if needed for closing.",
-    },
-    {
-      question: "Do you work with all title companies and lenders?",
-      answer:
-        "Yes, we work with all title companies and lenders. We can coordinate directly with them to ensure a smooth closing process.",
-    },
-    {
-      question: "What happens after the signing is complete?",
-      answer:
-        "After the signing, we return the documents to the title company or lender as specified in your closing instructions. This can be done via overnight shipping, courier, or electronic return depending on the requirements.",
-    },
-  ],
-  ctaTitle: "Ready to Schedule Your Loan Signing?",
-  ctaDescription:
-    "Our professional signing agents are ready to help you complete your transaction smoothly and efficiently.",
-}
-
-export const metadata: Metadata = {
-  title: SERVICE_DATA.title,
-  description: SERVICE_DATA.description,
-  alternates: {
-    canonical: `https://houstonmobilenotarypros.com/services/${SERVICE_DATA.slug}`,
-  },
-  openGraph: {
-    title: `${SERVICE_DATA.title} | Houston Mobile Notary Pros`,
-    description: SERVICE_DATA.description,
-    url: `https://houstonmobilenotarypros.com/services/${SERVICE_DATA.slug}`,
-    images: [
-      {
-        url: SERVICE_DATA.heroImage,
-        width: 800,
-        height: 600,
-        alt: SERVICE_DATA.heroAlt,
-      },
-    ],
-  },
-}
-
-export default function ServicePage() {
-  // Prepare service data for structured data
-  const serviceSchemaData = {
-    name: SERVICE_DATA.title,
-    description: SERVICE_DATA.description,
-    type: "Mobile Notary Service",
-    price: SERVICE_DATA.price,
-  }
-
+export default function LoanSigningPage() {
   return (
-    <main className="flex flex-col">
-      {/* Add structured data for SEO */}
-      <ServiceSchema service={serviceSchemaData} />
+    <div className="container mx-auto px-4 py-12">
+      <Link href="/services" className="flex items-center text-[#002147] hover:text-[#A52A2A] mb-8">
+        <ChevronLeft className="mr-2 h-4 w-4" />
+        Back to All Services
+      </Link>
 
-      {/* Service Details */}
-      <section className="py-12 bg-background">
-        <div className="container-custom">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <h2 className="section-heading mb-6">Service Details</h2>
-              <p className="text-lg mb-6">{SERVICE_DATA.introText}</p>
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold text-[#002147] mb-4">Loan Signing Services</h1>
+        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          Professional loan signing services for real estate and mortgage transactions
+        </p>
+      </div>
 
-              <h3 className="section-subheading mb-4">What's Included</h3>
-              <ul className="space-y-4 mb-8">
-                {SERVICE_DATA.features.map((feature, index) => (
-                  <li key={index} className="flex items-start">
-                    <CheckCircle2 className="h-6 w-6 text-primary mr-3 shrink-0" />
-                    <div>
-                      <span className="font-semibold">{feature.title}</span>
-                      <p className="text-muted-foreground">{feature.description}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+      {/* Hero Banner */}
+      <div className="bg-[#002147] text-white p-8 rounded-lg mb-12">
+        <div className="grid md:grid-cols-3 gap-8">
+          <div className="flex flex-col items-center text-center">
+            <FileText className="h-12 w-12 mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Unlimited Documents</h3>
+            <p>No limit on document count</p>
+          </div>
+          <div className="flex flex-col items-center text-center">
+            <Users className="h-12 w-12 mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Multiple Signers</h3>
+            <p>Up to 4 signers included</p>
+          </div>
+          <div className="flex flex-col items-center text-center">
+            <Clock className="h-12 w-12 mb-4" />
+            <h3 className="text-xl font-semibold mb-2">90-Minute Session</h3>
+            <p>Thorough signing experience</p>
+          </div>
+        </div>
+      </div>
 
-              {SERVICE_DATA.documentTypes.length > 0 && (
-                <>
-                  <h3 className="section-subheading mb-4">Common Documents We Handle</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                    {SERVICE_DATA.documentTypes.map((doc, index) => (
-                      <div key={index} className="flex items-center">
-                        <FileText className="h-5 w-5 text-primary mr-2" />
-                        <span>{doc}</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-
-              <div className="bg-muted p-6 rounded-lg mb-8">
-                <div className="flex items-start">
-                  <AlertCircle className="h-6 w-6 text-primary mr-3 shrink-0" />
-                  <div>
-                    <h4 className="font-semibold mb-2">Important Reminder</h4>
-                    <p>
-                      All signers must present valid government-issued photo ID. Documents should NOT be signed before
-                      the notary arrives. Please have any information requested by your lender ready for the
-                      appointment.
-                    </p>
-                  </div>
-                </div>
-              </div>
+      {/* Service Options */}
+      <div className="grid md:grid-cols-2 gap-8 mb-16">
+        {/* Standard Loan Closing */}
+        <Card className="shadow-md">
+          <CardHeader className="bg-[#002147] text-white">
+            <CardTitle>Standard Loan Closing</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <p className="text-3xl font-bold mb-6">$150 flat fee</p>
+            <h3 className="text-xl font-semibold mb-3">What's Included:</h3>
+            <ul className="space-y-3 mb-6">
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                <span>Unlimited documents</span>
+              </li>
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                <span>Up to 4 signers</span>
+              </li>
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                <span>Color printing service</span>
+              </li>
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                <span>Professional closing binder</span>
+              </li>
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                <span>Title company shipping</span>
+              </li>
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                <span>90-minute signing session</span>
+              </li>
+            </ul>
+            <h3 className="text-xl font-semibold mb-3">Additional Options:</h3>
+            <ul className="space-y-3">
+              <li className="flex items-start">
+                <span className="text-[#A52A2A] mr-2">+</span>
+                <span>Overnight document handling: $35</span>
+              </li>
+            </ul>
+            <div className="mt-6">
+              <Button className="w-full bg-[#002147] hover:bg-[#001a38]">Book Standard Loan Closing</Button>
             </div>
+          </CardContent>
+        </Card>
 
-            <div>
-              <div className="bg-card rounded-lg border p-6 sticky top-20">
-                <h3 className="text-xl font-bold mb-4">Pricing</h3>
-                <p className="text-3xl font-bold mb-2">${SERVICE_DATA.pricing.base}</p>
-                <p className="text-sm text-muted-foreground mb-6">{SERVICE_DATA.priceLabel}</p>
-
-                <h4 className="font-semibold mb-2">What's Included:</h4>
-                <ul className="space-y-2 mb-6">
-                  {SERVICE_DATA.pricing.includes.map((item, index) => (
-                    <li key={index} className="flex items-center">
-                      <CheckCircle2 className="h-5 w-5 text-primary mr-2 shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                {SERVICE_DATA.pricing.addons.length > 0 && (
-                  <>
-                    <h4 className="font-semibold mb-2">Add-ons:</h4>
-                    <ul className="space-y-2 mb-6">
-                      {SERVICE_DATA.pricing.addons.map((addon, index) => (
-                        <li key={index} className="flex justify-between">
-                          <span>{addon.name}</span>
-                          <span className="font-medium">{addon.price}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-
-                <Button className="w-full bg-primary text-primary-foreground">
-                  <Link href="/booking" className="w-full flex items-center justify-center">
-                    Book Now <ChevronRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
+        {/* Reverse Mortgage/HELOC */}
+        <Card className="shadow-md">
+          <CardHeader className="bg-[#002147] text-white">
+            <CardTitle>Reverse Mortgage/HELOC</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <p className="text-3xl font-bold mb-6">$150 flat fee</p>
+            <h3 className="text-xl font-semibold mb-3">What's Included:</h3>
+            <ul className="space-y-3 mb-6">
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                <span>4-hour response window</span>
+              </li>
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                <span>Certified mail return</span>
+              </li>
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                <span>Dual agent coordination</span>
+              </li>
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                <span>Unlimited documents</span>
+              </li>
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                <span>In-depth explanation of forms</span>
+              </li>
+            </ul>
+            <div className="mt-6">
+              <Button className="w-full bg-[#002147] hover:bg-[#001a38]">Book Reverse Mortgage Signing</Button>
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Service Description */}
+      <div className="mb-16">
+        <h2 className="text-2xl font-bold text-[#002147] mb-6">Our Loan Signing Expertise</h2>
+        <div className="grid md:grid-cols-2 gap-8">
+          <div>
+            <h3 className="text-xl font-semibold mb-3">Experienced Loan Signing Agents</h3>
+            <p className="mb-4">
+              Our notaries are specifically trained in loan document signing. We understand the complexities of real
+              estate transactions and provide professional service to ensure your closing goes smoothly.
+            </p>
+            <p>
+              We work with title companies, lenders, and real estate professionals throughout the Houston area to
+              facilitate timely and accurate loan closings.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold mb-3">What Sets Us Apart</h3>
+            <ul className="space-y-3">
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                <span>
+                  <span className="font-semibold">Comprehensive Service:</span> We handle everything from document
+                  preparation to final delivery.
+                </span>
+              </li>
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                <span>
+                  <span className="font-semibold">Flexible Scheduling:</span> We accommodate your timeline, including
+                  evenings and weekends.
+                </span>
+              </li>
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                <span>
+                  <span className="font-semibold">E&O Insurance:</span> $100k coverage for your peace of mind.
+                </span>
+              </li>
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                <span>
+                  <span className="font-semibold">Professional Presentation:</span> Organized documents in a
+                  professional binder.
+                </span>
+              </li>
+            </ul>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Benefits Section */}
-      <section className="py-12 bg-muted">
-        <div className="container-custom">
-          <h2 className="section-heading mb-8 text-center">Benefits of This Service</h2>
+      {/* Legal Compliance */}
+      <div className="bg-gray-50 p-8 rounded-lg mb-16">
+        <h2 className="text-2xl font-bold text-[#002147] mb-6">Legal Compliance</h2>
+        <div className="grid md:grid-cols-2 gap-8">
+          <div>
+            <h3 className="text-xl font-semibold mb-3">Our Role as Notaries</h3>
+            <p className="mb-4">
+              As notaries, we are strictly prohibited from explaining loan terms or providing legal advice. Our role is
+              limited to:
+            </p>
+            <ul className="space-y-2">
+              <li className="flex items-start">
+                <span className="text-[#A52A2A] mr-2">•</span>
+                <span>Verifying the identity of signers</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-[#A52A2A] mr-2">•</span>
+                <span>Witnessing signatures</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-[#A52A2A] mr-2">•</span>
+                <span>Administering oaths when required</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-[#A52A2A] mr-2">•</span>
+                <span>Ensuring proper document execution</span>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold mb-3">Legal Disclaimer</h3>
+            <p className="mb-4">In accordance with Texas Government Code §406.017:</p>
+            <p className="bg-white p-4 border-l-4 border-[#A52A2A] italic">
+              "I AM NOT AN ATTORNEY LICENSED TO PRACTICE LAW IN TEXAS AND MAY NOT GIVE LEGAL ADVICE OR ACCEPT FEES FOR
+              LEGAL ADVICE."
+            </p>
+            <p className="mt-4">
+              For questions about your loan terms or legal implications, please consult with your lender, title company,
+              or attorney.
+            </p>
+          </div>
+        </div>
+      </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {SERVICE_DATA.benefits.map((benefit, index) => {
-              const Icon = benefit.icon
-              return (
-                <div key={index} className="bg-background rounded-lg p-6">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                    <Icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">{benefit.title}</h3>
-                  <p className="text-muted-foreground">{benefit.description}</p>
+      {/* Process */}
+      <div className="mb-16">
+        <h2 className="text-2xl font-bold text-[#002147] mb-6">The Loan Signing Process</h2>
+        <div className="grid md:grid-cols-4 gap-6">
+          <Card>
+            <CardHeader className="bg-[#91A3B0]/20">
+              <CardTitle className="flex items-center">
+                <div className="bg-[#002147] text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">
+                  1
                 </div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-12 bg-background">
-        <div className="container-custom">
-          <h2 className="section-heading mb-8 text-center">How It Works</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {SERVICE_DATA.process.map((step, index) => (
-              <div key={index} className="text-center">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-primary text-2xl font-bold">{index + 1}</span>
+                Scheduling
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <p>
+                Book your appointment online or by phone. We'll coordinate with your title company or lender to receive
+                the documents.
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="bg-[#91A3B0]/20">
+              <CardTitle className="flex items-center">
+                <div className="bg-[#002147] text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">
+                  2
                 </div>
-                <h3 className="text-lg font-bold mb-2">{step.title}</h3>
-                <p className="text-muted-foreground">{step.description}</p>
-              </div>
-            ))}
-          </div>
+                Preparation
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <p>
+                We review and organize your documents, prepare a signing binder, and confirm all details with relevant
+                parties.
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="bg-[#91A3B0]/20">
+              <CardTitle className="flex items-center">
+                <div className="bg-[#002147] text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">
+                  3
+                </div>
+                Signing
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <p>
+                Our notary arrives at your location, verifies IDs, and guides you through the signing process for all
+                documents.
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="bg-[#91A3B0]/20">
+              <CardTitle className="flex items-center">
+                <div className="bg-[#002147] text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">
+                  4
+                </div>
+                Return
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <p>
+                We return the signed documents to your title company or lender, either electronically or via overnight
+                shipping.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
-          <div className="mt-12 text-center">
-            <Button className="bg-primary text-primary-foreground">
-              <Link href="/booking" className="flex items-center">
-                Book Your Appointment <ChevronRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+      {/* FAQ */}
+      <div className="mb-16">
+        <h2 className="text-2xl font-bold text-[#002147] mb-6">Frequently Asked Questions</h2>
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-xl font-semibold text-[#002147] mb-2">
+              How long does a typical loan signing appointment take?
+            </h3>
+            <p>
+              Most loan signings take 60-90 minutes, depending on the number of documents and signers. Reverse mortgages
+              may take longer due to their complexity.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-[#002147] mb-2">
+              Do all signers need to be present at the same time?
+            </h3>
+            <p>
+              For most loan documents, all signers must be present at the same time. However, in some cases,
+              arrangements can be made for separate signings. Please consult with your lender about their requirements.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-[#002147] mb-2">
+              Can you explain the loan terms to me during the signing?
+            </h3>
+            <p>
+              No. As notaries, we are prohibited by law from explaining loan terms or providing legal advice. We can
+              identify where you need to sign and what type of document you're signing, but for questions about terms,
+              please contact your lender or attorney.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-[#002147] mb-2">
+              What do I need to have ready for my loan signing appointment?
+            </h3>
+            <p>
+              All signers should have valid, government-issued photo identification. You may also want to have any
+              relevant loan documents or correspondence from your lender available for reference.
+            </p>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* FAQ Section */}
-      <section className="py-12 bg-muted">
-        <div className="container-custom max-w-4xl">
-          <h2 className="section-heading mb-8 text-center">Frequently Asked Questions</h2>
-
-          <Accordion type="single" collapsible className="w-full">
-            {SERVICE_DATA.faqs.map((faq, index) => (
-              <AccordionItem key={index} value={`item-${index}`}>
-                <AccordionTrigger>{faq.question}</AccordionTrigger>
-                <AccordionContent>
-                  <p>{faq.answer}</p>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
+      {/* Call to Action */}
+      <div className="bg-[#002147] text-white p-8 rounded-lg text-center">
+        <h2 className="text-2xl font-bold mb-4">Ready to Schedule Your Loan Signing?</h2>
+        <p className="mb-6 max-w-2xl mx-auto">
+          Our professional loan signing agents are ready to assist with your real estate transaction.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
+            Book Loan Signing
+          </Button>
+          <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147]">
+            Contact for Title Companies
+          </Button>
         </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-12 bg-accent text-accent-foreground">
-        <div className="container-custom text-center">
-          <h2 className="text-3xl font-bold mb-4">{SERVICE_DATA.ctaTitle}</h2>
-          <p className="text-xl max-w-3xl mx-auto mb-8">{SERVICE_DATA.ctaDescription}</p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button size="lg" className="bg-primary text-primary-foreground">
-              <Link href="/booking" className="flex items-center">
-                Book Now <ChevronRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10"
-            >
-              <Link href="/contact" className="flex items-center">
-                Contact Us <ChevronRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-    </main>
+      </div>
+    </div>
   )
 }
-

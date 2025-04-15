@@ -1,105 +1,123 @@
 import Link from "next/link"
-import { SocialLinks } from "@/components/social-links"
+import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react"
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear()
-
   return (
-    <footer className="bg-background border-t">
-      <div className="container py-8 md:py-12">
+    <footer className="bg-[#002147] text-white">
+      <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-primary">Houston Mobile Notary Pros</h3>
-            <p className="text-muted-foreground">
-              Professional notary services day & evening throughout the Houston area.
-            </p>
-            <SocialLinks />
+          {/* Company Info */}
+          <div>
+            <h3 className="text-xl font-bold mb-4">Houston Mobile Notary Pros</h3>
+            <p className="mb-4">Professional notary services day & evening. We come to you!</p>
+            <div className="flex space-x-4">
+              <Link href="https://facebook.com" className="hover:text-[#A52A2A]">
+                <Facebook className="h-5 w-5" />
+                <span className="sr-only">Facebook</span>
+              </Link>
+              <Link href="https://instagram.com" className="hover:text-[#A52A2A]">
+                <Instagram className="h-5 w-5" />
+                <span className="sr-only">Instagram</span>
+              </Link>
+              <Link href="https://twitter.com" className="hover:text-[#A52A2A]">
+                <Twitter className="h-5 w-5" />
+                <span className="sr-only">Twitter</span>
+              </Link>
+            </div>
           </div>
 
+          {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold text-primary mb-4">Services</h3>
+            <h3 className="text-xl font-bold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/services/essential" className="text-foreground hover:text-primary transition-colors">
-                  Essential Package
+                <Link href="/" className="hover:text-[#A52A2A]">
+                  Home
                 </Link>
               </li>
               <li>
-                <Link href="/services/priority" className="text-foreground hover:text-primary transition-colors">
-                  Priority Service
+                <Link href="/services" className="hover:text-[#A52A2A]">
+                  Services
                 </Link>
               </li>
               <li>
-                <Link href="/services/loan-signing" className="text-foreground hover:text-primary transition-colors">
-                  Loan Signing
+                <Link href="/booking" className="hover:text-[#A52A2A]">
+                  Book Now
                 </Link>
               </li>
               <li>
-                <Link href="/services/specialty" className="text-foreground hover:text-primary transition-colors">
-                  Specialty Services
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold text-primary mb-4">Company</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/about" className="text-foreground hover:text-primary transition-colors">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/blog" className="text-foreground hover:text-primary transition-colors">
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link href="/faq" className="text-foreground hover:text-primary transition-colors">
+                <Link href="/faq" className="hover:text-[#A52A2A]">
                   FAQ
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-foreground hover:text-primary transition-colors">
+                <Link href="/contact" className="hover:text-[#A52A2A]">
                   Contact
                 </Link>
               </li>
             </ul>
           </div>
 
+          {/* Services */}
           <div>
-            <h3 className="text-lg font-semibold text-primary mb-4">Legal</h3>
+            <h3 className="text-xl font-bold mb-4">Our Services</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/privacy-policy" className="text-foreground hover:text-primary transition-colors">
-                  Privacy Policy
+                <Link href="/services#essential" className="hover:text-[#A52A2A]">
+                  Essential Package
                 </Link>
               </li>
               <li>
-                <Link href="/terms-of-service" className="text-foreground hover:text-primary transition-colors">
-                  Terms of Service
+                <Link href="/services#priority" className="hover:text-[#A52A2A]">
+                  Priority Service
                 </Link>
               </li>
               <li>
-                <Link href="/accessibility" className="text-foreground hover:text-primary transition-colors">
-                  Accessibility
+                <Link href="/services#loan" className="hover:text-[#A52A2A]">
+                  Loan Signing
                 </Link>
+              </li>
+              <li>
+                <Link href="/services#specialty" className="hover:text-[#A52A2A]">
+                  Specialty Services
+                </Link>
+              </li>
+              <li>
+                <Link href="/services#business" className="hover:text-[#A52A2A]">
+                  Business Packages
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Contact Info */}
+          <div>
+            <h3 className="text-xl font-bold mb-4">Contact Us</h3>
+            <ul className="space-y-2">
+              <li className="flex items-start">
+                <Phone className="h-5 w-5 mr-2 mt-0.5 text-[#A52A2A]" />
+                <span>(123) 456-7890</span>
+              </li>
+              <li className="flex items-start">
+                <Mail className="h-5 w-5 mr-2 mt-0.5 text-[#A52A2A]" />
+                <span>info@houstonmobilenotarypros.com</span>
+              </li>
+              <li className="flex items-start">
+                <MapPin className="h-5 w-5 mr-2 mt-0.5 text-[#A52A2A]" />
+                <span>Serving 30-mile radius from ZIP 77591</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>© {currentYear} Houston Mobile Notary Pros. All rights reserved.</p>
-          <p className="mt-2">
-            <span className="block md:inline">Texas Notary Public #123456789</span>
-            <span className="hidden md:inline mx-2">•</span>
-            <span className="block md:inline">E&O Insured</span>
+        <div className="border-t border-gray-700 mt-8 pt-8 text-center">
+          <p>&copy; {new Date().getFullYear()} Houston Mobile Notary Pros. All rights reserved.</p>
+          <p className="mt-2 text-sm text-gray-400">
+            "I AM NOT AN ATTORNEY LICENSED TO PRACTICE LAW IN TEXAS AND MAY NOT GIVE LEGAL ADVICE OR ACCEPT FEES FOR
+            LEGAL ADVICE."
           </p>
         </div>
       </div>
     </footer>
   )
 }
-
