@@ -59,7 +59,9 @@
     "vaul": "^0.9.6",
     "zod": "latest",
     "prisma": "latest",
-    "@prisma/client": "latest"
+    "@neondatabase/serverless": "latest",
+    "@prisma/client": "latest",
+    "@prisma/adapter-neon": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

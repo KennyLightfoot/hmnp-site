@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { validateBookingData } from "@/lib/validation"
 
+export const runtime = "edge"
+
 export async function GET() {
   try {
     const bookings = await prisma.booking.findMany({
