@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "@/components/ui/use-toast"
 import CalendarSelector from "@/components/calendar-selector"
+import Link from "next/link"
 
 // Define the form schema using Zod
 const formSchema = z.object({
@@ -639,9 +640,9 @@ export default function BookingPageClient() {
                     />
                     <Label htmlFor="termsAccepted" className="text-sm">
                       I agree to the{" "}
-                      <a href="/terms" className="text-[#002147] underline">
+                      <Link href="/terms" className="text-[#002147] underline hover:text-[#A52A2A]">
                         terms and conditions
-                      </a>{" "}
+                      </Link>{" "}
                       and understand that a valid government-issued photo ID will be required for all signers
                     </Label>
                   </div>

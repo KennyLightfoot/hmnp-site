@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import Link from "next/link"
 
 export default function ContactForm() {
   const router = useRouter()
@@ -268,7 +269,15 @@ export default function ContactForm() {
       </Button>
 
       <p className="text-xs text-gray-500 text-center">
-        By submitting this form, you agree to our privacy policy and terms of service.
+        By submitting this form, you agree to our{" "}
+        <Link href="/privacy-policy" className="text-[#002147] underline hover:text-[#A52A2A]">
+          privacy policy
+        </Link>{" "}
+        and{" "}
+        <Link href="/terms" className="text-[#002147] underline hover:text-[#A52A2A]">
+          terms of service
+        </Link>
+        .
         <br />
         We'll never share your information with third parties.
       </p>

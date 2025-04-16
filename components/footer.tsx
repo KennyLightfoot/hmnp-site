@@ -42,6 +42,19 @@ export default function Footer() {
             <span className="font-medium">Phone:</span> (281) 779-8847 | <span className="font-medium">Email:</span>{" "}
             contact@houstonmobilenotarypros.com
           </p>
+          <div className="mt-4 text-xs">
+            <Link href="/privacy-policy" className="text-gray-600 hover:text-[#002147] mx-2">
+              Privacy Policy
+            </Link>
+            <span className="text-gray-400">|</span>
+            <Link href="/terms" className="text-gray-600 hover:text-[#002147] mx-2">
+              Terms of Service
+            </Link>
+            <span className="text-gray-400">|</span>
+            <Link href="/about" className="text-gray-600 hover:text-[#002147] mx-2">
+              About Us
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
