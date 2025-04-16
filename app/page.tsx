@@ -286,7 +286,7 @@ export default function HomePage() {
               </div>
               <div>
                 <p className="text-white text-sm font-medium">Need Same-Day Service?</p>
-                <p className="text-white/80 text-xs">Call (123) 456-7890</p>
+                <p className="text-white/80 text-xs">Call (281) 779-8847</p>
               </div>
             </div>
           </div>
@@ -747,7 +747,7 @@ export default function HomePage() {
                   <Phone className="mr-3 h-5 w-5 text-[#91A3B0]" />
                   <h3 className="font-semibold">Call Us</h3>
                 </div>
-                <p className="text-lg">(123) 456-7890</p>
+                <p className="text-lg">(281) 779-8847</p>
                 <p className="text-sm text-gray-300">Available 7am-9pm daily</p>
               </div>
 
@@ -756,7 +756,7 @@ export default function HomePage() {
                   <Mail className="mr-3 h-5 w-5 text-[#91A3B0]" />
                   <h3 className="font-semibold">Email Us</h3>
                 </div>
-                <p className="text-lg">info@houstonmobilenotarypros.com</p>
+                <p className="text-lg">contact@houstonmobilnotarypros.com</p>
                 <p className="text-sm text-gray-300">We respond within 2 hours</p>
               </div>
             </div>

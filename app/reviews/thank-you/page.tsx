@@ -78,6 +78,9 @@ export default function ThankYouPage() {
               <span className="mr-1">Yelp</span>
             </a>
           </div>
+          <p className="mt-4 text-sm text-gray-600">
+            Questions? Call us at (281) 779-8847 or email contact@houstonmobilnotarypros.com
+          </p>
         </div>
       </div>
     </div>

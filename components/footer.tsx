@@ -38,6 +38,10 @@ export default function Footer() {
           <p className="text-xs mt-2">
             Serving Houston and surrounding areas with professional mobile notary services.
           </p>
+          <p className="text-xs mt-2">
+            <span className="font-medium">Phone:</span> (281) 779-8847 | <span className="font-medium">Email:</span>{" "}
+            contact@houstonmobilnotarypros.com
+          </p>
         </div>
       </div>
     </footer>

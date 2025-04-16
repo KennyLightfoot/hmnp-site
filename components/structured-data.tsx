@@ -8,7 +8,7 @@ export function StructuredData() {
     image: "/images/og-image.jpg",
     "@id": "https://houstonmobilenotarypros.com/",
     url: "https://houstonmobilenotarypros.com/",
-    telephone: "+1-XXX-XXX-XXXX", // Replace with actual phone number
+    telephone: "+12817798847", // Updated phone number
     priceRange: "$75-$250+",
     address: {
       "@type": "PostalAddress",
@@ -42,6 +42,7 @@ export function StructuredData() {
       "https://www.yelp.com/biz/your-yelp-page", // Replace with actual Yelp page
       // Add other social media profiles
     ],
+    email: "contact@houstonmobilnotarypros.com", // Added email
   }
 
   return (
