@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
-import { validateBookingData } from "@/lib/validation"
-
-export const runtime = "edge"
 
 export async function GET() {
   try {
@@ -23,15 +20,21 @@ export async function POST(request: Request) {
   try {
     const data = await request.json()
 
-    // Validate the booking data
-    const validationResult = validateBookingData(data)
-    if (!validationResult.success) {
-      return NextResponse.json({ error: validationResult.error }, { status: 400 })
-    }
-
     // Create the booking
     const booking = await prisma.booking.create({
-      data: validationResult.data,
+      data: {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        date: new Date(data.date),
+        time: data.time,
+        serviceType: data.serviceType,
+        location: data.location,
+        numberOfSigners: data.numberOfSigners || 1,
+        numberOfDocs: data.numberOfDocs || 1,
+        notes: data.notes,
+        status: "pending",
+      },
     })
 
     return NextResponse.json({ booking })
