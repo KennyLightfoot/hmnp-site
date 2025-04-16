@@ -6,6 +6,7 @@ import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { Providers } from "./providers"
 import { StructuredData } from "@/components/structured-data"
+import { initErrorMonitoring } from "@/lib/error-monitoring"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -78,6 +79,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  // Initialize error monitoring on the client side
+  if (typeof window !== "undefined") {
+    initErrorMonitoring()
+  }
+
   return (
     <html lang="en" className="light">
       <body className={`${inter.className} bg-white`}>

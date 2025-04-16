@@ -12,6 +12,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
+import { logFormError } from "@/lib/error-logger"
+import { useEffect } from "react"
 
 export default function ContactForm() {
   const router = useRouter()
@@ -24,10 +26,29 @@ export default function ContactForm() {
     subject: "General Inquiry",
     message: "",
     smsConsent: false,
+    csrfToken: "", // Will be set before submission
   })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = useState(false)
+
+  // Fetch CSRF token on component mount
+  useEffect(() => {
+    async function fetchCsrfToken() {
+      try {
+        const response = await fetch("/api/csrf")
+        const data = await response.json()
+        if (data.csrfToken) {
+          setFormData((prev) => ({ ...prev, csrfToken: data.csrfToken }))
+        }
+      } catch (error) {
+        logFormError("contact-form", error as Error, { action: "fetch-csrf-token" })
+        console.error("Failed to fetch CSRF token:", error)
+      }
+    }
+
+    fetchCsrfToken()
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -90,17 +111,17 @@ export default function ContactForm() {
     setSubmitError(null)
 
     try {
-      // In a real implementation, this would send data to your API
-      // const response = await fetch('/api/contact', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // })
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const result = await response.json()
 
-      // if (!response.ok) throw new Error('Failed to submit form')
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to submit form")
+      }
 
       setSubmitSuccess(true)
 
@@ -109,6 +130,12 @@ export default function ContactForm() {
       //   router.push('/contact/thank-you')
       // }, 2000)
     } catch (error) {
+      // Log the form error
+      logFormError("contact-form", error as Error, {
+        formName: "contact-form",
+        fields: Object.keys(formData),
+      })
+
       setSubmitError(error instanceof Error ? error.message : "An unexpected error occurred")
     } finally {
       setIsSubmitting(false)
@@ -133,6 +160,7 @@ export default function ContactForm() {
               subject: "General Inquiry",
               message: "",
               smsConsent: false,
+              csrfToken: "",
             })
           }}
           className="bg-green-700 hover:bg-green-800"

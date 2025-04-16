@@ -1,4 +1,7 @@
 import { NextResponse } from "next/server"
+import { rateLimit } from "@/lib/rate-limit"
+import { sanitizeObject } from "@/lib/sanitize"
+import { logApiError } from "@/lib/error-logger"
 
 // GHL API base URL from environment variable
 const GHL_API_BASE_URL = process.env.GHL_API_BASE_URL
@@ -98,7 +101,28 @@ async function updateOpportunityCustomFields(opportunityId: string, customFields
 
 export async function POST(request: Request) {
   try {
+    // Apply rate limiting
+    const rateLimitResult = await rateLimit(request as any, 5, 60)
+    if (!rateLimitResult.success) {
+      const error = new Error(rateLimitResult.message || "Rate limit exceeded")
+      logApiError("/api/booking", error, request, {
+        reason: "Rate limit exceeded",
+        limit: "5 requests per 60 seconds",
+      })
+
+      return NextResponse.json(
+        {
+          success: false,
+          message: rateLimitResult.message || "Too many requests. Please try again later.",
+        },
+        { status: 429 },
+      )
+    }
+
     const data = await request.json()
+
+    // Sanitize input data
+    const sanitizedData = sanitizeObject(data)
 
     // Extract contact and opportunity data from the form submission
     const {
@@ -121,7 +145,7 @@ export async function POST(request: Request) {
       specialInstructions,
       smsNotifications,
       emailUpdates,
-    } = data
+    } = sanitizedData
 
     // Create contact in GHL
     const contactData = {
@@ -187,7 +211,12 @@ export async function POST(request: Request) {
       },
     })
   } catch (error) {
-    console.error("Booking error:", error)
+    // Log the error with our enhanced logger
+    logApiError("/api/booking", error as Error, request, {
+      endpoint: "POST /api/booking",
+      service: "GHL Booking API",
+    })
+
     return NextResponse.json(
       {
         success: false,

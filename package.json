@@ -61,7 +61,8 @@
     "fs": "latest",
     "path": "latest",
     "child_process": "latest",
-    "resend": "latest"
+    "resend": "latest",
+    "crypto": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

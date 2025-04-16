@@ -2,6 +2,8 @@
 
 import { Button } from "@/components/ui/button"
 import { AlertTriangle } from "lucide-react"
+import { logError } from "@/lib/error-logger"
+import { useEffect } from "react"
 
 export default function GlobalError({
   error,
@@ -10,6 +12,18 @@ export default function GlobalError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  useEffect(() => {
+    // Log the global error with our enhanced logger
+    logError(error, {
+      severity: "critical",
+      context: {
+        digest: error.digest,
+        location: "global-error",
+      },
+      tags: ["client", "global-error"],
+    })
+  }, [error])
+
   return (
     <html lang="en">
       <body>
