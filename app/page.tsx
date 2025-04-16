@@ -756,7 +756,7 @@ export default function HomePage() {
                   <Mail className="mr-3 h-5 w-5 text-[#91A3B0]" />
                   <h3 className="font-semibold">Email Us</h3>
                 </div>
-                <p className="text-lg">contact@houstonmobilnotarypros.com</p>
+                <p className="text-lg">contact@houstonmobilenotarypros.com</p>
                 <p className="text-sm text-gray-300">We respond within 2 hours</p>
               </div>
             </div>

@@ -79,7 +79,7 @@ export default function ThankYouPage() {
             </a>
           </div>
           <p className="mt-4 text-sm text-gray-600">
-            Questions? Call us at (281) 779-8847 or email contact@houstonmobilnotarypros.com
+            Questions? Call us at (281) 779-8847 or email contact@houstonmobilenotarypros.com
           </p>
         </div>
       </div>

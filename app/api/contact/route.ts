@@ -100,7 +100,11 @@ export async function POST(request: Request) {
     const contactId = contactResponse.id
 
     // Add the message as a note
-    const noteContent = `Subject: ${subject}\n\nMessage: ${message}\n\nSMS Consent: ${smsConsent ? "Yes" : "No"}`
+    const noteContent = `Subject: ${subject}
+
+Message: ${message}
+
+SMS Consent: ${smsConsent ? "Yes" : "No"}`
     await createNote(contactId, noteContent)
 
     // Trigger workflow if configured

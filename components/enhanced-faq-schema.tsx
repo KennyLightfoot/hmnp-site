@@ -1,6 +1,6 @@
 import Script from "next/script"
 
-export default function FAQSchema() {
+export default function EnhancedFAQSchema() {
   return (
     <Script
       id="faq-schema"
@@ -31,7 +31,7 @@ export default function FAQSchema() {
               name: "What areas do you serve?",
               acceptedAnswer: {
                 "@type": "Answer",
-                text: "We serve clients within a 20-mile radius of ZIP code 77591, covering the greater Houston area including Houston, Galveston, League City, Pearland, Sugar Land, Katy, The Woodlands, Baytown, Friendswood, and Missouri City. We can also travel beyond our standard service area for an additional fee of $0.50 per mile.",
+                text: "We serve clients within a 30-mile radius of ZIP code 77591, covering the greater Houston area including Houston, Galveston, League City, Pearland, Sugar Land, Katy, The Woodlands, Baytown, Friendswood, and Missouri City. We can also travel beyond our standard service area for an additional fee of $0.50 per mile.",
               },
             },
             {
@@ -52,10 +52,10 @@ export default function FAQSchema() {
             },
             {
               "@type": "Question",
-              name: "How do I schedule an appointment?",
+              name: "How quickly can you respond to a request?",
               acceptedAnswer: {
                 "@type": "Answer",
-                text: "You can schedule an appointment through our online booking system (available 24/7), by phone at (281) 779-8847 during business hours (Monday-Friday, 8am-6pm), by email to contact@houstonmobilenotarypros.com, or through our contact form. For Priority Service (2-hour response time), we recommend booking online or by phone for the fastest confirmation.",
+                text: "Our response time depends on the service level you choose. For Essential Service, we typically require 24-hour advance notice, but same-day service may be available depending on our schedule. For Priority Service, we guarantee a 2-hour response time, available 7am-9pm daily, including weekends. For urgent needs, we recommend our Priority Service package.",
               },
             },
             {
@@ -71,23 +71,23 @@ export default function FAQSchema() {
               name: "What payment methods do you accept?",
               acceptedAnswer: {
                 "@type": "Answer",
-                text: "We accept all major credit and debit cards (Visa, MasterCard, American Express, Discover), cash (exact change required), and offer corporate billing for approved business accounts. Payment is due at the time of service unless other arrangements have been made in advance.",
+                text: "We accept credit/debit cards (Visa, MasterCard, American Express, Discover) which is our preferred method, cash (exact change required), and we offer corporate billing for approved business accounts. Payment is due at the time of service. We do not accept personal checks, money orders, or payment apps like Venmo or Cash App at this time.",
               },
             },
             {
               "@type": "Question",
-              name: "What are the legal limitations of a notary public?",
+              name: "Do I need witnesses for my document?",
               acceptedAnswer: {
                 "@type": "Answer",
-                text: "As notaries public in Texas, we cannot provide legal advice, explain legal documents, prepare legal documents, advise on document types, certify copies of most documents, notarize for absent signers, notarize incomplete documents, or notarize when we have a direct financial interest in the transaction. These limitations are established by Texas Government Code Chapter 406.",
+                text: "Whether witnesses are required depends on the type of document. In Texas, wills typically require two witnesses who are not beneficiaries. Powers of Attorney require notarization but not witnesses. Deeds generally require notarization but not witnesses. Medical directives often require two witnesses or notarization. If your document requires witnesses, you should arrange for them to be present during the notary appointment.",
               },
             },
             {
               "@type": "Question",
-              name: "What is your cancellation policy?",
+              name: "What should I expect during a mobile notary appointment?",
               acceptedAnswer: {
                 "@type": "Answer",
-                text: "Our cancellation policy provides a full refund with 24+ hours notice. For cancellations with 2-24 hours notice, no fee applies but deposits may be converted to credit. Less than 2 hours notice may incur a $35 fee. No-shows may be charged $50 plus travel costs. For weather-related cancellations, we offer a 15% discount when rescheduling.",
+                text: "During a typical appointment, our notary will arrive at your location, verify the identity of all signers using government-issued photo ID, ensure all signers understand the document(s) and are signing willingly, witness the signing of the document(s), complete the notarial certificate and apply their official seal, and collect payment. The process typically takes 15-30 minutes for standard notarizations or 60-90 minutes for loan signings.",
               },
             },
           ],

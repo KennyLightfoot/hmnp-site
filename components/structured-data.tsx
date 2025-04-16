@@ -42,7 +42,7 @@ export function StructuredData() {
       "https://www.yelp.com/biz/your-yelp-page", // Replace with actual Yelp page
       // Add other social media profiles
     ],
-    email: "contact@houstonmobilnotarypros.com", // Added email
+    email: "contact@houstonmobilenotarypros.com", // Fixed email address
   }
 
   return (
