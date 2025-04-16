@@ -10,70 +10,39 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User model for authentication
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  password      String?
-  image         String?
-  role          String    @default("USER")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  bookings      Booking[]
-}
-
-// Booking model for notary appointments
 model Booking {
-  id                 String    @id @default(cuid())
-  userId             String?
-  user               User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  serviceType        String
-  numberOfSigners    Int       @default(1)
-  appointmentDate    DateTime
-  status             String    @default("PENDING")
-  firstName          String
-  lastName           String
-  email              String
-  phone              String
-  address            String
-  city               String
-  state              String
-  postalCode         String
-  signingLocation    String
-  specialInstructions String?
-  totalPrice         Decimal   @default(0)
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  name            String
+  email           String
+  phone           String
+  date            DateTime
+  time            String
+  serviceType     String
+  location        String
+  numberOfSigners Int      @default(1)
+  numberOfDocs    Int      @default(1)
+  notes           String?
+  status          String   @default("pending")
 }
 
-// Testimonials model
 model Testimonial {
   id        String   @id @default(cuid())
-  name      String
-  location  String
-  service   String
-  rating    Decimal
-  date      DateTime
-  content   String
-  featured  Boolean  @default(false)
-  approved  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  name      String
+  rating    Int
+  comment   String
+  service   String?
+  approved  Boolean  @default(false)
 }
 
-// Contact form submissions
-model ContactSubmission {
-  id          String   @id @default(cuid())
-  firstName   String
-  lastName    String
-  email       String
-  phone       String
-  subject     String
-  message     String
-  smsConsent  Boolean  @default(false)
-  responded   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  email     String   @unique
+  name      String?
+  role      String   @default("user")
 }
