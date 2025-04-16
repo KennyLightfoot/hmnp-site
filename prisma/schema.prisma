@@ -1,0 +1,106 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  role          UserRole  @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  bookings      Booking[]
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  NOTARY
+}
+
+// Booking model for notary appointments
+model Booking {
+  id                 String           @id @default(cuid())
+  userId             String?
+  user               User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  serviceType        ServiceType
+  numberOfSigners    Int              @default(1)
+  appointmentDate    DateTime
+  status             BookingStatus    @default(PENDING)
+  firstName          String
+  lastName           String
+  email              String
+  phone              String
+  address            String
+  city               String
+  state              String
+  postalCode         String
+  signingLocation    SigningLocation
+  specialInstructions String?
+  totalPrice         Decimal          @default(0)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+enum ServiceType {
+  ESSENTIAL
+  PRIORITY
+  LOAN_SIGNING
+  REVERSE_MORTGAGE
+  SPECIALTY
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum SigningLocation {
+  CLIENT_LOCATION
+  PUBLIC_PLACE
+  BUSINESS_OFFICE
+}
+
+// Testimonials model
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  location  String
+  service   String
+  rating    Decimal
+  date      DateTime
+  content   String
+  featured  Boolean  @default(false)
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Contact form submissions
+model ContactSubmission {
+  id          String   @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String
+  phone       String
+  subject     String
+  message     String
+  smsConsent  Boolean  @default(false)
+  responded   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
