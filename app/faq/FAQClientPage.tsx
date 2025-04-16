@@ -866,14 +866,6 @@ const faqs: FAQ[] = [
             <strong>Digital Security:</strong> Our digital systems use encryption and secure protocols to protect your
             information.
           </li>
-          <li>
-            <strong>Staff Training:</strong> All staff members are trained in privacy practices and confidentiality
-            requirements.
-          </li>
-          <li>
-            <strong>Retention Policy:</strong> We maintain records only for the period required by law (7 years in
-            Texas) and securely dispose of them afterward.
-          </li>
         </ul>
         <p className="mt-2">
           We do not sell or share your personal information with third parties except as required to complete your
@@ -919,7 +911,7 @@ const faqs: FAQ[] = [
   },
 ]
 
-export default function FAQPage() {
+export default function FAQClientPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredFAQs, setFilteredFAQs] = useState<FAQ[]>(faqs)
   const [activeCategory, setActiveCategory] = useState("all")
