@@ -2,14 +2,35 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Menu, X } from "lucide-react"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [hasScrolled, setHasScrolled] = useState(false)
+
+  // Handle scroll event to add shadow when scrolled
+  useEffect(() => {
+    const handleScroll = () => {
+      setHasScrolled(window.scrollY > 10)
+    }
+
+    // Add scroll event listener
+    window.addEventListener("scroll", handleScroll)
+
+    // Check initial scroll position
+    handleScroll()
+
+    // Clean up event listener
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   return (
-    <header className="bg-white py-4 border-b">
+    <header
+      className={`sticky top-0 bg-white py-4 border-b w-full z-50 transition-all duration-200 ${
+        hasScrolled ? "shadow-md" : ""
+      }`}
+    >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center">
@@ -53,7 +74,7 @@ export default function Header() {
             </nav>
             <Link
               href="/booking"
-              className="bg-[#A52A2A] text-white px-6 py-2 rounded-full hover:bg-[#8B2323] transition-colors font-medium"
+              className="bg-[#A52A2A] text-white px-6 py-2 rounded-full hover:bg-[#8B2323] transition-colors font-medium hover:shadow-md"
             >
               Book Now
             </Link>
@@ -103,7 +124,7 @@ export default function Header() {
               <li>
                 <Link
                   href="/booking"
-                  className="bg-[#A52A2A] text-white px-6 py-2 rounded-full hover:bg-[#8B2323] transition-colors inline-block font-medium"
+                  className="bg-[#A52A2A] text-white px-6 py-2 rounded-full hover:bg-[#8B2323] transition-colors inline-block font-medium hover:shadow-md"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Book Now
