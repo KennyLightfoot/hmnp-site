@@ -112,6 +112,36 @@ SMS Consent: ${smsConsent ? "Yes" : "No"}`
       await triggerWorkflow(contactId)
     }
 
+    // Trigger specific Call Request Webhook
+    const callRequestWebhookUrl = "https://services.leadconnectorhq.com/hooks/oUvYNTw2Wvul7JSJplqQ/webhook-trigger/62fca39a-8d94-4813-b550-62027a30152b";
+    try {
+        const webhookPayload = {
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            phone: phone,
+            subject: subject, // Sending subject in case it indicates call request
+            message: message, // Sending message content
+            contactId: contactId // Sending GHL contact ID if useful for workflow
+        };
+        const webhookResponse = await fetch(callRequestWebhookUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(webhookPayload),
+        });
+        if (!webhookResponse.ok) {
+            console.error(`Failed to send data to Call Request webhook: ${webhookResponse.status} ${await webhookResponse.text()}`);
+            // Decide if this should be an error or just log
+        } else {
+             console.log('Successfully sent data to Call Request webhook.');
+        }
+    } catch (webhookError) {
+        console.error("Error sending data to Call Request webhook:", webhookError);
+        // Decide if this should be an error or just log
+    }
+
     // Return success response
     return NextResponse.json({
       success: true,
