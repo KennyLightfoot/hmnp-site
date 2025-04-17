@@ -7,7 +7,9 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true,
+    // No specific image config needed for now, 
+    // defaults will apply. If remote domains are needed, add them here.
+    // e.g., remotePatterns: [{ protocol: 'https', hostname: 'example.com' }]
   },
 }
 

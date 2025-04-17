@@ -2,7 +2,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { z } from "zod"
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -14,7 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "@/components/ui/use-toast"
-import CalendarSelector from "@/components/calendar-selector"
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import AppointmentCalendar from "@/components/appointment-calendar"
 
 // Define the form schema using Zod
 const formSchema = z.object({
@@ -52,6 +53,9 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>
 
+// Define valid service types for props (matching the calendar component)
+type ServiceType = "essential" | "priority" | "loan-signing" | "reverse-mortgage" | "specialty";
+
 export default function BookingPageClient() {
   const router = useRouter()
   const [step, setStep] = useState(1)
@@ -83,12 +87,12 @@ export default function BookingPageClient() {
   const { formState, watch, setValue } = form
   const { errors, isValid } = formState
 
-  const serviceType = watch("serviceType")
+  const serviceType = watch("serviceType") as ServiceType
   const numberOfSigners = watch("numberOfSigners")
   const appointmentStartTime = watch("appointmentStartTime")
   const appointmentFormattedTime = watch("appointmentFormattedTime")
 
-  const totalSteps = 6 // Increased by 1 for calendar selection
+  const totalSteps = 6
 
   const nextStep = () => {
     if (step < totalSteps) {
@@ -140,11 +144,13 @@ export default function BookingPageClient() {
     }
   }
 
-  // Function to handle calendar time selection
+  // Function to handle calendar time selection (matches AppointmentCalendar callback)
   const handleTimeSelected = (startTime: string, endTime: string, formattedTime: string) => {
     setValue("appointmentStartTime", startTime)
-    setValue("appointmentEndTime", endTime)
+    setValue("appointmentEndTime", endTime) // Make sure endTime is in schema if needed, or just use startTime
     setValue("appointmentFormattedTime", formattedTime)
+    // Optionally move to the next step automatically after time selection
+    // nextStep(); 
   }
 
   // Function to geocode the address
@@ -291,406 +297,423 @@ export default function BookingPageClient() {
           </div>
         </div>
 
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <Card className="shadow-md">
-            {/* Step 1: Service Selection */}
-            {step === 1 && (
-              <>
-                <CardHeader>
-                  <CardTitle>Select Your Service</CardTitle>
-                  <CardDescription>Choose the type of notary service you need</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <Label>Service Type</Label>
-                    <RadioGroup
-                      defaultValue={serviceType}
-                      onValueChange={(value) => setValue("serviceType", value as any)}
-                      className="grid grid-cols-1 md:grid-cols-2 gap-4"
-                    >
-                      <div className="relative">
-                        <RadioGroupItem value="essential" id="essential" className="peer sr-only" />
-                        <Label
-                          htmlFor="essential"
-                          className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
-                        >
-                          <span className="font-semibold">Essential Mobile Package</span>
-                          <span className="text-sm text-gray-500">Starting at $75</span>
-                        </Label>
-                      </div>
-                      <div className="relative">
-                        <RadioGroupItem value="priority" id="priority" className="peer sr-only" />
-                        <Label
-                          htmlFor="priority"
-                          className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
-                        >
-                          <span className="font-semibold">Priority Service Package</span>
-                          <span className="text-sm text-gray-500">$100 flat fee</span>
-                        </Label>
-                      </div>
-                      <div className="relative">
-                        <RadioGroupItem value="loan-signing" id="loan-signing" className="peer sr-only" />
-                        <Label
-                          htmlFor="loan-signing"
-                          className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
-                        >
-                          <span className="font-semibold">Loan Signing Service</span>
-                          <span className="text-sm text-gray-500">$150 flat fee</span>
-                        </Label>
-                      </div>
-                      <div className="relative">
-                        <RadioGroupItem value="reverse-mortgage" id="reverse-mortgage" className="peer sr-only" />
-                        <Label
-                          htmlFor="reverse-mortgage"
-                          className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
-                        >
-                          <span className="font-semibold">Reverse Mortgage/HELOC</span>
-                          <span className="text-sm text-gray-500">$150 flat fee</span>
-                        </Label>
-                      </div>
-                      <div className="relative">
-                        <RadioGroupItem value="specialty" id="specialty" className="peer sr-only" />
-                        <Label
-                          htmlFor="specialty"
-                          className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
-                        >
-                          <span className="font-semibold">Specialty Services</span>
-                          <span className="text-sm text-gray-500">Starting at $55</span>
-                        </Label>
-                      </div>
-                    </RadioGroup>
-                    {errors.serviceType && <p className="text-sm text-red-500">{errors.serviceType.message}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="numberOfSigners">Number of Signers</Label>
-                    <Select
-                      defaultValue={numberOfSigners.toString()}
-                      onValueChange={(value) => setValue("numberOfSigners", Number.parseInt(value))}
-                    >
-                      <SelectTrigger id="numberOfSigners">
-                        <SelectValue placeholder="Select number of signers" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                          <SelectItem key={num} value={num.toString()}>
-                            {num} {num === 1 ? "Signer" : "Signers"}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.numberOfSigners && <p className="text-sm text-red-500">{errors.numberOfSigners.message}</p>}
-                  </div>
-
-                  <div className="bg-gray-50 p-4 rounded-md">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-semibold">Estimated Price:</h3>
-                        <p className="text-sm text-gray-500">Based on service type and number of signers</p>
-                      </div>
-                      <div className="text-2xl font-bold text-[#002147]">${getServicePrice()}</div>
+        {/* Wrap form content with shadcn/ui Form component */}
+        <Form {...form}> 
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <Card className="shadow-md">
+              {/* Step 1: Service Selection */}
+              {step === 1 && (
+                <>
+                  <CardHeader>
+                    <CardTitle>Select Your Service</CardTitle>
+                    <CardDescription>Choose the type of notary service you need</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-4">
+                      <Label>Service Type</Label>
+                      <RadioGroup
+                        defaultValue={serviceType}
+                        onValueChange={(value) => setValue("serviceType", value as any)}
+                        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                      >
+                        <div className="relative">
+                          <RadioGroupItem value="essential" id="essential" className="peer sr-only" />
+                          <Label
+                            htmlFor="essential"
+                            className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
+                          >
+                            <span className="font-semibold">Essential Mobile Package</span>
+                            <span className="text-sm text-gray-500">Starting at $75</span>
+                          </Label>
+                        </div>
+                        <div className="relative">
+                          <RadioGroupItem value="priority" id="priority" className="peer sr-only" />
+                          <Label
+                            htmlFor="priority"
+                            className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
+                          >
+                            <span className="font-semibold">Priority Service Package</span>
+                            <span className="text-sm text-gray-500">$100 flat fee</span>
+                          </Label>
+                        </div>
+                        <div className="relative">
+                          <RadioGroupItem value="loan-signing" id="loan-signing" className="peer sr-only" />
+                          <Label
+                            htmlFor="loan-signing"
+                            className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
+                          >
+                            <span className="font-semibold">Loan Signing Service</span>
+                            <span className="text-sm text-gray-500">$150 flat fee</span>
+                          </Label>
+                        </div>
+                        <div className="relative">
+                          <RadioGroupItem value="reverse-mortgage" id="reverse-mortgage" className="peer sr-only" />
+                          <Label
+                            htmlFor="reverse-mortgage"
+                            className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
+                          >
+                            <span className="font-semibold">Reverse Mortgage/HELOC</span>
+                            <span className="text-sm text-gray-500">$150 flat fee</span>
+                          </Label>
+                        </div>
+                        <div className="relative">
+                          <RadioGroupItem value="specialty" id="specialty" className="peer sr-only" />
+                          <Label
+                            htmlFor="specialty"
+                            className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
+                          >
+                            <span className="font-semibold">Specialty Services</span>
+                            <span className="text-sm text-gray-500">Starting at $55</span>
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                      {errors.serviceType && <p className="text-sm text-red-500">{errors.serviceType.message}</p>}
                     </div>
-                  </div>
-                </CardContent>
-              </>
-            )}
 
-            {/* Step 2: Calendar Selection (New Step) */}
-            {step === 2 && (
-              <>
-                <CardHeader>
-                  <CardTitle>Schedule Your Appointment</CardTitle>
-                  <CardDescription>Select a date and time for your notary service</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <CalendarSelector serviceType={serviceType} onTimeSelected={handleTimeSelected} />
-
-                  {appointmentStartTime && (
-                    <div className="bg-green-50 p-4 rounded-md">
-                      <h3 className="font-semibold text-green-800">Appointment Selected</h3>
-                      <p className="text-green-700">
-                        {new Date(appointmentStartTime).toLocaleDateString()} at {appointmentFormattedTime}
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </>
-            )}
-
-            {/* Step 3: Contact Information (previously Step 2) */}
-            {step === 3 && (
-              <>
-                <CardHeader>
-                  <CardTitle>Contact Information</CardTitle>
-                  <CardDescription>Provide your contact details</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" {...form.register("firstName")} placeholder="Enter your first name" />
-                      {errors.firstName && <p className="text-sm text-red-500">{errors.firstName.message}</p>}
+                      <Label htmlFor="numberOfSigners">Number of Signers</Label>
+                      <Select
+                        defaultValue={numberOfSigners.toString()}
+                        onValueChange={(value) => setValue("numberOfSigners", Number.parseInt(value))}
+                      >
+                        <SelectTrigger id="numberOfSigners">
+                          <SelectValue placeholder="Select number of signers" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                            <SelectItem key={num} value={num.toString()}>
+                              {num} {num === 1 ? "Signer" : "Signers"}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.numberOfSigners && <p className="text-sm text-red-500">{errors.numberOfSigners.message}</p>}
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" {...form.register("lastName")} placeholder="Enter your last name" />
-                      {errors.lastName && <p className="text-sm text-red-500">{errors.lastName.message}</p>}
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-gray-50 p-4 rounded-md">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h3 className="font-semibold">Estimated Price:</h3>
+                          <p className="text-sm text-gray-500">Based on service type and number of signers</p>
+                        </div>
+                        <div className="text-2xl font-bold text-[#002147]">${getServicePrice()}</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </>
+              )}
+
+              {/* Step 2: Calendar Selection */}
+              {step === 2 && (
+                <>
+                  <CardHeader>
+                    <CardTitle>Schedule Your Appointment</CardTitle>
+                    <CardDescription>Select an available date and time slot</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <AppointmentCalendar 
+                      serviceType={serviceType} 
+                      onTimeSelected={handleTimeSelected} 
+                    />
+
+                    {appointmentStartTime && (
+                      <div className="bg-green-50 p-4 rounded-md mt-4">
+                        <h3 className="font-semibold text-green-800">Time Slot Selected</h3>
+                        <p className="text-green-700">
+                          {appointmentFormattedTime || "Error displaying time"}
+                        </p>
+                      </div>
+                    )}
+                    {errors.appointmentStartTime && <p className="text-sm text-red-500 mt-2">Please select a time slot.</p>}
+                  </CardContent>
+                </>
+              )}
+
+              {/* Step 3: Contact Information */}
+              {step === 3 && (
+                <>
+                  <CardHeader>
+                    <CardTitle>Contact Information</CardTitle>
+                    <CardDescription>Provide your contact details</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">First Name</Label>
+                        <Input id="firstName" {...form.register("firstName")} placeholder="Enter your first name" />
+                        {errors.firstName && <p className="text-sm text-red-500">{errors.firstName.message}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Last Name</Label>
+                        <Input id="lastName" {...form.register("lastName")} placeholder="Enter your last name" />
+                        {errors.lastName && <p className="text-sm text-red-500">{errors.lastName.message}</p>}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email Address</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          {...form.register("email")}
+                          placeholder="Enter your email address"
+                        />
+                        {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input id="phone" type="tel" {...form.register("phone")} placeholder="Enter your phone number" />
+                        {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
+                      </div>
+                    </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
+                      <Label htmlFor="company">Company Name (Optional)</Label>
                       <Input
-                        id="email"
-                        type="email"
-                        {...form.register("email")}
-                        placeholder="Enter your email address"
+                        id="company"
+                        {...form.register("company")}
+                        placeholder="Enter your company name if applicable"
                       />
-                      {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input id="phone" type="tel" {...form.register("phone")} placeholder="Enter your phone number" />
-                      {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="company">Company Name (Optional)</Label>
-                    <Input
-                      id="company"
-                      {...form.register("company")}
-                      placeholder="Enter your company name if applicable"
-                    />
-                  </div>
-                </CardContent>
-              </>
-            )}
-
-            {/* Step 4: Location Details (previously Step 3) */}
-            {step === 4 && (
-              <>
-                <CardHeader>
-                  <CardTitle>Location Details</CardTitle>
-                  <CardDescription>Where will the notarization take place?</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Street Address</Label>
-                    <Input id="address" {...form.register("address")} placeholder="Enter the street address" />
-                    {errors.address && <p className="text-sm text-red-500">{errors.address.message}</p>}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="city">City</Label>
-                      <Input id="city" {...form.register("city")} placeholder="Enter the city" />
-                      {errors.city && <p className="text-sm text-red-500">{errors.city.message}</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="state">State</Label>
-                      <Input id="state" {...form.register("state")} placeholder="Enter the state" />
-                      {errors.state && <p className="text-sm text-red-500">{errors.state.message}</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="postalCode">Postal Code</Label>
-                      <Input id="postalCode" {...form.register("postalCode")} placeholder="Enter the postal code" />
-                      {errors.postalCode && <p className="text-sm text-red-500">{errors.postalCode.message}</p>}
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <Label>Signing Location Type</Label>
-                    <RadioGroup
-                      defaultValue="client-location"
-                      onValueChange={(value) => setValue("signingLocation", value as any)}
-                      className="grid grid-cols-1 md:grid-cols-3 gap-4"
-                    >
-                      <div className="relative">
-                        <RadioGroupItem value="client-location" id="client-location" className="peer sr-only" />
-                        <Label
-                          htmlFor="client-location"
-                          className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
-                        >
-                          <span className="font-semibold">Residence</span>
-                          <span className="text-sm text-gray-500">Home or apartment</span>
-                        </Label>
-                      </div>
-                      <div className="relative">
-                        <RadioGroupItem value="business-office" id="business-office" className="peer sr-only" />
-                        <Label
-                          htmlFor="business-office"
-                          className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
-                        >
-                          <span className="font-semibold">Business Office</span>
-                          <span className="text-sm text-gray-500">Office or workplace</span>
-                        </Label>
-                      </div>
-                      <div className="relative">
-                        <RadioGroupItem value="public-place" id="public-place" className="peer sr-only" />
-                        <Label
-                          htmlFor="public-place"
-                          className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
-                        >
-                          <span className="font-semibold">Public Place</span>
-                          <span className="text-sm text-gray-500">Café, library, etc.</span>
-                        </Label>
-                      </div>
-                    </RadioGroup>
-                    {errors.signingLocation && <p className="text-sm text-red-500">{errors.signingLocation.message}</p>}
-                  </div>
-                </CardContent>
-              </>
-            )}
-
-            {/* Step 5: Additional Information (previously Step 4) */}
-            {step === 5 && (
-              <>
-                <CardHeader>
-                  <CardTitle>Additional Details</CardTitle>
-                  <CardDescription>Provide any special instructions or requirements</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="specialInstructions">Special Instructions (Optional)</Label>
-                    <Textarea
-                      id="specialInstructions"
-                      {...form.register("specialInstructions")}
-                      placeholder="Enter any special instructions or additional information"
-                      rows={3}
-                    />
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="smsNotifications"
-                        checked={watch("smsNotifications")}
-                        onCheckedChange={(checked) => setValue("smsNotifications", checked as boolean)}
-                      />
-                      <Label htmlFor="smsNotifications" className="text-sm">
-                        I would like to receive SMS notifications about my appointment
-                      </Label>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="emailUpdates"
-                        checked={watch("emailUpdates")}
-                        onCheckedChange={(checked) => setValue("emailUpdates", checked as boolean)}
-                      />
-                      <Label htmlFor="emailUpdates" className="text-sm">
-                        I would like to receive email updates about my appointment
-                      </Label>
-                    </div>
-                  </div>
-                </CardContent>
-              </>
-            )}
-
-            {/* Step 6: Confirmation (previously Step 5) */}
-            {step === 6 && (
-              <>
-                <CardHeader>
-                  <CardTitle>Confirm Your Booking</CardTitle>
-                  <CardDescription>Review and confirm your appointment details</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="bg-gray-50 p-4 rounded-md">
-                    <h3 className="font-semibold mb-4">Booking Summary</h3>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Service:</span>
-                        <span className="font-medium">{getServiceName()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Number of Signers:</span>
-                        <span className="font-medium">{numberOfSigners}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Date:</span>
-                        <span className="font-medium">
-                          {appointmentStartTime ? new Date(appointmentStartTime).toLocaleDateString() : "Not selected"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Time:</span>
-                        <span className="font-medium">{appointmentFormattedTime || "Not selected"}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Location:</span>
-                        <span className="font-medium">
-                          {watch("address")}, {watch("city")}, {watch("state")} {watch("postalCode")}
-                        </span>
-                      </div>
-                      <div className="border-t border-gray-200 my-2 pt-2 flex justify-between">
-                        <span className="font-semibold">Total:</span>
-                        <span className="font-bold text-[#002147]">${getServicePrice()}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="termsAccepted"
-                      checked={watch("termsAccepted")}
-                      onCheckedChange={(checked) => setValue("termsAccepted", checked as boolean)}
-                    />
-                    <Label htmlFor="termsAccepted" className="text-sm">
-                      I agree to the{" "}
-                      <a href="/terms" className="text-[#002147] underline">
-                        terms and conditions
-                      </a>{" "}
-                      and understand that a valid government-issued photo ID will be required for all signers
-                    </Label>
-                  </div>
-                  {errors.termsAccepted && <p className="text-sm text-red-500">{errors.termsAccepted.message}</p>}
-                </CardContent>
-              </>
-            )}
-
-            <CardFooter className="flex justify-between">
-              {step > 1 && (
-                <Button type="button" variant="outline" onClick={prevStep}>
-                  <ChevronLeft className="mr-2 h-4 w-4" />
-                  Back
-                </Button>
+                  </CardContent>
+                </>
               )}
-              {step < totalSteps ? (
-                <Button
-                  type="button"
-                  onClick={nextStep}
-                  disabled={
-                    (step === 1 && !serviceType) ||
-                    (step === 2 && !appointmentStartTime) ||
-                    (step === 3 && (!watch("firstName") || !watch("lastName") || !watch("email") || !watch("phone"))) ||
-                    (step === 4 && (!watch("address") || !watch("city") || !watch("state") || !watch("postalCode")))
-                  }
-                  className="ml-auto"
-                >
-                  Next
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  disabled={!isValid || isSubmitting || !appointmentStartTime}
-                  className="ml-auto bg-[#A52A2A] hover:bg-[#8B0000]"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    "Complete Booking"
-                  )}
-                </Button>
+
+              {/* Step 4: Location Details */}
+              {step === 4 && (
+                <>
+                  <CardHeader>
+                    <CardTitle>Location Details</CardTitle>
+                    <CardDescription>Where will the notarization take place?</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="address">Street Address</Label>
+                      <Input id="address" {...form.register("address")} placeholder="Enter the street address" />
+                      {errors.address && <p className="text-sm text-red-500">{errors.address.message}</p>}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="city">City</Label>
+                        <Input id="city" {...form.register("city")} placeholder="Enter the city" />
+                        {errors.city && <p className="text-sm text-red-500">{errors.city.message}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="state">State</Label>
+                        <Input id="state" {...form.register("state")} placeholder="Enter the state" />
+                        {errors.state && <p className="text-sm text-red-500">{errors.state.message}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="postalCode">Postal Code</Label>
+                        <Input id="postalCode" {...form.register("postalCode")} placeholder="Enter the postal code" />
+                        {errors.postalCode && <p className="text-sm text-red-500">{errors.postalCode.message}</p>}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <Label>Signing Location Type</Label>
+                      <RadioGroup
+                        defaultValue="client-location"
+                        onValueChange={(value) => setValue("signingLocation", value as any)}
+                        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                      >
+                        <div className="relative">
+                          <RadioGroupItem value="client-location" id="client-location" className="peer sr-only" />
+                          <Label
+                            htmlFor="client-location"
+                            className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
+                          >
+                            <span className="font-semibold">Residence</span>
+                            <span className="text-sm text-gray-500">Home or apartment</span>
+                          </Label>
+                        </div>
+                        <div className="relative">
+                          <RadioGroupItem value="business-office" id="business-office" className="peer sr-only" />
+                          <Label
+                            htmlFor="business-office"
+                            className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
+                          >
+                            <span className="font-semibold">Business Office</span>
+                            <span className="text-sm text-gray-500">Office or workplace</span>
+                          </Label>
+                        </div>
+                        <div className="relative">
+                          <RadioGroupItem value="public-place" id="public-place" className="peer sr-only" />
+                          <Label
+                            htmlFor="public-place"
+                            className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
+                          >
+                            <span className="font-semibold">Public Place</span>
+                            <span className="text-sm text-gray-500">Café, library, etc.</span>
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                      {errors.signingLocation && <p className="text-sm text-red-500">{errors.signingLocation.message}</p>}
+                    </div>
+                  </CardContent>
+                </>
               )}
-            </CardFooter>
-          </Card>
-        </form>
+
+              {/* Step 5: Additional Information */}
+              {step === 5 && (
+                <>
+                  <CardHeader>
+                    <CardTitle>Additional Details</CardTitle>
+                    <CardDescription>Provide any special instructions or requirements</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="specialInstructions">Special Instructions (Optional)</Label>
+                      <Textarea
+                        id="specialInstructions"
+                        {...form.register("specialInstructions")}
+                        placeholder="Enter any special instructions or additional information"
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="smsNotifications"
+                          checked={watch("smsNotifications")}
+                          onCheckedChange={(checked) => setValue("smsNotifications", checked as boolean)}
+                        />
+                        <Label htmlFor="smsNotifications" className="text-sm">
+                          I would like to receive SMS notifications about my appointment
+                        </Label>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="emailUpdates"
+                          checked={watch("emailUpdates")}
+                          onCheckedChange={(checked) => setValue("emailUpdates", checked as boolean)}
+                        />
+                        <Label htmlFor="emailUpdates" className="text-sm">
+                          I would like to receive email updates about my appointment
+                        </Label>
+                      </div>
+                    </div>
+                  </CardContent>
+                </>
+              )}
+
+              {/* Step 6: Confirmation */}
+              {step === 6 && (
+                <>
+                  <CardHeader>
+                    <CardTitle>Confirm Your Booking</CardTitle>
+                    <CardDescription>Review and confirm your appointment details</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="bg-gray-50 p-4 rounded-md">
+                      <h3 className="font-semibold mb-4">Booking Summary</h3>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Service:</span>
+                          <span className="font-medium">{getServiceName()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Number of Signers:</span>
+                          <span className="font-medium">{numberOfSigners}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Date:</span>
+                          <span className="font-medium">
+                            {appointmentStartTime ? new Date(appointmentStartTime).toLocaleDateString() : "Not selected"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Time:</span>
+                          <span className="font-medium">{appointmentFormattedTime || "Not selected"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Location:</span>
+                          <span className="font-medium">
+                            {watch("address")}, {watch("city")}, {watch("state")} {watch("postalCode")}
+                          </span>
+                        </div>
+                        <div className="border-t border-gray-200 my-2 pt-2 flex justify-between">
+                          <span className="font-semibold">Total:</span>
+                          <span className="font-bold text-[#002147]">${getServicePrice()}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="termsAccepted"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>
+                              I agree to the{" "}
+                              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-[#002147] underline hover:text-[#A52A2A]">
+                                terms and conditions
+                              </a>{" "}
+                              and understand that a valid government-issued photo ID will be required for all signers.
+                            </FormLabel>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    {errors.termsAccepted && <p className="text-sm text-red-500 pt-2">{errors.termsAccepted.message}</p>}
+                  </CardContent>
+                </>
+              )}
+
+              <CardFooter className="flex justify-between">
+                {step > 1 && (
+                  <Button type="button" variant="outline" onClick={prevStep}>
+                    <ChevronLeft className="mr-2 h-4 w-4" />
+                    Back
+                  </Button>
+                )}
+                {step < totalSteps ? (
+                  <Button
+                    type="button"
+                    onClick={nextStep}
+                    disabled={
+                      (step === 1 && (!serviceType || errors.numberOfSigners)) || // Ensure service/signers selected
+                      (step === 2 && !appointmentStartTime) || // Ensure time is selected
+                      (step === 3 && (errors.firstName || errors.lastName || errors.email || errors.phone)) ||
+                      (step === 4 && (errors.address || errors.city || errors.state || errors.postalCode || errors.signingLocation)) ||
+                      (step === 5 && (errors.smsNotifications || errors.emailUpdates)) // Check step 5 fields if needed
+                    }
+                    className="ml-auto"
+                  >
+                    Next
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    disabled={!form.formState.isValid || isSubmitting}
+                    className="ml-auto bg-[#A52A2A] hover:bg-[#8B0000]"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      "Complete Booking"
+                    )}
+                  </Button>
+                )}
+              </CardFooter>
+            </Card>
+          </form>
+        </Form>
       </div>
     </div>
   )

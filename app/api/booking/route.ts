@@ -5,6 +5,42 @@ const GHL_API_BASE_URL = process.env.GHL_API_BASE_URL
 const GHL_API_KEY = process.env.GHL_API_KEY
 const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID
 
+// Helper function to search for a contact by email in GHL
+async function findContactByEmail(email: string) {
+  const query = new URLSearchParams({
+    locationId: GHL_LOCATION_ID!,
+    query: email,
+  }).toString()
+
+  const response = await fetch(`${GHL_API_BASE_URL}/contacts/lookup?${query}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${GHL_API_KEY}`,
+      Version: "V2",
+      Accept: "application/json",
+    },
+  })
+
+  if (!response.ok) {
+    // If the API returns 404, it means no contact was found, which is not an error in this context.
+    if (response.status === 404) {
+      return null // No contact found
+    }
+    const errorData = await response.json().catch(() => ({})) // Catch errors if response is not JSON
+    console.error(`Failed to search for contact by email (${email}): ${JSON.stringify(errorData)}`, { status: response.status })
+    // Throw an error for non-404 responses as it indicates a different problem
+    throw new Error(`Failed to search contact: Status ${response.status}`)
+  }
+
+  const data = await response.json()
+  // The lookup API returns an array, usually with one element if found
+  if (data.contacts && data.contacts.length > 0) {
+    return data.contacts[0] // Return the first matching contact
+  }
+
+  return null // No contact found
+}
+
 // Helper function to create a contact in GHL
 async function createContact(contactData: any) {
   const response = await fetch(`${GHL_API_BASE_URL}/contacts`, {
@@ -123,21 +159,35 @@ export async function POST(request: Request) {
       emailUpdates,
     } = data
 
-    // Create contact in GHL
-    const contactData = {
-      firstName,
-      lastName,
-      email,
-      phone,
-      address1: address,
-      city,
-      state,
-      postalCode,
-      source: "Website Booking",
-    }
+    let contactId: string
+    let contactResponse: any
 
-    const contactResponse = await createContact(contactData)
-    const contactId = contactResponse.id
+    // 1. Check if contact already exists by email
+    const existingContact = await findContactByEmail(email)
+
+    if (existingContact) {
+      console.log(`Existing contact found for ${email}: ${existingContact.id}`)
+      contactId = existingContact.id
+      // Optional: Update existing contact details if needed
+      // For now, we just use the existing contact ID
+    } else {
+      // 2. Create contact in GHL if it doesn't exist
+      console.log(`No existing contact found for ${email}. Creating new contact.`)
+      const contactData = {
+        firstName,
+        lastName,
+        email,
+        phone,
+        address1: address,
+        city,
+        state,
+        postalCode,
+        source: "Website Booking",
+      }
+      contactResponse = await createContact(contactData)
+      contactId = contactResponse.id
+      console.log(`New contact created for ${email}: ${contactId}`)
+    }
 
     // Create opportunity in GHL
     const opportunityData = {

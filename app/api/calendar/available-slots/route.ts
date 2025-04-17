@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { parseISO, getUnixTime } from 'date-fns'; // Import date-fns functions
 
 // GHL API configuration from environment variables
 const GHL_API_BASE_URL = process.env.GHL_API_BASE_URL
@@ -24,25 +25,27 @@ function getCalendarId(serviceType: string): string | undefined {
 // Helper function to fetch available slots from GHL API
 async function fetchAvailableSlots(
   calendarId: string,
-  startDate: string,
-  endDate: string,
-  duration: number,
-  timezone: string,
+  startDateISO: string, // Renamed for clarity
+  endDateISO: string,   // Renamed for clarity
+  timezone: string // Keep timezone for potential logging/debugging if needed, but don't send to GHL
 ) {
   try {
-    // The correct endpoint might be different - check GHL API documentation
-    const url = `${GHL_API_BASE_URL}/v2/calendars/${calendarId}/available-slots`
-    // Or it might be:
-    // const url = `${GHL_API_BASE_URL}/calendars/available-slots/${calendarId}`
+    // Convert ISO strings to Unix timestamps (milliseconds)
+    const startDateTimestampMs = getUnixTime(parseISO(startDateISO)) * 1000;
+    const endDateTimestampMs = getUnixTime(parseISO(endDateISO)) * 1000;
 
+    // Updated endpoint based on GHL API documentation
+    const url = `${GHL_API_BASE_URL}/calendars/${calendarId}/free-slots`
+
+    // Corrected query parameters for the /free-slots endpoint (using milliseconds)
     const queryParams = new URLSearchParams({
-      startDate,
-      endDate,
-      duration: duration.toString(),
-      timezone,
+      startDate: startDateTimestampMs.toString(),
+      endDate: endDateTimestampMs.toString(),
+      // Removed duration and timezone as they are not accepted/needed by this endpoint
     })
 
-    console.log(`Attempting to fetch from: ${url}?${queryParams.toString()}`)
+    console.log(`Attempting GHL fetch: ${url}?${queryParams.toString()}`)
+    console.log(`Original Dates: Start=${startDateISO}, End=${endDateISO}, Timezone=${timezone}`);
 
     const response = await fetch(`${url}?${queryParams.toString()}`, {
       method: "GET",
@@ -72,8 +75,9 @@ export async function GET(request: Request) {
     // Get query parameters from the request URL
     const { searchParams } = new URL(request.url)
     const serviceType = searchParams.get("serviceType")
-    const startDate = searchParams.get("startDate")
+    const startDate = searchParams.get("startDate") // Keep original names here
     const endDate = searchParams.get("endDate")
+    // Duration is fetched but no longer passed to fetchAvailableSlots
     const duration = Number.parseInt(searchParams.get("duration") || "60", 10)
     const timezone = searchParams.get("timezone") || "America/Chicago"
 
@@ -104,6 +108,7 @@ export async function GET(request: Request) {
     console.log(`API Base URL: ${GHL_API_BASE_URL}`)
     console.log(`API Version: ${GHL_API_VERSION}`)
 
+    /* TEMP: Comment out mock data for local GHL API testing
     // For testing, return mock data if we're in development
     if (process.env.NODE_ENV === "development") {
       console.log("Returning mock data for development")
@@ -114,9 +119,10 @@ export async function GET(request: Request) {
         },
       })
     }
+    */
 
-    // Fetch available slots from GHL API
-    const availableSlots = await fetchAvailableSlots(calendarId, startDate, endDate, duration, timezone)
+    // Fetch available slots from GHL API - pass original date strings
+    const availableSlots = await fetchAvailableSlots(calendarId, startDate, endDate, timezone)
 
     // Return success response with available slots
     return NextResponse.json({
