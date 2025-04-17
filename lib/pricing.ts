@@ -1,6 +1,84 @@
-export const SERVICE_AREA_RADIUS = 20 // miles
+// Pricing constants and calculation functions
 
-interface PricingParams {
+// Base prices for different service types
+export const BASE_PRICES = {
+  essential: 75,
+  priority: 100,
+  loanSigning: 150,
+  reverseMortgage: 150,
+  specialty: 75,
+  businessConcierge: 200,
+  healthcare: 175,
+  education: 150,
+  construction: 250,
+}
+
+// Additional fees
+export const ADDITIONAL_FEES = {
+  extraSigner: {
+    essential: 10,
+    priority: 10,
+    loanSigning: 10,
+    specialty: 10,
+  },
+  weekend: 40,
+  holiday: 40,
+  afterHours: 30,
+  extraDocument: 15,
+  extendedTravel: 0.5, // per mile beyond 20 miles
+  overnightHandling: 35,
+  bilingual: 20,
+}
+
+// Service area radius in miles
+export const SERVICE_AREA_RADIUS = 20
+
+// Federal holidays
+export const FEDERAL_HOLIDAYS = [
+  "New Year's Day",
+  "Martin Luther King Jr. Day",
+  "Presidents' Day",
+  "Memorial Day",
+  "Juneteenth",
+  "Independence Day",
+  "Labor Day",
+  "Columbus Day",
+  "Veterans Day",
+  "Thanksgiving Day",
+  "Christmas Day",
+]
+
+// Calculate essential service price based on number of signers
+export function calculateEssentialPrice(numberOfSigners: number): number {
+  if (numberOfSigners === 1) return 75
+  if (numberOfSigners === 2) return 85
+  if (numberOfSigners === 3) return 95
+  return 100 // 4+ signers
+}
+
+// Calculate priority service price based on number of signers
+export function calculatePriorityPrice(numberOfSigners: number): number {
+  return 100 + (numberOfSigners > 2 ? (numberOfSigners - 2) * 10 : 0)
+}
+
+// Calculate travel fee based on distance
+export function calculateTravelFee(distance: number): number {
+  if (distance <= SERVICE_AREA_RADIUS) return 0
+  return (distance - SERVICE_AREA_RADIUS) * ADDITIONAL_FEES.extendedTravel
+}
+
+// Calculate total price
+export function calculateTotalPrice({
+  serviceType,
+  numberOfSigners,
+  distance,
+  isWeekend,
+  isHoliday,
+  isAfterHours,
+  extraDocuments,
+  needsOvernightHandling,
+  needsBilingualService,
+}: {
   serviceType: string
   numberOfSigners: number
   distance: number
@@ -10,68 +88,53 @@ interface PricingParams {
   extraDocuments: number
   needsOvernightHandling: boolean
   needsBilingualService: boolean
-}
-
-export function calculateTotalPrice(params: PricingParams) {
-  const {
-    serviceType,
-    numberOfSigners,
-    distance,
-    isWeekend,
-    isHoliday,
-    isAfterHours,
-    extraDocuments,
-    needsOvernightHandling,
-    needsBilingualService,
-  } = params
-
-  // Base prices
+}): {
+  basePrice: number
+  extraSignersFee: number
+  travelFee: number
+  weekendHolidayFee: number
+  afterHoursFee: number
+  extraDocumentsFee: number
+  overnightHandlingFee: number
+  bilingualFee: number
+  totalPrice: number
+} {
+  // Calculate base price
   let basePrice = 0
+  let extraSignersFee = 0
+
   switch (serviceType) {
     case "essential":
-      basePrice = 75
+      basePrice = calculateEssentialPrice(numberOfSigners)
+      extraSignersFee = 0 // Already included in the base price calculation
       break
     case "priority":
-      basePrice = 100
+      basePrice = calculatePriorityPrice(numberOfSigners)
+      extraSignersFee = 0 // Already included in the base price calculation
       break
     case "loanSigning":
-      basePrice = 150
-      break
     case "reverseMortgage":
-      basePrice = 150
+      basePrice = BASE_PRICES.loanSigning
+      extraSignersFee = numberOfSigners > 4 ? (numberOfSigners - 4) * ADDITIONAL_FEES.extraSigner.loanSigning : 0
       break
     case "specialty":
-      basePrice = 55
+      basePrice = BASE_PRICES.specialty
+      extraSignersFee = numberOfSigners > 1 ? (numberOfSigners - 1) * ADDITIONAL_FEES.extraSigner.specialty : 0
       break
     default:
-      basePrice = 75
+      basePrice = BASE_PRICES.essential
+      extraSignersFee = 0
   }
 
-  // Extra signers fee
-  const extraSignersFee = Math.max(0, numberOfSigners - 1) * 10
+  // Calculate additional fees
+  const travelFee = calculateTravelFee(distance)
+  const weekendHolidayFee = isWeekend || isHoliday ? ADDITIONAL_FEES.weekend : 0
+  const afterHoursFee = isAfterHours ? ADDITIONAL_FEES.afterHours : 0
+  const extraDocumentsFee = extraDocuments * ADDITIONAL_FEES.extraDocument
+  const overnightHandlingFee = needsOvernightHandling ? ADDITIONAL_FEES.overnightHandling : 0
+  const bilingualFee = needsBilingualService ? ADDITIONAL_FEES.bilingual : 0
 
-  // Travel fee (beyond service area)
-  const extraDistance = Math.max(0, distance - SERVICE_AREA_RADIUS)
-  const travelFee = extraDistance * 0.5 // $0.50 per mile
-
-  // Weekend/holiday fee
-  const weekendFee = isWeekend ? 40 : 0
-  const holidayFee = isHoliday ? 50 : 0
-  const weekendHolidayFee = Math.max(weekendFee, holidayFee) // Don't double charge
-
-  // After hours fee
-  const afterHoursFee = isAfterHours ? 30 : 0
-
-  // Extra documents fee
-  const extraDocumentsFee = extraDocuments * 5
-
-  // Overnight handling fee
-  const overnightHandlingFee = needsOvernightHandling ? 35 : 0
-
-  // Bilingual service fee
-  const bilingualFee = needsBilingualService ? 20 : 0
-
-  // Calculate total
+  // Calculate total price
   const totalPrice =
     basePrice +
     extraSignersFee +
