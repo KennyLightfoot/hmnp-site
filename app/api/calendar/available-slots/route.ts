@@ -57,12 +57,22 @@ async function fetchAvailableSlots(
     })
 
     if (!response.ok) {
-      const errorData = await response.json()
-      console.error(`API Response Status: ${response.status}`)
-      console.error(`API Response Headers:`, Object.fromEntries(response.headers.entries()))
-      throw new Error(`Failed to fetch available slots: ${JSON.stringify(errorData)}`)
+      // Read the response body as text first in case it's not JSON
+      const errorText = await response.text();
+      console.error(`GHL API Error Response Status: ${response.status}`)
+      console.error(`GHL API Error Response Headers:`, Object.fromEntries(response.headers.entries()))
+      console.error(`GHL API Error Response Body: ${errorText}`);
+      // Try to parse as JSON for more structured logging if possible, but don't fail if it's not JSON
+      let errorData = {};
+      try {
+        errorData = JSON.parse(errorText);
+      } catch (parseError) {
+        // Ignore parsing error if the body wasn't JSON
+      }
+      throw new Error(`Failed to fetch available slots from GHL. Status: ${response.status}, Body: ${errorText}`);
     }
 
+    // If response is ok, parse as JSON
     return response.json()
   } catch (error) {
     console.error("Error fetching available slots:", error)
