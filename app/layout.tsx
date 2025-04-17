@@ -6,6 +6,8 @@ import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { Providers } from "./providers"
 import { StructuredData } from "@/components/structured-data"
+import type { Metric } from 'web-vitals'
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -73,6 +75,20 @@ export const metadata: Metadata = {
     generator: 'v0.dev'
 }
 
+export function reportWebVitals(metric: Metric) {
+  // Use `window.gtag` if you adopted Google Analytics through gtag.js
+  // window.gtag?.('event', metric.name, {
+  //   value: Math.round(metric.name === 'CLS' ? metric.value * 1000 : metric.value), // values must be integers
+  //   event_label: metric.id, // id unique to current page load
+  //   non_interaction: true, // avoids affecting bounce rate
+  // });
+
+  // If using Vercel Analytics, no need to report here
+  // console.log(metric); // Optional: Log to console for debugging
+
+  // Send to any other analytics endpoint here
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -82,10 +98,13 @@ export default function RootLayout({
     <html lang="en" className="light">
       <body className={`${inter.className} bg-white`}>
         <Providers>
+          {/* If using next/third-parties for Google Analytics, add GA component here */}
+          {/* Example: <GoogleAnalytics gaId="YOUR_GA_ID" /> */}
           <Header />
           <main>{children}</main>
           <Footer />
           <StructuredData />
+          <SpeedInsights />
         </Providers>
       </body>
     </html>
