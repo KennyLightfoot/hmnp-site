@@ -24,4 +24,13 @@ The blank screen issue appears linked to dependency updates made after commit `a
 
 1.  Identify the specific dependency updates causing the rendering failure.
 2.  Resolve the conflicts introduced by these updates.
-3.  Re-address CSP refinement, likely starting with nonce-based approaches for scripts and styles. 
+3.  Re-address CSP refinement, likely starting with nonce-based approaches for scripts and styles.
+
+**Update (Date of this attempt):**
+
+*   After reverting to `afa7775`, the site still showed a blank screen and CSP errors in Vercel deployments.
+*   Errors indicated blocks related to inline scripts/styles, Vercel Analytics (`va.vercel-scripts.com`), Vercel Toolbar/Feedback (`vercel.live`), and potential WebSocket issues (`Connection closed`).
+*   Modified `middleware.ts` to allow `va.vercel-scripts.com`, `vercel.live`, and `wss:` in relevant CSP directives. This restored site visibility but broke some form functionality (booking page dropdowns/radio buttons).
+*   Console errors now showed scripts blocked due to `'strict-dynamic'` overriding `'self'`, and continued inline script/style blocks.
+*   Attempted adding `'unsafe-inline'` alongside the nonce, but browser security rules ignore `'unsafe-inline'` when a nonce is present, resulting in a blank screen again.
+*   **Current Approach:** Removed nonce generation and `'strict-dynamic'`. Simplified CSP to use `'unsafe-inline'` for both `script-src` and `style-src` as a temporary measure to restore full functionality. Added `frame-src` for `vercel.live`. 

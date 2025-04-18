@@ -3,14 +3,16 @@ import type { NextRequest } from 'next/server'
 
 // https://nextjs.org/docs/app/building-your-application/configuring/content-security-policy
 export function middleware(request: NextRequest) {
-  const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
+  // const nonce = Buffer.from(crypto.randomUUID()).toString('base64') // Remove nonce generation
   const isDevelopment = process.env.NODE_ENV === 'development';
 
-  // Base CSP directives
+  // Base CSP directives - Relying on 'unsafe-inline' for now, nonce removed
   let cspDirectives = {
     'default-src': "'self'",
-    'script-src': `'self' 'nonce-${nonce}' 'unsafe-inline' https://va.vercel-scripts.com https://vercel.live`,
-    'style-src': `'self' 'nonce-${nonce}' 'unsafe-inline'`,
+    // Nonce removed, keep unsafe-inline
+    'script-src': `'self' 'unsafe-inline' https://va.vercel-scripts.com https://vercel.live`,
+    // Nonce removed, keep unsafe-inline
+    'style-src': `'self' 'unsafe-inline'`,
     'img-src': "'self' blob: data:",
     'font-src': "'self'",
     'connect-src': "'self' https://va.vercel-scripts.com https://vercel.live wss:",
@@ -18,19 +20,19 @@ export function middleware(request: NextRequest) {
     'base-uri': "'self'",
     'form-action': "'self'",
     'frame-ancestors': "'none'",
+    // Allow framing self and vercel.live
+    'frame-src': "'self' https://vercel.live",
     'block-all-mixed-content': "",
     'upgrade-insecure-requests': "",
   };
 
-  // Relax CSP in development for libraries that use inline styles/eval
+  // Relax CSP in development
   if (isDevelopment) {
     console.log("Middleware: Applying relaxed CSP for development");
     if (!cspDirectives['script-src'].includes('unsafe-eval')) {
       cspDirectives['script-src'] += ` 'unsafe-eval'`;
     }
-    if (!cspDirectives['style-src'].includes('unsafe-inline')) {
-      cspDirectives['style-src'] += ` 'unsafe-inline'`;
-    }
+    // 'unsafe-inline' is already present in the base config now
   }
 
   // Construct the header string
@@ -41,8 +43,8 @@ export function middleware(request: NextRequest) {
   const contentSecurityPolicyHeaderValue = cspHeader;
 
   const requestHeaders = new Headers(request.headers)
-  // Pass nonce to server components
-  requestHeaders.set('x-nonce', nonce)
+  // Pass nonce to server components - Removed nonce, so remove this header
+  // requestHeaders.set('x-nonce', nonce)
   // Set CSP header on the request (needed for server components)
   requestHeaders.set(
     'Content-Security-Policy',
