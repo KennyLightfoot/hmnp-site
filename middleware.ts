@@ -10,7 +10,7 @@ export function middleware(request: NextRequest) {
   let cspDirectives = {
     'default-src': "'self'",
     'script-src': `'self' 'nonce-${nonce}' 'sha256-HugGj5oR7f2UGBbrPIOJua5vPpKBIJj8354Z6gsKoUQ=' https://va.vercel-scripts.com https://vercel.live`,
-    'style-src': `'self' 'nonce-${nonce}'`,
+    'style-src': `'self' 'nonce-${nonce}' 'unsafe-inline'`,
     'img-src': "'self' blob: data:",
     'font-src': "'self'",
     'object-src': "'none'",
@@ -25,7 +25,6 @@ export function middleware(request: NextRequest) {
   if (isDevelopment) {
     console.log("Middleware: Applying relaxed CSP for development");
     cspDirectives['script-src'] += ` 'unsafe-eval'`; // Allow eval in dev
-    cspDirectives['style-src'] += ` 'unsafe-inline'`; // Allow inline styles in dev
   }
 
   // Construct the header string
