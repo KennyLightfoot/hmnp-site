@@ -9,10 +9,9 @@ export function middleware(request: NextRequest) {
   // Base CSP directives
   let cspDirectives = {
     'default-src': "'self'",
-    // TEMPORARY: Add 'unsafe-inline' to diagnose blank screen issue.
-    // Add specific hashes for inline scripts found in console logs
-    'script-src': `'self' 'unsafe-inline' 'nonce-${nonce}' 'sha256-HugGj5oR7f2UGBbrPIOJua5vPpKBIJj8354Z6gsKoUQ=' 'sha256-8aOPPWyRtx1KihwZszeJRDJg0nrAFqi04JPFG9eQUek=' 'sha256-OBTN3RiyCV4Bq7dFqZ5a2pAXjnCcCYeTJMO2I/LYKeo=' 'sha256-j52TX6Fb3NUO2bmvjon49I8tpCGwn0R+ovIp8x2RBNk=' 'sha256-mybKB6E84PBV3jfqjxoTLfch7bQz+ftmC3t/Qf9Hc7Y=' 'sha256-s3MA+Y+irjqktkWpxmrlHLM1yXuLXj9f5XdG0fW9W3k=' 'sha256-LTK2nxgRZWhSIAsTmeFsyUfzld7VK6xUG2gV7+GwE3Y=' 'sha256-AOncNHcBkLDoOXJJ7mYdLdBp54fH6nWRTBXh/O6P32I=' 'sha256-vxlp+Qmk93njFqSirNuY8MhsR3Qru0z+3AzIFQb1AVo=' 'sha256-g+p4mnZ6pSKlyH9nMQsc839rxNaLuUX7R8KnPZMGSRc=' https://va.vercel-scripts.com https://vercel.live`,
-    // Remove nonce, rely on 'unsafe-inline' for styles due to third-party script injections
+    // REMOVED temporary 'unsafe-inline', ADDED latest hash from console.
+    'script-src': `'self' 'nonce-${nonce}' 'sha256-HugGj5oR7f2UGBbrPIOJua5vPpKBIJj8354Z6gsKoUQ=' 'sha256-8aOPPWyRtx1KihwZszeJRDJg0nrAFqi04JPFG9eQUek=' 'sha256-OBTN3RiyCV4Bq7dFqZ5a2pAXjnCcCYeTJMO2I/LYKeo=' 'sha256-j52TX6Fb3NUO2bmvjon49I8tpCGwn0R+ovIp8x2RBNk=' 'sha256-mybKB6E84PBV3jfqjxoTLfch7bQz+ftmC3t/Qf9Hc7Y=' 'sha256-s3MA+Y+irjqktkWpxmrlHLM1yXuLXj9f5XdG0fW9W3k=' 'sha256-LTK2nxgRZWhSIAsTmeFsyUfzld7VK6xUG2gV7+GwE3Y=' 'sha256-AOncNHcBkLDoOXJJ7mYdLdBp54fH6nWRTBXh/O6P32I=' 'sha256-vxlp+Qmk93njFqSirNuY8MhsR3Qru0z+3AzIFQb1AVo=' 'sha256-g+p4mnZ6pSKlyH9nMQsc839rxNaLuUX7R8KnPZMGSRc=' 'sha256-EFxh9i21P+5gYZZGNUAWpUAIcpvo5WZvUh3s7N45TKA=' https://va.vercel-scripts.com https://vercel.live`,
+    // Keep 'unsafe-inline' for styles as nonce was ignored.
     'style-src': `'self' 'unsafe-inline'`,
     'img-src': "'self' blob: data:",
     'font-src': "'self'",
@@ -28,10 +27,9 @@ export function middleware(request: NextRequest) {
   // Relax CSP in development for libraries that use inline styles/eval
   if (isDevelopment) {
     console.log("Middleware: Applying relaxed CSP for development");
-    // Ensure 'unsafe-inline' and 'unsafe-eval' are present if needed for dev, 
-    // even if also present for production (they won't duplicate in the final header).
-    cspDirectives['script-src'] += ` 'unsafe-eval' 'unsafe-inline'`; 
-    cspDirectives['style-src'] += ` 'unsafe-inline'`;
+    // Restore development settings
+    cspDirectives['script-src'] += ` 'unsafe-eval'`; 
+    cspDirectives['style-src'] += ` 'unsafe-inline'`; // Keep allowing inline styles in dev
   }
 
   // Construct the header string
