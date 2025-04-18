@@ -9,10 +9,11 @@ export function middleware(request: NextRequest) {
   // Base CSP directives
   let cspDirectives = {
     'default-src': "'self'",
-    'script-src': `'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    'script-src': `'self' 'nonce-${nonce}' 'strict-dynamic' https://va.vercel-scripts.com https://vercel.live`,
     'style-src': `'self' 'nonce-${nonce}'`,
     'img-src': "'self' blob: data:",
     'font-src': "'self'",
+    'connect-src': "'self' https://va.vercel-scripts.com https://vercel.live wss:",
     'object-src': "'none'",
     'base-uri': "'self'",
     'form-action': "'self'",
