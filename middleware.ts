@@ -9,14 +9,15 @@ export function middleware(request: NextRequest) {
   // Base CSP directives
   let cspDirectives = {
     'default-src': "'self'",
-    'script-src': `'self' 'nonce-${nonce}' 'sha256-HugGj5oR7f2UGBbrPIOJua5vPpKBIJj8354Z6gsKoUQ=' https://va.vercel-scripts.com https://vercel.live`,
-    'style-src': `'self' 'nonce-${nonce}' 'unsafe-inline'`,
+    'script-src': `'self' 'nonce-${nonce}' 'sha256-HugGj5oR7f2UGBbrPIOJua5vPpKBIJj8354Z6gsKoUQ=' 'sha256-8aOPPWyRtx1KihwZszeJRDJg0nrAFqi04JPFG9eQUek=' 'sha256-OBTN3RiyCV4Bq7dFqZ5a2pAXjnCcCYeTJMO2I/LYKeo=' 'sha256-j52TX6Fb3NUO2bmvjon49I8tpCGwn0R+ovIp8x2RBNk=' 'sha256-mybKB6E84PBV3jfqjxoTLfch7bQz+ftmC3t/Qf9Hc7Y=' 'sha256-s3MA+Y+irjqktkWpxmrlHLM1yXuLXj9f5XdG0fW9W3k=' 'sha256-LTK2nxgRZWhSIAsTmeFsyUfzld7VK6xUG2gV7+GwE3Y=' 'sha256-AOncNHcBkLDoOXJJ7mYdLdBp54fH6nWRTBXh/O6P32I=' 'sha256-vxlp+Qmk93njFqSirNuY8MhsR3Qru0z+3AzIFQb1AVo=' 'sha256-g+p4mnZ6pSKlyH9nMQsc839rxNaLuUX7R8KnPZMGSRc=' https://va.vercel-scripts.com https://vercel.live`,
+    'style-src': `'self' 'unsafe-inline'`,
     'img-src': "'self' blob: data:",
     'font-src': "'self'",
     'object-src': "'none'",
     'base-uri': "'self'",
     'form-action': "'self'",
     'frame-ancestors': "'none'",
+    'frame-src': "https://vercel.live",
     'block-all-mixed-content': "",
     'upgrade-insecure-requests': "",
   };
