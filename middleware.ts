@@ -15,6 +15,8 @@ export function middleware(request: NextRequest) {
     'style-src': `'self' 'unsafe-inline'`,
     'img-src': "'self' blob: data:",
     'font-src': "'self'",
+    // ADDED connect-src for Vercel Live and Analytics WebSockets/connections
+    'connect-src': "'self' https://vercel.live wss://vercel.live https://vitals.vercel-insights.com",
     'object-src': "'none'",
     'base-uri': "'self'",
     'form-action': "'self'",
