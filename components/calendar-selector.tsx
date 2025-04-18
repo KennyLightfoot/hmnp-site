@@ -55,8 +55,6 @@ export default function CalendarSelector({ serviceType, onTimeSelected, classNam
         const duration = getDuration()
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
-        console.log(`Fetching slots for ${serviceType} on ${startDate} with duration ${duration}`)
-
         const response = await fetch(
           `/api/calendar/available-slots?serviceType=${serviceType}&startDate=${startDate}&endDate=${endDate}&duration=${duration}&timezone=${timezone}`,
         )
@@ -67,7 +65,6 @@ export default function CalendarSelector({ serviceType, onTimeSelected, classNam
         }
 
         const data = await response.json()
-        console.log("API Response:", data)
 
         if (data.success && data.data && Array.isArray(data.data.slots)) {
           // Format the time slots for display

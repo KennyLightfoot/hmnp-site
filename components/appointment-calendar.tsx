@@ -18,11 +18,12 @@ interface TimeSlot {
 
 interface AppointmentCalendarProps {
   serviceType: ServiceType;
-  onTimeSelected: (startTime: string, endTime: string, formattedTime: string) => void;
+  numberOfSigners: number;
+  onTimeSelected: (startTime: string, endTime: string, formattedTime: string, calendarId: string) => void;
   // TODO: Add prop for existing bookings
 }
 
-export default function AppointmentCalendar({ serviceType, onTimeSelected }: AppointmentCalendarProps) {
+export default function AppointmentCalendar({ serviceType, numberOfSigners, onTimeSelected }: AppointmentCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   // State now holds TimeSlot objects
   const [availableTimeSlots, setAvailableTimeSlots] = useState<TimeSlot[]>([]);
@@ -30,6 +31,46 @@ export default function AppointmentCalendar({ serviceType, onTimeSelected }: App
   // Added loading and error states
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [determinedCalendarId, setDeterminedCalendarId] = useState<string>(""); // State to hold the determined ID
+
+  /**
+   * Determines the specific GoHighLevel Calendar ID based on the selected service type and number of signers.
+   * This mapping is crucial for fetching the correct availability slots.
+   * Assumptions:
+   * - Essential service has different calendars based on the number of signers (1, 2, 3+).
+   * - Reverse Mortgage uses the same calendar as Loan Signing.
+   * - Specialty service uses a specific general services calendar.
+   * - A fallback calendar (Essential 1 Signer) is used for unknown service types.
+   *
+   * @param service The type of notary service requested.
+   * @param signers The number of signers involved.
+   * @returns The corresponding GHL Calendar ID string.
+   */
+  const getCalendarId = (service: ServiceType, signers: number): string => {
+    switch (service) {
+      case "essential":
+        // Specific calendars for 1, 2, and 3+ signers for Essential service
+        if (signers === 1) return "r9koQ0kxmuMuWryZkjdo"; // Essential - 1 Signer
+        if (signers === 2) return "wkTW5ZX4EMl5hOAbCk9D"; // Essential - 2 Signers
+        // Default to 3-signer calendar for 3 or more
+        return "Vy3hd6Or6Xi2ogW0mvEG"; // Essential - 3 Signers
+      case "priority":
+        return "xtHXReq1dfd0wGA7dLc0"; // Priority Service
+      case "loan-signing":
+        return "EJ5ED9UXPHCjBePUTJ0W"; // Loan Signing
+      case "reverse-mortgage":
+        // Assumption: Use the same calendar as Loan Signing for Reverse Mortgages
+        return "EJ5ED9UXPHCjBePUTJ0W"; // Loan Signing
+      case "specialty":
+        // Assumption: Use a general services calendar for Specialty requests
+        return "h4X7cZ0mZ3c52XSzvpjU"; // Houston Mobile Notary Pros Services
+      default:
+        // Log a warning if an unexpected service type is encountered
+        console.warn(`Unknown service type in getCalendarId: ${service}`);
+        // Fallback to a default calendar (Essential 1 Signer) to prevent errors
+        return "r9koQ0kxmuMuWryZkjdo"; // Fallback: Essential - 1 Signer
+    }
+  };
 
   // Function to get appointment duration based on service type
   const getDuration = (service: ServiceType): number => {
@@ -65,11 +106,11 @@ export default function AppointmentCalendar({ serviceType, onTimeSelected }: App
         const endDateISO = format(endOfDay(selectedDate), "yyyy-MM-dd'T'HH:mm:ssXXX"); // Use ISO 8601 with timezone
         const duration = getDuration(serviceType);
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const calendarId = getCalendarId(serviceType, numberOfSigners); // Determine Calendar ID
+        setDeterminedCalendarId(calendarId); // Store the determined ID
 
-        console.log(`Fetching slots: service=${serviceType}, start=${startDateISO}, end=${endDateISO}, duration=${duration}, tz=${timezone}`);
-
-        // Construct API URL
-        const apiUrl = `/api/calendar/available-slots?serviceType=${encodeURIComponent(serviceType)}&startDate=${encodeURIComponent(startDateISO)}&endDate=${encodeURIComponent(endDateISO)}&duration=${duration}&timezone=${encodeURIComponent(timezone)}`;
+        // Construct API URL using calendarId
+        const apiUrl = `/api/calendar/available-slots?calendarId=${encodeURIComponent(calendarId)}&startDate=${encodeURIComponent(startDateISO)}&endDate=${encodeURIComponent(endDateISO)}&duration=${duration}&timezone=${encodeURIComponent(timezone)}`;
 
         const response = await fetch(apiUrl);
 
@@ -80,7 +121,6 @@ export default function AppointmentCalendar({ serviceType, onTimeSelected }: App
         }
 
         const data = await response.json();
-        console.log("API Success Response:", data);
 
         // Format selected date to match the key in the API response (e.g., "2025-05-07")
         const dateKey = format(selectedDate, 'yyyy-MM-dd');
@@ -118,7 +158,6 @@ export default function AppointmentCalendar({ serviceType, onTimeSelected }: App
           // Apply Same-Day Cutoff Logic
           if (serviceType === 'essential' && isToday(selectedDate)) {
             const cutoffHour = 15; // 3 PM
-            console.log(`Applying 3 PM cutoff for Essential service on today's date.`);
             slotsFromApi = slotsFromApi.filter(slot => {
               try {
                 const startHour = parseISO(slot.startTime).getHours();
@@ -151,7 +190,7 @@ export default function AppointmentCalendar({ serviceType, onTimeSelected }: App
 
     fetchSlots();
 
-  }, [selectedDate, serviceType]); // Dependencies for the effect
+  }, [selectedDate, serviceType, numberOfSigners]); // Dependencies for the effect
 
   const handleDateSelect: SelectSingleEventHandler = (date) => {
     setSelectedDate(date);
@@ -161,10 +200,11 @@ export default function AppointmentCalendar({ serviceType, onTimeSelected }: App
     // Fetching is now handled by useEffect
   };
 
-  // Updated handleTimeSelect to use TimeSlot object
+  // Updated handleTimeSelect to use TimeSlot object and pass calendarId
   const handleTimeSelect = (slot: TimeSlot) => {
     setSelectedTimeSlot(slot);
-    onTimeSelected(slot.startTime, slot.endTime, slot.formattedTime);
+    // Pass the determinedCalendarId back via the callback
+    onTimeSelected(slot.startTime, slot.endTime, slot.formattedTime, determinedCalendarId);
   };
 
   const today = new Date();

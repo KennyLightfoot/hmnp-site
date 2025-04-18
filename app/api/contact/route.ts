@@ -134,8 +134,6 @@ SMS Consent: ${smsConsent ? "Yes" : "No"}`
         if (!webhookResponse.ok) {
             console.error(`Failed to send data to Call Request webhook: ${webhookResponse.status} ${await webhookResponse.text()}`);
             // Decide if this should be an error or just log
-        } else {
-             console.log('Successfully sent data to Call Request webhook.');
         }
     } catch (webhookError) {
         console.error("Error sending data to Call Request webhook:", webhookError);

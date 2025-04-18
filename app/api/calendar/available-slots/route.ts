@@ -44,9 +44,6 @@ async function fetchAvailableSlots(
       // Removed duration and timezone as they are not accepted/needed by this endpoint
     })
 
-    console.log(`Attempting GHL fetch: ${url}?${queryParams.toString()}`)
-    console.log(`Original Dates: Start=${startDateISO}, End=${endDateISO}, Timezone=${timezone}`);
-
     const response = await fetch(`${url}?${queryParams.toString()}`, {
       method: "GET",
       headers: {
@@ -84,25 +81,27 @@ export async function GET(request: Request) {
   try {
     // Get query parameters from the request URL
     const { searchParams } = new URL(request.url)
-    const serviceType = searchParams.get("serviceType")
-    const startDate = searchParams.get("startDate") // Keep original names here
+    // Read calendarId directly, remove serviceType logic
+    const calendarId = searchParams.get("calendarId") 
+    const startDate = searchParams.get("startDate") 
     const endDate = searchParams.get("endDate")
-    // Duration is fetched but no longer passed to fetchAvailableSlots
-    const duration = Number.parseInt(searchParams.get("duration") || "60", 10)
+    // Duration is fetched but no longer passed to fetchAvailableSlots (GHL endpoint doesn't use it)
+    const duration = Number.parseInt(searchParams.get("duration") || "60", 10) // Keep for potential future use or logging
     const timezone = searchParams.get("timezone") || "America/Chicago"
 
-    // Validate required parameters
-    if (!serviceType || !startDate || !endDate) {
+    // Validate required parameters - now including calendarId
+    if (!calendarId || !startDate || !endDate) {
       return NextResponse.json(
         {
           success: false,
-          message: "Missing required parameters: serviceType, startDate, endDate",
+          message: "Missing required parameters: calendarId, startDate, endDate",
         },
         { status: 400 },
       )
     }
 
-    // Get calendar ID based on service type
+    // Remove the logic that gets calendarId from serviceType
+    /* 
     const calendarId = getCalendarId(serviceType)
     if (!calendarId) {
       return NextResponse.json(
@@ -113,25 +112,9 @@ export async function GET(request: Request) {
         { status: 400 },
       )
     }
-
-    console.log(`Using calendar ID: ${calendarId} for service type: ${serviceType}`)
-    console.log(`API Base URL: ${GHL_API_BASE_URL}`)
-    console.log(`API Version: ${GHL_API_VERSION}`)
-
-    /* TEMP: Comment out mock data for local GHL API testing
-    // For testing, return mock data if we're in development
-    if (process.env.NODE_ENV === "development") {
-      console.log("Returning mock data for development")
-      return NextResponse.json({
-        success: true,
-        data: {
-          slots: generateMockTimeSlots(startDate, duration),
-        },
-      })
-    }
     */
 
-    // Fetch available slots from GHL API - pass original date strings
+    // Fetch available slots from GHL API - pass validated calendarId and original date strings
     const availableSlots = await fetchAvailableSlots(calendarId, startDate, endDate, timezone)
 
     // Return success response with available slots

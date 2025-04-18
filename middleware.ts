@@ -9,7 +9,7 @@ export function middleware(request: NextRequest) {
   // Base CSP directives
   let cspDirectives = {
     'default-src': "'self'",
-    'script-src': `'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    'script-src': `'self' 'nonce-${nonce}' 'sha256-HugGj5oR7f2UGBbrPIOJua5vPpKBIJj8354Z6gsKoUQ=' https://va.vercel-scripts.com`,
     'style-src': `'self' 'nonce-${nonce}'`,
     'img-src': "'self' blob: data:",
     'font-src': "'self'",

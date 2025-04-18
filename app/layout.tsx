@@ -8,6 +8,9 @@ import { Providers } from "./providers"
 import { StructuredData } from "@/components/structured-data"
 import type { Metric } from 'web-vitals'
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Toaster } from "@/components/ui/toaster"
+import { Analytics } from "@vercel/analytics/react"
+import { log } from "console"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -76,15 +79,8 @@ export const metadata: Metadata = {
 }
 
 export function reportWebVitals(metric: Metric) {
-  // Use `window.gtag` if you adopted Google Analytics through gtag.js
-  // window.gtag?.('event', metric.name, {
-  //   value: Math.round(metric.name === 'CLS' ? metric.value * 1000 : metric.value), // values must be integers
-  //   event_label: metric.id, // id unique to current page load
-  //   non_interaction: true, // avoids affecting bounce rate
-  // });
-
-  // If using Vercel Analytics, no need to report here
-  // console.log(metric); // Optional: Log to console for debugging
+  // Use `window.gtag` if you initialized Google Analytics snippet directly
+  // window.gtag('event', name, { ... });
 
   // Send to any other analytics endpoint here
 }
@@ -105,6 +101,8 @@ export default function RootLayout({
           <Footer />
           <StructuredData />
           <SpeedInsights />
+          <Toaster />
+          <Analytics />
         </Providers>
       </body>
     </html>
