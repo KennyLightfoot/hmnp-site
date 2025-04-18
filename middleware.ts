@@ -9,18 +9,21 @@ export function middleware(request: NextRequest) {
   // Base CSP directives
   let cspDirectives = {
     'default-src': "'self'",
-    // REMOVED temporary 'unsafe-inline', REMOVED all sha256 hashes. Relying on nonce.
+    // Relying on nonce + allowing Vercel scripts. Inline scripts without nonce still an issue.
     'script-src': `'self' 'nonce-${nonce}' https://va.vercel-scripts.com https://vercel.live`,
-    // Keep 'unsafe-inline' for styles as nonce was ignored.
-    'style-src': `'self' 'unsafe-inline'`,
-    'img-src': "'self' blob: data:",
-    'font-src': "'self'",
-    // ADDED connect-src for Vercel Live and Analytics WebSockets/connections
-    'connect-src': "'self' https://vercel.live wss://vercel.live https://vitals.vercel-insights.com",
+    // Added https://vercel.live based on Vercel docs
+    'style-src': `'self' 'unsafe-inline' https://vercel.live`,
+    // Added https://vercel.live and https://vercel.com based on Vercel docs
+    'img-src': "'self' blob: data: https://vercel.live https://vercel.com",
+    // Added https://vercel.live and https://assets.vercel.com based on Vercel docs
+    'font-src': "'self' https://vercel.live https://assets.vercel.com",
+    // Added wss://ws-us3.pusher.com based on Vercel docs
+    'connect-src': "'self' https://vercel.live wss://vercel.live https://vitals.vercel-insights.com wss://ws-us3.pusher.com",
     'object-src': "'none'",
     'base-uri': "'self'",
     'form-action': "'self'",
     'frame-ancestors': "'none'",
+    // Matches Vercel docs
     'frame-src': "https://vercel.live",
     'block-all-mixed-content': "",
     'upgrade-insecure-requests': "",
