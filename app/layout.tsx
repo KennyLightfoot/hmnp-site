@@ -100,9 +100,9 @@ export default function RootLayout({
           <main>{children}</main>
           <Footer />
           <StructuredData />
-          <SpeedInsights />
+          {/* <SpeedInsights /> */}
           <Toaster />
-          <Analytics />
+          {/* <Analytics /> */}
         </Providers>
       </body>
     </html>
