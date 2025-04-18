@@ -9,8 +9,8 @@ export function middleware(request: NextRequest) {
   // Base CSP directives
   let cspDirectives = {
     'default-src': "'self'",
-    'script-src': `'self' 'nonce-${nonce}' 'strict-dynamic' https://va.vercel-scripts.com https://vercel.live`,
-    'style-src': `'self' 'nonce-${nonce}'`,
+    'script-src': `'self' 'nonce-${nonce}' 'unsafe-inline' https://va.vercel-scripts.com https://vercel.live`,
+    'style-src': `'self' 'nonce-${nonce}' 'unsafe-inline'`,
     'img-src': "'self' blob: data:",
     'font-src': "'self'",
     'connect-src': "'self' https://va.vercel-scripts.com https://vercel.live wss:",
@@ -25,8 +25,12 @@ export function middleware(request: NextRequest) {
   // Relax CSP in development for libraries that use inline styles/eval
   if (isDevelopment) {
     console.log("Middleware: Applying relaxed CSP for development");
-    cspDirectives['script-src'] += ` 'unsafe-eval'`; // Allow eval in dev
-    cspDirectives['style-src'] += ` 'unsafe-inline'`; // Allow inline styles in dev
+    if (!cspDirectives['script-src'].includes('unsafe-eval')) {
+      cspDirectives['script-src'] += ` 'unsafe-eval'`;
+    }
+    if (!cspDirectives['style-src'].includes('unsafe-inline')) {
+      cspDirectives['style-src'] += ` 'unsafe-inline'`;
+    }
   }
 
   // Construct the header string
