@@ -9,8 +9,9 @@ export function middleware(request: NextRequest) {
   // Base CSP directives
   let cspDirectives = {
     'default-src': "'self'",
+    // TEMPORARILY ADDING 'unsafe-inline' to diagnose visibility issue.
     // Relying on nonce + allowing Vercel scripts. Inline scripts without nonce still an issue.
-    'script-src': `'self' 'nonce-${nonce}' https://va.vercel-scripts.com https://vercel.live`,
+    'script-src': `'self' 'unsafe-inline' 'nonce-${nonce}' https://va.vercel-scripts.com https://vercel.live`,
     // Added https://vercel.live based on Vercel docs
     'style-src': `'self' 'unsafe-inline' https://vercel.live`,
     // Added https://vercel.live and https://vercel.com based on Vercel docs
