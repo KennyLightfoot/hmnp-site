@@ -59,7 +59,12 @@ async function fetchFreeSlotsForRange(
     }
 
     // Expecting response format like: { "2024-04-20": { slots: [...] }, ... }
-    return response.json()
+    const ghlResponseData = await response.json() // Read the JSON body
+
+    // Log the raw response from GHL
+    console.log("Raw GHL Free Slots Response:", JSON.stringify(ghlResponseData, null, 2))
+
+    return ghlResponseData // Return the parsed data
 
   } catch (error) {
     console.error(`Error fetching free slots for range ${format(startDate, 'yyyy-MM-dd')} - ${format(endDate, 'yyyy-MM-dd')}:`, error)
@@ -119,6 +124,7 @@ export async function GET(request: Request) {
     // Process the response: Extract dates with non-empty slots
     const availableDates: string[] = []
     if (freeSlotsData) {
+      console.log("Processing GHL Response Keys:", Object.keys(freeSlotsData))
       for (const dateStr in freeSlotsData) {
         // Check if the key is a valid date and has slots
         if (freeSlotsData[dateStr] && Array.isArray(freeSlotsData[dateStr].slots) && freeSlotsData[dateStr].slots.length > 0) {
