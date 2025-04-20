@@ -59,6 +59,7 @@ type FormData = z.infer<typeof formSchema>
 interface TimeSlot {
   startTime: string
   endTime: string
+  formattedTime?: string
 }
 
 export default function BookingPageClient() {
@@ -141,11 +142,10 @@ export default function BookingPageClient() {
       try {
         const monthStart = format(startOfMonth(currentMonth), "yyyy-MM-dd")
         const monthEnd = format(endOfMonth(currentMonth), "yyyy-MM-dd")
-        const duration = getDuration()
         const timezone = "America/Chicago"
 
         const response = await fetch(
-          `/api/calendar/available-slots?serviceType=${serviceType}&startDate=${monthStart}&endDate=${monthEnd}&duration=${duration}&timezone=${timezone}`
+          `/api/calendar/available-slots?serviceType=${serviceType}&startDate=${monthStart}&endDate=${monthEnd}&timezone=${timezone}`
         )
 
         if (!response.ok) {
@@ -407,7 +407,6 @@ export default function BookingPageClient() {
 
   const modifiers = {
     available: availableDateObjects,
-    selected: selectedDate,
     today: today,
   }
   const modifiersStyles = {
@@ -627,7 +626,7 @@ export default function BookingPageClient() {
                               onClick={() => handleTimeSlotSelect(timeSlot as TimeSlot & { formattedTime: string })}
                             >
                               <Clock className="mr-2 h-4 w-4" />
-                              {(timeSlot as TimeSlot & { formattedTime: string }).formattedTime}
+                              {timeSlot.formattedTime}
                             </Button>
                           ))}
                         </div>
@@ -772,11 +771,19 @@ export default function BookingPageClient() {
 
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="smsNotifications" defaultChecked={watch("smsNotifications")} onCheckedChange={(checked) => setValue("smsNotifications", Boolean(checked))} />
+                      <Checkbox
+                        id="smsNotifications"
+                        defaultChecked={!!watch("smsNotifications")}
+                        onCheckedChange={(checked) => setValue("smsNotifications", Boolean(checked))}
+                      />
                       <Label htmlFor="smsNotifications">Receive SMS appointment reminders</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="emailUpdates" defaultChecked={watch("emailUpdates")} onCheckedChange={(checked) => setValue("emailUpdates", Boolean(checked))} />
+                      <Checkbox
+                        id="emailUpdates"
+                        defaultChecked={!!watch("emailUpdates")}
+                        onCheckedChange={(checked) => setValue("emailUpdates", Boolean(checked))}
+                      />
                       <Label htmlFor="emailUpdates">Receive email updates and confirmations</Label>
                     </div>
                   </div>

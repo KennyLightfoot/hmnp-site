@@ -27,6 +27,7 @@ async function fetchFreeSlotsForSingleDay(
   calendarId: string,
   date: Date,
   timezone: string,
+  duration: number,
 ) {
   try {
     const dayStart = startOfDay(date);
@@ -37,6 +38,7 @@ async function fetchFreeSlotsForSingleDay(
       startDate: dayStart.getTime().toString(),
       endDate: dayEnd.getTime().toString(),
       timezone,
+      appointmentDuration: duration.toString(),
     });
 
     console.log(`Fetching time slots from: ${url}?${queryParams.toString()}`);
@@ -101,7 +103,7 @@ export async function GET(request: Request) {
     }
 
     // Production: Fetch real slots
-    const freeSlotsData = await fetchFreeSlotsForSingleDay(calendarId, targetDate, timezone);
+    const freeSlotsData = await fetchFreeSlotsForSingleDay(calendarId, targetDate, timezone, duration);
 
     let finalSlots: { startTime: string; endTime: string }[] = [];
     if (freeSlotsData && freeSlotsData[dateStr] && Array.isArray(freeSlotsData[dateStr].slots)) {
