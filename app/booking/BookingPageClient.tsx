@@ -1,10 +1,11 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
+import { format, startOfMonth, endOfMonth, parseISO, eachDayOfInterval, addDays, startOfDay } from 'date-fns'
+import { ChevronLeft, ChevronRight, Loader2, CalendarIcon, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -14,7 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "@/components/ui/use-toast"
-import CalendarSelector from "@/components/calendar-selector"
+import { Calendar } from "@/components/ui/calendar"
+import { cn } from "@/lib/utils"
 
 // Define the form schema using Zod
 const formSchema = z.object({
@@ -23,6 +25,7 @@ const formSchema = z.object({
   numberOfSigners: z.coerce.number().min(1).max(10),
 
   // Step 2: Calendar Selection
+  appointmentDate: z.string().optional(),
   appointmentStartTime: z.string().optional(),
   appointmentEndTime: z.string().optional(),
   appointmentFormattedTime: z.string().optional(),
@@ -52,17 +55,38 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>
 
+// Define TimeSlot interface
+interface TimeSlot {
+  startTime: string
+  endTime: string
+}
+
 export default function BookingPageClient() {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [addressCoordinates, setAddressCoordinates] = useState({ lat: 0, lng: 0 })
 
+  // Calendar State
+  const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
+  const [availableDates, setAvailableDates] = useState<string[]>([])
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<TimeSlot[]>([])
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | null>(null)
+  const [isLoadingDates, setIsLoadingDates] = useState(false)
+  const [isLoadingTimes, setIsLoadingTimes] = useState(false)
+  const [dateError, setDateError] = useState<string | null>(null)
+  const [timeError, setTimeError] = useState<string | null>(null)
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       serviceType: "essential",
       numberOfSigners: 1,
+      appointmentDate: undefined,
+      appointmentStartTime: undefined,
+      appointmentEndTime: undefined,
+      appointmentFormattedTime: undefined,
       firstName: "",
       lastName: "",
       email: "",
@@ -80,17 +104,159 @@ export default function BookingPageClient() {
     },
   })
 
-  const { formState, watch, setValue } = form
+  const { formState, watch, setValue, register } = form
   const { errors, isValid } = formState
 
   const serviceType = watch("serviceType")
   const numberOfSigners = watch("numberOfSigners")
+  const appointmentDate = watch("appointmentDate")
   const appointmentStartTime = watch("appointmentStartTime")
   const appointmentFormattedTime = watch("appointmentFormattedTime")
 
-  const totalSteps = 6 // Increased by 1 for calendar selection
+  const totalSteps = 6
+
+  const getDuration = () => {
+    switch (serviceType) {
+      case "loan-signing":
+      case "reverse-mortgage":
+        return 90
+      case "priority":
+        return 60
+      default:
+        return 30
+    }
+  }
+
+  useEffect(() => {
+    if (!serviceType) return
+
+    const fetchAvailableDates = async () => {
+      setIsLoadingDates(true)
+      setDateError(null)
+      setAvailableDates([])
+      setSelectedDate(undefined)
+      setAvailableTimeSlots([])
+      setSelectedTimeSlot(null)
+
+      try {
+        const monthStart = format(startOfMonth(currentMonth), "yyyy-MM-dd")
+        const monthEnd = format(endOfMonth(currentMonth), "yyyy-MM-dd")
+        const duration = getDuration()
+        const timezone = "America/Chicago"
+
+        const response = await fetch(
+          `/api/calendar/available-slots?serviceType=${serviceType}&startDate=${monthStart}&endDate=${monthEnd}&duration=${duration}&timezone=${timezone}`
+        )
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.message || "Failed to fetch available dates")
+        }
+
+        const data = await response.json()
+        console.log("Available Dates Response:", data)
+
+        if (data.success && data.data && Array.isArray(data.data.availableDates)) {
+          setAvailableDates(data.data.availableDates)
+        } else {
+          setAvailableDates([])
+          if (!data.success) {
+            throw new Error(data.message || "Failed to retrieve available dates")
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching available dates:", error)
+        setDateError(error instanceof Error ? error.message : "Could not load available dates. Please try refreshing.")
+      } finally {
+        setIsLoadingDates(false)
+      }
+    }
+
+    fetchAvailableDates()
+  }, [serviceType, currentMonth])
+
+  useEffect(() => {
+    if (!selectedDate || !serviceType) {
+      setAvailableTimeSlots([])
+      setSelectedTimeSlot(null)
+      return
+    }
+
+    const fetchTimeSlots = async () => {
+      setIsLoadingTimes(true)
+      setTimeError(null)
+      setAvailableTimeSlots([])
+      setSelectedTimeSlot(null)
+
+      try {
+        const dateStr = format(selectedDate, "yyyy-MM-dd")
+        const duration = getDuration()
+        const timezone = "America/Chicago"
+
+        const response = await fetch(
+          `/api/calendar/time-slots?serviceType=${serviceType}&date=${dateStr}&duration=${duration}&timezone=${timezone}`
+        )
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.message || "Failed to fetch time slots")
+        }
+
+        const data = await response.json()
+        console.log("Available Times Response:", data)
+
+        if (data.success && data.data && Array.isArray(data.data.slots)) {
+          const formattedSlots = data.data.slots.map((slot: TimeSlot) => {
+            const start = parseISO(slot.startTime)
+            return {
+              ...slot,
+              formattedTime: format(start, "h:mm a"),
+            }
+          })
+          setAvailableTimeSlots(formattedSlots)
+        } else {
+          setAvailableTimeSlots([])
+          if (!data.success) {
+            throw new Error(data.message || "Failed to retrieve time slots")
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching time slots:", error)
+        setTimeError(error instanceof Error ? error.message : "Could not load time slots for this date.")
+      } finally {
+        setIsLoadingTimes(false)
+      }
+    }
+
+    fetchTimeSlots()
+  }, [selectedDate, serviceType])
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) {
+      setSelectedDate(undefined)
+      return
+    }
+    const dateStr = format(date, "yyyy-MM-dd")
+    if (availableDates.includes(dateStr)) {
+      setSelectedDate(date)
+      setValue("appointmentDate", dateStr)
+    } else {
+      toast({ title: "Date Not Available", description: "Please select a highlighted date." })
+    }
+  }
+
+  const handleTimeSlotSelect = (timeSlot: TimeSlot & { formattedTime: string }) => {
+    setSelectedTimeSlot(timeSlot)
+    setValue("appointmentStartTime", timeSlot.startTime)
+    setValue("appointmentEndTime", timeSlot.endTime)
+    setValue("appointmentFormattedTime", timeSlot.formattedTime)
+  }
 
   const nextStep = () => {
+    if (step === 2 && !selectedTimeSlot) {
+      toast({ title: "Selection Required", description: "Please select an available date and time slot.", variant: "destructive" })
+      return
+    }
     if (step < totalSteps) {
       setStep(step + 1)
       window.scrollTo(0, 0)
@@ -110,7 +276,7 @@ export default function BookingPageClient() {
         if (numberOfSigners === 1) return 75
         if (numberOfSigners === 2) return 85
         if (numberOfSigners === 3) return 95
-        return 100 // 4+ signers
+        return 100
       case "priority":
         return 100 + (numberOfSigners > 2 ? (numberOfSigners - 2) * 10 : 0)
       case "loan-signing":
@@ -140,14 +306,6 @@ export default function BookingPageClient() {
     }
   }
 
-  // Function to handle calendar time selection
-  const handleTimeSelected = (startTime: string, endTime: string, formattedTime: string) => {
-    setValue("appointmentStartTime", startTime)
-    setValue("appointmentEndTime", endTime)
-    setValue("appointmentFormattedTime", formattedTime)
-  }
-
-  // Function to geocode the address
   const geocodeAddress = async (address: string, city: string, state: string, zip: string) => {
     try {
       const response = await fetch(
@@ -176,17 +334,14 @@ export default function BookingPageClient() {
     setIsSubmitting(true)
 
     try {
-      // Geocode the address
       const coordinates = await geocodeAddress(data.address, data.city, data.state, data.postalCode)
 
-      // Prepare the data for submission
       const bookingData = {
         ...data,
         addressLatitude: coordinates?.lat.toString() || "",
         addressLongitude: coordinates?.lng.toString() || "",
       }
 
-      // Create appointment in GHL calendar
       if (data.appointmentStartTime && data.appointmentEndTime) {
         const appointmentResponse = await fetch("/api/calendar/create-appointment", {
           method: "POST",
@@ -219,7 +374,6 @@ export default function BookingPageClient() {
           throw new Error(appointmentResult.message || "Failed to create appointment")
         }
 
-        // Store booking reference in localStorage for the confirmation page
         localStorage.setItem("bookingReference", appointmentResult.data.bookingReference)
         localStorage.setItem(
           "bookingDetails",
@@ -227,12 +381,11 @@ export default function BookingPageClient() {
             serviceName: getServiceName(),
             servicePrice: getServicePrice(),
             numberOfSigners,
-            appointmentDate: new Date(data.appointmentStartTime).toLocaleDateString(),
+            appointmentDate: format(parseISO(data.appointmentStartTime), "PPP"),
             appointmentTime: data.appointmentFormattedTime,
           }),
         )
 
-        // Redirect to confirmation page
         router.push("/booking/confirmation")
       } else {
         throw new Error("No appointment time selected")
@@ -249,6 +402,29 @@ export default function BookingPageClient() {
     }
   }
 
+  const today = startOfDay(new Date())
+  const availableDateObjects = availableDates.map(dateStr => parseISO(dateStr))
+
+  const modifiers = {
+    available: availableDateObjects,
+    selected: selectedDate,
+    today: today,
+  }
+  const modifiersStyles = {
+    available: {
+      fontWeight: 'bold',
+    },
+    selected: {
+      backgroundColor: '#002147',
+      color: 'white',
+    },
+  }
+
+  const disabledDays = [
+    { before: today },
+    (date: Date) => !availableDates.includes(format(date, 'yyyy-MM-dd'))
+  ]
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-3xl mx-auto">
@@ -256,7 +432,6 @@ export default function BookingPageClient() {
           <h1 className="text-3xl font-bold text-[#002147] mb-2">Book Your Notary Service</h1>
           <p className="text-gray-600">Complete the form below to schedule your mobile notary appointment.</p>
 
-          {/* Progress Indicator */}
           <div className="mt-8">
             <div className="flex justify-between mb-2">
               {Array.from({ length: totalSteps }).map((_, index) => (
@@ -293,7 +468,6 @@ export default function BookingPageClient() {
 
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <Card className="shadow-md">
-            {/* Step 1: Service Selection */}
             {step === 1 && (
               <>
                 <CardHeader>
@@ -395,21 +569,77 @@ export default function BookingPageClient() {
               </>
             )}
 
-            {/* Step 2: Calendar Selection (New Step) */}
             {step === 2 && (
               <>
                 <CardHeader>
                   <CardTitle>Schedule Your Appointment</CardTitle>
-                  <CardDescription>Select a date and time for your notary service</CardDescription>
+                  <CardDescription>Select an available date and time slot</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <CalendarSelector serviceType={serviceType} onTimeSelected={handleTimeSelected} />
+                  <div>
+                    <h3 className="text-lg font-medium mb-2">1. Select Date</h3>
+                    {isLoadingDates ? (
+                      <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-[#002147]" /></div>
+                    ) : dateError ? (
+                      <p className="text-red-500">{dateError}</p>
+                    ) : (
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={handleDateSelect}
+                        month={currentMonth}
+                        onMonthChange={setCurrentMonth}
+                        disabled={disabledDays}
+                        modifiers={modifiers}
+                        modifiersStyles={modifiersStyles}
+                        initialFocus
+                        className="rounded-md border"
+                        fromMonth={new Date()}
+                        toMonth={addDays(new Date(), 365)}
+                      />
+                    )}
+                    {!isLoadingDates && availableDates.length === 0 && !dateError && (
+                      <p className="mt-2 text-yellow-600">No available dates found for this service in the current month.</p>
+                    )}
+                  </div>
 
-                  {appointmentStartTime && (
-                    <div className="bg-green-50 p-4 rounded-md">
+                  {selectedDate && (
+                    <div className="mt-6">
+                      <h3 className="text-lg font-medium mb-2">2. Select Time Slot for {format(selectedDate, "PPP")}</h3>
+                      {isLoadingTimes ? (
+                        <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-[#002147]" /></div>
+                      ) : timeError ? (
+                        <p className="text-red-500">{timeError}</p>
+                      ) : availableTimeSlots.length === 0 ? (
+                        <p className="text-yellow-600">No available time slots found for this date.</p>
+                      ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                          {availableTimeSlots.map((timeSlot, index) => (
+                            <Button
+                              key={index}
+                              variant={selectedTimeSlot?.startTime === timeSlot.startTime ? "default" : "outline"}
+                              className={cn(
+                                "flex items-center justify-center",
+                                selectedTimeSlot?.startTime === timeSlot.startTime
+                                  ? "bg-[#002147] hover:bg-[#001a38]"
+                                  : "hover:bg-gray-100",
+                              )}
+                              onClick={() => handleTimeSlotSelect(timeSlot as TimeSlot & { formattedTime: string })}
+                            >
+                              <Clock className="mr-2 h-4 w-4" />
+                              {(timeSlot as TimeSlot & { formattedTime: string }).formattedTime}
+                            </Button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {selectedTimeSlot && (
+                    <div className="bg-green-50 p-4 rounded-md mt-4">
                       <h3 className="font-semibold text-green-800">Appointment Selected</h3>
                       <p className="text-green-700">
-                        {new Date(appointmentStartTime).toLocaleDateString()} at {appointmentFormattedTime}
+                        {format(selectedDate!, "PPP")} at {selectedTimeSlot.formattedTime}
                       </p>
                     </div>
                   )}
@@ -417,7 +647,6 @@ export default function BookingPageClient() {
               </>
             )}
 
-            {/* Step 3: Contact Information (previously Step 2) */}
             {step === 3 && (
               <>
                 <CardHeader>
@@ -428,12 +657,12 @@ export default function BookingPageClient() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" {...form.register("firstName")} placeholder="Enter your first name" />
+                      <Input id="firstName" {...register("firstName")} placeholder="Enter your first name" />
                       {errors.firstName && <p className="text-sm text-red-500">{errors.firstName.message}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" {...form.register("lastName")} placeholder="Enter your last name" />
+                      <Input id="lastName" {...register("lastName")} placeholder="Enter your last name" />
                       {errors.lastName && <p className="text-sm text-red-500">{errors.lastName.message}</p>}
                     </div>
                   </div>
@@ -444,14 +673,14 @@ export default function BookingPageClient() {
                       <Input
                         id="email"
                         type="email"
-                        {...form.register("email")}
+                        {...register("email")}
                         placeholder="Enter your email address"
                       />
                       {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone Number</Label>
-                      <Input id="phone" type="tel" {...form.register("phone")} placeholder="Enter your phone number" />
+                      <Input id="phone" type="tel" {...register("phone")} placeholder="Enter your phone number" />
                       {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
                     </div>
                   </div>
@@ -460,7 +689,7 @@ export default function BookingPageClient() {
                     <Label htmlFor="company">Company Name (Optional)</Label>
                     <Input
                       id="company"
-                      {...form.register("company")}
+                      {...register("company")}
                       placeholder="Enter your company name if applicable"
                     />
                   </div>
@@ -468,7 +697,6 @@ export default function BookingPageClient() {
               </>
             )}
 
-            {/* Step 4: Location Details (previously Step 3) */}
             {step === 4 && (
               <>
                 <CardHeader>
@@ -478,64 +706,46 @@ export default function BookingPageClient() {
                 <CardContent className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="address">Street Address</Label>
-                    <Input id="address" {...form.register("address")} placeholder="Enter the street address" />
+                    <Input id="address" {...register("address")} placeholder="Enter the street address" />
                     {errors.address && <p className="text-sm text-red-500">{errors.address.message}</p>}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="city">City</Label>
-                      <Input id="city" {...form.register("city")} placeholder="Enter the city" />
+                      <Input id="city" {...register("city")} placeholder="Enter the city" />
                       {errors.city && <p className="text-sm text-red-500">{errors.city.message}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="state">State</Label>
-                      <Input id="state" {...form.register("state")} placeholder="Enter the state" />
+                      <Input id="state" {...register("state")} placeholder="Enter the state" />
                       {errors.state && <p className="text-sm text-red-500">{errors.state.message}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="postalCode">Postal Code</Label>
-                      <Input id="postalCode" {...form.register("postalCode")} placeholder="Enter the postal code" />
+                      <Input id="postalCode" {...register("postalCode")} placeholder="Enter the postal code" />
                       {errors.postalCode && <p className="text-sm text-red-500">{errors.postalCode.message}</p>}
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <Label>Signing Location Type</Label>
+                    <Label>Signing Location</Label>
                     <RadioGroup
-                      defaultValue="client-location"
+                      defaultValue={watch("signingLocation")}
                       onValueChange={(value) => setValue("signingLocation", value as any)}
-                      className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                      className="flex flex-col space-y-1"
                     >
-                      <div className="relative">
-                        <RadioGroupItem value="client-location" id="client-location" className="peer sr-only" />
-                        <Label
-                          htmlFor="client-location"
-                          className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
-                        >
-                          <span className="font-semibold">Residence</span>
-                          <span className="text-sm text-gray-500">Home or apartment</span>
-                        </Label>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="client-location" id="client-location" />
+                        <Label htmlFor="client-location">Client's Location (Home/Office)</Label>
                       </div>
-                      <div className="relative">
-                        <RadioGroupItem value="business-office" id="business-office" className="peer sr-only" />
-                        <Label
-                          htmlFor="business-office"
-                          className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
-                        >
-                          <span className="font-semibold">Business Office</span>
-                          <span className="text-sm text-gray-500">Office or workplace</span>
-                        </Label>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="public-place" id="public-place" />
+                        <Label htmlFor="public-place">Public Place (Cafe, Library, etc.)</Label>
                       </div>
-                      <div className="relative">
-                        <RadioGroupItem value="public-place" id="public-place" className="peer sr-only" />
-                        <Label
-                          htmlFor="public-place"
-                          className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
-                        >
-                          <span className="font-semibold">Public Place</span>
-                          <span className="text-sm text-gray-500">Café, library, etc.</span>
-                        </Label>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="business-office" id="business-office" />
+                        <Label htmlFor="business-office">Our Business Office</Label>
                       </div>
                     </RadioGroup>
                     {errors.signingLocation && <p className="text-sm text-red-500">{errors.signingLocation.message}</p>}
@@ -544,147 +754,74 @@ export default function BookingPageClient() {
               </>
             )}
 
-            {/* Step 5: Additional Information (previously Step 4) */}
             {step === 5 && (
               <>
                 <CardHeader>
-                  <CardTitle>Additional Details</CardTitle>
-                  <CardDescription>Provide any special instructions or requirements</CardDescription>
+                  <CardTitle>Additional Information</CardTitle>
+                  <CardDescription>Any other details we should know?</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="specialInstructions">Special Instructions (Optional)</Label>
                     <Textarea
                       id="specialInstructions"
-                      {...form.register("specialInstructions")}
-                      placeholder="Enter any special instructions or additional information"
-                      rows={3}
+                      {...register("specialInstructions")}
+                      placeholder="E.g., Gate code, specific meeting spot, documents involved"
                     />
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="smsNotifications"
-                        checked={watch("smsNotifications")}
-                        onCheckedChange={(checked) => setValue("smsNotifications", checked as boolean)}
-                      />
-                      <Label htmlFor="smsNotifications" className="text-sm">
-                        I would like to receive SMS notifications about my appointment
-                      </Label>
+                      <Checkbox id="smsNotifications" defaultChecked={watch("smsNotifications")} onCheckedChange={(checked) => setValue("smsNotifications", Boolean(checked))} />
+                      <Label htmlFor="smsNotifications">Receive SMS appointment reminders</Label>
                     </div>
-
                     <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="emailUpdates"
-                        checked={watch("emailUpdates")}
-                        onCheckedChange={(checked) => setValue("emailUpdates", checked as boolean)}
-                      />
-                      <Label htmlFor="emailUpdates" className="text-sm">
-                        I would like to receive email updates about my appointment
-                      </Label>
-                    </div>
-                  </div>
-                </CardContent>
-              </>
-            )}
-
-            {/* Step 6: Confirmation (previously Step 5) */}
-            {step === 6 && (
-              <>
-                <CardHeader>
-                  <CardTitle>Confirm Your Booking</CardTitle>
-                  <CardDescription>Review and confirm your appointment details</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="bg-gray-50 p-4 rounded-md">
-                    <h3 className="font-semibold mb-4">Booking Summary</h3>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Service:</span>
-                        <span className="font-medium">{getServiceName()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Number of Signers:</span>
-                        <span className="font-medium">{numberOfSigners}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Date:</span>
-                        <span className="font-medium">
-                          {appointmentStartTime ? new Date(appointmentStartTime).toLocaleDateString() : "Not selected"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Time:</span>
-                        <span className="font-medium">{appointmentFormattedTime || "Not selected"}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Location:</span>
-                        <span className="font-medium">
-                          {watch("address")}, {watch("city")}, {watch("state")} {watch("postalCode")}
-                        </span>
-                      </div>
-                      <div className="border-t border-gray-200 my-2 pt-2 flex justify-between">
-                        <span className="font-semibold">Total:</span>
-                        <span className="font-bold text-[#002147]">${getServicePrice()}</span>
-                      </div>
+                      <Checkbox id="emailUpdates" defaultChecked={watch("emailUpdates")} onCheckedChange={(checked) => setValue("emailUpdates", Boolean(checked))} />
+                      <Label htmlFor="emailUpdates">Receive email updates and confirmations</Label>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="termsAccepted"
-                      checked={watch("termsAccepted")}
-                      onCheckedChange={(checked) => setValue("termsAccepted", checked as boolean)}
-                    />
-                    <Label htmlFor="termsAccepted" className="text-sm">
-                      I agree to the{" "}
-                      <a href="/terms" className="text-[#002147] underline">
-                        terms and conditions
-                      </a>{" "}
-                      and understand that a valid government-issued photo ID will be required for all signers
-                    </Label>
+                    <Checkbox id="termsAccepted" onCheckedChange={(checked) => setValue("termsAccepted", Boolean(checked))} />
+                    <Label htmlFor="termsAccepted">I accept the terms and conditions</Label>
+                    {errors.termsAccepted && <p className="text-sm text-red-500 ml-4">{errors.termsAccepted.message}</p>}
                   </div>
-                  {errors.termsAccepted && <p className="text-sm text-red-500">{errors.termsAccepted.message}</p>}
                 </CardContent>
               </>
             )}
 
-            <CardFooter className="flex justify-between">
-              {step > 1 && (
-                <Button type="button" variant="outline" onClick={prevStep}>
-                  <ChevronLeft className="mr-2 h-4 w-4" />
-                  Back
-                </Button>
-              )}
+            {step === 6 && (
+              <>
+                <CardHeader>
+                  <CardTitle>Confirm Your Booking</CardTitle>
+                  <CardDescription>Review your details before submitting</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2"><span className="font-semibold">Service:</span> {getServiceName()}</div>
+                  <div className="space-y-2"><span className="font-semibold">Signers:</span> {numberOfSigners}</div>
+                  <div className="space-y-2"><span className="font-semibold">Date:</span> {format(selectedDate!, "PPP")}</div>
+                  <div className="space-y-2"><span className="font-semibold">Time:</span> {selectedTimeSlot?.formattedTime}</div>
+                  <div className="space-y-2"><span className="font-semibold">Contact:</span> {watch("firstName")} {watch("lastName")}, {watch("email")}, {watch("phone")}</div>
+                  <div className="space-y-2"><span className="font-semibold">Location:</span> {watch("address")}, {watch("city")}, {watch("state")} {watch("postalCode")}</div>
+                  <div className="space-y-2"><span className="font-semibold">Estimated Price:</span> ${getServicePrice()}</div>
+                </CardContent>
+              </>
+            )}
+
+            <CardFooter className="flex justify-between pt-6">
+              <Button type="button" variant="outline" onClick={prevStep} disabled={step === 1}>
+                <ChevronLeft className="mr-2 h-4 w-4" /> Previous
+              </Button>
               {step < totalSteps ? (
-                <Button
-                  type="button"
-                  onClick={nextStep}
-                  disabled={
-                    (step === 1 && !serviceType) ||
-                    (step === 2 && !appointmentStartTime) ||
-                    (step === 3 && (!watch("firstName") || !watch("lastName") || !watch("email") || !watch("phone"))) ||
-                    (step === 4 && (!watch("address") || !watch("city") || !watch("state") || !watch("postalCode")))
-                  }
-                  className="ml-auto"
-                >
-                  Next
-                  <ChevronRight className="ml-2 h-4 w-4" />
+                <Button type="button" onClick={nextStep} disabled={(step === 2 && !selectedTimeSlot)}>
+                  Next <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               ) : (
-                <Button
-                  type="submit"
-                  disabled={!isValid || isSubmitting || !appointmentStartTime}
-                  className="ml-auto bg-[#A52A2A] hover:bg-[#8B0000]"
-                >
+                <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...</>
                   ) : (
-                    "Complete Booking"
+                    "Submit Booking"
                   )}
                 </Button>
               )}
