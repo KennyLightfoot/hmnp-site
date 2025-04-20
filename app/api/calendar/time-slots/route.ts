@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { startOfDay, endOfDay, parseISO, format } from 'date-fns';
+import { startOfDay, endOfDay, parseISO, format, addMinutes } from 'date-fns';
 
 // GHL API configuration from environment variables
 const GHL_API_BASE_URL = process.env.GHL_API_BASE_URL;
 const GHL_API_KEY = process.env.GHL_API_KEY;
-const GHL_API_VERSION = process.env.GHL_API_VERSION || "V2";
+const GHL_API_VERSION_HEADER = "2021-04-15";
 
 // Calendar IDs mapping (ensure this matches the other API route)
 const CALENDAR_IDS: Record<string, string | undefined> = {
@@ -22,51 +22,47 @@ function getCalendarId(serviceType: string): string | undefined {
   return CALENDAR_IDS[serviceType];
 }
 
-// Helper function to fetch slots from GHL API for a specific day
-async function fetchSlotsForDay(
+// Helper function to fetch free slots from GHL API for a specific day
+async function fetchFreeSlotsForSingleDay(
   calendarId: string,
-  isoDate: string, // Expecting YYYY-MM-DD
-  duration: number,
+  date: Date,
   timezone: string,
 ) {
   try {
-    const dateObj = parseISO(isoDate);
-    const dayStart = startOfDay(dateObj);
-    const dayEnd = endOfDay(dateObj);
-    const startDate = dayStart.toISOString(); // Required format for GHL API
-    const endDate = dayEnd.toISOString(); // Required format for GHL API
+    const dayStart = startOfDay(date);
+    const dayEnd = endOfDay(date);
 
-    const url = `${GHL_API_BASE_URL}/v2/calendars/${calendarId}/available-slots`;
+    const url = `${GHL_API_BASE_URL}/calendars/${calendarId}/free-slots`;
     const queryParams = new URLSearchParams({
-      startDate,
-      endDate,
-      duration: duration.toString(),
+      startDate: dayStart.getTime().toString(),
+      endDate: dayEnd.getTime().toString(),
       timezone,
     });
 
-    console.log(`Time Slot Fetch: ${url}?${queryParams.toString()}`);
+    console.log(`Fetching time slots from: ${url}?${queryParams.toString()}`);
 
     const response = await fetch(`${url}?${queryParams.toString()}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${GHL_API_KEY}`,
-        Version: GHL_API_VERSION,
+        Version: GHL_API_VERSION_HEADER,
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Time Slot API Status: ${response.status}`);
-      console.error(`Time Slot API Body: ${errorText}`);
+      console.error(`GHL Time Slot API Status: ${response.status}`);
+      console.error(`GHL Time Slot API Body: ${errorText}`);
       throw new Error(`Failed to fetch time slots: Status ${response.status}`);
     }
 
-    return response.json(); // Expecting { slots: [...] } or similar
+    return response.json();
 
   } catch (error) {
-    console.error(`Error fetching time slots for ${isoDate}:`, error);
-    throw error; // Re-throw the error to be caught by the GET handler
+    console.error(`Error fetching time slots for ${format(date, 'yyyy-MM-dd')}:`, error);
+    throw error;
   }
 }
 
@@ -74,13 +70,13 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const serviceType = searchParams.get("serviceType");
-    const date = searchParams.get("date"); // Expecting YYYY-MM-DD format
+    const dateStr = searchParams.get("date");
     const duration = Number.parseInt(searchParams.get("duration") || "30", 10);
     const timezone = searchParams.get("timezone") || "America/Chicago";
 
-    if (!serviceType || !date) {
+    if (!serviceType || !dateStr) {
       return NextResponse.json(
-        { success: false, message: "Missing required parameters: serviceType, date" },
+        { success: false, message: "Missing required parameters: serviceType, date (as YYYY-MM-DD)" },
         { status: 400 },
       );
     }
@@ -93,26 +89,41 @@ export async function GET(request: Request) {
       );
     }
 
-    console.log(`Fetching time slots for ${date}, Calendar: ${calendarId}, Service: ${serviceType}, Duration: ${duration}`);
+    console.log(`Fetching time slots for ${dateStr}, Calendar: ${calendarId}, Service: ${serviceType}, Duration: ${duration}`);
+
+    const targetDate = parseISO(dateStr);
 
     // Mock data for development
     if (process.env.NODE_ENV === "development") {
       console.log("Returning mock time slots for development");
-      const mockSlots = generateMockTimeSlotsForDay(date, duration);
+      const mockSlots = generateMockTimeSlotsForDay(dateStr, duration);
       return NextResponse.json({ success: true, data: { slots: mockSlots } });
     }
 
     // Production: Fetch real slots
-    const result = await fetchSlotsForDay(calendarId, date, duration, timezone);
+    const freeSlotsData = await fetchFreeSlotsForSingleDay(calendarId, targetDate, timezone);
 
-    // Assuming the result structure is { slots: [...] }
-    if (result && Array.isArray(result.slots)) {
-      return NextResponse.json({ success: true, data: { slots: result.slots } });
+    let finalSlots: { startTime: string; endTime: string }[] = [];
+    if (freeSlotsData && freeSlotsData[dateStr] && Array.isArray(freeSlotsData[dateStr].slots)) {
+      const timeStrings: string[] = freeSlotsData[dateStr].slots;
+
+      finalSlots = timeStrings.map((timeStr) => {
+        const [hour, minute] = timeStr.split(':').map(Number);
+        const startTime = new Date(targetDate);
+        startTime.setHours(hour, minute, 0, 0);
+
+        const endTime = addMinutes(startTime, duration);
+
+        return {
+          startTime: startTime.toISOString(),
+          endTime: endTime.toISOString(),
+        };
+      }).filter(slot => new Date(slot.startTime) > new Date());
     } else {
-      // Handle cases where slots might be missing or in unexpected format
-      console.warn("Unexpected API response structure for time slots:", result);
-      return NextResponse.json({ success: true, data: { slots: [] } }); // Return empty slots
+      console.warn(`No slots found or unexpected format in response for date ${dateStr}:`, freeSlotsData);
     }
+
+    return NextResponse.json({ success: true, data: { slots: finalSlots } });
 
   } catch (error) {
     console.error("Get time slots error:", error);
