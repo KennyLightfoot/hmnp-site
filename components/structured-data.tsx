@@ -3,46 +3,55 @@ import Script from "next/script"
 export function StructuredData() {
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": "ProfessionalService",
+    "@type": "LocalBusiness",
+    additionalType: "https://schema.org/Notary",
     name: "Houston Mobile Notary Pros",
-    image: "/images/og-image.jpg",
+    image: "/og-image.jpg",
     "@id": "https://houstonmobilenotarypros.com/",
     url: "https://houstonmobilenotarypros.com/",
-    telephone: "+12817798847", // Updated phone number
-    priceRange: "$75-$250+",
+    telephone: "+12817798847",
+    priceRange: "$$",
     address: {
       "@type": "PostalAddress",
-      streetAddress: "Replace with actual street address",
-      addressLocality: "Houston",
+      streetAddress: "3118 FM 528 Rd",
+      addressLocality: "Webster",
       addressRegion: "TX",
-      postalCode: "77591",
+      postalCode: "77598",
       addressCountry: "US",
     },
     geo: {
       "@type": "GeoCoordinates",
-      latitude: 29.0, // Replace with actual latitude
-      longitude: -95.0, // Replace with actual longitude
+      latitude: 29.53858,
+      longitude: -95.11935,
     },
     openingHoursSpecification: [
       {
         "@type": "OpeningHoursSpecification",
+        name: "Essential Service Hours",
         dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
         opens: "09:00",
         closes: "17:00",
       },
       {
         "@type": "OpeningHoursSpecification",
-        dayOfWeek: ["Saturday", "Sunday"],
-        opens: "09:00",
-        closes: "17:00",
+        name: "Priority Service Hours",
+        dayOfWeek: [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+          "Sunday",
+        ],
+        opens: "07:00",
+        closes: "21:00",
       },
     ],
     sameAs: [
-      "https://www.facebook.com/your-facebook-page", // Replace with actual Facebook page
-      "https://www.yelp.com/biz/your-yelp-page", // Replace with actual Yelp page
-      // Add other social media profiles
+      // Add social media profile URLs here when available
     ],
-    email: "contact@houstonmobilenotarypros.com", // Fixed email address
+    email: "contact@houstonmobilenotarypros.com",
   }
 
   return (

@@ -3,6 +3,47 @@ import { ChevronLeft, Check, Globe, FileCheck, Award } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
+// Define Base URL for metadata
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'; // Replace with your actual domain
+
+export const metadata = {
+  metadataBase: new URL(BASE_URL),
+  title: "Specialty Notary Services (Apostille, Verification) | Houston Mobile Notary Pros",
+  description:
+    "Expert specialty notary services in Houston, including Apostille, background check verification, wedding certificate expediting, and Medallion Signatures.",
+  keywords:
+    "specialty notary Houston, apostille service Houston, background check notary, wedding certificate notary, medallion signature Houston, mobile notary",
+  alternates: {
+    canonical: '/services/specialty',
+  },
+  openGraph: {
+    title: "Specialty Notary Services in Houston (Apostille, Verification) | HMNP",
+    description: "Houston Mobile Notary Pros offers specialized services like Apostille, background verifications, wedding certificate expediting, and Medallion Signatures.",
+    url: `${BASE_URL}/services/specialty`,
+    siteName: 'Houston Mobile Notary Pros',
+    images: [
+      {
+        url: '/og-image.jpg', // Ensure this image exists in /public
+        width: 1200,
+        height: 630,
+        alt: 'Specialty Notary Services by Houston Mobile Notary Pros',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Houston Specialty Notary: Apostille, Verifications & More - HMNP",
+    description: "Need Apostille, background check verification, or other specialty notary services in Houston? Houston Mobile Notary Pros can help.",
+    // Add your Twitter handle here if you have one
+    // siteId: 'YourTwitterID',
+    // creator: '@YourTwitterHandle',
+    // creatorId: 'YourTwitterCreatorID',
+    images: [`${BASE_URL}/og-image.jpg`], // Must be an absolute URL
+  },
+}
+
 export default function SpecialtyServicesPage() {
   return (
     <div className="container mx-auto px-4 py-12">

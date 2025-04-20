@@ -3,6 +3,47 @@ import { ChevronLeft, Printer, Cloud, Mail, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
+// Define Base URL for metadata
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'; // Replace with your actual domain
+
+export const metadata = {
+  metadataBase: new URL(BASE_URL),
+  title: "Additional Notary Services (Printing, Mail, Storage) | Houston Mobile Notary Pros",
+  description:
+    "Enhance your mobile notary experience in Houston with additional services like document printing, scanning, secure cloud storage, USPS mail services, and premium time slots.",
+  keywords:
+    "notary printing Houston, notary scanning, notary mail service, document storage, notary premium time slots, Houston mobile notary, notary add-on services",
+  alternates: {
+    canonical: '/services/additional',
+  },
+  openGraph: {
+    title: "Additional Mobile Notary Services in Houston | HMNP",
+    description: "Beyond notarization: Explore Houston Mobile Notary Pros' additional services like printing, scanning, mail, secure storage, and premium booking times.",
+    url: `${BASE_URL}/services/additional`,
+    siteName: 'Houston Mobile Notary Pros',
+    images: [
+      {
+        url: '/og-image.jpg', // Ensure this image exists in /public
+        width: 1200,
+        height: 630,
+        alt: 'Additional Notary Services by Houston Mobile Notary Pros',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Houston Notary Add-On Services: Printing, Mail, Storage - HMNP",
+    description: "Complete your notary needs with our add-on services in Houston: document printing, scanning, secure storage, mail services, & premium appointment times.",
+    // Add your Twitter handle here if you have one
+    // siteId: 'YourTwitterID',
+    // creator: '@YourTwitterHandle',
+    // creatorId: 'YourTwitterCreatorID',
+    images: [`${BASE_URL}/og-image.jpg`], // Must be an absolute URL
+  },
+}
+
 export default function AdditionalServicesPage() {
   return (
     <div className="container mx-auto px-4 py-12">

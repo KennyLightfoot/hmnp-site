@@ -3,6 +3,47 @@ import { ChevronLeft, Check, Building, Users, Briefcase, GraduationCap, HardHat 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
+// Define Base URL for metadata
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'; // Replace with your actual domain
+
+export const metadata = {
+  metadataBase: new URL(BASE_URL),
+  title: "Business Notary Packages & Corporate Services | Houston Mobile Notary Pros",
+  description:
+    "Tailored mobile notary packages for businesses in Houston. Solutions for title companies, healthcare providers, construction, education, and more. Save time and ensure compliance.",
+  keywords:
+    "business notary Houston, corporate notary services, mobile notary for business, title company notary, healthcare notary, construction notary, education notary, Houston notary packages",
+  alternates: {
+    canonical: '/services/business',
+  },
+  openGraph: {
+    title: "Business Notary Packages in Houston | HMNP",
+    description: "Streamline your notary needs with Houston Mobile Notary Pros' tailored business packages. Reliable, convenient mobile service for corporations.",
+    url: `${BASE_URL}/services/business`,
+    siteName: 'Houston Mobile Notary Pros',
+    images: [
+      {
+        url: '/og-image.jpg', // Ensure this image exists in /public
+        width: 1200,
+        height: 630,
+        alt: 'Business Notary Packages by Houston Mobile Notary Pros',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Houston Business Notary Packages | Corporate Mobile Notary - HMNP",
+    description: "Save time & ensure compliance with tailored mobile notary packages for Houston businesses. Title, healthcare, construction, & custom solutions.",
+    // Add your Twitter handle here if you have one
+    // siteId: 'YourTwitterID',
+    // creator: '@YourTwitterHandle',
+    // creatorId: 'YourTwitterCreatorID',
+    images: [`${BASE_URL}/og-image.jpg`], // Must be an absolute URL
+  },
+}
+
 export default function BusinessPackagesPage() {
   return (
     <div className="container mx-auto px-4 py-12">

@@ -3,6 +3,47 @@ import { ChevronLeft, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
+// Define Base URL for metadata
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'; // Replace with your actual domain
+
+export const metadata = {
+  metadataBase: new URL(BASE_URL),
+  title: "Essential Mobile Notary Package | Houston Mobile Notary Pros",
+  description:
+    "Affordable essential mobile notary services in Houston. Ideal for wills, POAs, affidavits, and general notarizations. We come to you Mon-Fri, 9am-5pm.",
+  keywords:
+    "essential notary Houston, mobile notary, general notarization, power of attorney notary, will notary, affidavit notary, Houston notary service",
+  alternates: {
+    canonical: '/services/essential',
+  },
+  openGraph: {
+    title: "Essential Mobile Notary Package | Houston Mobile Notary Pros",
+    description: "Need standard notarization in Houston? Our Essential Mobile Package offers convenient service for wills, POAs, and more.",
+    url: `${BASE_URL}/services/essential`,
+    siteName: 'Houston Mobile Notary Pros',
+    images: [
+      {
+        url: '/og-image.jpg', // Ensure this image exists in /public
+        width: 1200,
+        height: 630,
+        alt: 'Essential Mobile Notary Service by Houston Mobile Notary Pros',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Essential Mobile Notary Package - Houston Mobile Notary Pros",
+    description: "Affordable and reliable essential mobile notary services in Houston for your standard document needs (wills, POAs, etc.). Book online!",
+    // Add your Twitter handle here if you have one
+    // siteId: 'YourTwitterID',
+    // creator: '@YourTwitterHandle',
+    // creatorId: 'YourTwitterCreatorID',
+    images: [`${BASE_URL}/og-image.jpg`], // Must be an absolute URL
+  },
+}
+
 export default function EssentialServicePage() {
   return (
     <div className="container mx-auto px-4 py-12">

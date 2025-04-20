@@ -3,6 +3,47 @@ import { ChevronLeft, Check, Clock, MapPin, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
+// Define Base URL for metadata
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'; // Replace with your actual domain
+
+export const metadata = {
+  metadataBase: new URL(BASE_URL),
+  title: "Priority Mobile Notary Service (2-Hour Response) | Houston Mobile Notary Pros",
+  description:
+    "Need urgent notary service in Houston? Our Priority Package offers a 2-hour response time, 7am-9pm daily. Fast, reliable notarization for time-sensitive documents.",
+  keywords:
+    "priority notary Houston, urgent notary, same day notary, 2 hour notary, emergency notary, mobile notary Houston, fast notary service",
+  alternates: {
+    canonical: '/services/priority',
+  },
+  openGraph: {
+    title: "Priority Mobile Notary Service (2-Hour Response) | Houston",
+    description: "Get urgent notarization in Houston within 2 hours, 7 days a week (7am-9pm) with our Priority Service Package.",
+    url: `${BASE_URL}/services/priority`,
+    siteName: 'Houston Mobile Notary Pros',
+    images: [
+      {
+        url: '/og-image.jpg', // Ensure this image exists in /public
+        width: 1200,
+        height: 630,
+        alt: 'Priority Mobile Notary Service by Houston Mobile Notary Pros',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Urgent Mobile Notary in Houston (2-Hour Response) - HMNP",
+    description: "Need a notary fast? Our Priority Service guarantees a 2-hour response in Houston, 7am-9pm daily. Ideal for urgent documents.",
+    // Add your Twitter handle here if you have one
+    // siteId: 'YourTwitterID',
+    // creator: '@YourTwitterHandle',
+    // creatorId: 'YourTwitterCreatorID',
+    images: [`${BASE_URL}/og-image.jpg`], // Must be an absolute URL
+  },
+}
+
 export default function PriorityServicePage() {
   return (
     <div className="container mx-auto px-4 py-12">

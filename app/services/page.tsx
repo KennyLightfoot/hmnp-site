@@ -7,12 +7,45 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import MiniFAQ from "@/components/mini-faq"
 
+// Define Base URL for metadata
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'; // Replace with your actual domain
+
 export const metadata = {
+  metadataBase: new URL(BASE_URL),
   title: "Mobile Notary Services | Houston Mobile Notary Pros",
   description:
     "Professional mobile notary services in Houston and surrounding areas. We offer essential notarization, priority service, loan signings, specialty services, and business packages.",
   keywords:
     "mobile notary, Houston notary, notary services, loan signing, priority notary, business notary, specialty notary",
+  alternates: {
+    canonical: '/services',
+  },
+  openGraph: {
+    title: "Mobile Notary Services | Houston Mobile Notary Pros",
+    description: "Comprehensive mobile notary services in Houston: Essential, Priority, Loan Signing, Specialty, and Business packages available.",
+    url: `${BASE_URL}/services`,
+    siteName: 'Houston Mobile Notary Pros',
+    images: [
+      {
+        url: '/og-image.jpg', // Ensure this image exists in /public
+        width: 1200,
+        height: 630,
+        alt: 'Houston Mobile Notary Pros Service Offerings',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Mobile Notary Services | Houston Mobile Notary Pros",
+    description: "Need a mobile notary in Houston? We offer fast, reliable service for all notary needs, including loan signings & priority appointments.",
+    // Add your Twitter handle here if you have one
+    // siteId: 'YourTwitterID',
+    // creator: '@YourTwitterHandle',
+    // creatorId: 'YourTwitterCreatorID',
+    images: [`${BASE_URL}/og-image.jpg`], // Must be an absolute URL
+  },
 }
 
 // Sample FAQ data for the services page

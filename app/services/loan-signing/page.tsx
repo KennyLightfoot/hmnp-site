@@ -3,6 +3,47 @@ import { ChevronLeft, Check, FileText, Users, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
+// Define Base URL for metadata
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'; // Replace with your actual domain
+
+export const metadata = {
+  metadataBase: new URL(BASE_URL),
+  title: "Mobile Loan Signing Agent Services | Houston Mobile Notary Pros",
+  description:
+    "Professional mobile loan signing agent services in Houston for real estate closings, refinances, HELOCs, and reverse mortgages. Experienced and reliable.",
+  keywords:
+    "loan signing agent Houston, mobile notary loan signing, real estate closing notary, mortgage signing agent, HELOC notary, reverse mortgage signing, Houston mobile notary",
+  alternates: {
+    canonical: '/services/loan-signing',
+  },
+  openGraph: {
+    title: "Mobile Loan Signing Agent Services in Houston | HMNP",
+    description: "Need a loan signing agent in Houston? We offer expert mobile services for all real estate transactions, including closings, refinances, and more.",
+    url: `${BASE_URL}/services/loan-signing`,
+    siteName: 'Houston Mobile Notary Pros',
+    images: [
+      {
+        url: '/og-image.jpg', // Ensure this image exists in /public
+        width: 1200,
+        height: 630,
+        alt: 'Mobile Loan Signing Services by Houston Mobile Notary Pros',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Houston Mobile Loan Signing Agent - HMNP",
+    description: "Expert mobile loan signing services for Houston real estate closings, refinances, HELOCs & reverse mortgages. Book your reliable agent today!",
+    // Add your Twitter handle here if you have one
+    // siteId: 'YourTwitterID',
+    // creator: '@YourTwitterHandle',
+    // creatorId: 'YourTwitterCreatorID',
+    images: [`${BASE_URL}/og-image.jpg`], // Must be an absolute URL
+  },
+}
+
 export default function LoanSigningPage() {
   return (
     <div className="container mx-auto px-4 py-12">

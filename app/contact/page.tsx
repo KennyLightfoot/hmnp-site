@@ -4,11 +4,44 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import ContactForm from "@/components/contact-form"
 
+// Define Base URL for metadata
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'; // Replace with your actual domain
+
 export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL),
   title: "Contact Us | Houston Mobile Notary Pros",
   description:
     "Contact our mobile notary service for appointments, quotes, or questions. Serving Houston, Galveston, Pearland, and surrounding areas with professional notary services.",
   keywords: "contact notary, Houston notary contact, mobile notary appointment, notary quote, notary questions",
+  alternates: {
+    canonical: '/contact',
+  },
+  openGraph: {
+    title: "Contact Houston Mobile Notary Pros",
+    description: "Get in touch with Houston Mobile Notary Pros for appointments, quotes, or questions. Serving Houston and nearby areas.",
+    url: `${BASE_URL}/contact`,
+    siteName: 'Houston Mobile Notary Pros',
+    images: [
+      {
+        url: '/og-image.jpg', // Ensure this image exists in /public
+        width: 1200,
+        height: 630,
+        alt: 'Contact Houston Mobile Notary Pros',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Contact Houston Mobile Notary Pros",
+    description: "Need a mobile notary in Houston? Contact us via phone, email, or contact form for appointments, quotes, or inquiries.",
+    // Add your Twitter handle here if you have one
+    // siteId: 'YourTwitterID',
+    // creator: '@YourTwitterHandle',
+    // creatorId: 'YourTwitterCreatorID',
+    images: [`${BASE_URL}/og-image.jpg`], // Must be an absolute URL
+  },
 }
 
 export default function ContactPage() {
