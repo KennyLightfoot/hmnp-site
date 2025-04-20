@@ -37,7 +37,6 @@ async function fetchFreeSlotsForRange(
       startDate: startDate.getTime().toString(),
       endDate: endDate.getTime().toString(),
       timezone, // Keep timezone
-      // Removed duration parameter
     })
 
     console.log(`Fetching available dates from: ${url}?${queryParams.toString()}`)
