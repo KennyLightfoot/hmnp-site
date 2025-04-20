@@ -811,7 +811,7 @@ export default function BookingPageClient() {
             <CardFooter className="flex justify-between pt-6">
               <Button type="button" variant="outline" onClick={prevStep} disabled={step === 1}>
                 <ChevronLeft className="mr-2 h-4 w-4" /> Previous
-              </Button>
+                </Button>
               {step < totalSteps ? (
                 <Button type="button" onClick={nextStep} disabled={(step === 2 && !selectedTimeSlot)}>
                   Next <ChevronRight className="ml-2 h-4 w-4" />
