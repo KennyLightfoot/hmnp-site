@@ -26,7 +26,6 @@ export default function ContactForm() {
   })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [submitError, setSubmitError] = useState<string | null>(null)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -89,57 +88,28 @@ export default function ContactForm() {
     setSubmitError(null)
 
     try {
-      // In a real implementation, this would send data to your API
-      // const response = await fetch('/api/contact', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // })
+      // Send data to our API route
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const result = await response.json();
 
-      // if (!response.ok) throw new Error('Failed to submit form')
+      if (!response.ok || !result.success) {
+        // Use error message from API if available, otherwise use a generic one
+        throw new Error(result.message || 'Failed to submit form. Please try again.');
+      }
 
-      setSubmitSuccess(true)
+      // Redirect on successful submission
+      router.push('/contact/thank-you')
 
-      // Optional: redirect after successful submission
-      // setTimeout(() => {
-      //   router.push('/contact/thank-you')
-      // }, 2000)
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "An unexpected error occurred")
+      setSubmitError(error instanceof Error ? error.message : "An unexpected error occurred. Please check your connection and try again.")
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  if (submitSuccess) {
-    return (
-      <div className="bg-green-50 p-6 rounded-lg text-center">
-        <h3 className="text-xl font-semibold text-green-800 mb-2">Thank You!</h3>
-        <p className="text-green-700 mb-4">
-          Your message has been sent successfully. We'll get back to you as soon as possible.
-        </p>
-        <Button
-          onClick={() => {
-            setSubmitSuccess(false)
-            setFormData({
-              firstName: "",
-              lastName: "",
-              email: "",
-              phone: "",
-              subject: "General Inquiry",
-              message: "",
-              smsConsent: false,
-            })
-          }}
-          className="bg-green-700 hover:bg-green-800"
-        >
-          Send Another Message
-        </Button>
-      </div>
-    )
   }
 
   return (
