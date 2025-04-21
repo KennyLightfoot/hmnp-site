@@ -23,7 +23,7 @@ async function createContact(contactData: any) {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${GHL_API_KEY}`,
-      Version: "V2",
+      Version: "2021-07-28",
     },
     body: JSON.stringify({
       locationId: GHL_LOCATION_ID,
@@ -50,7 +50,7 @@ async function createNote(contactId: string, message: string) {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${GHL_API_KEY}`,
-      Version: "V2",
+      Version: "2021-07-28",
     },
     body: JSON.stringify({
       body: message,
@@ -78,7 +78,7 @@ async function triggerWorkflow(contactId: string) {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${GHL_API_KEY}`,
-      Version: "V2",
+      Version: "2021-07-28",
     },
     body: JSON.stringify({
       contactId: contactId,
