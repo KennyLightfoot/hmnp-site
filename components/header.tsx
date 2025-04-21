@@ -66,6 +66,11 @@ export default function Header() {
                   </Link>
                 </li>
                 <li>
+                  <Link href="/blog" className="text-[#002147] hover:text-[#A52A2A]">
+                    Blog
+                  </Link>
+                </li>
+                <li>
                   <Link href="/contact" className="text-[#002147] hover:text-[#A52A2A]">
                     Contact
                   </Link>
@@ -110,6 +115,15 @@ export default function Header() {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   FAQ
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/blog"
+                  className="text-[#002147] hover:text-[#A52A2A] block"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Blog
                 </Link>
               </li>
               <li>
