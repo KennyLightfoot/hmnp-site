@@ -6,10 +6,8 @@ import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { Providers } from "./providers"
 import { StructuredData } from "@/components/structured-data"
-import type { Metric } from 'web-vitals'
-import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Toaster } from "@/components/ui/toaster"
-import { Analytics } from "@vercel/analytics/react"
+import { GoogleAnalytics } from '@next/third-parties/google'
 import { log } from "console"
 import { headers } from 'next/headers'
 
@@ -79,13 +77,6 @@ export const metadata: Metadata = {
     generator: 'v0.dev'
 }
 
-export function reportWebVitals(metric: Metric) {
-  // Use `window.gtag` if you initialized Google Analytics snippet directly
-  // window.gtag('event', name, { ... });
-
-  // Send to any other analytics endpoint here
-}
-
 export default async function RootLayout({
   children,
 }: {
@@ -99,6 +90,7 @@ export default async function RootLayout({
         <Providers>
           {/* If using next/third-parties for Google Analytics, add GA component here */}
           {/* Example: <GoogleAnalytics gaId="YOUR_GA_ID" /> */}
+          <GoogleAnalytics gaId="G-EXWGCN0D53" />
           <Header />
           <main>{children}</main>
           <Footer />
