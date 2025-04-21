@@ -25,6 +25,9 @@ export default function TestimonialsSection() {
               ))}
             </div>
           </div>
+          {/* TODO: Consider replacing or supplementing this carousel with an embedded live feed 
+               of reviews from Google or Yelp for enhanced, verifiable social proof, 
+               as recommended in the competitive analysis. */}
           <TestimonialCarousel itemsToShow={3} />
         </div>
 

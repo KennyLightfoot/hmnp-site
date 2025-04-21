@@ -562,15 +562,12 @@ export default function ServicesPage() {
             <div className="bg-gray-50 p-6 rounded-lg">
               <div className="grid md:grid-cols-2 gap-8">
                 <div>
-                  <h3 className="text-xl font-bold text-[#002147] mb-4">Essential Mobile Package</h3>
+                  <h3 className="text-xl font-bold text-[#002147] mb-4">Essential Mobile Notary Service</h3>
                   <p className="text-gray-600 mb-4">
-                    Our Essential Mobile Package is designed for individuals and businesses who need standard notary
-                    services with the convenience of a mobile notary. We come to your location, making the process
-                    simple and hassle-free.
+                    Our Essential Mobile Package brings standard notary services directly to your location in the Houston area. Avoid traffic and save time with a professional traveling notary public who comes to your home, office, or agreed-upon location.
                   </p>
                   <p className="text-gray-600 mb-4">
-                    This package is ideal for notarizing wills, powers of attorney, affidavits, and other general
-                    documents that require notarization.
+                    This package is ideal for common personal and business documents requiring notarization. We handle the process efficiently, ensuring your documents are properly executed according to Texas law.
                   </p>
                   <div className="mt-6">
                     <Link href="/services/essential">
@@ -583,58 +580,46 @@ export default function ServicesPage() {
                 </div>
                 <div className="space-y-4">
                   <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-[#002147] mb-2">Package Options</h4>
+                    <h4 className="font-semibold text-[#002147] mb-2">Common Documents Handled</h4>
                     <ul className="space-y-2">
                       <li className="flex items-start">
                         <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">Essential Service: $75</span>
-                          <p className="text-sm text-gray-600">Perfect for 1-2 quick documents</p>
-                        </div>
+                        <span>Wills, Trusts, & Estate Planning Documents</span>
                       </li>
                       <li className="flex items-start">
                         <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">Two Signers: $85</span>
-                          <p className="text-sm text-gray-600">Up to 3 documents per signer</p>
-                        </div>
+                        <span>Powers of Attorney (Financial, Medical)</span>
                       </li>
                       <li className="flex items-start">
                         <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">Three Signers: $95</span>
-                          <p className="text-sm text-gray-600">Up to 3 documents per signer</p>
-                        </div>
+                        <span>Affidavits & Sworn Statements</span>
                       </li>
                       <li className="flex items-start">
                         <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">Weekend Service: +$50</span>
-                          <p className="text-sm text-gray-600">Available Saturday and Sunday</p>
-                        </div>
+                        <span>Deeds (Quitclaim, Warranty, etc.)</span>
+                      </li>
+                       <li className="flex items-start">
+                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                        <span>Contracts & Business Agreements</span>
+                      </li>
+                       <li className="flex items-start">
+                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                        <span>Vehicle Title Transfers</span>
+                      </li>
+                       <li className="flex items-start">
+                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                        <span>Travel Consent Forms for Minors</span>
+                      </li>
+                       <li className="flex items-start">
+                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                        <span>I-9 Employment Eligibility Verification*</span>
+                      </li>
+                       <li className="flex items-start">
+                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                        <span>And many other documents requiring notarization!</span>
                       </li>
                     </ul>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-[#002147] mb-2">Ideal For</h4>
-                    <ul className="space-y-2">
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Wills and estate planning documents</span>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Powers of attorney</span>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Affidavits and sworn statements</span>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>General business documents</span>
-                      </li>
-                    </ul>
+                    <p className="text-xs text-gray-500 mt-2">*I-9 Verification may fall under Specialty Services depending on requirements.</p>
                   </div>
                 </div>
               </div>
@@ -723,15 +708,12 @@ export default function ServicesPage() {
             <div className="bg-gray-50 p-6 rounded-lg">
               <div className="grid md:grid-cols-2 gap-8">
                 <div>
-                  <h3 className="text-xl font-bold text-[#002147] mb-4">Loan Signing Services</h3>
+                  <h3 className="text-xl font-bold text-[#002147] mb-4">Loan Signing Agent Services</h3>
                   <p className="text-gray-600 mb-4">
-                    Our Loan Signing Services are specifically designed for real estate transactions. Our notaries are
-                    experienced in handling loan documents and can guide you through the signing process efficiently and
-                    professionally.
+                    Our certified Loan Signing Agents (LSAs) specialize in facilitating real estate closings throughout the Houston area. We understand the critical importance of accuracy, timeliness, and professionalism in handling mortgage documents for title companies, lenders, and borrowers.
                   </p>
                   <p className="text-gray-600 mb-4">
-                    Whether you're purchasing a new home, refinancing, or getting a reverse mortgage, our loan signing
-                    agents have the expertise to ensure your closing goes smoothly.
+                    Whether it's a Purchase, Refinance, HELOC, Seller Package, or Reverse Mortgage, our experienced LSAs ensure a smooth and error-free signing experience. We meticulously review documents and guide signers through the process with clarity.
                   </p>
                   <div className="mt-6">
                     <Link href="/services/loan-signing">
@@ -744,42 +726,35 @@ export default function ServicesPage() {
                 </div>
                 <div className="space-y-4">
                   <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-[#002147] mb-2">Package Options</h4>
-                    <ul className="space-y-4">
-                      <li className="pb-4 border-b border-gray-100">
-                        <div className="font-medium">Standard Loan Closing: $150 flat fee</div>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Includes unlimited documents, up to 4 signers, color printing, professional closing binder,
-                          and 90-minute signing session.
-                        </p>
-                      </li>
-                      <li>
-                        <div className="font-medium">Reverse Mortgage/HELOC: $150 flat fee</div>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Includes 4-hour response window, certified mail return, dual agent coordination, and in-depth
-                          explanation of forms.
-                        </p>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-[#002147] mb-2">Our Expertise</h4>
+                    <h4 className="font-semibold text-[#002147] mb-2">Why Choose Us for Loan Signings?</h4>
                     <ul className="space-y-2">
                       <li className="flex items-start">
                         <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Experienced loan signing agents</span>
+                        <span>Experienced & Certified LSAs (NNA, LSS - *TODO: Confirm/add specific certs*)</span>
                       </li>
                       <li className="flex items-start">
                         <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>$100k E&O insurance coverage</span>
+                        <span>Comprehensive E&O Insurance (*TODO: Update level - $1M Recommended*)</span>
+                      </li>
+                       <li className="flex items-start">
+                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                        <span>Expertise in various loan types: Purchase, Refi, HELOC, Seller, Reverse Mortgage</span>
                       </li>
                       <li className="flex items-start">
                         <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Comprehensive service from document preparation to final delivery</span>
+                        <span>Meticulous attention to detail & accuracy</span>
                       </li>
-                      <li className="flex items-start">
+                       <li className="flex items-start">
                         <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Flexible scheduling including evenings and weekends</span>
+                        <span>Reliable, punctual, and professional service</span>
+                      </li>
+                       <li className="flex items-start">
+                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                        <span>Flexible scheduling (evenings/weekends available)</span>
+                      </li>
+                        <li className="flex items-start">
+                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                        <span>Mobile convenience - We travel to the signing location</span>
                       </li>
                     </ul>
                   </div>

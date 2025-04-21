@@ -39,6 +39,7 @@ export default function WhyChooseUs() {
             <h3 className="text-xl font-semibold text-[#002147] mb-3 text-center">Experience</h3>
             <p className="text-gray-600 text-center">
               Our notaries are experienced professionals with specialized training in all types of notarizations.
+              {/* TODO: Add specific certifications (e.g., NNA Certified Signing Agent, LSS Certified) if applicable */}
             </p>
             <div className="w-12 h-1 bg-[#A52A2A] mx-auto mt-4"></div>
           </div>
@@ -60,7 +61,8 @@ export default function WhyChooseUs() {
             </div>
             <h3 className="text-xl font-semibold text-[#002147] mb-3 text-center">Trusted</h3>
             <p className="text-gray-600 text-center">
-              Fully insured with $100k E&O coverage. Strict compliance with all Texas notary laws.
+              {/* TODO: Update E&O insurance level. Recommended: $1M for LSA focus. */}
+              Fully insured with $100k E&O coverage (meeting Texas requirements). Strict compliance with all Texas notary laws.
             </p>
             <div className="w-12 h-1 bg-[#A52A2A] mx-auto mt-4"></div>
           </div>

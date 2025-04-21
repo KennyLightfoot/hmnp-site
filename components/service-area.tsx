@@ -69,10 +69,9 @@ export default function ServiceArea() {
                   <MapPin className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-[#002147] mb-1">Standard Service Area</h3>
+                  <h3 className="font-semibold text-[#002147] mb-1">Standard Service Area & Travel Fees</h3>
                   <p className="text-gray-700">
-                    Our standard service area extends to a 20-mile radius from ZIP code 77591. We can travel beyond
-                    this area for an additional fee of $0.50 per mile.
+                    Our primary service point is based in Texas City (ZIP 77591). Our standard service packages include travel within a 20-mile radius of this location. We gladly travel to all listed areas and beyond, with an additional travel fee of $0.50 per mile applying for distances beyond the initial 20 miles from 77591. Please contact us for a precise quote if you are unsure about potential travel fees for your location.
                   </p>
                 </div>
               </div>
@@ -108,10 +107,10 @@ export default function ServiceArea() {
               <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
                 <div className="flex items-center mb-2">
                   <div className="w-3 h-3 bg-[#A52A2A] rounded-full mr-2"></div>
-                  <p className="font-semibold">ZIP 77591 (Texas City, TX)</p>
+                  <p className="font-semibold">Base ZIP 77591 (Texas City, TX)</p>
                 </div>
-                <p className="text-sm mb-1">20-mile standard service radius</p>
-                <p className="text-sm">Extended coverage available for additional fee</p>
+                <p className="text-sm mb-1">20-mile standard service radius included in packages</p>
+                <p className="text-sm">Extended coverage available for additional fee (calculated from 77591)</p>
               </div>
             </div>
           </div>

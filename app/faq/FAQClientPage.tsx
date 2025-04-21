@@ -107,7 +107,11 @@ const faqs: FAQ[] = [
     question: "What areas do you serve?",
     answer: (
       <div>
-        <p>We serve clients within a 20-mile radius of ZIP code 77591, covering the greater Houston area including:</p>
+        <p>
+          Our primary service point is based in Texas City (ZIP 77591). Our standard service packages include travel
+          within a 20-mile radius of this location.
+        </p>
+        <p className="mt-2">We proudly serve the greater Houston area, including but not limited to:</p>
         <div className="grid grid-cols-2 gap-2 mt-2">
           <div>
             <ul className="list-disc list-inside space-y-1">
@@ -129,15 +133,10 @@ const faqs: FAQ[] = [
           </div>
         </div>
         <p className="mt-2">
-          We can also travel beyond our standard service area for an additional fee of $0.50 per mile. This extended
-          service area allows us to accommodate clients throughout the greater Houston metropolitan area.
+          We gladly travel to all listed areas and beyond. An additional travel fee of $0.50 per mile applies for
+          distances beyond the initial 20 miles from 77591. Please see our Travel Fees question for more details or
+          contact us for a precise quote.
         </p>
-        <div className="mt-4 p-3 bg-gray-100 rounded-md">
-          <p className="text-sm">
-            <strong>Note:</strong> For locations beyond 35 miles from our base, we recommend booking our Priority
-            Service to ensure availability. Please contact us directly to confirm service for these locations.
-          </p>
-        </div>
         <div className="mt-4">
           <Link href="/contact" className="text-[#002147] underline hover:text-[#A52A2A]">
             Contact us to check if we serve your specific location
@@ -146,7 +145,7 @@ const faqs: FAQ[] = [
       </div>
     ),
     category: "general",
-    keywords: ["area", "houston", "coverage", "zip", "travel", "radius", "location", "service area", "texas city"],
+    keywords: ["area", "houston", "coverage", "zip", "travel", "radius", "location", "service area", "texas city", "fee"],
     relatedQuestions: ["travel-fees", "response-time"],
   },
   {
@@ -387,50 +386,102 @@ const faqs: FAQ[] = [
     answer: (
       <div>
         <p>
-          A loan signing agent is a notary public who has received additional training specifically for handling real
-          estate loan documents. While all loan signing agents are notaries, not all notaries are qualified loan signing
-          agents.
+          A loan signing agent (LSA) is a notary public who has received additional training specifically for handling
+          real estate loan documents. While all LSAs are notaries, not all notaries are qualified LSAs.
         </p>
         <p className="mt-2">Key differences include:</p>
         <ul className="list-disc list-inside mt-2 space-y-1">
           <li>
-            <strong>Specialized Knowledge:</strong> Loan signing agents understand real estate terminology, loan
-            document packages, and the specific requirements of different types of loans (conventional, FHA, VA, etc.).
+            <strong>Specialized Knowledge:</strong> LSAs understand real estate terminology, loan document packages,
+            and the specific requirements of different types of loans (Conventional, FHA, VA, Purchase, Refinance,
+            HELOC, Reverse Mortgage, etc.).
           </li>
           <li>
             <strong>Process Expertise:</strong> They know the correct order and procedure for loan document execution,
             ensuring all documents are properly signed, initialed, and dated according to lender requirements.
           </li>
           <li>
-            <strong>Additional Training:</strong> Loan signing agents typically complete specialized training programs
-            and may hold certifications from recognized organizations in the industry.
+            <strong>Additional Training & Certification:</strong> LSAs typically complete specialized training programs
+            and hold certifications from recognized organizations like the National Notary Association (NNA) or Loan
+            Signing System (LSS). {/* TODO: Confirm and list specific certifications held */}
           </li>
           <li>
-            <strong>Additional Insurance:</strong> Our loan signing agents carry $100k Errors & Omissions insurance to
-            provide protection for all parties involved in the transaction.
+            <strong>Enhanced Insurance:</strong> Due to the high value of transactions, professional LSAs carry
+            significant Errors & Omissions (E&O) insurance. We maintain comprehensive E&O coverage. {/* TODO: Specify E&O level ($1M Recommended) */}
           </li>
           <li>
-            <strong>Industry Relationships:</strong> Experienced loan signing agents maintain relationships with title
-            companies, escrow officers, and lenders to facilitate smooth closings.
+            <strong>Industry Relationships:</strong> Experienced LSAs maintain relationships with title companies,
+            escrow officers, and lenders to facilitate smooth closings.
           </li>
         </ul>
         <p className="mt-2">
-          Our loan signing agents are experienced professionals who work with title companies, lenders, and escrow
-          officers to ensure smooth and compliant real estate closings. They can guide signers through complex loan
-          packages, ensuring all documents are properly executed while maintaining a neutral role as required by law.
+          Our loan signing agents are experienced professionals dedicated to ensuring smooth, accurate, and compliant
+          real estate closings.
         </p>
         <div className="mt-4 p-3 bg-[#002147]/10 rounded-md">
           <p className="text-sm text-[#002147]">
-            <strong>Important Note:</strong> While loan signing agents are knowledgeable about loan documents, they
-            cannot provide legal advice or explain the legal implications of the documents being signed. Their role is
-            to facilitate the signing process, not to interpret the documents.
+            <strong>Important Note:</strong> While LSAs are knowledgeable about loan documents, they cannot provide
+            legal advice or explain the legal implications of the documents being signed. Their role is to facilitate
+            the signing process, not to interpret the documents.
           </p>
         </div>
       </div>
     ),
     category: "services",
-    keywords: ["loan", "signing", "agent", "real estate", "mortgage", "closing", "NSA", "LSA", "difference"],
+    keywords: ["loan", "signing", "agent", "real estate", "mortgage", "closing", "NSA", "LSA", "difference", "certified", "NNA", "LSS", "E&O"],
     relatedQuestions: ["services-offered", "documents-notarized"],
+  },
+  {
+    id: "provide-witnesses",
+    question: "Can you provide witnesses if my document requires them?",
+    answer: (
+      <div>
+        <p>
+          Some documents, like certain wills or real estate documents, may require one or more witnesses in addition to
+          the notary. Witnesses must be impartial, over 18, and not named in the document or benefiting from it.
+        </p>
+        <p className="mt-2">
+          Generally, signers are responsible for providing their own witnesses. However, if you are unable to arrange
+          for witnesses, please let us know when booking your appointment. We may be able to provide witnesses for an
+          additional fee, subject to availability. Advance notice (at least 24-48 hours) is required for witness
+          requests.
+        </p>
+        <div className="mt-4 p-3 bg-gray-100 rounded-md">
+          <p className="text-sm">
+            <strong>Please Note:</strong> The notary public cannot act as a witness for the same document they are
+            notarizing.
+          </p>
+        </div>
+      </div>
+    ),
+    category: "services",
+    keywords: ["witness", "witnesses", "provide", "document", "signing", "additional fee"],
+    relatedQuestions: ["what-to-expect", "document-preparation"],
+  },
+  {
+    id: "offer-ron",
+    question: "Do you offer Remote Online Notarization (RON)?",
+    answer: (
+      <div>
+        <p>
+          Currently, Houston Mobile Notary Pros focuses on providing in-person mobile notary and loan signing services.
+          We do not offer Remote Online Notarization (RON) at this time.
+        </p>
+        <p className="mt-2">
+          RON allows notarizations to be performed remotely using audiovisual technology. While it offers convenience in
+          some situations, our mobile service provides face-to-face verification and assistance directly at your
+          location.
+        </p>
+        {/* Optional: Add if considering RON in the future */}
+        {/* <p className="mt-2">
+          We are continuously evaluating our service offerings and may consider adding RON in the future. Please check back
+          for updates.
+        </p> */}
+      </div>
+    ),
+    category: "services",
+    keywords: ["ron", "remote", "online", "notarization", "virtual", "video", "webcam"],
+    relatedQuestions: ["services-offered", "why-mobile-notary"],
   },
   {
     id: "documents-notarized",
@@ -653,273 +704,128 @@ const faqs: FAQ[] = [
   // Document Requirements
   {
     id: "id-requirements",
-    question: "What forms of identification do you accept?",
+    question: "What are the specific ID requirements in Texas?",
     answer: (
       <div>
-        <p>In accordance with Texas law, we accept the following forms of government-issued photo identification:</p>
+        <p>
+          Texas law requires notaries to verify the identity of signers using specific forms of identification. The ID
+          must be current (unexpired) and issued by the federal government or a state government. It must contain the
+          signer's photograph and signature.
+        </p>
+        <p className="mt-2">Acceptable forms of primary identification include:</p>
         <ul className="list-disc list-inside mt-2 space-y-1">
-          <li>Driver's license or state ID card issued by any U.S. state</li>
-          <li>U.S. passport or passport card</li>
-          <li>U.S. military ID card</li>
-          <li>Permanent resident card or alien registration receipt card (Form I-551)</li>
-          <li>Foreign passport with temporary I-551 stamp or temporary I-551 printed notation</li>
-          <li>Employment authorization document with photograph (Form I-766)</li>
-          <li>U.S. Citizenship and Immigration Services ID card</li>
+          <li>Texas Driver's License or State ID Card</li>
+          <li>U.S. Driver's License or State ID Card from another state</li>
+          <li>U.S. Passport or Passport Card</li>
+          <li>U.S. Military ID Card</li>
+          <li>Foreign Passport stamped by U.S. Citizenship and Immigration Services (USCIS)</li>
+          <li>Inmate ID Card issued by the Texas Department of Criminal Justice (TDCJ) or federal detention facility (if signer is incarcerated)</li>
         </ul>
-        <p className="mt-4">Important requirements for acceptable ID:</p>
-        <ul className="list-disc list-inside mt-2 space-y-1">
-          <li>Must be current (not expired)</li>
-          <li>Must contain a photograph of the bearer</li>
-          <li>Must contain a physical description of the bearer</li>
-          <li>Must contain the bearer's signature (unless exempt by statute)</li>
-          <li>Must be issued by a governmental entity</li>
-        </ul>
-        <div className="mt-4 p-3 bg-[#A52A2A]/10 rounded-md">
-          <p className="text-sm text-[#A52A2A]">
-            <strong>Important:</strong> Temporary or non-government IDs such as student IDs, employee badges, or
-            membership cards are not acceptable for notarization purposes under Texas law. Additionally, photocopies or
-            digital versions of IDs are not acceptable - we must see the original, physical ID.
+        <p className="mt-2">
+          The ID must be original; photocopies are not acceptable. The name on the ID should generally match the name
+          on the document being signed. Minor variations may be acceptable, but significant discrepancies might prevent
+          notarization.
+        </p>
+        <p className="mt-2">
+          <strong>What if a signer doesn't have acceptable ID?</strong>
+        </p>
+        <p className="mt-1">
+          If a signer lacks acceptable ID, Texas law allows for identification through **Credible Witnesses**. A
+          credible witness must personally know the signer, be personally known by the notary, and present their own
+          valid ID to the notary. The witness must swear or affirm to the signer's identity and sign the notary journal.
+          Please contact us in advance if you believe credible witnesses will be needed, as specific requirements apply.
+        </p>
+        <div className="mt-4 p-3 bg-gray-100 rounded-md">
+          <p className="text-sm">
+            <strong>Note:</strong> Expired IDs generally cannot be accepted. Ensuring all signers have valid ID before
+            the appointment saves time and avoids potential issues.
           </p>
         </div>
-        <p className="mt-4">
-          If you have questions about whether your ID will be accepted, please{" "}
-          <Link href="/contact" className="text-[#002147] underline hover:text-[#A52A2A]">
-            contact us
-          </Link>{" "}
-          before your appointment.
-        </p>
       </div>
     ),
-    category: "documents",
-    keywords: ["identification", "ID", "driver's license", "passport", "requirements", "photo ID", "government-issued"],
-    relatedQuestions: ["what-to-expect", "document-preparation"],
+    category: "legal",
+    keywords: ["id", "identification", "requirements", "texas", "driver's license", "passport", "military id", "valid", "unexpired", "photo", "signature", "credible witness"],
+    relatedQuestions: ["bring-to-appointment", "what-to-expect"],
     popular: true,
   },
   {
     id: "document-preparation",
-    question: "Should my documents be prepared before the notary arrives?",
+    question: "Should I fill out the document completely before the notary arrives?",
     answer: (
       <div>
         <p>
-          Yes, your documents should be fully prepared before the notary appointment, with the following guidelines:
+          Please ensure your document is fully completed *except* for the signature and any notary-specific sections.
         </p>
         <ul className="list-disc list-inside mt-2 space-y-1">
           <li>
-            <strong>Complete all information</strong> in the document except for signatures and dates that need to be
-            witnessed by the notary. All blank spaces that should be filled in must be completed before notarization.
+            <strong>Do Fill In:</strong> All personal information, dates (unless the date needs to be the date of
+            signing), specific details required by the document.
           </li>
           <li>
-            <strong>Do not sign the documents</strong> before the notary arrives. The notary must witness your signature
-            for most notarizations. If you've already signed the document, in some cases it can still be notarized if
-            you acknowledge your signature to the notary, but it's best to wait.
-          </li>
-          <li>
-            <strong>Have all necessary supporting documents</strong> ready, such as trust documents if signing as a
-            trustee, or corporate resolutions if signing on behalf of a company.
-          </li>
-          <li>
-            <strong>Ensure all signers will be present</strong> with valid identification. Everyone who needs to sign
-            must be physically present during the notarization.
-          </li>
-          <li>
-            <strong>Review the documents</strong> to make sure you understand what you're signing. The notary cannot
-            explain the legal content of documents to you.
-          </li>
-          <li>
-            <strong>Prepare multiple copies</strong> if you need more than one original notarized document. The notary
-            will need to perform a separate notarization for each copy.
+            <strong>Do Not Fill In / Sign:</strong>
+            <ul className="list-circle list-inside ml-4 mt-1">
+              <li>The signature line(s). Signatures must typically be done in the notary's presence.</li>
+              <li>The Notarial Certificate section (often titled "Acknowledgment" or "Jurat"). This part is for the
+                notary only.</li>
+            </ul>
           </li>
         </ul>
         <p className="mt-2">
-          For loan signings, the documents are typically prepared by the lender or title company and provided to us
-          before the appointment. In these cases, you don't need to prepare anything - just have your valid ID ready.
+          Having the document otherwise complete saves time during the appointment. If you have questions about filling
+          out the document, please consult the document issuer or an attorney, as the notary cannot provide legal advice
+          or assist in preparing your document.
         </p>
-        <div className="mt-4 p-3 bg-gray-100 rounded-md">
-          <p className="text-sm">
-            <strong>Note:</strong> If your document doesn't include notarial wording (the "acknowledgment" or "jurat"
-            section where the notary signs), we can provide appropriate wording that can be attached to your document.
-            Please let us know in advance if you need this service.
-          </p>
-        </div>
-      </div>
-    ),
-    category: "documents",
-    keywords: ["preparation", "prepare", "ready", "before", "signing", "documents", "complete"],
-    relatedQuestions: ["id-requirements", "witnesses-required"],
-  },
-  {
-    id: "witnesses-required",
-    question: "Do I need witnesses for my document?",
-    answer: (
-      <div>
-        <p>
-          Whether witnesses are required depends on the type of document and its specific requirements. Here are some
-          common scenarios:
-        </p>
-        <div className="mt-3 space-y-4">
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Wills</h3>
-            <p className="mt-1">
-              In Texas, wills typically require two witnesses who are not beneficiaries of the will. These witnesses
-              must sign in the presence of the testator (the person making the will) and in the presence of each other.
-              The notary can serve as one of the witnesses if they are not a beneficiary.
-            </p>
-          </div>
-
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Powers of Attorney</h3>
-            <p className="mt-1">
-              Texas law requires that a durable power of attorney be notarized, but witnesses are not legally required
-              (though some institutions may require them). For medical powers of attorney, two witnesses OR notarization
-              is required.
-            </p>
-          </div>
-
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Deeds</h3>
-            <p className="mt-1">
-              Generally require notarization but not witnesses in Texas. However, some counties or specific situations
-              may have different requirements.
-            </p>
-          </div>
-
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Medical Directives</h3>
-            <p className="mt-1">
-              Often require two witnesses or notarization. The witnesses typically cannot be healthcare providers,
-              employees of healthcare facilities, or relatives.
-            </p>
-          </div>
-        </div>
-        <p className="mt-4">
-          If your document requires witnesses, you should arrange for them to be present during the notary appointment.
-          In some cases, we may be able to provide a witness for an additional fee, but this should be arranged in
-          advance.
-        </p>
-        <div className="mt-4 p-3 bg-[#002147]/10 rounded-md">
-          <p className="text-sm text-[#002147]">
-            <strong>Important:</strong> Witness requirements can vary based on document type, purpose, and jurisdiction.
-            If you're unsure whether your document requires witnesses, we recommend consulting with the issuing
-            authority or an attorney. You can also check the document itself, which often specifies witness
-            requirements.
-          </p>
-        </div>
-      </div>
-    ),
-    category: "documents",
-    keywords: ["witnesses", "required", "need", "present", "signature", "will", "power of attorney", "deed"],
-    relatedQuestions: ["document-preparation", "id-requirements"],
-  },
-  {
-    id: "copies-certification",
-    question: "Can you certify copies of documents?",
-    answer: (
-      <div>
-        <p>
-          In Texas, notaries public are not authorized to certify copies of most documents. However, there are some
-          exceptions and alternatives:
-        </p>
-        <div className="mt-3 space-y-4">
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Copy Certification by Document Custodian</h3>
-            <p className="mt-1">
-              If you are the legal custodian of an original document, you can sign a statement (which we can notarize)
-              declaring that the copy is a true and correct copy of the original. This process is called "Copy
-              Certification by Document Custodian."
-            </p>
-            <p className="mt-1 text-sm text-gray-600">
-              <strong>Example:</strong> You have the original of your diploma and need to certify a copy for an
-              employer.
-            </p>
-          </div>
-
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Certified Copies of Powers of Attorney</h3>
-            <p className="mt-1">
-              Texas notaries can make certified copies of powers of attorney if the person requesting the copy is named
-              in the document or is a family member of the principal (the person who created the power of attorney).
-            </p>
-          </div>
-
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Official Documents</h3>
-            <p className="mt-1">
-              For official documents like birth certificates, marriage certificates, or court records, you should
-              contact the issuing agency for certified copies. These agencies are the only ones authorized to certify
-              copies of their own records.
-            </p>
-          </div>
-        </div>
-        <p className="mt-4">If you need certified copies of other documents, we recommend:</p>
-        <ul className="list-disc list-inside mt-2 space-y-1">
-          <li>Contacting the original issuer of the document</li>
-          <li>Visiting a government office that provides this service (for certain documents)</li>
-          <li>Consulting with an attorney about the proper procedure for your specific document</li>
-        </ul>
         <div className="mt-4 p-3 bg-[#A52A2A]/10 rounded-md">
           <p className="text-sm text-[#A52A2A]">
-            <strong>Pro Tip:</strong> If you need to provide proof that a copy is authentic, bring both the original and
-            the copy to your appointment. We can help you prepare a document custodian statement that you can sign and
-            have notarized, which may satisfy many requirements for "certified" copies.
+            <strong>Important:</strong> Do not sign the document before the notary arrives unless instructed otherwise
+            (e.g., for an acknowledgment where prior signing is permitted). Signing in front of the notary is usually
+            required.
           </p>
         </div>
       </div>
     ),
     category: "documents",
-    keywords: ["copies", "certify", "certification", "duplicate", "original", "true copy", "document custodian"],
-    relatedQuestions: ["documents-notarized", "cannot-notarize"],
+    keywords: ["document", "fill out", "complete", "prepare", "sign", "signature", "before", "notary section"],
+    relatedQuestions: ["what-to-expect", "notary-legal-advice"],
+    popular: true,
   },
   {
-    id: "electronic-documents",
-    question: "Can you notarize electronic documents?",
+    id: "bring-to-appointment",
+    question: "What do I need to bring to the appointment?",
     answer: (
       <div>
-        <p>There are two different scenarios when it comes to electronic documents:</p>
-        <div className="mt-3 space-y-4">
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Traditional Notarization of Printed Electronic Documents</h3>
-            <p className="mt-1">
-              Yes, we can notarize documents that were originally electronic but have been printed out on paper. The
-              process is the same as notarizing any paper document - you must be physically present, show proper
-              identification, and sign the printed document in the presence of the notary.
-            </p>
-            <p className="mt-1 text-sm text-gray-600">
-              <strong>Example:</strong> You download a contract as a PDF, print it out, and have it notarized in person.
-            </p>
-          </div>
-
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Remote Online Notarization (RON)</h3>
-            <p className="mt-1">
-              Remote Online Notarization allows documents to be notarized in an electronic form, with the signer
-              appearing before the notary via audio-visual technology rather than in person. While Texas law does permit
-              RON, our mobile notary service currently specializes in traditional in-person notarization only.
-            </p>
-            <p className="mt-1 text-sm text-gray-600">
-              <strong>Note:</strong> We do not currently offer Remote Online Notarization services. All our
-              notarizations require in-person appearance.
-            </p>
-          </div>
-        </div>
-        <p className="mt-4">For electronic documents that need notarization:</p>
-        <ol className="list-decimal list-inside mt-2 space-y-1">
-          <li>Print the document on paper (make sure all pages are included)</li>
-          <li>Do not sign the document until the notary is present</li>
-          <li>Have your valid government-issued photo ID ready</li>
-          <li>After notarization, you can scan the document if you need an electronic copy</li>
-        </ol>
-        <div className="mt-4 p-3 bg-gray-100 rounded-md">
-          <p className="text-sm">
-            <strong>Important:</strong> Some receiving parties may have specific requirements about electronic
-            documents. If you're unsure whether a printed and notarized copy of an electronic document will be accepted,
-            check with the recipient before proceeding.
-          </p>
-        </div>
+        <p>To ensure a smooth appointment, please have the following ready:</p>
+        <ul className="list-disc list-inside mt-2 space-y-2">
+          <li>
+            <strong>The Complete Document(s):</strong> Ensure you have the entire, original document(s) needing
+            notarization. Please review them for completeness (except signatures and notary sections) beforehand.
+          </li>
+          <li>
+            <strong>All Signers Present:</strong> Every person who needs to sign the document must be physically present
+            at the appointment time.
+          </li>
+          <li>
+            <strong>Valid Government-Issued Photo ID:</strong> Each signer must present a valid (unexpired) photo ID
+            issued by the state or federal government. See our "ID Requirements" FAQ for details.
+          </li>
+          <li>
+            <strong>Witnesses (If Required):</strong> If your document requires witnesses, ensure they are present with
+            their own valid IDs. (See our "Witnesses" FAQ).
+          </li>
+          <li>
+            <strong>Payment Method:</strong> We accept various payment methods (please confirm acceptable forms when
+            booking or see our Pricing section).
+          </li>
+        </ul>
+        <p className="mt-2">
+          Having everything prepared helps make the notarization process quick and efficient.
+        </p>
       </div>
     ),
     category: "documents",
-    keywords: ["electronic", "digital", "online", "remote", "RON", "e-notary", "virtual"],
-    relatedQuestions: ["document-preparation", "cannot-notarize"],
+    keywords: ["bring", "appointment", "documents", "id", "signers", "witnesses", "payment", "prepare"],
+    relatedQuestions: ["id-requirements", "document-preparation", "provide-witnesses"],
+    popular: true,
   },
 
   // Pricing & Payment
@@ -1076,197 +982,86 @@ const faqs: FAQ[] = [
   },
   {
     id: "travel-fees",
-    question: "Do you charge travel fees?",
+    question: "How are travel fees calculated?",
     answer: (
       <div>
-        <p>Our travel fee policy is as follows:</p>
-        <div className="mt-3 space-y-4">
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Standard Service Area</h3>
-            <p className="mt-1">
-              No travel fees within a 20-mile radius of ZIP code 77591. This area covers most of Houston and surrounding
-              communities.
-            </p>
-          </div>
-
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Extended Service Area</h3>
-            <p className="mt-1">
-              $0.50 per mile for locations beyond the 20-mile radius. This fee applies to the distance beyond the
-              standard service area, not the entire trip.
-            </p>
-            <p className="mt-1 text-sm text-gray-600">
-              <strong>Example:</strong> For a location 25 miles from our base, the travel fee would be $0.50 × 5 miles =
-              $2.50.
-            </p>
-          </div>
-
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Additional Travel Considerations</h3>
-            <ul className="list-disc list-inside mt-1 space-y-1 text-sm">
-              <li>
-                <strong>Toll Roads:</strong> Any toll fees incurred will be added to the final bill at cost.
-              </li>
-              <li>
-                <strong>Severe Weather:</strong> During severe weather events, a $0.65/mile fuel surcharge may apply for
-                travel beyond our primary service area.
-              </li>
-              <li>
-                <strong>Priority Service:</strong> The extended service area is increased to 35 miles for Priority
-                Service, with the same $0.50/mile fee applying beyond that distance.
-              </li>
-              <li>
-                <strong>Multiple Locations:</strong> If your appointment requires visits to multiple locations,
-                additional travel fees may apply.
-              </li>
-            </ul>
-          </div>
-        </div>
-        <p className="mt-4">
-          Travel fees are calculated based on the round-trip distance from our base location to your appointment
-          location using standard mapping software. The fee will be clearly disclosed when you book your appointment.
+        <p>
+          Our standard service packages (Essential, Priority, Loan Signing, etc.) include travel within a 20-mile
+          radius of our base location in Texas City (ZIP 77591).
+        </p>
+        <p className="mt-2">
+          For locations beyond this initial 20-mile radius, an additional travel fee applies. This fee is calculated at
+          <strong>$0.50 per mile for the round trip distance traveled *beyond* the first 20 miles each way</strong> (i.e., beyond 40 miles round trip).
+        </p>
+        <p className="mt-2">
+          Example: If your location is 30 miles from 77591:
+        </p>
+        <ul className="list-disc list-inside mt-1 space-y-1 text-sm">
+          <li>One way distance: 30 miles</li>
+          <li>Round trip distance: 60 miles</li>
+          <li>Included round trip distance: 40 miles (20 miles each way)</li>
+          <li>Billable round trip distance: 20 miles (60 total - 40 included)</li>
+          <li>Additional Travel Fee: 20 miles * $0.50/mile = $10.00</li>
+        </ul>
+        <p className="mt-2">
+          We use standard mapping services (like Google Maps) to determine the distance from ZIP 77591 to your signing
+          location. The travel fee will be calculated and confirmed with you when booking your appointment.
         </p>
         <div className="mt-4 p-3 bg-gray-100 rounded-md">
           <p className="text-sm">
-            <strong>Note:</strong> For locations significantly outside our standard service area, we may require
-            additional notice or specific scheduling windows. Please contact us directly to discuss arrangements for
-            these locations.
+            Please{" "}
+            <Link href="/contact" className="text-[#002147] underline hover:text-[#A52A2A]">
+              contact us
+            </Link>{" "}
+            if you need a precise quote including travel fees for your specific location.
           </p>
         </div>
       </div>
     ),
     category: "pricing",
-    keywords: ["travel", "fee", "distance", "mileage", "radius", "service area", "location"],
+    keywords: ["travel fee", "mileage", "distance", "cost", "charge", "additional", "calculation", "radius", "zip 77591"],
     relatedQuestions: ["service-area", "pricing-structure"],
+    popular: true,
   },
   {
-    id: "cancellation-policy",
-    question: "What is your cancellation policy?",
+    id: "additional-fees",
+    question: "Are there additional fees for weekends, holidays, or after-hours service?",
     answer: (
       <div>
-        <p>Our cancellation policy is designed to be fair while respecting our notaries' time:</p>
-        <div className="mt-3 space-y-4">
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">24+ Hours Notice</h3>
-            <p className="mt-1">Full refund of any deposits or prepayments. No cancellation fee applies.</p>
-          </div>
-
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">2-24 Hours Notice</h3>
-            <p className="mt-1">
-              No cancellation fee, but any deposits may be converted to a credit for future service rather than
-              refunded.
-            </p>
-          </div>
-
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Less than 2 Hours Notice</h3>
-            <p className="mt-1">
-              $35 cancellation fee may apply to cover administrative costs and the notary's preparation time.
-            </p>
-          </div>
-
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">No-Show</h3>
-            <p className="mt-1">
-              $50 fee plus travel costs may apply if our notary arrives at the appointment location and no one is
-              available within 15 minutes of the scheduled time.
-            </p>
-          </div>
-
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Special Circumstances</h3>
-            <ul className="list-disc list-inside mt-1 space-y-1 text-sm">
-              <li>
-                <strong>Weather-Related Cancellations:</strong> For cancellations due to severe weather or other
-                emergencies, we offer a 15% discount when rescheduling.
-              </li>
-              <li>
-                <strong>Document Not Ready:</strong> If the appointment must be cancelled because documents aren't
-                ready, standard cancellation policies apply.
-              </li>
-              <li>
-                <strong>Signing Refusal:</strong> If the notary determines they cannot legally perform the notarization
-                (e.g., ID issues, document problems), a $75 documentation fee may apply.
-              </li>
-            </ul>
-          </div>
-        </div>
-        <p className="mt-4">
-          <strong>Rescheduling:</strong> Rescheduling with at least 2 hours' notice is free of charge. For rescheduling
-          with less than 2 hours' notice, a $15 fee may apply.
+        <p>Yes, additional fees may apply in certain situations:</p>
+        <ul className="list-disc list-inside mt-2 space-y-2">
+          <li>
+            <strong>Weekend Service:</strong> Appointments scheduled on Saturdays or Sundays may incur a weekend
+            surcharge (e.g., +$50 for Essential/Loan Signing, included in Priority). Please check specific package
+            details or confirm when booking.
+          </li>
+          <li>
+            <strong>Holiday Service:</strong> Service on major holidays (e.g., New Year's Day, Thanksgiving, Christmas)
+            may be available at premium rates and subject to availability. Please inquire directly.
+          </li>
+          <li>
+            <strong>After-Hours Service:</strong> Our Priority Service covers extended hours (7am-9pm). Services requested
+            outside these hours, if available, may be subject to after-hours fees.
+          </li>
+          <li>
+            <strong>Excessive Wait Time:</strong> If the notary has to wait significantly beyond the scheduled
+            appointment time due to signer unpreparedness or other delays caused by the client, a waiting fee may apply
+            (e.g., after the first 15 minutes).
+          </li>
+          <li>
+            <strong>Additional Services:</strong> Fees apply for services beyond standard notarization, such as
+            witness provision, document printing, scanning, or shipping.
+          </li>
+        </ul>
+        <p className="mt-2">
+          All applicable fees, including travel and any surcharges, will be clearly communicated and agreed upon before
+          your appointment is confirmed.
         </p>
-        <div className="mt-4 p-3 bg-[#002147]/10 rounded-md">
-          <p className="text-sm text-[#002147]">
-            <strong>Cancellation Tip:</strong> If you need to cancel or reschedule, please do so as early as possible by
-            calling or emailing us. This allows us to adjust our schedule and potentially accommodate other clients.
-          </p>
-        </div>
       </div>
     ),
     category: "pricing",
-    keywords: ["cancel", "cancellation", "reschedule", "refund", "policy", "no-show", "fee"],
-    relatedQuestions: ["appointment-scheduling", "payment-methods"],
-  },
-  {
-    id: "discounts-available",
-    question: "Do you offer any discounts?",
-    answer: (
-      <div>
-        <p>Yes, we offer several discounts and special offers:</p>
-        <div className="mt-3 space-y-4">
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">New Client Discount</h3>
-            <p className="mt-1">
-              First-time clients receive 10% off services under $200. This is our way of welcoming you to our service
-              and building a long-term relationship.
-            </p>
-          </div>
-
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Referral Program</h3>
-            <p className="mt-1">
-              Receive a $25 credit toward future services when you refer a friend who books an appointment. There's no
-              limit to how many referral credits you can earn.
-            </p>
-          </div>
-
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Volume Discounts</h3>
-            <p className="mt-1">For multiple notarizations in a single appointment or regular ongoing service:</p>
-            <ul className="list-disc list-inside mt-1 space-y-1 text-sm">
-              <li>5+ documents: 10% off total service fee</li>
-              <li>10+ documents: 15% off total service fee</li>
-              <li>Monthly service plans: Up to 20% off regular rates</li>
-            </ul>
-          </div>
-
-          <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Special Group Rates</h3>
-            <p className="mt-1">We offer special rates for:</p>
-            <ul className="list-disc list-inside mt-1 space-y-1 text-sm">
-              <li>Senior citizens (65+): 10% discount</li>
-              <li>Military personnel (active or veteran): 10% discount</li>
-              <li>Non-profit organizations: 15% discount with valid documentation</li>
-              <li>Healthcare workers: 10% discount with ID</li>
-            </ul>
-          </div>
-        </div>
-        <p className="mt-4">
-          Please mention any applicable discounts when booking your appointment. Proof of eligibility may be required
-          for certain discounts (military ID, senior ID, etc.).
-        </p>
-        <div className="mt-4 p-3 bg-[#A52A2A]/10 rounded-md">
-          <p className="text-sm text-[#A52A2A]">
-            <strong>Note:</strong> Discounts cannot be combined and do not apply to third-party fees, travel surcharges,
-            or weekend/holiday fees. Discounts apply to our service fees only.
-          </p>
-        </div>
-      </div>
-    ),
-    category: "pricing",
-    keywords: ["discount", "offer", "special", "savings", "reduced", "promotion", "coupon"],
-    relatedQuestions: ["pricing-structure", "payment-methods"],
+    keywords: ["additional fee", "surcharge", "weekend", "holiday", "after hours", "wait time", "extra cost"],
+    relatedQuestions: ["travel-fees", "pricing-structure"],
   },
 
   // Scheduling & Availability
@@ -1875,7 +1670,87 @@ const faqs: FAQ[] = [
     keywords: ["disclaimer", "legal", "attorney", "practice", "advice", "limitations", "restrictions"],
     relatedQuestions: ["legal-limitations", "notary-credentials"],
   },
-]
+  {
+    id: "notary-legal-advice",
+    question: "Can the notary give me legal advice or help prepare my documents?",
+    answer: (
+      <div>
+        <p>
+          No. Notaries public, including loan signing agents, are strictly prohibited from providing legal advice or
+          assisting in the preparation of legal documents unless they are also a licensed attorney.
+        </p>
+        <p className="mt-2">Our role is to:</p>
+        <ul className="list-disc list-inside mt-2 space-y-1">
+          <li>Verify the identity of the signer(s).</li>
+          <li>Ensure the signer(s) appear willing and aware.</li>
+          <li>Administer oaths or affirmations when required.</li>
+          <li>Complete the notarial certificate accurately.</li>
+          <li>Record the transaction in the notary journal.</li>
+        </ul>
+        <p className="mt-2">
+          We cannot explain the legal meaning or consequences of the documents you are signing, advise you on which
+          document form to use, or help you fill out sections of the document beyond the notary certificate itself.
+        </p>
+        <p className="mt-2">
+          If you have questions about the content of your document or need legal advice, please consult with a qualified
+          attorney or the person/entity who drafted the document before scheduling your notary appointment.
+        </p>
+      </div>
+    ),
+    category: "legal",
+    keywords: ["legal advice", "prepare documents", "explain", "attorney", "lawyer", "notary role", "prohibited"],
+    relatedQuestions: ["what-is-notary", "document-preparation"],
+  },
+  {
+    id: "notary-family",
+    question: "Can you notarize documents for family members?",
+    answer: (
+      <div>
+        <p>
+          While Texas law doesn't explicitly prohibit notarizing for relatives, it strongly advises against it if the
+          notary has a direct financial or beneficial interest in the transaction (beyond the standard notary fee).
+          Notarizing for family can create the appearance of a conflict of interest, potentially leading to the
+          notarization being challenged later.
+        </p>
+        <p className="mt-2">
+          To maintain impartiality and avoid any potential issues, it is generally best practice for notaries to avoid
+          notarizing documents for close family members (spouse, parents, children, siblings) especially if the document
+          involves significant financial transactions or property transfers where the notary might indirectly benefit.
+        </p>
+        <p className="mt-2">
+          We reserve the right to decline a notarization if we perceive a potential conflict of interest that could compromise
+          our impartiality as required by Texas law.
+        </p>
+      </div>
+    ),
+    category: "legal",
+    keywords: ["family", "relative", "spouse", "parent", "child", "conflict of interest", "impartiality", "prohibited"],
+    relatedQuestions: ["notary-legal-advice"],
+  },
+  {
+    id: "insured-bonded",
+    question: "Are your notaries insured and bonded?",
+    answer: (
+      <div>
+        <p>
+          Yes. All our notaries are commissioned by the State of Texas and maintain the required $10,000 Notary Bond.
+        </p>
+        <p className="mt-2">
+          Furthermore, for your protection and ours, Houston Mobile Notary Pros carries Errors & Omissions (E&O)
+          insurance coverage. {/* TODO: Update E&O level mentioned here. */}\n E&O insurance helps protect consumers against financial loss due
+          to unintentional notary errors or omissions during the notarization process.
+        </p>
+        <p className="mt-2">
+          Our commitment to professionalism includes ensuring we meet all state requirements and maintain appropriate
+          insurance coverage.
+        </p>
+      </div>
+    ),
+    category: "legal",
+    keywords: ["insured", "bonded", "insurance", "bond", "e&o", "errors and omissions", "protection", "$10000", "$10k"],
+    relatedQuestions: ["loan-signing"], // Add reference to LSA E&O if updated there
+  },
+] // End of faqs array
 
 export default function FAQClientPage() {
   const [searchQuery, setSearchQuery] = useState("")
