@@ -1,6 +1,10 @@
 import Script from "next/script"
 
-export function StructuredData() {
+interface StructuredDataProps {
+  nonce: string;
+}
+
+export function StructuredData({ nonce }: StructuredDataProps) {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -58,6 +62,7 @@ export function StructuredData() {
     <Script
       id="structured-data"
       type="application/ld+json"
+      nonce={nonce}
       dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
     />
   )

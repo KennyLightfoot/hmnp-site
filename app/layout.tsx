@@ -11,6 +11,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Toaster } from "@/components/ui/toaster"
 import { Analytics } from "@vercel/analytics/react"
 import { log } from "console"
+import { headers } from 'next/headers'
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -85,11 +86,13 @@ export function reportWebVitals(metric: Metric) {
   // Send to any other analytics endpoint here
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const nonce = (await headers()).get('x-nonce') || "";
+
   return (
     <html lang="en" className="light">
       <body className={`${inter.className} bg-white`}>
@@ -99,7 +102,7 @@ export default function RootLayout({
           <Header />
           <main>{children}</main>
           <Footer />
-          <StructuredData />
+          <StructuredData nonce={nonce} />
           {/* <SpeedInsights /> */}
           <Toaster />
           {/* <Analytics /> */}
