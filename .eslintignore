@@ -1,0 +1,11 @@
+# Lint only portal code for now
+/app/**
+!/app/portal/**
+!/app/api/portal/**
+
+# Ignore legacy and misc
+components/**
+lib/**
+
+# Build output
+.next/
