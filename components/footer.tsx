@@ -53,6 +53,9 @@ export default function Footer() {
           </div>
         </div>
       </div>
+      {/*NOTARY PUBLIC STAMPS LOGO STARTS HERE*/}
+      <script type="text/javascript" src="https://www.notarypublicstamps.com/js/logo.small.white.js"></script>
+      {/*NOTARY PUBLIC STAMPS LOGO ENDS HERE*/}
     </footer>
   )
 }

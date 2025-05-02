@@ -1,5 +1,17 @@
 {
-  "node": {},
+  "node": {
+    "602c39f27f37c2f3b2939af5fa4c6cdf39278ef71a": {
+      "workers": {
+        "app/portal/[id]/page": {
+          "moduleId": "(rsc)/./node_modules/.pnpm/next@15.2.4_@babel+core@7.26.10_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Ffleece-johnson%2FHMNP-Site%2Fhmnp-site%2Fapp%2Fportal%2F%5Bid%5D%2Fpage.tsx%22%2C%5B%7B%22id%22%3A%22602c39f27f37c2f3b2939af5fa4c6cdf39278ef71a%22%2C%22exportedName%22%3A%22%24%24RSC_SERVER_ACTION_0%22%7D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/portal/[id]/page": "rsc"
+      }
+    }
+  },
   "edge": {},
   "encryptionKey": "iu1Rwgz2cUcHyCf7ctG0bULxX7a/qaXsS6zj9xQXp4g="
 }

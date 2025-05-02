@@ -1,4 +1,4 @@
-// File: C:\Users\kenny\OneDrive\Desktop\HMNP\hmnp-site\app\layout.tsx
+// File: /home/fleece-johnson/HMNP-Site/hmnp-site/app/layout.tsx
 import * as entry from '../../../app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

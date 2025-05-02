@@ -1,49 +1,34 @@
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
+# Node modules and build output
+node_modules
+.next
+out
+dist
+build
 
-# testing
-/coverage
+# Environment variables
+.env*
+!.env.example
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
+# Logs
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
+pnpm-debug.log*
+logs
+*.log
 
-# local env files
-.env*.local
-.env
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# OS generated files
+# macOS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db 
+
+# Prisma local files
+prisma/dev.db
+*.sqlite
+
+# Test coverage
+coverage
+
+# Optional IDE settings
+.vscode
+.idea
+
+# Misc
+*~

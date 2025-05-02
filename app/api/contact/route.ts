@@ -73,7 +73,10 @@ async function triggerWorkflow(contactId: string) {
     return null
   }
 
-  const response = await fetch(`${GHL_API_BASE_URL}/workflows/${GHL_CONTACT_FORM_WORKFLOW_ID}/trigger`, {
+  // Construct the correct URL for adding a contact to a workflow
+  const url = `${GHL_API_BASE_URL}/contacts/${contactId}/workflow/${GHL_CONTACT_FORM_WORKFLOW_ID}`;
+
+  const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -152,10 +155,38 @@ export async function POST(request: Request) {
       tags: ["Website Lead"] // Add relevant tags
     }
 
-    const contactResponse = await createContact(contactData);
-    contactId = contactResponse.id; // Store contactId if created
+    // Attempt to create contact in GHL, handle duplicate error
+    try {
+      const contactResponse = await createContact(contactData);
+      contactId = contactResponse.id; // Store contactId if created successfully
+      console.log(`Successfully created new GHL contact: ${contactId}`);
+    } catch (ghlError) {
+      if (ghlError instanceof Error && ghlError.message.includes("Failed to create contact in GHL:")) {
+        try {
+          // Extract the JSON part of the error message
+          const jsonString = ghlError.message.replace("Failed to create contact in GHL: ", "");
+          const errorDetails = JSON.parse(jsonString);
 
-    // Send Resend Email Notification (do this early in case GHL fails)
+          // Check if it's the duplicate contact error
+          if (errorDetails.statusCode === 400 && errorDetails.message?.includes("allow duplicated contacts") && errorDetails.meta?.contactId) {
+            contactId = errorDetails.meta.contactId;
+            console.warn(`Duplicate contact found in GHL. Using existing contact ID: ${contactId}`);
+          } else {
+            // It's a different GHL error, re-throw it to be caught by the outer catch block
+            throw ghlError;
+          }
+        } catch (parseError) {
+          // If parsing the error message fails, re-throw the original GHL error
+          console.error("Failed to parse GHL error message:", parseError);
+          throw ghlError;
+        }
+      } else {
+        // Not a GHL creation error we can handle, re-throw it
+        throw ghlError;
+      }
+    }
+
+    // Send Resend Email Notification (do this early, regardless of GHL status for now)
     const emailResult = await sendEmailNotification(data);
     // Optional: Handle email failure more gracefully if needed
     // if (emailResult.error) { /* ... maybe log but continue */ }

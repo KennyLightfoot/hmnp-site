@@ -1,5 +1,8 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/page": "app/page.js",
-  "/studio/[[...index]]/page": "app/studio/[[...index]]/page.js"
+  "/api/portal/assignments/route": "app/api/portal/assignments/route.js",
+  "/api/portal/assignments/[id]/route": "app/api/portal/assignments/[id]/route.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/login/page": "app/login/page.js",
+  "/portal/[id]/page": "app/portal/[id]/page.js",
+  "/portal/page": "app/portal/page.js"
 }

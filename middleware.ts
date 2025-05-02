@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { getToken } from "next-auth/jwt"
 
-// https://nextjs.org/docs/app/building-your-application/configuring/content-security-policy
-export function middleware(request: NextRequest) {
+// https://nextjs.org/docs/app/building-your-application/configuring-content-security-policy
+export async function middleware(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
   const isDevelopment = process.env.NODE_ENV === 'development';
 
@@ -61,6 +62,16 @@ export function middleware(request: NextRequest) {
     },
   })
 
+  // RBAC redirect logic (after headers set)
+  const { pathname } = request.nextUrl
+  const protectedRoutes = ["/portal"]
+  if (protectedRoutes.some((p) => pathname.startsWith(p))) {
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+    if (!token) {
+      return NextResponse.redirect(new URL("/login", request.url))
+    }
+  }
+
   // Also set CSP header on the response (needed for client components)
   response.headers.set(
     'Content-Security-Policy',
@@ -83,4 +94,4 @@ export const config = {
     // - favicon.ico (favicon file)
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
-} 
+}
