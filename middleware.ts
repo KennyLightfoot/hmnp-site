@@ -10,22 +10,17 @@ export async function middleware(request: NextRequest) {
   // Base CSP directives
   let cspDirectives = {
     'default-src': "'self'",
-    // TEMPORARILY ADDING 'unsafe-inline' to diagnose visibility issue.
-    // Relying on nonce + allowing Vercel scripts. Inline scripts without nonce still an issue.
-    'script-src': `'self' 'unsafe-inline' 'nonce-${nonce}' https://va.vercel-scripts.com https://vercel.live`,
-    // Added https://vercel.live based on Vercel docs
-    'style-src': `'self' 'unsafe-inline' https://vercel.live`,
-    // Added https://vercel.live and https://vercel.com based on Vercel docs
+    // Updated script-src: removed permanent 'unsafe-inline', added 'strict-dynamic', still include nonce & Vercel domains
+    'script-src': `'self' 'nonce-${nonce}' 'strict-dynamic' https://va.vercel-scripts.com https://vercel.live`,
+    // Updated style-src: removed permanent 'unsafe-inline', rely on nonce for inline styles + allow vercel.live
+    'style-src': `'self' 'nonce-${nonce}' https://vercel.live`,
     'img-src': "'self' blob: data: https://vercel.live https://vercel.com",
-    // Added https://vercel.live and https://assets.vercel.com based on Vercel docs
     'font-src': "'self' https://vercel.live https://assets.vercel.com",
-    // Added wss://ws-us3.pusher.com based on Vercel docs
     'connect-src': "'self' https://vercel.live wss://vercel.live https://vitals.vercel-insights.com wss://ws-us3.pusher.com",
     'object-src': "'none'",
     'base-uri': "'self'",
     'form-action': "'self'",
     'frame-ancestors': "'none'",
-    // Matches Vercel docs
     'frame-src': "https://vercel.live",
     'block-all-mixed-content': "",
     'upgrade-insecure-requests': "",
@@ -34,9 +29,9 @@ export async function middleware(request: NextRequest) {
   // Relax CSP in development for libraries that use inline styles/eval
   if (isDevelopment) {
     console.log("Middleware: Applying relaxed CSP for development");
-    // Restore development settings
-    cspDirectives['script-src'] += ` 'unsafe-eval'`; 
-    cspDirectives['style-src'] += ` 'unsafe-inline'`; // Keep allowing inline styles in dev
+    // Allow eval and inline styles during development for better DX
+    cspDirectives['script-src'] += ` 'unsafe-inline' 'unsafe-eval'`;
+    cspDirectives['style-src'] += ` 'unsafe-inline'`;
   }
 
   // Construct the header string

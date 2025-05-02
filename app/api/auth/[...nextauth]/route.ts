@@ -8,16 +8,28 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 export const authOptions = {
   adapter: PrismaAdapter(prisma),
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     EmailProvider({
       sendVerificationRequest: async ({ identifier, url }) => {
         const html = `<p>Click <a href="${url}">here</a> to sign in to HMNP Portal.</p>`
-        await resend.emails.send({
-          to: identifier,
-          from: process.env.FROM_EMAIL || "notifications@houstonmobilenotarypros.com",
-          subject: "Your HMNP login link",
-          html,
-        })
+        try {
+          if (!process.env.RESEND_API_KEY) {
+            throw new Error("RESEND_API_KEY is not set")
+          }
+          if (!process.env.FROM_EMAIL) {
+            console.warn("FROM_EMAIL not provided – using default fallback")
+          }
+          await resend.emails.send({
+            to: identifier,
+            from: process.env.FROM_EMAIL || "notifications@houstonmobilenotarypros.com",
+            subject: "Your HMNP login link",
+            html,
+          })
+        } catch (err) {
+          console.error("[Auth] Failed to send verification email", err)
+          throw err
+        }
       },
     }),
   ],
