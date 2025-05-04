@@ -32,3 +32,6 @@ coverage
 
 # Misc
 *~
+
+# Next.js build output
+.next

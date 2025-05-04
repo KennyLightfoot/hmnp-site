@@ -1,5 +1,1 @@
-{
-  "node": {},
-  "edge": {},
-  "encryptionKey": "iu1Rwgz2cUcHyCf7ctG0bULxX7a/qaXsS6zj9xQXp4g="
-}
+{"node":{"4001a67349176b8e9045adc8a7c3e9aed29a27f995":{"workers":{"app/portal/[assignmentId]/page":{"moduleId":"35227","async":false}},"layer":{"app/portal/[assignmentId]/page":"action-browser"}},"701415faa3e2857f82826fa18efa451c278a343ecd":{"workers":{"app/portal/[assignmentId]/page":{"moduleId":"35227","async":false}},"layer":{"app/portal/[assignmentId]/page":"action-browser"}},"78e5adc40d47c921cc51658a351a4855a9aded2b8b":{"workers":{"app/portal/[assignmentId]/page":{"moduleId":"35227","async":false}},"layer":{"app/portal/[assignmentId]/page":"action-browser"}},"707d2c07b476a5ff41857bf0ea630c6ba60baad38c":{"workers":{"app/portal/[assignmentId]/page":{"moduleId":"35227","async":false}},"layer":{"app/portal/[assignmentId]/page":"action-browser"}}},"edge":{},"encryptionKey":"iu1Rwgz2cUcHyCf7ctG0bULxX7a/qaXsS6zj9xQXp4g="}
