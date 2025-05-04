@@ -62,6 +62,7 @@
     "next-auth": "^4.24.11",
     "next-sanity": "9",
     "next-themes": "latest",
+    "nodemailer": "^7.0.0",
     "path": "latest",
     "prisma": "^5.22.0",
     "react": "^19",
