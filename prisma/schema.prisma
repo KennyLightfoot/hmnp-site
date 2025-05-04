@@ -47,6 +47,7 @@ model User {
   uploadedDocs   AssignmentDocument[] @relation("UploadedDocs")
   statusChanges  StatusHistory[]   @relation("StatusHistoryChangedBy")
   downloads      DownloadLog[]
+  comments       Comment[]         @relation("UserComments")
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
   onboardedAt    DateTime?
@@ -110,6 +111,7 @@ model Assignment {
   documents          AssignmentDocument[]
   history            StatusHistory[]
   allowPartnerComments Boolean       @default(false)
+  comments           Comment[]
 }
 
 model AssignmentDocument {
@@ -133,6 +135,18 @@ model StatusHistory {
   changedAt    DateTime          @default(now())
   changedById  String?
   changedBy    User?             @relation("StatusHistoryChangedBy", fields: [changedById], references: [id])
+}
+
+model Comment {
+  id           String   @id @default(cuid())
+  text         String   @db.Text
+  createdAt    DateTime @default(now())
+  assignmentId String
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  authorId     String
+  author       User     @relation("UserComments", fields: [authorId], references: [id])
+
+  @@index([assignmentId])
 }
 
 model BackgroundError {

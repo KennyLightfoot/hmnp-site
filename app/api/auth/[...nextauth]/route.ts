@@ -1,4 +1,4 @@
-import NextAuth from "next-auth"
+import NextAuth, { AuthOptions } from "next-auth"
 import EmailProvider from "next-auth/providers/email"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { prisma } from "@/lib/db"
@@ -6,7 +6,7 @@ import { Resend } from "resend"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-export const authOptions = {
+export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
@@ -35,7 +35,6 @@ export const authOptions = {
   ],
   // Use JWT strategy so middleware can read token without DB call
   session: {
-    // @ts-ignore
     strategy: "jwt",
   },
   callbacks: {

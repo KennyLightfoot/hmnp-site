@@ -1,0 +1,96 @@
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { prisma } from "@/lib/db";
+import { redirect } from 'next/navigation';
+import { User, Role } from "@prisma/client";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+// We will create this component later for role changes
+// import { UserRoleSelect } from "@/components/admin/UserRoleSelect"; 
+import { UserRoleSelect } from "@/components/admin/UserRoleSelect";
+import { InviteUserDialog } from "@/components/admin/InviteUserDialog";
+
+// Helper function to format dates (can move to utils)
+const formatDateTime = (date: Date | string | null | undefined) => {
+  if (!date) return "-";
+  return new Date(date).toLocaleString();
+};
+
+export default async function AdminUsersPage() {
+  const session = await getServerSession(authOptions);
+
+  // 1. Authorization Check: Only Admins allowed
+  if (!session?.user || (session.user as any).role !== Role.ADMIN) {
+    // Redirect non-admins or unauthenticated users
+    redirect('/portal'); // Or '/unauthorized', or '/login'
+  }
+
+  // 2. Fetch Users
+  let users: User[] = [];
+  try {
+    users = await prisma.user.findMany({
+      orderBy: {
+        createdAt: 'desc', // Show newest users first
+      },
+    });
+  } catch (error) {
+    console.error("Failed to fetch users:", error);
+    return <p className="text-red-500">Error loading users. Please try again later.</p>;
+  }
+
+  // 3. Display Users
+  return (
+    <div className="container mx-auto py-6">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">User Management</h1>
+        <InviteUserDialog />
+      </div>
+
+      <div className="border rounded-lg">
+        <Table>
+          <TableCaption>List of all portal users.</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Joined</TableHead>
+               {/* <TableHead>Actions</TableHead> */}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {users.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center">
+                  No users found.
+                </TableCell>
+              </TableRow>
+            )}
+            {users.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell className="font-medium">{user.name || "-"}</TableCell>
+                <TableCell>{user.email || "-"}</TableCell>
+                <TableCell>
+                  {/* Placeholder for role selector - display badge for now */}
+                  <UserRoleSelect userId={user.id} currentRole={user.role} />
+                </TableCell>
+                <TableCell>{formatDateTime(user.createdAt)}</TableCell>
+                {/* <TableCell>
+                  { /* Action buttons e.g., Edit, Delete? * /}
+                </TableCell> */}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+} 
