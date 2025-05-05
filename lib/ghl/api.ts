@@ -12,12 +12,14 @@ export async function findContactByEmail(email: string): Promise<any | null> {
     console.error("GHL API credentials missing in environment variables.");
     throw new Error("Server configuration error.");
   }
+  // Use the main /contacts endpoint with an email filter
   const query = new URLSearchParams({
-    locationId: GHL_LOCATION_ID,
-    query: email,
+    email: email,
+    // locationId: GHL_LOCATION_ID, // Temporarily removed, token might scope it
   }).toString();
 
-  const response = await fetch(`${GHL_API_BASE_URL}/contacts/lookup?${query}`, {
+  // Change endpoint from /contacts/lookup to /contacts
+  const response = await fetch(`${GHL_API_BASE_URL}/contacts?${query}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${GHL_API_KEY}`,
@@ -38,7 +40,7 @@ export async function findContactByEmail(email: string): Promise<any | null> {
   }
 
   const data = await response.json();
-  // The lookup API returns an array, usually with one element if found
+  // The /contacts endpoint likely returns an array under 'contacts'
   if (data.contacts && data.contacts.length > 0) {
     return data.contacts[0]; // Return the first matching contact
   }
