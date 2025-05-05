@@ -7,16 +7,22 @@ const GHL_API_VERSION = process.env.GHL_API_VERSION || "V2";
 const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
 
 // Helper function to search for a contact by email in GHL
-export async function findContactByEmail(email: string): Promise<any | null> {
-  if (!GHL_LOCATION_ID || !GHL_API_BASE_URL || !GHL_API_KEY) {
+export async function findContactByEmail(email: string, locationId?: string): Promise<any | null> {
+  if (!GHL_API_BASE_URL || !GHL_API_KEY) {
     console.error("GHL API credentials missing in environment variables.");
     throw new Error("Server configuration error.");
   }
-  // Use the main /contacts endpoint with an email filter
-  const query = new URLSearchParams({
-    email: email,
-    // locationId: GHL_LOCATION_ID, // Temporarily removed, token might scope it
-  }).toString();
+  
+  // Use the provided locationId or fall back to the environment variable
+  const locationIdToUse = locationId || GHL_LOCATION_ID;
+  
+  // Add locationId to query params if provided
+  const queryParams: Record<string, string> = { email };
+  if (locationIdToUse) {
+    queryParams.locationId = locationIdToUse;
+  }
+  
+  const query = new URLSearchParams(queryParams).toString();
 
   // Change endpoint from /contacts/lookup to /contacts
   const response = await fetch(`${GHL_API_BASE_URL}/contacts?${query}`, {
@@ -49,11 +55,19 @@ export async function findContactByEmail(email: string): Promise<any | null> {
 }
 
 // Helper function to create a contact in GHL
-export async function createContact(contactData: any): Promise<any> {
-  if (!GHL_LOCATION_ID || !GHL_API_BASE_URL || !GHL_API_KEY) {
+export async function createContact(contactData: any, locationId?: string): Promise<any> {
+  if (!GHL_API_BASE_URL || !GHL_API_KEY) {
     console.error("GHL API credentials missing in environment variables.");
     throw new Error("Server configuration error.");
   }
+  
+  // Use the provided locationId or fall back to the environment variable
+  const locationIdToUse = locationId || GHL_LOCATION_ID;
+  
+  if (!locationIdToUse) {
+    throw new Error("No location ID provided or available in environment.");
+  }
+  
   const response = await fetch(`${GHL_API_BASE_URL}/contacts`, {
     method: "POST",
     headers: {
@@ -62,7 +76,7 @@ export async function createContact(contactData: any): Promise<any> {
       Version: GHL_API_VERSION,
     },
     body: JSON.stringify({
-      locationId: GHL_LOCATION_ID,
+      locationId: locationIdToUse,
       ...contactData,
     }),
   });
@@ -90,11 +104,19 @@ export async function createContact(contactData: any): Promise<any> {
 }
 
 // Helper function to create an opportunity in GHL
-export async function createOpportunity(contactId: string, opportunityData: any): Promise<any> {
-  if (!GHL_LOCATION_ID || !GHL_API_BASE_URL || !GHL_API_KEY) {
+export async function createOpportunity(contactId: string, opportunityData: any, locationId?: string): Promise<any> {
+  if (!GHL_API_BASE_URL || !GHL_API_KEY) {
     console.error("GHL API credentials missing in environment variables.");
     throw new Error("Server configuration error.");
   }
+  
+  // Use the provided locationId or fall back to the environment variable
+  const locationIdToUse = locationId || GHL_LOCATION_ID;
+  
+  if (!locationIdToUse) {
+    throw new Error("No location ID provided or available in environment.");
+  }
+  
   const response = await fetch(`${GHL_API_BASE_URL}/opportunities`, {
     method: "POST",
     headers: {
@@ -103,7 +125,7 @@ export async function createOpportunity(contactId: string, opportunityData: any)
       Version: GHL_API_VERSION,
     },
     body: JSON.stringify({
-      locationId: GHL_LOCATION_ID,
+      locationId: locationIdToUse,
       contactId: contactId,
       ...opportunityData,
     }),
@@ -173,13 +195,31 @@ export async function updateOpportunityCustomFields(opportunityId: string, custo
 }
 
 // Helper function to create an appointment in GHL
-export async function createAppointment(appointmentData: any): Promise<any> {
+export async function createAppointment(appointmentData: any, locationId?: string): Promise<any> {
   if (!GHL_API_BASE_URL || !GHL_API_KEY) {
     console.error("GHL API credentials missing in environment variables.");
     throw new Error("Server configuration error.");
   }
+  
+  // Use the provided locationId or fall back to the environment variable
+  const locationIdToUse = locationId || GHL_LOCATION_ID;
+  
+  if (locationIdToUse && !appointmentData.locationId) {
+    appointmentData.locationId = locationIdToUse;
+  }
+  
   try {
     const url = `${GHL_API_BASE_URL}/calendars/events/appointments`;
+    
+    // Log the appointment data for troubleshooting
+    console.log("Creating appointment with data:", JSON.stringify({
+      calendarId: appointmentData.calendarId,
+      contactId: appointmentData.contactId,
+      locationId: appointmentData.locationId, 
+      title: appointmentData.title,
+      startTime: appointmentData.startTime,
+      endTime: appointmentData.endTime
+    }));
 
     const response = await fetch(url, {
       method: "POST",

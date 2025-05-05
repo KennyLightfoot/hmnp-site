@@ -10,13 +10,12 @@ export async function middleware(request: NextRequest) {
   // Base CSP directives
   let cspDirectives = {
     'default-src': "'self'",
-    // Updated script-src: removed permanent 'unsafe-inline', added 'strict-dynamic', still include nonce & Vercel domains
-    'script-src': `'self' 'nonce-${nonce}' 'strict-dynamic' https://va.vercel-scripts.com https://vercel.live`,
-    // Updated style-src: removed permanent 'unsafe-inline', rely on nonce for inline styles + allow vercel.live
-    'style-src': `'self' 'nonce-${nonce}' https://vercel.live`,
+    // Allow necessary inline scripts and styles for the booking functionality
+    'script-src': `'self' 'nonce-${nonce}' 'unsafe-inline' 'strict-dynamic' https://va.vercel-scripts.com https://vercel.live`,
+    'style-src': `'self' 'nonce-${nonce}' 'unsafe-inline' https://vercel.live`,
     'img-src': "'self' blob: data: https://vercel.live https://vercel.com",
     'font-src': "'self' https://vercel.live https://assets.vercel.com",
-    'connect-src': "'self' https://vercel.live wss://vercel.live https://vitals.vercel-insights.com wss://ws-us3.pusher.com",
+    'connect-src': "'self' https://vercel.live wss://vercel.live https://vitals.vercel-insights.com wss://ws-us3.pusher.com https://houstonmobilenotarypros.com",
     'object-src': "'none'",
     'base-uri': "'self'",
     'form-action': "'self'",

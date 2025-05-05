@@ -41,12 +41,18 @@ export async function POST(request: Request) {
       specialInstructions,
       smsNotifications,
       emailUpdates,
+      locationId, // Allow explicit locationId to be passed
     } = data
+    
+    // Use the provided locationId or fall back to the environment variable
+    const locationIdToUse = locationId || process.env.GHL_LOCATION_ID;
+    
+    console.log("Booking API: Using locationId:", locationIdToUse);
 
     let contactId: string
 
     // 1. Check if contact already exists by email using imported function
-    const existingContact = await findContactByEmail(email)
+    const existingContact = await findContactByEmail(email, locationIdToUse)
 
     if (existingContact) {
       contactId = existingContact.id
@@ -64,7 +70,7 @@ export async function POST(request: Request) {
         postalCode,
         source: "Website Booking",
       }
-      const contactResponse = await createContact(contactData)
+      const contactResponse = await createContact(contactData, locationIdToUse)
       contactId = contactResponse.id
     }
 
@@ -76,7 +82,7 @@ export async function POST(request: Request) {
       monetaryValue: getServiceValue(serviceType, numberOfSigners),
     }
 
-    const opportunityResponse = await createOpportunity(contactId, opportunityData)
+    const opportunityResponse = await createOpportunity(contactId, opportunityData, locationIdToUse)
     const opportunityId = opportunityResponse.id
 
     // Update contact custom fields using imported function

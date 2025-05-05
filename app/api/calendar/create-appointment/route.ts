@@ -37,6 +37,7 @@ export async function POST(request: Request) {
       smsNotifications,
       emailUpdates,
       serviceType, // Keep serviceType for title/notes logic
+      locationId, // Allow explicit locationId to be passed
     } = data
 
     // Validate required parameters, including calendarId
@@ -58,10 +59,18 @@ export async function POST(request: Request) {
       )
     }
 
+    // Extract the locationId from environment variables based on calendarId if not provided
+    // This assumes calendarId might match one of our defined calendar IDs
+    let locationIdToUse = locationId || process.env.GHL_LOCATION_ID;
+    
+    // Get calendar mappings from environment for troubleshooting
+    console.log("Calendar API: Using calendarId:", calendarId);
+    console.log("Calendar API: Using locationId:", locationIdToUse);
+
     let contactId: string
 
     // 1. Check if contact already exists by email using imported function
-    const existingContact = await findContactByEmail(email)
+    const existingContact = await findContactByEmail(email, locationIdToUse)
 
     if (existingContact) {
       contactId = existingContact.id
@@ -79,7 +88,7 @@ export async function POST(request: Request) {
         postalCode,
         source: "Website Calendar Booking", // Specific source
       }
-      const contactResponse = await createContact(contactData)
+      const contactResponse = await createContact(contactData, locationIdToUse)
       contactId = contactResponse.id
     }
 
@@ -117,11 +126,11 @@ Communication Preferences:
   SMS Notifications: ${smsNotifications ? "Yes" : "No"}
   Email Updates: ${emailUpdates ? "Yes" : "No"}
       `.trim(), // Use trim() to remove leading/trailing whitespace
-      // locationId should be automatically handled by GHL based on API key/calendar
-      // locationId: GHL_LOCATION_ID, // Removed: Not typically needed here
+      // Include locationId if we have it
+      ...(locationIdToUse ? { locationId: locationIdToUse } : {}),
     }
 
-    const appointmentResponse = await createAppointment(appointmentData)
+    const appointmentResponse = await createAppointment(appointmentData, locationIdToUse)
 
     // Return success response
     return NextResponse.json({
