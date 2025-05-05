@@ -17,15 +17,15 @@ export async function findContactByEmail(email: string, locationId?: string): Pr
   const locationIdToUse = locationId || GHL_LOCATION_ID;
   
   // Add locationId to query params if provided
-  const queryParams: Record<string, string> = { email };
+  const queryParams: Record<string, string> = { query: email };
   if (locationIdToUse) {
     queryParams.locationId = locationIdToUse;
   }
   
-  const query = new URLSearchParams(queryParams).toString();
+  const queryString = new URLSearchParams(queryParams).toString();
 
   // Change endpoint from /contacts/lookup to /contacts
-  const response = await fetch(`${GHL_API_BASE_URL}/contacts?${query}`, {
+  const response = await fetch(`${GHL_API_BASE_URL}/contacts?${queryString}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${GHL_API_KEY}`,
