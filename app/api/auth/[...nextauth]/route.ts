@@ -1,8 +1,10 @@
 import NextAuth, { AuthOptions } from "next-auth"
 import EmailProvider from "next-auth/providers/email"
+import CredentialsProvider from "next-auth/providers/credentials"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { prisma } from "@/lib/db"
 import { Resend } from "resend"
+import bcrypt from "bcrypt"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -32,28 +34,56 @@ export const authOptions: AuthOptions = {
         }
       },
     }),
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email", placeholder: "you@example.com" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials.password) {
+          throw new Error("Email and password required")
+        }
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email }
+        })
+
+        if (!user || !user.password) {
+          throw new Error("Invalid credentials")
+        }
+
+        const isValid = await bcrypt.compare(credentials.password, user.password)
+
+        if (!isValid) {
+          throw new Error("Invalid credentials")
+        }
+
+        return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            role: user.role,
+            emailVerified: user.emailVerified
+        };
+      }
+    })
   ],
-  // Use JWT strategy so middleware can read token without DB call
   session: {
     strategy: "jwt",
   },
   callbacks: {
     async jwt({ token, user }) {
-      // Initial sign in stores fields on token
       if (user) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore token is a generic Record
         token.role = (user as any).role
-        // @ts-ignore
         token.id = user.id
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
-        // @ts-ignore augment session
         session.user.role = token.role
-        // @ts-ignore
         session.user.id = token.id
       }
       return session

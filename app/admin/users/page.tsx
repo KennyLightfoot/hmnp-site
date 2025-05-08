@@ -13,10 +13,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 // We will create this component later for role changes
 // import { UserRoleSelect } from "@/components/admin/UserRoleSelect"; 
 import { UserRoleSelect } from "@/components/admin/UserRoleSelect";
 import { InviteUserDialog } from "@/components/admin/InviteUserDialog";
+import { SetPasswordDialog } from "@/components/admin/SetPasswordDialog";
 
 // Helper function to format dates (can move to utils)
 const formatDateTime = (date: Date | string | null | undefined) => {
@@ -63,7 +65,7 @@ export default async function AdminUsersPage() {
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Joined</TableHead>
-               {/* <TableHead>Actions</TableHead> */}
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -79,13 +81,16 @@ export default async function AdminUsersPage() {
                 <TableCell className="font-medium">{user.name || "-"}</TableCell>
                 <TableCell>{user.email || "-"}</TableCell>
                 <TableCell>
-                  {/* Placeholder for role selector - display badge for now */}
                   <UserRoleSelect userId={user.id} currentRole={user.role} />
                 </TableCell>
                 <TableCell>{formatDateTime(user.createdAt)}</TableCell>
-                {/* <TableCell>
-                  { /* Action buttons e.g., Edit, Delete? * /}
-                </TableCell> */}
+                <TableCell className="text-right">
+                  <SetPasswordDialog userId={user.id} userEmail={user.email}>
+                    <Button variant="outline" size="sm">
+                      Set Password
+                    </Button>
+                  </SetPasswordDialog>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

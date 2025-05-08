@@ -52,8 +52,12 @@ type AssignmentDetailPageProps = {
 };
 
 export default async function AssignmentDetailPage({ params }: AssignmentDetailPageProps) {
+  // console.log('[AssignmentDetailPage] Received params:', JSON.stringify(params)); // Commented out due to Next.js warning
   const session = await getServerSession(authOptions);
-  const assignmentId = params.assignmentId;
+  // Ensure params is resolved before accessing its properties
+  const resolvedParams = await params;
+  const assignmentId = resolvedParams.assignmentId;
+  console.log('[AssignmentDetailPage] Extracted assignmentId:', assignmentId); // Log the extracted assignmentId
 
   if (!session?.user) {
     redirect('/login');
@@ -107,6 +111,7 @@ export default async function AssignmentDetailPage({ params }: AssignmentDetailP
   }
 
   if (!assignment) {
+    console.log(`[AssignmentDetailPage] Assignment not found for ID: ${assignmentId}. Calling notFound().`); // Log before calling notFound()
     notFound(); // Triggers the not-found page
   }
 

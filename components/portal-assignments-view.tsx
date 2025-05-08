@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Assignment, AssignmentStatus } from "@prisma/client"
+import { Assignment } from "@prisma/client"
 import AssignmentsFilterControls from "@/components/assignments-filter-controls"
 import { getStatusBadgeStyle, formatDateShort } from "@/lib/assignmentUtils"
 import { PaginationControls } from "@/components/ui/pagination-controls"
@@ -29,8 +29,8 @@ interface PortalAssignmentsViewProps {
   totalAssignments: number;
   currentPage: number;
   pageSize: number;
-  initialSearch: string;
-  initialStatus: string;
+  currentSearch: string;
+  currentStatus: string;
 }
 
 export default function PortalAssignmentsView({
@@ -38,23 +38,22 @@ export default function PortalAssignmentsView({
   totalAssignments,
   currentPage,
   pageSize,
-  initialSearch,
-  initialStatus,
+  currentSearch,
+  currentStatus,
 }: PortalAssignmentsViewProps) {
-
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">Assignments</h2>
 
       {/* Filter Controls Client Component */}
       {/* It receives initial values but manages its own state/updates URL */}
-      <AssignmentsFilterControls initialSearch={initialSearch} initialStatus={initialStatus} />
+      <AssignmentsFilterControls initialSearch={currentSearch} initialStatus={currentStatus} />
 
       <div className="border rounded-lg mt-4">
         <Table>
           <TableCaption>
-            A list of assignments {initialStatus ? `with status ${initialStatus}` : ''} {initialSearch ? `matching "${initialSearch}"` : ''}.
-            {assignments.length === 0 && !initialStatus && !initialSearch ? "No assignments found." : ""}
+            A list of assignments {currentStatus ? `with status ${currentStatus}` : ''} {currentSearch ? `matching "${currentSearch}"` : ''}.
+            {assignments.length === 0 && !currentStatus && !currentSearch ? "No assignments found." : ""}
           </TableCaption>
           <TableHeader>
             <TableRow>
@@ -70,7 +69,7 @@ export default function PortalAssignmentsView({
             {assignments.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center">
-                  {initialSearch || initialStatus ? "No assignments match the current filters." : "No assignments found."}
+                  {currentSearch || currentStatus ? "No assignments match the current filters." : "No assignments found."}
                 </TableCell>
               </TableRow>
             )}

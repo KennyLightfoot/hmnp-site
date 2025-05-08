@@ -99,7 +99,9 @@ export async function getPresignedDownloadUrl(documentId: string): Promise<{ err
 export async function getPresignedUploadUrl(
   assignmentId: string, // Ensure upload is associated with an assignment
   filename: string,
-  contentType: string
+  contentType: string,
+  // Add optional dependencies parameter
+  dependencies: { uuidGenerator: () => string } = { uuidGenerator: randomUUID }
 ): Promise<{ error?: string; url?: string; fields?: Record<string, string>; key?: string }> {
   const session = await getServerSession(authOptions);
 
@@ -124,7 +126,8 @@ export async function getPresignedUploadUrl(
   // TODO: Add check to ensure assignmentId exists and is valid?
 
   try {
-    const key = `assignments/${assignmentId}/${randomUUID()}-${filename}`;
+    // Use the injected dependency
+    const key = `assignments/${assignmentId}/${dependencies.uuidGenerator()}-${filename}`;
     const MAX_FILE_SIZE_MB = 10;
     const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
@@ -132,14 +135,14 @@ export async function getPresignedUploadUrl(
       Bucket: S3_BUCKET_NAME,
       Key: key,
       Fields: {
-        // Include content-type in the policy fields
-        "Content-Type": contentType,
+        // "Content-Type": contentType, // Try removing this from Fields
       },
       Conditions: [
         ["content-length-range", 0, MAX_FILE_SIZE_BYTES], // Max file size
         // Optional: Restrict content type more strictly if needed
         // ["starts-with", "$Content-Type", "image/"], // Example: Only images
-        ["starts-with", "$Content-Type", contentType], // Ensure uploaded type matches provided type
+        // ["starts-with", "$Content-Type", contentType], // Ensure uploaded type matches provided type - REMOVED FOR MORE FLEXIBILITY
+        ["starts-with", "$Content-Type", ""] // Explicitly allow any content type
       ],
       Expires: 300, // URL expires in 5 minutes
     });

@@ -3,7 +3,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/db";
-import { Role, AssignmentStatus } from "@prisma/client";
+import { Role, AssignmentStatus, Assignment } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -76,5 +76,82 @@ export async function updateAssignmentStatus(
         errorMessage = error.message;
     }
     return { error: errorMessage };
+  }
+}
+
+// Re-define or import AssignmentData if it's not globally available
+// For now, defining it here based on its previous definition.
+export type AssignmentData = Pick<
+  Assignment,
+  'id' | 'title' | 'status' | 'closingDate' | 'borrowerName' | 'propertyAddress' | 'updatedAt'
+>;
+
+interface FetchAssignmentsParams {
+  page: number;
+  pageSize: number;
+  search?: string; // Optional search term
+  status?: string; // Optional status filter
+  userRole: string;
+  userId: string;
+}
+
+export async function fetchAssignmentsAction(params: FetchAssignmentsParams): Promise<{ assignments: AssignmentData[]; totalAssignments: number; error?: string }> {
+  const { page, pageSize, search, status, userRole, userId } = params;
+
+  try {
+    const whereClause: any = {};
+
+    // Apply user role-based filtering
+    if (userRole === 'PARTNER') {
+      whereClause.partnerAssignedToId = userId;
+    } else if (userRole !== 'ADMIN' && userRole !== 'STAFF') {
+      console.warn(`fetchAssignmentsAction: Unhandled user role for assignment fetching: ${userRole}`);
+      // If not ADMIN, STAFF, or a specific PARTNER, they see nothing by default
+      // Or handle as an error, depending on desired behavior
+      return { assignments: [], totalAssignments: 0, error: "Unauthorized role for fetching assignments." };
+    }
+
+    // Apply status filter if provided and valid
+    if (status && Object.values(AssignmentStatus).includes(status as AssignmentStatus)) {
+      whereClause.status = status as AssignmentStatus;
+    }
+
+    // Apply search filter if provided
+    // This is a simple search; consider more advanced full-text search for production
+    if (search) {
+      whereClause.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { borrowerName: { contains: search, mode: 'insensitive' } },
+        { propertyAddress: { contains: search, mode: 'insensitive' } },
+        // Add other fields to search if necessary
+      ];
+    }
+
+    const countQuery = prisma.assignment.count({ where: whereClause });
+    const dataQuery = prisma.assignment.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        closingDate: true,
+        borrowerName: true,
+        propertyAddress: true,
+        updatedAt: true,
+      },
+      orderBy: {
+        updatedAt: 'desc' as const,
+      },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
+
+    const [totalAssignments, assignments] = await Promise.all([countQuery, dataQuery]);
+
+    return { assignments, totalAssignments };
+
+  } catch (error) {
+    console.error("Failed to fetch assignments via action:", error);
+    return { assignments: [], totalAssignments: 0, error: "Error loading assignments. Please try again later." };
   }
 } 

@@ -14,6 +14,7 @@ import { headers } from 'next/headers'
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
   title: {
     template: "%s | Houston Mobile Notary Pros",
     default: "Houston Mobile Notary Pros | Professional Mobile Notary Services",
@@ -85,7 +86,7 @@ export default async function RootLayout({
   const nonce = (await headers()).get('x-nonce') || "";
 
   return (
-    <html lang="en" className="light">
+    <html lang="en" className="light" suppressHydrationWarning>
       <body className={`${inter.className} bg-white`}>
         <Providers>
           {/* If using next/third-parties for Google Analytics, add GA component here */}

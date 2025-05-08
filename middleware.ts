@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
     'style-src': `'self' 'nonce-${nonce}' 'unsafe-inline' https://vercel.live`,
     'img-src': "'self' blob: data: https://vercel.live https://vercel.com",
     'font-src': "'self' https://vercel.live https://assets.vercel.com",
-    'connect-src': "'self' https://vercel.live wss://vercel.live https://vitals.vercel-insights.com wss://ws-us3.pusher.com https://houstonmobilenotarypros.com",
+    'connect-src': "'self' https://vercel.live wss://vercel.live https://vitals.vercel-insights.com wss://ws-us3.pusher.com https://houstonmobilenotarypros.com https://houston-notary-docs.s3.us-east-1.amazonaws.com",
     'object-src': "'none'",
     'base-uri': "'self'",
     'form-action': "'self'",
