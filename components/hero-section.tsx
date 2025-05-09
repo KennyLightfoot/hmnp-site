@@ -36,7 +36,7 @@ export default function HeroSection() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-white text-white hover:bg-white/20 w-full sm:w-auto"
+                  className="border-white text-white bg-transparent hover:bg-white/20 w-full sm:w-auto"
                 >
                   Our Services
                 </Button>
