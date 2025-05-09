@@ -24,7 +24,7 @@ export default function CtaSection() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-white text-white hover:bg-white hover:text-[#002147] w-full sm:w-auto"
+                className="border-white text-white bg-transparent hover:bg-white hover:text-[#002147] w-full sm:w-auto"
               >
                 Contact Us
               </Button>

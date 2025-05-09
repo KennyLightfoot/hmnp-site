@@ -974,7 +974,7 @@ export default function ServicesPage() {
             </Button>
           </Link>
           <Link href="/contact">
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147]">
+            <Button size="lg" variant="outline" className="border-white text-white bg-transparent hover:bg-white hover:text-[#002147]">
               Contact Us
             </Button>
           </Link>
