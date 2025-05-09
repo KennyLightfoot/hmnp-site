@@ -20,11 +20,10 @@ export default function HeroSection() {
               <span className="text-white font-medium">Professional Mobile Notary Services</span>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-              Notary Services <span className="text-[#91A3B0]">That Come To You</span>
+              Your Important Signings, <span className="text-[#91A3B0]">Handled with Care & Precision</span>
             </h1>
             <p className="text-xl text-gray-100">
-              Fast, reliable, and convenient notarization at your home, office, or preferred location throughout the
-              Houston area.
+              Stop the confusion and delays. Houston Mobile Notary Pros offers professional, reliable service, ensuring every document is handled correctly and clearly explained.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link href="/booking">

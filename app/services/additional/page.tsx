@@ -8,17 +8,17 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Additional Notary Services (Printing, Mail, Storage) | Houston Mobile Notary Pros",
+  title: "Comprehensive Notary Add-On Services Houston | Printing, Storage & More | HMNP",
   description:
-    "Enhance your mobile notary experience in Houston with additional services like document printing, scanning, secure cloud storage, USPS mail services, and premium time slots.",
+    "Elevate your Houston mobile notary experience with our convenient add-on services: printing, secure storage, mail, premium times, and more. Handled with care and precision.",
   keywords:
-    "notary printing Houston, notary scanning, notary mail service, document storage, notary premium time slots, Houston mobile notary, notary add-on services",
+    "notary printing Houston, notary scanning, notary mail service, document storage, notary premium time slots, Houston mobile notary, notary add-on services, Houston notary add-ons, secure document solutions, notary convenience services, professional document handling, complete notary service Houston",
   alternates: {
     canonical: '/services/additional',
   },
   openGraph: {
-    title: "Additional Mobile Notary Services in Houston | HMNP",
-    description: "Beyond notarization: Explore Houston Mobile Notary Pros' additional services like printing, scanning, mail, secure storage, and premium booking times.",
+    title: "Houston Mobile Notary: Full Suite of Add-On Services | HMNP",
+    description: "Go beyond notarization with HMNP's add-on services in Houston. Printing, secure cloud storage, mail, and premium booking for a complete, stress-free experience.",
     url: `${BASE_URL}/services/additional`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
@@ -34,8 +34,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Houston Notary Add-On Services: Printing, Mail, Storage - HMNP",
-    description: "Complete your notary needs with our add-on services in Houston: document printing, scanning, secure storage, mail services, & premium appointment times.",
+    title: "More Than Notary: Houston Add-On Services (Printing, Storage) | HMNP",
+    description: "Complete your Houston notary needs with our professional add-on services: document printing, secure storage, mail, bilingual support & premium times. Book with confidence!",
     // Add your Twitter handle here if you have one
     // siteId: 'YourTwitterID',
     // creator: '@YourTwitterHandle',
@@ -54,8 +54,8 @@ export default function AdditionalServicesPage() {
 
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-[#002147] mb-4">Additional Services</h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Supplementary services to enhance your notary experience
+        <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+          Elevate your notary experience with convenient add-on services designed for your <span className="font-semibold text-[#002147]">complete peace of mind and efficiency</span>. Handled with our signature <span className="font-semibold text-[#002147]">care and precision</span>.
         </p>
       </div>
 
@@ -70,6 +70,7 @@ export default function AdditionalServicesPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
+            <p className="mb-4 text-sm text-gray-700">Save time and hassle. We handle your document printing, scanning, and faxing needs with precision and care.</p>
             <h3 className="text-xl font-semibold mb-3">Printing</h3>
             <ul className="space-y-2 mb-6">
               <li className="flex items-start">
@@ -118,9 +119,8 @@ export default function AdditionalServicesPage() {
                 <span>Annual Plan: $150/year (save $30)</span>
               </li>
             </ul>
-            <p className="mb-4">
-              Secure, encrypted storage for your important documents with 24/7 access. Includes up to 10GB of storage
-              space.
+            <p className="mb-4 text-sm text-gray-700">
+              Enjoy peace of mind with our secure, encrypted cloud storage for your vital documents. Access them anytime, anywhere, with confidence in their protection. Includes up to 10GB.
             </p>
             <div className="mt-6">
               <Button className="w-full bg-[#002147] hover:bg-[#001a38]">Learn More</Button>
@@ -137,6 +137,7 @@ export default function AdditionalServicesPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
+            <p className="mb-4 text-sm text-gray-700">Ensure your documents reach their destination reliably. We offer USPS Certified Mail and express shipping options, handled efficiently.</p>
             <h3 className="text-xl font-semibold mb-3">USPS Services</h3>
             <ul className="space-y-2 mb-6">
               <li className="flex items-start">
@@ -181,7 +182,7 @@ export default function AdditionalServicesPage() {
                 <span>After-Hours (7-9pm): +$30</span>
               </li>
             </ul>
-            <p className="mb-4">Premium time slots require 24-hour advance booking and are subject to availability.</p>
+            <p className="mb-4 text-sm text-gray-700">For your convenience, we offer premium time slots outside standard hours. Book in advance to secure appointments that fit your demanding schedule, always handled with our professional care. Premium time slots require 24-hour advance booking and are subject to availability.</p>
             <div className="mt-6">
               <Button className="w-full bg-[#002147] hover:bg-[#001a38]">Check Availability</Button>
             </div>
@@ -201,9 +202,8 @@ export default function AdditionalServicesPage() {
                 <span>Bilingual Notary: +$20</span>
               </li>
             </ul>
-            <p className="mb-4">
-              Our bilingual notaries can assist with document explanation and notarization in both Spanish and English.
-              This service helps ensure clear understanding for all signers.
+            <p className="mb-4 text-sm text-gray-700">
+              Ensuring clear communication for all parties, our professional bilingual (Spanish/English) notaries provide calm and accurate assistance with document explanation and notarization, fostering complete understanding.
             </p>
             <div className="mt-6">
               <Button className="w-full bg-[#002147] hover:bg-[#001a38]">Request Bilingual Service</Button>
@@ -217,9 +217,8 @@ export default function AdditionalServicesPage() {
             <CardTitle>Custom Add-Ons</CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
-            <p className="mb-4">
-              Don't see what you need? We can create custom add-on services to meet your specific requirements. Contact
-              us to discuss your needs.
+            <p className="mb-4 text-sm text-gray-700">
+              Have a unique requirement? We're here to provide flexible, tailored solutions. Contact us to discuss how we can create a custom add-on service with the clarity and precision you expect.
             </p>
             <h3 className="text-xl font-semibold mb-3">Examples:</h3>
             <ul className="space-y-2 mb-6">
@@ -246,21 +245,21 @@ export default function AdditionalServicesPage() {
       {/* Value-Added Services */}
       <div className="bg-gray-50 p-8 rounded-lg mb-16">
         <h2 className="text-2xl font-bold text-[#002147] mb-6">Complimentary Value-Added Services</h2>
-        <p className="mb-6">
-          The following services are included at no additional charge with any notary service booking:
+        <p className="mb-6 text-gray-700">
+          The following services are included at no additional charge with any notary service booking, ensuring a seamless and stress-free experience:
         </p>
         <div className="grid md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <h3 className="text-xl font-semibold text-[#002147] mb-3">Digital Document Archiving</h3>
-            <p>Free secure storage of your notarized documents for 1 year</p>
+            <p className="text-gray-700 text-sm">For your convenience and peace of mind, enjoy complimentary secure digital archiving of your notarized documents for one full year.</p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <h3 className="text-xl font-semibold text-[#002147] mb-3">Real-Time SMS Updates</h3>
-            <p>Status tracking and notifications during service hours</p>
+            <p className="text-gray-700 text-sm">Stay informed with complimentary real-time SMS updates, providing clarity and status tracking throughout your service.</p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <h3 className="text-xl font-semibold text-[#002147] mb-3">Mobile Tracking</h3>
-            <p>Track your notary's arrival time with our mobile tracking system</p>
+            <p className="text-gray-700 text-sm">Experience predictability with our complimentary mobile tracking system, allowing you to monitor your notary's arrival time.</p>
           </div>
         </div>
       </div>
@@ -268,6 +267,9 @@ export default function AdditionalServicesPage() {
       {/* How to Add Services */}
       <div className="mb-16">
         <h2 className="text-2xl font-bold text-[#002147] mb-6">How to Add These Services</h2>
+        <p className="text-gray-700 mb-6 text-center max-w-2xl mx-auto">
+          Adding these convenient services to your appointment is simple and designed for your ease:
+        </p>
         <div className="grid md:grid-cols-3 gap-6">
           <Card>
             <CardHeader className="bg-[#91A3B0]/20">
@@ -315,6 +317,12 @@ export default function AdditionalServicesPage() {
             </CardContent>
           </Card>
         </div>
+        <p className="text-sm text-gray-600 mt-6 text-center">
+          To understand the full notary process before adding these services, please see our detailed{" "}
+          <Link href="/what-to-expect" className="text-[#A52A2A] hover:underline font-medium">
+            What to Expect guide
+          </Link>.
+        </p>
       </div>
 
       {/* FAQ */}
@@ -355,9 +363,9 @@ export default function AdditionalServicesPage() {
 
       {/* Call to Action */}
       <div className="bg-[#002147] text-white p-8 rounded-lg text-center">
-        <h2 className="text-2xl font-bold mb-4">Enhance Your Notary Experience</h2>
+        <h2 className="text-2xl font-bold mb-4">Create Your Complete, Stress-Free Notary Solution</h2>
         <p className="mb-6 max-w-2xl mx-auto">
-          Add these valuable services to your notary appointment for a more comprehensive solution.
+          Customize your appointment with our range of professional add-on services for ultimate convenience and peace of mind. Let us handle all the details with care and precision.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">

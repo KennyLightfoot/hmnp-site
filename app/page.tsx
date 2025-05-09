@@ -77,6 +77,90 @@ export default function HomePage() {
       {/* Why Choose Us - Simplified */}
       <WhyChooseUs />
 
+      {/* Our Commitment Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-[#002147] mb-4">
+              🛡️ Our Commitment to You
+            </h2>
+            <p className="text-lg text-gray-700 max-w-3xl mx-auto">
+              We believe every signature tells a story—and it deserves to be handled with care, clarity, and precision. 
+              Our work is not just about documents. It's about peace of mind.
+            </p>
+            <p className="text-md text-gray-600 max-w-3xl mx-auto mt-4">
+              To see how these commitments translate into a smooth and transparent experience for you, 
+              we invite you to learn about{" "}
+              <Link href="/what-to-expect" className="text-[#A52A2A] hover:underline font-medium">
+                what to expect during your appointment
+              </Link>.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-12 items-start">
+            <div>
+              <h3 className="text-2xl font-semibold text-[#002147] mb-6">Core Beliefs</h3>
+              <ul className="space-y-4 text-gray-700">
+                <li className="flex items-start">
+                  <CheckCircle className="h-6 w-6 text-[#A52A2A] mr-3 flex-shrink-0 mt-1" />
+                  <span><strong>Every Signature Carries Weight:</strong> We don't handle paper—we handle people's futures.</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-6 w-6 text-[#A52A2A] mr-3 flex-shrink-0 mt-1" />
+                  <span><strong>Clarity Creates Confidence:</strong> We don't just present documents. We explain, guide, and educate.</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-6 w-6 text-[#A52A2A] mr-3 flex-shrink-0 mt-1" />
+                  <span><strong>Precision Is Non-Negotiable:</strong> Accuracy isn't a feature—it's our default.</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-6 w-6 text-[#A52A2A] mr-3 flex-shrink-0 mt-1" />
+                  <span><strong>Professionalism Is a Ritual, Not a Performance:</strong> Clean appearance. Calm tone. Courteous manner. Every time.</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-6 w-6 text-[#A52A2A] mr-3 flex-shrink-0 mt-1" />
+                  <span><strong>Time is Sacred:</strong> We don't waste a second—yours or ours.</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-6 w-6 text-[#A52A2A] mr-3 flex-shrink-0 mt-1" />
+                  <span><strong>We're the Calm in Critical Moments:</strong> Legal stress, real estate rush, family crisis—we show up with care.</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-6 w-6 text-[#A52A2A] mr-3 flex-shrink-0 mt-1" />
+                  <span><strong>We Don't Earn Trust Once:</strong> Every signing is a living reference. We win trust again each time.</span>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-2xl font-semibold text-[#002147] mb-6">Code of Conduct</h3>
+              <ul className="space-y-3 text-gray-700">
+                <li className="flex items-center">✅ Arrive early</li>
+                <li className="flex items-center">✅ Dress professionally</li>
+                <li className="flex items-center">✅ Explain without ego</li>
+                <li className="flex items-center">✅ Check every detail twice</li>
+                <li className="flex items-center">✅ Secure your confidentiality</li>
+                <li className="flex items-center">✅ Guide with calm clarity</li>
+                <li className="flex items-center">✅ Follow through after the signing</li>
+                <li className="flex items-center">✅ Serve with presence and pride</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-lg text-gray-700 mb-4">
+              Want peace of mind with your next signing?
+            </p>
+            <Button asChild size="lg" className="bg-[#A52A2A] hover:bg-opacity-80 text-white">
+              <Link href="/booking">
+                Book with Houston Mobile Notary Pros—where professionalism meets precision.
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Service Area - Fixed with proper map */}
       <ServiceArea />
 

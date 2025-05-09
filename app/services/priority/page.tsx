@@ -8,17 +8,17 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Priority Mobile Notary Service (2-Hour Response) | Houston Mobile Notary Pros",
+  title: "Priority Mobile Notary Houston | Fast, Reliable & Precise | Houston Mobile Notary Pros",
   description:
-    "Need urgent notary service in Houston? Our Priority Package offers a 2-hour response time, 7am-9pm daily. Fast, reliable notarization for time-sensitive documents.",
+    "Urgent notary needs in Houston? Our Priority Service delivers a 2-hour response with calm, clear, and precise notarization. 7am-9pm daily for your peace of mind.",
   keywords:
-    "priority notary Houston, urgent notary, same day notary, 2 hour notary, emergency notary, mobile notary Houston, fast notary service",
+    "priority notary Houston, urgent notary, same day notary, 2 hour notary, emergency notary, mobile notary Houston, fast notary service, Houston urgent notary, fast precise notary, reliable emergency notary, 2-hour mobile notary, calm priority signing",
   alternates: {
     canonical: '/services/priority',
   },
   openGraph: {
-    title: "Priority Mobile Notary Service (2-Hour Response) | Houston",
-    description: "Get urgent notarization in Houston within 2 hours, 7 days a week (7am-9pm) with our Priority Service Package.",
+    title: "Houston Priority Notary: 2-Hour Response, Utmost Precision | HMNP",
+    description: "When time is critical, trust Houston's Priority Mobile Notary. Fast 2-hour response, 7am-9pm, ensuring calm and precise notarization.",
     url: `${BASE_URL}/services/priority`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
@@ -34,8 +34,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Urgent Mobile Notary in Houston (2-Hour Response) - HMNP",
-    description: "Need a notary fast? Our Priority Service guarantees a 2-hour response in Houston, 7am-9pm daily. Ideal for urgent documents.",
+    title: "Urgent Houston Notary? Get Calm, Precise Service in 2 Hrs | HMNP",
+    description: "Houston's Priority Notary: 2-hour response (7am-9pm daily) for urgent documents. Fast, reliable, and always precise. Book now for peace of mind!",
     // Add your Twitter handle here if you have one
     // siteId: 'YourTwitterID',
     // creator: '@YourTwitterHandle',
@@ -54,7 +54,9 @@ export default function PriorityServicePage() {
 
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-[#002147] mb-4">Priority Service Package</h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">For time-sensitive documents and last-minute needs</p>
+        <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+          When time is critical, count on our <span className="font-semibold text-[#002147]">rapid 2-hour response</span>. We deliver swift notarization with the <span className="font-semibold text-[#002147]">calm, clarity, and precision</span> you deserve.
+        </p>
       </div>
 
       {/* Hero Banner */}
@@ -63,17 +65,17 @@ export default function PriorityServicePage() {
           <div className="flex flex-col items-center text-center">
             <Clock className="h-12 w-12 mb-4" />
             <h3 className="text-xl font-semibold mb-2">2-Hour Response</h3>
-            <p>Quick service when you need it most</p>
+            <p>Guaranteed arrival within 2 hours for your urgent needs.</p>
           </div>
           <div className="flex flex-col items-center text-center">
             <MapPin className="h-12 w-12 mb-4" />
             <h3 className="text-xl font-semibold mb-2">Extended Coverage</h3>
-            <p>35-mile service radius</p>
+            <p>Prompt service across an extended 35-mile radius.</p>
           </div>
           <div className="flex flex-col items-center text-center">
             <Shield className="h-12 w-12 mb-4" />
             <h3 className="text-xl font-semibold mb-2">7am-9pm Daily</h3>
-            <p>Including weekends and evenings</p>
+            <p>Available early mornings, late evenings, and weekends to meet your schedule.</p>
           </div>
         </div>
       </div>
@@ -83,14 +85,10 @@ export default function PriorityServicePage() {
         <div>
           <h2 className="text-2xl font-bold text-[#002147] mb-4">Service Overview</h2>
           <p className="mb-4">
-            Our Priority Service Package is designed for clients with urgent notarization needs. When time is of the
-            essence, we provide a rapid response with our 2-hour service window, available from 7am to 9pm, seven days a
-            week.
+            Facing an urgent notarization need? Our Priority Service Package is your solution for swift, reliable service. We provide a guaranteed 2-hour response from 7am to 9pm daily, ensuring your critical documents are addressed without delay, yet with complete professional calm.
           </p>
           <p className="mb-4">
-            This premium service ensures that your time-sensitive documents are notarized promptly and professionally.
-            Whether you're facing a tight deadline or need last-minute notarization, our Priority Service has you
-            covered.
+            This premium service ensures your time-sensitive documents are notarized with both speed and meticulous precision. Even under tight deadlines or last-minute requests, our Priority Service delivers peace of mind, knowing every detail is handled correctly.
           </p>
           <p>
             All of our notaries are commissioned by the state of Texas, carry E&O insurance, and follow strict protocols
@@ -112,7 +110,7 @@ export default function PriorityServicePage() {
             </li>
             <li className="flex items-start">
               <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-              <span>Up to 5 documents</span>
+              <span>Swift and precise handling of up to 5 documents.</span>
             </li>
             <li className="flex items-start">
               <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
@@ -124,7 +122,7 @@ export default function PriorityServicePage() {
             </li>
             <li className="flex items-start">
               <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-              <span>SMS status updates</span>
+              <span>Real-time SMS updates for your peace of mind and planning.</span>
             </li>
           </ul>
           <h3 className="text-xl font-semibold mb-3">Additional Options:</h3>
@@ -150,7 +148,7 @@ export default function PriorityServicePage() {
               <CardTitle>Urgent Deadlines</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>When you need notarization completed today for time-sensitive submissions</p>
+              <p>Meet your critical deadlines with confidence. We ensure your time-sensitive submissions are notarized today.</p>
             </CardContent>
           </Card>
           <Card>
@@ -158,7 +156,7 @@ export default function PriorityServicePage() {
               <CardTitle>After-Hours Needs</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>When you need service outside of standard business hours</p>
+              <p>Flexible notarization when you need it most—early mornings, late evenings, or weekends.</p>
             </CardContent>
           </Card>
           <Card>
@@ -166,7 +164,7 @@ export default function PriorityServicePage() {
               <CardTitle>Last-Minute Requirements</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>When unexpected notarization needs arise with little notice</p>
+              <p>Sudden notarization need? We provide prompt and professional service, even with minimal notice.</p>
             </CardContent>
           </Card>
         </div>
@@ -175,6 +173,9 @@ export default function PriorityServicePage() {
       {/* Process */}
       <div className="bg-gray-50 p-8 rounded-lg mb-16">
         <h2 className="text-2xl font-bold text-[#002147] mb-6">The Priority Service Process</h2>
+        <p className="text-gray-700 mb-6 text-center max-w-2xl mx-auto">
+          Our Priority Service is built for speed and efficiency, without compromising on clarity or the quality of your experience. Here's our streamlined approach:
+        </p>
         <div className="grid md:grid-cols-4 gap-6">
           <div className="text-center">
             <div className="bg-[#A52A2A] text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -205,6 +206,12 @@ export default function PriorityServicePage() {
             <p className="text-sm">Documents notarized and payment collected</p>
           </div>
         </div>
+        <p className="text-sm text-gray-600 mt-6 text-center">
+          For a comprehensive overview of our entire client journey, from initial booking to post-signing, please see our detailed{" "}
+          <Link href="/what-to-expect" className="text-[#A52A2A] hover:underline font-medium">
+            What to Expect guide
+          </Link>.
+        </p>
       </div>
 
       {/* FAQ */}
@@ -239,9 +246,9 @@ export default function PriorityServicePage() {
 
       {/* Call to Action */}
       <div className="bg-[#A52A2A] text-white p-8 rounded-lg text-center">
-        <h2 className="text-2xl font-bold mb-4">Need Urgent Notary Service?</h2>
+        <h2 className="text-2xl font-bold mb-4">Urgent Need? Get Swift, Precise Notarization Now!</h2>
         <p className="mb-6 max-w-2xl mx-auto">
-          Don't wait! Book our Priority Service now and have a professional notary at your location within 2 hours.
+          For critical, time-sensitive documents, choose speed without sacrificing precision or peace of mind. Book or call now for our 2-hour priority response.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button size="lg" className="bg-white text-[#A52A2A] hover:bg-gray-100">

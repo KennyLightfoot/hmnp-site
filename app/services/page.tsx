@@ -84,6 +84,42 @@ const serviceFaqs = [
       </p>
     ),
   },
+  {
+    id: "prevent-mistakes",
+    question: "I'm worried about making a mistake on important documents. How do you help prevent that?",
+    answer: (
+      <p>
+        We understand! Our process is built on precision and clarity. We guide you patiently, explain documents
+        clearly, and double-check everything – from ID verification to signatures and dates – to ensure accuracy
+        and prevent errors that could cause future issues. Your confidence is our priority.
+      </p>
+    ),
+  },
+  {
+    id: "hmnp-difference",
+    question: "What makes your notary service different from others?",
+    answer: (
+      <p>
+        Beyond convenience, we're committed to a higher standard of care. This means arriving early and
+        professionally, explaining everything without jargon, ensuring every detail is accurate, and following
+        through diligently. We believe every signing deserves this level of dedication for your peace of mind.
+      </p>
+    ),
+  },
+  {
+    id: "notary-process",
+    question: "What is the mobile notary process like?",
+    answer: (
+      <p>
+        We aim for a clear, calm, and professional experience every time. We've outlined our entire mobile notary process
+        from start to finish for your convenience. Please visit our{" "}
+        <Link href="/what-to-expect" className="text-[#A52A2A] hover:underline font-medium">
+          What to Expect page
+        </Link>{" "}
+        for a detailed guide.
+      </p>
+    ),
+  },
 ]
 
 export default function ServicesPage() {
@@ -91,10 +127,13 @@ export default function ServicesPage() {
     <div className="container mx-auto px-4 py-12">
       {/* Hero Section */}
       <div className="text-center mb-16">
-        <h1 className="text-4xl font-bold text-[#002147] mb-4">Professional Mobile Notary Services</h1>
+        <h1 className="text-4xl font-bold text-[#002147] mb-4">
+          Clear, Calm, Professional Notary Services, When and Where You Need Them.
+        </h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          We bring notary services directly to you. Choose from our range of service packages designed to meet your
-          specific needs, timeline, and budget.
+          Experience peace of mind with our meticulous and reliable mobile notary services. We bring clarity and
+          professionalism to every signing, ensuring your important documents are handled with the utmost care and
+          precision.
         </p>
       </div>
 
@@ -109,7 +148,10 @@ export default function ServicesPage() {
               </div>
               <CardTitle className="text-[#002147]">Essential Mobile Package</CardTitle>
             </div>
-            <CardDescription>Perfect for wills, POAs, and general notarizations</CardDescription>
+            <CardDescription>
+              For straightforward notarizations, handled with precision and care. We ensure your documents are
+              correctly processed, providing a calm and clear experience.
+            </CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
             <div className="flex items-baseline mb-4">
@@ -155,7 +197,10 @@ export default function ServicesPage() {
               </div>
               <CardTitle className="text-[#002147]">Priority Service Package</CardTitle>
             </div>
-            <CardDescription>For time-sensitive documents and urgent needs</CardDescription>
+            <CardDescription>
+              Urgent needs met with speed and professionalism. When time is critical, rely on our prompt, meticulous
+              service to manage your time-sensitive documents accurately.
+            </CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
             <div className="flex items-baseline mb-4">
@@ -193,7 +238,10 @@ export default function ServicesPage() {
               </div>
               <CardTitle className="text-[#002147]">Loan Signing Services</CardTitle>
             </div>
-            <CardDescription>For real estate and mortgage transactions</CardDescription>
+            <CardDescription>
+              Expert handling of complex loan documents. We bring clarity and precision to your real estate
+              transactions, ensuring every detail is meticulously managed for a smooth closing.
+            </CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
             <div className="flex items-baseline mb-4">
@@ -236,7 +284,10 @@ export default function ServicesPage() {
               </div>
               <CardTitle className="text-[#002147]">Specialty Services</CardTitle>
             </div>
-            <CardDescription>Apostille, background checks, and more</CardDescription>
+            <CardDescription>
+              Professional solutions for unique notary needs. From apostilles to I-9 verification, we provide
+              specialized, reliable service with a focus on accuracy and clarity.
+            </CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
             <div className="flex items-baseline mb-4">
@@ -279,7 +330,10 @@ export default function ServicesPage() {
               </div>
               <CardTitle className="text-[#002147]">Business Packages</CardTitle>
             </div>
-            <CardDescription>Tailored solutions for businesses</CardDescription>
+            <CardDescription>
+              Dedicated notary support for your business. Streamline your operations with our reliable, professional,
+              and meticulous notary services, tailored to your company's ongoing needs.
+            </CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
             <div className="flex items-baseline mb-4">
@@ -322,7 +376,10 @@ export default function ServicesPage() {
               </div>
               <CardTitle className="text-[#002147]">Additional Services</CardTitle>
             </div>
-            <CardDescription>Document services, mail, and more</CardDescription>
+            <CardDescription>
+              Convenient document and mail services to support your notary needs. We provide clear, reliable
+              assistance for printing, scanning, and shipping, ensuring a complete service experience.
+            </CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
             <div className="flex items-baseline mb-4">
@@ -355,6 +412,20 @@ export default function ServicesPage() {
             </Link>
           </CardFooter>
         </Card>
+      </div>
+
+      {/* What to Expect Call-out */}
+      <div className="my-16 p-8 bg-gray-50 rounded-lg text-center">
+        <h2 className="text-2xl font-bold text-[#002147] mb-4">New to Mobile Notary Services?</h2>
+        <p className="text-gray-700 mb-6 max-w-xl mx-auto">
+          Understanding the process can bring peace of mind. We've detailed every step, so you know exactly what to expect when you book with us.
+        </p>
+        <Link href="/what-to-expect">
+          <Button variant="outline" className="border-[#002147] text-[#002147] hover:bg-[#002147] hover:text-white">
+            Learn About Our Process
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </Link>
       </div>
 
       {/* Service Comparison */}
@@ -564,10 +635,15 @@ export default function ServicesPage() {
                 <div>
                   <h3 className="text-xl font-bold text-[#002147] mb-4">Essential Mobile Notary Service</h3>
                   <p className="text-gray-600 mb-4">
-                    Our Essential Mobile Package brings standard notary services directly to your location in the Houston area. Avoid traffic and save time with a professional traveling notary public who comes to your home, office, or agreed-upon location.
+                    Need to notarize important personal or business documents like wills, POAs, or contracts? The Essential
+                    Mobile Package brings our <strong>professional and precise notary services</strong> directly to you in the
+                    Houston area. We understand that even standard notarizations carry significant weight.
                   </p>
                   <p className="text-gray-600 mb-4">
-                    This package is ideal for common personal and business documents requiring notarization. We handle the process efficiently, ensuring your documents are properly executed according to Texas law.
+                    That's why we <strong>arrive prepared, explain everything clearly</strong>, and <strong>meticulously
+                    check every detail</strong> to ensure your documents are executed correctly and without confusion. Avoid
+                    the hassle of travel and experience a <strong>calm, efficient signing process</strong> that gives you
+                    confidence and peace of mind.
                   </p>
                   <div className="mt-6">
                     <Link href="/services/essential">

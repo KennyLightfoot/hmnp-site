@@ -8,17 +8,17 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Mobile Loan Signing Agent Services | Houston Mobile Notary Pros",
+  title: "Expert Loan Signing Agent Houston | Calm & Precise Closings | Houston Mobile Notary Pros",
   description:
-    "Professional mobile loan signing agent services in Houston for real estate closings, refinances, HELOCs, and reverse mortgages. Experienced and reliable.",
+    "Ensure a smooth and stress-free real estate closing in Houston with our expert mobile loan signing agents. We bring calm, clarity, and precision to every signing.",
   keywords:
-    "loan signing agent Houston, mobile notary loan signing, real estate closing notary, mortgage signing agent, HELOC notary, reverse mortgage signing, Houston mobile notary",
+    "loan signing agent Houston, mobile notary loan signing, real estate closing notary, mortgage signing agent, HELOC notary, reverse mortgage signing, Houston mobile notary, calm loan closing, precise mortgage signing, stress-free real estate notary, Houston expert loan signer",
   alternates: {
     canonical: '/services/loan-signing',
   },
   openGraph: {
-    title: "Mobile Loan Signing Agent Services in Houston | HMNP",
-    description: "Need a loan signing agent in Houston? We offer expert mobile services for all real estate transactions, including closings, refinances, and more.",
+    title: "Expert Mobile Loan Signing - Smooth Houston Closings | HMNP",
+    description: "Navigate your Houston real estate closing with confidence. Our expert loan signing agents ensure a calm, precise, and stress-free experience.",
     url: `${BASE_URL}/services/loan-signing`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
@@ -34,8 +34,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Houston Mobile Loan Signing Agent - HMNP",
-    description: "Expert mobile loan signing services for Houston real estate closings, refinances, HELOCs & reverse mortgages. Book your reliable agent today!",
+    title: "Houston Loan Signing Agents: Calm, Precise, Reliable | HMNP",
+    description: "Expert mobile loan signing for Houston real estate. We guarantee a calm, clear, and precise closing process. Book with confidence!",
     // Add your Twitter handle here if you have one
     // siteId: 'YourTwitterID',
     // creator: '@YourTwitterHandle',
@@ -54,8 +54,8 @@ export default function LoanSigningPage() {
 
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-[#002147] mb-4">Loan Signing Services</h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Professional loan signing services for real estate and mortgage transactions
+        <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+          Navigate your real estate and mortgage transactions with <span className="font-semibold text-[#002147]">calm and precision</span>. Our expert agents ensure every detail is handled correctly for a <span className="font-semibold text-[#002147]">stress-free closing</span>.
         </p>
       </div>
 
@@ -65,17 +65,17 @@ export default function LoanSigningPage() {
           <div className="flex flex-col items-center text-center">
             <FileText className="h-12 w-12 mb-4" />
             <h3 className="text-xl font-semibold mb-2">Unlimited Documents</h3>
-            <p>No limit on document count</p>
+            <p>Complete handling of all your loan documents, meticulously organized.</p>
           </div>
           <div className="flex flex-col items-center text-center">
             <Users className="h-12 w-12 mb-4" />
             <h3 className="text-xl font-semibold mb-2">Multiple Signers</h3>
-            <p>Up to 4 signers included</p>
+            <p>Seamless coordination for up to 4 signers in one appointment.</p>
           </div>
           <div className="flex flex-col items-center text-center">
             <Clock className="h-12 w-12 mb-4" />
             <h3 className="text-xl font-semibold mb-2">90-Minute Session</h3>
-            <p>Thorough signing experience</p>
+            <p>Dedicated time for a calm, unhurried, and precise signing process.</p>
           </div>
         </div>
       </div>
@@ -93,11 +93,11 @@ export default function LoanSigningPage() {
             <ul className="space-y-3 mb-6">
               <li className="flex items-start">
                 <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Unlimited documents</span>
+                <span>Meticulous handling of your entire loan package, regardless of size.</span>
               </li>
               <li className="flex items-start">
                 <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Up to 4 signers</span>
+                <span>Smooth coordination for all parties, accommodating up to 4 signers.</span>
               </li>
               <li className="flex items-start">
                 <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
@@ -105,7 +105,7 @@ export default function LoanSigningPage() {
               </li>
               <li className="flex items-start">
                 <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Professional closing binder</span>
+                <span>Your documents, professionally organized in a take-home closing binder for easy reference.</span>
               </li>
               <li className="flex items-start">
                 <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
@@ -113,7 +113,7 @@ export default function LoanSigningPage() {
               </li>
               <li className="flex items-start">
                 <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>90-minute signing session</span>
+                <span>A dedicated 90-minute session ensuring a calm, thorough, and precise signing experience.</span>
               </li>
             </ul>
             <h3 className="text-xl font-semibold mb-3">Additional Options:</h3>
@@ -140,7 +140,7 @@ export default function LoanSigningPage() {
             <ul className="space-y-3 mb-6">
               <li className="flex items-start">
                 <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>4-hour response window</span>
+                <span>Prompt 4-hour response window for time-sensitive transactions.</span>
               </li>
               <li className="flex items-start">
                 <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
@@ -152,11 +152,11 @@ export default function LoanSigningPage() {
               </li>
               <li className="flex items-start">
                 <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Unlimited documents</span>
+                <span>Comprehensive handling of all complex documentation involved.</span>
               </li>
               <li className="flex items-start">
                 <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>In-depth explanation of forms</span>
+                <span>Clear guidance on each document to be signed, ensuring you know what you are signing (Note: We identify documents and direct you where to sign, but cannot provide legal advice or explain loan terms).</span>
               </li>
             </ul>
             <div className="mt-6">
@@ -173,12 +173,11 @@ export default function LoanSigningPage() {
           <div>
             <h3 className="text-xl font-semibold mb-3">Experienced Loan Signing Agents</h3>
             <p className="mb-4">
-              Our notaries are specifically trained in loan document signing. We understand the complexities of real
-              estate transactions and provide professional service to ensure your closing goes smoothly.
+              When it comes to loan signings, expertise and a calm demeanor are paramount. Our notaries are specifically trained in loan document signing. We understand the complexities of real estate transactions and provide professional, meticulous service to ensure your closing is not just smooth, but also instills confidence and peace of mind.
             </p>
             <p>
               We work with title companies, lenders, and real estate professionals throughout the Houston area to
-              facilitate timely and accurate loan closings.
+              facilitate timely, accurate, and stress-free loan closings.
             </p>
           </div>
           <div>
@@ -187,8 +186,7 @@ export default function LoanSigningPage() {
               <li className="flex items-start">
                 <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
                 <span>
-                  <span className="font-semibold">Comprehensive Service:</span> We handle everything from document
-                  preparation to final delivery.
+                  <span className="font-semibold">Comprehensive, Hassle-Free Service:</span> From meticulous document review and preparation to secure final delivery, we manage every step with precision.
                 </span>
               </li>
               <li className="flex items-start">
@@ -207,8 +205,7 @@ export default function LoanSigningPage() {
               <li className="flex items-start">
                 <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
                 <span>
-                  <span className="font-semibold">Professional Presentation:</span> Organized documents in a
-                  professional binder.
+                  <span className="font-semibold">Clarity and Professional Presentation:</span> Your important documents are always handled with care, organized logically, and presented in a professional binder for your records.
                 </span>
               </li>
             </ul>
@@ -263,6 +260,9 @@ export default function LoanSigningPage() {
       {/* Process */}
       <div className="mb-16">
         <h2 className="text-2xl font-bold text-[#002147] mb-6">The Loan Signing Process</h2>
+        <p className="text-gray-700 mb-6 text-center max-w-2xl mx-auto">
+          We ensure a clear, predictable, and calm loan signing journey from start to finish. Here's how our meticulous process works for you:
+        </p>
         <div className="grid md:grid-cols-4 gap-6">
           <Card>
             <CardHeader className="bg-[#91A3B0]/20">
@@ -329,6 +329,12 @@ export default function LoanSigningPage() {
             </CardContent>
           </Card>
         </div>
+        <p className="text-sm text-gray-600 mt-6 text-center">
+          For a comprehensive overview of our entire client journey, from initial booking to post-signing, please see our detailed{" "}
+          <Link href="/what-to-expect" className="text-[#A52A2A] hover:underline font-medium">
+            What to Expect guide
+          </Link>.
+        </p>
       </div>
 
       {/* FAQ */}
@@ -377,9 +383,9 @@ export default function LoanSigningPage() {
 
       {/* Call to Action */}
       <div className="bg-[#002147] text-white p-8 rounded-lg text-center">
-        <h2 className="text-2xl font-bold mb-4">Ready to Schedule Your Loan Signing?</h2>
+        <h2 className="text-2xl font-bold mb-4">Ensure a Smooth & Confident Closing Experience</h2>
         <p className="mb-6 max-w-2xl mx-auto">
-          Our professional loan signing agents are ready to assist with your real estate transaction.
+          Entrust your important loan documents to Houston's experts in calm, precise, and reliable mobile signing. Schedule your appointment today for peace of mind.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">

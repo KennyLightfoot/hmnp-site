@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "@/components/ui/use-toast"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import AppointmentCalendar from "@/components/appointment-calendar"
+import Link from "next/link"
 
 // Define the form schema using Zod
 const formSchema = z.object({
@@ -315,6 +316,13 @@ export default function BookingPageClient() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-[#002147] mb-2">Book Your Notary Service</h1>
           <p className="text-gray-600">Complete the form below to schedule your mobile notary appointment.</p>
+          <p className="text-sm text-gray-500 mt-2">
+            New to our services? Learn about{" "}
+            <Link href="/what-to-expect" className="text-[#A52A2A] hover:underline font-medium">
+              what to expect during your appointment
+            </Link>{" "}
+            to ensure a smooth process.
+          </p>
 
           {/* Progress Indicator */}
           <div className="mt-8">

@@ -19,6 +19,9 @@ export default function Footer() {
             <Link href="/services" className="text-gray-600 hover:text-[#002147]">
               Services
             </Link>
+            <Link href="/what-to-expect" className="text-gray-600 hover:text-[#002147]">
+              What to Expect
+            </Link>
             <Link href="/booking" className="text-gray-600 hover:text-[#002147]">
               Book Now
             </Link>

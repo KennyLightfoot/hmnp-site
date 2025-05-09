@@ -8,17 +8,17 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Essential Mobile Notary Package | Houston Mobile Notary Pros",
+  title: "Essential Mobile Notary Houston | Stress-Free & Professional | Houston Mobile Notary Pros",
   description:
-    "Affordable essential mobile notary services in Houston. Ideal for wills, POAs, affidavits, and general notarizations. We come to you Mon-Fri, 9am-5pm.",
+    "Experience stress-free essential mobile notary services in Houston. We bring calm, clarity, and precision to your wills, POAs, affidavits, and general notarizations. Mon-Fri, 9am-5pm.",
   keywords:
-    "essential notary Houston, mobile notary, general notarization, power of attorney notary, will notary, affidavit notary, Houston notary service",
+    "essential notary Houston, mobile notary, general notarization, power of attorney notary, will notary, affidavit notary, Houston notary service, stress-free notary, clear notary process, precise notarization, peace of mind notary",
   alternates: {
     canonical: '/services/essential',
   },
   openGraph: {
     title: "Essential Mobile Notary Package | Houston Mobile Notary Pros",
-    description: "Need standard notarization in Houston? Our Essential Mobile Package offers convenient service for wills, POAs, and more.",
+    description: "Get your essential documents (wills, POAs, etc.) notarized in Houston with calm and precision. Our mobile service ensures a stress-free experience.",
     url: `${BASE_URL}/services/essential`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
@@ -35,7 +35,7 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: "Essential Mobile Notary Package - Houston Mobile Notary Pros",
-    description: "Affordable and reliable essential mobile notary services in Houston for your standard document needs (wills, POAs, etc.). Book online!",
+    description: "Houston's choice for essential mobile notary services. We bring calm, clarity, and professional precision to your standard document needs (wills, POAs). Book your stress-free appointment!",
     // Add your Twitter handle here if you have one
     // siteId: 'YourTwitterID',
     // creator: '@YourTwitterHandle',
@@ -54,8 +54,8 @@ export default function EssentialServicePage() {
 
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-[#002147] mb-4">Essential Mobile Package</h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Perfect for wills, POAs, affidavits, and general notarizations
+        <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+          Ensuring your important documents like wills, POAs, and affidavits are handled with <span className="font-semibold text-[#002147]">precision and care</span>, right at your doorstep. Experience notarization that brings you <span className="font-semibold text-[#002147]">peace of mind</span>.
         </p>
       </div>
 
@@ -64,14 +64,12 @@ export default function EssentialServicePage() {
         <div>
           <h2 className="text-2xl font-bold text-[#002147] mb-4">Service Overview</h2>
           <p className="mb-4">
-            Our Essential Mobile Package is designed for individuals and businesses who need standard notary services
-            with the convenience of a mobile notary. We come to your location, making the process simple and
-            hassle-free.
+            When you need important documents notarized without the stress, our Essential Mobile Package is designed for individuals and businesses who need standard notary services with the convenience of a mobile notary. We come to your location, making the notarization process straightforward and stress-free, allowing you to focus on what truly matters.
           </p>
           <p className="mb-4">
             This package is ideal for notarizing wills, powers of attorney, affidavits, and other general documents that
             require notarization. Our professional notaries are experienced in handling a wide variety of documents and
-            will ensure that everything is properly executed.
+            will ensure that every document is meticulously and correctly executed, safeguarding its validity and contributing to your peace of mind.
           </p>
           <p>
             All of our notaries are commissioned by the state of Texas, carry E&O insurance, and follow strict protocols
@@ -86,7 +84,7 @@ export default function EssentialServicePage() {
               <ul className="space-y-2">
                 <li className="flex items-start">
                   <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                  <span>Perfect for 1-2 quick documents</span>
+                  <span>Ideal for your straightforward notarization needs: 1-2 documents handled efficiently and accurately.</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
@@ -168,7 +166,10 @@ export default function EssentialServicePage() {
 
       {/* What to Expect */}
       <div className="bg-gray-50 p-8 rounded-lg mb-16">
-        <h2 className="text-2xl font-bold text-[#002147] mb-6">What to Expect</h2>
+        <h2 className="text-2xl font-bold text-[#002147] mb-6">Our Clear & Professional Process</h2>
+        <p className="text-gray-700 mb-6 text-center max-w-xl mx-auto">
+          We believe in transparency and a calm experience. Here's a brief look at how we make your notarization process smooth and predictable.
+        </p>
         <div className="grid md:grid-cols-2 gap-8">
           <div>
             <h3 className="text-xl font-semibold mb-3">Before Your Appointment</h3>
@@ -213,6 +214,12 @@ export default function EssentialServicePage() {
             </ul>
           </div>
         </div>
+        <p className="text-sm text-gray-600 mt-6 text-center">
+          For a comprehensive overview of our entire client journey, please see our detailed{" "}
+          <Link href="/what-to-expect" className="text-[#A52A2A] hover:underline font-medium">
+            What to Expect guide
+          </Link>.
+        </p>
       </div>
 
       {/* FAQ */}
@@ -255,9 +262,9 @@ export default function EssentialServicePage() {
 
       {/* Call to Action */}
       <div className="bg-[#002147] text-white p-8 rounded-lg text-center">
-        <h2 className="text-2xl font-bold mb-4">Ready to Book Your Essential Service?</h2>
+        <h2 className="text-2xl font-bold mb-4">Secure Your Peace of Mind with Our Essential Notary Service</h2>
         <p className="mb-6 max-w-2xl mx-auto">
-          Schedule your appointment today and experience the convenience of our mobile notary services.
+          Let us handle the details with the professionalism and care you deserve. Schedule your convenient mobile notary appointment today and sign with confidence.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
