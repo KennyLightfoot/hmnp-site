@@ -40,6 +40,11 @@ export default function HeroSection() {
                   Our Services
                 </Button>
               </Link>
+              <p className="mt-4 text-sm text-gray-200">
+                <Link href="/service-areas" className="underline hover:text-white">
+                  See all areas we serve
+                </Link>
+              </p>
             </div>
             <div className="flex items-center pt-2">
               <div className="flex -space-x-2">

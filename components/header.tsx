@@ -56,6 +56,11 @@ export default function Header() {
                   </Link>
                 </li>
                 <li>
+                  <Link href="/service-areas" className="text-[#002147] hover:text-[#A52A2A]">
+                    Service Areas
+                  </Link>
+                </li>
+                <li>
                   <Link href="/what-to-expect" className="text-[#002147] hover:text-[#A52A2A]">
                     What to Expect
                   </Link>
@@ -102,6 +107,15 @@ export default function Header() {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Services
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/service-areas"
+                  className="text-[#002147] hover:text-[#A52A2A] block"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Service Areas
                 </Link>
               </li>
               <li>
