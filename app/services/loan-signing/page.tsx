@@ -388,12 +388,16 @@ export default function LoanSigningPage() {
           Entrust your important loan documents to Houston's experts in calm, precise, and reliable mobile signing. Schedule your appointment today for peace of mind.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
-            Book Loan Signing
-          </Button>
-          <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147]">
-            Contact for Title Companies
-          </Button>
+          <Link href="/booking?service=loan-signing">
+            <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white w-full sm:w-auto">
+              Book Loan Signing
+            </Button>
+          </Link>
+          <Link href="/contact?subject=Title%20Company%20Inquiry">
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147] w-full sm:w-auto">
+              Contact for Title Companies
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

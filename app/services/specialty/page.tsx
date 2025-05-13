@@ -481,12 +481,16 @@ export default function SpecialtyServicesPage() {
           Don't navigate complex document requirements alone. Our experts provide calm, clear, and precise specialty notary services. Request a consultation for your peace of mind.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
-            Book Specialty Service
-          </Button>
-          <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147]">
-            Request Consultation
-          </Button>
+          <Link href="/contact?service=specialty&subject=Specialty%20Service%20Booking%20Inquiry">
+            <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white w-full sm:w-auto">
+              Book Specialty Service
+            </Button>
+          </Link>
+          <Link href="/contact?subject=Specialty%20Service%20Consultation%20Request">
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147] w-full sm:w-auto">
+              Request Consultation
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

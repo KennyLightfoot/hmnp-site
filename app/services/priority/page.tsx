@@ -251,12 +251,16 @@ export default function PriorityServicePage() {
           For critical, time-sensitive documents, choose speed without sacrificing precision or peace of mind. Book or call now for our 2-hour priority response.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" className="bg-white text-[#A52A2A] hover:bg-gray-100">
-            Book Priority Service
-          </Button>
-          <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#A52A2A]">
-            Call Now
-          </Button>
+          <Link href="/booking?service=priority">
+            <Button size="lg" className="bg-white text-[#A52A2A] hover:bg-gray-100 w-full sm:w-auto">
+              Book Priority Service
+            </Button>
+          </Link>
+          <Link href="tel:+12817798847">
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#A52A2A] w-full sm:w-auto">
+              Call Now
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

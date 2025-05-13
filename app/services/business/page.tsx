@@ -494,12 +494,16 @@ export default function BusinessPackagesPage() {
           Elevate your business operations with tailored notary solutions that deliver efficiency, ensure compliance, and provide complete peace of mind. Schedule a consultation to discover the perfect package for your organization.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
-            Request Business Package
-          </Button>
-          <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147]">
-            Schedule Consultation
-          </Button>
+          <Link href="/contact?subject=Business%20Package%20Inquiry">
+            <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white w-full sm:w-auto">
+              Request Business Package
+            </Button>
+          </Link>
+          <Link href="/contact?subject=Business%20Consultation%20Request">
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147] w-full sm:w-auto">
+              Schedule Consultation
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

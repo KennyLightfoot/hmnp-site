@@ -267,12 +267,16 @@ export default function EssentialServicePage() {
           Let us handle the details with the professionalism and care you deserve. Schedule your convenient mobile notary appointment today and sign with confidence.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
-            Book Essential Service
-          </Button>
-          <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147]">
-            Contact Us
-          </Button>
+          <Link href="/booking?service=essential">
+            <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white w-full sm:w-auto">
+              Book Essential Service
+            </Button>
+          </Link>
+          <Link href="/contact">
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147] w-full sm:w-auto">
+              Contact Us
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

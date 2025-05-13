@@ -1,5 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
+import { Metadata } from 'next'
 import {
   MapPin,
   Clock,
@@ -23,6 +24,35 @@ import ServiceArea from "@/components/service-area"
 import TestimonialsSection from "@/components/testimonials-section"
 import FaqSection from "@/components/faq-section"
 import CtaSection from "@/components/cta-section"
+
+export const metadata: Metadata = {
+  title: "Houston Mobile Notary Pros | Mobile Notary Service | Houston, TX",
+  description: "Reliable mobile notary public serving Houston, Galveston, League City, Pearland, and surrounding areas. We travel to you for convenient document notarization.",
+  keywords:
+    "mobile notary Houston, notary public, Houston notary, Galveston notary, Pearland notary, League City notary, traveling notary, notary services, loan signing agent, document notarization, mobile notary service",
+  openGraph: {
+    title: "Houston Mobile Notary Pros | Premier Mobile Notary Service",
+    description: "Your trusted mobile notary serving Houston, Galveston, Pearland, and more. Convenient, professional notarization at your location.",
+    url: "/", // Assuming this is the root URL
+    siteName: 'Houston Mobile Notary Pros',
+    images: [
+      {
+        url: '/og-image.jpg', // Ensure this image exists in /public
+        width: 1200,
+        height: 630,
+        alt: 'Houston Mobile Notary Pros',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Houston Mobile Notary Pros | Your Trusted Mobile Notary",
+    description: "Need a notary in Houston? We travel to you! Professional mobile notary services for loan signings, POAs, wills, and more.",
+    images: [`/og-image.jpg`], // Must be an absolute URL relative to the domain
+  },
+}
 
 export default function HomePage() {
   // FAQ items for the MiniFAQ component

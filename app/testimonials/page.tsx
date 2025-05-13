@@ -370,8 +370,9 @@ export default function TestimonialsPage() {
               >
                 <p className="font-semibold">Facebook</p>
               </a>
+              {/* TODO: Replace '#' with the actual Yelp business profile URL */}
               <a
-                href="https://www.yelp.com"
+                href="#"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-white/20 hover:bg-white/30 p-4 rounded-lg text-center transition-colors"
