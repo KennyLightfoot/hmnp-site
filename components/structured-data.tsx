@@ -56,6 +56,11 @@ export function StructuredData({ nonce }: StructuredDataProps) {
       // Add social media profile URLs here when available
     ],
     email: "contact@houstonmobilenotarypros.com",
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "5",
+      reviewCount: "35",
+    },
   }
 
   return (

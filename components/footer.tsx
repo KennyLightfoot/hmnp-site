@@ -55,6 +55,36 @@ export default function Footer() {
             </Link>
           </div>
         </div>
+        {/* Service Areas quick links */}
+        <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 text-xs text-gray-600">
+          {[
+            "Clear Lake City",
+            "Pasadena",
+            "Texas City",
+            "Webster",
+            "Nassau Bay",
+            "Seabrook",
+            "Clear Lake Shores",
+            "Taylor Lake Village",
+            "Friendswood",
+            "League City",
+            "Kemah",
+            "La Porte",
+            "Deer Park",
+            "South Houston",
+            "La Marque",
+            "Dickinson",
+            "Santa Fe",
+            "Galveston",
+          ].map((city) => {
+            const slug = city.toLowerCase().replace(/ /g, "-")
+            return (
+              <Link key={city} href={`/service-areas/${slug}`} className="hover:text-[#002147]">
+                {city}
+              </Link>
+            )
+          })}
+        </div>
       </div>
     </footer>
   )

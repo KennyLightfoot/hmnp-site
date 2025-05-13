@@ -6,7 +6,7 @@ import { MetadataRoute } from 'next'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // !!! Replace with your actual domain !!!
-  const baseUrl = 'https://your-domain.com';
+  const baseUrl = 'https://houstonmobilenotarypros.com';
 
   // --- Example: Fetching dynamic blog posts ---
   // const posts = await getAllBlogPosts();
