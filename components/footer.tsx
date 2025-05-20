@@ -57,6 +57,13 @@ export default function Footer() {
               Privacy Policy
             </Link>
           </div>
+          <div className="flex justify-center space-x-4 mt-6">
+            <Link href="https://www.facebook.com/HoustonMobileNotaryPros/" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-[#002147]">
+              {/* Replace with an icon if available */}
+              Facebook
+            </Link>
+            {/* Add other social media links here */}
+          </div>
         </div>
         {/* Service Areas quick links */}
         <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 text-xs text-gray-600">

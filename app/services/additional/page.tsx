@@ -53,7 +53,7 @@ export default function AdditionalServicesPage() {
       </Link>
 
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-[#002147] mb-4">Additional Services</h1>
+        <h1 className="text-4xl font-bold text-[#002147] mb-4">Notary Add-On Services</h1>
         <p className="text-xl text-gray-700 max-w-3xl mx-auto">
           Elevate your notary experience with convenient add-on services designed for your <span className="font-semibold text-[#002147]">complete peace of mind and efficiency</span>. Handled with our signature <span className="font-semibold text-[#002147]">care and precision</span>.
         </p>

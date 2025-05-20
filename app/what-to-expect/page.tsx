@@ -9,6 +9,7 @@ export const metadata = {
   metadataBase: new URL(BASE_URL),
   title: "What to Expect | Houston Mobile Notary Pros",
   description: "Understand the mobile notary process with Houston Mobile Notary Pros. From booking to signing, we ensure a clear, calm, and professional experience.",
+  keywords: "mobile notary process, what to expect notary, Houston notary process, notary appointment steps, HMNP signing experience",
   alternates: {
     canonical: '/what-to-expect',
   },

@@ -1981,7 +1981,7 @@ This workflow automates the initial actions taken when a prospective client or i
       - **4. Email Template for Auto-Reply Acknowledgment:**
          - Create an email template to send to contacts immediately after they submit the form. Go to **Marketing > Emails > Templates**.
          - Name it `HMNP - Email - General Contact Form Ack`.
-         - *Content Idea:* Thank them for their inquiry, mention you'll be in touch (e.g., "within 24 business hours"), and provide your business phone number (Houston Mobile Notary Pros: 832-617-4285).
+         - *Content Idea:* Thank them for their inquiry, mention you'll be in touch (e.g., "within 24 business hours"), and provide your business phone number (Houston Mobile Notary Pros: (832) 617-4285).
 
       - **5. Staff/User for Notifications:**
          - Identify which GHL user(s) or email address(es) should receive internal notifications about new contact form submissions.
@@ -2081,7 +2081,7 @@ This workflow is designed for submissions from your "Request a Call" form. These
 
       - **5. Email Template for Auto-Reply Acknowledgment:**
          - Create an email template: `HMNP - Email - RequestCall Form Ack` in **Marketing > Emails > Templates**.
-         - *Content Idea:* "Thanks for requesting a call! We've received your information and will contact you shortly to confirm a time. Our team (Houston Mobile Notary Pros) will reach out from 832-617-4285."
+         - *Content Idea:* "Thanks for requesting a call! We've received your information and will contact you shortly to confirm a time. Our team (Houston Mobile Notary Pros) will reach out from (832) 617-4285."
 
       - **6. Staff/User for Prioritized Notifications:**
          - Identify who needs immediate notification for these high-intent leads.
@@ -2260,7 +2260,7 @@ This workflow processes new leads that originate from a Google My Business (GMB)
       - **4. Email/SMS Template for Auto-Reply (for GMB Messages):**
          - If GHL captures GMB messages and allows automated replies via workflow:
            - Create an SMS template: `HMNP - SMS - GMB Message Ack` (since GMB interactions are often mobile-first).
-           - *Content Idea (SMS):* "Hi {{contact.first_name}}, thanks for your message via Google! This is Houston Mobile Notary Pros. We'll review your inquiry and get back to you ASAP. Our direct line is 832-617-4285."
+           - *Content Idea (SMS):* "Hi {{contact.first_name}}, thanks for your message via Google! This is Houston Mobile Notary Pros. We'll review your inquiry and get back to you ASAP. Our direct line is (832) 617-4285."
            - Create an email template (as a backup or alternative): `HMNP - Email - GMB Message Ack` with similar content.
 
       - **5. Staff/User for Notifications:**
@@ -2357,7 +2357,7 @@ This workflow is for new leads initiated through Direct Messages (DMs) on Facebo
       - **4. SMS/Email Template for Auto-Reply (Optional but Recommended):**
          - Since direct replies within FB/IG via GHL workflows can be complex or limited by platform policies, a common strategy is to acknowledge and attempt to move the conversation to a more robust channel (like SMS or email if details are captured or requested).
            - SMS Template: `HMNP - SMS - SocialDM Ack`
-             *Content Idea:* "Hi {{contact.first_name}}, thanks for your message on Social Media! This is HMNP. To best assist you, can you please provide your phone number or email? Or, feel free to call us at 832-617-4285."
+             *Content Idea:* "Hi {{contact.first_name}}, thanks for your message on Social Media! This is HMNP. To best assist you, can you please provide your phone number or email? Or, feel free to call us at (832) 617-4285."
            - Email Template: `HMNP - Email - SocialDM Ack` (if email is captured)
              *Content Idea:* Similar, acknowledging the social DM and offering further assistance.
 
@@ -2548,7 +2548,7 @@ This workflow automates the response when a scheduled or attempted payment fails
 
       - **4. Email Templates for Client Notification:**
          - `HMNP - Email - Payment Failed - Action Required`: Main notification.
-           *Content Idea:* "Hi {{contact.first_name}}, it looks like there was an issue processing your recent payment for {{product.name_or_invoice_details}}. Please update your payment information here: {{links.update_payment_method_link_OR_portal_link}}. If you believe this is an error, please contact us at 832-617-4285."
+           *Content Idea:* "Hi {{contact.first_name}}, it looks like there was an issue processing your recent payment for {{product.name_or_invoice_details}}. Please update your payment information here: {{links.update_payment_method_link_OR_portal_link}}. If you believe this is an error, please contact us at (832) 617-4285."
          - (Optional) `HMNP - Email - Payment Failed - Reminder`: If you send multiple reminders.
 
       - **5. GHL Payment Links/Update Methods:**
@@ -2931,7 +2931,7 @@ This workflow attempts to re-engage past clients who haven't had significant int
 
       - **3. Email Templates for Reactivation:**
          - `HMNP - Email - Reactivation - 6Months - WeMissYou`: A friendly, no-pressure email. 
-           *Content Idea:* "Hi {{contact.first_name}}, it's been a while since we last connected! Just wanted to say hello from Houston Mobile Notary Pros and remind you we're here for any notary needs you might have. Perhaps you're planning for [common service need, e.g., travel documents, estate planning]? See our services: [Link to Services Page] or call us at 832-617-4285."
+           *Content Idea:* "Hi {{contact.first_name}}, it's been a while since we last connected! Just wanted to say hello from Houston Mobile Notary Pros and remind you we're here for any notary needs you might have. Perhaps you're planning for [common service need, e.g., travel documents, estate planning]? See our services: [Link to Services Page] or call us at (832) 617-4285."
          - (Optional) `HMNP - Email - Reactivation - 6Months - GentleFollowUp`: A second, perhaps slightly different attempt.
            *Content Idea:* "Hi {{contact.first_name}}, following up on our last note. As a thank you for being a past client, here's a 10% discount on your next service with HMNP: [DiscountCode]. Let us know if we can help! [Link to Booking Page]"
 
@@ -3032,7 +3032,7 @@ This workflow targets past clients who have had no significant interaction for a
 
       - **4. Email Templates for 12-Month Reactivation:**
          - `HMNP - Email - Reactivation - 12Months - LongTimeNoSee`: Acknowledge the longer time, offer a slightly stronger incentive if appropriate.
-           *Content Idea:* "Hi {{contact.first_name}}, it's been quite some time since we last connected at Houston Mobile Notary Pros. We value your past business and would love to assist you again. As a special welcome back, we're offering you a [Significant Offer, e.g., 15% discount] on your next service. Visit [Link to Services/Booking Page] or call us at 832-617-4285."
+           *Content Idea:* "Hi {{contact.first_name}}, it's been quite some time since we last connected at Houston Mobile Notary Pros. We value your past business and would love to assist you again. As a special welcome back, we're offering you a [Significant Offer, e.g., 15% discount] on your next service. Visit [Link to Services/Booking Page] or call us at (832) 617-4285."
          - (Optional) `HMNP - Email - Reactivation - 12Months - FinalCheckIn`: A very brief, final attempt.
            *Content Idea:* "Hi {{contact.first_name}}, just a final check-in from HMNP. If your notary needs have changed or if you're no longer interested in our services, no action is needed. Otherwise, we're here to help!"
 
@@ -3516,7 +3516,7 @@ This workflow is triggered when HMNP staff need to cancel a client's existing ap
 
       - **4. Email/SMS Templates:**
          - `HMNP - Email - Booking - StaffCancellationNoticeClient`: To inform the client about the staff-initiated cancellation.
-           *Content Idea:* "Hi {{contact.first_name}}, This email is to inform you that we've had to cancel your HMNP appointment for [Service: {{appointment.title}}] on {{appointment.start_time | date: "MMMM d, yyyy 'at' h:mm a"}}. This was due to [Brief, Professional Reason - staff may need to customize this or have pre-set versions]. We sincerely apologize for any inconvenience. We'd love to help you reschedule. Please visit [Link to Booking Page] or call us at 832-617-4285."
+           *Content Idea:* "Hi {{contact.first_name}}, This email is to inform you that we've had to cancel your HMNP appointment for [Service: {{appointment.title}}] on {{appointment.start_time | date: "MMMM d, yyyy 'at' h:mm a"}}. This was due to [Brief, Professional Reason - staff may need to customize this or have pre-set versions]. We sincerely apologize for any inconvenience. We'd love to help you reschedule. Please visit [Link to Booking Page] or call us at (832) 617-4285."
          - (Optional) `HMNP - SMS - Booking - StaffCancellationNoticeClient`: SMS version.
 
       - **5. Internal Notification Details:**
@@ -3808,7 +3808,7 @@ This workflow addresses the situation when a client fails to show up for their s
 
       - **3. Email/SMS Templates (Use with caution and empathy):**
          - `HMNP - Email - Booking - MissedAppointmentNotice`: To the client (consider if/when to send this).
-           *Content Idea (Gentle):* "Hi {{contact.first_name}}, We missed you at your HMNP appointment for [Service: {{appointment.title}}] scheduled for {{appointment.start_time | date: "MMMM d, yyyy 'at' h:mm a"}}. We understand things happen. If you'd like to reschedule, please contact us at 832-617-4285 or visit [Link to Booking Page]."
+           *Content Idea (Gentle):* "Hi {{contact.first_name}}, We missed you at your HMNP appointment for [Service: {{appointment.title}}] scheduled for {{appointment.start_time | date: "MMMM d, yyyy 'at' h:mm a"}}. We understand things happen. If you'd like to reschedule, please contact us at (832) 617-4285 or visit [Link to Booking Page]."
            *Content Idea (More direct, if policy dictates):* "Hi {{contact.first_name}}, This is a notice that you missed your HMNP appointment for [Service: {{appointment.title}}] on {{appointment.start_time | date: "MMMM d, yyyy 'at' h:mm a"}}. Please contact us to discuss rescheduling or any applicable no-show fees as per our policy."
          - (Optional) `HMNP - SMS - Booking - MissedAppointmentNotice`: SMS version.
 
@@ -4252,7 +4252,7 @@ This workflow automates sending a pre-appointment preparation reminder to client
            5.  **Mobile Service:** Please ensure the location is accessible and provides a suitable space for the notarization.
            {{/if}}
 
-           If you have any questions or need to reschedule, please contact us at 832-617-4285.
+           If you have any questions or need to reschedule, please contact us at (832) 617-4285.
 
            We look forward to assisting you!
            Sincerely, The HMNP Team"
@@ -4663,7 +4663,7 @@ This workflow automates sending a review request to clients after their service,
 
            Sincerely,
            The HMNP Team
-           832-617-4285
+           (832) 617-4285
            [Link to HMNP Website]"
 
          - **SMS Name:** `HMNP - SMS - Review - RequestPositiveExp`
@@ -4791,7 +4791,7 @@ This workflow automates sending a general feedback survey to clients after their
 
            Sincerely,
            The HMNP Team
-           832-617-4285"
+           (832) 617-4285"
 
          - **SMS Name:** `HMNP - SMS - Review - FeedbackSurveyInvite` (similar, shorter message with survey link).
 
@@ -4912,7 +4912,7 @@ This workflow triggers automatically after a client submits highly positive feed
 
            Sincerely,
            The HMNP Team
-           832-617-4285
+           (832) 617-4285
            [Link to HMNP Website]"
 
          - **SMS Name:** `HMNP - SMS - Review - PublicReqFromSurvey`
@@ -6451,7 +6451,7 @@ Effective and consistent communication is key to client satisfaction and operati
      - "Dear {{contact.first_name}},"
      - "Thank you for reaching out to Houston Mobile Notary Pros. We've received your inquiry regarding: {{custom_fields.cf_contact_inquiry_subject}}."
      - "Our team will review your message and get back to you within 24 business hours."
-     - "If your matter is urgent, please call us at 832-617-4285."
+     - "If your matter is urgent, please call us at (832) 617-4285."
      - "Sincerely, Houston Mobile Notary Pros"
    - **Tone:** Professional, reassuring.
 
@@ -6498,7 +6498,7 @@ Effective and consistent communication is key to client satisfaction and operati
      - "This is a reminder for your confirmed appointment for {{custom_fields.cf_booking_service_type}} tomorrow, {{custom_fields.cf_booking_appointment_datetime | date: 'MMMM d, yyyy'}}, at {{custom_fields.cf_booking_appointment_datetime | date: 'h:mm a'}}."
      - "Location: {{custom_fields.cf_booking_service_address}}."
      - "Please ensure you have [mention any required items, e.g., a valid government-issued photo ID for all signers, all documents to be notarized, any witnesses if required, etc.]. If you have questions about requirements, please contact us."
-     - "If you need to reschedule or cancel, please contact us immediately at 832-617-4285 or reply to this email. Note that our cancellation policy (see Section 7 or link to website) may apply."
+     - "If you need to reschedule or cancel, please contact us immediately at (832) 617-4285 or reply to this email. Note that our cancellation policy (see Section 7 or link to website) may apply."
      - "Sincerely, Houston Mobile Notary Pros"
    - **Tone:** Helpful, informative.
 
@@ -6509,7 +6509,7 @@ Effective and consistent communication is key to client satisfaction and operati
      - "Dear {{contact.first_name}},"
      - "We had an appointment scheduled for you for {{custom_fields.cf_booking_service_type}} today, {{custom_fields.cf_booking_appointment_datetime | date: 'MMMM d, yyyy'}}, at {{custom_fields.cf_booking_appointment_datetime | date: 'h:mm a'}}, but it appears we missed you."
      - "As per our policy (Section 7), the $25 deposit is non-refundable for no-shows."
-     - "If there was a misunderstanding or you'd like to reschedule, please contact us at 832-617-4285. A new deposit may be required to book a new appointment."
+     - "If there was a misunderstanding or you'd like to reschedule, please contact us at (832) 617-4285. A new deposit may be required to book a new appointment."
      - "Sincerely, Houston Mobile Notary Pros"
    - **Tone:** Professional, understanding but firm on policy.
 

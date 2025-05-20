@@ -16,6 +16,7 @@ interface ReviewFormProps {
 }
 
 export function ReviewForm({ serviceName }: ReviewFormProps) {
+  const privacyPolicyLink = "/privacy-policy"; // Define this or pass as prop if dynamic
   const router = useRouter()
   const [rating, setRating] = useState(0)
   const [hoveredRating, setHoveredRating] = useState(0)
@@ -107,7 +108,15 @@ export function ReviewForm({ serviceName }: ReviewFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="p-4 md:p-6 border rounded-lg shadow-md">
+      <div className="mb-6 text-center">
+        <h2 className="text-2xl font-semibold text-[#002147]">Share Your Experience</h2>
+        <p className="text-sm text-gray-700 mt-1 italic">Houston Mobile Notary Pros - Professional Notary Services Day & Evening</p>
+        <p className="text-muted-foreground mt-2">
+          We value your feedback! Please take a moment to tell us about your experience. Your review helps us improve and informs other clients.
+        </p>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <Label htmlFor="name" className="text-base">
           Your Name
@@ -117,7 +126,7 @@ export function ReviewForm({ serviceName }: ReviewFormProps) {
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="John Smith"
+          placeholder="e.g., Jane D."
           required
           className="mt-1"
         />
@@ -132,7 +141,7 @@ export function ReviewForm({ serviceName }: ReviewFormProps) {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="john@example.com"
+          placeholder="e.g., jane.d@example.com"
           required
           className="mt-1"
         />
@@ -190,7 +199,7 @@ export function ReviewForm({ serviceName }: ReviewFormProps) {
           id="reviewText"
           value={reviewText}
           onChange={(e) => setReviewText(e.target.value)}
-          placeholder="Tell us about your experience with our notary service..."
+          placeholder="Please share details about your experience. What did we do well? How could we improve? Your feedback helps us and other customers."
           required
           className="mt-1 min-h-[150px]"
         />
@@ -202,9 +211,21 @@ export function ReviewForm({ serviceName }: ReviewFormProps) {
         </div>
       )}
 
+      <div className="mt-8 pt-6 border-t border-gray-200 text-center">
+        <p className="text-sm font-semibold text-[#002147] mb-1">Houston Mobile Notary Pros</p>
+        <p className="text-xs text-gray-600 mb-2 italic">Professional Notary Services Day & Evening.</p>
+        <p className="text-xs text-gray-500">
+          By submitting your review, you grant us permission to display it on our website and other marketing materials. Your email address will not be published.
+          Please review our <a href={privacyPolicyLink} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-700">Privacy Policy</a> for more information on how we handle your data.
+        </p>
+        <p className="text-xs text-gray-500 mt-2">
+          We appreciate your feedback and look forward to serving you again in the future.
+        </p>
+      </div>
+
       <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
         <Button type="submit" disabled={loading} className="bg-[#002147] hover:bg-[#001a38]">
-          {loading ? "Submitting..." : "Submit Review"}
+          {loading ? "Submitting Review..." : "Submit Review"}
         </Button>
 
         <div className="flex flex-col sm:items-end">
@@ -238,5 +259,6 @@ export function ReviewForm({ serviceName }: ReviewFormProps) {
         </div>
       </div>
     </form>
+    </div>
   )
 }

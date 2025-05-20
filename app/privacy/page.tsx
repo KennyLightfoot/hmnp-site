@@ -3,6 +3,7 @@ import { Metadata } from "next"
 export const metadata: Metadata = {
   title: "Privacy Policy | Houston Mobile Notary Pros",
   description: "Learn about how Houston Mobile Notary Pros handles your personal information.",
+  keywords: "notary privacy policy, Houston notary privacy, data protection notary service, mobile notary privacy policy, HMNP privacy",
   robots: { // Allow indexing now that content is added
     index: true, 
     follow: true,
@@ -113,7 +114,7 @@ export default function PrivacyPolicyPage() {
           <p>If you have questions or comments about this Privacy Policy, please contact us at:</p>
           <p>
             <strong>Houston Mobile Notary Pros</strong><br />
-            Phone: 832-617-4285<br />
+            Phone: (832) 617-4285<br />
             Email: contact@houstonmobilenotarypros.com
             {/* Add physical address if applicable */}
           </p>

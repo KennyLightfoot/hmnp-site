@@ -26,7 +26,7 @@ export default function ServiceAreaJSONLD({ area, faqs }: Props) {
       "@type": "LocalBusiness",
       name: "Houston Mobile Notary Pros",
       url: process.env.NEXT_PUBLIC_BASE_URL || "https://houstonmobilenotarypros.com",
-      telephone: "+12817798847",
+      telephone: "+18326174285",
     },
     offers: {
       "@type": "Offer",

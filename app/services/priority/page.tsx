@@ -53,7 +53,7 @@ export default function PriorityServicePage() {
       </Link>
 
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-[#002147] mb-4">Priority Service Package</h1>
+        <h1 className="text-4xl font-bold text-[#002147] mb-4">Priority Mobile Notary Package</h1>
         <p className="text-xl text-gray-700 max-w-3xl mx-auto">
           When time is critical, count on our <span className="font-semibold text-[#002147]">rapid 2-hour response</span>. We deliver swift notarization with the <span className="font-semibold text-[#002147]">calm, clarity, and precision</span> you deserve.
         </p>
@@ -256,7 +256,7 @@ export default function PriorityServicePage() {
               Book Priority Service
             </Button>
           </Link>
-          <Link href="tel:+12817798847">
+          <Link href="tel:+18326174285">
             <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#A52A2A] w-full sm:w-auto">
               Call Now
             </Button>

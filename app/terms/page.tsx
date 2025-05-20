@@ -4,6 +4,7 @@ import Link from "next/link"; // Import Link
 export const metadata: Metadata = {
   title: "Terms and Conditions | Houston Mobile Notary Pros",
   description: "Review the terms and conditions for using Houston Mobile Notary Pros services.",
+  keywords: "notary terms and conditions, mobile notary terms, Houston notary terms, HMNP terms and conditions, service terms Houston mobile notary",
   robots: { // Allow indexing now that content is added
     index: true,
     follow: true,
@@ -135,7 +136,7 @@ export default function TermsPage() {
           <p>For any questions regarding these Terms, please contact us:</p>
           <p>
             <strong>Houston Mobile Notary Pros</strong><br />
-            Phone: 832-617-4285<br />
+            Phone: (832) 617-4285<br />
             Email: contact@houstonmobilenotarypros.com
           </p>
 

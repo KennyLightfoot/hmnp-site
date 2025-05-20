@@ -819,6 +819,8 @@ export default function BookingPageClient() {
                       </div>
                     </div>
 
+
+
                     <FormField
                       control={form.control}
                       name="termsAccepted"

@@ -173,7 +173,7 @@ const faqs: FAQ[] = [
         <div className="mt-4 p-3 bg-[#A52A2A]/10 rounded-md">
           <p className="text-sm text-[#A52A2A]">
             <strong>Quick Tip:</strong> When booking online, select "Priority Service" and note the urgency of your
-            request in the special instructions field. For immediate assistance, call us directly at (281) 779-8847.
+            request in the special instructions field. For immediate assistance, call us directly at (832) 617-4285.
           </p>
         </div>
       </div>
@@ -2091,10 +2091,10 @@ export default function FAQClientPage() {
                   variant="outline"
                   className="border-white text-white hover:bg-white hover:text-[#002147]"
                   as="a"
-                  href="tel:+12817798847"
+                  href="tel:+18326174285"
                 >
                   <Phone className="mr-2 h-5 w-5" />
-                  (281) 779-8847
+                  (832) 617-4285
                 </Button>
               </div>
             </div>

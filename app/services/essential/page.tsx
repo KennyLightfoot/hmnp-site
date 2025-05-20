@@ -53,7 +53,7 @@ export default function EssentialServicePage() {
       </Link>
 
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-[#002147] mb-4">Essential Mobile Package</h1>
+        <h1 className="text-4xl font-bold text-[#002147] mb-4">Essential Mobile Notary Package</h1>
         <p className="text-xl text-gray-700 max-w-3xl mx-auto">
           Ensuring your important documents like wills, POAs, and affidavits are handled with <span className="font-semibold text-[#002147]">precision and care</span>, right at your doorstep. Experience notarization that brings you <span className="font-semibold text-[#002147]">peace of mind</span>.
         </p>

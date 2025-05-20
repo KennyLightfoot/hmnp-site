@@ -95,6 +95,44 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly',
       priority: 0.6,
     },
+    // New Landing Pages
+    {
+      url: `${baseUrl}/lp/facebook-campaign`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly', // Or 'yearly' if content is very static
+      priority: 0.6, // Adjust based on SEO strategy for this page
+    },
+    {
+      url: `${baseUrl}/lp/gmb-contact`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7, // Higher priority as it's a key contact point
+    },
+    {
+      url: `${baseUrl}/lp/newsletter-signup`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.5,
+    },
+    // New Thank You Pages
+    {
+      url: `${baseUrl}/thank-you-fb`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.2, // Lower priority for thank you pages
+    },
+    {
+      url: `${baseUrl}/contact/thank-you-gmb`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.2,
+    },
+    {
+      url: `${baseUrl}/newsletter-thank-you`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.2,
+    },
   ];
 
   return [

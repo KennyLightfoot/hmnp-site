@@ -7,7 +7,7 @@ import { format, addHours, setHours, setMinutes, setSeconds, setMilliseconds, st
 import { Loader2 } from 'lucide-react'; // Added for loading state
 
 // Define valid service types
-type ServiceType = "essential" | "priority" | "loan-signing" | "reverse-mortgage" | "specialty";
+export type ServiceType = "essential" | "priority" | "loan-signing" | "reverse-mortgage" | "specialty";
 
 // Define structure for time slots fetched from API
 interface TimeSlot {
@@ -24,6 +24,8 @@ interface AppointmentCalendarProps {
 }
 
 export default function AppointmentCalendar({ serviceType, numberOfSigners, onTimeSelected }: AppointmentCalendarProps) {
+  const privacyPolicyLink = "/privacy-policy";
+  const termsOfServiceLink = "/terms";
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   // State now holds TimeSlot objects
   const [availableTimeSlots, setAvailableTimeSlots] = useState<TimeSlot[]>([]);
@@ -218,74 +220,120 @@ export default function AppointmentCalendar({ serviceType, numberOfSigners, onTi
   // TODO: Add logic to disable specific booked dates or dates outside service range
 
   return (
-    <div className="flex flex-col md:flex-row gap-8 p-4 border rounded-lg bg-white shadow-sm">
-      <div className="flex-shrink-0">
-        <DayPicker
-          mode="single"
-          selected={selectedDate}
-          onSelect={handleDateSelect}
-          disabled={disabledDays}
-          showOutsideDays
-          fixedWeeks
-          classNames={{
-            root: 'border-0 p-0 m-0',
-            caption: 'flex justify-center items-center h-10 mb-2 relative',
-            caption_label: 'text-lg font-medium text-[#002147]',
-            nav_button: 'h-8 w-8 absolute top-1 bg-gray-100 hover:bg-gray-200 rounded-full p-1 disabled:opacity-50',
-            nav_button_previous: 'left-1',
-            nav_button_next: 'right-1',
-            table: 'border-collapse w-full',
-            head_cell: 'text-sm font-semibold text-gray-500 pb-2 w-[2.5rem]',
-            cell: 'text-center p-0 align-middle relative h-10 w-10',
-            day: 'h-9 w-9 rounded-full hover:bg-[#A52A2A]/10 aria-selected:opacity-100',
-            day_selected: 'bg-[#A52A2A] text-white hover:bg-[#8B0000] focus:bg-[#A52A2A]',
-            day_today: 'font-bold text-[#A52A2A]',
-            day_outside: 'text-gray-400 opacity-50 aria-selected:opacity-30',
-            day_disabled:
-              'text-gray-300 opacity-50 cursor-not-allowed hover:bg-transparent',
-          }}
-        />
-      </div>
+    <>
+      <style jsx global>{`
+        .rdp-day_selected:not([disabled]),
+        .rdp-day_selected:focus:not([disabled]),
+        .rdp-day_selected:active:not([disabled]),
+        .rdp-day_selected:hover:not([disabled]) {
+          background-color: hsl(var(--primary)); /* Use your primary color variable */
+          color: hsl(var(--primary-foreground)); /* Use your primary foreground color variable */
+          /* Ensure the number is centered */
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%; /* Ensure it's a circle */
+        }
+        .rdp-day_selected .rdp-button:hover {
+            background-color: hsl(var(--primary) / 0.9);
+        }
+      `}</style>
+      <div className="p-4 md:p-6 border rounded-lg shadow-md bg-white">
+        <div className="mb-6 text-center md:text-left">
+          <h2 className="text-2xl font-semibold text-[#002147]">Schedule Your Appointment</h2>
+          <p className="text-sm text-gray-700 mt-1 italic">Houston Mobile Notary Pros - Professional Notary Services Day & Evening</p>
+          <p className="text-muted-foreground mt-2">
+            Please select your desired date and time for your notary service. Our availability is updated in real-time.
+          </p>
+        </div>
+        <div className="my-4 p-3 bg-amber-50 border border-amber-200 rounded-md text-xs text-amber-800">
+          <p><strong>Important:</strong> For all notarial acts, a valid government-issued photo ID (e.g., Driver's License, State ID, Passport) is required for each signer, as per Texas law. Please ensure all signers have their ID ready for the appointment.</p>
+        </div>
 
-      <div className="flex-grow border-l border-gray-200 pl-8 min-w-[250px]">
-        <h3 className="text-lg font-semibold mb-4 text-[#002147]">
-          {selectedDate ? `Available Times for ${format(selectedDate, 'PPP')}` : 'Select a date'}
-        </h3>
-        {/* Conditional rendering based on state */}
-        {!selectedDate ? (
-          <p className="text-gray-500">Select a date to see available time slots.</p>
-        ) : isLoading ? (
-          <div className="flex justify-center items-center h-32">
-            <Loader2 className="h-8 w-8 animate-spin text-[#002147]" />
-            <span className="ml-2 text-gray-500">Loading times...</span>
-          </div>
-        ) : error ? (
-           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
-              <strong className="font-bold">Error: </strong>
-              <span className="block sm:inline">{error}</span>
+        {/* Original content for calendar and time slots starts here, wrapped in a new div for proper layout within the new structure */}
+        <div className="flex flex-col md:flex-row gap-8 pt-4"> {/* Removed p-4, border, shadow from this inner div, added pt-4 for spacing */}
+        <div className="flex-shrink-0">
+          <DayPicker
+            mode="single"
+            selected={selectedDate}
+            onSelect={handleDateSelect}
+            disabled={isLoading || disabledDays}
+            showOutsideDays
+            fixedWeeks
+            classNames={{
+              root: 'border-0 p-0 m-0',
+              caption: 'flex justify-center items-center h-10 mb-2 relative',
+              caption_label: 'text-lg font-medium text-[#002147]',
+              nav_button: 'h-8 w-8 absolute top-1 bg-gray-100 hover:bg-gray-200 rounded-full p-1 disabled:opacity-50',
+              nav_button_previous: 'left-1',
+              nav_button_next: 'right-1',
+              table: 'border-collapse w-full',
+              head_cell: 'text-sm font-semibold text-gray-500 pb-2 w-[2.5rem]',
+              cell: 'text-center p-0 align-middle relative h-10 w-10',
+              day: 'h-9 w-9 rounded-full leading-9 hover:bg-[#A52A2A]/10 aria-selected:opacity-100',
+              day_selected: 'bg-[#A52A2A] text-white hover:bg-[#8B0000] focus:bg-[#A52A2A]',
+              day_today: 'font-bold text-[#A52A2A]',
+              day_outside: 'text-gray-400 opacity-50 aria-selected:opacity-30',
+              day_disabled:
+                'text-gray-300 opacity-50 cursor-not-allowed hover:bg-transparent',
+            }}
+          />
+        </div>
+
+        <div className="flex-grow border-l border-gray-200 pl-8 min-w-[250px]">
+          <h3 className="text-lg font-semibold mb-4 text-[#002147]">
+            {selectedDate ? `Available Times for ${format(selectedDate, 'PPP')}` : 'Select a date'}
+          </h3>
+          {/* Conditional rendering based on state */}
+          {!selectedDate ? (
+            <p className="text-gray-500">Select a date to see available time slots.</p>
+          ) : isLoading ? (
+            <div className="flex justify-center items-center h-32">
+              <Loader2 className="h-8 w-8 animate-spin text-[#002147]" />
+              <span className="ml-2 text-gray-600 font-medium">Fetching available times...</span>
             </div>
-        ) : availableTimeSlots.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {/* Map over availableTimeSlots */}
-            {availableTimeSlots.map((slot) => (
-                <button
-                key={slot.startTime} // Use startTime as key
-                onClick={() => handleTimeSelect(slot)}
-                  className={`p-2 border rounded-md text-center text-sm transition-colors
-                  ${selectedTimeSlot?.startTime === slot.startTime // Compare based on startTime
-                      ? 'bg-[#A52A2A] text-white border-[#A52A2A] ring-2 ring-offset-1 ring-[#A52A2A]'
-                      : 'bg-white text-[#002147] border-gray-300 hover:bg-gray-100 hover:border-gray-400'
-                    }`}
-                >
-                {slot.formattedTime} {/* Display formatted time */}
-                </button>
-              ))}
-            </div>
-          ) : (
-           // Message when loading is done, no error, but no slots found
-            <p className="text-gray-500">No available time slots for this date/service.</p>
-        )}
+          ) : error ? (
+             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <strong className="font-bold">Error: </strong>
+                <span className="block sm:inline">{error}</span>
+              </div>
+          ) : availableTimeSlots.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {/* Map over availableTimeSlots */}
+              {availableTimeSlots.map((slot) => (
+                  <button
+                  key={slot.startTime} // Use startTime as key
+                  onClick={() => handleTimeSelect(slot)}
+                    className={`p-2 border rounded-md text-center text-sm transition-colors
+                    ${selectedTimeSlot?.startTime === slot.startTime // Compare based on startTime
+                        ? 'bg-[#A52A2A] text-white border-[#A52A2A] ring-2 ring-offset-1 ring-[#A52A2A]'
+                        : 'bg-white text-[#002147] border-gray-300 hover:bg-gray-100 hover:border-gray-400'
+                      }`}
+                  >
+                  {slot.formattedTime} {/* Display formatted time */}
+                  </button>
+                ))}
+              </div>
+            ) : (
+             // Message when loading is done, no error, but no slots found
+              <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-gray-700 mb-2">No time slots are currently available for the selected date and service.</p>
+                <p className="text-sm text-gray-600">Please try selecting a different date, or <a href="/contact" className="font-medium text-[#002147] hover:text-[#A52A2A] underline">contact us</a> if you need further assistance.</p>
+              </div>
+          )}
+        </div> {/* End of flex-grow container for time slots */}
+        </div> {/* End of flex container for DayPicker and time slots wrapper (from line 235) */}
+
+        <div className="mt-8 pt-6 border-t border-gray-200 text-center">
+          <p className="text-sm font-semibold text-[#002147] mb-1">Houston Mobile Notary Pros</p>
+          <p className="text-xs text-gray-600 mb-2 italic">Professional Notary Services Day & Evening.</p>
+          <p className="text-xs text-gray-500">
+            Once you select a time, you will proceed to the next step to confirm your appointment details.
+            For any questions or if you need to schedule a service not listed, please contact us directly.
+            By proceeding, you agree to our <a href={termsOfServiceLink} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-700">Terms of Service</a> and <a href={privacyPolicyLink} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-700">Privacy Policy</a>.
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 } 

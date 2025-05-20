@@ -24,7 +24,7 @@ The specific services listed are the Essential Mobile Package (for general notar
 * **Priority Service Package:** Flat fee of $100 (offers 2-hour response time, service 7 am-9 pm daily, covers up to 5 documents/2 signers).  
 * **Loan Signing Services:** Flat fee of $150 (includes unlimited documents, up to 4 signers, 90-minute signing session). This transparency contrasts favorably with many competitors who often require potential clients to call or submit a form for a quote.2
 
-Contact methods are clearly provided: a phone number (281-779-8847), an email address (contact@houstonmobilenotarypros.com), and dedicated Contact and Booking pages.1
+Contact methods are clearly provided: a phone number (832) 617-4285, an email address (contact@houstonmobilenotarypros.com), and dedicated Contact and Booking pages.1
 
 The service area description is detailed but presents potential confusion. It lists specific North/West Houston areas (Houston, The Woodlands, Katy, Sugar Land) and South/East Houston areas (Galveston, League City, Pearland, Baytown), but also defines a "Standard Service Area" as a 20-mile radius from ZIP code 77591 (Texas City) with extended coverage available for an additional fee ($0.50 per mile).1 While detailed, anchoring the standard radius to Texas City while listing far-flung Houston suburbs like The Woodlands or Katy within named service zones could create uncertainty for clients regarding applicable fees. A client in Katy, for instance, might see their city listed but then question if the standard fee applies given their distance from Texas City.1 This ambiguity could cause friction, potentially requiring users to call for clarification, unlike competitors who often list clear county or neighborhood coverage.2
 

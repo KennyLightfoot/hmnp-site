@@ -13,7 +13,7 @@ export function StructuredData({ nonce }: StructuredDataProps) {
     image: "/og-image.jpg",
     "@id": "https://houstonmobilenotarypros.com/",
     url: "https://houstonmobilenotarypros.com/",
-    telephone: "+12817798847",
+    telephone: "+18326174285",
     priceRange: "$$",
     address: {
       "@type": "PostalAddress",
@@ -53,7 +53,8 @@ export function StructuredData({ nonce }: StructuredDataProps) {
       },
     ],
     sameAs: [
-      // Add social media profile URLs here when available
+      "https://www.facebook.com/HoustonMobileNotaryPros/"
+      // Add other social media profile URLs here
     ],
     email: "contact@houstonmobilenotarypros.com",
     aggregateRating: {

@@ -53,7 +53,7 @@ export default function LoanSigningPage() {
       </Link>
 
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-[#002147] mb-4">Loan Signing Services</h1>
+        <h1 className="text-4xl font-bold text-[#002147] mb-4">Loan Signing Notary Services</h1>
         <p className="text-xl text-gray-700 max-w-3xl mx-auto">
           Navigate your real estate and mortgage transactions with <span className="font-semibold text-[#002147]">calm and precision</span>. Our expert agents ensure every detail is handled correctly for a <span className="font-semibold text-[#002147]">stress-free closing</span>.
         </p>
