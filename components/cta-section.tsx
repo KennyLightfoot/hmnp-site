@@ -37,7 +37,7 @@ export default function CtaSection() {
                 <Phone className="mr-3 h-5 w-5 text-[#91A3B0]" />
                 <h3 className="font-semibold">Call Us</h3>
               </div>
-              <p className="text-lg">(281) 779-8847</p>
+              <p className="text-lg">(832) 617-4285</p>
               <p className="text-sm text-gray-300">Available 7am-9pm daily</p>
             </div>
 

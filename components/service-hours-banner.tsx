@@ -31,7 +31,7 @@ export default function ServiceHoursBanner() {
             </div>
             <div>
               <p className="text-white text-sm font-medium">Need Same-Day Service?</p>
-              <p className="text-white/80 text-xs">Call (281) 779-8847</p>
+              <p className="text-white/80 text-xs">Call (832) 617-4285</p>
             </div>
           </div>
         </div>
