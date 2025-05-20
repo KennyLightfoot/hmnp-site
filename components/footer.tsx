@@ -45,7 +45,7 @@ export default function Footer() {
             Serving Houston and surrounding areas with professional mobile notary services.
           </p>
           <p className="text-xs mt-2">
-            <span className="font-medium">Phone:</span> (281) 779-8847 | <span className="font-medium">Email:</span>{" "}
+            <span className="font-medium">Phone:</span> (832) 617-4285 | <span className="font-medium">Email:</span>{" "}
             contact@houstonmobilenotarypros.com
           </p>
           <div className="flex justify-center space-x-4 mt-4">
