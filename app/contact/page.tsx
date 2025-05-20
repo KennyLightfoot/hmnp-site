@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Mail, Phone, MapPin, Clock } from "lucide-react"
+import { Mail, Phone, MapPin, Clock, Facebook } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import ContactForm from "@/components/contact-form"
@@ -63,7 +63,7 @@ export default function ContactPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
-            <p className="text-xl font-bold mb-2">(281) 779-8847</p>
+            <p className="text-xl font-bold mb-2">(832) 617-4285</p>
             <p className="text-gray-600 mb-4">For immediate assistance or to book by phone</p>
             <div className="text-sm text-gray-500">
               <p className="flex items-center">
@@ -105,6 +105,21 @@ export default function ContactPage() {
               <p>Extended service area available for additional fee</p>
               <p className="mt-1">We come to your location!</p>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-md">
+          <CardHeader className="bg-[#002147]/5 pb-2">
+            <CardTitle className="flex items-center text-[#002147]">
+              <Facebook className="mr-2 h-5 w-5 text-[#A52A2A]" />
+              Connect With Us
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <a href="https://www.facebook.com/HoustonMobileNotaryPros/" target="_blank" rel="noopener noreferrer" className="text-lg font-bold mb-2 hover:text-[#A52A2A] break-words">
+              Facebook Page
+            </a>
+            <p className="text-gray-600 mb-4">Follow us for updates and news</p>
           </CardContent>
         </Card>
       </div>

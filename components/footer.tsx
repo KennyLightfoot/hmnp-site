@@ -1,5 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
+import { Facebook } from 'lucide-react'
 
 export default function Footer() {
   return (
@@ -58,9 +59,8 @@ export default function Footer() {
             </Link>
           </div>
           <div className="flex justify-center space-x-4 mt-6">
-            <Link href="https://www.facebook.com/HoustonMobileNotaryPros/" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-[#002147]">
-              {/* Replace with an icon if available */}
-              Facebook
+            <Link href="https://www.facebook.com/HoustonMobileNotaryPros/" target="_blank" rel="noopener noreferrer" aria-label="Houston Mobile Notary Pros on Facebook" className="text-gray-600 hover:text-[#002147]">
+              <Facebook className="h-6 w-6" />
             </Link>
             {/* Add other social media links here */}
           </div>
