@@ -1,9 +1,5 @@
-// Prisma schema for Houston Mobile Notary Pros portal
-// Run `pnpm prisma migrate dev` after editing to create your DB tables
-
 generator client {
   provider = "prisma-client-js"
-  output   = "./node_modules/@prisma/client"
 }
 
 datasource db {
@@ -11,14 +7,289 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ------------------------------------------------------------
-//  ENUMS
-// ------------------------------------------------------------
+model User {
+  id                             String                 @id @default(cuid())
+  name                           String?
+  email                          String?                @unique
+  emailVerified                  DateTime?
+  image                          String?
+  role                           Role                   @default(PARTNER)
+  createdAt                      DateTime               @default(now())
+  updatedAt                      DateTime               @updatedAt
+  onboardedAt                    DateTime?
+  password                       String?
+  accounts                       Account[]
+  assignments                    Assignment[]           @relation("UserAssignments")
+  uploadedDocs                   AssignmentDocument[]   @relation("UploadedDocs")
+  Booking_Booking_notaryIdToUser Booking[]              @relation("Booking_notaryIdToUser")
+  Booking_Booking_signerIdToUser Booking[]              @relation("Booking_signerIdToUser")
+  comments                       Comment[]              @relation("UserComments")
+  downloads                      DownloadLog[]
+  InvitationToken                InvitationToken[]
+  NotarizationDocument           NotarizationDocument[]
+  sessions                       Session[]
+  statusChanges                  StatusHistory[]        @relation("StatusHistoryChangedBy")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Assignment {
+  id                   String               @id @default(cuid())
+  reference            String?              @unique
+  title                String
+  status               AssignmentStatus     @default(REQUESTED)
+  partnerAssignedToId  String?
+  propertyAddress      String?
+  borrowerName         String?
+  closingDate          DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  allowPartnerComments Boolean              @default(false)
+  partnerAssignedTo    User?                @relation("UserAssignments", fields: [partnerAssignedToId], references: [id])
+  documents            AssignmentDocument[]
+  comments             Comment[]
+  history              StatusHistory[]
+}
+
+model AssignmentDocument {
+  id                   String                 @id @default(cuid())
+  assignmentId         String
+  key                  String
+  filename             String
+  uploadedAt           DateTime               @default(now())
+  uploadedById         String?
+  assignment           Assignment             @relation(fields: [assignmentId], references: [id])
+  uploadedBy           User?                  @relation("UploadedDocs", fields: [uploadedById], references: [id])
+  downloads            DownloadLog[]
+  NotarizationDocument NotarizationDocument[]
+}
+
+model StatusHistory {
+  id           String           @id @default(cuid())
+  assignmentId String
+  status       AssignmentStatus
+  note         String?
+  changedAt    DateTime         @default(now())
+  changedById  String?
+  assignment   Assignment       @relation(fields: [assignmentId], references: [id])
+  changedBy    User?            @relation("StatusHistoryChangedBy", fields: [changedById], references: [id])
+}
+
+model Comment {
+  id           String     @id @default(cuid())
+  text         String
+  createdAt    DateTime   @default(now())
+  assignmentId String
+  authorId     String
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  author       User       @relation("UserComments", fields: [authorId], references: [id])
+
+  @@index([assignmentId])
+}
+
+model BackgroundError {
+  id        String   @id @default(cuid())
+  source    String
+  message   String
+  stack     String?
+  createdAt DateTime @default(now())
+}
+
+model DownloadLog {
+  id           String             @id @default(cuid())
+  documentId   String
+  userId       String
+  downloadedAt DateTime           @default(now())
+  document     AssignmentDocument @relation(fields: [documentId], references: [id])
+  user         User               @relation(fields: [userId], references: [id])
+}
+
+model Service {
+  id                 String      @id @default(cuid())
+  name               String      @unique
+  description        String?
+  serviceType        ServiceType
+  durationMinutes    Int
+  basePrice          Decimal     @db.Decimal(10, 2)
+  isActive           Boolean     @default(true)
+  requiresDeposit    Boolean     @default(false)
+  depositAmount      Decimal?    @db.Decimal(10, 2)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  externalCalendarId String?     @unique
+  bookings           Booking[]
+
+  @@index([isActive])
+  @@index([serviceType])
+}
+
+model Booking {
+  id                          String                 @id @default(cuid())
+  signerId                    String
+  serviceId                   String
+  notaryId                    String?
+  scheduledDateTime           DateTime?
+  actualEndDateTime           DateTime?
+  status                      BookingStatus          @default(REQUESTED)
+  locationType                LocationType?
+  addressStreet               String?
+  addressCity                 String?
+  addressState                String?
+  addressZip                  String?
+  locationNotes               String?
+  priceAtBooking              Decimal                @db.Decimal(10, 2)
+  notes                       String?
+  dailyRoomUrl                String?
+  dailyRecordingId            String?
+  kbaStatus                   String?
+  idVerificationStatus        String?
+  notaryJournalEntry          String?
+  lastReminderSentAt          DateTime?
+  reminder24hrSentAt          DateTime?
+  reminder2hrSentAt           DateTime?
+  reminder1hrSentAt           DateTime?
+  confirmationEmailSentAt     DateTime?
+  confirmationSmsSentAt       DateTime?
+  followUpSentAt              DateTime?
+  noShowCheckPerformedAt      DateTime?
+  createdAt                   DateTime               @default(now())
+  updatedAt                   DateTime               @updatedAt
+  User_Booking_notaryIdToUser User?                  @relation("Booking_notaryIdToUser", fields: [notaryId], references: [id])
+  service                     Service                @relation(fields: [serviceId], references: [id])
+  User_Booking_signerIdToUser User                   @relation("Booking_signerIdToUser", fields: [signerId], references: [id])
+  NotarizationDocument        NotarizationDocument[]
+  Payment                     Payment[]
+  NotificationLog             NotificationLog[]
+
+  @@index([locationType])
+  @@index([notaryId])
+  @@index([scheduledDateTime])
+  @@index([serviceId])
+  @@index([signerId])
+  @@index([status])
+  @@index([lastReminderSentAt])
+  @@index([noShowCheckPerformedAt])
+}
+
+model InvitationToken {
+  id        String   @id
+  token     String   @unique
+  email     String
+  userId    String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  User      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([userId])
+}
+
+model NotarizationDocument {
+  id                         String              @id
+  s3Key                      String
+  originalFilename           String
+  uploadedAt                 DateTime            @default(now())
+  uploadedById               String
+  isSigned                   Boolean             @default(false)
+  signedS3Key                String?
+  signedAt                   DateTime?
+  createdAt                  DateTime            @default(now())
+  updatedAt                  DateTime
+  sourceAssignmentDocumentId String?
+  bookingId                  String
+  Booking                    Booking             @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  AssignmentDocument         AssignmentDocument? @relation(fields: [sourceAssignmentDocumentId], references: [id])
+  User                       User                @relation(fields: [uploadedById], references: [id])
+
+  @@index([bookingId])
+  @@index([sourceAssignmentDocumentId])
+  @@index([uploadedById])
+}
+
+model Payment {
+  id              String          @id @default(cuid())
+  bookingId       String
+  amount          Decimal         @db.Decimal(10, 2)
+  status          PaymentStatus   @default(PENDING)
+  provider        PaymentProvider
+  transactionId   String?         @unique
+  paymentIntentId String?         @unique
+  notes           String?
+  paidAt          DateTime?
+  refundedAmount  Decimal?        @db.Decimal(10, 2)
+  refundedAt      DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  Booking         Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([paymentIntentId])
+  @@index([provider])
+  @@index([status])
+}
+
+model NotificationLog {
+  id                String              @id @default(cuid())
+  bookingId         String
+  notificationType  NotificationType
+  method            NotificationMethod
+  recipientEmail    String?
+  recipientPhone    String?
+  subject           String?
+  message           String
+  sentAt            DateTime            @default(now())
+  status            NotificationStatus  @default(SENT)
+  errorMessage      String?
+  metadata          Json?               // Store additional context like reminder type, payment amount, etc.
+  createdAt         DateTime            @default(now())
+  Booking           Booking             @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([notificationType])
+  @@index([method])
+  @@index([recipientEmail])
+  @@index([sentAt])
+}
 
 enum Role {
   ADMIN
   STAFF
   PARTNER
+  SIGNER
+  NOTARY
 }
 
 enum AssignmentStatus {
@@ -31,139 +302,88 @@ enum AssignmentStatus {
   ARCHIVED
 }
 
-// ------------------------------------------------------------
-//  NEXTAUTH CORE MODELS (slightly modified)
-// ------------------------------------------------------------
-
-model User {
-  id             String            @id @default(cuid())
-  name           String?
-  email          String?           @unique
-  emailVerified  DateTime?
-  image          String?
-  password       String?
-  role           Role              @default(PARTNER)
-  accounts       Account[]
-  sessions       Session[]
-  assignments    Assignment[]      @relation("UserAssignments")
-  uploadedDocs   AssignmentDocument[] @relation("UploadedDocs")
-  statusChanges  StatusHistory[]   @relation("StatusHistoryChangedBy")
-  downloads      DownloadLog[]
-  comments       Comment[]         @relation("UserComments")
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
-  onboardedAt    DateTime?
+enum BookingStatus {
+  REQUESTED
+  PAYMENT_PENDING
+  CONFIRMED
+  SCHEDULED
+  AWAITING_CLIENT_ACTION
+  READY_FOR_SERVICE
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED_BY_CLIENT
+  CANCELLED_BY_STAFF
+  REQUIRES_RESCHEDULE
+  NO_SHOW
+  ARCHIVED
 }
 
-model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?   @db.Text
-  access_token       String?   @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?   @db.Text
-  session_state      String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
+enum LocationType {
+  CLIENT_SPECIFIED_ADDRESS
+  OUR_OFFICE
+  REMOTE_ONLINE_NOTARIZATION
+  PUBLIC_PLACE
 }
 
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+enum ServiceType {
+  STANDARD_NOTARY
+  EXTENDED_HOURS_NOTARY
+  LOAN_SIGNING_SPECIALIST
+  SPECIALTY_NOTARY_SERVICE
+  BUSINESS_SOLUTIONS
+  SUPPORT_SERVICE
 }
 
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
+enum PaymentProvider {
+  STRIPE
+  SQUARE
+  PAYPAL
+  MANUAL
+  OTHER
 }
 
-// ------------------------------------------------------------
-//  HMNP PORTAL MODELS
-// ------------------------------------------------------------
-
-model Assignment {
-  id                 String              @id @default(cuid())
-  reference          String?             @unique
-  title              String
-  status             AssignmentStatus    @default(REQUESTED)
-  partnerAssignedToId String?
-  partnerAssignedTo  User?               @relation("UserAssignments", fields: [partnerAssignedToId], references: [id])
-
-  propertyAddress    String?
-  borrowerName       String?
-  closingDate        DateTime?
-
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-
-  documents          AssignmentDocument[]
-  history            StatusHistory[]
-  allowPartnerComments Boolean       @default(false)
-  comments           Comment[]
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  VOIDED
 }
 
-model AssignmentDocument {
-  id            String   @id @default(cuid())
-  assignmentId  String
-  assignment    Assignment @relation(fields: [assignmentId], references: [id])
-  key           String   // S3 object key
-  filename      String
-  uploadedAt    DateTime @default(now())
-  uploadedById  String?
-  uploadedBy    User?    @relation("UploadedDocs", fields: [uploadedById], references: [id])
-  downloads     DownloadLog[]
+enum NotificationType {
+  BOOKING_CONFIRMATION
+  PAYMENT_CONFIRMATION
+  APPOINTMENT_REMINDER_24HR
+  APPOINTMENT_REMINDER_2HR
+  APPOINTMENT_REMINDER_1HR
+  APPOINTMENT_REMINDER_NOW
+  BOOKING_CANCELLED
+  BOOKING_RESCHEDULED
+  PAYMENT_FAILED
+  PAYMENT_REMINDER
+  NO_SHOW_CHECK
+  POST_SERVICE_FOLLOWUP
+  REVIEW_REQUEST
+  DOCUMENT_READY
+  DOCUMENT_REMINDER
+  NOTARY_ASSIGNMENT
+  EMERGENCY_NOTIFICATION
+  LEAD_NURTURING
 }
 
-model StatusHistory {
-  id           String            @id @default(cuid())
-  assignmentId String
-  assignment   Assignment        @relation(fields: [assignmentId], references: [id])
-  status       AssignmentStatus
-  note         String?
-  changedAt    DateTime          @default(now())
-  changedById  String?
-  changedBy    User?             @relation("StatusHistoryChangedBy", fields: [changedById], references: [id])
+enum NotificationMethod {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
 }
 
-model Comment {
-  id           String   @id @default(cuid())
-  text         String   @db.Text
-  createdAt    DateTime @default(now())
-  assignmentId String
-  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  authorId     String
-  author       User     @relation("UserComments", fields: [authorId], references: [id])
-
-  @@index([assignmentId])
-}
-
-model BackgroundError {
-  id        String   @id @default(cuid())
-  source    String   // e.g. "webhook", "cron"
-  message   String
-  stack     String?  @db.Text
-  createdAt DateTime @default(now())
-}
-
-model DownloadLog {
-  id           String   @id @default(cuid())
-  documentId   String
-  document     AssignmentDocument @relation(fields: [documentId], references: [id])
-  userId       String
-  user         User    @relation(fields: [userId], references: [id])
-  downloadedAt DateTime @default(now())
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  BOUNCED
+  UNSUBSCRIBED
 }

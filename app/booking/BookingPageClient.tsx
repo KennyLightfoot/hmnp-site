@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, Controller } from "react-hook-form"
 import { z } from "zod"
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Loader2, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -17,11 +17,13 @@ import { toast } from "@/components/ui/use-toast"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import AppointmentCalendar from "@/components/appointment-calendar"
 import Link from "next/link"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 // Define the form schema using Zod
 const formSchema = z.object({
   // Step 1: Service Selection
   serviceType: z.enum(["essential", "priority", "loan-signing", "reverse-mortgage", "specialty"]),
+promoCode: z.string().optional(), // Added for promo code
   numberOfSigners: z.coerce.number().min(1).max(10),
 
   // Step 2: Calendar Selection
@@ -55,6 +57,16 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>
 
+interface ApiService {
+  id: string;
+  key: string; // Should match values in serviceType enum e.g., "essential", "loan-signing"
+  name: string; // For display name
+  basePrice: number;
+  requiresDeposit: boolean;
+  depositAmount: number | null;
+  // Add other relevant fields from your Service model in Prisma if needed for display
+}
+
 // Define valid service types for props (matching the calendar component)
 type ServiceType = "essential" | "priority" | "loan-signing" | "reverse-mortgage" | "specialty";
 
@@ -62,7 +74,53 @@ export default function BookingPageClient() {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [addressCoordinates, setAddressCoordinates] = useState({ lat: 0, lng: 0 })
+  const [addressCoordinates, setAddressCoordinates] = useState({ lat: 0, lng: 0 });
+  const [serviceIdMapFromAPI, setServiceIdMapFromAPI] = useState<Record<string, string>>({});
+  const [fetchedServicesList, setFetchedServicesList] = useState<ApiService[]>([]); // To store full service details
+  const [servicesLoadingError, setServicesLoadingError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setServicesLoadingError(null); // Clear previous error on new attempt
+        const response = await fetch('/api/services');
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Could not retrieve error details.');
+          console.error('Failed to fetch services response:', response.status, errorText);
+          throw new Error(`Failed to fetch services: ${response.status}. ${errorText.substring(0, 150)}`);
+        }
+        const services: ApiService[] = await response.json();
+        console.log('!!!!!!!!!! Fetched services from /api/services:', JSON.stringify(services, null, 2)); // DETAILED LOGGING
+        if (!Array.isArray(services)) {
+          console.error('Fetched services is not an array:', services);
+          throw new Error('Invalid format for services data received from server.');
+        }
+        const newMap: Record<string, string> = {};
+        services.forEach(service => {
+          if (service.key && service.id) {
+            newMap[service.key] = service.id;
+          }
+        });
+        setServiceIdMapFromAPI(newMap);
+        setFetchedServicesList(services); // Store the full list
+        if (Object.keys(newMap).length === 0 && services.length > 0) {
+            console.warn('Service map is empty but services were fetched. Check service keys against form serviceType enum.');
+        }
+      } catch (error) {
+        console.error("Error fetching services:", error);
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred while fetching services.";
+        setServicesLoadingError(errorMessage);
+        toast({
+          title: "Error Loading Service Options",
+          description: "Could not load service types. Please try refreshing. If the problem persists, contact support.",
+          variant: "destructive",
+          duration: 10000, // Keep toast longer
+        });
+      }
+    };
+
+    fetchServices();
+  }, []); // Empty dependency array ensures this runs once on mount
 
   // Refs for step titles
   const stepRefs = {
@@ -77,6 +135,7 @@ export default function BookingPageClient() {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      promoCode: "",
       serviceType: "essential",
       numberOfSigners: 1,
       calendarId: "",
@@ -212,103 +271,121 @@ export default function BookingPageClient() {
   }
 
   const onSubmit = async (data: FormData) => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
+    console.log("Form data for /api/bookings:", data);
+
+    // Service ID is now fetched dynamically from /api/services and stored in serviceIdMapFromAPI.
+    const serviceId = serviceIdMapFromAPI[data.serviceType as keyof typeof serviceIdMapFromAPI];
+
+    if (!serviceId) {
+      console.error("Could not determine serviceId for serviceType:", data.serviceType, "Available map:", serviceIdMapFromAPI);
+      toast({
+        title: "Booking Failed",
+        description: servicesLoadingError || "Invalid service type selected or service ID mapping missing. This could be due to a problem loading service options. Please refresh and try again, or contact support if the issue persists.",
+        variant: "destructive",
+        duration: 10000,
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Map signingLocation to LocationType enum expected by backend
+    let locationTypeApi: string | undefined = undefined;
+    switch (data.signingLocation) {
+      case "client-location":
+        locationTypeApi = "CLIENT_ADDRESS";
+        break;
+      case "public-place":
+        locationTypeApi = "PUBLIC_LOCATION";
+        break;
+      case "business-office": // Assuming this means a generic business office
+        locationTypeApi = "PUBLIC_LOCATION"; // Or map to HMNP_OFFICE if it's an option and defined in Prisma enum
+        break;
+      default:
+        console.warn("Unknown signing location:", data.signingLocation);
+        // Optionally set a default or handle as an error
+    }
+
+    const apiPayload = {
+      serviceId: serviceId,
+      scheduledDateTime: data.appointmentStartTime, // Ensure this is an ISO string
+      locationType: locationTypeApi,
+      addressStreet: data.address,
+      addressCity: data.city,
+      addressState: data.state,
+      addressZip: data.postalCode,
+      // locationNotes: data.locationNotes, // TODO: Add locationNotes to form if needed by backend/GHL
+      notes: data.specialInstructions, // This will map to cf_booking_special_instructions in the backend
+      // promoCode: data.promoCode, // TODO: Add promoCode field to the form
+      // referredBy: data.referredBy, // TODO: Add referredBy field to the form
+      booking_number_of_signers: data.numberOfSigners,
+      consent_terms_conditions: data.termsAccepted,
+      // Client details for GHL upsertion. Backend uses session for Booking's signerId.
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      phone: data.phone,
+      company: data.company, // Optional, but pass if collected
+    };
+
+    console.log("Submitting to /api/bookings with payload:", JSON.stringify(apiPayload, null, 2));
 
     try {
-      // Geocode the address
-      const coordinates = await geocodeAddress(data.address, data.city, data.state, data.postalCode)
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(apiPayload),
+      });
 
-      // Prepare the data specifically for the API endpoint
-      const apiPayload = {
-        calendarId: data.calendarId,
-        startTime: data.appointmentStartTime,
-        endTime: data.appointmentEndTime,
-        // Send firstName and lastName separately as expected by the API
-        firstName: data.firstName, 
-        lastName: data.lastName,
-        email: data.email,
-        phone: data.phone,
-        // Include other relevant fields from 'data'
-        address: data.address,
-        city: data.city,
-        state: data.state,
-        postalCode: data.postalCode,
-        signingLocation: data.signingLocation,
-        specialInstructions: data.specialInstructions,
-        // Pass coordinates if available
-        addressLatitude: coordinates?.lat.toString() || "",
-        addressLongitude: coordinates?.lng.toString() || "",
-        // Add any other necessary fields based on the API documentation
-        serviceType: data.serviceType,
-        numberOfSigners: data.numberOfSigners,
-        smsNotifications: data.smsNotifications,
-        emailUpdates: data.emailUpdates,
-        // We don't need to send termsAccepted to the GHL API
-      };
+      const result = await response.json();
+      console.log("/api/bookings Response:", result);
 
-      // Create appointment in GHL calendar
-      if (apiPayload.startTime && apiPayload.endTime) { // Check renamed fields
-        const appointmentResponse = await fetch("/api/calendar/create-appointment", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          // Send the formatted apiPayload
-          body: JSON.stringify(apiPayload),
-        })
-
-        const appointmentResult = await appointmentResponse.json()
-
-        if (!appointmentResult.success) {
-          throw new Error(appointmentResult.message || "Failed to create appointment")
-        }
-
-        // Store booking reference in localStorage for the confirmation page
-        // Use original form data 'data' or watched values for storing details if needed
-        localStorage.setItem("bookingReference", appointmentResult.data.bookingReference)
-        localStorage.setItem(
-          "bookingDetails",
-          JSON.stringify({
-            serviceName: getServiceName(),
-            servicePrice: getServicePrice(),
-            numberOfSigners: data.numberOfSigners, // Use original data
-            appointmentDate: new Date(data.appointmentStartTime).toLocaleDateString(), // Use original data
-            appointmentTime: data.appointmentFormattedTime, // Use original data
-          }),
-        )
-
-        // Redirect to confirmation page
-        router.push("/booking/confirmation")
-      } else {
-        throw new Error("No appointment time selected")
+      if (!response.ok) {
+        // Use error message from backend if available, otherwise a generic one
+        throw new Error(result.error || `Request failed with status ${response.status}`);
       }
-    } catch (error) {
-      console.error("Submission error:", error)
 
-      let errorMessage = "An error occurred while creating your booking. Please try again later."
-      if (error instanceof Error) {
-        // Check for specific error messages
-        if (error.message.includes("Failed to create appointment")) {
-          errorMessage = "Could not schedule the appointment in the calendar. Please try selecting a different time or contact support."
-        } else if (error.message.includes("No appointment time selected")) {
-          errorMessage = "No appointment time was selected. Please go back to the calendar step and choose a time slot."
-        } else if (error.message.includes("geocode") || error.message.includes("Geocoding")) {
-          errorMessage = "Could not verify the provided address. Please go back and check the location details."
+      // Handle response from /api/bookings
+      if (result.booking && result.booking.id) {
+        if (result.payment && result.payment.clientSecret && result.payment.paymentIntentId && result.payment.amount) {
+          // Payment is required, redirect to a checkout page
+          toast({
+            title: "Payment Required",
+            description: "Redirecting to secure payment...",
+            variant: "default", // Or 'info'
+          });
+          router.push(`/checkout?bookingId=${result.booking.id}&paymentIntentId=${result.payment.paymentIntentId}&clientSecret=${result.payment.clientSecret}&amount=${result.payment.amount}`);
         } else {
-          // Use the caught error message if it's somewhat specific, otherwise use the default
-          errorMessage = error.message || errorMessage;
+          // No payment required at this step, or payment handled differently (e.g., pay on arrival)
+          // Navigate to a booking confirmation page
+          toast({
+            title: "Booking Confirmed!", // Or "Booking Request Received!" if further steps are needed
+            description: `Thank you, ${data.firstName}! Your booking for ${getServiceName()} has been processed.`,
+            variant: "default", // Changed from 'success' to 'default'
+          });
+          // TODO: Decide if GHL calendar booking should be triggered here or by the backend.
+          // For now, navigating directly to confirmation.
+          router.push(`/booking-confirmation?bookingId=${result.booking.id}`);
         }
+      } else {
+        // Should not happen if response.ok is true and backend behaves as expected
+        console.error("Booking successful but booking ID missing in response:", result);
+        throw new Error("Booking processed but encountered an issue retrieving booking details. Please contact support.");
       }
 
+    } catch (error) {
+      console.error("Error submitting booking to /api/bookings:", error);
       toast({
-        title: "Booking Error",
-        description: errorMessage,
+        title: "Booking Submission Failed",
+        description: error instanceof Error ? error.message : "An unexpected error occurred. Please check your details and try again. If the problem persists, contact support.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -359,6 +436,24 @@ export default function BookingPageClient() {
         </div>
 
         {/* Wrap form content with shadcn/ui Form component */}
+        {/* BEGIN: Promotional Alert */}
+        <Alert className="mb-6 border-green-400 bg-green-50 text-green-700 dark:border-green-600 dark:bg-green-900/30 dark:text-green-300">
+          <Sparkles className="h-5 w-5 text-green-600 dark:text-green-400" />
+          <AlertTitle className="font-semibold text-green-800 dark:text-green-200">Unlock Your Discounts!</AlertTitle>
+          <AlertDescription className="text-sm">
+            <ul className="list-disc space-y-1 pl-5 mt-1">
+              <li>
+                <strong>New Here?</strong> Get $25 off your first service! Use code
+                <code className="mx-1 rounded bg-green-200 px-1.5 py-0.5 font-semibold text-green-900 dark:bg-green-700 dark:text-green-100">FIRST25</code>
+                in the "Promo Code" field below.
+              </li>
+              <li>
+                <strong>Referred by a Friend?</strong> Enter their full name in the "Referred By" field. You'll both save $25!
+              </li>
+            </ul>
+          </AlertDescription>
+        </Alert>
+        {/* END: Promotional Alert */}
         <Form {...form}> 
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <Card className="shadow-md">

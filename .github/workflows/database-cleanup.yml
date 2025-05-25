@@ -1,0 +1,58 @@
+name: Database Cleanup
+
+on:
+  schedule:
+    # Run every Monday at 2 AM UTC (adjust timezone as needed)
+    - cron: '0 2 * * 1'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Generate Prisma Client
+        run: pnpm prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Run database analysis
+        run: node scripts/analyze-db-usage.cjs
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Run database cleanup
+        run: node scripts/cleanup-database.cjs --confirm
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Create cleanup report
+        run: |
+          echo "# Database Cleanup Report - $(date)" >> cleanup-report.md
+          echo "" >> cleanup-report.md
+          echo "Automated cleanup completed successfully." >> cleanup-report.md
+          echo "Check the logs above for details on what was cleaned." >> cleanup-report.md
+
+      - name: Upload cleanup report
+        uses: actions/upload-artifact@v4
+        with:
+          name: cleanup-report-${{ github.run_number }}
+          path: cleanup-report.md
+          retention-days: 30 

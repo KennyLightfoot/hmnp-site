@@ -15,7 +15,13 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
-    "script:set-admin-password": "node --loader ts-node/esm scripts/set-admin-password.ts"
+    "script:set-admin-password": "node --loader ts-node/esm scripts/set-admin-password.ts",
+    "db:analyze": "node scripts/analyze-db-usage.cjs",
+    "db:cleanup": "node scripts/cleanup-database.cjs",
+    "db:cleanup:confirm": "node scripts/cleanup-database.cjs --confirm",
+    "db:archive": "node scripts/archive-old-data.cjs",
+    "db:archive:confirm": "node scripts/archive-old-data.cjs --confirm",
+    "db:maintenance": "pnpm db:analyze && pnpm db:cleanup:confirm"
   },
   "pnpm": {
     "overrides": {
@@ -31,7 +37,12 @@
     },
     "onlyBuiltDependencies": [
       "@prisma/client",
-      "bcrypt"
+      "@prisma/engines",
+      "bcrypt",
+      "esbuild",
+      "prisma",
+      "sharp",
+      "unrs-resolver"
     ]
   },
   "dependencies": {
@@ -73,6 +84,8 @@
     "@sanity/icons": "^3.7.0",
     "@sanity/image-url": "^1.0.2",
     "@sanity/vision": "^3.88.2",
+    "@stripe/react-stripe-js": "^3.7.0",
+    "@stripe/stripe-js": "^7.3.0",
     "@types/bcrypt": "^5.0.2",
     "autoprefixer": "^10.4.21",
     "bcrypt": "^5.1.1",
@@ -104,6 +117,7 @@
     "resend": "^4.5.1",
     "sanity": "^3.88.2",
     "sonner": "^2.0.3",
+    "stripe": "^18.1.1",
     "styled-components": "^6.1.18",
     "swr": "^2.3.3",
     "tailwind-merge": "^3.2.0",

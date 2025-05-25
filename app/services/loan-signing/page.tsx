@@ -1,32 +1,33 @@
 import Link from "next/link"
-import { ChevronLeft, Check, FileText, Users, Clock } from "lucide-react"
+import { ChevronLeft, Check, FileText, Users, Clock, Briefcase, Phone, Info, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import MiniFAQ from "@/components/mini-faq"; // Assuming you have this component
 
 // Define Base URL for metadata
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'; // Replace with your actual domain
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com';
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Expert Loan Signing Agent Houston | Calm & Precise Closings | Houston Mobile Notary Pros",
+  title: "Loan Signing Specialist Houston | Certified & Precise | Houston Mobile Notary Pros",
   description:
-    "Ensure a smooth and stress-free real estate closing in Houston with our expert mobile loan signing agents. We bring calm, clarity, and precision to every signing.",
+    "Expert Loan Signing Specialist services in Houston. Certified for all loan types including purchases, refinances, HELOCs, and reverse mortgages. Paperwork pros you can trust.",
   keywords:
-    "loan signing agent Houston, mobile notary loan signing, real estate closing notary, mortgage signing agent, HELOC notary, reverse mortgage signing, Houston mobile notary, calm loan closing, precise mortgage signing, stress-free real estate notary, Houston expert loan signer",
+    "loan signing specialist Houston, mobile notary loan signing, certified loan signer, mortgage signing agent, HELOC notary, reverse mortgage signing Houston, RON notary, real estate closing, courier returns, paperwork pros",
   alternates: {
     canonical: '/services/loan-signing',
   },
   openGraph: {
-    title: "Expert Mobile Loan Signing - Smooth Houston Closings | HMNP",
-    description: "Navigate your Houston real estate closing with confidence. Our expert loan signing agents ensure a calm, precise, and stress-free experience.",
+    title: "Houston Loan Signing Specialist | Certified & Reliable | HMNP",
+    description: "Houston Mobile Notary Pros: Your certified Loan Signing Specialists for smooth, accurate real estate closings, including RON and reverse mortgages.",
     url: `${BASE_URL}/services/loan-signing`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
       {
-        url: '/og-image.jpg', // Ensure this image exists in /public
+        url: '/og-image.jpg', 
         width: 1200,
         height: 630,
-        alt: 'Mobile Loan Signing Services by Houston Mobile Notary Pros',
+        alt: 'Loan Signing Specialist Services by Houston Mobile Notary Pros',
       },
     ],
     locale: 'en_US',
@@ -34,15 +35,50 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Houston Loan Signing Agents: Calm, Precise, Reliable | HMNP",
-    description: "Expert mobile loan signing for Houston real estate. We guarantee a calm, clear, and precise closing process. Book with confidence!",
-    // Add your Twitter handle here if you have one
-    // siteId: 'YourTwitterID',
-    // creator: '@YourTwitterHandle',
-    // creatorId: 'YourTwitterCreatorID',
-    images: [`${BASE_URL}/og-image.jpg`], // Must be an absolute URL
+    title: "Loan Signing Specialist Houston: Certified Pros You Can Trust | HMNP",
+    description: "Need a Loan Signing Specialist in Houston? We handle all loan types, RON, and courier returns with precision. Book with the paperwork pros!",
+    images: [`${BASE_URL}/og-image.jpg`],
   },
 }
+
+const loanSigningFaqs = [
+  {
+    id: "what-is-lsa",
+    question: "What does a Loan Signing Specialist do?",
+    answer: (
+      <p>
+        A Loan Signing Specialist (or Loan Signing Agent) is a notary public specifically trained to handle and notarize loan documents for real estate transactions. We guide signers through the paperwork, ensure all signatures and initials are correctly placed, and return the documents promptly to the lender or title company. Our role is to ensure a smooth, accurate, and compliant closing process.
+      </p>
+    ),
+  },
+  {
+    id: "loan-types-covered",
+    question: "What types of loan signings do you handle?",
+    answer: (
+      <p>
+        Our certified Loan Signing Specialists are experienced with a wide range of real estate transactions, including: Purchase agreements, Refinances, Home Equity Lines of Credit (HELOCs), Seller packages, and <Link href="/services/reverse-mortgage" className="text-[#A52A2A] hover:underline">Reverse Mortgages</Link>. We also offer Remote Online Notarization (RON) for eligible signings.
+      </p>
+    ),
+  },
+  {
+    id: "ron-courier",
+    question: "Do you offer Remote Online Notarization (RON) and courier services?",
+    answer: (
+      <p>
+        Yes! We are equipped to handle Remote Online Notarizations (RON) for clients who prefer a digital closing experience or when signers are in different locations. We also manage all necessary courier returns (e.g., FedEx, UPS) to ensure your completed loan package is delivered securely and on time.
+      </p>
+    ),
+  },
+  {
+    id: "booking-process-loan",
+    question: "How do I book a Loan Signing Specialist?",
+    answer: (
+      <p>
+        You can book our Loan Signing Specialist service directly through our <Link href="/booking?service=loan-signing" className="text-[#A52A2A] hover:underline">online booking system</Link> or by <Link href="/contact" className="text-[#A52A2A] hover:underline">contacting us</Link> with your signing details (date, time, location, type of loan). We coordinate with title companies and lenders to ensure we have the documents and instructions needed.
+      </p>
+    ),
+  }
+];
 
 export default function LoanSigningPage() {
   return (
@@ -52,350 +88,180 @@ export default function LoanSigningPage() {
         Back to All Services
       </Link>
 
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-[#002147] mb-4">Loan Signing Notary Services</h1>
-        <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-          Navigate your real estate and mortgage transactions with <span className="font-semibold text-[#002147]">calm and precision</span>. Our expert agents ensure every detail is handled correctly for a <span className="font-semibold text-[#002147]">stress-free closing</span>.
+      {/* Hero Section */}
+      <section className="text-center mb-12">
+        <h1 className="text-4xl font-bold text-[#002147] mb-3">
+          Loan Signing Specialist Services
+        </h1>
+        <p className="text-2xl font-semibold text-[#A52A2A] mb-4">
+          Paperwork pros you can trust.
         </p>
-      </div>
-
-      {/* Hero Banner */}
-      <div className="bg-[#002147] text-white p-8 rounded-lg mb-12">
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="flex flex-col items-center text-center">
-            <FileText className="h-12 w-12 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Unlimited Documents</h3>
-            <p>Complete handling of all your loan documents, meticulously organized.</p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <Users className="h-12 w-12 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Multiple Signers</h3>
-            <p>Seamless coordination for up to 4 signers in one appointment.</p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <Clock className="h-12 w-12 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">90-Minute Session</h3>
-            <p>Dedicated time for a calm, unhurried, and precise signing process.</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Service Options */}
-      <div className="grid md:grid-cols-2 gap-8 mb-16">
-        {/* Standard Loan Closing */}
-        <Card className="shadow-md">
-          <CardHeader className="bg-[#002147] text-white">
-            <CardTitle>Standard Loan Closing</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <p className="text-3xl font-bold mb-6">$150 flat fee</p>
-            <h3 className="text-xl font-semibold mb-3">What's Included:</h3>
-            <ul className="space-y-3 mb-6">
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Meticulous handling of your entire loan package, regardless of size.</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Smooth coordination for all parties, accommodating up to 4 signers.</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Color printing service</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Your documents, professionally organized in a take-home closing binder for easy reference.</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Title company shipping</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>A dedicated 90-minute session ensuring a calm, thorough, and precise signing experience.</span>
-              </li>
-            </ul>
-            <h3 className="text-xl font-semibold mb-3">Additional Options:</h3>
-            <ul className="space-y-3">
-              <li className="flex items-start">
-                <span className="text-[#A52A2A] mr-2">+</span>
-                <span>Overnight document handling: $35</span>
-              </li>
-            </ul>
-            <div className="mt-6">
-              <Button className="w-full bg-[#002147] hover:bg-[#001a38]">Book Standard Loan Closing</Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Reverse Mortgage/HELOC */}
-        <Card className="shadow-md">
-          <CardHeader className="bg-[#002147] text-white">
-            <CardTitle>Reverse Mortgage/HELOC</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <p className="text-3xl font-bold mb-6">$150 flat fee</p>
-            <h3 className="text-xl font-semibold mb-3">What's Included:</h3>
-            <ul className="space-y-3 mb-6">
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Prompt 4-hour response window for time-sensitive transactions.</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Certified mail return</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Dual agent coordination</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Comprehensive handling of all complex documentation involved.</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Clear guidance on each document to be signed, ensuring you know what you are signing (Note: We identify documents and direct you where to sign, but cannot provide legal advice or explain loan terms).</span>
-              </li>
-            </ul>
-            <div className="mt-6">
-              <Button className="w-full bg-[#002147] hover:bg-[#001a38]">Book Reverse Mortgage Signing</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Service Description */}
-      <div className="mb-16">
-        <h2 className="text-2xl font-bold text-[#002147] mb-6">Our Loan Signing Expertise</h2>
-        <div className="grid md:grid-cols-2 gap-8">
-          <div>
-            <h3 className="text-xl font-semibold mb-3">Experienced Loan Signing Agents</h3>
-            <p className="mb-4">
-              When it comes to loan signings, expertise and a calm demeanor are paramount. Our notaries are specifically trained in loan document signing. We understand the complexities of real estate transactions and provide professional, meticulous service to ensure your closing is not just smooth, but also instills confidence and peace of mind.
-            </p>
-            <p>
-              We work with title companies, lenders, and real estate professionals throughout the Houston area to
-              facilitate timely, accurate, and stress-free loan closings.
-            </p>
-          </div>
-          <div>
-            <h3 className="text-xl font-semibold mb-3">What Sets Us Apart</h3>
-            <ul className="space-y-3">
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>
-                  <span className="font-semibold">Comprehensive, Hassle-Free Service:</span> From meticulous document review and preparation to secure final delivery, we manage every step with precision.
-                </span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>
-                  <span className="font-semibold">Flexible Scheduling:</span> We accommodate your timeline, including
-                  evenings and weekends.
-                </span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>
-                  <span className="font-semibold">E&O Insurance:</span> $100k coverage for your peace of mind.
-                </span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>
-                  <span className="font-semibold">Clarity and Professional Presentation:</span> Your important documents are always handled with care, organized logically, and presented in a professional binder for your records.
-                </span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      {/* Legal Compliance */}
-      <div className="bg-gray-50 p-8 rounded-lg mb-16">
-        <h2 className="text-2xl font-bold text-[#002147] mb-6">Legal Compliance</h2>
-        <div className="grid md:grid-cols-2 gap-8">
-          <div>
-            <h3 className="text-xl font-semibold mb-3">Our Role as Notaries</h3>
-            <p className="mb-4">
-              As notaries, we are strictly prohibited from explaining loan terms or providing legal advice. Our role is
-              limited to:
-            </p>
-            <ul className="space-y-2">
-              <li className="flex items-start">
-                <span className="text-[#A52A2A] mr-2">•</span>
-                <span>Verifying the identity of signers</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-[#A52A2A] mr-2">•</span>
-                <span>Witnessing signatures</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-[#A52A2A] mr-2">•</span>
-                <span>Administering oaths when required</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-[#A52A2A] mr-2">•</span>
-                <span>Ensuring proper document execution</span>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-xl font-semibold mb-3">Legal Disclaimer</h3>
-            <p className="mb-4">In accordance with Texas Government Code §406.017:</p>
-            <p className="bg-white p-4 border-l-4 border-[#A52A2A] italic">
-              "I AM NOT AN ATTORNEY LICENSED TO PRACTICE LAW IN TEXAS AND MAY NOT GIVE LEGAL ADVICE OR ACCEPT FEES FOR
-              LEGAL ADVICE."
-            </p>
-            <p className="mt-4">
-              For questions about your loan terms or legal implications, please consult with your lender, title company,
-              or attorney.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Process */}
-      <div className="mb-16">
-        <h2 className="text-2xl font-bold text-[#002147] mb-6">The Loan Signing Process</h2>
-        <p className="text-gray-700 mb-6 text-center max-w-2xl mx-auto">
-          We ensure a clear, predictable, and calm loan signing journey from start to finish. Here's how our meticulous process works for you:
+        <p className="text-lg text-gray-700 max-w-3xl mx-auto mb-6">
+          Your critical loan documents demand more than just a stamp. They Demand Our Expertise. Our Promise: Fast, precise notary service—every time, no hassle.
         </p>
-        <div className="grid md:grid-cols-4 gap-6">
-          <Card>
-            <CardHeader className="bg-[#91A3B0]/20">
-              <CardTitle className="flex items-center">
-                <div className="bg-[#002147] text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">
-                  1
-                </div>
-                Scheduling
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <p>
-                Book your appointment online or by phone. We'll coordinate with your title company or lender to receive
-                the documents.
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="bg-[#91A3B0]/20">
-              <CardTitle className="flex items-center">
-                <div className="bg-[#002147] text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">
-                  2
-                </div>
-                Preparation
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <p>
-                We review and organize your documents, prepare a signing binder, and confirm all details with relevant
-                parties.
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="bg-[#91A3B0]/20">
-              <CardTitle className="flex items-center">
-                <div className="bg-[#002147] text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">
-                  3
-                </div>
-                Signing
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <p>
-                Our notary arrives at your location, verifies IDs, and guides you through the signing process for all
-                documents.
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="bg-[#91A3B0]/20">
-              <CardTitle className="flex items-center">
-                <div className="bg-[#002147] text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">
-                  4
-                </div>
-                Return
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <p>
-                We return the signed documents to your title company or lender, either electronically or via overnight
-                shipping.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-        <p className="text-sm text-gray-600 mt-6 text-center">
-          For a comprehensive overview of our entire client journey, from initial booking to post-signing, please see our detailed{" "}
-          <Link href="/what-to-expect" className="text-[#A52A2A] hover:underline font-medium">
-            What to Expect guide
-          </Link>.
-        </p>
-      </div>
+      </section>
 
-      {/* FAQ */}
-      <div className="mb-16">
-        <h2 className="text-2xl font-bold text-[#002147] mb-6">Frequently Asked Questions</h2>
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-xl font-semibold text-[#002147] mb-2">
-              How long does a typical loan signing appointment take?
+      {/* Main Content Area */}
+      <div className="grid md:grid-cols-3 gap-8 mb-12">
+        {/* Left Column - Service Details */}
+        <div className="md:col-span-2 bg-white p-8 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold text-[#002147] mb-6">Certified Expertise for Your Real Estate Transactions</h2>
+          <p className="text-gray-700 mb-4">
+            Navigating the complexities of real estate closings requires specialized knowledge and meticulous attention to detail. Our certified Loan Signing Specialists are dedicated to providing a seamless, accurate, and stress-free experience for borrowers, lenders, and title companies alike.
+          </p>
+          <p className="text-gray-700 mb-6">
+            We handle all types of loan documents, including purchases, refinances, HELOCs, and reverse mortgages. With expertise in Remote Online Notarization (RON) and efficient courier return services, we ensure your transaction is completed correctly and on schedule, whether in-person or online.
+          </p>
+
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold text-[#002147] mb-4">Key Features of Our Loan Signing Service:</h3>
+            <ul className="space-y-3 text-gray-700">
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-6 w-6 mt-0.5 shrink-0" />
+                <span><strong>Certified Loan Signing Agents:</strong> Trained and experienced in all types of real estate loan documents.</span>
+              </li>
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-6 w-6 mt-0.5 shrink-0" />
+                <span><strong>Comprehensive Document Handling:</strong> Includes Purchases, Refinances, HELOCs, Seller Packages, and Reverse Mortgages.</span>
+              </li>
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-6 w-6 mt-0.5 shrink-0" />
+                <span><strong>Remote Online Notarization (RON):</strong> Available for eligible signings, providing convenience and flexibility.</span>
+              </li>
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-6 w-6 mt-0.5 shrink-0" />
+                <span><strong>Courier & Scan-Back Services:</strong> Efficient management of document returns (FedEx, UPS, scan-backs) to meet deadlines.</span>
+              </li>
+              <li className="flex items-start">
+                <Check className="text-[#A52A2A] mr-2 h-6 w-6 mt-0.5 shrink-0" />
+                <span><strong>Meticulous & Professional:</strong> We ensure every signature, initial, and date is correct, preventing funding delays.</span>
+              </li>
+            </ul>
+          </div>
+          
+          <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 mb-8">
+            <h3 className="text-xl font-semibold text-[#002147] mb-3">Pricing</h3>
+            <p className="text-3xl font-bold text-[#002147] mb-1">$200+</p>
+            <p className="text-sm text-gray-600 mb-4">Starting price for comprehensive loan signing services. This includes handling of all documents, travel within our standard service area, RON setup if applicable, and standard courier returns. Specific requirements for your signing will be confirmed upon booking. Visit our <Link href="/services/extras" className="text-[#A52A2A] hover:underline">Extras & Fees</Link> page for more details.</p>
+            <Link href="/booking?service=loan-signing">
+              <Button size="lg" className="w-full sm:w-auto bg-[#002147] hover:bg-[#001a38] text-white">
+                Book Loan Signing Specialist
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
+
+          {/* Reverse Mortgage Section */}
+          <div className="bg-[#002147]/5 p-6 rounded-lg border border-[#002147]/20">
+            <h3 className="text-xl font-semibold text-[#002147] mb-3 flex items-center">
+              <Info className="text-[#002147] mr-2 h-5 w-5" /> Specialized in Reverse Mortgages
             </h3>
-            <p>
-              Most loan signings take 60-90 minutes, depending on the number of documents and signers. Reverse mortgages
-              may take longer due to their complexity.
+            <p className="text-gray-700 mb-4">
+              Reverse mortgage signings require specific expertise and sensitivity. Our specialists are well-versed in these unique transactions, ensuring all documents are handled with the utmost care and all signers feel comfortable and informed (within the scope of our notarial duties).
+            </p>
+            <Link href="/services/reverse-mortgage">
+              <Button variant="outline" size="sm" className="border-[#002147] text-[#002147] hover:bg-[#002147] hover:text-white">
+                Learn More About Reverse Mortgage Signings
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Right Column - Why Choose Us / Legal */}
+        <div className="md:col-span-1 space-y-6">
+          <div className="bg-[#002147] text-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-semibold mb-3 flex items-center">
+              <Briefcase className="mr-2 h-6 w-6" /> Why Entrust Us With Your Closing?
+            </h3>
+            <ul className="text-sm space-y-2">
+              <li className="flex items-start"><Check className="mr-2 mt-1 h-4 w-4 shrink-0" />Certified & Insured ($1M E&O)</li>
+              <li className="flex items-start"><Check className="mr-2 mt-1 h-4 w-4 shrink-0" />NNA Background Screened</li>
+              <li className="flex items-start"><Check className="mr-2 mt-1 h-4 w-4 shrink-0" />Punctual & Reliable Professionals</li>
+              <li className="flex items-start"><Check className="mr-2 mt-1 h-4 w-4 shrink-0" />Flexible Scheduling (Evenings/Weekends)</li>
+              <li className="flex items-start"><Check className="mr-2 mt-1 h-4 w-4 shrink-0" />Clear, Calm Communication</li>
+              <li className="flex items-start"><Check className="mr-2 mt-1 h-4 w-4 shrink-0" />Commitment to Accuracy</li>
+            </ul>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
+            <h3 className="text-lg font-semibold text-[#002147] mb-3">Legal Disclaimer</h3>
+            <p className="text-xs text-gray-600 mb-2">
+              As Loan Signing Specialists, we are not attorneys. We cannot provide legal advice or explain loan terms.
+              Our role is to ensure documents are signed and notarized correctly.
+            </p>
+            <p className="text-xs italic text-gray-500">
+              "I AM NOT AN ATTORNEY LICENSED TO PRACTICE LAW IN TEXAS AND MAY NOT GIVE LEGAL ADVICE OR ACCEPT FEES FOR LEGAL ADVICE." (Texas Gov't Code §406.017)
+            </p>
+            <p className="text-xs text-gray-600 mt-2">
+              For questions about your loan, please contact your lender or title company.
             </p>
           </div>
-          <div>
-            <h3 className="text-xl font-semibold text-[#002147] mb-2">
-              Do all signers need to be present at the same time?
+           <div className="bg-white p-6 rounded-lg shadow">
+             <h3 className="text-lg font-semibold text-[#002147] mb-3 flex items-center">
+              <Phone className="text-[#A52A2A] mr-2 h-6 w-6" /> Questions or Title Company Inquiries?
             </h3>
-            <p>
-              For most loan documents, all signers must be present at the same time. However, in some cases,
-              arrangements can be made for separate signings. Please consult with your lender about their requirements.
+            <p className="text-sm text-gray-600 mb-4">
+              We partner with title companies and lenders to provide seamless closing experiences. Contact us for collaboration or if you have specific questions.
             </p>
-          </div>
-          <div>
-            <h3 className="text-xl font-semibold text-[#002147] mb-2">
-              Can you explain the loan terms to me during the signing?
-            </h3>
-            <p>
-              No. As notaries, we are prohibited by law from explaining loan terms or providing legal advice. We can
-              identify where you need to sign and what type of document you're signing, but for questions about terms,
-              please contact your lender or attorney.
-            </p>
-          </div>
-          <div>
-            <h3 className="text-xl font-semibold text-[#002147] mb-2">
-              What do I need to have ready for my loan signing appointment?
-            </h3>
-            <p>
-              All signers should have valid, government-issued photo identification. You may also want to have any
-              relevant loan documents or correspondence from your lender available for reference.
-            </p>
+            <Link href="/contact?subject=Loan%20Signing%20Inquiry">
+              <Button variant="outline" className="w-full border-[#002147] text-[#002147] hover:bg-[#002147] hover:text-white">
+                Contact Us
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Call to Action */}
-      <div className="bg-[#002147] text-white p-8 rounded-lg text-center">
-        <h2 className="text-2xl font-bold mb-4">Ensure a Smooth & Confident Closing Experience</h2>
+      {/* Process Section (Simplified from existing, if applicable) */}
+      <div className="my-12">
+        <h2 className="text-2xl font-bold text-[#002147] mb-8 text-center">Our Streamlined Loan Signing Process</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          <div className="bg-white p-4 rounded-lg shadow">
+            <div className="bg-[#002147] text-white w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 font-bold text-lg">1</div>
+            <h4 className="font-semibold text-[#002147] mb-1">Receive & Review</h4>
+            <p className="text-xs text-gray-600">Docs received from title/lender, meticulously reviewed.</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow">
+            <div className="bg-[#002147] text-white w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 font-bold text-lg">2</div>
+            <h4 className="font-semibold text-[#002147] mb-1">Confirm & Travel</h4>
+            <p className="text-xs text-gray-600">Appointment confirmed, notary travels to your location.</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow">
+            <div className="bg-[#002147] text-white w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 font-bold text-lg">3</div>
+            <h4 className="font-semibold text-[#002147] mb-1">Sign & Notarize</h4>
+            <p className="text-xs text-gray-600">IDs verified, documents professionally signed & notarized.</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow">
+            <div className="bg-[#002147] text-white w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 font-bold text-lg">4</div>
+            <h4 className="font-semibold text-[#002147] mb-1">Return & Close</h4>
+            <p className="text-xs text-gray-600">Docs promptly returned per instructions, ensuring funding.</p>
+          </div>
+        </div>
+      </div>
+      
+      {/* FAQ Section */}
+      <div className="my-12">
+        <h2 className="text-2xl font-bold text-[#002147] mb-8 text-center">Loan Signing FAQs</h2>
+        <div className="max-w-3xl mx-auto">
+          <MiniFAQ faqs={loanSigningFaqs} />
+        </div>
+      </div>
+
+      {/* CTA Section */}
+      <div className="bg-[#A52A2A] text-white p-8 rounded-lg text-center">
+        <h2 className="text-2xl font-bold mb-4">Trust Your Closing to Certified Professionals</h2>
         <p className="mb-6 max-w-2xl mx-auto">
-          Entrust your important loan documents to Houston's experts in calm, precise, and reliable mobile signing. Schedule your appointment today for peace of mind.
+          Experience a smooth, accurate, and stress-free loan signing with Houston Mobile Notary Pros. We are your dedicated paperwork pros.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/booking?service=loan-signing">
-            <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white w-full sm:w-auto">
-              Book Loan Signing
+            <Button size="lg" className="bg-[#002147] hover:bg-[#001a38] text-white">
+              Book Loan Signing Specialist
             </Button>
           </Link>
-          <Link href="/contact?subject=Title%20Company%20Inquiry">
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147] w-full sm:w-auto">
-              Contact for Title Companies
+          <Link href="/contact?subject=Loan%20Signing%20Partnership">
+            <Button size="lg" variant="outline" className="border-white text-white bg-transparent hover:bg-white hover:text-[#002147]">
+              Title Company Partnerships
             </Button>
           </Link>
         </div>

@@ -41,6 +41,9 @@ export default function Footer() {
           </div>
         </div>
         <div className="text-center text-gray-600">
+          <p className="text-xs font-medium text-[#002147] mb-2 opacity-80">
+  Our Promise: Fast, precise notary service—every time, no hassle.
+</p>
           <p className="text-sm">&copy; {new Date().getFullYear()} Houston Mobile Notary Pros. All rights reserved.</p>
           <p className="text-xs mt-2">
             Serving Houston and surrounding areas with professional mobile notary services.

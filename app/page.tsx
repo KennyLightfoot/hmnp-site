@@ -202,6 +202,48 @@ export default function HomePage() {
       {/* <section className="py-16 bg-white"> ... </section> */}
       <FaqSection faqs={faqs} />
 
+      {/* Special Offers Section */}
+      <section className="py-12 md:py-16 bg-blue-50">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold text-[#002147] mb-8">
+            Exclusive Savings & Rewards!
+          </h2>
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="bg-white p-6 rounded-lg shadow-lg text-left">
+              <h3 className="text-2xl font-semibold text-[#A52A2A] mb-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-7 w-7"><path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 1 1 0-8c-2 0-4 1.33-6 4Z"/><path d="M12 12v-2"/><path d="M12 12v2"/><path d="M12 12H2"/><path d="M12 12h10"/></svg> {/* Sparkles Icon */}
+                First-Time Client Discount
+              </h3>
+              <p className="text-gray-700 mb-2">
+                New to Houston Mobile Notary Pros? Welcome aboard! Enjoy <strong>$25 OFF</strong> your very first service with us.
+              </p>
+              <p className="text-gray-600 text-sm">
+                Simply use code <strong className="text-[#002147] bg-yellow-200 px-1 rounded">FIRST25</strong> during your booking.
+              </p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-lg text-left">
+              <h3 className="text-2xl font-semibold text-[#A52A2A] mb-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-7 w-7"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg> {/* Users Icon (simplified gift/users) */}
+                Refer a Friend & You Both Save!
+              </h3>
+              <p className="text-gray-700 mb-2">
+                Love our convenient notary services? Share the love! When you refer a new client, and they complete their first booking, <strong>you both receive a $25 discount</strong>.
+              </p>
+              <p className="text-gray-600 text-sm">
+                Ensure your friend mentions your full name when they book their appointment.
+              </p>
+            </div>
+          </div>
+          <div className="mt-10">
+            <Button asChild size="lg" className="bg-[#A52A2A] hover:bg-opacity-80 text-white px-8 py-3">
+              <Link href="/booking">
+                Book Your Appointment & Save <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section - Simplified */}
       <CtaSection />
     </>

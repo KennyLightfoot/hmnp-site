@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowRight, Check, Clock, MapPin, Shield, FileText, Users, DollarSign, Calendar } from "lucide-react"
+import { ArrowRight, Check, Clock, MapPin, Shield, FileText, Users, DollarSign, Calendar, Briefcase, Award, Building, PlusCircle, Info, ListPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -12,17 +12,17 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Mobile Notary Services | Houston Mobile Notary Pros",
+  title: "Notary Services You Can Rely On | Houston Mobile Notary Pros",
   description:
-    "Professional mobile notary services in Houston and surrounding areas. We offer essential notarization, priority service, loan signings, specialty services, and business packages.",
+    "Our Promise: Fast, precise notary service—every time, no hassle. Houston Mobile Notary Pros offers Standard, Extended Hours, Loan Signing, Specialty, and Business Notary Solutions.",
   keywords:
-    "mobile notary, Houston notary, notary services, loan signing, priority notary, business notary, specialty notary",
+    "mobile notary, Houston notary, standard notary, extended hours notary, loan signing specialist, specialty notary services, business notary solutions, transparent pricing, notary services, loan signing, priority notary",
   alternates: {
     canonical: '/services',
   },
   openGraph: {
-    title: "Mobile Notary Services | Houston Mobile Notary Pros",
-    description: "Comprehensive mobile notary services in Houston: Essential, Priority, Loan Signing, Specialty, and Business packages available.",
+    title: "Notary Services You Can Rely On | Houston Mobile Notary Pros",
+    description: "Our Promise: Fast, precise notary service—every time, no hassle. Discover our range of mobile notary services tailored to your needs.",
     url: `${BASE_URL}/services`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
@@ -38,8 +38,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Mobile Notary Services | Houston Mobile Notary Pros",
-    description: "Need a mobile notary in Houston? We offer fast, reliable service for all notary needs, including loan signings & priority appointments.",
+    title: "Notary Services You Can Rely On | Houston Mobile Notary Pros",
+    description: "Need a reliable mobile notary in Houston? We offer fast, precise service for all your notary needs. Our Promise: Fast, precise notary service—every time, no hassle.",
     // Add your Twitter handle here if you have one
     // siteId: 'YourTwitterID',
     // creator: '@YourTwitterHandle',
@@ -48,17 +48,149 @@ export const metadata = {
   },
 }
 
-// Sample FAQ data for the services page
+export const services = [
+  {
+    slug: "standard",
+    name: "Standard Notary",
+    price: "$75+",
+    tagline: "On-time, every time.",
+    description:
+      "On-site notarizations of standard documents (POAs, affidavits, contracts) between 9 am–5 pm.",
+    link: "/services/standard",
+    icon: FileText,
+    features: [
+      "POAs, affidavits, contracts",
+      "Service between 9 am - 5 pm",
+      "Travel within 15 miles included",
+    ],
+    bgColor: "bg-[#002147]",
+    borderColor: "border-t-[#002147]",
+    buttonVariant: "outline" as "outline" | "default",
+    textColor: "text-[#002147]",
+    hoverBgColor: "hover:bg-[#002147]",
+    hoverTextColor: "hover:text-white",
+  },
+  {
+    slug: "extended",
+    name: "Extended Hours Notary",
+    price: "$100+",
+    tagline: "When 9–5 just won't cut it.",
+    description:
+      "Same-day or after-hours service (7 am–9 pm) for when 9–5 won't cut it.",
+    link: "/services/extended",
+    icon: Clock,
+    features: [
+      "Same-day or after-hours",
+      "Service between 7 am - 9 pm",
+      "Ideal for urgent needs",
+    ],
+    bgColor: "bg-[#A52A2A]",
+    borderColor: "border-t-[#A52A2A]",
+    buttonVariant: "default" as "outline" | "default",
+    textColor: "text-white", // For default button
+    hoverBgColor: "hover:bg-[#8B0000]", // For default button
+    isPopular: true,
+  },
+  {
+    slug: "loan-signing",
+    name: "Loan Signing Specialist",
+    price: "$200+",
+    tagline: "Paperwork pros you can trust.",
+    description:
+      "Certified loan signings, including all trip-chain, remote online signings, and courier returns.",
+    link: "/services/loan-signing",
+    icon: Briefcase,
+    features: [
+      "Certified loan signings",
+      "RON and courier returns",
+      "Meticulous & professional",
+    ],
+    bgColor: "bg-[#002147]",
+    borderColor: "border-t-[#002147]",
+    buttonVariant: "outline" as "outline" | "default",
+    textColor: "text-[#002147]",
+    hoverBgColor: "hover:bg-[#002147]",
+    hoverTextColor: "hover:text-white",
+  },
+  {
+    slug: "specialty",
+    name: "Specialty Notary Services",
+    price: "$150+",
+    tagline: "Complex docs handled.",
+    description:
+      "Apostilles, embassy certifications, translations, and other complex notarial acts.",
+    link: "/services/specialty",
+    icon: Award,
+    features: [
+      "Apostilles, translations",
+      "Embassy certifications",
+      "Expert handling of unique needs",
+    ],
+    bgColor: "bg-[#002147]",
+    borderColor: "border-t-[#002147]",
+    buttonVariant: "outline" as "outline" | "default",
+    textColor: "text-[#002147]",
+    hoverBgColor: "hover:bg-[#002147]",
+    hoverTextColor: "hover:text-white",
+  },
+  {
+    slug: "business",
+    name: "Business Notary Solutions",
+    price: "$250+",
+    tagline: "Keep your business moving.",
+    description:
+      "Volume signings, block-booking discounts, corporate account setups, and recurring appointments.",
+    link: "/services/business",
+    icon: Building,
+    features: [
+      "Volume & block-booking discounts",
+      "Corporate accounts",
+      "Recurring appointments",
+    ],
+    bgColor: "bg-[#002147]",
+    borderColor: "border-t-[#002147]",
+    buttonVariant: "outline" as "outline" | "default",
+    textColor: "text-[#002147]",
+    hoverBgColor: "hover:bg-[#002147]",
+    hoverTextColor: "hover:text-white",
+  },
+  {
+    slug: "extras",
+    name: "Extras & Fees",
+    price: "See details",
+    tagline: "Transparent pricing, no surprises.",
+    description:
+      "Mileage Fee: $0.50/mile • After-Hours Fee: $30 • Weekend Fee: $40",
+    link: "/services/extras",
+    icon: ListPlus,
+    features: [
+      "Mileage Fee: $0.50/mile",
+      "After-Hours Fee: $30",
+      "Weekend Fee: $40",
+    ],
+    bgColor: "bg-[#002147]",
+    borderColor: "border-t-[#002147]",
+    buttonVariant: "outline" as "outline" | "default",
+    textColor: "text-[#002147]",
+    hoverBgColor: "hover:bg-[#002147]",
+    hoverTextColor: "hover:text-white",
+  },
+];
+
+// Updated FAQ data
 const serviceFaqs = [
   {
     id: "service-difference",
     question: "What's the difference between your service packages?",
     answer: (
       <p>
-        Our Essential Package is for standard notarizations during business hours. Priority Service offers 2-hour
-        response times, 7 days a week. Loan Signing is specialized for real estate transactions. Specialty Services
-        cover unique needs like apostille services, and Business Packages provide ongoing service for companies with
-        regular notary needs.
+        Our services are designed to meet diverse needs:
+        <strong className="block mt-2">Standard Notary:</strong> For on-site notarizations of standard documents (POAs, affidavits, contracts) during 9 am–5 pm.
+        <strong className="block mt-2">Extended Hours Notary:</strong> Offers same-day or after-hours service (7 am–9 pm) for urgent needs outside standard business hours.
+        <strong className="block mt-2">Loan Signing Specialist:</strong> Provides certified loan signings, including remote online notarizations (RON) and courier services.
+        <strong className="block mt-2">Specialty Notary Services:</strong> Covers complex notarial acts like apostilles, embassy certifications, and translations.
+        <strong className="block mt-2">Business Notary Solutions:</strong> Caters to businesses with volume signings, block-booking discounts, and corporate account setups.
+        Each service ensures professionalism and precision. Please check individual service details for specifics.
       </p>
     ),
   },
@@ -126,292 +258,63 @@ export default function ServicesPage() {
   return (
     <div className="container mx-auto px-4 py-12">
       {/* Hero Section */}
-      <div className="text-center mb-16">
-        <h1 className="text-4xl font-bold text-[#002147] mb-4">
-          Clear, Calm, Professional Notary Services, When and Where You Need Them.
-        </h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Experience peace of mind with our meticulous and reliable mobile notary services. We bring clarity and
-          professionalism to every signing, ensuring your important documents are handled with the utmost care and
-          precision.
-        </p>
-      </div>
+      <section className="hero text-center mb-16">
+  <h1 className="text-4xl font-bold text-[#002147] mb-4">
+    Notary Services You Can Rely On
+  </h1>
+  <p className="subtitle text-xl text-gray-600 max-w-3xl mx-auto">
+    Our Promise: Fast, precise notary service—every time, no hassle.
+  </p>
+</section>
 
       {/* Service Categories Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-        {/* Essential Service */}
-        <Card className="shadow-md hover:shadow-lg transition-all duration-300 border-t-4 border-t-[#002147]">
-          <CardHeader className="pb-2">
-            <div className="flex items-center mb-2">
-              <div className="bg-[#002147] p-2 rounded-full mr-3">
-                <FileText className="h-5 w-5 text-white" />
+        {services.map((service) => (
+          <Card
+            key={service.slug}
+            className={`shadow-md hover:shadow-lg transition-all duration-300 border-t-4 ${service.borderColor} ${service.isPopular ? 'shadow-xl hover:shadow-2xl' : ''}`}
+          >
+            {service.isPopular && (
+              <div className={`absolute top-0 right-0 ${service.bgColor} text-white px-3 py-1 text-xs font-medium rounded-bl-lg -mt-1`}>
+                MOST POPULAR
               </div>
-              <CardTitle className="text-[#002147]">Essential Mobile Package</CardTitle>
-            </div>
-            <CardDescription>
-              For straightforward notarizations, handled with precision and care. We ensure your documents are
-              correctly processed, providing a calm and clear experience.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <div className="flex items-baseline mb-4">
-              <p className="text-3xl font-bold text-[#002147]">$75</p>
-              <span className="ml-2 text-gray-500">starting at</span>
-            </div>
-            <ul className="space-y-3 mb-6">
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>1-2 documents notarized</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Travel within 15 miles included</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Available Monday-Friday, 9am-5pm</span>
-              </li>
-            </ul>
-          </CardContent>
-          <CardFooter className="pt-0">
-            <Link href="/services/essential" className="w-full">
-              <Button
-                variant="outline"
-                className="w-full border-[#002147] text-[#002147] hover:bg-[#002147] hover:text-white"
-              >
-                Learn More
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-
-        {/* Priority Service */}
-        <Card className="shadow-xl hover:shadow-2xl transition-all duration-300 border-t-4 border-t-[#A52A2A] relative">
-          <div className="absolute top-0 right-0 bg-[#A52A2A] text-white px-3 py-1 text-xs font-medium rounded-bl-lg -mt-1">
-            MOST POPULAR
-          </div>
-          <CardHeader className="pb-2">
-            <div className="flex items-center mb-2">
-              <div className="bg-[#A52A2A] p-2 rounded-full mr-3">
-                <Clock className="h-5 w-5 text-white" />
+            )}
+            <CardHeader className="pb-2">
+              <div className="flex items-center mb-2">
+                <div className={`${service.bgColor} p-2 rounded-full mr-3`}>
+                  <service.icon className="h-5 w-5 text-white" />
+                </div>
+                <CardTitle className="text-[#002147]">{service.name}</CardTitle>
               </div>
-              <CardTitle className="text-[#002147]">Priority Service Package</CardTitle>
-            </div>
-            <CardDescription>
-              Urgent needs met with speed and professionalism. When time is critical, rely on our prompt, meticulous
-              service to manage your time-sensitive documents accurately.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <div className="flex items-baseline mb-4">
-              <p className="text-3xl font-bold text-[#002147]">$100</p>
-              <span className="ml-2 text-gray-500">flat fee</span>
-            </div>
-            <ul className="space-y-3 mb-6">
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>2-hour response time</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Service from 7am-9pm daily</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Up to 5 documents and 2 signers</span>
-              </li>
-            </ul>
-          </CardContent>
-          <CardFooter className="pt-0">
-            <Link href="/services/priority" className="w-full">
-              <Button className="w-full bg-[#A52A2A] hover:bg-[#8B0000]">Learn More</Button>
-            </Link>
-          </CardFooter>
-        </Card>
-
-        {/* Loan Signing */}
-        <Card className="shadow-md hover:shadow-lg transition-all duration-300 border-t-4 border-t-[#002147]">
-          <CardHeader className="pb-2">
-            <div className="flex items-center mb-2">
-              <div className="bg-[#002147] p-2 rounded-full mr-3">
-                <Users className="h-5 w-5 text-white" />
+              <CardDescription>{service.tagline}</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="flex items-baseline mb-4">
+                <p className="text-3xl font-bold text-[#002147]">{service.price}</p>
+                {service.price !== "See details" && !service.price.includes("/") && <span className="ml-2 text-gray-500">starting at</span>}
               </div>
-              <CardTitle className="text-[#002147]">Loan Signing Services</CardTitle>
-            </div>
-            <CardDescription>
-              Expert handling of complex loan documents. We bring clarity and precision to your real estate
-              transactions, ensuring every detail is meticulously managed for a smooth closing.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <div className="flex items-baseline mb-4">
-              <p className="text-3xl font-bold text-[#002147]">$150</p>
-              <span className="ml-2 text-gray-500">flat fee</span>
-            </div>
-            <ul className="space-y-3 mb-6">
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Unlimited documents</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Up to 4 signers</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>90-minute signing session</span>
-              </li>
-            </ul>
-          </CardContent>
-          <CardFooter className="pt-0">
-            <Link href="/services/loan-signing" className="w-full">
-              <Button
-                variant="outline"
-                className="w-full border-[#002147] text-[#002147] hover:bg-[#002147] hover:text-white"
-              >
-                Learn More
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-
-        {/* Specialty Services */}
-        <Card className="shadow-md hover:shadow-lg transition-all duration-300 border-t-4 border-t-[#002147]">
-          <CardHeader className="pb-2">
-            <div className="flex items-center mb-2">
-              <div className="bg-[#002147] p-2 rounded-full mr-3">
-                <Shield className="h-5 w-5 text-white" />
-              </div>
-              <CardTitle className="text-[#002147]">Specialty Services</CardTitle>
-            </div>
-            <CardDescription>
-              Professional solutions for unique notary needs. From apostilles to I-9 verification, we provide
-              specialized, reliable service with a focus on accuracy and clarity.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <div className="flex items-baseline mb-4">
-              <p className="text-3xl font-bold text-[#002147]">$55</p>
-              <span className="ml-2 text-gray-500">starting at</span>
-            </div>
-            <ul className="space-y-3 mb-6">
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Apostille services</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Background check verification</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Wedding certificate expediting</span>
-              </li>
-            </ul>
-          </CardContent>
-          <CardFooter className="pt-0">
-            <Link href="/services/specialty" className="w-full">
-              <Button
-                variant="outline"
-                className="w-full border-[#002147] text-[#002147] hover:bg-[#002147] hover:text-white"
-              >
-                Learn More
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-
-        {/* Business Packages */}
-        <Card className="shadow-md hover:shadow-lg transition-all duration-300 border-t-4 border-t-[#002147]">
-          <CardHeader className="pb-2">
-            <div className="flex items-center mb-2">
-              <div className="bg-[#002147] p-2 rounded-full mr-3">
-                <DollarSign className="h-5 w-5 text-white" />
-              </div>
-              <CardTitle className="text-[#002147]">Business Packages</CardTitle>
-            </div>
-            <CardDescription>
-              Dedicated notary support for your business. Streamline your operations with our reliable, professional,
-              and meticulous notary services, tailored to your company's ongoing needs.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <div className="flex items-baseline mb-4">
-              <p className="text-3xl font-bold text-[#002147]">$125</p>
-              <span className="ml-2 text-gray-500">/month</span>
-            </div>
-            <ul className="space-y-3 mb-6">
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Title company partnerships</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Business concierge service</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Healthcare provider packages</span>
-              </li>
-            </ul>
-          </CardContent>
-          <CardFooter className="pt-0">
-            <Link href="/services/business" className="w-full">
-              <Button
-                variant="outline"
-                className="w-full border-[#002147] text-[#002147] hover:bg-[#002147] hover:text-white"
-              >
-                Learn More
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-
-        {/* Additional Services */}
-        <Card className="shadow-md hover:shadow-lg transition-all duration-300 border-t-4 border-t-[#002147]">
-          <CardHeader className="pb-2">
-            <div className="flex items-center mb-2">
-              <div className="bg-[#002147] p-2 rounded-full mr-3">
-                <Calendar className="h-5 w-5 text-white" />
-              </div>
-              <CardTitle className="text-[#002147]">Additional Services</CardTitle>
-            </div>
-            <CardDescription>
-              Convenient document and mail services to support your notary needs. We provide clear, reliable
-              assistance for printing, scanning, and shipping, ensuring a complete service experience.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <div className="flex items-baseline mb-4">
-              <p className="text-3xl font-bold text-[#002147]">$10</p>
-              <span className="ml-2 text-gray-500">starting at</span>
-            </div>
-            <ul className="space-y-3 mb-6">
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Document printing services</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Secure cloud storage</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Mail and shipping services</span>
-              </li>
-            </ul>
-          </CardContent>
-          <CardFooter className="pt-0">
-            <Link href="/services/additional" className="w-full">
-              <Button
-                variant="outline"
-                className="w-full border-[#002147] text-[#002147] hover:bg-[#002147] hover:text-white"
-              >
-                Learn More
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
+              <p className="text-sm text-gray-600 mb-4 h-20 overflow-hidden">{service.description}</p> {/* Added fixed height and overflow hidden for uniform look */}
+              <ul className="space-y-3 mb-6">
+                {service.features?.slice(0, 3).map((feature, index) => ( // Display up to 3 features
+                  <li key={index} className="flex items-start">
+                    <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+            <CardFooter className="pt-0">
+              <Link href={service.link} className="w-full">
+                <Button
+                  variant={service.buttonVariant || 'outline'}
+                  className={`w-full ${service.buttonVariant === 'outline' ? `${service.borderColor ? `border-[${service.borderColor.split('-')[2]}]` : 'border-[#002147]'} ${service.textColor || 'text-[#002147]'} ${service.hoverBgColor || 'hover:bg-[#002147]'} ${service.hoverTextColor || 'hover:text-white'}` : `${service.bgColor} ${service.textColor || 'text-white'} ${service.hoverBgColor || 'hover:bg-[#8B0000]'}`}`}
+                >
+                  Learn More
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+        ))}
       </div>
 
       {/* What to Expect Call-out */}
@@ -436,71 +339,48 @@ export default function ServicesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[200px]">Feature</TableHead>
-                <TableHead>Essential</TableHead>
-                <TableHead>Priority</TableHead>
-                <TableHead>Loan Signing</TableHead>
-                <TableHead>Specialty</TableHead>
-                <TableHead>Business</TableHead>
+                <TableHead className="w-[150px] md:w-[200px]">Feature</TableHead>
+                <TableHead>Standard Notary</TableHead>
+                <TableHead>Extended Hours Notary</TableHead>
+                <TableHead>Loan Signing Specialist</TableHead>
+                <TableHead>Specialty Notary Services</TableHead>
+                <TableHead>Business Notary Solutions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <TableRow>
                 <TableCell className="font-medium">Starting Price</TableCell>
-                <TableCell>$75</TableCell>
-                <TableCell>$100</TableCell>
-                <TableCell>$150</TableCell>
-                <TableCell>$55</TableCell>
-                <TableCell>$125/month</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Response Time</TableCell>
-                <TableCell>24 hours</TableCell>
-                <TableCell>2 hours</TableCell>
-                <TableCell>24-48 hours</TableCell>
-                <TableCell>Varies</TableCell>
-                <TableCell>Priority</TableCell>
+                <TableCell>$75+</TableCell>
+                <TableCell>$100+</TableCell>
+                <TableCell>$200+</TableCell>
+                <TableCell>$150+</TableCell>
+                <TableCell>$250+</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Service Hours</TableCell>
-                <TableCell>9am-5pm M-F</TableCell>
-                <TableCell>7am-9pm Daily</TableCell>
-                <TableCell>9am-5pm M-F</TableCell>
-                <TableCell>9am-5pm M-F</TableCell>
-                <TableCell>Custom</TableCell>
+                <TableCell>9 am–5 pm M-F</TableCell>
+                <TableCell>7 am–9 pm Daily</TableCell>
+                <TableCell>By Appointment</TableCell>
+                <TableCell>By Appointment</TableCell>
+                <TableCell>Custom / Recurring</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell className="font-medium">Documents</TableCell>
-                <TableCell>1-2</TableCell>
-                <TableCell>Up to 5</TableCell>
-                <TableCell>Unlimited</TableCell>
-                <TableCell>Varies</TableCell>
-                <TableCell>Unlimited</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Signers</TableCell>
-                <TableCell>1 ($10/additional)</TableCell>
-                <TableCell>2 ($10/additional)</TableCell>
-                <TableCell>Up to 4</TableCell>
-                <TableCell>1-2</TableCell>
-                <TableCell>Unlimited</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Weekend Service</TableCell>
-                <TableCell>+$50</TableCell>
-                <TableCell>Included</TableCell>
-                <TableCell>+$50</TableCell>
-                <TableCell>+$50</TableCell>
-                <TableCell>Negotiable</TableCell>
+                <TableCell className="font-medium">Key Documents/Use</TableCell>
+                <TableCell>POAs, Affidavits, Contracts</TableCell>
+                <TableCell>Urgent, Same-day, After-hours</TableCell>
+                <TableCell>Certified Loan Signings, RON</TableCell>
+                <TableCell>Apostilles, Translations, Embassy</TableCell>
+                <TableCell>Volume Signings, Corporate</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Best For</TableCell>
-                <TableCell>General notarizations</TableCell>
-                <TableCell>Urgent needs</TableCell>
-                <TableCell>Real estate closings</TableCell>
-                <TableCell>Unique document needs</TableCell>
-                <TableCell>Regular notary needs</TableCell>
+                <TableCell>Standard legal documents</TableCell>
+                <TableCell>Time-sensitive situations</TableCell>
+                <TableCell>Real estate transactions</TableCell>
+                <TableCell>International & complex docs</TableCell>
+                <TableCell>Businesses with ongoing needs</TableCell>
               </TableRow>
+              {/* Add more feature rows as needed */}
             </TableBody>
           </Table>
         </div>
@@ -607,425 +487,95 @@ export default function ServicesPage() {
       <div className="mb-16">
         <h2 className="text-2xl font-bold text-[#002147] mb-8 text-center">Explore Our Services</h2>
 
-        <Tabs defaultValue="essential" className="w-full">
-          <TabsList className="grid grid-cols-3 md:grid-cols-6 mb-8">
-            <TabsTrigger value="essential" className="data-[state=active]:bg-[#002147] data-[state=active]:text-white">
-              Essential
-            </TabsTrigger>
-            <TabsTrigger value="priority" className="data-[state=active]:bg-[#002147] data-[state=active]:text-white">
-              Priority
-            </TabsTrigger>
-            <TabsTrigger value="loan" className="data-[state=active]:bg-[#002147] data-[state=active]:text-white">
-              Loan Signing
-            </TabsTrigger>
-            <TabsTrigger value="specialty" className="data-[state=active]:bg-[#002147] data-[state=active]:text-white">
-              Specialty
-            </TabsTrigger>
-            <TabsTrigger value="business" className="data-[state=active]:bg-[#002147] data-[state=active]:text-white">
-              Business
-            </TabsTrigger>
-            <TabsTrigger value="additional" className="data-[state=active]:bg-[#002147] data-[state=active]:text-white">
-              Additional
-            </TabsTrigger>
+        <Tabs defaultValue={services[0].slug} className="w-full">
+          <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 mb-8">
+            {services.map(service => (
+              <TabsTrigger key={service.slug} value={service.slug} className="data-[state=active]:bg-[#002147] data-[state=active]:text-white">
+                {service.name.replace(" Notary", "").replace(" Services", "").replace(" Specialist", "").replace(" Solutions", "")} {/* Shortened name for tab */}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
-          <TabsContent value="essential" className="mt-0">
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-xl font-bold text-[#002147] mb-4">Essential Mobile Notary Service</h3>
-                  <p className="text-gray-600 mb-4">
-                    Need to notarize important personal or business documents like wills, POAs, or contracts? The Essential
-                    Mobile Package brings our <strong>professional and precise notary services</strong> directly to you in the
-                    Houston area. We understand that even standard notarizations carry significant weight.
-                  </p>
-                  <p className="text-gray-600 mb-4">
-                    That's why we <strong>arrive prepared, explain everything clearly</strong>, and <strong>meticulously
-                    check every detail</strong> to ensure your documents are executed correctly and without confusion. Avoid
-                    the hassle of travel and experience a <strong>calm, efficient signing process</strong> that gives you
-                    confidence and peace of mind.
-                  </p>
-                  <div className="mt-6">
-                    <Link href="/services/essential">
-                      <Button className="bg-[#002147] hover:bg-[#001a38]">
-                        View Essential Package Details
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
+          {services.map(service => (
+            <TabsContent key={service.slug} value={service.slug} className="mt-0">
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <div className="grid md:grid-cols-2 gap-8 items-start">
+                  <div>
+                    <h3 className="text-xl font-bold text-[#002147] mb-4">{service.name}</h3>
+                    <p className="text-gray-600 mb-2"><strong>Tagline:</strong> {service.tagline}</p>
+                    <p className="text-gray-600 mb-4">
+                      {service.description}
+                    </p>
+                    {service.price && (
+                       <p className="text-lg font-semibold text-[#002147] mb-4">
+                        {service.price === "See details" ? "Pricing: See details below or contact us" : `Starting at: ${service.price}`}
+                      </p>
+                    )}
+                    {service.slug === "extras" && (
+                       <div className="mt-4">
+                        <h4 className="font-semibold text-[#002147] mb-2">Fee Details:</h4>
+                        <ul className="space-y-1 text-gray-600">
+                          <li>Mileage Fee: $0.50/mile</li>
+                          <li>After-Hours Fee: $30</li>
+                          <li>Weekend Fee: $40</li>
+                        </ul>
+                       </div>
+                    )}
+                    <div className="mt-6">
+                      <Link href={service.link}>
+                        <Button className={`${service.bgColor} ${service.textColor || 'text-white'} ${service.hoverBgColor || 'hover:bg-[#001a38]'}`}>
+                          Learn More About {service.name.replace(" Notary", "").replace(" Services", "")}
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-[#002147] mb-2">Common Documents Handled</h4>
-                    <ul className="space-y-2">
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Wills, Trusts, & Estate Planning Documents</span>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Powers of Attorney (Financial, Medical)</span>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Affidavits & Sworn Statements</span>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Deeds (Quitclaim, Warranty, etc.)</span>
-                      </li>
-                       <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Contracts & Business Agreements</span>
-                      </li>
-                       <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Vehicle Title Transfers</span>
-                      </li>
-                       <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Travel Consent Forms for Minors</span>
-                      </li>
-                       <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>I-9 Employment Eligibility Verification*</span>
-                      </li>
-                       <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>And many other documents requiring notarization!</span>
-                      </li>
-                    </ul>
-                    <p className="text-xs text-gray-500 mt-2">*I-9 Verification may fall under Specialty Services depending on requirements.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="priority" className="mt-0">
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-xl font-bold text-[#002147] mb-4">Priority Service Package</h3>
-                  <p className="text-gray-600 mb-4">
-                    Our Priority Service Package is designed for clients with urgent notarization needs. When time is of
-                    the essence, we provide a rapid response with our 2-hour service window, available from 7am to 9pm,
-                    seven days a week.
-                  </p>
-                  <p className="text-gray-600 mb-4">
-                    This premium service ensures that your time-sensitive documents are notarized promptly and
-                    professionally. Whether you're facing a tight deadline or need last-minute notarization, our
-                    Priority Service has you covered.
-                  </p>
-                  <div className="mt-6">
-                    <Link href="/services/priority">
-                      <Button className="bg-[#A52A2A] hover:bg-[#8B0000]">
-                        View Priority Service Details
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-[#002147] mb-2">Package Details</h4>
-                    <p className="text-xl font-bold mb-2">$100 flat fee</p>
-                    <ul className="space-y-2">
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">2-hour response time</span>
-                          <p className="text-sm text-gray-600">Quick service when you need it most</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">Extended hours</span>
-                          <p className="text-sm text-gray-600">Service from 7am-9pm daily</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">Additional signers: +$10 each</span>
-                          <p className="text-sm text-gray-600">Beyond the 2 included signers</p>
-                        </div>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-[#002147] mb-2">Ideal For</h4>
-                    <ul className="space-y-2">
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Urgent deadlines and time-sensitive documents</span>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>After-hours notarization needs</span>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Last-minute requirements</span>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Weekend and holiday service</span>
-                      </li>
-                    </ul>
+                  <div className="space-y-4">
+                    {service.features && service.features.length > 0 && service.slug !== "extras" && (
+                      <div className="bg-white p-4 rounded-lg shadow-sm">
+                        <h4 className="font-semibold text-[#002147] mb-2">Key Features & Inclusions</h4>
+                        <ul className="space-y-2">
+                          {service.features.map((feature, index) => (
+                            <li key={index} className="flex items-start">
+                              <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                     {service.slug === "standard" && (
+                       <div className="bg-white p-4 rounded-lg shadow-sm">
+                        <h4 className="font-semibold text-[#002147] mb-2">Common Documents Handled</h4>
+                        <ul className="space-y-2 text-sm text-gray-600">
+                          <li>Wills, Trusts, & Estate Planning</li>
+                          <li>Powers of Attorney (Financial, Medical)</li>
+                          <li>Affidavits & Sworn Statements</li>
+                          <li>Deeds (Quitclaim, Warranty, etc.)</li>
+                          <li>Contracts & Business Agreements</li>
+                          <li>Vehicle Title Transfers</li>
+                          <li>Travel Consent Forms for Minors</li>
+                          <li>I-9 Employment Verification (as applicable)</li>
+                        </ul>
+                       </div>
+                    )}
+                    {service.slug === "loan-signing" && (
+                       <div className="bg-white p-4 rounded-lg shadow-sm">
+                        <h4 className="font-semibold text-[#002147] mb-2">Loan Signing Expertise</h4>
+                        <ul className="space-y-2 text-sm text-gray-600">
+                            <li>Certified Loan Signing Agent</li>
+                            <li>Purchase, Refinance, HELOC, Seller Packages</li>
+                            <li>Remote Online Notarization (RON) capabilities</li>
+                            <li>Courier and document return services</li>
+                            <li>Meticulous attention to detail</li>
+                        </ul>
+                       </div>
+                    )}
                   </div>
                 </div>
               </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="loan" className="mt-0">
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-xl font-bold text-[#002147] mb-4">Loan Signing Agent Services</h3>
-                  <p className="text-gray-600 mb-4">
-                    Our certified Loan Signing Agents (LSAs) specialize in facilitating real estate closings throughout the Houston area. We understand the critical importance of accuracy, timeliness, and professionalism in handling mortgage documents for title companies, lenders, and borrowers.
-                  </p>
-                  <p className="text-gray-600 mb-4">
-                    Whether it's a Purchase, Refinance, HELOC, Seller Package, or Reverse Mortgage, our experienced LSAs ensure a smooth and error-free signing experience. We meticulously review documents and guide signers through the process with clarity.
-                  </p>
-                  <div className="mt-6">
-                    <Link href="/services/loan-signing">
-                      <Button className="bg-[#002147] hover:bg-[#001a38]">
-                        View Loan Signing Details
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-[#002147] mb-2">Why Choose Us for Loan Signings?</h4>
-                    <ul className="space-y-2">
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Experienced & Certified LSAs (NNA, LSS - *TODO: Confirm/add specific certs*)</span>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Comprehensive E&O Insurance (*TODO: Update level - $1M Recommended*)</span>
-                      </li>
-                       <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Expertise in various loan types: Purchase, Refi, HELOC, Seller, Reverse Mortgage</span>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Meticulous attention to detail & accuracy</span>
-                      </li>
-                       <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Reliable, punctual, and professional service</span>
-                      </li>
-                       <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Flexible scheduling (evenings/weekends available)</span>
-                      </li>
-                        <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <span>Mobile convenience - We travel to the signing location</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="specialty" className="mt-0">
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-xl font-bold text-[#002147] mb-4">Specialty Services</h3>
-                  <p className="text-gray-600 mb-4">
-                    Our Specialty Services go beyond standard notarizations to address complex document requirements.
-                    With specialized training and experience, our notaries can handle unique situations that require
-                    additional expertise.
-                  </p>
-                  <p className="text-gray-600 mb-4">
-                    Whether you need documents authenticated for international use, verification for sensitive
-                    background checks, or expedited processing of important certificates, our team has the knowledge and
-                    credentials to assist you.
-                  </p>
-                  <div className="mt-6">
-                    <Link href="/services/specialty">
-                      <Button className="bg-[#002147] hover:bg-[#001a38]">
-                        View Specialty Services Details
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-[#002147] mb-2">Specialty Options</h4>
-                    <ul className="space-y-2">
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">Apostille Services: $75 + state fees</span>
-                          <p className="text-sm text-gray-600">Authentication for international documents</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">Background Check Verification: $55</span>
-                          <p className="text-sm text-gray-600">For employment and licensing verification</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">Wedding Certificate Expediting: $75</span>
-                          <p className="text-sm text-gray-600">Streamlined processing of marriage documentation</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">Medallion Signature: $95</span>
-                          <p className="text-sm text-gray-600">For financial securities transactions</p>
-                        </div>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="business" className="mt-0">
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-xl font-bold text-[#002147] mb-4">Business Packages</h3>
-                  <p className="text-gray-600 mb-4">
-                    Our Business Packages are tailored solutions for businesses with regular notary needs. These
-                    packages provide consistent, reliable notary services with the convenience of a dedicated account
-                    manager and customized service schedule.
-                  </p>
-                  <p className="text-gray-600 mb-4">
-                    Whether you're a title company, healthcare provider, educational institution, or any other business
-                    with ongoing notary requirements, we have a package that can be customized to meet your specific
-                    needs.
-                  </p>
-                  <div className="mt-6">
-                    <Link href="/services/business">
-                      <Button className="bg-[#002147] hover:bg-[#001a38]">
-                        View Business Packages Details
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-[#002147] mb-2">Business Package Options</h4>
-                    <ul className="space-y-2">
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">Title Company Partnership: $125/month</span>
-                          <p className="text-sm text-gray-600">Priority scheduling for closings</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">Business Concierge Package: $200/month</span>
-                          <p className="text-sm text-gray-600">On-site service twice monthly</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">Healthcare Provider Package: $175/month</span>
-                          <p className="text-sm text-gray-600">HIPAA-compliant document handling</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">Custom Business Solution</span>
-                          <p className="text-sm text-gray-600">Tailored to your specific requirements</p>
-                        </div>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="additional" className="mt-0">
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-xl font-bold text-[#002147] mb-4">Additional Services</h3>
-                  <p className="text-gray-600 mb-4">
-                    Our Additional Services complement our notary offerings to provide a more comprehensive solution for
-                    your document needs. These services can be added to any notary appointment or used independently.
-                  </p>
-                  <p className="text-gray-600 mb-4">
-                    From document printing and scanning to secure cloud storage and mail services, we offer a range of
-                    supplementary services to enhance your notary experience and make the process as convenient as
-                    possible.
-                  </p>
-                  <div className="mt-6">
-                    <Link href="/services/additional">
-                      <Button className="bg-[#002147] hover:bg-[#001a38]">
-                        View Additional Services Details
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-[#002147] mb-2">Additional Service Options</h4>
-                    <ul className="space-y-2">
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">Document Services</span>
-                          <p className="text-sm text-gray-600">Printing, scanning, and faxing</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">Digital Storage</span>
-                          <p className="text-sm text-gray-600">Secure cloud storage for your documents</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">Mail Services</span>
-                          <p className="text-sm text-gray-600">USPS certified mail and express shipping</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start">
-                        <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-medium">Premium Time Slots</span>
-                          <p className="text-sm text-gray-600">Sunday, holiday, and after-hours service</p>
-                        </div>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
+            </TabsContent>
+          ))}
         </Tabs>
       </div>
 

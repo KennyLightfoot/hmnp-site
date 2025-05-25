@@ -43,6 +43,8 @@ const serviceBookingSchema = z.object({
   serviceAddressState: z.string().min(2, { message: "Please enter a state." }),
   serviceAddressZip: z.string().min(5, { message: "Please enter a valid ZIP code." }),
   additionalNotes: z.string().optional(),
+  promoCode: z.string().optional(), // Added for promo code
+  referredBy: z.string().optional(), // Added for referral tracking
   termsAccepted: z.boolean().refine(val => val === true, { message: "You must accept the terms and conditions to proceed." })
 });
 
@@ -60,23 +62,21 @@ const defaultValues: Partial<ServiceBookingFormValues> = {
   serviceAddressState: "",
   serviceAddressZip: "",
   additionalNotes: "",
+  promoCode: "", // Added for promo code
+  referredBy: "", // Added for referral tracking
   termsAccepted: false,
 };
 
-// Updated service types to match AppointmentCalendar's expected ServiceType values
+// Updated service types to align with new branding and expected keys for AppointmentCalendar
 const HMNPServices: { id: AppointmentServiceType | 'other'; label: string }[] = [
-  { id: "essential", label: "Essential Notary" }, // `numberOfSigners` will be used by AppointmentCalendar
-  { id: "priority", label: "Priority/Rush Notary" },
-  { id: "loan-signing", label: "Loan Signing Appointment" },
-  { id: "reverse-mortgage", label: "Reverse Mortgage Signing" },
-  { id: "specialty", label: "Specialty Notary Service" },
-  // 'other' can be kept if you have a fallback or special handling, 
-  // but AppointmentCalendar doesn't have a direct 'other' calendarId. 
-  // For now, let's assume 'other' might mean a different flow or requires contact.
-  // Or, map 'other' to a general calendar if one exists in AppointmentCalendar's logic.
-  // Consider removing 'other' if all bookable services map to a specific calendar type.
-  // For this integration, we'll focus on the defined service types for calendar booking.
-  // Consider removing 'other' if all bookable services map to a specific calendar type.
+  { id: "standard-notary" as AppointmentServiceType, label: "Standard Notary" }, 
+  { id: "extended-hours-notary" as AppointmentServiceType, label: "Extended Hours Notary" },
+  { id: "loan-signing-specialist" as AppointmentServiceType, label: "Loan Signing Specialist" },
+  { id: "specialty-notary-service" as AppointmentServiceType, label: "Specialty Notary Service" },
+  // Business Solutions and individual Support Services are likely handled via different forms/flows
+  // and are not included here as direct calendar-bookable service types in this specific form.
+  // The 'other' option can be kept if there's a manual process for unlisted requests.
+  // { id: "other", label: "Other Inquiry (Please describe in notes)" }
 ];
 
 export function ServiceBookingForm() {
@@ -331,6 +331,40 @@ export function ServiceBookingForm() {
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="promoCode"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Promo Code (Optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter promo code" {...field} />
+              </FormControl>
+              <FormDescription>
+                e.g., FIRST25 for first-time client discount.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="referredBy"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Referred by (Name or Email - Optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter referrer's name or email" {...field} />
+              </FormControl>
+              <FormDescription>
+                If someone referred you, let us know!
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
