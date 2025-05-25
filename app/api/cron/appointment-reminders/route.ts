@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { NotificationService, sendAppointmentReminder } from '@/lib/notifications';
 import { BookingStatus, NotificationType, NotificationMethod } from '@prisma/client';
 
-// This endpoint will be called by a scheduler (e.g., Vercel Cron Jobs, Upstash QStash, etc.)
+// This endpoint will be called by a scheduler (e.g., cron-job.org, Upstash QStash, etc.)
 // to send appointment reminders
 
 export async function POST(request: Request) {

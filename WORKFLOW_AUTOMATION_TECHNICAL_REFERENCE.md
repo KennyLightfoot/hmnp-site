@@ -566,42 +566,6 @@ export async function POST(req: Request) {
 
 ### 14. Cron Jobs {#cron-jobs}
 
-#### Vercel Cron Configuration
-```json
-{
-  "crons": [
-    {
-      "path": "/api/cron/appointment-reminders?type=24hr",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/cron/appointment-reminders?type=2hr",
-      "schedule": "0 */2 * * *"
-    },
-    {
-      "path": "/api/cron/appointment-reminders?type=1hr",
-      "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/cron/booking-automation",
-      "schedule": "*/15 * * * *"
-    },
-    {
-      "path": "/api/cron/payment-automation",
-      "schedule": "0 */4 * * *"
-    },
-    {
-      "path": "/api/cron/lead-nurturing",
-      "schedule": "0 8,14,20 * * *"
-    },
-    {
-      "path": "/api/cron/post-service-followup",
-      "schedule": "0 10 * * *"
-    }
-  ]
-}
-```
-
 #### Cron Job Implementation
 ```typescript
 export async function GET(request: Request) {

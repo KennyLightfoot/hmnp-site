@@ -1224,7 +1224,7 @@ sendAppointmentReminderSms(booking)
 
 #### Automated Scheduling
 
-**Cron Jobs** (`vercel.json`):
+**Cron Jobs** (External Scheduler like cron-job.org):
 ```json
 {
   "crons": [

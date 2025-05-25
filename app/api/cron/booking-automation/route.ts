@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { BookingAutomationService } from '@/lib/booking-automation';
 
-// This endpoint will be called by a scheduler (e.g., Vercel Cron Jobs)
+// This endpoint will be called by a scheduler (e.g., cron-job.org)
 // to process booking status automation
 
 export async function POST(request: Request) {

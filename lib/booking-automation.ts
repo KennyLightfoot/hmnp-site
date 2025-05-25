@@ -231,7 +231,7 @@ export class BookingAutomationService {
    * Schedule appointment reminders for the booking
    */
   private static async scheduleAppointmentReminders(bookingId: string): Promise<void> {
-    // Note: In a production system, you'd integrate with a job scheduler like Upstash QStash
+    // Note: In a production system, you'd integrate with a job scheduler like Upstash QStash or cron-job.org
     // For now, we'll rely on the cron jobs to pick up the reminders
     console.log(`Appointment reminders will be picked up by cron jobs for booking ${bookingId}`);
   }
