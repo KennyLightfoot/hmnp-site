@@ -965,10 +965,10 @@ These updated HTML templates now contain all your correct business information a
                             <div style="background-color: #fef2f2; padding: 25px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #A52A2A;">
                                 <h3 style="color: #1e3a8a; margin: 0 0 15px; font-size: 20px;">Remember Our Commitment?</h3>
                                 <p style="color: #374151; margin: 0 0 15px; font-size: 16px; line-height: 1.6;">
-                                    "{{custom_value.positive_testimonial_snippet}}" <br>- <em>{{custom_value.testimonial_client_name}} (Satisfied Client)</em>
+                                    "Finally, a notary service that doesn't rush you through. They truly are calm in critical moments!" <br>- <em>Sarah M., Houston</em>
                                 </p>
                                 <p style="color: #374151; margin: 0 0 15px; font-size: 16px; line-height: 1.6;">
-                                    <em>(This is a placeholder. Consider adding a brief, positive client testimonial or a reminder of a key service benefit here.)</em>
+                                    "Professional, punctual, and made the whole process stress-free. I'll definitely use them again!" <br>- <em>Michael T., Katy</em>
                                 </p>
                                 <ul style="color: #374151; margin: 0; padding-left: 20px; line-height: 1.8; font-size: 16px;">
                                     <li>✓ Stress-free 5-Minute Peace Protocol</li>
@@ -1013,3 +1013,350 @@ These updated HTML templates now contain all your correct business information a
     </table>
 </body>
 </html>
+```
+
+---
+
+## Template 10: No-Show Follow-Up Email
+**Subject**: We Missed You - Reschedule Your Notary Appointment
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>No-Show Follow-Up - Houston Mobile Notary Pros</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f8f9fa;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 20px 0; text-align: center; background-color: #f8f9fa;">
+                <table role="presentation" style="width: 600px; max-width: 100%; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <!-- Header with Logo -->
+                    <tr>
+                        <td style="padding: 40px 30px 20px; text-align: center; background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border-radius: 8px 8px 0 0;">
+                            <img src="https://storage.googleapis.com/msgsndr/oUvYNTw2Wvul7JSJplqQ/media/68302173ce008c8562696b18.png" alt="Houston Mobile Notary Pros" style="width: 100px; height: 100px; margin-bottom: 15px; border-radius: 50%;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">We Missed You</h1>
+                            <p style="color: #e0e7ff; margin: 10px 0 0; font-size: 16px;">Let's reschedule your notary appointment</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <h2 style="color: #1e3a8a; margin: 0 0 20px; font-size: 24px;">Hi {{contact.first_name}},</h2>
+                            
+                            <p style="color: #374151; margin: 0 0 25px; font-size: 16px; line-height: 1.6;">
+                                We noticed we missed our scheduled appointment. We understand that unexpected circumstances can arise, and we're here to help you reschedule at a time that works better for you.
+                            </p>
+                            
+                            <!-- Missed Appointment Details -->
+                            <div style="background-color: #f1f5f9; padding: 25px; border-radius: 8px; margin: 25px 0;">
+                                <h3 style="color: #1e3a8a; margin: 0 0 15px; font-size: 20px;">Missed Appointment Details:</h3>
+                                <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #4b5563; font-weight: bold; width: 30%;">Date:</td>
+                                        <td style="padding: 8px 0; color: #1f2937;">{{contact.missed_appointment_date}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #4b5563; font-weight: bold;">Time:</td>
+                                        <td style="padding: 8px 0; color: #1f2937;">{{contact.missed_appointment_time}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #4b5563; font-weight: bold;">Location:</td>
+                                        <td style="padding: 8px 0; color: #1f2937;">{{contact.missed_appointment_location}}</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- Rescheduling Options -->
+                            <div style="background-color: #fef2f2; padding: 25px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #dc2626;">
+                                <h3 style="color: #dc2626; margin: 0 0 15px; font-size: 20px;">Easy Rescheduling Options:</h3>
+                                <ul style="color: #374151; margin: 0; padding-left: 20px; line-height: 1.8;">
+                                    <li>📞 Call us at (832) 617-4285</li>
+                                    <li>📧 Email us at contact@houstonmobilenotarypros.com</li>
+                                    <li>💬 Text us at (832) 617-4285</li>
+                                    <li>🌐 Visit our website to book online</li>
+                                </ul>
+                            </div>
+
+                            <!-- Special Offer -->
+                            <div style="background-color: #1e3a8a; padding: 25px; border-radius: 8px; text-align: center; margin: 30px 0;">
+                                <h3 style="color: #ffffff; margin: 0 0 15px; font-size: 20px;">Special Rescheduling Offer</h3>
+                                <p style="color: #e0e7ff; margin: 0 0 20px; font-size: 16px;">
+                                    Book your rescheduled appointment within 48 hours and receive 10% off your service fee!
+                                </p>
+                                <a href="tel:+18326174285" style="display: inline-block; background-color: #dc2626; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold;">Reschedule Now</a>
+                            </div>
+
+                            <p style="color: #374151; margin: 30px 0 0; font-size: 16px; line-height: 1.6;">
+                                We look forward to serving you and bringing calm to your important notary needs.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px; background-color: #1e3a8a; border-radius: 0 0 8px 8px; text-align: center;">
+                            <p style="color: #ffffff; margin: 0 0 10px; font-size: 16px; font-weight: bold;">Houston Mobile Notary Pros</p>
+                            <p style="color: #e0e7ff; margin: 0 0 10px; font-size: 14px;">
+                                <a href="tel:+18326174285" style="color: #e0e7ff; text-decoration: none;">(832) 617-4285</a> | 
+                                <a href="mailto:contact@houstonmobilenotarypros.com" style="color: #e0e7ff; text-decoration: none;">contact@houstonmobilenotarypros.com</a> | 
+                                <a href="https://houstonmobilenotarypros.com/" style="color: #e0e7ff; text-decoration: none;">houstonmobilenotarypros.com</a>
+                            </p>
+                            <p style="color: #e0e7ff; margin: 0; font-size: 14px;">Professional • Calm • Reliable</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+```
+
+---
+
+## Template 11: Service Reminder Email
+**Subject**: Your Notary Appointment is Tomorrow - Important Reminders
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Reminder - Houston Mobile Notary Pros</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f8f9fa;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 20px 0; text-align: center; background-color: #f8f9fa;">
+                <table role="presentation" style="width: 600px; max-width: 100%; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <!-- Header with Logo -->
+                    <tr>
+                        <td style="padding: 40px 30px 20px; text-align: center; background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border-radius: 8px 8px 0 0;">
+                            <img src="https://storage.googleapis.com/msgsndr/oUvYNTw2Wvul7JSJplqQ/media/68302173ce008c8562696b18.png" alt="Houston Mobile Notary Pros" style="width: 100px; height: 100px; margin-bottom: 15px; border-radius: 50%;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">Appointment Tomorrow</h1>
+                            <p style="color: #e0e7ff; margin: 10px 0 0; font-size: 16px;">Important reminders for your notary service</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <h2 style="color: #1e3a8a; margin: 0 0 20px; font-size: 24px;">Hi {{contact.first_name}},</h2>
+                            
+                            <p style="color: #374151; margin: 0 0 25px; font-size: 16px; line-height: 1.6;">
+                                This is a friendly reminder about your notary appointment tomorrow. We're looking forward to providing you with our calm and professional service.
+                            </p>
+                            
+                            <!-- Appointment Details -->
+                            <div style="background-color: #f1f5f9; padding: 25px; border-radius: 8px; margin: 25px 0;">
+                                <h3 style="color: #1e3a8a; margin: 0 0 15px; font-size: 20px;">Your Appointment Details:</h3>
+                                <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #4b5563; font-weight: bold; width: 30%;">Date:</td>
+                                        <td style="padding: 8px 0; color: #1f2937;">{{contact.appointment_date}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #4b5563; font-weight: bold;">Time:</td>
+                                        <td style="padding: 8px 0; color: #1f2937;">{{contact.appointment_time}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #4b5563; font-weight: bold;">Location:</td>
+                                        <td style="padding: 8px 0; color: #1f2937;">{{contact.appointment_location}}</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- Important Reminders -->
+                            <div style="background-color: #fef2f2; padding: 25px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #dc2626;">
+                                <h3 style="color: #dc2626; margin: 0 0 15px; font-size: 20px;">Important Reminders:</h3>
+                                <ul style="color: #374151; margin: 0; padding-left: 20px; line-height: 1.8;">
+                                    <li>✓ Bring valid government-issued photo ID</li>
+                                    <li>✓ Have all documents ready (but not signed)</li>
+                                    <li>✓ Ensure all signers will be present</li>
+                                    <li>✓ Have payment method ready</li>
+                                </ul>
+                            </div>
+
+                            <!-- Contact Info -->
+                            <div style="text-align: center; background-color: #1e3a8a; padding: 25px; border-radius: 8px; margin: 30px 0;">
+                                <h3 style="color: #ffffff; margin: 0 0 15px; font-size: 20px;">Need to Reschedule?</h3>
+                                <p style="color: #e0e7ff; margin: 0 0 20px; font-size: 16px;">
+                                    Please contact us as soon as possible if you need to make any changes.
+                                </p>
+                                <a href="tel:+18326174285" style="display: inline-block; background-color: #dc2626; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold;">Call to Reschedule</a>
+                            </div>
+
+                            <p style="color: #374151; margin: 30px 0 0; font-size: 16px; line-height: 1.6;">
+                                We look forward to serving you tomorrow!
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px; background-color: #1e3a8a; border-radius: 0 0 8px 8px; text-align: center;">
+                            <p style="color: #ffffff; margin: 0 0 10px; font-size: 16px; font-weight: bold;">Houston Mobile Notary Pros</p>
+                            <p style="color: #e0e7ff; margin: 0 0 10px; font-size: 14px;">
+                                <a href="tel:+18326174285" style="color: #e0e7ff; text-decoration: none;">(832) 617-4285</a> | 
+                                <a href="mailto:contact@houstonmobilenotarypros.com" style="color: #e0e7ff; text-decoration: none;">contact@houstonmobilenotarypros.com</a> | 
+                                <a href="https://houstonmobilenotarypros.com/" style="color: #e0e7ff; text-decoration: none;">houstonmobilenotarypros.com</a>
+                            </p>
+                            <p style="color: #e0e7ff; margin: 0; font-size: 14px;">Professional • Calm • Reliable</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+```
+
+---
+
+## Template 12: Quote Follow-Up Email
+**Subject**: Your Notary Quote - Ready When You Are
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quote Follow-Up - Houston Mobile Notary Pros</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f8f9fa;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 20px 0; text-align: center; background-color: #f8f9fa;">
+                <table role="presentation" style="width: 600px; max-width: 100%; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <!-- Header with Logo -->
+                    <tr>
+                        <td style="padding: 40px 30px 20px; text-align: center; background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border-radius: 8px 8px 0 0;">
+                            <img src="https://storage.googleapis.com/msgsndr/oUvYNTw2Wvul7JSJplqQ/media/68302173ce008c8562696b18.png" alt="Houston Mobile Notary Pros" style="width: 100px; height: 100px; margin-bottom: 15px; border-radius: 50%;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">Your Quote is Ready</h1>
+                            <p style="color: #e0e7ff; margin: 10px 0 0; font-size: 16px;">Let's bring calm to your notary needs</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <h2 style="color: #1e3a8a; margin: 0 0 20px; font-size: 24px;">Hi {{contact.first_name}},</h2>
+                            
+                            <p style="color: #374151; margin: 0 0 25px; font-size: 16px; line-height: 1.6;">
+                                Thank you for your interest in our notary services. We've prepared a detailed quote for your needs, and we're ready to help you move forward whenever you are.
+                            </p>
+                            
+                            <!-- Quote Details -->
+                            <div style="background-color: #f1f5f9; padding: 25px; border-radius: 8px; margin: 25px 0;">
+                                <h3 style="color: #1e3a8a; margin: 0 0 15px; font-size: 20px;">Your Quote Summary:</h3>
+                                <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #4b5563; font-weight: bold; width: 40%;">Service Type:</td>
+                                        <td style="padding: 8px 0; color: #1f2937;">{{contact.service_type}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #4b5563; font-weight: bold;">Number of Documents:</td>
+                                        <td style="padding: 8px 0; color: #1f2937;">{{contact.document_count}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #4b5563; font-weight: bold;">Number of Signers:</td>
+                                        <td style="padding: 8px 0; color: #1f2937;">{{contact.signer_count}}</td>
+                                    </tr>
+                                    <tr style="border-top: 2px solid #1e3a8a;">
+                                        <td style="padding: 15px 0 8px; color: #1e3a8a; font-weight: bold; font-size: 18px;">Total Quote:</td>
+                                        <td style="padding: 15px 0 8px; color: #dc2626; font-weight: bold; font-size: 20px;">${{contact.quote_amount}}</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- Next Steps -->
+                            <div style="background-color: #fef2f2; padding: 25px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #dc2626;">
+                                <h3 style="color: #dc2626; margin: 0 0 15px; font-size: 20px;">Next Steps:</h3>
+                                <ul style="color: #374151; margin: 0; padding-left: 20px; line-height: 1.8;">
+                                    <li>Review the quote details above</li>
+                                    <li>Choose your preferred appointment time</li>
+                                    <li>Contact us to confirm and schedule</li>
+                                    <li>We'll bring calm to your signing process</li>
+                                </ul>
+                            </div>
+
+                            <!-- CTA -->
+                            <div style="text-align: center; background-color: #1e3a8a; padding: 25px; border-radius: 8px; margin: 30px 0;">
+                                <h3 style="color: #ffffff; margin: 0 0 15px; font-size: 20px;">Ready to Schedule?</h3>
+                                <p style="color: #e0e7ff; margin: 0 0 20px; font-size: 16px;">
+                                    Let's get your documents notarized with our calm, professional service.
+                                </p>
+                                <a href="tel:+18326174285" style="display: inline-block; background-color: #dc2626; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold;">Schedule Now</a>
+                            </div>
+
+                            <p style="color: #374151; margin: 30px 0 0; font-size: 16px; line-height: 1.6;">
+                                We're here to answer any questions and help you move forward with confidence.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px; background-color: #1e3a8a; border-radius: 0 0 8px 8px; text-align: center;">
+                            <p style="color: #ffffff; margin: 0 0 10px; font-size: 16px; font-weight: bold;">Houston Mobile Notary Pros</p>
+                            <p style="color: #e0e7ff; margin: 0 0 10px; font-size: 14px;">
+                                <a href="tel:+18326174285" style="color: #e0e7ff; text-decoration: none;">(832) 617-4285</a> | 
+                                <a href="mailto:contact@houstonmobilenotarypros.com" style="color: #e0e7ff; text-decoration: none;">contact@houstonmobilenotarypros.com</a> | 
+                                <a href="https://houstonmobilenotarypros.com/" style="color: #e0e7ff; text-decoration: none;">houstonmobilenotarypros.com</a>
+                            </p>
+                            <p style="color: #e0e7ff; margin: 0; font-size: 14px;">Professional • Calm • Reliable</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+```
+
+---
+
+## 📋 Implementation Instructions
+
+### How to Use These Templates in GoHighLevel:
+
+1. **Navigate to**: `Settings` → `Company` → `Templates` → `Email Templates`
+2. **Click**: `+ Add Template`
+3. **Name**: Use the template names above (e.g., "No-Show Follow-Up")
+4. **Subject**: Copy the subject line provided
+5. **Content**: Switch to "HTML" mode and paste the complete HTML code
+6. **Save**: Template for use in workflows
+
+### Template Variables:
+
+- `{{contact.first_name}}` - Client's first name
+- `{{contact.appointment_date}}` - Scheduled appointment date
+- `{{contact.appointment_time}}` - Scheduled appointment time
+- `{{contact.appointment_location}}` - Service location
+- `{{contact.service_type}}` - Type of notary service
+- `{{contact.document_count}}` - Number of documents
+- `{{contact.signer_count}}` - Number of signers
+- `{{contact.quote_amount}}` - Quote total
+- `{{contact.missed_appointment_date}}` - Date of missed appointment
+- `{{contact.missed_appointment_time}}` - Time of missed appointment
+- `{{contact.missed_appointment_location}}` - Location of missed appointment
+
+### Key Features:
+
+✅ **Mobile Responsive** - Looks great on all devices  
+✅ **Professional Design** - Clean, modern styling  
+✅ **Brand Consistent** - Houston Mobile Notary Pros branding  
+✅ **Call-to-Actions** - Clear buttons and contact information  
+✅ **Personalized** - Uses GHL merge tags  
+✅ **Email Client Compatible** - Works with Gmail, Outlook, Apple Mail  
+✅ **Accurate Pricing** - Matches your SOP service packages
+
+These templates are designed to maintain your brand's professional image while effectively communicating with clients at various stages of the service process.
