@@ -4,9 +4,178 @@ This document outlines the triggers and actions for each workflow, including mes
 
 ---
 
+### If/Else Condition Setup Guide
+
+#### Basic Structure
+1. **Add If/Else Action**
+   * Click "+" in workflow builder
+   * Select "If/Else" action
+   * Name branches for clarity (e.g., "High Priority" vs "Standard Lead")
+
+2. **Configure Conditions**
+   * **Branch A (Primary Condition)**
+     * Select Segment Type:
+       * Contact Details (standard fields)
+       * Custom Fields (e.g., `cf_contact_inquiry_subject`)
+       * Contact Tags (e.g., `Status:Contacted`)
+       * Opportunity Details (stage, status, value)
+       * Workflow Status
+       * Events (email opens, SMS replies)
+     * Choose Field/Tag
+     * Select Operator:
+       * "Is" / "Is not"
+       * "Contains" / "Does not contain"
+       * "Exists" / "Does not exist"
+       * "Greater than" / "Less than"
+       * "Is empty" / "Is not empty"
+     * Enter Value (if applicable)
+     * Add multiple conditions with AND/OR logic
+
+   * **Branch B (Else/Default Path)**
+     * Configure if different from default "No" path
+     * Often used for standard/default processing
+
+#### Common Examples
+
+1. **Tag-Based Conditions**
+   ```plaintext
+   If Contact Tags
+   - Field: Status:Contacted
+   - Operator: Exists
+   Then: End Workflow
+   Else: Send Follow-up
+   ```
+
+2. **Custom Field Conditions**
+   ```plaintext
+   If Contact Details
+   - Field: cf_contact_inquiry_subject
+   - Operator: Contains
+   - Value: "Urgent"
+   Then: High Priority Path
+   Else: Standard Path
+   ```
+
+3. **Opportunity Stage Conditions**
+   ```plaintext
+   If Opportunity
+   - Field: Pipeline Stage
+   - Operator: Is
+   - Value: "Booked"
+   Then: End Follow-up
+   Else: Continue Follow-up
+   ```
+
+4. **Combined Conditions**
+   ```plaintext
+   If (Contact Tags: Status:Booking_Requested Exists)
+   OR (Opportunity Stage Is "Booked")
+   Then: End Workflow
+   Else: Send Reminder
+   ```
+
+5. **Time-Based Conditions**
+   ```plaintext
+   If Contact Details
+   - Field: cf_last_contact_date
+   - Operator: Is greater than
+   - Value: 30 days ago
+   Then: Send Re-engagement
+   Else: Continue Nurture
+   ```
+
+6. **Service Type Conditions**
+   ```plaintext
+   If Contact Details
+   - Field: cf_booking_service_type
+   - Operator: Is
+   - Value: "LOAN_SIGNING_SPECIALIST"
+   Then: Trigger Loan Signing Prep
+   Else: Standard Service Prep
+   ```
+
+7. **Payment Status Conditions**
+   ```plaintext
+   If Contact Tags
+   - Field: Status:Payment_Received
+   - Operator: Exists
+   Then: Proceed with Booking
+   Else: Send Payment Reminder
+   ```
+
+8. **Location-Based Conditions**
+   ```plaintext
+   If Contact Details
+   - Field: cf_service_zip_code
+   - Operator: Is in list
+   - Value: ["77001", "77002", "77003"]
+   Then: Standard Service Area
+   Else: Extended Service Area
+   ```
+
+9. **Feedback Score Conditions**
+   ```plaintext
+   If Contact Details
+   - Field: cf_satisfaction_score
+   - Operator: Is greater than or equal to
+   - Value: 9
+   Then: Request Review
+   Else: Send Improvement Survey
+   ```
+
+10. **Multiple AND Conditions**
+    ```plaintext
+    If (Contact Tags: Status:New_Lead Exists)
+    AND (Contact Details: cf_contact_inquiry_subject Contains "Urgent")
+    AND (Contact Details: cf_service_type Is "LOAN_SIGNING")
+    Then: High Priority Loan Signing Path
+    Else: Standard New Lead Path
+    ```
+
+11. **No-Show Handling Conditions**
+    ```plaintext
+    If Contact Details
+    - Field: cf_no_show_count
+    - Operator: Is greater than
+    - Value: 1
+    Then: Apply No-Show Fee
+    Else: Waive First-Time Fee
+    ```
+
+12. **Referral Program Conditions**
+    ```plaintext
+    If (Contact Tags: Feedback:Positive Exists)
+    AND (Contact Details: cf_satisfaction_score Is greater than or equal to 9)
+    Then: Offer Referral Program
+    Else: Continue Standard Follow-up
+    ```
+
+#### Best Practices
+1. **Wait Steps**
+   * Add appropriate wait times before If/Else
+   * Allow time for actions to complete
+   * Consider manual intervention time
+
+2. **Testing**
+   * Test each branch thoroughly
+   * Verify conditions are met
+   * Check default paths
+
+3. **Documentation**
+   * Name branches clearly
+   * Document conditions
+   * Note expected outcomes
+
+4. **Maintenance**
+   * Review conditions regularly
+   * Update as business rules change
+   * Monitor workflow performance
+
+---
+
 ### Lead Management Workflows
 
-#### 1. New Lead Welcome Sequence
+#### 1. New Lead Welcome Sequence 40230ec0-9a2a-4129-83e5-3a2eea2a2aab
 
 *   **Workflow Name**: New Lead Welcome Sequence
 *   **Trigger**: Tag Added → `Status:New_Lead`
@@ -73,7 +242,7 @@ This document outlines the triggers and actions for each workflow, including mes
 
 ---
 
-#### 2. Hot Prospect Follow-up
+#### 2. Hot Prospect Follow-up  1084e838-1c3a-49ba-ac43-6577afa5271a
 
 *   **Workflow Name**: Hot Prospect Follow-up
 *   **Trigger**: Tag Added → `Status:Hot_Prospect`
