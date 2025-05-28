@@ -793,6 +793,150 @@ const customFields = [
     dataType: 'TEXT',
     position: 61,
     placeholder: 'Ad content variation'
+  },
+
+  // ===== WORKFLOW & AUTOMATION SPECIFIC FIELDS (from GHL_Workflow_Details.md) =====
+  {
+    name: 'cf_booking_appointment_time_only',
+    dataType: 'TEXT',
+    position: 500,
+    placeholder: 'e.g., 02:30 PM'
+  },
+  {
+    name: 'cf_confirmation_sent_at',
+    dataType: 'TEXT', // Could be DATETIME if GHL API supports it directly for contact field updates
+    position: 501,
+    placeholder: 'Timestamp of confirmation'
+  },
+  {
+    name: 'cf_no_show_reason',
+    dataType: 'LARGE_TEXT',
+    position: 502,
+    placeholder: 'Reason provided for no-show'
+  },
+  {
+    name: 'cf_no_show_count',
+    dataType: 'NUMERICAL',
+    position: 503,
+    placeholder: '0'
+  },
+  {
+    name: 'cf_payment_date',
+    dataType: 'DATE',
+    position: 504,
+    placeholder: 'Date of payment'
+  },
+  {
+    name: 'cf_invoice_due_date',
+    dataType: 'DATE',
+    position: 505,
+    placeholder: 'Due date for an invoice'
+  },
+  {
+    name: 'cf_payment_failed_attempts',
+    dataType: 'NUMERICAL',
+    position: 506,
+    placeholder: '0'
+  },
+  {
+    name: 'cf_satisfaction_score',
+    dataType: 'NUMERICAL', // Or TEXT if using a non-numeric scale like "Good", "Bad"
+    position: 507,
+    placeholder: 'e.g., 1-10'
+  },
+  {
+    name: 'cf_onboarding_documents_received',
+    dataType: 'TEXT',
+    position: 508,
+    placeholder: 'Yes, No, Pending'
+  },
+  {
+    name: 'cf_last_service_type',
+    dataType: 'TEXT',
+    position: 509,
+    placeholder: 'Type of the last service provided'
+  },
+  {
+    name: 'cf_last_service_type_friendly_name',
+    dataType: 'TEXT',
+    position: 510,
+    placeholder: 'User-friendly name of last service'
+  },
+  {
+    name: 'cf_reengagement_segment',
+    dataType: 'TEXT',
+    position: 511,
+    placeholder: 'Segment for re-engagement campaigns'
+  },
+  {
+    name: 'cf_lifetime_value',
+    dataType: 'MONETORY',
+    position: 512,
+    placeholder: '0.00'
+  },
+
+  // ===== REFUND SPECIFIC FIELDS (from GHL_Workflow_Details.md) =====
+  {
+    name: 'cf_refund_request_amount',
+    dataType: 'MONETORY',
+    position: 520,
+    placeholder: '0.00'
+  },
+  {
+    name: 'cf_refund_request_reason',
+    dataType: 'LARGE_TEXT',
+    position: 521,
+    placeholder: 'Reason for refund request'
+  },
+  {
+    name: 'cf_original_invoice_id',
+    dataType: 'TEXT',
+    position: 522,
+    placeholder: 'Original invoice ID for refund'
+  },
+  {
+    name: 'cf_refund_processed_amount',
+    dataType: 'MONETORY',
+    position: 523,
+    placeholder: '0.00'
+  },
+  {
+    name: 'cf_refund_gateway_transaction_id',
+    dataType: 'TEXT',
+    position: 524,
+    placeholder: 'Refund transaction ID from gateway'
+  },
+  {
+    name: 'cf_refund_status',
+    dataType: 'TEXT',
+    position: 525,
+    placeholder: 'e.g., Requested, Processed, Denied'
+  },
+
+  // ===== REFERRAL PROGRAM SPECIFIC FIELDS (from GHL_Workflow_Details.md) =====
+  {
+    name: 'cf_unique_referral_code',
+    dataType: 'TEXT',
+    position: 530,
+    placeholder: 'Unique code assigned to referrer'
+  },
+  {
+    name: 'cf_referral_code_used',
+    dataType: 'TEXT',
+    position: 531,
+    placeholder: 'Referral code used by new lead'
+  },
+  {
+    name: 'cf_referrer_contact_id',
+    dataType: 'TEXT',
+    position: 532,
+    placeholder: 'GHL Contact ID of the referrer'
+  },
+  {
+    name: 'cf_account_credit_referrer',
+    dataType: 'MONETORY',
+    position: 533,
+    placeholder: '0.00 account credit for referrer'
   }
 ];
 
@@ -859,6 +1003,9 @@ async function createAllCustomFields() {
     console.log('   - RON Platform: 7+ fields');
     console.log('   - Consent & Compliance: 10+ fields');
     console.log('   - Marketing & Tracking: 10+ fields');
+    console.log('   ✅ Workflow & Automation Specific Fields (New)');
+    console.log('   ✅ Refund Specific Fields (New)');
+    console.log('   ✅ Referral Program Specific Fields (New)');
     return;
   }
 
@@ -901,6 +1048,9 @@ async function createAllCustomFields() {
     console.log('   ✅ Consent & Compliance fields');
     console.log('   ✅ Marketing & Tracking fields');
     console.log('   ✅ Legacy fields (for backward compatibility)');
+    console.log('   ✅ Workflow & Automation Specific Fields');
+    console.log('   ✅ Refund Specific Fields');
+    console.log('   ✅ Referral Program Specific Fields');
     console.log('\nNext steps:');
     console.log('1. Verify the fields in GHL: Settings > Custom Fields');
     console.log('2. Test your automation workflows');

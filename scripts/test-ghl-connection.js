@@ -4,6 +4,8 @@
  * Script to test GoHighLevel API v2 connection and credentials
  * Verifies that the Private Integrations v2 API setup is working correctly
  * 
+ * Updated with latest API v2 endpoints and comprehensive testing
+ * 
  * Usage: node scripts/test-ghl-connection.js
  */
 
@@ -16,6 +18,9 @@ import {
   getLocationPipelines,
   getLocationWebhooks,
   getLocationContacts,
+  getLocationDetails,
+  getLocationWorkflows,
+  getLocationConversations,
   printSuccess,
   printError,
   printInfo
@@ -35,122 +40,158 @@ async function testEndpoint(name, endpoint, requestFn) {
     console.log(`Testing ${name}...`);
     
     const result = await requestFn();
-    printSuccess(`${name}: Success`);
     
-    // Show relevant info based on endpoint
-    if (name.includes('Location Info')) {
-      console.log(`   Location: ${result.name || 'Unknown'}`);
-      console.log(`   Address: ${result.address || 'Not set'}`);
-    } else if (name.includes('Company Locations')) {
-      console.log(`   Found: ${result.locations?.length || 0} locations`);
-      if (result.locations?.length > 0) {
-        console.log(`   Current Location ID: ${GHL_LOCATION_ID}`);
-        const currentLocation = result.locations.find(loc => loc.id === GHL_LOCATION_ID);
-        if (currentLocation) {
-          console.log(`   Current Location Name: ${currentLocation.name || 'Unknown'}`);
-        }
+    if (result) {
+      printSuccess(`${name}: Success`);
+      
+      // Log relevant details based on endpoint type
+      if (name === 'Location Details' && result.name) {
+        console.log(`   Location Name: ${result.name}`);
+        console.log(`   Location ID: ${result.id || GHL_LOCATION_ID}`);
+      } else if (Array.isArray(result)) {
+        console.log(`   Found: ${result.length} items`);
+      } else if (result.customFields) {
+        console.log(`   Found: ${result.customFields.length} custom fields`);
+      } else if (result.tags) {
+        console.log(`   Found: ${result.tags.length} tags`);
+      } else if (result.pipelines) {
+        console.log(`   Found: ${result.pipelines.length} pipelines`);
+      } else if (result.webhooks) {
+        console.log(`   Found: ${result.webhooks.length} webhooks`);
+      } else if (result.contacts) {
+        console.log(`   Found: ${result.contacts.length} contacts`);
+      } else if (result.workflows) {
+        console.log(`   Found: ${result.workflows.length} workflows`);
+      } else if (result.conversations) {
+        console.log(`   Found: ${result.conversations.length} conversations`);
       }
-    } else if (name.includes('Custom Fields')) {
-      console.log(`   Found: ${result.customFields?.length || 0} custom fields`);
-    } else if (name.includes('Tags')) {
-      console.log(`   Found: ${result.tags?.length || 0} tags`);
-    } else if (name.includes('Pipelines')) {
-      console.log(`   Found: ${result.pipelines?.length || 0} pipelines`);
-    } else if (name.includes('Webhooks')) {
-      console.log(`   Found: ${result.webhooks?.length || 0} webhooks`);
-    } else if (name.includes('Contacts')) {
-      console.log(`   Found: ${result.contacts?.length || 0} contacts`);
+      
+      return true;
+    } else {
+      printError(`${name}: No data returned`);
+      return false;
     }
-
-    return true;
-    
   } catch (error) {
-    printError(`${name}: Connection Error`);
-    console.log(`   Error: ${error.message}`);
+    printError(`${name}: ${error.message}`);
+    
+    // Provide specific guidance based on error type
+    if (error.message.includes('401')) {
+      console.log('   💡 Check your Private Integration token in .env file');
+    } else if (error.message.includes('403')) {
+      console.log('   💡 Ensure your Private Integration has the required permissions');
+    } else if (error.message.includes('404')) {
+      console.log('   💡 This endpoint may require manual setup in GHL');
+    }
+    
     return false;
   }
 }
 
-async function runConnectionTests() {
+async function testConnection() {
   console.log('🔌 Testing GoHighLevel API v2 Connection...\n');
-  console.log(`📍 Company ID: ${GHL_COMPANY_ID}`);
-  console.log(`📍 Location ID: ${GHL_LOCATION_ID}`);
-  console.log(`🔑 API Key: ${GHL_API_KEY.substring(0, 8)}...${GHL_API_KEY.substring(GHL_API_KEY.length - 4)}\n`);
+  console.log('Configuration:');
+  console.log(`- API Key: ${GHL_API_KEY ? GHL_API_KEY.substring(0, 20) + '...' : 'Missing'}`);
+  console.log(`- Location ID: ${GHL_LOCATION_ID || 'Missing'}`);
+  console.log(`- Company ID: ${GHL_COMPANY_ID || 'Not set (optional)'}`);
+  console.log('\n' + '='.repeat(50) + '\n');
 
-  const tests = [
-    {
-      name: 'Company Locations',
-      requestFn: getCompanyLocations
-    },
-    {
-      name: 'Location Info',
-      requestFn: () => makeGhlV2Request(`/locations/${GHL_LOCATION_ID}`)
-    },
-    {
-      name: 'Custom Fields',
-      requestFn: getLocationCustomFields
-    },
-    {
-      name: 'Tags',
-      requestFn: getLocationTags
-    },
-    {
-      name: 'Pipelines',
-      requestFn: getLocationPipelines
-    },
-    {
-      name: 'Webhooks',
-      requestFn: getLocationWebhooks
-    },
-    {
-      name: 'Contacts (limited)',
-      requestFn: () => getLocationContacts({ limit: 1 })
-    }
-  ];
+  const results = [];
+  
+  // Test location details first (most basic test)
+  results.push(await testEndpoint(
+    'Location Details', 
+    '/locations/{locationId}',
+    getLocationDetails
+  ));
+  
+  // Test custom fields
+  results.push(await testEndpoint(
+    'Custom Fields', 
+    '/locations/{locationId}/customFields',
+    getLocationCustomFields
+  ));
+  
+  // Test tags
+  results.push(await testEndpoint(
+    'Tags', 
+    '/locations/{locationId}/tags',
+    getLocationTags
+  ));
+  
+  // Test pipelines
+  results.push(await testEndpoint(
+    'Pipelines/Opportunities', 
+    '/opportunities/pipelines',
+    getLocationPipelines
+  ));
+  
+  // Test webhooks
+  results.push(await testEndpoint(
+    'Webhooks', 
+    '/locations/{locationId}/webhooks',
+    getLocationWebhooks
+  ));
+  
+  // Test contacts
+  results.push(await testEndpoint(
+    'Contacts', 
+    '/contacts',
+    () => getLocationContacts({ limit: 1 })
+  ));
+  
+  // Test workflows (may require additional permissions)
+  results.push(await testEndpoint(
+    'Workflows', 
+    '/workflows',
+    getLocationWorkflows
+  ));
+  
+  // Test conversations (may require additional permissions)
+  results.push(await testEndpoint(
+    'Conversations', 
+    '/conversations',
+    () => getLocationConversations({ limit: 1 })
+  ));
 
-  let successCount = 0;
-  let totalTests = tests.length;
-
-  for (const test of tests) {
-    const success = await testEndpoint(test.name, null, test.requestFn);
-    if (success) successCount++;
-    
-    // Small delay between tests
-    await new Promise(resolve => setTimeout(resolve, 500));
-  }
-
-  console.log('\n📊 Connection Test Results:');
-  console.log(`✅ Successful: ${successCount}/${totalTests} tests`);
-  console.log(`❌ Failed: ${totalTests - successCount}/${totalTests} tests`);
-
+  // Summary
+  console.log('\n' + '='.repeat(50));
+  console.log('📊 Connection Test Summary:');
+  console.log('='.repeat(50) + '\n');
+  
+  const successCount = results.filter(r => r).length;
+  const totalTests = results.length;
+  
   if (successCount === totalTests) {
-    console.log('\n🎉 All API connections are working correctly!');
-    console.log('\nYour GHL v2 API integration is ready for:');
-    console.log('• Creating custom fields');
-    console.log('• Managing contact tags');
-    console.log('• Setting up pipelines');
-    console.log('• Configuring webhooks');
-    console.log('• Processing contact data');
-    console.log('\nPrivate Integrations v2 has been successfully configured.');
+    printSuccess(`All ${totalTests} API endpoints tested successfully! 🎉`);
+    console.log('\nYour GHL v2 API integration is fully configured and ready.');
   } else if (successCount > 0) {
-    console.log('\n⚠️  Partial connectivity - some endpoints are working');
-    console.log('Check the failed tests above and verify your API permissions.');
+    console.log(`✅ ${successCount}/${totalTests} endpoints working`);
+    console.log(`❌ ${totalTests - successCount}/${totalTests} endpoints failed`);
+    console.log('\nYour GHL v2 API integration is partially working.');
+    console.log('Some endpoints may require:');
+    console.log('- Additional permissions in your Private Integration');
+    console.log('- Manual setup in the GHL dashboard');
+    console.log('- Higher account plan level');
   } else {
     console.log('\n❌ No API v2 connections working');
-    console.log('\nTroubleshooting checklist:');
-    console.log('1. Verify your API key is correct and active');
-    console.log('2. Check that your company ID and location ID are accurate');
-    console.log('3. Ensure your Private Integration has the required permissions');
-    console.log('4. Confirm your GHL account is active and in good standing');
-    console.log('5. Check if there are any rate limits or IP restrictions');
+    console.log('\nPlease check:');
+    console.log('1. Your Private Integration token is correct');
+    console.log('2. Your Location ID is correct');
+    console.log('3. Your Private Integration has the required permissions');
   }
 
-  // Additional diagnostic info
-  console.log('\n🔍 Diagnostic Information:');
-  console.log(`Node.js version: ${process.version}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`Timestamp: ${new Date().toISOString()}`);
+  console.log('\n📚 Next Steps:');
+  if (successCount < totalTests) {
+    console.log('1. Review failed endpoints and their error messages');
+    console.log('2. Check your Private Integration permissions');
+    console.log('3. Manually create resources (pipelines, webhooks) if needed');
+  }
+  console.log('4. Run the complete setup script: node scripts/setup-ghl-complete.js');
+  console.log('5. Check the setup status report: scripts/ghl-setup-status.md');
 }
 
-// Run the tests
-runConnectionTests().catch(console.error); 
+// Run the test
+testConnection().catch(error => {
+  printError('Unexpected error:', error.message);
+  process.exit(1);
+}); 

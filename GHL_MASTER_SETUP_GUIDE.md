@@ -35,11 +35,11 @@
 
 #### Required Environment Variables
 ```env
-# GoHighLevel Configuration
-GHL_API_KEY=your_private_integration_key
+# GoHighLevel Configuration - Updated for Latest API v2
+GHL_API_KEY=your_private_integration_token
 GHL_LOCATION_ID=your_location_id
 GHL_API_BASE_URL=https://services.leadconnectorhq.com
-GHL_API_VERSION=2021-04-15
+GHL_API_VERSION=2021-07-28
 GHL_WEBHOOK_SECRET=your_webhook_secret
 
 # SMS Configuration
@@ -59,7 +59,7 @@ DATABASE_URL=your_postgres_connection_string
 
 #### Required Access & Permissions
 - GoHighLevel account with admin access
-- Private Integration enabled in GHL Labs
+- Private Integration enabled (Settings > Private Integrations)
 - API permissions for:
   - Contacts (read/write)
   - Opportunities (read/write)
@@ -67,29 +67,33 @@ DATABASE_URL=your_postgres_connection_string
   - Webhooks (read/write)
   - Workflows (read/write)
   - Conversations (send messages)
+  - Custom Fields (read/write)
+  - Tags (read/write)
 
 ### 2. GHL Account Configuration {#ghl-configuration}
 
 #### Enable Required Features
-1. **Navigate to**: Settings → Labs
+1. **Navigate to**: Settings → Labs (if available)
 2. **Enable**:
-   - Private Integrations
+   - Private Integrations (may already be enabled by default)
    - Premium Actions & Triggers (for Custom Webhook action)
    - Any other beta features needed
 
 #### Create Private Integration
-1. **Navigate to**: Settings → Other Settings → Private Integrations
+1. **Navigate to**: Settings → Private Integrations
 2. **Create Integration**:
    - Name: `Houston Mobile Notary Automation`
    - Description: `Complete automation integration for HMNP`
-3. **Select Scopes**:
+3. **Select Scopes** (permissions):
    - `contacts.readonly` & `contacts.write`
    - `opportunities.readonly` & `opportunities.write`
    - `calendars.readonly` & `calendars.write`
    - `webhooks.readonly` & `webhooks.write`
    - `workflows.readonly` & `workflows.write`
    - `conversations.write`
-4. **Copy Token**: Save immediately to `.env` file
+   - `locations.customFields.readonly` & `locations.customFields.write`
+   - `locations.tags.readonly` & `locations.tags.write`
+4. **Copy Token**: Save immediately to `.env` file as `GHL_API_KEY`
 
 ### 3. Custom Fields Setup {#custom-fields}
 

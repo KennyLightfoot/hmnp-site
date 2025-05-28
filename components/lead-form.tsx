@@ -32,35 +32,36 @@ const leadFormSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   phone: z.string().min(1, { message: "Phone number is required" }),
   message: z.string().min(1, { message: "Message is required" }),
-  preferredCallTime: z.string(), // Allows empty string, message handled by FormMessage if needed
-  callRequestReason: z.string(), // Allows empty string, message handled by FormMessage if needed
+  preferredCallTime: z.string().optional(),
+  callRequestReason: z.string().optional(),
   termsAccepted: z.boolean().refine((val) => val === true, {
     message: "You must accept the terms and conditions",
   }),
-  smsConsent: z.boolean(),
-  // Hidden fields (UTMs, tags, customFields) will be registered dynamically
+  smsConsent: z.boolean().optional(),
+  // Hidden fields will be registered dynamically and included in form.getValues()
 });
 
 type LeadFormValues = z.infer<typeof leadFormSchema>;
 
 interface LeadFormProps {
-  ghlFormUrl: string;
+  apiEndpoint: string; // New: API endpoint to submit to
   tags?: string[];
-  // GHL often uses specific names for custom fields e.g. custom_field_id or contact.custom_field_name
-  // The keys in this record should match GHL's expected field names.
-  customFields?: Record<string, string>;
-  successRedirectUrl?: string; // URL to redirect to on successful submission
-  onSuccess?: (data: LeadFormValues & Record<string, any>) => void; // Callback for more complex success handling
-  onError?: (error: Error) => void; // Callback for error handling
+  customFields?: Record<string, string>; // For ad-specific fields not in schema, passed directly
+  successRedirectUrl?: string;
+  onSuccess?: (data: any) => void; // Data from API response
+  onError?: (error: Error) => void;
   submitButtonText?: string;
   formTitle?: string;
   formDescription?: string;
   privacyPolicyLink?: string;
   termsOfServiceLink?: string;
+  // UTMs will be automatically collected and sent.
+  // Add any other props you might need, like campaign name for internal logic
+  campaignName?: string; 
 }
 
 export default function LeadForm({
-  ghlFormUrl,
+  apiEndpoint,
   tags = [],
   customFields = {},
   successRedirectUrl,
@@ -71,6 +72,7 @@ export default function LeadForm({
   formDescription,
   privacyPolicyLink,
   termsOfServiceLink,
+  campaignName,
 }: LeadFormProps) {
   const router = useRouter();
   // Separate state for global submission error, RHF handles field errors
@@ -91,88 +93,54 @@ export default function LeadForm({
     },
   });
 
-  // Effect to register and set hidden fields (UTMs, tags, custom GHL fields)
-  useEffect(() => {
-    // UTM Parameters
-    const queryParams = new URLSearchParams(window.location.search);
-    const utmParams: Record<string, string> = {};
-    ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach(param => {
-      if (queryParams.has(param)) {
-        const value = queryParams.get(param)!;
-        utmParams[param] = value; // Store for GHL
-        form.register(param as any); // Register with RHF
-        form.setValue(param as any, value); // Set value in RHF
-      }
-    });
-
-    // Tags (GHL might expect a field named 'tags' with comma-separated values)
-    if (tags.length > 0) {
-      const tagsFieldName = "tags"; // Adjust if GHL expects a different name
-      form.register(tagsFieldName as any);
-      form.setValue(tagsFieldName as any, tags.join(","));
-    }
-
-    // Other Custom Fields
-    // These are passed in via the customFields prop. The key should be GHL's expected field name.
-    Object.entries(customFields).forEach(([key, value]) => {
-      form.register(key as any);
-      form.setValue(key as any, value);
-    });
-  }, [form, tags, customFields]); // Rerun if these props change, though typically they are static per form instance
+  // Hidden fields for UTMs, ad_platform etc. are prepared in processSubmit
+  // No need to register them with react-hook-form if they are not part of the Zod schema
+  // and are collected just before sending.
 
   async function processSubmit(data: LeadFormValues) {
     setSubmissionError(null);
-    const allFormData = form.getValues(); // This gets all values, including registered hidden ones.
-
-    // Construct FormData for GHL
-    // GHL web forms typically expect 'application/x-www-form-urlencoded' or 'multipart/form-data'
-    // FormData handles the 'multipart/form-data' case well.
-    const ghlPayload = new FormData();
-    for (const key in allFormData) {
-      // Make sure to handle boolean values appropriately if GHL expects 'true'/'false' strings
-      const value = (allFormData as any)[key];
-      if (typeof value === 'boolean') {
-        ghlPayload.append(key, value.toString());
-      } else if (value !== undefined && value !== null) {
-        ghlPayload.append(key, value);
+    
+    const queryParams = new URLSearchParams(window.location.search);
+    const utmData: Record<string, string> = {};
+    ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach(param => {
+      if (queryParams.has(param)) {
+        utmData[param] = queryParams.get(param)!;
       }
-    }
+    });
 
-    // If there are specific tags from props, ensure they are on the payload
-    // The useEffect already handles this if 'tags' is a GHL field name.
-    // If GHL expects tags differently (e.g. array), adjust here.
+    // Consolidate all data to be sent
+    const payload = {
+      ...data, // Data from react-hook-form (visible fields)
+      tags,    // Tags from props
+      customFieldsFromProps: customFields, // Explicitly named to avoid conflict if 'customFields' is a form field
+      utmData, // UTMs collected from URL
+      landingPageUrl: window.location.href, // Current landing page URL
+      campaignName, // Pass campaign name if provided
+    };
 
     try {
-      const response = await fetch(ghlFormUrl, {
+      const response = await fetch(apiEndpoint, { // Use new apiEndpoint prop
         method: "POST",
-        body: ghlPayload,
-        // No 'Content-Type' header needed for FormData; browser sets it with boundary.
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload), // Send as JSON
       });
 
+      const result = await response.json(); // Expect JSON response
+
       if (!response.ok) {
-        let errorMsg = "An error occurred during submission.";
-        try {
-          // Attempt to parse GHL error response
-          const errorResult = await response.json();
-          errorMsg = errorResult?.message || errorResult?.error?.message || errorMsg;
-        } catch (e) {
-          // GHL might not return JSON on error, or it might be a network issue
-          errorMsg = response.statusText || errorMsg;
-        }
-        throw new Error(errorMsg);
+        throw new Error(result.message || "An error occurred during submission.");
       }
 
-      // Call onSuccess callback if provided
       if (onSuccess) {
-        onSuccess(allFormData);
+        onSuccess(result); // Pass API response data to callback
       }
 
-      // Redirect if URL is provided
       if (successRedirectUrl) {
         router.push(successRedirectUrl);
       } else if (!onSuccess) {
-        // Default success action if no redirect and no custom onSuccess: show toast & reset
-        toast.success("Form submitted successfully!");
+        toast.success(result.message || "Form submitted successfully!");
         form.reset();
       }
 
@@ -182,7 +150,7 @@ export default function LeadForm({
       if (onError) {
         onError(new Error(errorMessage));
       } else {
-        toast.error(errorMessage); // Default error display
+        toast.error(errorMessage);
       }
     }
   }
@@ -286,7 +254,7 @@ export default function LeadForm({
           name="preferredCallTime"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Preferred Call Time <span className="text-red-500">*</span></FormLabel>
+              <FormLabel>Preferred Call Time</FormLabel>
               <FormControl>
                 <Input placeholder="e.g., Weekdays 2-4 PM, Evenings after 6 PM. Please specify your general availability." {...field} />
               </FormControl>
@@ -301,7 +269,7 @@ export default function LeadForm({
           name="callRequestReason"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Call Request Reason <span className="text-red-500">*</span></FormLabel>
+              <FormLabel>Call Request Reason</FormLabel>
               <FormControl>
                 <Textarea placeholder="Briefly tell us what you'd like to discuss so we can prepare for our conversation (e.g., questions about loan signing, specific document type)." rows={3} {...field} />
               </FormControl>
@@ -337,7 +305,7 @@ export default function LeadForm({
             <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                <FormControl>
                 <Checkbox
-                  checked={field.value}
+                  checked={field.value || false}
                   onCheckedChange={field.onChange}
                   id="smsConsent"
                 />

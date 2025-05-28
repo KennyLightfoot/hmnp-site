@@ -10,6 +10,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { log } from "console"
 import { headers } from 'next/headers'
+import Script from 'next/script'
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -87,6 +88,42 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className="light" suppressHydrationWarning>
+      <head>
+        <meta name="facebook-domain-verification" content="z1f6t494uyp7hjnin4ca8fz1u9q51r" />
+        {/* Facebook Pixel Base Code */}
+        <Script id="fb-pixel-base" strategy="afterInteractive">
+          {`
+            !function(f,b,e,v,n,t,s)
+            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+            fbq('init', 'YOUR_PIXEL_ID'); // TODO: Replace YOUR_PIXEL_ID
+            fbq('track', 'PageView');
+          `}
+        </Script>
+        {/* End Facebook Pixel Base Code */}
+
+        {/* LinkedIn Insight Tag Base Code */}
+        <Script id="linkedin-insight-tag" strategy="afterInteractive">
+          {`
+            _linkedin_partner_id = "YOUR_LINKEDIN_PARTNER_ID"; // TODO: Replace YOUR_LINKEDIN_PARTNER_ID
+            window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
+            window._linkedin_data_partner_ids.push(_linkedin_partner_id);
+            (function(l) {
+            if (!l){window.lintrk = function(a,b){window.lintrk.q.push([a,b])}; window.lintrk.q=[]}
+            var s = document.getElementsByTagName("script")[0];
+            var b = document.createElement("script");
+            b.type = "text/javascript";b.async = true;
+            b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
+            s.parentNode.insertBefore(b, s);})(window.lintrk);
+          `}
+        </Script>
+        {/* End LinkedIn Insight Tag Base Code */}
+      </head>
       <body className={`${inter.className} bg-white`}>
         <Providers>
           {/* If using next/third-parties for Google Analytics, add GA component here */}

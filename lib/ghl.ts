@@ -386,6 +386,51 @@ export async function addTagsToContactByEmail(email: string, tags: string[]): Pr
   }
 }
 
+// Add this new interface for Opportunity Data
+export interface GhlOpportunity {
+  name: string;
+  pipelineId: string;
+  stageId: string; // GHL refers to this as 'pipelineStageId' in some contexts but often just 'stageId' in API
+  status: 'open' | 'won' | 'lost' | 'abandoned';
+  contactId?: string; // Link to an existing contact
+  monetaryValue?: number;
+  assignedTo?: string; // User ID to assign opportunity to
+  source?: string; // Lead source for the opportunity
+  // You can add other opportunity-specific custom fields here if needed,
+  // though they are less common than on contacts.
+}
+
+/**
+ * Creates an opportunity in GHL.
+ * @param {GhlOpportunity} opportunityData The data for the new opportunity.
+ * @returns {Promise<any>} The created opportunity object from GHL.
+ */
+export async function createOpportunity(opportunityData: GhlOpportunity): Promise<any> {
+  if (!opportunityData.name || !opportunityData.pipelineId || !opportunityData.stageId) {
+    throw new Error('Opportunity name, pipelineId, and stageId are required.');
+  }
+  if (!opportunityData.contactId && opportunityData.status === 'open') {
+      // While GHL API might allow creating an opportunity without a contactId initially,
+      // it is highly recommended to associate it with a contact for it to be useful.
+      // Depending on your GHL version, contactId might be implicitly required for certain operations.
+      console.warn('Creating an open opportunity without a contactId. Ensure this is intended.');
+  }
+
+  try {
+    // The endpoint for creating opportunities is typically POST /opportunities/
+    // GHL may require locationId in the opportunity payload for some API versions or setups.
+    // Check GHL API documentation if direct creation under /opportunities/ fails.
+    // If so, you might need to ensure your callGhlApi or the opportunityData includes locationId.
+    // For now, assuming location context is handled by API key or GHL automatically.
+    
+    const response = await callGhlApi('/opportunities/', 'POST', opportunityData);
+    return response.opportunity || response; // Response structure might vary
+  } catch (error) {
+    console.error('Error creating opportunity:', error);
+    throw error;
+  }
+}
+
 // Example Usage (comment out or remove in production code):
 /*
 async function testGhlFunctions() {
