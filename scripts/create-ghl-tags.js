@@ -25,187 +25,303 @@ if (!validateEnvVariables()) {
 const requiredTags = {
   // Status Tags (Lead/Booking/Payment/Service)
   status: [
-    { name: 'Status:New_Lead' },
-    { name: 'Status:Contacted' }, // Implied, used in workflow logic
-    { name: 'Status:Hot_Prospect' },
-    { name: 'Status:Cold_Lead' }, // Kept from original script
-    { name: 'Status:Follow_Up_Needed' }, // Kept from original script, consider if covered by specific workflow tags
-    { name: 'Status:Qualified_Lead' }, // Kept from original script
-    { name: 'Status:Not_Interested' }, // Kept from original script
-    { name: 'Status:Quote_Sent' },
-    { name: 'Status:Booking_Requested' },
-    { name: 'Status:Booking_Confirmed' },
-    { name: 'Status:Booking_Needs_Info' }, // Kept from original script
-    { name: 'Status:Booking_Rescheduled' },
-    { name: 'Status:Booking_Cancelled' },
-    { name: 'Status:No_Show' },
-    { name: 'Status:Payment_Pending' },
-    { name: 'Status:Payment_Received' }, // Equivalent to payment_completed
-    { name: 'Status:Payment_Failed' },
-    { name: 'Status:Payment_Partial' }, // Kept from original script (payment_partial)
-    { name: 'Status:Payment_Overdue' }, // Kept from original script
-    { name: 'Status:Payment_Refunded' }, // Kept from original script
-    { name: 'Status:Service_In_Progress' }, // Kept from original script
-    { name: 'Status:Service_Completed' },
-    { name: 'Status:Ready_For_Service' }, // From GHL Guide
-    { name: 'Status:Refund_Requested' } // From GHL Guide
+    { name: 'status:new_lead' },
+    { name: 'status:contact_form_submitted' }, // Added for General Contact Workflow
+    { name: 'status:call_requested' }, // Added for Request a Call Workflow
+    { name: 'status:contacted' }, // Implied, used in workflow logic
+    { name: 'status:hot_prospect' },
+    { name: 'status:cold_lead' }, // Kept from original script
+    { name: 'status:follow_up_needed' }, // Kept from original script, consider if covered by specific workflow tags
+    { name: 'status:qualified_lead' }, // Kept from original script
+    { name: 'status:not_interested' }, // Kept from original script
+    { name: 'status:quote_sent' },
+    { name: 'status:booking_requested' },
+    { name: 'status:booking_confirmed' }, // EXACT match for booking system
+    { name: 'status:booking_pendingpayment' }, // EXACT match for booking system
+    { name: 'status:payment_expired' }, // For workflows - when payment times out
+    { name: 'status:referred_client' }, // EXACT match for booking system
+    { name: 'status:booking_needs_info' }, // Kept from original script
+    { name: 'status:booking_rescheduled' },
+    { name: 'status:booking_cancelled' },
+    { name: 'status:no_show' },
+    { name: 'status:payment_pending' },
+    { name: 'status:payment_received' }, // Equivalent to payment_completed
+    { name: 'status:payment_failed' },
+    { name: 'status:payment_partial' }, // Kept from original script (payment_partial)
+    { name: 'status:payment_overdue' }, // Kept from original script
+    { name: 'status:payment_refunded' }, // Kept from original script
+    { name: 'status:service_in_progress' }, // Kept from original script
+    { name: 'status:service_completed' },
+    { name: 'status:ready_for_service' }, // From GHL Guide
+    { name: 'status:refund_requested' }, // From GHL Guide
+    { name: 'status:booking_abandoned' },
+    { name: 'status:testimonial_requested' },
+    { name: 'status:testimonial_received' },
+    { name: 'status:nurture' },
+    { name: 'status:re_engagement' },
+    { name: 'status:unsubscribed' },
+    { name: 'status:escalated' },
+    { name: 'status:manual_review' },
+    { name: 'status:internal_followup' },
+    // NEW WORKFLOW TAGS
+    { name: 'status:quote_requested' },
+    { name: 'status:payment_failed' },
+    { name: 'status:payment_completed' },
+    { name: 'status:service_scheduled' },
+    { name: 'status:nurture_general' },
+    { name: 'status:no_action_taken' },
+    { name: 'status:reschedule_requested' },
+    { name: 'status:rescheduled_confirmed' },
+    { name: 'status:reschedule_abandoned' },
+    { name: 'status:lost_customer' }
   ],
 
   // Source Tags
   source: [
-    { name: 'Source:Website_Contact_Form' },
-    { name: 'Source:Website_Service_Booking_Form' },
-    { name: 'Source:Website_Newsletter_Signup' },
-    { name: 'Source:GMB_Listing' }, // Google My Business
-    { name: 'Source:Google' }, // General Google
-    { name: 'Source:Facebook' },
-    { name: 'Source:Instagram' },
-    { name: 'Source:Email_Campaign' }, // More specific than 'source_email'
-    { name: 'Source:Referral' }, // General referral
-    // For Source:Referral_[Name], manual creation or a different mechanism might be needed if names are dynamic
-    { name: 'Source:Affiliate' },
-    { name: 'Source:Yelp' },
-    { name: 'Source:Direct_Traffic' }, // More specific than 'source_direct'
-    { name: 'Source:Returning_Customer' } // More specific than 'source_returning'
+    { name: 'source:website_contact_form' },
+    { name: 'source:website_request_call_form' }, // Added for Request a Call Workflow
+    { name: 'source:website_service_booking_form' },
+    { name: 'source:website_booking' }, // EXACT match for booking system
+    { name: 'source:website_newsletter_signup' },
+    { name: 'source:gmb_listing' }, // Google My Business
+    { name: 'source:google' }, // General Google
+    { name: 'source:facebook' },
+    { name: 'source:instagram' },
+    { name: 'source:email_campaign' }, // More specific than 'source_email'
+    { name: 'source:referral' }, // General referral
+    // For source:referral_[name], manual creation or a different mechanism might be needed if names are dynamic
+    { name: 'source:affiliate' },
+    { name: 'source:yelp' },
+    { name: 'source:direct_traffic' }, // More specific than 'source_direct'
+    { name: 'source:returning_customer' }, // More specific than 'source_returning'
+    // NEW WORKFLOW SOURCE TAGS
+    { name: 'source:facebook_ads' },
+    { name: 'source:google_ads' },
+    { name: 'source:instagram_ads' },
+    { name: 'source:lead_magnet' },
+    { name: 'source:website_visitor' }
   ],
   
   // Service Type Tags
   service: [
-    { name: 'Service:STANDARD_NOTARY' },
-    { name: 'Service:LOAN_SIGNING_SPECIALIST' },
-    { name: 'Service:EXTENDED_HOURS_NOTARY' },
-    { name: 'Service:REAL_ESTATE' }, // Kept from original script (service_real_estate)
-    { name: 'Service:RON' }, // Remote Online Notarization, kept from original script
-    { name: 'Service:Apostille' }, // Kept from original script (service_apostille)
-    { name: 'Service:Multiple_Signers' }, // Kept from original script
-    { name: 'Service:Rush_Service' }, // Kept from original script (service_rush)
-    { name: 'Service:After_Hours' }, // Kept from original script
-    { name: 'Service:Weekend_Service' }, // Kept from original script
-    { name: 'Service:Business_Client' }, // Kept from original script (service_business)
-    { name: 'Service:Wedding_Officiant' } // Kept from original script (service_wedding)
+    { name: 'service:standard_mobile_notary' }, // EXACT match for booking system
+    { name: 'service:loan_signing_specialist' }, // EXACT match for booking system
+    { name: 'service:extended_hours_notary' }, // EXACT match for booking system
+    { name: 'service:completed' }, // For workflows - manually added after appointments
+    { name: 'service:real_estate' }, // Kept from original script (service_real_estate)
+    { name: 'service:ron' }, // Remote Online Notarization, kept from original script
+    { name: 'service:apostille' }, // Kept from original script (service_apostille)
+    { name: 'service:multiple_signers' }, // Kept from original script
+    { name: 'service:rush_service' }, // Kept from original script (service_rush)
+    { name: 'service:after_hours' }, // Kept from original script
+    { name: 'service:weekend_service' }, // Kept from original script
+    { name: 'service:business_client' }, // Kept from original script (service_business)
+    { name: 'service:wedding_officiant' }, // Kept from original script (service_wedding)
+    // NEW WORKFLOW SERVICE TAGS
+    { name: 'service:emergency' },
+    { name: 'priority:same_day' }
   ],
 
   // Workflow & Process Tags
   workflow: [
-    { name: 'Workflow:Welcome_Sequence_Started' },
-    { name: 'Workflow:Booking_Confirmation_Sent' },
-    { name: 'Reminder:24hr_Sent' },
-    { name: 'Reminder:2hr_Sent' },
-    { name: 'Reminder:1hr_Sent' },
-    { name: 'Marketing:Quote_Follow_Up_Complete' },
-    { name: 'Marketing:Testimonial_Approved' }
+    { name: 'workflow:welcome_sequence_started' },
+    { name: 'workflow:booking_confirmation_sent' },
+    { name: 'workflow:confirmation_sent' }, // For workflows - booking confirmation tracking
+    { name: 'reminder:24hr_needed' }, // For workflows - manually added 24hrs before appointment
+    { name: 'reminder:2hr_needed' }, // For workflows - manually added 2hrs before appointment
+    { name: 'reminder:24hr_sent' },
+    { name: 'reminder:2hr_sent' },
+    { name: 'reminder:1hr_sent' },
+    { name: 'marketing:quote_follow_up_complete' },
+    { name: 'marketing:testimonial_approved' },
+    // NEW WORKFLOW TRACKING TAGS
+    { name: 'workflow:ad_nurture_started' },
+    { name: 'workflow:quote_sent' },
+    { name: 'workflow:payment_followup_sent' }
   ],
   
   // Customer & Client Management (Kept distinct category from original script)
   customer: [
-    { name: 'Customer:New' },
-    { name: 'Customer:Repeat' },
-    { name: 'Customer:VIP' },
-    { name: 'Customer:Business' }, // Can overlap with Service:Business_Client, consider consolidation if needed
-    { name: 'Customer:Individual' },
-    { name: 'Customer:Has_Special_Needs' },
-    { name: 'Customer:With_Feedback' }, // General feedback tag
-    { name: 'Customer:Testimonial_Provided' }, // If different from Marketing:Testimonial_Approved
-    { name: 'Customer:Referral_Source' }, // If different from Source:Referral
-    { name: 'Customer:Affiliate_Partner' } // If different from Source:Affiliate
+    { name: 'client:first_time' }, // EXACT match for booking system
+    { name: 'client:returning' }, // For workflows - manually added for repeat customers
+    { name: 'customer:new' },
+    { name: 'customer:repeat' },
+    { name: 'customer:vip' },
+    { name: 'customer:business' }, // Can overlap with service:business_client, consider consolidation if needed
+    { name: 'customer:individual' },
+    { name: 'customer:has_special_needs' },
+    { name: 'customer:with_feedback' }, // General feedback tag
+    { name: 'customer:testimonial_provided' }, // If different from marketing:testimonial_approved
+    { name: 'customer:referral_source' }, // If different from source:referral
+    { name: 'customer:affiliate_partner' } // If different from source:affiliate
   ],
   
   // Payment & Billing Modifiers (Kept distinct category)
   payment: [
-    { name: 'Payment:Method_Card' },
-    { name: 'Payment:Method_Cash' },
-    { name: 'Payment:Method_Check' },
-    { name: 'Payment:Method_Transfer' },
-    { name: 'Payment:Discount_Applied' },
-    { name: 'Payment:Promo_Used' }
+    { name: 'payment:method_card' },
+    { name: 'payment:method_cash' },
+    { name: 'payment:method_check' },
+    { name: 'payment:method_transfer' },
+    { name: 'payment:discount_applied' },
+    { name: 'payment:promo_used' },
+    // --- Added for full workflow coverage ---
+    { name: 'payment:deposit' },
+    { name: 'payment:full' }
+  ],
+
+  // Location & Geography Tags (For booking system)
+  location: [
+    { name: 'location:client_specified_address' }, // EXACT match for booking system
+    { name: 'location:our_office' },
+    { name: 'location:remote_online_notarization' },
+    { name: 'location:public_place' }
+  ],
+
+  // Discount & Promo Tags (For booking system)
+  discount: [
+    { name: 'discount:applied' }, // EXACT match for booking system
+    { name: 'promo:first25' }, // EXACT match for booking system
+    { name: 'promo:generic' } // Generic promo tag
   ],
   
   // Feedback & Reviews (Kept distinct category)
   feedback: [
-    { name: 'Feedback:Requested' },
-    { name: 'Feedback:Provided' }, // General, can be positive or negative
-    { name: 'Feedback:Positive' },
-    { name: 'Feedback:Negative' },
-    { name: 'Review:Request_Sent' },
-    { name: 'Review:Completed' }, // Implied, used in workflow logic
-    { name: 'Review:Google_Completed' },
-    { name: 'Review:Yelp_Completed' }
-    // Testimonial_Approved is now under 'workflow' as Marketing:Testimonial_Approved
+    { name: 'feedback:requested' },
+    { name: 'feedback:provided' }, // General, can be positive or negative
+    { name: 'feedback:positive' },
+    { name: 'feedback:negative' },
+    { name: 'review:request_sent' },
+    { name: 'review:completed' }, // Implied, used in workflow logic
+    { name: 'review:google_completed' },
+    { name: 'review:yelp_completed' },
+    // --- Added for full workflow coverage ---
+    { name: 'feedback:display_consent' }
+    // testimonial_approved is now under 'workflow' as marketing:testimonial_approved
   ],
 
   // Risk Tags
   risk: [
-    { name: 'Risk:Frequent_No_Show' },
-    { name: 'Risk:Payment_Overdue' } // Note: Status:Payment_Overdue also exists. This could be for escalation.
+    { name: 'risk:frequent_no_show' },
+    { name: 'risk:payment_overdue' } // Note: status:payment_overdue also exists. This could be for escalation.
   ],
   
   // Consent Tags (From GHL Guide and original script)
   consent: [
-    { name: 'Consent:SMS_Opt_In' }, // From GHL_MASTER_SETUP_GUIDE.md (environment variables)
-    { name: 'Consent:Marketing' }, // General marketing consent
-    { name: 'Consent:Testimonial' }, // If testimonial can be used
-    { name: 'Consent:Data_Sharing' }
+    { name: 'consent:sms_opt_in' }, // EXACT match for booking system
+    { name: 'consent:marketing_opt_in' }, // EXACT match for booking system
+    { name: 'consent:marketing' }, // General marketing consent
+    { name: 'consent:testimonial' }, // If testimonial can be used
+    { name: 'consent:data_sharing' }
   ],
 
   // Support & Tickets (Kept from original script, may not be in GHL guide but good to have)
   supportTickets: [
-    { name: 'Ticket:New' },
-    { name: 'Ticket:Pending' },
-    { name: 'Ticket:In_Progress' },
-    { name: 'Ticket:Resolved' },
-    { name: 'Ticket:Billing_Issue' },
-    { name: 'Ticket:Service_Issue' },
-    { name: 'Ticket:Technical_Issue' },
-    { name: 'Ticket:Feedback' }, // Can overlap with Feedback:Provided
-    { name: 'Ticket:High_Priority' }
+    { name: 'ticket:new' },
+    { name: 'ticket:pending' },
+    { name: 'ticket:in_progress' },
+    { name: 'ticket:resolved' },
+    { name: 'ticket:billing_issue' },
+    { name: 'ticket:service_issue' },
+    { name: 'ticket:technical_issue' },
+    { name: 'ticket:feedback' }, // Can overlap with feedback:provided
+    { name: 'ticket:high_priority' }
   ],
   
   // Automated Communications (Kept from original script, may not be in GHL guide)
   communications: [
-    { name: 'Comm:Email_Sent' },
-    { name: 'Comm:Email_Opened' },
-    { name: 'Comm:Email_Clicked' },
-    { name: 'Comm:Email_Bounced' },
-    { name: 'Comm:Email_Unsubscribed' },
-    { name: 'Comm:SMS_Sent' },
-    { name: 'Comm:SMS_Delivered' },
-    { name: 'Comm:SMS_Failed' },
-    { name: 'Comm:Voicemail_Sent' },
-    { name: 'Comm:Two_Way_Conversation' }
+    { name: 'comm:email_sent' },
+    { name: 'comm:email_opened' },
+    { name: 'comm:email_clicked' },
+    { name: 'comm:email_bounced' },
+    { name: 'comm:email_unsubscribed' },
+    { name: 'comm:sms_sent' },
+    { name: 'comm:sms_delivered' },
+    { name: 'comm:sms_failed' },
+    { name: 'comm:voicemail_sent' },
+    { name: 'comm:two_way_conversation' }
   ],
   
   // Compliance & Documents (Kept from original script, may not be in GHL guide)
   complianceDocuments: [
-    { name: 'Doc:Received' },
-    { name: 'Doc:Pending' },
-    { name: 'Doc:Rejected' },
-    { name: 'Doc:Verified' },
-    { name: 'Contract:Sent' },
-    { name: 'Contract:Signed' }
+    { name: 'doc:received' },
+    { name: 'doc:pending' },
+    { name: 'doc:rejected' },
+    { name: 'doc:verified' },
+    { name: 'contract:sent' },
+    { name: 'contract:signed' }
   ],
   
   // Referral & Affiliate Program (Kept from original script)
   referralProgram: [
-    { name: 'Referral:Partner' },
-    { name: 'Referral:Submitted' },
-    { name: 'Referral:Converted' },
-    { name: 'Referral:Rewarded' },
-    { name: 'Affiliate:Active' },
-    { name: 'Affiliate:Pending' },
-    { name: 'Affiliate:Commission_Paid' },
-    { name: 'Affiliate:Top_Performer' }
+    { name: 'referral:partner' },
+    { name: 'referral:submitted' },
+    { name: 'referral:converted' },
+    { name: 'referral:rewarded' },
+    // --- Added for full workflow coverage ---
+    { name: 'referral:requested' },
+    { name: 'referral:received' },
+    { name: 'referral:made_referral' },
+    { name: 'referral:received_reward' },
+    { name: 'referral:reward_earned' },
+    { name: 'loyalty:rewarded' },
+    { name: 'affiliate:signup' },
+    { name: 'affiliate:active' },
+    { name: 'affiliate:pending' },
+    { name: 'affiliate:commission_paid' },
+    { name: 'affiliate:top_performer' }
   ],
   
   // RON Platform (Kept from original script)
   ronPlatform: [
-    { name: 'RON:Session_Scheduled' },
-    { name: 'RON:Session_Completed' },
-    { name: 'RON:Session_Cancelled' },
-    { name: 'RON:KBA_Passed' },
-    { name: 'RON:KBA_Failed' },
-    { name: 'RON:IDV_Passed' },
-    { name: 'RON:IDV_Failed' }
+    { name: 'ron:session_scheduled' },
+    { name: 'ron:session_completed' },
+    { name: 'ron:session_cancelled' },
+    { name: 'ron:kba_passed' },
+    { name: 'ron:kba_failed' },
+    { name: 'ron:idv_passed' },
+    { name: 'ron:idv_failed' }
+  ],
+
+  // Review Management Tags (NEW for Workflow 20)
+  reviewManagement: [
+    { name: 'review:positive_given' },
+    { name: 'review:negative_damage_control' },
+    { name: 'review:rating_1' },
+    { name: 'review:rating_2' },
+    { name: 'review:rating_3' },
+    { name: 'review:rating_4' },
+    { name: 'review:rating_5' },
+    { name: 'review:platform_google' },
+    { name: 'review:platform_yelp' },
+    { name: 'review:platform_facebook' }
+  ],
+
+  // Calendar Integration Tags (NEW for Workflow 23)
+  calendarIntegration: [
+    { name: 'calendar:customer_accepted' },
+    { name: 'calendar:auto_created' },
+    { name: 'calendar:manual_entry_needed' },
+    { name: 'calendar:buffer_added' },
+    { name: 'calendar:travel_time_extended' }
+  ],
+
+  // Campaign and Interest Tags (NEW for enhanced workflows)
+  campaignInterest: [
+    { name: 'campaign:holiday_promo' },
+    { name: 'campaign:back_to_school' },
+    { name: 'campaign:tax_season' },
+    { name: 'campaign:summer_special' },
+    { name: 'interest:price_shopping' },
+    { name: 'interest:same_day_service' },
+    { name: 'interest:evening_hours' }
+  ],
+
+  // Download/Lead Magnet Tags (NEW for Workflow 10)
+  downloadTracking: [
+    { name: 'downloaded:pricing_guide' },
+    { name: 'downloaded:faq_guide' }
   ]
+
   // NOTE: Tags like "Lead Reactivated", "Lead First Contact", "Lead Multiple Inquiries", "Lead Dormant", "Lead Priority"
   // from the original "leadNurturing" category have been integrated into "Status" or might be too granular/workflow-specific.
   // Review if these distinct tags are still needed or if their intent is covered by other Status or Workflow tags.

@@ -28,10 +28,49 @@ interface SendNotificationOptions {
 }
 
 export class NotificationService {
+  private static instance: NotificationService | null = null;
+
+  private constructor() {
+    // Private constructor to prevent direct construction calls with the `new` operator
+    if (NotificationService.instance) {
+      throw new Error('Use NotificationService.getInstance() instead');
+    }
+  }
+
+  /**
+   * Gets the singleton instance of NotificationService
+   */
+  public static getInstance(): NotificationService {
+    if (!NotificationService.instance) {
+      NotificationService.instance = new this();
+    }
+    return NotificationService.instance;
+  }
+
+  /**
+   * Static method to send a notification (delegates to instance method)
+   */
+  public static async sendNotification(options: SendNotificationOptions): Promise<{
+    success: boolean;
+    results: Array<{
+      method: NotificationMethod;
+      success: boolean;
+      error?: string;
+      notificationId?: string;
+    }>;
+  }> {
+    return this.getInstance().sendInstanceNotification(options);
+  }
+
+  // Clear the singleton instance (for testing purposes)
+  public static clearInstance(): void {
+    NotificationService.instance = null;
+  }
+
   /**
    * Check if a notification has already been sent to prevent duplicates
    */
-  static async hasNotificationBeenSent(
+  private async hasNotificationBeenSent(
     bookingId: string,
     type: NotificationType,
     method: NotificationMethod,
@@ -58,7 +97,7 @@ export class NotificationService {
   /**
    * Check if booking should receive notifications based on its current status
    */
-  static shouldReceiveNotification(
+  private shouldReceiveNotification(
     status: BookingStatus,
     type: NotificationType
   ): boolean {
@@ -69,7 +108,8 @@ export class NotificationService {
       ],
       [BookingStatus.PAYMENT_PENDING]: [
         NotificationType.PAYMENT_REMINDER,
-        NotificationType.PAYMENT_FAILED
+        NotificationType.PAYMENT_FAILED,
+        NotificationType.PAYMENT_UPDATE
       ],
       [BookingStatus.CONFIRMED]: [
         NotificationType.PAYMENT_CONFIRMATION,
@@ -116,8 +156,9 @@ export class NotificationService {
 
   /**
    * Send a notification via specified methods with duplicate prevention
+   * This is the instance method that does the actual work
    */
-  static async sendNotification({
+  async sendInstanceNotification({
     bookingId,
     type,
     recipient,
@@ -276,7 +317,7 @@ export class NotificationService {
   /**
    * Update booking notification timestamps
    */
-  private static async updateBookingNotificationTimestamp(
+  private async updateBookingNotificationTimestamp(
     bookingId: string,
     type: NotificationType
   ): Promise<void> {
@@ -313,7 +354,7 @@ export class NotificationService {
   /**
    * Send email notification
    */
-  private static async sendEmailNotification(
+  private async sendEmailNotification(
     to: string,
     subject: string,
     html: string
@@ -329,7 +370,7 @@ export class NotificationService {
   /**
    * Send SMS notification
    */
-  private static async sendSmsNotification(
+  private async sendSmsNotification(
     to: string,
     message: string
   ): Promise<{ success: boolean; error?: string }> {

@@ -829,8 +829,67 @@ const customFields = [
   {
     name: 'cf_invoice_due_date',
     dataType: 'DATE',
-    position: 505,
-    placeholder: 'Due date for an invoice'
+    position: 18,
+    placeholder: 'Current status of the last booking'
+  },
+
+  // ===== NEW FINANCIAL & BOOKING DETAIL FIELDS (May 2025) =====
+  {
+    name: 'cf_booking_additional_charges', // For 'additionalCharges'
+    dataType: 'MONETORY', // GHL uses MONETORY for currency
+    position: 400,
+    placeholder: '0.00'
+  },
+  {
+    name: 'cf_booking_base_price', // For 'basePrice'
+    dataType: 'MONETORY',
+    position: 401,
+    placeholder: '0.00'
+  },
+  {
+    name: 'cf_booking_client_type', // For 'clientType'
+    dataType: 'TEXT', // Or 'DROPDOWN_SINGLE' if you have predefined types
+    position: 402,
+    placeholder: 'e.g., Individual, Business, Title Company'
+  },
+  {
+    name: 'cf_booking_document_count', // For 'documentCount'
+    dataType: 'NUMERICAL',
+    position: 403,
+    placeholder: 'Number of documents'
+  },
+  // Note: 'cf_booking_location_type' already exists at position 358.
+  // If you need a different one for 'locationType', use a new name.
+  // Otherwise, ensure your internal 'locationType' maps to 'cf_booking_location_type'.
+  {
+    name: 'cf_booking_travel_mileage', // For 'mileage'
+    dataType: 'NUMERICAL',
+    position: 404,
+    placeholder: 'Total miles traveled'
+  },
+  {
+    name: 'cf_booking_travel_fee', // For 'travelFee'
+    dataType: 'MONETORY',
+    position: 405,
+    placeholder: '0.00'
+  },
+  {
+    name: 'cf_booking_payment_status', // For 'paymentStatus'
+    dataType: 'TEXT', // Or 'DROPDOWN_SINGLE' (e.g., Paid, Unpaid, Pending, Refunded)
+    position: 406,
+    placeholder: 'Current payment status'
+  },
+  {
+    name: 'cf_booking_urgency_level', // For 'urgency'
+    dataType: 'TEXT', // Or 'DROPDOWN_SINGLE' (e.g., Standard, Rush, ASAP)
+    position: 407,
+    placeholder: 'Urgency of the booking'
+  },
+  {
+    name: 'cf_booking_witness_count', // For 'witnessCount'
+    dataType: 'NUMERICAL',
+    position: 408,
+    placeholder: 'Number of witnesses required'
   },
   {
     name: 'cf_payment_failed_attempts',

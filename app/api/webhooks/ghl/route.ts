@@ -33,11 +33,12 @@ export async function POST(request: NextRequest) {
     }
     
     // Log the webhook event for debugging
+    const headersList = await headers();
     console.log('GHL Webhook received:', {
       type: body.type,
       contactId: body.contactId,
       timestamp: new Date().toISOString(),
-      headers: Object.fromEntries(headers().entries()),
+      headers: Object.fromEntries(headersList.entries()),
       payload: body
     });
 

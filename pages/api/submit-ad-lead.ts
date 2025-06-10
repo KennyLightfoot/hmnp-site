@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import {
   upsertContact,
-  addTagsToContact, // We might call this separately if upsert doesn't handle tags perfectly or if contact already exists
+  // addTagsToContact, // We might call this separately if upsert doesn't handle tags perfectly or if contact already exists
   GhlContact,
   GhlCustomField,
 } from '@/lib/ghl'; // Adjust path based on your project structure
@@ -31,7 +31,7 @@ const GHL_CUSTOM_FIELD_IDS: Record<string, string> = {
 };
 
 // Placeholder for your actual function - you'll need to implement this in lib/ghl.ts
-async function createOpportunity(opportunityData: any): Promise<any> {
+async function createOpportunity(opportunityData: Record<string, unknown>): Promise<Record<string, unknown>> {
   console.log("Placeholder: createOpportunity called with", opportunityData);
   // In a real implementation, this would call the GHL API to create an opportunity
   // Example: return await callGhlApi('/opportunities/', 'POST', opportunityData);
@@ -53,11 +53,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       lastName,
       email,
       phone,
-      message,
+      // message, // Assigned but not used - consider if needed for GHL or logging
       preferredCallTime,
       callRequestReason,
-      termsAccepted,
-      smsConsent,
+      // termsAccepted, // Assigned but not used - consider if needed for GHL or logging
+      // smsConsent, // Assigned but not used - consider if needed for GHL or logging
       tags, // Array of strings
       customFieldsFromProps, // Record<string, string>
       utmData, // Record<string, string>

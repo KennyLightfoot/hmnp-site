@@ -111,10 +111,7 @@ export default function BookingConfirmationPage() {
     );
   }
 
-  const isSuccess = !error && bookingDetails && 
-                    (paymentStatus === 'succeeded' || // Stripe redirect indicates success
-                     (!paymentStatus && (bookingDetails.status === 'CONFIRMED' || bookingDetails.status === 'REQUESTED')) // No Stripe redirect, but DB status is good
-                    );
+  const isSuccess = !error && bookingDetails && (paymentStatus ? paymentStatus === 'succeeded' : bookingDetails.status === 'CONFIRMED' || bookingDetails.status === 'REQUESTED' || bookingDetails.status === 'PAYMENT_PENDING');
   const latestPaymentIntent = bookingDetails?.paymentIntents?.[0];
 
   return (

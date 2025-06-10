@@ -100,8 +100,8 @@ export async function POST(request: Request) {
         const ghlContact = await ghl.getContactByEmail(userEmail);
 
         if (ghlContact && ghlContact.id) {
-          await ghl.removeTagsFromContact(ghlContact.id, ['Status:Payment_Pending']);
-          await ghl.addTagsToContact(ghlContact.id, ['Status:Payment_Received', 'Status:Booking_Confirmed']);
+          await ghl.removeTagsFromContact(ghlContact.id, ['status:payment_pending']);
+          await ghl.addTagsToContact(ghlContact.id, ['status:payment_received', 'status:booking_confirmed']);
           console.log(`GHL: Tags updated for contact ${ghlContact.id} (Booking ${bookingId})`);
         } else {
           console.warn(`GHL: Contact not found for email ${userEmail} (Booking ${bookingId}). Tags not updated.`);
@@ -220,8 +220,8 @@ export async function POST(request: Request) {
           ghlContactFailed = await ghl.getContactByEmail(userEmailFailed);
 
           if (ghlContactFailed && ghlContactFailed.id) {
-            await ghl.removeTagsFromContact(ghlContactFailed.id, ['Status:Payment_Pending']);
-            await ghl.addTagsToContact(ghlContactFailed.id, ['Status:Payment_Failed']);
+            await ghl.removeTagsFromContact(ghlContactFailed.id, ['status:payment_pending']);
+            await ghl.addTagsToContact(ghlContactFailed.id, ['status:payment_failed']);
             console.log(`GHL: Tags updated for payment failure for contact ${ghlContactFailed.id} (Booking ${failedBookingId})`);
           } else {
             console.warn(`GHL: Contact not found for email ${userEmailFailed} (Booking ${failedBookingId}) during payment failure. Tags not updated.`);

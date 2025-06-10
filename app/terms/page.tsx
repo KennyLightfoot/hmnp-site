@@ -63,12 +63,12 @@ export default function TermsPage() {
             <li><strong>Priority Service:</strong> Confirmation requires an available 2-hour window.</li>
           </ul>
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">5. Fees and Payment</h2>
+          <h2 id="fees-and-payment" className="text-2xl font-semibold text-[#002147] mt-6 mb-2">5. Fees and Payment</h2>
           <ul className="list-disc pl-6 space-y-1">
             <li><strong>Notarial Act Fees:</strong> Fees for specific notarial acts (e.g., Acknowledgments, Jurats) are charged per notarization/signature as permitted by Texas Government Code §406.024. Our current fees are listed on our website and/or provided during booking.</li>
             <li><strong>Service Fees:</strong> Mobile service, travel, administrative, after-hours, weekend, and other non-notarial fees are charged separately from notarial act fees, as permitted by §406.024(c). These will be itemized in your quote and invoice.</li>
             <li><strong>Travel Fees:</strong> Apply for travel within the Extended Service Area as described in Section 2.</li>
-            <li><strong>Deposit:</strong> A deposit equal to 50% of the estimated total service cost is required at the time of booking for <strong>all</strong> appointments to secure your requested time slot. This deposit will be applied towards your final invoice amount upon successful completion of the service.</li>
+            <li><strong>Deposit:</strong> A flat deposit of $25.00 is required at the time of booking for <strong>all</strong> appointments to secure your requested time slot. This deposit will be applied towards your final invoice amount upon successful completion of the service.</li>
             <li><strong>Payment Authorization:</strong> A valid credit card is required at the time of booking to process the deposit and must be kept on file. This card may be charged for the remaining balance upon service completion or for any applicable cancellation fees (see Section 6).</li>
             <li><strong>Payment Due:</strong> The remaining balance (total fees minus deposit paid) is due at the time service is rendered.</li>
             <li><strong>Payment Methods:</strong> We accept major credit cards for deposits and final payments. Cash may be accepted for the final balance in specific circumstances (e.g., repeat clients with agreement, corporate accounts) and requires exact change.</li>
@@ -79,7 +79,7 @@ export default function TermsPage() {
           <ul className="list-disc pl-6 space-y-1">
             <li><strong>Cancellation Notice:</strong> Please provide at least <strong>four (4) hours</strong> notice prior to your scheduled appointment time if you need to cancel or reschedule. You can notify us via phone or email using the contact information provided.</li>
             <li><strong>Late Cancellation / No-Show Fee:</strong> If you cancel with less than four (4) hours notice, fail to appear for your appointment, or if the signing cannot proceed due to reasons within your control (e.g., lack of required valid ID, absence of signer, unprepared documents preventing notarization), a <strong>$50.00 cancellation/no-show fee</strong> will be charged.</li>
-            <li><strong>Fee Application:</strong> This $50.00 fee will be deducted from the deposit paid. If the deposit amount was less than $50.00, the fee will be charged to the credit card on file. If the appointment is successfully completed after rescheduling, this fee does not apply to the rescheduled appointment (though a new deposit may be required for the new time).</li>
+            <li><strong>Fee Application:</strong> This $50.00 fee will be deducted from the deposit paid. Your $25.00 deposit will be applied towards this fee, and the remaining $25.00 will be charged to the credit card on file. If the appointment is successfully completed after rescheduling, this fee does not apply to the rescheduled appointment (though a new deposit may be required for the new time).</li>
           </ul>
 
           <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">7. Signer Requirements</h2>

@@ -8,15 +8,19 @@ import { useEffect } from 'react'; // For tracking scripts
 const ThankYouFacebookPage: NextPage = () => {
   // Placeholder for Facebook Pixel event tracking (e.g., Lead event)
   useEffect(() => {
-    // if (typeof window !== 'undefined' && window.fbq) {
-    //   window.fbq('track', 'Lead');
-    //   console.log("Facebook Pixel: Lead event tracked.");
-    // }
-    // Placeholder for Google Ads Conversion Tracking or other analytics events
-    // if (typeof window !== 'undefined' && window.gtag) {
-    //   window.gtag('event', 'conversion', {'send_to': 'AW-CONVERSION_ID/CONVERSION_LABEL'});
-    //   console.log("Google Ads: Conversion event tracked.");
-    // }
+    // Facebook Pixel - Lead Event
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'Lead');
+      console.log("Facebook Pixel: Lead event tracked.");
+    }
+    
+    // Google Ads Conversion Tracking
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'conversion', {
+        'send_to': process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID || 'AW-CONVERSION_ID/CONVERSION_LABEL'
+      });
+      console.log("Google Ads: Conversion event tracked.");
+    }
   }, []);
 
   return (

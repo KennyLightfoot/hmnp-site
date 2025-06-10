@@ -144,6 +144,24 @@ export default function LeadForm({
         form.reset();
       }
 
+      // Track form submission for analytics
+      if (typeof window !== 'undefined') {
+        // Facebook Pixel - InitiateCheckout or Lead event
+        if (window.fbq) {
+          window.fbq('track', 'InitiateCheckout');
+          console.log('Facebook Pixel: InitiateCheckout event tracked.');
+        }
+        
+        // Google Analytics - form submission
+        if (window.gtag) {
+          window.gtag('event', 'generate_lead', {
+            'event_category': 'engagement',
+            'event_label': 'lead_form_submission'
+          });
+          console.log('Google Analytics: generate_lead event tracked.');
+        }
+      }
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
       setSubmissionError(errorMessage);

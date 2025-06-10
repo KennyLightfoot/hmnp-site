@@ -85,6 +85,11 @@ export default function Header() {
                     Contact
                   </Link>
                 </li>
+                <li>
+                  <Link href="/login" className="text-[#002147] hover:text-[#A52A2A]">
+                    Sign In
+                  </Link>
+                </li>
               </ul>
             </nav>
             <Link
@@ -161,6 +166,15 @@ export default function Header() {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Contact
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/login"
+                  className="text-[#002147] hover:text-[#A52A2A] block"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign In
                 </Link>
               </li>
               <li>

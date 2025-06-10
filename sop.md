@@ -101,7 +101,8 @@ Texas Maximums for Notarial Acts (these are for individual acts, distinct from o
 ### 6.2 Brand Standards  
 - **Digital Assets**:  
   - Headers: #A52A2A (Auburn)  
-  - Accents: #91A3B0 (Cadet Gray)  
+  - Accents: #91A3B0 (Cadet Gray)
+  - Button: #A52A2A (Auburn)  
 - **Physical Materials**:  
   - Business Cards: Matte finish in #002147 (Oxford Blue)  
   - Brochures: Auburn (#A52A2A) and Oxford Blue (#002147)  

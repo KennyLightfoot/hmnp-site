@@ -21,7 +21,11 @@
     "db:cleanup:confirm": "node scripts/cleanup-database.cjs --confirm",
     "db:archive": "node scripts/archive-old-data.cjs",
     "db:archive:confirm": "node scripts/archive-old-data.cjs --confirm",
-    "db:maintenance": "pnpm db:analyze && pnpm db:cleanup:confirm"
+    "db:maintenance": "pnpm db:analyze && pnpm db:cleanup:confirm",
+    "prisma:seed": "pnpm dotenv -e .env -- prisma db seed"
+  },
+  "prisma": {
+    "seed": "node --loader ts-node/esm prisma/seed.ts"
   },
   "pnpm": {
     "overrides": {

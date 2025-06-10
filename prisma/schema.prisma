@@ -144,8 +144,8 @@ model Service {
   durationMinutes    Int
   basePrice          Decimal     @db.Decimal(10, 2)
   isActive           Boolean     @default(true)
-  requiresDeposit    Boolean     @default(false)
-  depositAmount      Decimal?    @db.Decimal(10, 2)
+  requiresDeposit    Boolean     @default(true)
+  depositAmount      Decimal     @default(25.00) @db.Decimal(10, 2)
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
   externalCalendarId String?     @unique
@@ -157,7 +157,7 @@ model Service {
 
 model Booking {
   id                          String                 @id @default(cuid())
-  signerId                    String
+  signerId                    String?
   serviceId                   String
   notaryId                    String?
   scheduledDateTime           DateTime?
@@ -176,22 +176,22 @@ model Booking {
   kbaStatus                   String?
   idVerificationStatus        String?
   notaryJournalEntry          String?
-  lastReminderSentAt          DateTime?
-  reminder24hrSentAt          DateTime?
-  reminder2hrSentAt           DateTime?
-  reminder1hrSentAt           DateTime?
+  createdAt                   DateTime               @default(now())
+  updatedAt                   DateTime               @updatedAt
   confirmationEmailSentAt     DateTime?
   confirmationSmsSentAt       DateTime?
   followUpSentAt              DateTime?
+  lastReminderSentAt          DateTime?
   noShowCheckPerformedAt      DateTime?
-  createdAt                   DateTime               @default(now())
-  updatedAt                   DateTime               @updatedAt
+  reminder1hrSentAt           DateTime?
+  reminder24hrSentAt          DateTime?
+  reminder2hrSentAt           DateTime?
   User_Booking_notaryIdToUser User?                  @relation("Booking_notaryIdToUser", fields: [notaryId], references: [id])
   service                     Service                @relation(fields: [serviceId], references: [id])
-  User_Booking_signerIdToUser User                   @relation("Booking_signerIdToUser", fields: [signerId], references: [id])
+  User_Booking_signerIdToUser User?                  @relation("Booking_signerIdToUser", fields: [signerId], references: [id])
   NotarizationDocument        NotarizationDocument[]
-  Payment                     Payment[]
   NotificationLog             NotificationLog[]
+  Payment                     Payment[]
 
   @@index([locationType])
   @@index([notaryId])
@@ -262,20 +262,20 @@ model Payment {
 }
 
 model NotificationLog {
-  id                String              @id @default(cuid())
-  bookingId         String
-  notificationType  NotificationType
-  method            NotificationMethod
-  recipientEmail    String?
-  recipientPhone    String?
-  subject           String?
-  message           String
-  sentAt            DateTime            @default(now())
-  status            NotificationStatus  @default(SENT)
-  errorMessage      String?
-  metadata          Json?               // Store additional context like reminder type, payment amount, etc.
-  createdAt         DateTime            @default(now())
-  Booking           Booking             @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  id               String             @id @default(cuid())
+  bookingId        String
+  notificationType NotificationType
+  method           NotificationMethod
+  recipientEmail   String?
+  recipientPhone   String?
+  subject          String?
+  message          String
+  sentAt           DateTime           @default(now())
+  status           NotificationStatus @default(SENT)
+  errorMessage     String?
+  metadata         Json?
+  createdAt        DateTime           @default(now())
+  Booking          Booking            @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
   @@index([notificationType])
@@ -314,8 +314,8 @@ enum BookingStatus {
   CANCELLED_BY_CLIENT
   CANCELLED_BY_STAFF
   REQUIRES_RESCHEDULE
-  NO_SHOW
   ARCHIVED
+  NO_SHOW
 }
 
 enum LocationType {
@@ -370,6 +370,7 @@ enum NotificationType {
   NOTARY_ASSIGNMENT
   EMERGENCY_NOTIFICATION
   LEAD_NURTURING
+  PAYMENT_UPDATE
 }
 
 enum NotificationMethod {

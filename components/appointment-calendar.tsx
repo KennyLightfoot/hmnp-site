@@ -7,7 +7,18 @@ import { format, addHours, setHours, setMinutes, setSeconds, setMilliseconds, st
 import { Loader2 } from 'lucide-react'; // Added for loading state
 
 // Define valid service types
-export type ServiceType = "essential" | "priority" | "loan-signing" | "reverse-mortgage" | "specialty";
+export type ServiceType =
+  | "essential"
+  | "priority"
+  | "loan-signing"
+  | "reverse-mortgage"
+  | "specialty"
+  | "standard-notary"
+  | "extended-hours-notary"
+  | "loan-signing-specialist"
+  | "specialty-notary-service"
+  | "business-solutions"
+  | "support-service";
 
 // Define structure for time slots fetched from API
 interface TimeSlot {
@@ -51,26 +62,31 @@ export default function AppointmentCalendar({ serviceType, numberOfSigners, onTi
   const getCalendarId = (service: ServiceType, signers: number): string => {
     switch (service) {
       case "essential":
-        // Specific calendars for 1, 2, and 3+ signers for Essential service
-        if (signers === 1) return "r9koQ0kxmuMuWryZkjdo"; // Essential - 1 Signer
-        if (signers === 2) return "wkTW5ZX4EMl5hOAbCk9D"; // Essential - 2 Signers
+      case "standard-notary": // Added standard-notary to behave like essential
+        // Specific calendars for 1, 2, and 3+ signers
+        if (signers === 1) return "r9koQ0kxmuMuWryZkjdo"; // Essential/Standard - 1 Signer
+        if (signers === 2) return "wkTW5ZX4EMl5hOAbCk9D"; // Essential/Standard - 2 Signers
         // Default to 3-signer calendar for 3 or more
-        return "Vy3hd6Or6Xi2ogW0mvEG"; // Essential - 3 Signers
+        return "Vy3hd6Or6Xi2ogW0mvEG"; // Essential/Standard - 3+ Signers
       case "priority":
         return "xtHXReq1dfd0wGA7dLc0"; // Priority Service
       case "loan-signing":
-        return "EJ5ED9UXPHCjBePUTJ0W"; // Loan Signing
+      case "loan-signing-specialist": // Added loan-signing-specialist
+        return "EJ5ED9UXPHCjBePUTJ0W"; // Loan Signing Calendar
       case "reverse-mortgage":
         // Assumption: Use the same calendar as Loan Signing for Reverse Mortgages
-        return "EJ5ED9UXPHCjBePUTJ0W"; // Loan Signing
+        return "EJ5ED9UXPHCjBePUTJ0W"; // Loan Signing Calendar
       case "specialty":
+      case "specialty-notary-service": // Added specialty-notary-service
         // Assumption: Use a general services calendar for Specialty requests
         return "h4X7cZ0mZ3c52XSzvpjU"; // Houston Mobile Notary Pros Services
+      // Cases for other Prisma ServiceTypes can be added here with their specific calendar IDs
+      // e.g., extended-hours-notary, business-solutions, support-service
       default:
         // Log a warning if an unexpected service type is encountered
-        console.warn(`Unknown service type in getCalendarId: ${service}`);
-        // Fallback to a default calendar (Essential 1 Signer) to prevent errors
-        return "r9koQ0kxmuMuWryZkjdo"; // Fallback: Essential - 1 Signer
+        console.warn(`Unknown or unmapped service type in getCalendarId: ${service}. Using fallback.`);
+        // Fallback to a default calendar (Essential/Standard 1 Signer) to prevent errors
+        return "r9koQ0kxmuMuWryZkjdo"; // Fallback: Essential/Standard - 1 Signer
     }
   };
 
@@ -79,11 +95,20 @@ export default function AppointmentCalendar({ serviceType, numberOfSigners, onTi
     switch (service) {
       case "loan-signing":
       case "reverse-mortgage":
+      case "loan-signing-specialist": // Added loan-signing-specialist
         return 90; // 90 minutes
       case "priority":
         return 60; // 60 minutes
-      default: // essential, specialty
-        return 30; // 30 minutes
+      case "essential":
+      case "specialty":
+      case "standard-notary": // Added standard-notary
+      case "specialty-notary-service": // Added specialty-notary-service
+        return 60; // 60 minutes
+      // Cases for other Prisma ServiceTypes can be added here with their specific durations
+      // e.g., extended-hours-notary, business-solutions, support-service
+      default:
+        console.warn(`Unknown or unmapped service type in getDuration: ${service}. Using fallback duration.`);
+        return 60; // Default/fallback duration
     }
   };
 

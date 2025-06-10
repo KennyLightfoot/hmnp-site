@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, Controller } from "react-hook-form"
 import { z } from "zod"
-import { ChevronLeft, ChevronRight, Loader2, Sparkles } from "lucide-react"
+import { ChevronLeft, ChevronRight, Loader2, Sparkles, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -22,7 +22,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 // Define the form schema using Zod
 const formSchema = z.object({
   // Step 1: Service Selection
-  serviceType: z.enum(["essential", "priority", "loan-signing", "reverse-mortgage", "specialty"]),
+  serviceType: z.string().min(1, { message: "Please select a service type" }),
 promoCode: z.string().optional(), // Added for promo code
   numberOfSigners: z.coerce.number().min(1).max(10),
 
@@ -67,8 +67,7 @@ interface ApiService {
   // Add other relevant fields from your Service model in Prisma if needed for display
 }
 
-// Define valid service types for props (matching the calendar component)
-type ServiceType = "essential" | "priority" | "loan-signing" | "reverse-mortgage" | "specialty";
+
 
 export default function BookingPageClient() {
   const router = useRouter()
@@ -78,6 +77,7 @@ export default function BookingPageClient() {
   const [serviceIdMapFromAPI, setServiceIdMapFromAPI] = useState<Record<string, string>>({});
   const [fetchedServicesList, setFetchedServicesList] = useState<ApiService[]>([]); // To store full service details
   const [servicesLoadingError, setServicesLoadingError] = useState<string | null>(null);
+  const [selectedServiceDetail, setSelectedServiceDetail] = useState<ApiService | null>(null);
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -166,6 +166,14 @@ export default function BookingPageClient() {
   const numberOfSigners = watch("numberOfSigners")
   const appointmentStartTime = watch("appointmentStartTime")
   const appointmentFormattedTime = watch("appointmentFormattedTime")
+
+  // Effect to update selectedServiceDetail when serviceType or fetchedServicesList changes
+  useEffect(() => {
+    if (serviceType && fetchedServicesList.length > 0) {
+      const detail = fetchedServicesList.find(s => s.key === serviceType) || null;
+      setSelectedServiceDetail(detail);
+    }
+  }, [serviceType, fetchedServicesList]);
 
   const totalSteps = 6
 
@@ -293,17 +301,26 @@ export default function BookingPageClient() {
     let locationTypeApi: string | undefined = undefined;
     switch (data.signingLocation) {
       case "client-location":
-        locationTypeApi = "CLIENT_ADDRESS";
+        locationTypeApi = "CLIENT_SPECIFIED_ADDRESS"; // Updated to match Prisma enum
         break;
       case "public-place":
-        locationTypeApi = "PUBLIC_LOCATION";
+        locationTypeApi = "PUBLIC_PLACE"; // Updated to match Prisma enum
         break;
-      case "business-office": // Assuming this means a generic business office
-        locationTypeApi = "PUBLIC_LOCATION"; // Or map to HMNP_OFFICE if it's an option and defined in Prisma enum
+      case "business-office": // Assuming this means a generic business office, maps to OUR_OFFICE
+        locationTypeApi = "OUR_OFFICE"; // Updated to match Prisma enum (assuming 'business-office' means HMNP's office)
         break;
       default:
         console.warn("Unknown signing location:", data.signingLocation);
-        // Optionally set a default or handle as an error
+        // Optionally set a default or handle as an error. 
+        // Consider throwing an error or setting a default that the backend will reject if unmapped.
+        toast({
+          title: "Invalid Location",
+          description: `The selected signing location '${data.signingLocation}' is not recognized. Please select a valid option.`,
+          variant: "destructive",
+          duration: 7000,
+        });
+        setIsSubmitting(false);
+        return; // Prevent submission with an undefined or unmapped locationTypeApi
     }
 
     const apiPayload = {
@@ -326,6 +343,8 @@ export default function BookingPageClient() {
       email: data.email,
       phone: data.phone,
       company: data.company, // Optional, but pass if collected
+      consentSms: data.smsNotifications, // Added for SMS consent
+      consentEmail: data.emailUpdates, // Added for Email consent
     };
 
     console.log("Submitting to /api/bookings with payload:", JSON.stringify(apiPayload, null, 2));
@@ -479,106 +498,41 @@ export default function BookingPageClient() {
                               defaultValue={field.value}
                               className="grid grid-cols-1 md:grid-cols-2 gap-4"
                             >
-                              <FormItem className="relative">
-                                <FormControl>
-                                  <RadioGroupItem value="essential" id="essential" className="peer sr-only" />
-                                </FormControl>
-                                <Label
-                                  htmlFor="essential"
-                                  className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
-                                >
-                                  <span className="font-semibold">Essential Mobile Package</span>
-                                  <span className="text-sm text-gray-500">Starting at $75</span>
-                                </Label>
-                              </FormItem>
-                              <FormItem className="relative">
-                                <FormControl>
-                                  <RadioGroupItem value="priority" id="priority" className="peer sr-only" />
-                                </FormControl>
-                                <Label
-                                  htmlFor="priority"
-                                  className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
-                                >
-                                  <span className="font-semibold">Priority Service Package</span>
-                                  <span className="text-sm text-gray-500">$100 flat fee</span>
-                                </Label>
-                              </FormItem>
-                              <FormItem className="relative">
-                                <FormControl>
-                                  <RadioGroupItem value="loan-signing" id="loan-signing" className="peer sr-only" />
-                                </FormControl>
-                                <Label
-                                  htmlFor="loan-signing"
-                                  className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
-                                >
-                                  <span className="font-semibold">Loan Signing Service</span>
-                                  <span className="text-sm text-gray-500">$150 flat fee</span>
-                                </Label>
-                              </FormItem>
-                              <FormItem className="relative">
-                                <FormControl>
-                                  <RadioGroupItem value="reverse-mortgage" id="reverse-mortgage" className="peer sr-only" />
-                                </FormControl>
-                                <Label
-                                  htmlFor="reverse-mortgage"
-                                  className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
-                                >
-                                  <span className="font-semibold">Reverse Mortgage/HELOC</span>
-                                  <span className="text-sm text-gray-500">$150 flat fee</span>
-                                </Label>
-                              </FormItem>
-                              <FormItem className="relative">
-                                <FormControl>
-                                  <RadioGroupItem value="specialty" id="specialty" className="peer sr-only" />
-                                </FormControl>
-                                <Label
-                                  htmlFor="specialty"
-                                  className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5"
-                                >
-                                  <span className="font-semibold">Specialty Services</span>
-                                  <span className="text-sm text-gray-500">Starting at $55</span>
-                                </Label>
-                              </FormItem>
+                              {servicesLoadingError && (
+                                <Alert variant="destructive" className="md:col-span-2">
+                                  <AlertTitle>Error Loading Services</AlertTitle>
+                                  <AlertDescription>
+                                    {servicesLoadingError} Please try refreshing the page.
+                                  </AlertDescription>
+                                </Alert>
+                              )}
+                              {!servicesLoadingError && fetchedServicesList.length === 0 && (
+                                <p className="text-gray-500 md:col-span-2">Loading service options...</p>
+                              )}
+                              {fetchedServicesList.map((service) => (
+                                <FormItem key={service.id} className="relative">
+                                  <FormControl>
+                                    <RadioGroupItem value={service.key} id={service.key} className="peer sr-only" />
+                                  </FormControl>
+                                  <Label
+                                    htmlFor={service.key}
+                                    className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5 h-full"
+                                  >
+                                    <span className="font-semibold">{service.name}</span>
+                                    <span className="text-lg font-bold text-[#002147] mt-auto pt-2">
+                                      ${service.basePrice}
+                                      {service.requiresDeposit && service.depositAmount && (
+                                        <span className="text-xs font-normal text-gray-500 block">(${service.depositAmount} deposit)</span>
+                                      )}
+                                    </span>
+                                  </Label>
+                                </FormItem>
+                              ))}
                             </RadioGroup>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="numberOfSigners"
-                      render={({ field }) => {
-                        // Extract onChange to potentially help type inference
-                        const handleValueChange = (value: string) => {
-                            field.onChange(Number.parseInt(value));
-                        };
-                        
-                        return (
-                          <FormItem className="space-y-2">
-                            <FormLabel htmlFor="numberOfSigners">Number of Signers</FormLabel>
-                            <Select
-                              onValueChange={handleValueChange} // Use the extracted handler
-                              defaultValue={field.value.toString()}
-                            >
-                              <FormControl>
-                                <SelectTrigger id="numberOfSigners">
-                                  <SelectValue placeholder="Select number of signers" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                                  <SelectItem key={num} value={num.toString()}>
-                                    {num} {num === 1 ? "Signer" : "Signers"}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        );
-                      }}
                     />
 
                     <div className="bg-gray-50 p-4 rounded-md">
@@ -587,7 +541,14 @@ export default function BookingPageClient() {
                           <h3 className="font-semibold">Estimated Price:</h3>
                           <p className="text-sm text-gray-500">Based on service type and number of signers</p>
                         </div>
-                        <div className="text-2xl font-bold text-[#002147]">${getServicePrice()}</div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-[#002147]">${getServicePrice()}</div>
+                          {selectedServiceDetail && selectedServiceDetail.requiresDeposit && selectedServiceDetail.depositAmount && selectedServiceDetail.depositAmount > 0 && (
+                            <p className="text-xs text-orange-600 font-semibold">
+                              Includes a ${selectedServiceDetail.depositAmount} deposit, payable upon booking.
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -773,6 +734,16 @@ export default function BookingPageClient() {
                       />
                     </div>
 
+                    {/* BEGIN: Mileage Fee Notice Alert */}
+                    <Alert variant="info" className="mt-4 mb-4 border-blue-400 bg-blue-50 text-blue-700 dark:border-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
+                      <AlertTriangle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      <AlertTitle className="font-semibold text-blue-800 dark:text-blue-200">Mileage Fee Notice</AlertTitle>
+                      <AlertDescription className="text-sm">
+                        For locations beyond a 20-mile radius from our business base (zip code <strong>77591</strong>), a mileage fee of $1.10 per additional mile (round trip) will apply. This will be calculated and invoiced separately after your booking is confirmed, if applicable.
+                      </AlertDescription>
+                    </Alert>
+                    {/* END: Mileage Fee Notice Alert */}
+
                     <FormField
                       control={form.control}
                       name="signingLocation"
@@ -907,6 +878,22 @@ export default function BookingPageClient() {
                             {watch("address")}, {watch("city")}, {watch("state")} {watch("postalCode")}
                           </span>
                         </div>
+
+                        {/* Promo Code Input */}
+                        <FormField
+                          control={form.control}
+                          name="promoCode"
+                          render={({ field }) => (
+                            <FormItem className="my-2">
+                              <FormLabel>Promo Code (Optional)</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter promo code" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
                         <div className="border-t border-gray-200 my-2 pt-2 flex justify-between">
                           <span className="font-semibold">Total:</span>
                           <span className="font-bold text-[#002147]">${getServicePrice()}</span>

@@ -1,32 +1,29 @@
 "use client";
 
 import Head from 'next/head';
+import { useEffect } from 'react';
 
 export default function ThankYouAdsPage() {
+  useEffect(() => {
+    // Facebook Pixel - Lead Event
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'Lead');
+      console.log('Facebook Pixel: Lead event tracked.');
+    }
+
+    // Google Ads Conversion Tracking
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'conversion', {
+        'send_to': process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID || 'AW_CONVERSION_ID/CONVERSION_LABEL'
+      });
+      console.log('Google Ads: Conversion event tracked.');
+    }
+  }, []);
+
   return (
     <>
       <Head>
         <title>Thank You! | Houston Mobile Notary Pros</title>
-        {/* TODO: Add Facebook Pixel - Lead Event */}
-        {/* 
-          <script>
-            fbq('track', 'Lead');
-          </script>
-        */}
-
-        {/* TODO: Add Google Ads Conversion Tracking */}
-        {/* 
-          Example Google Ads Lead Conversion Snippet (replace with your actual GTAG_ID and AW_CONVERSION_ID)
-          <script async src="https://www.googletagmanager.com/gtag/js?id=GTAG_ID"></script>
-          <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'GTAG_ID');
-            gtag('event', 'conversion', {'send_to': 'AW_CONVERSION_ID/YOUR_CONVERSION_LABEL'});
-          </script>
-        */}
-
         {/* TODO: Add LinkedIn Insight Tag & Conversion Tracking */}
         {/* 
           Ensure LinkedIn Insight Tag is installed (usually in <head> of all pages or via GTM)

@@ -101,7 +101,7 @@ export default async function RootLayout({
             t.src=v;s=b.getElementsByTagName(e)[0];
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', 'YOUR_PIXEL_ID'); // TODO: Replace YOUR_PIXEL_ID
+            fbq('init', '${process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID || 'YOUR_PIXEL_ID'}'); // TODO: Add NEXT_PUBLIC_FACEBOOK_PIXEL_ID to .env
             fbq('track', 'PageView');
           `}
         </Script>

@@ -25,7 +25,16 @@ import {
 } from "@/components/ui/select"; // Assuming Shadcn UI Select is available
 import { useState, useEffect } from 'react';
 import AppointmentCalendar from "@/components/appointment-calendar"; // Import the calendar component
-import type { ServiceType as AppointmentServiceType } from "@/components/appointment-calendar"; // Import ServiceType for casting
+
+interface ApiService {
+  id: string; // This will be the UUID for the service
+  name: string;
+  description?: string | null;
+  basePrice: number; // Assuming Prisma Decimal is converted to number
+  depositAmount?: number | null;
+  requiresDeposit: boolean;
+  // Add any other fields from your Service model that might be useful in the form
+}
 
 // Schema updated for direct calendar booking
 const serviceBookingSchema = z.object({
@@ -45,7 +54,9 @@ const serviceBookingSchema = z.object({
   additionalNotes: z.string().optional(),
   promoCode: z.string().optional(), // Added for promo code
   referredBy: z.string().optional(), // Added for referral tracking
-  termsAccepted: z.boolean().refine(val => val === true, { message: "You must accept the terms and conditions to proceed." })
+  termsAccepted: z.boolean().refine(val => val === true, { message: "You must accept the terms and conditions to proceed." }),
+  consentSms: z.boolean().optional(),
+  consentEmail: z.boolean().optional()
 });
 
 type ServiceBookingFormValues = z.infer<typeof serviceBookingSchema>;
@@ -65,23 +76,16 @@ const defaultValues: Partial<ServiceBookingFormValues> = {
   promoCode: "", // Added for promo code
   referredBy: "", // Added for referral tracking
   termsAccepted: false,
+  consentSms: false,
+  consentEmail: false,
 };
 
-// Updated service types to align with new branding and expected keys for AppointmentCalendar
-const HMNPServices: { id: AppointmentServiceType | 'other'; label: string }[] = [
-  { id: "standard-notary" as AppointmentServiceType, label: "Standard Notary" }, 
-  { id: "extended-hours-notary" as AppointmentServiceType, label: "Extended Hours Notary" },
-  { id: "loan-signing-specialist" as AppointmentServiceType, label: "Loan Signing Specialist" },
-  { id: "specialty-notary-service" as AppointmentServiceType, label: "Specialty Notary Service" },
-  // Business Solutions and individual Support Services are likely handled via different forms/flows
-  // and are not included here as direct calendar-bookable service types in this specific form.
-  // The 'other' option can be kept if there's a manual process for unlisted requests.
-  // { id: "other", label: "Other Inquiry (Please describe in notes)" }
-];
+
 
 export function ServiceBookingForm() {
+  const [services, setServices] = useState<ApiService[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [submitStatus, setSubmitStatus] = useState<{ success: boolean; message: string } | null>(null);
+  const [submitStatus, setSubmitStatus] = useState<{ success: boolean; message: string; bookingId?: string } | null>(null);
   
   // State for selected time slot from AppointmentCalendar
   const [selectedSlot, setSelectedSlot] = useState<{
@@ -90,6 +94,23 @@ export function ServiceBookingForm() {
     formattedTime: string;
     calendarId: string;
   } | null>(null);
+
+  useEffect(() => {
+    async function fetchServices() {
+      try {
+        const response = await fetch('/api/services');
+        if (!response.ok) {
+          throw new Error('Failed to fetch services');
+        }
+        const data = await response.json();
+        setServices(data.services || []); // Assuming API returns { services: [...] }
+      } catch (error) {
+        console.error("Error fetching services:", error);
+        setSubmitStatus({ success: false, message: 'Could not load service options.' });
+      }
+    }
+    fetchServices();
+  }, []);
 
   const form = useForm<ServiceBookingFormValues>({
     resolver: zodResolver(serviceBookingSchema),
@@ -116,34 +137,40 @@ export function ServiceBookingForm() {
     setIsLoading(true);
     setSubmitStatus(null);
 
-    const [firstName, ...lastNameParts] = data.fullName.split(' ');
-    const lastName = lastNameParts.join(' ');
+    const nameParts = data.fullName.trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
 
+    // Map form data to the BookingRequestBody structure
     const payload = {
-      calendarId: selectedSlot.calendarId,
-      startTime: selectedSlot.startTime,
-      endTime: selectedSlot.endTime,
-      firstName: firstName || '',
-      lastName: lastName || data.fullName, // Fallback if no space in fullName
-      email: data.email,
+      serviceId: data.serviceType, // serviceType from form now holds the serviceId (UUID)
+      scheduledDateTime: selectedSlot.startTime, // ISO string
+      firstName: firstName, // For guest bookings
+      lastName: lastName,   // For guest bookings
+      email: data.email,    // Always required
       phone: data.phone,
-      address: `${data.serviceAddressStreet}, ${data.serviceAddressCity}, ${data.serviceAddressState} ${data.serviceAddressZip}`,
-      city: data.serviceAddressCity,
-      state: data.serviceAddressState,
-      postalCode: data.serviceAddressZip,
-      numberOfSigners: data.numberOfSigners || 1,
-      signingLocation: "Client's Address", // Default or could be another form field
-      specialInstructions: data.additionalNotes || "",
-      smsNotifications: true, // Default or could be a checkbox
-      emailUpdates: true,     // Default or could be a checkbox
-      serviceType: data.serviceType, // To be used for appointment title/notes in API
-      // locationId can be omitted, API will use default or logic based on calendarId
+      // Location details - assuming CLIENT_SPECIFIED_ADDRESS for now
+      // The API defaults to REMOTE_ONLINE_NOTARIZATION if not provided
+      // You might want a form field for locationType if it varies
+      locationType: 'CLIENT_SPECIFIED_ADDRESS', 
+      addressStreet: data.serviceAddressStreet,
+      addressCity: data.serviceAddressCity,
+      addressState: data.serviceAddressState,
+      addressZip: data.serviceAddressZip,
+      // locationNotes: // Optional, if you have a field for it
+      notes: data.additionalNotes, // Maps to cf_booking_special_instructions
+      promoCode: data.promoCode,
+      referredBy: data.referredBy,
+      booking_number_of_signers: data.numberOfSigners,
+      consent_terms_conditions: data.termsAccepted,
+      smsNotifications: data.consentSms,
+      emailUpdates: data.consentEmail,
     };
 
-    console.log("Submitting to /api/calendar/create-appointment with payload:", payload);
+    console.log("Submitting to /api/bookings with payload:", payload);
 
     try {
-      const response = await fetch('/api/calendar/create-appointment', {
+      const response = await fetch('/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -157,12 +184,21 @@ export function ServiceBookingForm() {
       }
 
       const result = await response.json();
-      if (result.success) {
-        setSubmitStatus({ success: true, message: `Appointment for ${selectedSlot.formattedTime} booked successfully! Booking Ref: ${result.data?.bookingReference}` });
-        form.reset();
-        setSelectedSlot(null); // Reset selected slot
+      // API returns { booking: {...}, checkoutUrl: "..." or null }
+      if (result.booking && result.booking.id) {
+        if (result.checkoutUrl) {
+          // Redirect to Stripe for payment
+          window.location.href = result.checkoutUrl;
+          // No need to set submit status here as page will redirect
+        } else {
+          // Booking confirmed without payment (e.g., free service or fully discounted)
+          // Redirect to a success page directly
+          // You might want to pass booking ID or some details to the success page via query params
+          window.location.href = `/booking-confirmed?bookingId=${result.booking.id}`;
+        }
       } else {
-        setSubmitStatus({ success: false, message: result.message || "Booking failed. Please try again." });
+        // Handle cases where booking ID might be missing or other errors not caught by !response.ok
+        setSubmitStatus({ success: false, message: result.error || result.message || "Booking creation failed. Please check details and try again." });
       }
     } catch (error: any) {
       console.error("Submission error:", error);
@@ -232,9 +268,10 @@ export function ServiceBookingForm() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {HMNPServices.map(service => (
+                  {services.length === 0 && <p className="p-4 text-sm text-gray-500">Loading services...</p>}
+                  {services.map((service) => (
                     <SelectItem key={service.id} value={service.id}>
-                      {service.label}
+                      {service.name} {/* Display service name from API */}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -397,7 +434,52 @@ export function ServiceBookingForm() {
               </FormControl>
               <div className="space-y-1 leading-none">
                 <FormLabel>
-                  I acknowledge and agree to the <a href="/deposit-policy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Deposit & Cancellation Policy</a> and <a href="/terms-of-service" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Terms of Service</a>.
+                  I acknowledge and agree to the <a href="/terms#fees-and-payment" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Deposit & Cancellation Policy</a> and <a href="/terms-of-service" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Terms of Service</a>.
+                </FormLabel>
+                <FormMessage />
+              </div>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="consentSms"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>
+                  I consent to receive SMS (text message) notifications related to my booking.
+                </FormLabel>
+                <FormDescription>
+                  Standard message and data rates may apply.
+                </FormDescription>
+                <FormMessage />
+              </div>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="consentEmail"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>
+                  I consent to receive email updates and confirmations related to my booking.
                 </FormLabel>
                 <FormMessage />
               </div>

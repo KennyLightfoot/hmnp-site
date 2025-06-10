@@ -1,28 +1,28 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> } // Changed to Promise type for NextJS 15
 ) {
-  const session = await getServerSession(authOptions);
+  const params = await context.params; // Await the params
+  const bookingId = params.id; // Access id via awaited params
 
-  if (!session || !session.user?.id) {
+  const session = await getServerSession(authOptions);
+  if (!session && process.env.NODE_ENV !== 'development') { 
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { id } = params;
-
-  if (!id) {
+  if (!bookingId) {
     return NextResponse.json({ error: 'Booking ID is required' }, { status: 400 });
   }
 
   try {
     const booking = await prisma.booking.findUnique({
       where: {
-        id: id,
+        id: bookingId,
         // Optional: Add security check to ensure the user owns this booking or is an admin
         // userId: session.user.id, // Uncomment if bookings are directly tied to users and you want to enforce ownership
       },
@@ -57,7 +57,7 @@ export async function GET(
 
     return NextResponse.json(booking);
   } catch (error) {
-    console.error(`Error fetching booking ${id}:`, error);
+    console.error(`Error fetching booking ${bookingId}:`, error);
     return NextResponse.json({ error: 'Failed to fetch booking details' }, { status: 500 });
   }
 } 
