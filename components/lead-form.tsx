@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { z } from "zod";
 import { Loader2 } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Form,
   FormControl,
@@ -20,10 +20,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-// It's good practice to use a toast for non-redirect success messages
-// Assuming you have sonner or react-toastify setup as seen in ui components
-import { toast } from "sonner"; // Or your preferred toast library
-
+import { toast } from "@/hooks/use-toast";
+import Link from "next/link";
+import { trackLead, type LeadTrackingData } from "@/lib/tracking";
 
 // Zod Schema for visible form fields
 const leadFormSchema = z.object({
@@ -144,23 +143,16 @@ export default function LeadForm({
         form.reset();
       }
 
-      // Track form submission for analytics
-      if (typeof window !== 'undefined') {
-        // Facebook Pixel - InitiateCheckout or Lead event
-        if (window.fbq) {
-          window.fbq('track', 'InitiateCheckout');
-          console.log('Facebook Pixel: InitiateCheckout event tracked.');
-        }
-        
-        // Google Analytics - form submission
-        if (window.gtag) {
-          window.gtag('event', 'generate_lead', {
-            'event_category': 'engagement',
-            'event_label': 'lead_form_submission'
-          });
-          console.log('Google Analytics: generate_lead event tracked.');
-        }
-      }
+      // Track form submission for analytics using our comprehensive tracking system
+      const trackingData: LeadTrackingData = {
+        lead_source: customFields.lead_source || campaignName || 'website_form',
+        service_type: customFields.service_type || 'general_notary',
+        estimated_value: 75, // Default service value
+        campaign_name: campaignName,
+        ad_platform: customFields.cf_ad_platform
+      };
+      
+      trackLead(trackingData);
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";

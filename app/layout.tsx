@@ -90,8 +90,8 @@ export default async function RootLayout({
     <html lang="en" className="light" suppressHydrationWarning>
       <head>
         <meta name="facebook-domain-verification" content="z1f6t494uyp7hjnin4ca8fz1u9q51r" />
-        {/* Facebook Pixel Base Code */}
-        <Script id="fb-pixel-base" strategy="afterInteractive">
+        {/* Meta Pixel Code */}
+        <Script id="meta-pixel" strategy="afterInteractive">
           {`
             !function(f,b,e,v,n,t,s)
             {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -101,16 +101,32 @@ export default async function RootLayout({
             t.src=v;s=b.getElementsByTagName(e)[0];
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '${process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID || 'YOUR_PIXEL_ID'}'); // TODO: Add NEXT_PUBLIC_FACEBOOK_PIXEL_ID to .env
+            fbq('init', '1459938351663284');
             fbq('track', 'PageView');
           `}
         </Script>
-        {/* End Facebook Pixel Base Code */}
+        <noscript>
+          <img height="1" width="1" style={{display: 'none'}} 
+               src="https://www.facebook.com/tr?id=1459938351663284&ev=PageView&noscript=1" />
+        </noscript>
+        {/* End Meta Pixel Code */}
 
-        {/* LinkedIn Insight Tag Base Code */}
+        {/* Google Tag Manager */}
+        <Script id="gtm" strategy="afterInteractive">
+          {`
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-YOUR_GTM_ID');
+          `}
+        </Script>
+        {/* End Google Tag Manager */}
+
+        {/* LinkedIn Insight Tag */}
         <Script id="linkedin-insight-tag" strategy="afterInteractive">
           {`
-            _linkedin_partner_id = "YOUR_LINKEDIN_PARTNER_ID"; // TODO: Replace YOUR_LINKEDIN_PARTNER_ID
+            _linkedin_partner_id = "514942430";
             window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
             window._linkedin_data_partner_ids.push(_linkedin_partner_id);
             (function(l) {
@@ -122,9 +138,40 @@ export default async function RootLayout({
             s.parentNode.insertBefore(b, s);})(window.lintrk);
           `}
         </Script>
-        {/* End LinkedIn Insight Tag Base Code */}
+        <noscript>
+          <img height="1" width="1" style={{display: 'none'}} 
+               src="https://px.ads.linkedin.com/collect/?pid=514942430&fmt=gif" />
+        </noscript>
+        {/* End LinkedIn Insight Tag */}
+
+        {/* Google Ads Conversion Tracking */}
+        <Script id="google-ads" strategy="afterInteractive">
+          {`
+            // Google Ads Global Site Tag will be configured in GTM
+            // Or add your Google Ads conversion ID here when available
+            // Example: gtag('config', 'AW-CONVERSION_ID');
+          `}
+        </Script>
+        {/* End Google Ads Conversion Tracking */}
+
+        {/* Yelp Conversion Tracking */}
+        <Script id="yelp-tracking" strategy="afterInteractive">
+          {`
+            // Yelp tracking will be added when you provide the Yelp tracking ID
+            // Contact Yelp Ads support for your specific tracking code
+            // Example format: yelp_conversion_id = "YOUR_YELP_TRACKING_ID";
+          `}
+        </Script>
+        {/* End Yelp Conversion Tracking */}
       </head>
       <body className={`${inter.className} bg-white`}>
+        {/* Google Tag Manager (noscript) */}
+        <noscript>
+          <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-YOUR_GTM_ID"
+                  height="0" width="0" style={{display: 'none', visibility: 'hidden'}}></iframe>
+        </noscript>
+        {/* End Google Tag Manager (noscript) */}
+        
         <Providers>
           {/* If using next/third-parties for Google Analytics, add GA component here */}
           {/* Example: <GoogleAnalytics gaId="YOUR_GA_ID" /> */}

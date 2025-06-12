@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ChevronLeft, Check, Clock, MapPin, Shield } from "lucide-react"
+import { ChevronRight, Clock, MapPin, CheckCircle, Shield, Users, Zap, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -46,221 +46,328 @@ export const metadata = {
 
 export default function PriorityServicePage() {
   return (
-    <div className="container mx-auto px-4 py-12">
-      <Link href="/services" className="flex items-center text-[#002147] hover:text-[#A52A2A] mb-8">
-        <ChevronLeft className="mr-2 h-4 w-4" />
-        Back to All Services
-      </Link>
-
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-[#002147] mb-4">Priority Mobile Notary Package</h1>
-        <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-          When time is critical, count on our <span className="font-semibold text-[#002147]">rapid 2-hour response</span>. We deliver swift notarization with the <span className="font-semibold text-[#002147]">calm, clarity, and precision</span> you deserve.
-        </p>
-      </div>
-
-      {/* Hero Banner */}
-      <div className="bg-[#A52A2A] text-white p-8 rounded-lg mb-12">
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="flex flex-col items-center text-center">
-            <Clock className="h-12 w-12 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">2-Hour Response</h3>
-            <p>Guaranteed arrival within 2 hours for your urgent needs.</p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <MapPin className="h-12 w-12 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Extended Coverage</h3>
-            <p>Prompt service across an extended 35-mile radius.</p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <Shield className="h-12 w-12 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">7am-9pm Daily</h3>
-            <p>Available early mornings, late evenings, and weekends to meet your schedule.</p>
-          </div>
+    <div className="min-h-screen bg-white">
+      {/* Breadcrumb */}
+      <div className="border-b border-gray-200">
+        <div className="container mx-auto px-4 py-4">
+          <nav className="flex items-center space-x-2 text-sm text-gray-600">
+            <Link href="/" className="hover:text-[#A52A2A]">Home</Link>
+            <ChevronRight className="h-4 w-4" />
+            <Link href="/services" className="hover:text-[#A52A2A]">Services</Link>
+            <ChevronRight className="h-4 w-4" />
+            <span className="text-gray-900">Priority Package</span>
+          </nav>
         </div>
       </div>
 
-      {/* Service Description */}
-      <div className="grid md:grid-cols-2 gap-12 mb-16">
-        <div>
-          <h2 className="text-2xl font-bold text-[#002147] mb-4">Service Overview</h2>
-          <p className="mb-4">
-            Facing an urgent notarization need? Our Priority Service Package is your solution for swift, reliable service. We provide a guaranteed 2-hour response from 7am to 9pm daily, ensuring your critical documents are addressed without delay, yet with complete professional calm.
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-[#A52A2A] to-[#8B0000] text-white py-16">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            Priority Mobile Notary
+          </h1>
+          <p className="text-xl md:text-2xl mb-4 text-red-100">
+            Urgent notarization with guaranteed 2-hour response
           </p>
-          <p className="mb-4">
-            This premium service ensures your time-sensitive documents are notarized with both speed and meticulous precision. Even under tight deadlines or last-minute requests, our Priority Service delivers peace of mind, knowing every detail is handled correctly.
+          <p className="text-lg mb-8 text-red-100 max-w-3xl mx-auto">
+            When time is critical, count on our rapid response. We deliver swift notarization with calm, clarity, and precision—available 7am to 9pm daily.
           </p>
-          <p>
-            All of our notaries are commissioned by the state of Texas, carry E&O insurance, and follow strict protocols
-            to ensure the validity of every notarization, even when time is limited.
-          </p>
-        </div>
-        <div className="bg-gray-50 p-6 rounded-lg">
-          <h2 className="text-2xl font-bold text-[#002147] mb-4">Package Details</h2>
-          <p className="text-3xl font-bold mb-6">$100 flat fee</p>
-          <h3 className="text-xl font-semibold mb-3">What's Included:</h3>
-          <ul className="space-y-3 mb-6">
-            <li className="flex items-start">
-              <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-              <span>2-hour response time</span>
-            </li>
-            <li className="flex items-start">
-              <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-              <span>Service from 7am-9pm daily</span>
-            </li>
-            <li className="flex items-start">
-              <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-              <span>Swift and precise handling of up to 5 documents.</span>
-            </li>
-            <li className="flex items-start">
-              <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-              <span>2 signers</span>
-            </li>
-            <li className="flex items-start">
-              <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-              <span>Extended 35-mile radius (+$0.50/mile beyond 20 miles)</span>
-            </li>
-            <li className="flex items-start">
-              <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-              <span>Real-time SMS updates for your peace of mind and planning.</span>
-            </li>
-          </ul>
-          <h3 className="text-xl font-semibold mb-3">Additional Options:</h3>
-          <ul className="space-y-3">
-            <li className="flex items-start">
-              <span className="text-[#A52A2A] mr-2">+</span>
-              <span>Additional signers: $10 each</span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-[#A52A2A] mr-2">+</span>
-              <span>Extra documents (beyond 5): $5 each</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      {/* When to Choose Priority Service */}
-      <div className="mb-16">
-        <h2 className="text-2xl font-bold text-[#002147] mb-6">When to Choose Priority Service</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Urgent Deadlines</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Meet your critical deadlines with confidence. We ensure your time-sensitive submissions are notarized today.</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>After-Hours Needs</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Flexible notarization when you need it most—early mornings, late evenings, or weekends.</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Last-Minute Requirements</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Sudden notarization need? We provide prompt and professional service, even with minimal notice.</p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Process */}
-      <div className="bg-gray-50 p-8 rounded-lg mb-16">
-        <h2 className="text-2xl font-bold text-[#002147] mb-6">The Priority Service Process</h2>
-        <p className="text-gray-700 mb-6 text-center max-w-2xl mx-auto">
-          Our Priority Service is built for speed and efficiency, without compromising on clarity or the quality of your experience. Here's our streamlined approach:
-        </p>
-        <div className="grid md:grid-cols-4 gap-6">
-          <div className="text-center">
-            <div className="bg-[#A52A2A] text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-              1
-            </div>
-            <h3 className="font-semibold mb-2">Request Service</h3>
-            <p className="text-sm">Call or book online with "Priority" selected</p>
-          </div>
-          <div className="text-center">
-            <div className="bg-[#A52A2A] text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-              2
-            </div>
-            <h3 className="font-semibold mb-2">Confirmation</h3>
-            <p className="text-sm">Receive confirmation and ETA within 15 minutes</p>
-          </div>
-          <div className="text-center">
-            <div className="bg-[#A52A2A] text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-              3
-            </div>
-            <h3 className="font-semibold mb-2">Notary Arrival</h3>
-            <p className="text-sm">Notary arrives within the 2-hour window</p>
-          </div>
-          <div className="text-center">
-            <div className="bg-[#A52A2A] text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-              4
-            </div>
-            <h3 className="font-semibold mb-2">Service Completion</h3>
-            <p className="text-sm">Documents notarized and payment collected</p>
-          </div>
-        </div>
-        <p className="text-sm text-gray-600 mt-6 text-center">
-          For a comprehensive overview of our entire client journey, from initial booking to post-signing, please see our detailed{" "}
-          <Link href="/what-to-expect" className="text-[#A52A2A] hover:underline font-medium">
-            What to Expect guide
-          </Link>.
-        </p>
-      </div>
-
-      {/* FAQ */}
-      <div className="mb-16">
-        <h2 className="text-2xl font-bold text-[#002147] mb-6">Frequently Asked Questions</h2>
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-xl font-semibold text-[#002147] mb-2">What if I need service in less than 2 hours?</h3>
-            <p>
-              While our standard Priority Service guarantees a 2-hour window, we may be able to accommodate more urgent
-              requests depending on notary availability. Please call us directly to discuss your specific timeline.
-            </p>
-          </div>
-          <div>
-            <h3 className="text-xl font-semibold text-[#002147] mb-2">Is Priority Service available on holidays?</h3>
-            <p>
-              Yes, Priority Service is available on most holidays for an additional $40 surcharge. Please book in
-              advance when possible for holiday service.
-            </p>
-          </div>
-          <div>
-            <h3 className="text-xl font-semibold text-[#002147] mb-2">
-              What happens if I'm outside the 35-mile service radius?
-            </h3>
-            <p>
-              We can still provide Priority Service beyond the 35-mile radius for an additional mileage fee of
-              $0.65/mile (instead of the standard $0.50/mile) for the distance beyond 35 miles.
-            </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/booking?service=priority">
+              <Button size="lg" className="bg-white text-[#A52A2A] hover:bg-gray-100">
+                Book Priority Service
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link href="/contact">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#A52A2A]">
+                Emergency Contact
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Call to Action */}
-      <div className="bg-[#A52A2A] text-white p-8 rounded-lg text-center">
-        <h2 className="text-2xl font-bold mb-4">Urgent Need? Get Swift, Precise Notarization Now!</h2>
-        <p className="mb-6 max-w-2xl mx-auto">
-          For critical, time-sensitive documents, choose speed without sacrificing precision or peace of mind. Book or call now for our 2-hour priority response.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/booking?service=priority">
-            <Button size="lg" className="bg-white text-[#A52A2A] hover:bg-gray-100 w-full sm:w-auto">
-              Book Priority Service
-            </Button>
-          </Link>
-          <Link href="tel:+18326174285">
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#A52A2A] w-full sm:w-auto">
-              Call Now
-            </Button>
-          </Link>
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-3 gap-12">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-12">
+            {/* Service Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl text-[#002147] flex items-center">
+                  <Zap className="mr-3 h-6 w-6 text-[#A52A2A]" />
+                  Service Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-gray-700">
+                <p>
+                  Our Priority Service Package is your solution for urgent notarization needs. With a guaranteed 2-hour response time from 7am to 9pm daily, we ensure your critical documents are addressed without delay while maintaining complete professional calm and precision.
+                </p>
+                <p>
+                  This premium service ensures your time-sensitive documents are notarized with both speed and meticulous accuracy. Even under tight deadlines or last-minute requests, our Priority Service delivers peace of mind, knowing every detail is handled correctly.
+                </p>
+                <p>
+                  All notaries are commissioned by the state of Texas, carry E&O insurance, and follow strict protocols to ensure validity of every notarization—even when time is limited.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Key Features */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg text-[#002147] flex items-center">
+                    <Clock className="mr-3 h-5 w-5 text-[#A52A2A]" />
+                    2-Hour Response
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700">Guaranteed arrival within 2 hours of your request, 7am to 9pm daily including weekends.</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg text-[#002147] flex items-center">
+                    <MapPin className="mr-3 h-5 w-5 text-[#A52A2A]" />
+                    Extended Coverage
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700">Service across extended 35-mile radius to reach you wherever urgent notarization is needed.</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg text-[#002147] flex items-center">
+                    <CheckCircle className="mr-3 h-5 w-5 text-[#A52A2A]" />
+                    Real-Time Updates
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700">SMS notifications with ETA and arrival updates for complete peace of mind and planning.</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg text-[#002147] flex items-center">
+                    <Shield className="mr-3 h-5 w-5 text-[#A52A2A]" />
+                    Professional Excellence
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700">Fast service without compromise—maintaining precision and calm professionalism under pressure.</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Pricing Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl text-[#002147] text-center">
+                  Priority Service Pricing
+                </CardTitle>
+                <p className="text-center text-gray-600 mt-2">Premium service for urgent needs</p>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-gradient-to-r from-[#A52A2A] to-[#8B0000] text-white p-8 rounded-lg text-center mb-6">
+                  <h3 className="text-3xl font-bold mb-4">$100</h3>
+                  <p className="text-xl mb-6">Flat fee for priority service</p>
+                  <div className="grid md:grid-cols-2 gap-6 text-left">
+                    <div>
+                      <h4 className="font-semibold mb-3">Included:</h4>
+                      <ul className="space-y-2 text-sm">
+                        <li>• 2-hour response guarantee</li>
+                        <li>• Up to 5 documents</li>
+                        <li>• Up to 2 signers</li>
+                        <li>• Service 7am-9pm daily</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-3">Additional Options:</h4>
+                      <ul className="space-y-2 text-sm">
+                        <li>• Extra signers: $10 each</li>
+                        <li>• Extra documents: $5 each</li>
+                        <li>• Extended travel: $0.50/mile</li>
+                        <li>• Real-time SMS updates</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <Link href="/booking?service=priority">
+                    <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
+                      Request Priority Service
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* When to Choose Priority */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl text-[#002147]">When to Choose Priority Service</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div className="text-center">
+                    <div className="bg-[#A52A2A] text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Clock className="h-8 w-8" />
+                    </div>
+                    <h4 className="font-semibold mb-2">Urgent Deadlines</h4>
+                    <p className="text-sm text-gray-600">Critical deadlines that can't wait for standard scheduling</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="bg-[#A52A2A] text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Users className="h-8 w-8" />
+                    </div>
+                    <h4 className="font-semibold mb-2">After-Hours Needs</h4>
+                    <p className="text-sm text-gray-600">Early mornings, late evenings, or weekend requirements</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="bg-[#A52A2A] text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Zap className="h-8 w-8" />
+                    </div>
+                    <h4 className="font-semibold mb-2">Last-Minute Requests</h4>
+                    <p className="text-sm text-gray-600">Sudden notarization needs with minimal advance notice</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Emergency Contact */}
+            <Card className="border-[#A52A2A] border-2">
+              <CardHeader>
+                <CardTitle className="text-lg text-[#A52A2A]">Emergency Contact</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="font-semibold text-[#002147]">Priority Line</p>
+                  <p className="text-gray-700 text-lg font-bold">(281) 404-2019</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-[#002147]">Available</p>
+                  <p className="text-gray-700">7am - 9pm Daily</p>
+                </div>
+                <Link href="/booking?service=priority">
+                  <Button className="w-full bg-[#A52A2A] hover:bg-[#8B0000] text-white">
+                    Book Now
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Service Features */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg text-[#002147]">Priority Features</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li>• 2-hour response guarantee</li>
+                  <li>• 7am-9pm availability</li>
+                  <li>• Weekend service included</li>
+                  <li>• Extended 35-mile radius</li>
+                  <li>• Real-time SMS updates</li>
+                  <li>• Professional precision</li>
+                  <li>• E&O insurance coverage</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Common Documents */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg text-[#002147]">Urgent Documents</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li>• Real estate closings</li>
+                  <li>• Legal deadlines</li>
+                  <li>• Medical directives</li>
+                  <li>• Business contracts</li>
+                  <li>• Court documents</li>
+                  <li>• Financial papers</li>
+                  <li>• Travel documents</li>
+                  <li>• Emergency POAs</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Process Steps */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg text-[#002147]">Quick Process</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4 text-sm">
+                  <div className="flex items-start">
+                    <div className="bg-[#A52A2A] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs mr-3 mt-0.5">1</div>
+                    <div>
+                      <p className="font-semibold">Call or Book</p>
+                      <p className="text-gray-600">Request priority service</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="bg-[#A52A2A] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs mr-3 mt-0.5">2</div>
+                    <div>
+                      <p className="font-semibold">Confirmation</p>
+                      <p className="text-gray-600">Get ETA within 15 minutes</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="bg-[#A52A2A] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs mr-3 mt-0.5">3</div>
+                    <div>
+                      <p className="font-semibold">Arrival</p>
+                      <p className="text-gray-600">Notary arrives within 2 hours</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="bg-[#A52A2A] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs mr-3 mt-0.5">4</div>
+                    <div>
+                      <p className="font-semibold">Complete</p>
+                      <p className="text-gray-600">Fast, precise notarization</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* FAQ Section */}
+        <div className="mt-16">
+          <h2 className="text-3xl font-bold text-[#002147] text-center mb-8">Priority Service FAQ</h2>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-[#002147] mb-2">How quickly can you arrive?</h3>
+                <p className="text-gray-700">We guarantee arrival within 2 hours of your confirmed request, available 7am to 9pm daily including weekends.</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-[#002147] mb-2">What's the coverage area?</h3>
+                <p className="text-gray-700">We serve an extended 35-mile radius from Houston. Additional mileage fees apply beyond 20 miles at $0.50 per mile.</p>
+              </div>
+            </div>
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-[#002147] mb-2">Do you provide weekend service?</h3>
+                <p className="text-gray-700">Yes, Priority Service is available 7 days a week from 7am to 9pm at the same flat rate with no weekend surcharge.</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-[#002147] mb-2">How do I track your arrival?</h3>
+                <p className="text-gray-700">You'll receive real-time SMS updates with ETA confirmation and arrival notifications for complete peace of mind.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

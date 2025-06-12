@@ -1,5 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
+import crypto from 'crypto';
+
+// Enhanced webhook signature verification
+function verifyGHLWebhookSignature(payload: string, signature: string, secret: string): boolean {
+  if (!signature || !secret) return false;
+  
+  // Remove 'sha256=' prefix if present
+  const cleanSignature = signature.startsWith('sha256=') 
+    ? signature.substring(7)
+    : signature;
+  
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(payload, 'utf8')
+    .digest('hex');
+  
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(cleanSignature, 'hex'),
+      Buffer.from(expectedSignature, 'hex')
+    );
+  } catch (error) {
+    console.error('Signature verification error:', error);
+    return false;
+  }
+}
 
 // Define webhook event types
 type WebhookEventType = 
@@ -42,14 +68,27 @@ export async function POST(request: NextRequest) {
       payload: body
     });
 
-    // Verify webhook signature if configured (optional but recommended)
+    // Enhanced webhook signature verification
     if (process.env.GHL_WEBHOOK_SECRET) {
-      // Add signature verification logic here
-      // const signature = headers().get('x-ghl-signature');
-      // const isValid = verifyWebhookSignature(rawBody, signature, process.env.GHL_WEBHOOK_SECRET);
-      // if (!isValid) {
-      //   return NextResponse.json({ success: false, error: 'Invalid signature' }, { status: 401 });
-      // }
+      const signature = headersList.get('x-ghl-signature');
+      if (!signature) {
+        console.error('❌ Missing webhook signature');
+        return NextResponse.json({ 
+          success: false, 
+          error: 'Missing webhook signature' 
+        }, { status: 401 });
+      }
+
+      const isValid = verifyGHLWebhookSignature(rawBody, signature, process.env.GHL_WEBHOOK_SECRET);
+      if (!isValid) {
+        console.error('❌ Invalid webhook signature');
+        return NextResponse.json({ 
+          success: false, 
+          error: 'Invalid webhook signature' 
+        }, { status: 401 });
+      }
+      
+      console.log('✅ Webhook signature verified');
     }
 
     // Extract event type and data

@@ -71,6 +71,27 @@ export const services = [
     hoverTextColor: "hover:text-white",
   },
   {
+    slug: "priority",
+    name: "Priority Mobile Notary",
+    price: "$100",
+    tagline: "Urgent notarization, 2-hour response.",
+    description:
+      "Guaranteed 2-hour response for urgent notarization needs, available 7am-9pm daily.",
+    link: "/services/priority",
+    icon: Clock,
+    features: [
+      "2-hour response guarantee",
+      "Service 7am-9pm daily",
+      "Up to 5 documents, 2 signers",
+    ],
+    bgColor: "bg-[#A52A2A]",
+    borderColor: "border-t-[#A52A2A]",
+    buttonVariant: "default" as "outline" | "default",
+    textColor: "text-white",
+    hoverBgColor: "hover:bg-[#8B0000]",
+    isPopular: true,
+  },
+  {
     slug: "extended",
     name: "Extended Hours Notary",
     price: "$100+",
@@ -78,18 +99,18 @@ export const services = [
     description:
       "Same-day or after-hours service (7 am–9 pm) for when 9–5 won't cut it.",
     link: "/services/extended",
-    icon: Clock,
+    icon: Calendar,
     features: [
       "Same-day or after-hours",
       "Service between 7 am - 9 pm",
-      "Ideal for urgent needs",
+      "Flexible scheduling",
     ],
-    bgColor: "bg-[#A52A2A]",
-    borderColor: "border-t-[#A52A2A]",
-    buttonVariant: "default" as "outline" | "default",
-    textColor: "text-white", // For default button
-    hoverBgColor: "hover:bg-[#8B0000]", // For default button
-    isPopular: true,
+    bgColor: "bg-[#002147]",
+    borderColor: "border-t-[#002147]",
+    buttonVariant: "outline" as "outline" | "default",
+    textColor: "text-[#002147]",
+    hoverBgColor: "hover:bg-[#002147]",
+    hoverTextColor: "hover:text-white",
   },
   {
     slug: "loan-signing",
@@ -104,6 +125,27 @@ export const services = [
       "Certified loan signings",
       "RON and courier returns",
       "Meticulous & professional",
+    ],
+    bgColor: "bg-[#002147]",
+    borderColor: "border-t-[#002147]",
+    buttonVariant: "outline" as "outline" | "default",
+    textColor: "text-[#002147]",
+    hoverBgColor: "hover:bg-[#002147]",
+    hoverTextColor: "hover:text-white",
+  },
+  {
+    slug: "estate-planning",
+    name: "Estate Planning Package",
+    price: "$250+",
+    tagline: "Secure your legacy, simply.",
+    description:
+      "A comprehensive package for notarizing all your estate documents—Wills, Trusts, POAs, and more.",
+    link: "/services/estate-planning", // Links to the main service page
+    icon: Shield,
+    features: [
+      "Notarize up to 10 documents",
+      "Includes up to 4 signers",
+      "Mobile service to your location",
     ],
     bgColor: "bg-[#002147]",
     borderColor: "border-t-[#002147]",
@@ -186,6 +228,7 @@ const serviceFaqs = [
       <p>
         Our services are designed to meet diverse needs:
         <strong className="block mt-2">Standard Notary:</strong> For on-site notarizations of standard documents (POAs, affidavits, contracts) during 9 am–5 pm.
+        <strong className="block mt-2">Priority Mobile Notary:</strong> Guaranteed 2-hour response for urgent notarization needs, available 7am-9pm daily.
         <strong className="block mt-2">Extended Hours Notary:</strong> Offers same-day or after-hours service (7 am–9 pm) for urgent needs outside standard business hours.
         <strong className="block mt-2">Loan Signing Specialist:</strong> Provides certified loan signings, including remote online notarizations (RON) and courier services.
         <strong className="block mt-2">Specialty Notary Services:</strong> Covers complex notarial acts like apostilles, embassy certifications, and translations.

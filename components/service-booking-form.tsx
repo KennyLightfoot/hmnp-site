@@ -22,38 +22,38 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"; // Assuming Shadcn UI Select is available
+} from "@/components/ui/select";
 import { useState, useEffect } from 'react';
-import AppointmentCalendar from "@/components/appointment-calendar"; // Import the calendar component
+import AppointmentCalendar, { ServiceType } from "@/components/appointment-calendar";
 
 interface ApiService {
-  id: string; // This will be the UUID for the service
+  id: string;
   name: string;
   description?: string | null;
-  basePrice: number; // Assuming Prisma Decimal is converted to number
+  basePrice: number;
   depositAmount?: number | null;
   requiresDeposit: boolean;
-  // Add any other fields from your Service model that might be useful in the form
+  durationMinutes: number;
+  serviceType?: ServiceType;
 }
 
-// Schema updated for direct calendar booking
+// Updated schema for new booking system
 const serviceBookingSchema = z.object({
   fullName: z.string().min(2, { message: "Full name must be at least 2 characters." }),
   email: z.string().email({ message: "Please enter a valid email address." }),
   phone: z.string().min(10, { message: "Please enter a valid phone number." }),
-  serviceType: z.string({ required_error: "Please select a service type." }),
+  serviceId: z.string({ required_error: "Please select a service." }),
   numberOfSigners: z.coerce.number({
     required_error: "Number of signers is required.",
     invalid_type_error: "Number of signers must be a number."
   }).min(1, { message: "Number of signers must be at least 1." }),
-  // preferredDateTime is removed, will be handled by AppointmentCalendar
   serviceAddressStreet: z.string().min(5, { message: "Please enter a street address." }),
   serviceAddressCity: z.string().min(2, { message: "Please enter a city." }),
   serviceAddressState: z.string().min(2, { message: "Please enter a state." }),
   serviceAddressZip: z.string().min(5, { message: "Please enter a valid ZIP code." }),
   additionalNotes: z.string().optional(),
-  promoCode: z.string().optional(), // Added for promo code
-  referredBy: z.string().optional(), // Added for referral tracking
+  promoCode: z.string().optional(),
+  referredBy: z.string().optional(),
   termsAccepted: z.boolean().refine(val => val === true, { message: "You must accept the terms and conditions to proceed." }),
   consentSms: z.boolean().optional(),
   consentEmail: z.boolean().optional()
@@ -65,22 +65,19 @@ const defaultValues: Partial<ServiceBookingFormValues> = {
   fullName: "",
   email: "",
   phone: "",
-  serviceType: undefined,
+  serviceId: undefined,
   numberOfSigners: 1,
-  // preferredDateTime removed
   serviceAddressStreet: "",
   serviceAddressCity: "",
   serviceAddressState: "",
   serviceAddressZip: "",
   additionalNotes: "",
-  promoCode: "", // Added for promo code
-  referredBy: "", // Added for referral tracking
+  promoCode: "",
+  referredBy: "",
   termsAccepted: false,
   consentSms: false,
   consentEmail: false,
 };
-
-
 
 export function ServiceBookingForm() {
   const [services, setServices] = useState<ApiService[]>([]);
@@ -95,6 +92,14 @@ export function ServiceBookingForm() {
     calendarId: string;
   } | null>(null);
 
+  // State for promo code validation
+  const [promoValidation, setPromoValidation] = useState<{
+    isValid: boolean;
+    discountAmount?: number;
+    finalAmount?: number;
+    error?: string;
+  } | null>(null);
+
   useEffect(() => {
     async function fetchServices() {
       try {
@@ -103,7 +108,7 @@ export function ServiceBookingForm() {
           throw new Error('Failed to fetch services');
         }
         const data = await response.json();
-        setServices(data.services || []); // Assuming API returns { services: [...] }
+        setServices(data.services || []);
       } catch (error) {
         console.error("Error fetching services:", error);
         setSubmitStatus({ success: false, message: 'Could not load service options.' });
@@ -118,14 +123,50 @@ export function ServiceBookingForm() {
     mode: "onChange",
   });
 
-  const watchedServiceType = useWatch({ control: form.control, name: "serviceType" });
+  const watchedServiceId = useWatch({ control: form.control, name: "serviceId" });
   const watchedNumberOfSigners = useWatch({ control: form.control, name: "numberOfSigners" });
+  const watchedPromoCode = useWatch({ control: form.control, name: "promoCode" });
+
+  // Get selected service details
+  const selectedService = services.find(service => service.id === watchedServiceId);
 
   const handleTimeSelected = (startTime: string, endTime: string, formattedTime: string, calendarId: string) => {
     setSelectedSlot({ startTime, endTime, formattedTime, calendarId });
-    // Optionally, you could set a hidden form field here if you wanted to include it in form.handleSubmit
-    // For now, we'll use the state variable `selectedSlot` directly in `onSubmit`
-    setSubmitStatus(null); // Clear previous submission status when a new time is selected
+    setSubmitStatus(null);
+  };
+
+  // Validate promo code when it changes
+  useEffect(() => {
+    if (watchedPromoCode && watchedPromoCode.trim() && selectedService) {
+      validatePromoCode(watchedPromoCode.trim(), selectedService.id, selectedService.basePrice);
+    } else {
+      setPromoValidation(null);
+    }
+  }, [watchedPromoCode, selectedService]);
+
+  const validatePromoCode = async (code: string, serviceId: string, amount: number) => {
+    try {
+      const response = await fetch('/api/promo-codes/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code,
+          serviceId,
+          originalAmount: amount,
+          customerEmail: form.getValues('email')
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setPromoValidation(result);
+      } else {
+        const errorData = await response.json();
+        setPromoValidation({ isValid: false, error: errorData.error || 'Invalid promo code' });
+      }
+    } catch (error) {
+      setPromoValidation({ isValid: false, error: 'Failed to validate promo code' });
+    }
   };
 
   async function onSubmit(data: ServiceBookingFormValues) {
@@ -134,40 +175,34 @@ export function ServiceBookingForm() {
       return;
     }
 
+    if (!selectedService) {
+      setSubmitStatus({ success: false, message: "Please select a service." });
+      return;
+    }
+
     setIsLoading(true);
     setSubmitStatus(null);
 
-    const nameParts = data.fullName.trim().split(' ');
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+    console.log("!!!!!!!!!! FORM ONSUBMIT CALLED !!!!!!!!!!"); 
+    console.log("!!!!!!!!!! FORM DATA:", data);
+    console.log("!!!!!!!!!! SELECTED SLOT:", selectedSlot);
 
-    // Map form data to the BookingRequestBody structure
+    // Updated payload for new booking system - matching API expectations
     const payload = {
-      serviceId: data.serviceType, // serviceType from form now holds the serviceId (UUID)
-      scheduledDateTime: selectedSlot.startTime, // ISO string
-      firstName: firstName, // For guest bookings
-      lastName: lastName,   // For guest bookings
-      email: data.email,    // Always required
-      phone: data.phone,
-      // Location details - assuming CLIENT_SPECIFIED_ADDRESS for now
-      // The API defaults to REMOTE_ONLINE_NOTARIZATION if not provided
-      // You might want a form field for locationType if it varies
-      locationType: 'CLIENT_SPECIFIED_ADDRESS', 
+      serviceId: data.serviceId,
+      scheduledDateTime: selectedSlot.startTime,
+      customerName: data.fullName,          // ✅ Fixed: API expects customerName
+      customerEmail: data.email,            // ✅ Fixed: API expects customerEmail  
+      customerPhone: data.phone,            // ✅ Fixed: API expects customerPhone
+      locationType: 'CLIENT_SPECIFIED_ADDRESS',
       addressStreet: data.serviceAddressStreet,
       addressCity: data.serviceAddressCity,
       addressState: data.serviceAddressState,
       addressZip: data.serviceAddressZip,
-      // locationNotes: // Optional, if you have a field for it
-      notes: data.additionalNotes, // Maps to cf_booking_special_instructions
-      promoCode: data.promoCode,
-      referredBy: data.referredBy,
-      booking_number_of_signers: data.numberOfSigners,
-      consent_terms_conditions: data.termsAccepted,
-      smsNotifications: data.consentSms,
-      emailUpdates: data.consentEmail,
+      locationNotes: '',                    // ✅ Fixed: API expects locationNotes
+      notes: data.additionalNotes || '',    // ✅ Fixed: API expects notes
+      promoCode: data.promoCode || '',      // ✅ Fixed: API expects promoCode
     };
-
-    console.log("Submitting to /api/bookings with payload:", payload);
 
     try {
       const response = await fetch('/api/bookings', {
@@ -184,25 +219,31 @@ export function ServiceBookingForm() {
       }
 
       const result = await response.json();
-      // API returns { booking: {...}, checkoutUrl: "..." or null }
+      console.log("!!!!!!!!!! FRONTEND API RESPONSE:", result);
+      
       if (result.booking && result.booking.id) {
         if (result.checkoutUrl) {
+          console.log("!!!!!!!!!! REDIRECTING TO CHECK OUT URL:", result.checkoutUrl);
           // Redirect to Stripe for payment
           window.location.href = result.checkoutUrl;
-          // No need to set submit status here as page will redirect
         } else {
-          // Booking confirmed without payment (e.g., free service or fully discounted)
-          // Redirect to a success page directly
-          // You might want to pass booking ID or some details to the success page via query params
+          console.log("!!!!!!!!!! NO CHECKOUT URL, REDIRECTING TO CONFIRMATION");
+          // Booking confirmed without payment
           window.location.href = `/booking-confirmed?bookingId=${result.booking.id}`;
         }
       } else {
-        // Handle cases where booking ID might be missing or other errors not caught by !response.ok
-        setSubmitStatus({ success: false, message: result.error || result.message || "Booking creation failed. Please check details and try again." });
+        console.log("!!!!!!!!!! NO BOOKING ID IN RESPONSE");
+        setSubmitStatus({ 
+          success: false, 
+          message: result.error || result.message || "Booking creation failed. Please check details and try again." 
+        });
       }
     } catch (error: any) {
       console.error("Submission error:", error);
-      setSubmitStatus({ success: false, message: error.message || "An unexpected error occurred. Please try again." });
+      setSubmitStatus({ 
+        success: false, 
+        message: error.message || "An unexpected error occurred. Please try again." 
+      });
     }
     setIsLoading(false);
   }
@@ -257,7 +298,7 @@ export function ServiceBookingForm() {
 
         <FormField
           control={form.control}
-          name="serviceType"
+          name="serviceId"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Service Type</FormLabel>
@@ -271,7 +312,12 @@ export function ServiceBookingForm() {
                   {services.length === 0 && <p className="p-4 text-sm text-gray-500">Loading services...</p>}
                   {services.map((service) => (
                     <SelectItem key={service.id} value={service.id}>
-                      {service.name} {/* Display service name from API */}
+                      {service.name} - ${service.basePrice}
+                      {service.requiresDeposit && service.depositAmount && (
+                        <span className="text-sm text-muted-foreground ml-2">
+                          (${service.depositAmount} deposit)
+                        </span>
+                      )}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -295,11 +341,11 @@ export function ServiceBookingForm() {
           )}
         />
 
-        {watchedServiceType && (watchedServiceType !== 'other') && watchedNumberOfSigners && watchedNumberOfSigners > 0 && (
+        {selectedService && selectedService.serviceType && watchedNumberOfSigners && watchedNumberOfSigners > 0 && (
           <div className="my-6 p-4 border rounded-md bg-slate-50">
             <h3 className="text-lg font-semibold mb-3 text-gray-800">Select Appointment Time</h3>
             <AppointmentCalendar
-              serviceType={watchedServiceType as AppointmentServiceType} // Cast to ensure type compatibility
+              serviceType={selectedService.serviceType}
               numberOfSigners={watchedNumberOfSigners}
               onTimeSelected={handleTimeSelected}
             />
@@ -376,11 +422,16 @@ export function ServiceBookingForm() {
             <FormItem>
               <FormLabel>Promo Code (Optional)</FormLabel>
               <FormControl>
-                <Input placeholder="Enter promo code" {...field} />
+                <Input placeholder="Enter promo code (e.g., WELCOME10, SAVE25)" {...field} />
               </FormControl>
-              <FormDescription>
-                e.g., FIRST25 for first-time client discount.
-              </FormDescription>
+              {promoValidation && (
+                <FormDescription className={promoValidation.isValid ? "text-green-600" : "text-red-600"}>
+                  {promoValidation.isValid
+                    ? `Valid! Save $${promoValidation.discountAmount?.toFixed(2)} - Final amount: $${promoValidation.finalAmount?.toFixed(2)}`
+                    : promoValidation.error
+                  }
+                </FormDescription>
+              )}
               <FormMessage />
             </FormItem>
           )}
@@ -408,11 +459,11 @@ export function ServiceBookingForm() {
           name="additionalNotes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Additional Notes or Special Instructions (Optional)</FormLabel>
+              <FormLabel>Additional Notes (Optional)</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="e.g., Specific documents to be notarized, gate code for access, any mobility concerns."
-                  className="resize-y"
+                  placeholder="Any special instructions or additional information..."
+                  className="resize-none"
                   {...field}
                 />
               </FormControl>
@@ -421,93 +472,81 @@ export function ServiceBookingForm() {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="termsAccepted"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>
-                  I acknowledge and agree to the <a href="/terms#fees-and-payment" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Deposit & Cancellation Policy</a> and <a href="/terms-of-service" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Terms of Service</a>.
-                </FormLabel>
-                <FormMessage />
-              </div>
-            </FormItem>
-          )}
-        />
+        <div className="space-y-4 pt-4 border-t">
+          <FormField
+            control={form.control}
+            name="consentSms"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>
+                    I consent to receive SMS (text message) notifications related to my booking.
+                  </FormLabel>
+                </div>
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="consentSms"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>
-                  I consent to receive SMS (text message) notifications related to my booking.
-                </FormLabel>
-                <FormDescription>
-                  Standard message and data rates may apply.
-                </FormDescription>
-                <FormMessage />
-              </div>
-            </FormItem>
-          )}
-        />
+          <FormField
+            control={form.control}
+            name="consentEmail"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>
+                    I consent to receive email updates and confirmations related to my booking.
+                  </FormLabel>
+                </div>
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="consentEmail"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>
-                  I consent to receive email updates and confirmations related to my booking.
-                </FormLabel>
+          <FormField
+            control={form.control}
+            name="termsAccepted"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>
+                    I accept the <a href="/terms" className="text-[#A52A2A] underline">Terms and Conditions</a> and <a href="/privacy" className="text-[#A52A2A] underline">Privacy Policy</a>.
+                  </FormLabel>
+                  <FormDescription>
+                    Please note that a deposit may be required to secure your booking, as detailed in our Deposit Policy.
+                  </FormDescription>
+                </div>
                 <FormMessage />
-              </div>
-            </FormItem>
-          )}
-        />
+              </FormItem>
+            )}
+          />
+        </div>
 
         {submitStatus && (
-          <div className={`p-4 rounded-md text-sm ${submitStatus.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-            {submitStatus.message}
+          <div className={`p-4 rounded-md ${submitStatus.success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+            <p>{submitStatus.message}</p>
           </div>
         )}
 
-        <p className="text-xs text-gray-600 mt-1">
-          Please note that a deposit may be required to secure your booking, as detailed in our Deposit Policy.
-        </p>
-
-        <Button 
-          type="submit" 
-          className="w-full mt-2"
-          disabled={isLoading || (watchedServiceType !== 'other' && !selectedSlot)} // Disable if calendar is active but no slot selected
-        >
-          {isLoading ? 'Booking Appointment...' : 'Book Appointment Now'}
+        <Button type="submit" disabled={isLoading} className="w-full">
+          {isLoading ? 'Creating Booking...' : 'Book Appointment Now'}
         </Button>
-
-        <p className="text-xs text-gray-500 text-center mt-4">
-          Please select your desired service and an available time slot. Your appointment will be confirmed upon submission. For services marked 'Other', please describe your needs in the notes; we will contact you.
-        </p>
       </form>
     </Form>
   );

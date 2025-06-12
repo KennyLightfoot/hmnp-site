@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ChevronLeft, Check, Award, Globe, FileText, Users, Phone, Info, ExternalLink } from "lucide-react"
+import { ChevronLeft, Check, Award, Globe, FileText, Users, Phone, Info, ExternalLink, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import MiniFAQ from "@/components/mini-faq"
 

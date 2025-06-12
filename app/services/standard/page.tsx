@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Check, ArrowRight, Users, FileText, Phone } from 'lucide-react'
-import MiniFAQ from '@/components/mini-faq' // Assuming you have a MiniFAQ component
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Check, ArrowRight, Clock, FileText, MapPin, Shield, Phone, ChevronLeft } from 'lucide-react'
+import MiniFAQ from '@/components/mini-faq'
 
 // Define Base URL for metadata
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com';
@@ -23,7 +24,7 @@ export const metadata = {
     siteName: 'Houston Mobile Notary Pros',
     images: [
       {
-        url: '/og-image.jpg', // Ensure this image exists in /public
+        url: '/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'Standard Notary Services by Houston Mobile Notary Pros',
@@ -76,150 +77,253 @@ const standardServiceFaqs = [
   },
 ];
 
-
 export default function StandardNotaryPage() {
   return (
     <div className="container mx-auto px-4 py-12">
+      {/* Breadcrumb */}
+      <Link href="/services" className="flex items-center text-[#002147] hover:text-[#A52A2A] mb-8">
+        <ChevronLeft className="mr-2 h-4 w-4" />
+        Back to All Services
+      </Link>
+
       {/* Hero Section */}
-      <section className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-[#002147] mb-3">
-          Standard Notary Services
-        </h1>
-        <p className="text-2xl font-semibold text-[#A52A2A] mb-4">
-          On-time, every time.
+      <header className="text-center mb-12">
+        <h1 className="text-4xl font-bold text-[#002147] mb-4">Standard Notary Services</h1>
+        <p className="text-xl text-[#A52A2A] font-semibold mb-4">On-time, every time.</p>
+        <p className="text-lg text-gray-700 max-w-3xl mx-auto mb-8">
+          Professional, on-site notarizations for your everyday documents. We bring reliability and precision 
+          directly to your location during standard business hours.
         </p>
-        <p className="text-lg text-gray-700 max-w-3xl mx-auto mb-6">
-          Your critical documents demand professionalism and precision. Our Promise: Fast, precise notary service—every time, no hassle.
-        </p>
-      </section>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link href="/booking?service=standard">
+            <Button size="lg" className="bg-[#002147] hover:bg-[#001a38] text-white">
+              Book Standard Notary
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </Link>
+          <Link href="/contact">
+            <Button size="lg" variant="outline" className="border-[#002147] text-[#002147] hover:bg-[#002147] hover:text-white">
+              Ask Questions
+              <Phone className="ml-2 h-5 w-5" />
+            </Button>
+          </Link>
+        </div>
+      </header>
 
-      {/* Main Content Area */}
-      <div className="grid md:grid-cols-3 gap-8 mb-12">
-        {/* Left Column - Service Details */}
-        <div className="md:col-span-2 bg-white p-8 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-bold text-[#002147] mb-6">Reliable Notarization for Your Everyday Needs</h2>
-          <p className="text-gray-700 mb-4">
-            Our Standard Notary service provides professional, on-site notarizations for a wide range of standard documents.
-            Whether you're dealing with Powers of Attorney, affidavits, contracts, or other important paperwork,
-            we ensure a smooth, precise, and calm experience.
-          </p>
-          <p className="text-gray-700 mb-6">
-            We operate during standard business hours (9 am – 5 pm, Monday to Friday) and bring our services directly to your location,
-            saving you time and hassle. Trust Houston Mobile Notary Pros to handle your documents with the care and expertise they deserve.
-          </p>
+      {/* Main Content */}
+      <div className="grid lg:grid-cols-3 gap-8 mb-12">
+        {/* Main Content Area */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Service Overview */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl text-[#002147]">Reliable Notarization for Your Everyday Needs</CardTitle>
+              <CardDescription className="text-lg">
+                Professional document notarization during standard business hours with mobile convenience.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-gray-700">
+                Our Standard Notary service provides professional, on-site notarizations for a wide range of documents.
+                Whether you're dealing with Powers of Attorney, affidavits, contracts, or other important paperwork,
+                we ensure a smooth, precise, and calm experience.
+              </p>
+              <p className="text-gray-700">
+                Operating during standard business hours (9 AM – 5 PM, Monday to Friday), we bring our services 
+                directly to your location, saving you time and eliminating the hassle of finding a notary.
+              </p>
+            </CardContent>
+          </Card>
 
-          <div className="mb-8">
-            <h3 className="text-xl font-semibold text-[#002147] mb-4">Key Features:</h3>
-            <ul className="space-y-3 text-gray-700">
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-6 w-6 mt-0.5 shrink-0" />
-                <span><strong>Service Hours:</strong> Monday - Friday, 9:00 AM - 5:00 PM</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-6 w-6 mt-0.5 shrink-0" />
-                <span><strong>Documents:</strong> POAs, Affidavits, Contracts, Wills, Deeds, & more</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-6 w-6 mt-0.5 shrink-0" />
-                <span><strong>Travel:</strong> Included within a 15-mile radius (from 77591)</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-6 w-6 mt-0.5 shrink-0" />
-                <span><strong>Convenience:</strong> We come to your home, office, or other preferred location.</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-6 w-6 mt-0.5 shrink-0" />
-                <span><strong>Professionalism:</strong> Experienced, certified, and insured notaries.</span>
-              </li>
-            </ul>
+          {/* Key Features */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center text-lg">
+                  <Clock className="text-[#A52A2A] mr-2 h-5 w-5" />
+                  Business Hours Service
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-3">Monday - Friday, 9:00 AM - 5:00 PM</p>
+                <p className="text-sm text-gray-500">
+                  Perfect for routine document needs during regular business hours. 
+                  Need after-hours service? Check our Extended Hours option.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center text-lg">
+                  <MapPin className="text-[#A52A2A] mr-2 h-5 w-5" />
+                  Mobile Convenience
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-3">We come to your preferred location</p>
+                <p className="text-sm text-gray-500">
+                  Travel included within 15 miles. Home, office, or other location - 
+                  wherever is most convenient for you.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center text-lg">
+                  <FileText className="text-[#A52A2A] mr-2 h-5 w-5" />
+                  Wide Document Coverage
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-3">POAs, Affidavits, Contracts & More</p>
+                <p className="text-sm text-gray-500">
+                  From estate planning documents to business contracts, 
+                  we handle all your standard notarization needs.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center text-lg">
+                  <Shield className="text-[#A52A2A] mr-2 h-5 w-5" />
+                  Professional Excellence
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-3">Certified, Insured & Experienced</p>
+                <p className="text-sm text-gray-500">
+                  NNA certified notaries with comprehensive insurance and 
+                  commitment to accuracy and professionalism.
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
-          <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-            <h3 className="text-xl font-semibold text-[#002147] mb-3">Pricing</h3>
-            <p className="text-3xl font-bold text-[#002147] mb-1">$75+</p>
-            <p className="text-sm text-gray-600 mb-4">Starting price for standard notarizations. Includes travel up to 15 miles and 1-2 notarized signatures. Additional signatures, documents, or mileage may incur extra fees. See our <Link href="/services/extras" className="text-[#A52A2A] hover:underline">Extras & Fees</Link> page for details.</p>
-            <Link href="/booking">
-              <Button size="lg" className="w-full sm:w-auto bg-[#002147] hover:bg-[#001a38] text-white">
-                Book Standard Notary
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-          </div>
+          {/* Pricing Section */}
+          <Card className="border-2 border-[#002147]/20 bg-[#002147]/5">
+            <CardHeader>
+              <CardTitle className="text-2xl text-[#002147]">Transparent Pricing</CardTitle>
+              <CardDescription>Starting at $75 with travel included</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-baseline gap-2 mb-4">
+                <span className="text-3xl font-bold text-[#002147]">$75</span>
+                <span className="text-lg text-gray-600">starting price</span>
+              </div>
+              <ul className="space-y-2 text-sm text-gray-600 mb-6">
+                <li className="flex items-center"><Check className="text-green-600 mr-2 h-4 w-4" />Travel up to 15 miles included</li>
+                <li className="flex items-center"><Check className="text-green-600 mr-2 h-4 w-4" />1-2 notarized signatures</li>
+                <li className="flex items-center"><Check className="text-green-600 mr-2 h-4 w-4" />Document review and guidance</li>
+                <li className="flex items-center"><Check className="text-green-600 mr-2 h-4 w-4" />Professional service guarantee</li>
+              </ul>
+              <p className="text-xs text-gray-500 mb-4">
+                Additional signatures, documents, or extended travel may incur extra fees. 
+                See our <Link href="/services/extras" className="text-[#A52A2A] hover:underline">Extras & Fees</Link> page for details.
+              </p>
+              <Link href="/booking?service=standard">
+                <Button size="lg" className="w-full bg-[#002147] hover:bg-[#001a38] text-white">
+                  Book Your Standard Notary Service
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Right Column - Benefits/Contact */}
-        <div className="md:col-span-1 space-y-6">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-[#002147] mb-3 flex items-center">
-              <FileText className="text-[#A52A2A] mr-2 h-6 w-6" /> Common Documents
-            </h3>
-            <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
-              <li>Powers of Attorney (Financial, Medical)</li>
-              <li>Affidavits & Sworn Statements</li>
-              <li>Contracts & Business Agreements</li>
-              <li>Last Will & Testament</li>
-              <li>Trust Documents</li>
-              <li>Quitclaim / Warranty Deeds</li>
-              <li>Vehicle Title Transfers</li>
-              <li>Minor Travel Consent Forms</li>
-              <li>I-9 Employment Verification (as applicable)</li>
-              <li>And many more...</li>
-            </ul>
-          </div>
-          <div className="bg-[#002147] text-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-3 flex items-center">
-              <Users className="mr-2 h-6 w-6" /> Why Choose Us?
-            </h3>
-            <ul className="text-sm space-y-2">
-              <li className="flex items-start"><Check className="mr-2 mt-1 h-4 w-4 shrink-0" />Reliable & Punctual</li>
-              <li className="flex items-start"><Check className="mr-2 mt-1 h-4 w-4 shrink-0" />Clear Communication</li>
-              <li className="flex items-start"><Check className="mr-2 mt-1 h-4 w-4 shrink-0" />Meticulous Attention to Detail</li>
-              <li className="flex items-start"><Check className="mr-2 mt-1 h-4 w-4 shrink-0" />Insured for Your Peace of Mind</li>
-            </ul>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-             <h3 className="text-lg font-semibold text-[#002147] mb-3 flex items-center">
-              <Phone className="text-[#A52A2A] mr-2 h-6 w-6" /> Have Questions?
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              If you're unsure if this service fits your needs or have specific questions, don't hesitate to reach out.
-            </p>
-            <Link href="/contact">
-              <Button variant="outline" className="w-full border-[#002147] text-[#002147] hover:bg-[#002147] hover:text-white">
-                Contact Us
-              </Button>
-            </Link>
-          </div>
+        {/* Sidebar */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Common Documents */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg text-[#002147]">Common Documents</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="text-sm text-gray-600 space-y-2">
+                <li>• Powers of Attorney (Financial, Medical)</li>
+                <li>• Affidavits & Sworn Statements</li>
+                <li>• Contracts & Business Agreements</li>
+                <li>• Last Will & Testament</li>
+                <li>• Trust Documents</li>
+                <li>• Quitclaim / Warranty Deeds</li>
+                <li>• Vehicle Title Transfers</li>
+                <li>• Minor Travel Consent Forms</li>
+                <li>• I-9 Employment Verification</li>
+                <li>• And many more...</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          {/* Why Choose Us */}
+          <Card className="bg-[#002147] text-white">
+            <CardHeader>
+              <CardTitle className="text-lg">Why Choose Us?</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="text-sm space-y-3">
+                <li className="flex items-start">
+                  <Check className="mr-2 mt-0.5 h-4 w-4 shrink-0" />
+                  Reliable & Always On Time
+                </li>
+                <li className="flex items-start">
+                  <Check className="mr-2 mt-0.5 h-4 w-4 shrink-0" />
+                  Clear, Calm Communication
+                </li>
+                <li className="flex items-start">
+                  <Check className="mr-2 mt-0.5 h-4 w-4 shrink-0" />
+                  Meticulous Attention to Detail
+                </li>
+                <li className="flex items-start">
+                  <Check className="mr-2 mt-0.5 h-4 w-4 shrink-0" />
+                  Fully Insured & Bonded
+                </li>
+                <li className="flex items-start">
+                  <Check className="mr-2 mt-0.5 h-4 w-4 shrink-0" />
+                  NNA Certified & Background Screened
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          {/* Contact Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg text-[#002147] flex items-center">
+                <Phone className="text-[#A52A2A] mr-2 h-5 w-5" />
+                Need Help Deciding?
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-4">
+                Not sure if this service fits your needs? Have specific questions about your documents? 
+                We're here to help.
+              </p>
+              <div className="space-y-3">
+                <Link href="/contact">
+                  <Button variant="outline" className="w-full border-[#002147] text-[#002147] hover:bg-[#002147] hover:text-white">
+                    Contact Us
+                  </Button>
+                </Link>
+                <Link href="/services">
+                  <Button variant="ghost" className="w-full text-[#002147] hover:bg-[#002147]/10">
+                    Compare All Services
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
       {/* FAQ Section */}
-      <div className="my-12">
-        <h2 className="text-2xl font-bold text-[#002147] mb-8 text-center">Frequently Asked Questions</h2>
-        <div className="max-w-3xl mx-auto">
+      <section className="mt-16">
+        <h2 className="text-3xl font-bold text-[#002147] mb-8 text-center">Frequently Asked Questions</h2>
+        <div className="max-w-4xl mx-auto">
           <MiniFAQ faqs={standardServiceFaqs} />
         </div>
-      </div>
-
-      {/* CTA Section */}
-      <div className="bg-[#A52A2A] text-white p-8 rounded-lg text-center">
-        <h2 className="text-2xl font-bold mb-4">Ready for a Hassle-Free Notarization?</h2>
-        <p className="mb-6 max-w-2xl mx-auto">
-          Schedule your Standard Notary appointment today and experience the convenience and professionalism of Houston Mobile Notary Pros.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/booking">
-            <Button size="lg" className="bg-[#002147] hover:bg-[#001a38] text-white">
-              Book Standard Service
-            </Button>
-          </Link>
-          <Link href="/services">
-            <Button size="lg" variant="outline" className="border-white text-white bg-transparent hover:bg-white hover:text-[#002147]">
-              Explore Other Services
-            </Button>
-          </Link>
-        </div>
-      </div>
+      </section>
     </div>
-  )
+  );
 } 

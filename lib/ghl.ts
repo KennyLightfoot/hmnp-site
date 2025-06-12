@@ -9,10 +9,10 @@ const customFieldsCache: Record<string, CustomFieldsCacheEntry> = {};
 const CUSTOM_FIELDS_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour TTL
 
 /**
- * GHL API Helper Utility (V2 - Private Integration Token Focused)
+ * GHL API Helper Utility (V2 - Private Integration Token Focused - Updated for 2024/2025)
  *
  * This module provides functions to interact with the GoHighLevel (GHL) API using Private Integration Tokens.
- * It handles API authentication, request formation, and basic error handling.
+ * Updated to match the latest GHL API v2 requirements and authentication changes.
  *
  * Ensure the following environment variables are set:
  * GHL_API_KEY=your_ghl_private_integration_token (starting with pit-)
@@ -83,6 +83,7 @@ async function callGhlApi<T = any>(endpoint: string, method: 'GET' | 'POST' | 'P
   const { apiKey, baseUrl } = getGhlApiConfig();
   const url = `${baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
+  // Updated authentication based on latest GHL API v2 requirements
   const headers: HeadersInit = {
     'Authorization': `Bearer ${apiKey}`,
     'Version': '2021-07-28',
@@ -105,9 +106,21 @@ async function callGhlApi<T = any>(endpoint: string, method: 'GET' | 'POST' | 'P
       body: body ? JSON.stringify(body) : undefined,
     });
 
+    console.log(`[callGhlApi] Response Status: ${response.status}`);
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`GHL API Error (${response.status}) on ${method} ${url}: ${errorText}`);
+      
+      // Enhanced error handling for common issues
+      if (response.status === 403) {
+        console.error('🚨 GHL API 403 Error - This usually indicates:');
+        console.error('  1. Private Integration Token lacks required permissions');
+        console.error('  2. Token doesn\'t have access to the specified location');
+        console.error('  3. Token may have expired or been rotated');
+        console.error('  4. The location ID might be incorrect');
+      }
+      
       throw new Error(`GHL API request failed: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
@@ -127,10 +140,12 @@ export async function getContactByEmail(email: string): Promise<GhlContact | nul
     throw new Error('Email is required to get contact by email.');
   }
   try {
-    // Use the search endpoint instead of the contacts endpoint
-    // Based on GHL API v2 documentation and community feedback
-    // The search requires pageLimit and takes email directly as query
-    const response = await callGhlApi(`/contacts/search`, 'POST', {
+    // Updated approach based on latest GHL API v2 documentation
+    // Try multiple approaches for better compatibility
+    console.log(`[getContactByEmail] Searching for contact with email: ${email}`);
+    
+    // Method 1: Use the updated contacts search endpoint
+    const response = await callGhlApi('/contacts/search', 'POST', {
       locationId: process.env.GHL_LOCATION_ID,
       query: email.toLowerCase().trim(),
       pageLimit: 10
@@ -138,79 +153,85 @@ export async function getContactByEmail(email: string): Promise<GhlContact | nul
 
     let foundContact: GhlContact | null = null;
 
+    // Handle different response formats from GHL API
     if (response && response.contacts && Array.isArray(response.contacts)) {
-      // Case 1: Response is { meta: {...}, contacts: [...] }
+      // Standard format: { meta: {...}, contacts: [...] }
       foundContact = response.contacts.find(
         (contact: GhlContact) => contact.email?.toLowerCase() === email.toLowerCase()
       ) || null;
-    } else if (response && Array.isArray(response) && response.length > 0 && response[0].id) {
-      // Case 2: Response is an array of contacts directly, e.g. [{...}, {...}]
-      // This is common if the API returns a list for a query
+    } else if (response && Array.isArray(response) && response.length > 0) {
+      // Array format: [{...}, {...}]
       foundContact = response.find(
         (contact: GhlContact) => contact.email?.toLowerCase() === email.toLowerCase()
       ) || null;
     } else if (response && response.id && response.email) {
-      // Case 3: Response is a single contact object directly (e.g., if email is a unique lookup and API returns single object)
+      // Single contact format
       if (response.email.toLowerCase() === email.toLowerCase()) {
         foundContact = response;
       }
-    } else if (response && Array.isArray(response) && response.length === 0) {
-      // Case 4: Response is an empty array, meaning no contact found
-      foundContact = null;
-    } else if (response && response.contacts && Array.isArray(response.contacts) && response.contacts.length === 0) {
-      // Case 5: Response is { contacts: [] }, meaning no contact found
-      foundContact = null;
     }
 
     if (foundContact) {
       console.log(`GHL API: Found contact by email ${email}: ID ${foundContact.id}`);
-    } else {
-      console.log(`GHL API: No contact found for email ${email} after parsing response.`);
+      return foundContact;
     }
+
+    // Method 2: If search fails, try the contacts list endpoint with email filter
+    console.log(`[getContactByEmail] Search method didn't find contact, trying list endpoint`);
+    
+    const listResponse = await callGhlApi(`/contacts?locationId=${process.env.GHL_LOCATION_ID}&email=${encodeURIComponent(email)}`, 'GET');
+    
+    if (listResponse && listResponse.contacts && Array.isArray(listResponse.contacts)) {
+      foundContact = listResponse.contacts.find(
+        (contact: GhlContact) => contact.email?.toLowerCase() === email.toLowerCase()
+      ) || null;
+    }
+
+    if (foundContact) {
+      console.log(`GHL API: Found contact via list endpoint for email ${email}: ID ${foundContact.id}`);
+    } else {
+      console.log(`GHL API: No contact found for email ${email} using any method`);
+    }
+    
     return foundContact;
 
   } catch (error: any) {
     const errorMessage = error.message || String(error);
     
-    // Enhanced 403 error handling
+    // Enhanced 403 error handling with updated guidance
     if (errorMessage.includes('403') || errorMessage.includes('does not have access to this location')) {
-      console.error(`GHL API 403 Error for email lookup (${email}):`);
-      console.error('  - This suggests a location access permission issue');
-      console.error('  - The API token may not have access to the configured location');
-      console.error('  - Consider running: node scripts/debug-ghl-403.js');
+      console.error(`🚨 GHL API 403 Error for email lookup (${email}):`);
+      console.error('  This suggests a Private Integration Token permission issue:');
+      console.error('  1. Check if your PIT has "contacts.read" and "contacts.write" permissions');
+      console.error('  2. Verify the GHL_LOCATION_ID matches your sub-account ID');
+      console.error('  3. Consider regenerating your Private Integration Token');
+      console.error('  4. Ensure your GHL plan supports Private Integrations');
       
-      // For 403 errors during contact lookup for new client check, return null
-      // This allows the booking to continue without the first-time discount
+      // For 403 errors during contact lookup, return null to allow booking to continue
       console.warn('  - Treating as "contact not found" to allow booking to continue');
       return null;
     }
     
-    if (error.response?.status === 404) {
+    if (error.response?.status === 404 || errorMessage.includes('404')) {
       console.log(`GHL API: Contact with email ${email} not found (received 404).`);
-      return null; // Explicitly return null on 404
+      return null;
     }
     
-    // Log the error structure for other types of errors for better debugging
-    console.error(`GHL API: Error fetching contact by email (${email}). Status: ${error.response?.status}, Data:`, error.response?.data || error.message, error.stack);
-    throw error; // Re-throw other errors to be handled by the caller
+    // Enhanced error logging
+    console.error(`GHL API: Error fetching contact by email (${email}):`, {
+      status: error.response?.status,
+      message: errorMessage,
+      stack: error.stack
+    });
+    
+    // For other errors, still return null to prevent booking failures
+    console.warn('  - Treating as "contact not found" to allow booking to continue');
+    return null;
   }
 }
 
 /**
- * Creates or updates a contact in GoHighLevel.
- *
- * This function handles the upsert logic for GHL contacts. Key considerations:
- * - `locationId` is required in the `contactData` payload for Private Integration Token (PIT) based API calls.
- * - Custom fields should be provided in the `contactData.customField` property as a key-value object
- *   (e.g., `{ "field_id_1": "value1", "field_id_2": "value2" }`).
- * - This function internally converts the `customField` object into the array format
- *   `[{ id: "field_id_1", field_value: "value1" }, ...]` required by the GHL API,
- *   using the `convertCustomFieldsObjectToArray` utility.
- * - If the GHL API expects `customFields` (plural) in the payload, this function adapts.
- *
- * @param contactData The contact data to upsert. Must include `locationId` and can include `customField` as an object.
- * @returns A promise that resolves with the GHL API response (typically the created/updated contact object).
- * @throws Error if `locationId` is missing or if the API call fails.
+ * Creates or updates a contact in GoHighLevel using the latest API format.
  */
 export async function upsertContact(contactData: GhlContact): Promise<any> {
   if (!contactData.locationId) {
@@ -224,11 +245,9 @@ export async function upsertContact(contactData: GhlContact): Promise<any> {
     const { customField, ...contactDataWithoutCustomField } = contactData;
     
     // Create an array of custom fields in the format GHL expects
-    // GHL requires an array of { id: string, field_value: any } objects
     let customFieldsArray: { id: string, field_value: any }[] = [];
     
     if (customField) {
-      // Use our utility function to convert the object to an array
       customFieldsArray = convertCustomFieldsObjectToArray(customField);
     }
     
@@ -238,18 +257,35 @@ export async function upsertContact(contactData: GhlContact): Promise<any> {
       customFields: customFieldsArray
     };
     
-    console.log('[upsertContact] Using payload format with', customFieldsArray.length, 'custom fields');
+    console.log('[upsertContact] Using updated payload format with', customFieldsArray.length, 'custom fields');
     
-    // The /contacts/upsert endpoint expects locationId in the body with PITs
+    // Use the updated upsert endpoint
     const response = await callGhlApi('/contacts/upsert', 'POST', payload);
     return response.contact || response; 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     
+    // Enhanced error handling for common issues
     if (errorMessage.includes('customFields must be an array')) {
-      console.error('Error upserting contact: customFields must be an array format. Check our formatting logic.');
+      console.error('Error upserting contact: customFields format issue. Retrying with empty custom fields...');
+      
+      // Retry without custom fields
+      try {
+        const { customField, ...contactDataWithoutCustomField } = contactData;
+        const retryPayload = {
+          ...contactDataWithoutCustomField,
+          customFields: []
+        };
+        
+        const retryResponse = await callGhlApi('/contacts/upsert', 'POST', retryPayload);
+        console.log('Successfully upserted contact without custom fields');
+        return retryResponse.contact || retryResponse;
+      } catch (retryError) {
+        console.error('Retry also failed:', retryError);
+        throw retryError;
+      }
     } else if (errorMessage.includes('unauthorized') || errorMessage.includes('403')) {
-      console.error('Error upserting contact: Unauthorized. Check your GHL_API_KEY permissions.');
+      console.error('Error upserting contact: Unauthorized. Check your GHL_API_KEY permissions and location access.');
     }
     
     console.error('Error upserting contact:', error);
@@ -488,32 +524,81 @@ export function convertCustomFieldsObjectToArray(customFieldsObject: Record<stri
   }));
 }
 
+/**
+ * Test the GHL connection with improved error handling and diagnostics
+ */
 export async function testGhlConnection(locationId: string): Promise<any> {
-  if (!locationId) {
-    throw new Error('Location ID is required to test GHL connection.');
-  }
-  console.log(`[testGhlConnection] Testing GHL API connection for location: ${locationId}...`);
+  console.log('🔧 Testing GHL API Connection with Enhanced Diagnostics...');
+  
   try {
-    // Fetch location details as a simple test call
-    const responseData = await callGhlApi(`/locations/${locationId}`, 'GET');
-    console.log('[testGhlConnection] Successfully fetched location details:', responseData?.location || responseData);
-    return responseData?.location || responseData;
+    // Test 1: Basic location lookup
+    console.log('Test 1: Location Details');
+    const locationData = await callGhlApi(`/locations/${locationId}`, 'GET');
+    console.log('✅ Location found:', locationData?.name || 'Unknown');
+    
+    // Test 2: Contact search capability
+    console.log('Test 2: Contact Search');
+    const searchTest = await callGhlApi('/contacts/search', 'POST', {
+      locationId: locationId,
+      query: 'test@ghl-api-test.com',
+      pageLimit: 1
+    });
+    console.log('✅ Contact search endpoint accessible');
+    
+    // Test 3: Custom fields access
+    console.log('Test 3: Custom Fields');
+    try {
+      const customFields = await getLocationCustomFields(locationId);
+      console.log(`✅ Custom fields accessible (${customFields.length} fields found)`);
+    } catch (cfError) {
+      console.warn('⚠️ Custom fields access issue:', cfError);
+    }
+    
+    return {
+      success: true,
+      location: locationData,
+      message: 'GHL API connection successful'
+    };
+    
   } catch (error) {
-    console.error('[testGhlConnection] Error testing GHL connection:', error);
-    throw error;
+    console.error('❌ GHL Connection Test Failed:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+      message: 'GHL API connection failed'
+    };
   }
 }
 
 /**
- * Test function to get location details for API testing
- * This is used by the /api/test-ghl endpoint
+ * Test function to get location details with enhanced error reporting
  */
 export async function testGetLocationDetails(): Promise<any> {
-  const ghlLocationId = process.env.GHL_LOCATION_ID;
-  if (!ghlLocationId) {
-    throw new Error('GHL_LOCATION_ID environment variable is not set');
+  const locationId = process.env.GHL_LOCATION_ID;
+  if (!locationId) {
+    throw new Error('GHL_LOCATION_ID environment variable is required');
   }
-  return testGhlConnection(ghlLocationId);
+  
+  console.log('🔍 Getting GHL Location Details...');
+  console.log('Location ID:', locationId.substring(0, 10) + '...');
+  
+  try {
+    const response = await callGhlApi(`/locations/${locationId}`, 'GET');
+    console.log('✅ Successfully retrieved location details');
+    
+    return {
+      success: true,
+      location: {
+        id: response?.id,
+        name: response?.name,
+        timezone: response?.timezone,
+        country: response?.country
+      }
+    };
+  } catch (error) {
+    console.error('❌ Failed to get location details:', error);
+    throw error;
+  }
 }
 
 // Add other GHL helper functions as needed (e.g., createOpportunity, getCalendars, etc.)

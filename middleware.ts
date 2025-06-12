@@ -4,33 +4,49 @@ import { getToken } from "next-auth/jwt"
 
 // https://nextjs.org/docs/app/building-your-application/configuring-content-security-policy
 export async function middleware(request: NextRequest) {
-  const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
   const isDevelopment = process.env.NODE_ENV === 'development';
+  
+  let cspDirectives: Record<string, string>;
+  let nonce: string | undefined;
 
-  // Base CSP directives
-  let cspDirectives = {
-    'default-src': "'self'",
-    // Allow necessary inline scripts and styles for the booking functionality
-    'script-src': `'self' 'nonce-${nonce}' 'unsafe-inline' 'strict-dynamic' https://va.vercel-scripts.com https://vercel.live`,
-    'style-src': `'self' 'nonce-${nonce}' 'unsafe-inline' https://vercel.live`,
-    'img-src': "'self' blob: data: https://vercel.live https://vercel.com",
-    'font-src': "'self' https://vercel.live https://assets.vercel.com",
-    'connect-src': "'self' https://vercel.live wss://vercel.live https://vitals.vercel-insights.com wss://ws-us3.pusher.com https://houstonmobilenotarypros.com https://houston-notary-docs.s3.us-east-1.amazonaws.com",
-    'object-src': "'none'",
-    'base-uri': "'self'",
-    'form-action': "'self'",
-    'frame-ancestors': "'none'",
-    'frame-src': "https://vercel.live",
-    'block-all-mixed-content': "",
-    'upgrade-insecure-requests': "",
-  };
-
-  // Relax CSP in development for libraries that use inline styles/eval
   if (isDevelopment) {
     console.log("Middleware: Applying relaxed CSP for development");
-    // Allow eval and inline styles during development for better DX
-    cspDirectives['script-src'] += ` 'unsafe-inline' 'unsafe-eval'`;
-    cspDirectives['style-src'] += ` 'unsafe-inline'`;
+    // In development, allow unsafe-inline and unsafe-eval without nonces
+    cspDirectives = {
+      'default-src': "'self'",
+      'script-src': "'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://vercel.live https://js.stripe.com https://connect.facebook.net https://www.googletagmanager.com https://snap.licdn.com",
+      'style-src': "'self' 'unsafe-inline' https://vercel.live",
+      'img-src': "'self' blob: data: https://vercel.live https://vercel.com https://www.facebook.com",
+      'font-src': "'self' https://vercel.live https://assets.vercel.com",
+      'connect-src': "'self' https://vercel.live wss://vercel.live https://vitals.vercel-insights.com wss://ws-us3.pusher.com https://houstonmobilenotarypros.com https://houston-notary-docs.s3.us-east-1.amazonaws.com https://api.stripe.com https://checkout.stripe.com",
+      'object-src': "'none'",
+      'base-uri': "'self'",
+      'form-action': "'self' https://checkout.stripe.com",
+      'frame-ancestors': "'none'",
+      'frame-src': "https://vercel.live https://js.stripe.com https://hooks.stripe.com",
+      'child-src': "https://js.stripe.com",
+      'worker-src': "'self' blob:",
+    };
+  } else {
+    // Production CSP with nonces
+    nonce = Buffer.from(crypto.randomUUID()).toString('base64')
+    cspDirectives = {
+      'default-src': "'self'",
+      'script-src': `'self' 'nonce-${nonce}' 'strict-dynamic' https://va.vercel-scripts.com https://js.stripe.com https://connect.facebook.net https://www.googletagmanager.com https://snap.licdn.com`,
+      'style-src': `'self' 'nonce-${nonce}'`,
+      'img-src': "'self' blob: data: https://vercel.com https://www.facebook.com",
+      'font-src': "'self' https://assets.vercel.com",
+      'connect-src': "'self' https://vitals.vercel-insights.com wss://ws-us3.pusher.com https://houstonmobilenotarypros.com https://houston-notary-docs.s3.us-east-1.amazonaws.com https://api.stripe.com https://checkout.stripe.com",
+      'object-src': "'none'",
+      'base-uri': "'self'",
+      'form-action': "'self' https://checkout.stripe.com",
+      'frame-ancestors': "'none'",
+      'frame-src': "https://js.stripe.com https://hooks.stripe.com",
+      'child-src': "https://js.stripe.com",
+      'worker-src': "'self' blob:",
+      'block-all-mixed-content': "",
+      'upgrade-insecure-requests': "",
+    };
   }
 
   // Construct the header string
@@ -41,8 +57,12 @@ export async function middleware(request: NextRequest) {
   const contentSecurityPolicyHeaderValue = cspHeader;
 
   const requestHeaders = new Headers(request.headers)
-  // Pass nonce to server components
-  requestHeaders.set('x-nonce', nonce)
+  
+  // Pass nonce to server components only in production
+  if (nonce) {
+    requestHeaders.set('x-nonce', nonce)
+  }
+  
   // Set CSP header on the request (needed for server components)
   requestHeaders.set(
     'Content-Security-Policy',

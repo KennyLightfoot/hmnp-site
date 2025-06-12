@@ -1,8 +1,7 @@
 import Link from "next/link"
-import { ChevronLeft, Check, Building, Users, Briefcase, GraduationCap, HardHat, Phone } from "lucide-react"
+import { ChevronRight, Building, Users, Briefcase, Shield, CheckCircle, ArrowRight, Heart, GraduationCap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import MiniFAQ from "@/components/mini-faq";
 
 // Define Base URL for metadata
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com';
@@ -41,386 +40,333 @@ export const metadata = {
   },
 }
 
-const businessFaqs = [
-  {
-    id: "how-to-start-business-solution",
-    question: "How do we get started with a Business Notary Solution for our company?",
-    answer: (
-      <p>
-        The best way to start is by <Link href="/contact?subject=Business%20Notary%20Solution%20Inquiry" className="text-[#A52A2A] hover:underline">contacting us for a consultation</Link>. We'll discuss your specific needs, typical document volume, types of notarizations required, and preferred scheduling. Based on this, we can recommend an existing package or design a custom solution with transparent pricing for your business.
-      </p>
-    ),
-  },
-  {
-    id: "custom-packages",
-    question: "Do you offer custom packages if the listed ones don't fit our needs?",
-    answer: (
-      <p>
-        Absolutely! The packages listed (Title Company, Healthcare, etc.) are examples of solutions we provide. We specialize in creating Custom Business Solutions tailored to unique operational needs, service frequencies, and industry-specific document handling. Let's discuss your requirements.
-      </p>
-    ),
-  },
-  {
-    id: "volume-discounts",
-    question: "Are volume discounts available for regular business clients?",
-    answer: (
-      <p>
-        Yes, volume discounts and block-booking rates are key components of our Business Notary Solutions. We aim to provide cost-effective services for businesses with ongoing or high-volume notary needs. This will be factored into your customized quote or package pricing.
-      </p>
-    ),
-  },
-  {
-    id: "multi-location-business",
-    question: "Can you service multiple business locations?",
-    answer: (
-      <p>
-        Yes, we can arrange to service multiple business locations within our greater Houston service area. For businesses with needs that span broader geographical areas, we can discuss potential arrangements or help coordinate with trusted partners if necessary.
-      </p>
-    ),
-  }
-];
-
 export default function BusinessSolutionsPage() {
   return (
-    <div className="container mx-auto px-4 py-12">
-      <Link href="/services" className="flex items-center text-[#002147] hover:text-[#A52A2A] mb-8">
-        <ChevronLeft className="mr-2 h-4 w-4" />
-        Back to All Services
-      </Link>
-
-      {/* Hero Section */}
-      <section className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-[#002147] mb-3">
-          Business Notary Solutions
-        </h1>
-        <p className="text-2xl font-semibold text-[#A52A2A] mb-4">
-          Keep your business moving.
-        </p>
-        <p className="text-lg text-gray-700 max-w-3xl mx-auto mb-6">
-          Your critical business documents demand more than just a stamp. They Demand Our Expertise. Our Promise: Fast, precise notary service—every time, no hassle.
-        </p>
-      </section>
-
-      {/* Introductory Section */}
-      <section className="mb-12 bg-white p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-[#002147] mb-6 text-center">Streamline Your Operations with Tailored Notary Support</h2>
-        <p className="text-gray-700 mb-4 text-center max-w-2xl mx-auto">
-          Houston Mobile Notary Pros offers comprehensive Business Notary Solutions designed to meet the unique demands of your company. Whether you require regular volume signings, desire the convenience of block-booking, need a dedicated corporate account, or seek reliable recurring appointments, we provide efficient, professional, and meticulous notary services.
-        </p>
-        <div className="text-center my-6">
-            <p className="text-3xl font-bold text-[#002147] mb-1">Starting at $250+</p>
-            <p className="text-sm text-gray-600">For customized business packages and volume pricing.</p>
+    <div className="min-h-screen bg-white">
+      {/* Breadcrumb */}
+      <div className="border-b border-gray-200">
+        <div className="container mx-auto px-4 py-4">
+          <nav className="flex items-center space-x-2 text-sm text-gray-600">
+            <Link href="/" className="hover:text-[#A52A2A]">Home</Link>
+            <ChevronRight className="h-4 w-4" />
+            <Link href="/services" className="hover:text-[#A52A2A]">Services</Link>
+            <ChevronRight className="h-4 w-4" />
+            <span className="text-gray-900">Business Solutions</span>
+          </nav>
         </div>
-        <p className="text-gray-700 mb-6 text-center max-w-2xl mx-auto">
-          Our goal is to integrate seamlessly with your workflow, saving you time, reducing administrative burden, and ensuring your important documents are handled with the utmost care and compliance. Explore our example packages below or contact us for a personalized consultation.
-        </p>
-        <div className="text-center">
+      </div>
+
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-[#002147] to-[#003366] text-white py-16">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            Business Notary Solutions
+          </h1>
+          <p className="text-xl md:text-2xl mb-4 text-blue-100">
+            Streamlined notary services that keep your business moving
+          </p>
+          <p className="text-lg mb-8 text-blue-100 max-w-3xl mx-auto">
+            From volume signings to corporate accounts, we provide comprehensive notary solutions tailored to your business needs with transparent pricing and professional reliability.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact?subject=Business%20Notary%20Solutions%20Inquiry">
-              <Button size="lg" className="bg-[#002147] hover:bg-[#001a38] text-white">
-                Inquire About Business Solutions
+              <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
+                Get Custom Quote
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-        </div>
-      </section>
-
-      {/* Service Package Examples - Retain existing detailed cards */}
-      <h2 className="text-3xl font-bold text-[#002147] mb-8 text-center">Example Business Packages & Industry Solutions</h2>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-        {/* Title Company Partnership Card - (Ensure content matches general tone, pricing consistent if specified elsewhere) */}
-        <Card className="shadow-md">
-          <CardHeader className="bg-[#002147] text-white">
-            <CardTitle className="flex items-center">
-              <Building className="mr-2 h-5 w-5" />
-              Title Company Partnership
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <p className="text-gray-700 mb-2"><strong className="text-[#002147]">Ideal for:</strong> Title companies, Escrow officers, Real estate law firms</p>
-            <p className="mb-4 text-sm text-gray-700">A seamless, reliable notary partnership ensuring efficient and precise closings. We understand the demands of the real estate industry.</p>
-            <h4 className="text-md font-semibold text-[#002147] mb-2">Key Features:</h4>
-            <ul className="space-y-1 text-sm text-gray-700 list-disc list-inside mb-4">
-              <li>Guaranteed priority scheduling</li>
-              <li>Dedicated communication channel</li>
-              <li>Volume-based pricing tiers</li>
-              <li>Monthly reporting & analytics</li>
-            </ul>
-             <p className="text-lg font-semibold text-[#002147] mb-4">From $125/month + per-signing fees</p>
-            <Link href="/contact?subject=Title%20Company%20Partnership%20Inquiry">
-              <Button className="w-full bg-[#002147] hover:bg-[#001a38] text-white text-sm">
-                Inquire About Title Partnerships
+            <Link href="/booking?service=business">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147]">
+                Schedule Consultation
               </Button>
             </Link>
-          </CardContent>
-        </Card>
-
-        {/* Business Concierge Package Card */}
-        <Card className="shadow-md">
-          <CardHeader className="bg-[#002147] text-white">
-            <CardTitle className="flex items-center">
-              <Briefcase className="mr-2 h-5 w-5" />
-              Business Concierge Package
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <p className="text-gray-700 mb-2"><strong className="text-[#002147]">Ideal for:</strong> Corporate offices, Professional service firms</p>
-            <p className="mb-4 text-sm text-gray-700">Comprehensive, proactive notary support with scheduled on-site visits to keep your operations running smoothly.</p>
-             <h4 className="text-md font-semibold text-[#002147] mb-2">Key Features:</h4>
-            <ul className="space-y-1 text-sm text-gray-700 list-disc list-inside mb-4">
-              <li>Includes a set number of notarizations monthly</li>
-              <li>Scheduled on-site service (e.g., twice a month)</li>
-              <li>I-9 verifications & other employee docs</li>
-              <li>Dedicated account manager</li>
-            </ul>
-            <p className="text-lg font-semibold text-[#002147] mb-4">From $200/month</p>
-             <Link href="/contact?subject=Business%20Concierge%20Inquiry">
-              <Button className="w-full bg-[#002147] hover:bg-[#001a38] text-white text-sm">
-                Inquire About Concierge Services
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        {/* Healthcare Provider Package Card */}
-        <Card className="shadow-md">
-          <CardHeader className="bg-[#002147] text-white">
-            <CardTitle className="flex items-center">
-              <Users className="mr-2 h-5 w-5" />
-              Healthcare Provider Solutions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <p className="text-gray-700 mb-2"><strong className="text-[#002147]">Ideal for:</strong> Hospitals, Clinics, Assisted living facilities</p>
-            <p className="mb-4 text-sm text-gray-700">HIPAA-compliant, compassionate notary services for healthcare facilities, meeting patient needs and regulatory requirements.</p>
-             <h4 className="text-md font-semibold text-[#002147] mb-2">Key Features:</h4>
-            <ul className="space-y-1 text-sm text-gray-700 list-disc list-inside mb-4">
-              <li>Strict HIPAA compliance</li>
-              <li>Priority response for urgent medical needs</li>
-              <li>Discreet patient room visits</li>
-              <li>Handling of POAs & Advance Directives</li>
-            </ul>
-            <p className="text-lg font-semibold text-[#002147] mb-4">From $175/month</p>
-            <Link href="/contact?subject=Healthcare%20Notary%20Inquiry">
-              <Button className="w-full bg-[#002147] hover:bg-[#001a38] text-white text-sm">
-                Inquire About Healthcare Solutions
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-        
-        {/* Retaining other specific package cards (Education, Construction, Custom) from existing file, with minor style updates if needed */}
-        {/* Education Institution Package */}
-        <Card className="shadow-md">
-          <CardHeader className="bg-[#002147] text-white">
-            <CardTitle className="flex items-center">
-              <GraduationCap className="mr-2 h-5 w-5" />
-              Education Institution Support
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <p className="text-gray-700 mb-2"><strong className="text-[#002147]">Ideal for:</strong> Schools, Colleges, Universities</p>
-            <p className="mb-4 text-sm text-gray-700">Reliable notary support for educational institutions, ensuring document integrity for students, faculty, and administration.</p>
-            <h4 className="text-md font-semibold text-[#002147] mb-2">Key Features:</h4>
-            <ul className="space-y-1 text-sm text-gray-700 list-disc list-inside mb-4">
-                <li>Student ID verifications</li>
-                <li>International student documentation</li>
-                <li>Faculty & staff notary needs</li>
-                <li>On-campus office hours option</li>
-            </ul>
-            <p className="text-lg font-semibold text-[#002147] mb-4">From $150/month</p>
-            <Link href="/contact?subject=Education%20Notary%20Inquiry">
-              <Button className="w-full bg-[#002147] hover:bg-[#001a38] text-white text-sm">
-                Inquire About Education Support
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        {/* Construction & Real Estate Developer Package */}
-        <Card className="shadow-md">
-          <CardHeader className="bg-[#002147] text-white">
-            <CardTitle className="flex items-center">
-              <HardHat className="mr-2 h-5 w-5" />
-              Construction & Real Estate Dev
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-             <p className="text-gray-700 mb-2"><strong className="text-[#002147]">Ideal for:</strong> Construction firms, Developers, Contractors</p>
-            <p className="mb-4 text-sm text-gray-700">Robust notary solutions for fast-paced construction/real estate sectors, handling critical documents on-site with precision.</p>
-            <h4 className="text-md font-semibold text-[#002147] mb-2">Key Features:</h4>
-            <ul className="space-y-1 text-sm text-gray-700 list-disc list-inside mb-4">
-                <li>Flexible multiple site visits</li>
-                <li>Contractor agreements, lien releases</li>
-                <li>Permit applications</li>
-                <li>Emergency weekend service option</li>
-            </ul>
-            <p className="text-lg font-semibold text-[#002147] mb-4">From $250/month</p>
-            <Link href="/contact?subject=Construction%20Notary%20Inquiry">
-              <Button className="w-full bg-[#002147] hover:bg-[#001a38] text-white text-sm">
-                Inquire About Construction Support
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        {/* Custom Business Solution */}
-        <Card className="shadow-md border-[#A52A2A] border-2 col-span-1 md:col-span-2 lg:col-span-1">
-          <CardHeader className="bg-[#A52A2A] text-white">
-            <CardTitle className="flex items-center">
-              <Briefcase className="mr-2 h-5 w-5" />
-              Your Custom Business Solution
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <p className="text-gray-700 mb-2"><strong className="text-[#A52A2A]">Fully Tailored to Your Needs</strong></p>
-            <p className="mb-4 text-sm text-gray-700">
-              Your business is unique. We provide bespoke notary solutions, meticulously crafted to your specific operational needs.
-            </p>
-            <h4 className="text-md font-semibold text-[#A52A2A] mb-2">Potential Inclusions:</h4>
-            <ul className="space-y-1 text-sm text-gray-700 list-disc list-inside mb-4">
-              <li>Service frequency matched to your workflow</li>
-              <li>Handling of industry-specific documents</li>
-              <li>Multi-location coverage</li>
-              <li>Customized staff training</li>
-              <li>Tailored reporting & analytics</li>
-            </ul>
-            <p className="text-lg font-semibold text-[#A52A2A] mb-4">Custom Pricing</p>
-            <Link href="/contact?subject=Custom%20Business%20Solution%20Inquiry">
-              <Button className="w-full bg-[#A52A2A] hover:bg-[#8B0000] text-white text-sm">
-                Design Your Custom Solution
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Business Benefits Section - (Retain existing, good content) */}
-      <div className="mb-16">
-        <h2 className="text-2xl font-bold text-[#002147] mb-6 text-center">Benefits for Your Business</h2>
-        <p className="text-gray-700 mb-6 text-center max-w-2xl mx-auto">
-          Partnering with Houston Mobile Notary Pros for your business needs translates into tangible benefits:
-        </p>
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="bg-gray-50 p-6 rounded-lg">
-            <h3 className="text-xl font-semibold text-[#002147] mb-3">Time & Cost Savings</h3>
-            <ul className="space-y-3 text-sm text-gray-700">
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Boost productivity by eliminating employee travel for notarizations.</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Minimize costly document processing delays with our efficient service.</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Simplify budgeting with clear, predictable monthly billing.</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Achieve greater cost-efficiency with volume discounts for regular service.</span>
-              </li>
-            </ul>
-          </div>
-          <div className="bg-gray-50 p-6 rounded-lg">
-            <h3 className="text-xl font-semibold text-[#002147] mb-3">Convenience & Reliability</h3>
-            <ul className="space-y-3 text-sm text-gray-700">
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Ultimate convenience with professional on-site service at your business location(s).</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Dependable priority scheduling when urgent notary needs arise.</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Experience consistently professional and reliable service every time.</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Enjoy clear communication and personalized support from a dedicated account manager.</span>
-              </li>
-            </ul>
-          </div>
-          <div className="bg-gray-50 p-6 rounded-lg">
-            <h3 className="text-xl font-semibold text-[#002147] mb-3">Expertise & Compliance</h3>
-            <ul className="space-y-3 text-sm text-gray-700">
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Benefit from our expert knowledge of industry-specific documents and notary requirements.</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Significantly reduce the risk of document rejection due to notarization errors.</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Operate with confidence knowing our services are fully insured ($1M E&O).</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                <span>Ensure full compliance with all Texas notary laws and best practices.</span>
-              </li>
-            </ul>
           </div>
         </div>
       </div>
 
-      {/* How It Works Section - (Retain existing, good content) */}
-      <div className="bg-gray-50 p-8 rounded-lg mb-16">
-        <h2 className="text-2xl font-bold text-[#002147] mb-6 text-center">How Our Business Solutions Work</h2>
-        <p className="text-gray-700 mb-8 text-center max-w-3xl mx-auto">
-          Our process for establishing your business notary solution is designed for clarity, collaboration, and a seamless start to our professional partnership:
-        </p>
-        <div className="grid md:grid-cols-4 gap-6">
-          <div className="text-center">
-            <div className="bg-[#A52A2A] text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-lg font-semibold">1</div>
-            <h3 className="font-semibold mb-2 text-[#002147]">Consultation</h3>
-            <p className="text-sm text-gray-700">We begin with a clear consultation to understand your unique business needs and recommend the most effective solution.</p>
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-3 gap-12">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-12">
+            {/* Service Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl text-[#002147] flex items-center">
+                  <Building className="mr-3 h-6 w-6 text-[#A52A2A]" />
+                  Business Solutions Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-gray-700">
+                <p>
+                  Houston Mobile Notary Pros offers comprehensive Business Notary Solutions designed to meet the unique demands of your company. Whether you require regular volume signings, block-booking convenience, dedicated corporate accounts, or reliable recurring appointments, we provide efficient and professional notary services.
+                </p>
+                <p>
+                  Our goal is to integrate seamlessly with your workflow, saving you time, reducing administrative burden, and ensuring your important documents are handled with utmost care and compliance.
+                </p>
+                <p>
+                  All business solutions include the same Texas-commissioned notaries, E&O insurance coverage, and strict quality protocols that define our standard service.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Key Features */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg text-[#002147] flex items-center">
+                    <Users className="mr-3 h-5 w-5 text-[#A52A2A]" />
+                    Volume Discounts
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700">Cost-effective pricing for high-volume needs with block-booking rates and monthly packages.</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg text-[#002147] flex items-center">
+                    <Briefcase className="mr-3 h-5 w-5 text-[#A52A2A]" />
+                    Dedicated Support
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700">Assigned account managers and priority scheduling for consistent business relationships.</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg text-[#002147] flex items-center">
+                    <CheckCircle className="mr-3 h-5 w-5 text-[#A52A2A]" />
+                    Flexible Scheduling
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700">Recurring appointments and on-site visits scheduled around your business operations.</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg text-[#002147] flex items-center">
+                    <Shield className="mr-3 h-5 w-5 text-[#A52A2A]" />
+                    Industry Compliance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700">HIPAA compliance for healthcare, specialized protocols for legal firms and title companies.</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Pricing Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl text-[#002147] text-center">
+                  Business Package Pricing
+                </CardTitle>
+                <p className="text-center text-gray-600 mt-2">Tailored solutions for your business needs</p>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-gray-50 p-8 rounded-lg text-center mb-6">
+                  <h3 className="text-3xl font-bold text-[#A52A2A] mb-4">Starting at $250+</h3>
+                  <p className="text-lg mb-6 text-gray-700">Customized business packages with volume pricing</p>
+                  <div className="text-left max-w-md mx-auto">
+                    <h4 className="font-semibold mb-3 text-[#002147]">Includes:</h4>
+                    <ul className="space-y-2 text-sm text-gray-700">
+                      <li>• Custom pricing based on volume</li>
+                      <li>• Dedicated account management</li>
+                      <li>• Priority scheduling</li>
+                      <li>• Monthly reporting & analytics</li>
+                      <li>• Industry-specific protocols</li>
+                    </ul>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <Link href="/contact?subject=Business%20Notary%20Solutions%20Inquiry">
+                    <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
+                      Get Custom Business Quote
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Industry Solutions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl text-[#002147]">Industry-Specific Solutions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="border-l-4 border-[#A52A2A] pl-4">
+                      <h4 className="font-semibold text-[#002147] mb-2 flex items-center">
+                        <Building className="mr-2 h-4 w-4" />
+                        Title Company Partnership
+                      </h4>
+                      <p className="text-sm text-gray-700">Guaranteed priority scheduling, dedicated communication, volume pricing tiers.</p>
+                      <p className="text-sm font-semibold text-[#A52A2A]">From $125/month + per-signing fees</p>
+                    </div>
+                    <div className="border-l-4 border-[#A52A2A] pl-4">
+                      <h4 className="font-semibold text-[#002147] mb-2 flex items-center">
+                        <Heart className="mr-2 h-4 w-4" />
+                        Healthcare Provider Solutions
+                      </h4>
+                      <p className="text-sm text-gray-700">HIPAA-compliant services, patient room visits, medical directive handling.</p>
+                      <p className="text-sm font-semibold text-[#A52A2A]">Custom pricing based on needs</p>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="border-l-4 border-[#A52A2A] pl-4">
+                      <h4 className="font-semibold text-[#002147] mb-2 flex items-center">
+                        <Briefcase className="mr-2 h-4 w-4" />
+                        Business Concierge Package
+                      </h4>
+                      <p className="text-sm text-gray-700">Scheduled on-site visits, I-9 verifications, dedicated account manager.</p>
+                      <p className="text-sm font-semibold text-[#A52A2A]">From $200/month</p>
+                    </div>
+                    <div className="border-l-4 border-[#A52A2A] pl-4">
+                      <h4 className="font-semibold text-[#002147] mb-2 flex items-center">
+                        <GraduationCap className="mr-2 h-4 w-4" />
+                        Educational Institution Package
+                      </h4>
+                      <p className="text-sm text-gray-700">Student document verification, employee onboarding, regular campus visits.</p>
+                      <p className="text-sm font-semibold text-[#A52A2A]">Contact for academic pricing</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-          <div className="text-center">
-            <div className="bg-[#A52A2A] text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-lg font-semibold">2</div>
-            <h3 className="font-semibold mb-2 text-[#002147]">Proposal & Customization</h3>
-            <p className="text-sm text-gray-700">We provide a tailored proposal. Your chosen package is meticulously customized to your specific operational needs.</p>
-          </div>
-          <div className="text-center">
-            <div className="bg-[#A52A2A] text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-lg font-semibold">3</div>
-            <h3 className="font-semibold mb-2 text-[#002147]">Agreement & Implementation</h3>
-            <p className="text-sm text-gray-700">Service plan agreed, implemented with precision, including scheduling and clear communication protocols.</p>
-          </div>
-          <div className="text-center">
-            <div className="bg-[#A52A2A] text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-lg font-semibold">4</div>
-            <h3 className="font-semibold mb-2 text-[#002147]">Ongoing Partnership</h3>
-            <p className="text-sm text-gray-700">Benefit from reliable service, supported by transparent reporting and proactive account reviews.</p>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Quick Contact */}
+            <Card className="border-[#002147] border-2">
+              <CardHeader>
+                <CardTitle className="text-lg text-[#002147]">Business Inquiries</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="font-semibold text-[#002147]">Business Line</p>
+                  <p className="text-gray-700 text-lg font-bold">(281) 404-2019</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-[#002147]">Consultation</p>
+                  <p className="text-gray-700">Free business needs assessment</p>
+                </div>
+                <Link href="/contact?subject=Business%20Notary%20Solutions%20Inquiry">
+                  <Button className="w-full bg-[#002147] hover:bg-[#003366] text-white">
+                    Schedule Consultation
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Business Features */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg text-[#002147]">Business Features</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li>• Volume discount pricing</li>
+                  <li>• Block-booking available</li>
+                  <li>• Dedicated account managers</li>
+                  <li>• Priority scheduling</li>
+                  <li>• Recurring appointments</li>
+                  <li>• Monthly reporting</li>
+                  <li>• Custom billing terms</li>
+                  <li>• Industry compliance</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Industries Served */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg text-[#002147]">Industries We Serve</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li>• Title & Escrow Companies</li>
+                  <li>• Healthcare Facilities</li>
+                  <li>• Legal Firms</li>
+                  <li>• Corporate Offices</li>
+                  <li>• Educational Institutions</li>
+                  <li>• Financial Services</li>
+                  <li>• Real Estate Agencies</li>
+                  <li>• Manufacturing</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Common Services */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg text-[#002147]">Common Business Services</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li>• I-9 Employment Verification</li>
+                  <li>• Corporate document signing</li>
+                  <li>• Loan document packages</li>
+                  <li>• Real estate closings</li>
+                  <li>• Healthcare directives</li>
+                  <li>• Legal affidavits</li>
+                  <li>• Powers of attorney</li>
+                  <li>• Contract notarizations</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Why Choose Us */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg text-[#002147]">Why Businesses Choose Us</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li>• Proven reliability</li>
+                  <li>• Scalable solutions</li>
+                  <li>• Professional consistency</li>
+                  <li>• Competitive pricing</li>
+                  <li>• Industry expertise</li>
+                  <li>• Flexible terms</li>
+                </ul>
+              </CardContent>
+            </Card>
           </div>
         </div>
-      </div>
 
-      {/* FAQ Section */}
-      <div className="my-12">
-        <h2 className="text-2xl font-bold text-[#002147] mb-8 text-center">Business Solutions FAQs</h2>
-        <div className="max-w-3xl mx-auto">
-          <MiniFAQ faqs={businessFaqs} />
-        </div>
-      </div>
-
-      {/* CTA Section */}
-      <div className="bg-[#002147] text-white p-8 rounded-lg text-center">
-        <h2 className="text-2xl font-bold mb-4">Partner with Us for Reliable Business Notary Services</h2>
-        <p className="mb-6 max-w-2xl mx-auto">
-          Elevate your business operations with tailored notary solutions that deliver efficiency, ensure compliance, and provide complete peace of mind. Schedule a consultation to discover the perfect solution for your organization.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/contact?subject=Business%20Notary%20Solutions%20Inquiry">
-            <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
-              Discuss Your Business Needs
-            </Button>
-          </Link>
-          <Link href="/services">
-            <Button size="lg" variant="outline" className="border-white text-white bg-transparent hover:bg-white hover:text-[#002147]">
-              View All Service Types
-            </Button>
-          </Link>
+        {/* FAQ Section */}
+        <div className="mt-16">
+          <h2 className="text-3xl font-bold text-[#002147] text-center mb-8">Business Solutions FAQ</h2>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-[#002147] mb-2">How do we get started with business solutions?</h3>
+                <p className="text-gray-700">Contact us for a free consultation where we'll discuss your specific needs, document volume, and preferred scheduling to recommend the best package or create a custom solution.</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-[#002147] mb-2">Do you offer custom packages?</h3>
+                <p className="text-gray-700">Absolutely! We specialize in creating custom business solutions tailored to unique operational needs, service frequencies, and industry-specific document handling requirements.</p>
+              </div>
+            </div>
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-[#002147] mb-2">Are volume discounts available?</h3>
+                <p className="text-gray-700">Yes, volume discounts and block-booking rates are key components of our business solutions. We provide cost-effective services for ongoing or high-volume notary needs.</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-[#002147] mb-2">Can you service multiple locations?</h3>
+                <p className="text-gray-700">Yes, we can arrange service for multiple business locations within our greater Houston service area and can coordinate broader geographical coverage as needed.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

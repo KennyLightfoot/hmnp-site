@@ -1,7 +1,7 @@
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Check, ArrowRight, Users, Clock, Phone, AlertTriangle } from 'lucide-react'
-import MiniFAQ from '@/components/mini-faq'
+import Link from "next/link"
+import { ChevronRight, Clock, MapPin, CheckCircle, Shield, Users, Moon, ArrowRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 // Define Base URL for metadata
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com';
@@ -40,179 +40,302 @@ export const metadata = {
   },
 }
 
-const extendedServiceFaqs = [
-  {
-    id: "extended-hours-details",
-    question: "What are the specific hours for Extended Hours Notary service?",
-    answer: (
-      <p>
-        Our Extended Hours Notary service is available 7 days a week, from 7:00 AM to 9:00 PM. This includes weekends and most holidays, subject to availability.
-        This service is designed for situations that fall outside our <Link href="/services/standard" className="text-[#A52A2A] hover:underline">Standard Notary</Link> hours of 9 am - 5 pm, Monday to Friday.
-      </p>
-    ),
-  },
-  {
-    id: "extended-response-time",
-    question: "Is this a same-day or immediate response service?",
-    answer: (
-      <p>
-        While we strive to accommodate urgent requests and often provide same-day service with our Extended Hours package, immediate dispatch (e.g., within 1 hour) may depend on current availability and location.
-        We recommend booking as soon as you anticipate the need. For very urgent, time-critical situations, please call us directly at <a href="tel:+18326174285" className="text-[#A52A2A] hover:underline">(832) 617-4285</a> to discuss feasibility.
-      </p>
-    ),
-  },
-  {
-    id: "extended-vs-standard-cost",
-    question: "How does the pricing for Extended Hours compare to Standard Notary?",
-    answer: (
-      <p>
-        The Extended Hours Notary service starts at $100+, reflecting the premium availability outside of standard business hours and often on shorter notice.
-        Standard Notary service starts at $75. The increased price for extended hours covers the flexibility and readiness required for urgent or after-hours requests.
-        Additional fees for mileage or specific complex documents may still apply. See our <Link href="/services/extras" className="text-[#A52A2A] hover:underline">Extras & Fees</Link> page for more details.
-      </p>
-    ),
-  },
-];
-
 export default function ExtendedHoursNotaryPage() {
   return (
-    <div className="container mx-auto px-4 py-12">
-      {/* Hero Section */}
-      <section className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-[#002147] mb-3">
-          Extended Hours Notary Services
-        </h1>
-        <p className="text-2xl font-semibold text-[#A52A2A] mb-4">
-          When 9–5 just won't cut it.
-        </p>
-        <p className="text-lg text-gray-700 max-w-3xl mx-auto mb-6">
-          Your critical documents demand professionalism, even when time is tight. Our Promise: Fast, precise notary service—every time, no hassle.
-        </p>
-      </section>
+    <div className="min-h-screen bg-white">
+      {/* Breadcrumb */}
+      <div className="border-b border-gray-200">
+        <div className="container mx-auto px-4 py-4">
+          <nav className="flex items-center space-x-2 text-sm text-gray-600">
+            <Link href="/" className="hover:text-[#A52A2A]">Home</Link>
+            <ChevronRight className="h-4 w-4" />
+            <Link href="/services" className="hover:text-[#A52A2A]">Services</Link>
+            <ChevronRight className="h-4 w-4" />
+            <span className="text-gray-900">Extended Hours</span>
+          </nav>
+        </div>
+      </div>
 
-      {/* Main Content Area */}
-      <div className="grid md:grid-cols-3 gap-8 mb-12">
-        {/* Left Column - Service Details */}
-        <div className="md:col-span-2 bg-white p-8 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-bold text-[#002147] mb-6">Urgent & After-Hours Notarizations, Handled with Precision</h2>
-          <p className="text-gray-700 mb-4">
-            Life doesn't always fit neatly into a 9-to-5 schedule. Our Extended Hours Notary service is designed for those moments when you need professional notary services urgently, in the early mornings, late evenings, or on weekends.
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-[#002147] to-[#003366] text-white py-16">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            Extended Hours Notary
+          </h1>
+          <p className="text-xl md:text-2xl mb-4 text-blue-100">
+            Professional notarization when you need it most
           </p>
-          <p className="text-gray-700 mb-6">
-            Operating from 7 am to 9 pm daily, we provide the same meticulous care and attention to detail for your time-sensitive documents as our standard service. Whether it's a last-minute business agreement, an urgent personal document, or any situation requiring notarization outside typical business hours, count on Houston Mobile Notary Pros.
+          <p className="text-lg mb-8 text-blue-100 max-w-3xl mx-auto">
+            Life doesn't stop at 5 PM. Our Extended Hours service provides professional notarization from 7 AM to 9 PM daily, including weekends and most holidays.
           </p>
-
-          <div className="mb-8">
-            <h3 className="text-xl font-semibold text-[#002147] mb-4">Key Features:</h3>
-            <ul className="space-y-3 text-gray-700">
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-6 w-6 mt-0.5 shrink-0" />
-                <span><strong>Premium Availability:</strong> 7 days a week, 7:00 AM - 9:00 PM</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-6 w-6 mt-0.5 shrink-0" />
-                <span><strong>Ideal For:</strong> Urgent needs, same-day requests (subject to availability), after-hours & weekend signings.</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-6 w-6 mt-0.5 shrink-0" />
-                <span><strong>Rapid Response:</strong> We prioritize accommodating your schedule for time-sensitive matters.</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-6 w-6 mt-0.5 shrink-0" />
-                <span><strong>Comprehensive Service:</strong> All standard document types handled with extended availability.</span>
-              </li>
-               <li className="flex items-start">
-                <Check className="text-[#A52A2A] mr-2 h-6 w-6 mt-0.5 shrink-0" />
-                <span><strong>Peace of Mind:</strong> Reliable, professional service even when you're short on time.</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="bg-[#A52A2A]/10 p-6 rounded-lg border border-[#A52A2A]/30">
-            <h3 className="text-xl font-semibold text-[#A52A2A] mb-3">Pricing</h3>
-            <p className="text-3xl font-bold text-[#A52A2A] mb-1">$100+</p>
-            <p className="text-sm text-gray-700 mb-4">Starting price for extended hours notarizations. Includes travel up to 15 miles and 1-2 notarized signatures. Additional fees for mileage, specific complex documents, or extensive wait times may apply. See our <Link href="/services/extras" className="text-[#A52A2A] hover:underline">Extras & Fees</Link> page.</p>
-            <Link href="/booking">
-              <Button size="lg" className="w-full sm:w-auto bg-[#A52A2A] hover:bg-[#8B0000] text-white">
-                Book Extended Hours Service
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/booking?service=extended">
+              <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
+                Book Extended Hours
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-          </div>
-        </div>
-
-        {/* Right Column - Benefits/Contact */}
-        <div className="md:col-span-1 space-y-6">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-[#002147] mb-3 flex items-center">
-              <AlertTriangle className="text-[#A52A2A] mr-2 h-6 w-6" /> When to Choose Extended Hours?
-            </h3>
-            <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
-              <li>Urgent document signing deadlines</li>
-              <li>Real estate closings after business hours</li>
-              <li>Hospital or healthcare facility signings</li>
-              <li>Airport or travel-related notarizations</li>
-              <li>Weekend legal document needs</li>
-              <li>Any situation requiring prompt, flexible service</li>
-            </ul>
-          </div>
-           <div className="bg-[#002147] text-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-3 flex items-center">
-              <Users className="mr-2 h-6 w-6" /> Your Trusted Partner, Anytime
-            </h3>
-            <ul className="text-sm space-y-2">
-              <li className="flex items-start"><Check className="mr-2 mt-1 h-4 w-4 shrink-0" />Professionalism, guaranteed</li>
-              <li className="flex items-start"><Check className="mr-2 mt-1 h-4 w-4 shrink-0" />Clarity, even under pressure</li>
-              <li className="flex items-start"><Check className="mr-2 mt-1 h-4 w-4 shrink-0" />Full E&O Insurance</li>
-              <li className="flex items-start"><Check className="mr-2 mt-1 h-4 w-4 shrink-0" />Dedicated to your convenience</li>
-            </ul>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-             <h3 className="text-lg font-semibold text-[#002147] mb-3 flex items-center">
-              <Phone className="text-[#A52A2A] mr-2 h-6 w-6" /> Need Immediate Assistance?
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              For very urgent requests or to confirm immediate availability, please call us directly.
-            </p>
-            <a href="tel:+18326174285">
-              <Button variant="outline" className="w-full border-[#A52A2A] text-[#A52A2A] hover:bg-[#A52A2A] hover:text-white">
-                Call (832) 617-4285
+            <Link href="/contact">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147]">
+                Get Quote
               </Button>
-            </a>
-            <Link href="/contact" className="mt-3 block text-center">
-                <Button variant="link" className="text-sm text-[#002147] hover:underline">
-                    Or Send an Online Inquiry
-                </Button>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* FAQ Section */}
-      <div className="my-12">
-        <h2 className="text-2xl font-bold text-[#002147] mb-8 text-center">Extended Hours FAQs</h2>
-        <div className="max-w-3xl mx-auto">
-          <MiniFAQ faqs={extendedServiceFaqs} />
-        </div>
-      </div>
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-3 gap-12">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-12">
+            {/* Service Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl text-[#002147] flex items-center">
+                  <Moon className="mr-3 h-6 w-6 text-[#A52A2A]" />
+                  Service Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-gray-700">
+                <p>
+                  Our Extended Hours Notary service is designed for those moments when you need professional notary services outside typical business hours. Operating from 7 AM to 9 PM daily, we provide the same meticulous care and attention to detail for your time-sensitive documents.
+                </p>
+                <p>
+                  Whether it's a last-minute business agreement, an urgent personal document, or any situation requiring notarization outside standard hours, count on Houston Mobile Notary Pros to deliver professional service when you need it most.
+                </p>
+                <p>
+                  All notaries are commissioned by the state of Texas, carry E&O insurance, and maintain the same strict quality standards regardless of the hour.
+                </p>
+              </CardContent>
+            </Card>
 
-      {/* CTA Section */}
-      <div className="bg-[#002147] text-white p-8 rounded-lg text-center">
-        <h2 className="text-2xl font-bold mb-4">Don't Let Time Hold You Back</h2>
-        <p className="mb-6 max-w-2xl mx-auto">
-          Secure your after-hours or urgent notarization with Houston Mobile Notary Pros. We're ready when you are.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/booking">
-            <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
-              Book Extended Hours
-            </Button>
-          </Link>
-          <Link href="/services">
-            <Button size="lg" variant="outline" className="border-white text-white bg-transparent hover:bg-white hover:text-[#002147]">
-              View All Services
-            </Button>
-          </Link>
+            {/* Key Features */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg text-[#002147] flex items-center">
+                    <Clock className="mr-3 h-5 w-5 text-[#A52A2A]" />
+                    Extended Availability
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700">Available 7 AM to 9 PM daily, including weekends and most holidays.</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg text-[#002147] flex items-center">
+                    <MapPin className="mr-3 h-5 w-5 text-[#A52A2A]" />
+                    Mobile Convenience
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700">Full mobile service to your location, perfect for urgent after-hours needs.</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg text-[#002147] flex items-center">
+                    <CheckCircle className="mr-3 h-5 w-5 text-[#A52A2A]" />
+                    Same-Day Service
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700">Often available for same-day requests, subject to availability and scheduling.</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg text-[#002147] flex items-center">
+                    <Shield className="mr-3 h-5 w-5 text-[#A52A2A]" />
+                    Professional Excellence
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700">Maintaining precision and professionalism regardless of the hour or urgency.</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Pricing Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl text-[#002147] text-center">
+                  Extended Hours Pricing
+                </CardTitle>
+                <p className="text-center text-gray-600 mt-2">Premium service for after-hours convenience</p>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-gray-50 p-8 rounded-lg text-center mb-6">
+                  <h3 className="text-3xl font-bold text-[#A52A2A] mb-4">$100+</h3>
+                  <p className="text-lg mb-6 text-gray-700">Starting price for extended hours service</p>
+                  <div className="text-left max-w-md mx-auto">
+                    <h4 className="font-semibold mb-3 text-[#002147]">Includes:</h4>
+                    <ul className="space-y-2 text-sm text-gray-700">
+                      <li>• Travel up to 15 miles</li>
+                      <li>• 1-2 notarized signatures</li>
+                      <li>• Service 7 AM - 9 PM daily</li>
+                      <li>• Weekend availability</li>
+                      <li>• Same professional standards</li>
+                    </ul>
+                    <p className="text-xs text-gray-600 mt-4">
+                      Additional fees may apply for extra mileage, complex documents, or extended wait times.
+                    </p>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <Link href="/booking?service=extended">
+                    <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
+                      Book Extended Hours Service
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* When to Choose Extended Hours */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl text-[#002147]">When to Choose Extended Hours</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold mb-3 text-[#002147]">Perfect for:</h4>
+                    <ul className="space-y-2 text-sm text-gray-700">
+                      <li>• Urgent document signing deadlines</li>
+                      <li>• Real estate closings after business hours</li>
+                      <li>• Hospital or healthcare facility signings</li>
+                      <li>• Airport or travel-related notarizations</li>
+                      <li>• Weekend legal document needs</li>
+                      <li>• Any situation requiring flexible service</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-3 text-[#002147]">Service Hours:</h4>
+                    <div className="bg-[#002147] text-white p-4 rounded-lg">
+                      <p className="text-lg font-bold mb-2">7 AM - 9 PM</p>
+                      <p className="text-sm">Monday through Sunday</p>
+                      <p className="text-sm">Including most holidays</p>
+                      <p className="text-xs mt-2 text-blue-200">
+                        Subject to availability - book as early as possible for best results
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Quick Contact */}
+            <Card className="border-[#A52A2A] border-2">
+              <CardHeader>
+                <CardTitle className="text-lg text-[#A52A2A]">Urgent Contact</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="font-semibold text-[#002147]">For Immediate Needs</p>
+                  <p className="text-gray-700 text-lg font-bold">(281) 404-2019</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-[#002147]">Available</p>
+                  <p className="text-gray-700">7 AM - 9 PM Daily</p>
+                </div>
+                <Link href="/booking?service=extended">
+                  <Button className="w-full bg-[#A52A2A] hover:bg-[#8B0000] text-white">
+                    Book Extended Hours
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Service Features */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg text-[#002147]">Extended Features</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li>• 7 AM - 9 PM availability</li>
+                  <li>• Weekend service included</li>
+                  <li>• Holiday availability</li>
+                  <li>• Same-day requests welcome</li>
+                  <li>• Mobile service to your location</li>
+                  <li>• Professional precision guaranteed</li>
+                  <li>• E&O insurance coverage</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Common Situations */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg text-[#002147]">Common Situations</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li>• Real estate closings</li>
+                  <li>• Medical facility visits</li>
+                  <li>• Travel documents</li>
+                  <li>• Business contracts</li>
+                  <li>• Legal deadlines</li>
+                  <li>• Emergency POAs</li>
+                  <li>• Healthcare directives</li>
+                  <li>• Financial documents</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Why Choose Us */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg text-[#002147]">Why Choose Us</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li>• Texas-commissioned notaries</li>
+                  <li>• Professionalism guaranteed</li>
+                  <li>• Clarity under pressure</li>
+                  <li>• Full E&O insurance</li>
+                  <li>• Dedicated to convenience</li>
+                  <li>• Flexible scheduling</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* FAQ Section */}
+        <div className="mt-16">
+          <h2 className="text-3xl font-bold text-[#002147] text-center mb-8">Extended Hours FAQ</h2>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-[#002147] mb-2">What are your exact extended hours?</h3>
+                <p className="text-gray-700">Our Extended Hours service is available 7 days a week, from 7:00 AM to 9:00 PM, including weekends and most holidays, subject to availability.</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-[#002147] mb-2">Is same-day service available?</h3>
+                <p className="text-gray-700">While we strive to accommodate urgent requests and often provide same-day service, availability depends on current schedule and location. We recommend booking as soon as possible.</p>
+              </div>
+            </div>
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-[#002147] mb-2">How does pricing compare to standard hours?</h3>
+                <p className="text-gray-700">Extended Hours service starts at $100+, reflecting the premium availability outside standard business hours. Standard service starts at $75. The increased price covers flexibility and readiness for urgent requests.</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-[#002147] mb-2">Do you provide holiday service?</h3>
+                <p className="text-gray-700">Yes, we're available on most holidays during our extended hours. Holiday service may include additional fees. Please call to confirm availability for specific holidays.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

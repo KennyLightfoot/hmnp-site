@@ -1,38 +1,104 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db'; // Corrected prisma client import path
+import { PrismaClient } from '@prisma/client';
 
-export async function GET(request: Request) {
+const prisma = new PrismaClient();
+
+export async function GET() {
   try {
-    const servicesFromDb = await prisma.service.findMany({
-      where: {
-        isActive: true,
+    // Get all active services ordered by name
+    const services = await prisma.service.findMany({
+      where: { 
+        isActive: true 
       },
-      orderBy: {
-        name: 'asc',
+      orderBy: [
+        { serviceType: 'asc' },
+        { name: 'asc' }
+      ],
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        serviceType: true,
+        durationMinutes: true,
+        basePrice: true,
+        requiresDeposit: true,
+        depositAmount: true,
+        externalCalendarId: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
-    const servicesApiShape = servicesFromDb.map(service => ({
-      id: service.id,
-      name: service.name,
-      description: service.description,
-      // The 'key' is the lowercase version of the ServiceType enum string, with special handling for loan_signing
-      key: service.serviceType.toString().toLowerCase().replace('_', '-'), 
-      durationMinutes: service.durationMinutes,
-      basePrice: service.basePrice.toNumber(), // Convert Decimal to number
-      isActive: service.isActive,
-      requiresDeposit: service.requiresDeposit,
-      depositAmount: service.depositAmount ? service.depositAmount.toNumber() : null, // Convert Decimal to number
-      externalCalendarId: service.externalCalendarId,
-      // Add any other fields from your Prisma Service model that ApiService on frontend might need
-    }));
 
-    console.log('!!!!!!!!!! /api/services RETURNING DATA (transformed):', JSON.stringify(servicesApiShape, null, 2)); // DEBUG LOG
-    return NextResponse.json(servicesApiShape);
+    // Group services by type for better organization
+    const servicesByType = services.reduce((acc, service) => {
+      const type = service.serviceType;
+      if (!acc[type]) {
+        acc[type] = [];
+      }
+      
+      acc[type].push({
+        id: service.id,
+        name: service.name,
+        description: service.description,
+        duration: service.durationMinutes,
+        basePrice: Number(service.basePrice),
+        requiresDeposit: service.requiresDeposit,
+        depositAmount: service.requiresDeposit ? Number(service.depositAmount) : 0,
+        hasCalendarIntegration: !!service.externalCalendarId,
+        createdAt: service.createdAt,
+        updatedAt: service.updatedAt,
+      });
+      
+      return acc;
+    }, {} as Record<string, any[]>);
+
+    // Create service type labels for frontend display
+    const serviceTypeLabels = {
+      'STANDARD_NOTARY': 'Standard Notary Services',
+      'EXTENDED_HOURS_NOTARY': 'Extended Hours Notary',
+      'LOAN_SIGNING_SPECIALIST': 'Loan Signing Specialist',
+      'SPECIALTY_NOTARY_SERVICE': 'Specialty Notary Services',
+      'BUSINESS_SOLUTIONS': 'Business Solutions',
+      'SUPPORT_SERVICE': 'Support Services',
+    };
+
+    return NextResponse.json({
+      success: true,
+      services: {
+        all: services.map(service => ({
+          id: service.id,
+          name: service.name,
+          description: service.description,
+          type: service.serviceType,
+          typeLabel: serviceTypeLabels[service.serviceType] || service.serviceType,
+          duration: service.durationMinutes,
+          basePrice: Number(service.basePrice),
+          requiresDeposit: service.requiresDeposit,
+          depositAmount: service.requiresDeposit ? Number(service.depositAmount) : 0,
+          hasCalendarIntegration: !!service.externalCalendarId,
+          createdAt: service.createdAt,
+          updatedAt: service.updatedAt,
+        })),
+        byType: servicesByType,
+        typeLabels: serviceTypeLabels,
+      },
+      meta: {
+        totalServices: services.length,
+        serviceTypes: Object.keys(servicesByType),
+      },
+    });
+
   } catch (error) {
-    console.error('Error fetching services:', error);
+    console.error('Services API error:', error);
+    
     return NextResponse.json(
-      { error: 'Failed to fetch services. Please try again later.' },
+      {
+        success: false,
+        error: 'Failed to fetch services'
+      },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }

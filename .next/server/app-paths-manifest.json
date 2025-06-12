@@ -1,7 +1,4 @@
 {
-  "/api/calendar/available-slots/route": "app/api/calendar/available-slots/route.js",
-  "/api/bookings/route": "app/api/bookings/route.js",
-  "/api/bookings/[id]/route": "app/api/bookings/[id]/route.js",
-  "/booking-confirmation/page": "app/booking-confirmation/page.js",
+  "/booking-confirmed/page": "app/booking-confirmed/page.js",
   "/booking/page": "app/booking/page.js"
 }

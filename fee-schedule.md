@@ -189,6 +189,24 @@ In compliance with Texas Government Code:
 - Staff training sessions
 - Emergency response (within 90 minutes)
 
+### ⚖️ Estate Planning Package
+**Base Rate: $250**
+
+**A comprehensive package designed for individuals and families preparing their essential estate documents.**
+
+**Package Includes:**
+- ✅ **Up to 10 Documents:** Notarization for any combination of Wills, POAs, Trusts, or other estate-related documents.
+- ✅ **Up to 4 Signers:** Perfect for couples or individuals with multiple designated agents.
+- ✅ **90-Minute Appointment:** A dedicated, unhurried session to ensure all documents are handled correctly.
+- ✅ **Mobile Service:** Includes travel within our standard 20-mile radius.
+- ✅ **Itemized Receipt:** A clear, detailed receipt for your records or legal counsel.
+
+**Common Add-ons:**
+- ➕ **Additional Documents:** $10 each (discounted from $15)
+- ➕ **Witness Sourcing:** $50 per witness provided by us.
+- ➕ **Extended Travel:** Standard mileage rates apply beyond 20 miles.
+- ➕ **Weekend & Holiday Service:** +$40
+
 ### 📚 Education Institution Package
 **Base Rate: $150/month**
 - Student ID verification services

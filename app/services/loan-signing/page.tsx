@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ChevronLeft, Check, FileText, Users, Clock, Briefcase, Phone, Info, ExternalLink } from "lucide-react"
+import { ChevronLeft, Check, FileText, Users, Clock, Briefcase, Phone, Info, ExternalLink, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import MiniFAQ from "@/components/mini-faq"; // Assuming you have this component

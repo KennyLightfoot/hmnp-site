@@ -1,8 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { BookingStatus, LocationType, PaymentProvider, PaymentStatus, Prisma } from '@prisma/client';
+import { Booking, Service, BookingStatus, LocationType, PaymentProvider, PaymentStatus, Prisma } from '@prisma/client';
+import { z } from 'zod';
+import { trackBookingConfirmation } from '@/lib/tracking';
 // Custom fields temporarily disabled - using standard GHL fields and tags
 
 // Using tags-only approach for optimal business operations
@@ -41,6 +43,13 @@ interface BookingRequestBody {
   urgencyLevel?: string; // e.g., 'standard', 'rush', 'emergency'
   witnessCount?: number; // Number of witnesses provided or needed
   documentUrl?: string; // Link to documents if uploaded
+
+  // Lead Source Tracking
+  leadSource?: string;
+  campaignName?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
 }
 
 // --- Stripe and GHL Integration Imports ---
@@ -52,7 +61,105 @@ import type { GhlContact, GhlCustomField } from '@/lib/ghl'; // Import GHL types
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeSecretKey ? new Stripe(stripeSecretKey, { apiVersion: '2025-04-30.basil' as const }) : null;
 
-export async function POST(request: Request) {
+// Input validation schema for booking creation
+const createBookingSchema = z.object({
+  // Customer Information
+  customerName: z.string().min(1, 'Customer name is required'),
+  customerEmail: z.string().email('Valid email is required'),
+  customerPhone: z.string().min(10, 'Valid phone number is required'),
+  
+  // Service Details
+  serviceId: z.string().min(1, 'Service ID is required'),
+  scheduledDateTime: z.string().datetime('Valid date/time is required'),
+  
+  // Location Information
+  locationType: z.enum(['CLIENT_SPECIFIED_ADDRESS', 'OUR_OFFICE', 'REMOTE_ONLINE_NOTARIZATION', 'PUBLIC_PLACE']),
+  addressStreet: z.string().optional(),
+  addressCity: z.string().optional(),
+  addressState: z.string().optional(),
+  addressZip: z.string().optional(),
+  locationNotes: z.string().optional(),
+  
+  // Pricing & Promo
+  promoCode: z.string().optional(),
+  
+  // Additional Details
+  notes: z.string().optional(),
+  
+  // Lead Source Tracking
+  leadSource: z.string().optional(),
+  campaignName: z.string().optional(),
+  utmSource: z.string().optional(),
+  utmMedium: z.string().optional(),
+  utmCampaign: z.string().optional(),
+});
+
+interface BookingPricing {
+  basePrice: number;
+  promoDiscount: number;
+  finalPrice: number;
+  depositAmount: number;
+  promoCodeInfo?: {
+    id: string;
+    code: string;
+    discountType: string;
+    discountValue: number;
+  };
+}
+
+// Helper function to trigger specific GHL workflows
+async function triggerGHLWorkflows(contactId: string, bookingStatus: BookingStatus, serviceName?: string) {
+  if (!process.env.GHL_API_BASE_URL || !process.env.GHL_API_KEY) {
+    console.warn('GHL API credentials missing, skipping workflow triggers');
+    return;
+  }
+
+  const workflowsToTrigger: string[] = [];
+  
+  // Determine which workflows to trigger based on booking status
+  if (bookingStatus === BookingStatus.PAYMENT_PENDING) {
+    // Add your payment pending workflow ID
+    if (process.env.GHL_PAYMENT_PENDING_WORKFLOW_ID) {
+      workflowsToTrigger.push(process.env.GHL_PAYMENT_PENDING_WORKFLOW_ID);
+    }
+  } else if (bookingStatus === BookingStatus.CONFIRMED) {
+    // Add your booking confirmed workflow ID
+    if (process.env.GHL_BOOKING_CONFIRMED_WORKFLOW_ID) {
+      workflowsToTrigger.push(process.env.GHL_BOOKING_CONFIRMED_WORKFLOW_ID);
+    }
+  }
+
+  // Add general booking notification workflow if it exists
+  if (process.env.GHL_NEW_BOOKING_WORKFLOW_ID) {
+    workflowsToTrigger.push(process.env.GHL_NEW_BOOKING_WORKFLOW_ID);
+  }
+
+  // Trigger each workflow
+  for (const workflowId of workflowsToTrigger) {
+    try {
+      const response = await fetch(`${process.env.GHL_API_BASE_URL}/contacts/${contactId}/workflow/${workflowId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.GHL_API_KEY}`,
+          'Version': '2021-07-28',
+        },
+        body: JSON.stringify({}),
+      });
+
+      if (response.ok) {
+        console.log(`GHL: Successfully triggered workflow ${workflowId} for contact ${contactId}`);
+      } else {
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        console.error(`GHL: Failed to trigger workflow ${workflowId}:`, errorData);
+      }
+    } catch (error) {
+      console.error(`GHL: Error triggering workflow ${workflowId}:`, error);
+    }
+  }
+}
+
+export async function POST(request: NextRequest) {
   const ghlLocationId = process.env.GHL_LOCATION_ID;
   if (!ghlLocationId) {
     console.error('GHL_LOCATION_ID environment variable is not set.');
@@ -82,7 +189,8 @@ export async function POST(request: Request) {
   try {
     const body = await request.json() as BookingRequestBody;
     // Extract email from request body - required for all bookings
-    signerUserEmail = body.email;
+    // Handle both 'email' and 'customerEmail' field names for compatibility
+    signerUserEmail = body.email || (body as any).customerEmail;
     
     if (!signerUserEmail) {
       return NextResponse.json({ error: 'Email is required for booking' }, { status: 400 });
@@ -120,7 +228,12 @@ export async function POST(request: Request) {
       }
     } else {
       // For guest bookings, use form data
-      signerUserName = `${body.firstName || ''} ${body.lastName || ''}`.trim() || null;
+      // Handle both field name formats for compatibility
+      const firstName = body.firstName || (body as any).customerName?.split(' ')[0];
+      const lastName = body.lastName || (body as any).customerName?.split(' ').slice(1).join(' ');
+      const customerName = (body as any).customerName;
+      
+      signerUserName = customerName || `${firstName || ''} ${lastName || ''}`.trim() || null;
       console.log("Guest booking with data:", {
         signerUserEmail,
         signerUserName
@@ -139,7 +252,6 @@ export async function POST(request: Request) {
       notes,
       promoCode,
       referredBy,
-      phone,
       companyName, // Added
       booking_number_of_signers,
       consent_terms_conditions,
@@ -154,7 +266,15 @@ export async function POST(request: Request) {
       urgencyLevel,
       witnessCount,
       documentUrl, // Added
+      leadSource,
+      campaignName,
+      utmSource,
+      utmMedium,
+      utmCampaign,
     } = body;
+
+    // Handle phone field compatibility
+    const phone = body.phone || (body as any).customerPhone;
 
     let discountAmount = 0;
     const appliedPromoCodeNormalized = promoCode?.trim().toUpperCase();
@@ -227,18 +347,12 @@ export async function POST(request: Request) {
       case "CLIENT_SPECIFIED_ADDRESS":
         mappedLocationType = LocationType.CLIENT_SPECIFIED_ADDRESS;
         break;
-      case "OUR_OFFICE":
-        mappedLocationType = LocationType.OUR_OFFICE;
-        break;
-      case "REMOTE_ONLINE_NOTARIZATION":
-        mappedLocationType = LocationType.REMOTE_ONLINE_NOTARIZATION;
-        break;
       case "PUBLIC_PLACE":
         mappedLocationType = LocationType.PUBLIC_PLACE;
         break;
       default:
         console.error(`Invalid locationType received: ${locationType}`);
-        return NextResponse.json({ error: `Invalid location type provided: ${locationType}. Valid types are CLIENT_SPECIFIED_ADDRESS, OUR_OFFICE, REMOTE_ONLINE_NOTARIZATION, PUBLIC_PLACE.` }, { status: 400 });
+        return NextResponse.json({ error: `Invalid location type provided: ${locationType}. Valid types are CLIENT_SPECIFIED_ADDRESS, PUBLIC_PLACE.` }, { status: 400 });
     }
 
     // Prepare booking data, handling both authenticated and guest bookings
@@ -369,8 +483,8 @@ export async function POST(request: Request) {
             addressZip
           ].filter(Boolean); // Filter out null, undefined, empty strings
           serviceAddressForGhl = parts.join(', ');
-        } else if (body.locationType === 'REMOTE_ONLINE_NOTARIZATION') {
-          serviceAddressForGhl = 'Remote Online Notarization';
+        } else if (body.locationType === 'PUBLIC_PLACE') {
+          serviceAddressForGhl = 'Public Place';
         } else {
           // Fallback for any other location types or if body.locationType is undefined
           serviceAddressForGhl = ''; // Or a more descriptive placeholder like 'Location N/A'
@@ -455,6 +569,10 @@ export async function POST(request: Request) {
               try {
                 await ghl.addTagsToContact(contactId, tagsToApply);
                 console.log(`GHL: Contact ${contactId} upserted and tags applied: ${tagsToApply.join(', ')}`);
+                
+                // NEW: Trigger specific workflows based on booking status
+                await triggerGHLWorkflows(contactId, newBooking.status, service?.name);
+                
               } catch (tagError) {
                 console.error('GHL: Error adding tags to contact:', tagError);
                 // Don't throw here, continue with booking creation
@@ -505,6 +623,10 @@ export async function POST(request: Request) {
       if (!signerUserId && signerUserName) {
         (newBookingWithRelations as any).guestName = signerUserName;
       }
+      
+      console.log("!!!!!!!!!! FINAL API RESPONSE CHECKOUT URL:", checkoutUrl);
+      console.log("!!!!!!!!!! FINAL API RESPONSE BOOKING ID:", newBookingWithRelations.id);
+      
       return NextResponse.json({ booking: newBookingWithRelations, checkoutUrl }, { status: 201 });
   }
   catch (errorUnknown) {
@@ -536,3 +658,157 @@ export async function POST(request: Request) {
     );
   }
 } // End of POST function
+
+// Helper function to validate time slot is still available
+async function validateTimeSlotAvailability(
+  tx: any, 
+  scheduledDateTime: Date, 
+  serviceDurationMinutes: number
+) {
+  const serviceEndTime = new Date(scheduledDateTime);
+  serviceEndTime.setMinutes(serviceEndTime.getMinutes() + serviceDurationMinutes);
+  
+  // Check for conflicting bookings
+  const conflictingBookings = await tx.booking.findMany({
+    where: {
+      scheduledDateTime: {
+        gte: new Date(scheduledDateTime.getTime() - (60 * 60 * 1000)), // 1 hour before
+        lte: new Date(scheduledDateTime.getTime() + (60 * 60 * 1000)), // 1 hour after
+      },
+      status: {
+        notIn: ['CANCELLED_BY_CLIENT', 'CANCELLED_BY_STAFF', 'NO_SHOW', 'ARCHIVED'],
+      },
+    },
+    include: {
+      service: true,
+    },
+  });
+  
+  const hasConflict = conflictingBookings.some((booking: Booking & { service: Service }) => {
+    if (!booking.scheduledDateTime) return false;
+    
+    const bookingStart = new Date(booking.scheduledDateTime);
+    const bookingEnd = new Date(bookingStart);
+    bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.service.durationMinutes);
+    
+    // Check for overlap
+    return (scheduledDateTime < bookingEnd && serviceEndTime > bookingStart);
+  });
+  
+  if (hasConflict) {
+    throw new Error('Selected time slot is no longer available');
+  }
+  
+  // Check if time is in the past
+  if (scheduledDateTime <= new Date()) {
+    throw new Error('Cannot book appointments in the past');
+  }
+  
+  // Check lead time (minimum 2 hours by default)
+  const minimumBookingTime = new Date();
+  minimumBookingTime.setHours(minimumBookingTime.getHours() + 2);
+  
+  if (scheduledDateTime < minimumBookingTime) {
+    throw new Error('Bookings require at least 2 hours advance notice');
+  }
+}
+
+// Helper function to calculate booking pricing with promo codes
+async function calculateBookingPricing(
+  tx: any, 
+  service: any, 
+  promoCodeStr?: string
+): Promise<BookingPricing> {
+  let basePrice = Number(service.basePrice);
+  let promoDiscount = 0;
+  let promoCodeInfo = undefined;
+  
+  // Apply promo code if provided
+  if (promoCodeStr) {
+    const promoCode = await tx.promoCode.findUnique({
+      where: { code: promoCodeStr.toUpperCase() },
+    });
+    
+    if (promoCode) {
+      // Validate promo code
+      const now = new Date();
+      const isValid = (
+        promoCode.isActive &&
+        promoCode.validFrom <= now &&
+        (!promoCode.validUntil || promoCode.validUntil >= now) &&
+        (!promoCode.usageLimit || promoCode.usageCount < promoCode.usageLimit)
+      );
+      
+      if (isValid) {
+        // Check if service is applicable
+        const isServiceApplicable = (
+          promoCode.applicableServices.length === 0 || 
+          promoCode.applicableServices.includes(service.id)
+        );
+        
+        if (isServiceApplicable) {
+          // Calculate discount
+          if (promoCode.discountType === 'PERCENTAGE') {
+            promoDiscount = basePrice * (Number(promoCode.discountValue) / 100);
+          } else {
+            promoDiscount = Number(promoCode.discountValue);
+          }
+          
+          // Apply maximum discount limit if set
+          if (promoCode.maxDiscountAmount && promoDiscount > Number(promoCode.maxDiscountAmount)) {
+            promoDiscount = Number(promoCode.maxDiscountAmount);
+          }
+          
+          // Apply minimum order amount if set
+          if (promoCode.minimumAmount && basePrice < Number(promoCode.minimumAmount)) {
+            promoDiscount = 0;
+          }
+          
+          promoCodeInfo = {
+            id: promoCode.id,
+            code: promoCode.code,
+            discountType: promoCode.discountType,
+            discountValue: Number(promoCode.discountValue),
+          };
+        }
+      }
+    }
+  }
+  
+  const finalPrice = Math.max(0, basePrice - promoDiscount);
+  const depositAmount = service.requiresDeposit ? Number(service.depositAmount) : 0;
+  
+  return {
+    basePrice,
+    promoDiscount,
+    finalPrice,
+    depositAmount,
+    promoCodeInfo,
+  };
+}
+
+// Helper function to find or create customer user record
+async function findOrCreateCustomer(tx: any, customerData: {
+  name: string;
+  email: string;
+  phone: string;
+}) {
+  // Try to find existing customer by email
+  let customer = await tx.user.findUnique({
+    where: { email: customerData.email },
+  });
+  
+  // If not found, create new customer
+  if (!customer) {
+    customer = await tx.user.create({
+      data: {
+        name: customerData.name,
+        email: customerData.email,
+        role: 'SIGNER',
+        createdAt: new Date(),
+      },
+    });
+  }
+  
+  return customer;
+}

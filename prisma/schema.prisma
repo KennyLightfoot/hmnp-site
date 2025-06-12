@@ -29,6 +29,8 @@ model User {
   NotarizationDocument           NotarizationDocument[]
   sessions                       Session[]
   statusChanges                  StatusHistory[]        @relation("StatusHistoryChangedBy")
+  createdPromoCodes              PromoCode[]
+  updatedBusinessSettings        BusinessSettings[]
 }
 
 model Account {
@@ -176,6 +178,10 @@ model Booking {
   kbaStatus                   String?
   idVerificationStatus        String?
   notaryJournalEntry          String?
+  promoCodeId                 String?
+  promoCodeDiscount           Decimal?               @db.Decimal(10, 2)
+  depositAmount               Decimal?               @db.Decimal(10, 2)
+  depositStatus               PaymentStatus?         @default(PENDING)
   createdAt                   DateTime               @default(now())
   updatedAt                   DateTime               @updatedAt
   confirmationEmailSentAt     DateTime?
@@ -189,6 +195,7 @@ model Booking {
   User_Booking_notaryIdToUser User?                  @relation("Booking_notaryIdToUser", fields: [notaryId], references: [id])
   service                     Service                @relation(fields: [serviceId], references: [id])
   User_Booking_signerIdToUser User?                  @relation("Booking_signerIdToUser", fields: [signerId], references: [id])
+  promoCode                   PromoCode?             @relation(fields: [promoCodeId], references: [id])
   NotarizationDocument        NotarizationDocument[]
   NotificationLog             NotificationLog[]
   Payment                     Payment[]
@@ -201,6 +208,8 @@ model Booking {
   @@index([status])
   @@index([lastReminderSentAt])
   @@index([noShowCheckPerformedAt])
+  @@index([promoCodeId])
+  @@index([depositStatus])
 }
 
 model InvitationToken {
@@ -282,6 +291,49 @@ model NotificationLog {
   @@index([method])
   @@index([recipientEmail])
   @@index([sentAt])
+}
+
+model PromoCode {
+  id                String           @id @default(cuid())
+  code              String           @unique
+  description       String?
+  discountType      DiscountType     @default(PERCENTAGE)
+  discountValue     Decimal          @db.Decimal(10, 2)
+  minimumAmount     Decimal?         @db.Decimal(10, 2)
+  maxDiscountAmount Decimal?         @db.Decimal(10, 2)
+  usageLimit        Int?
+  usageCount        Int              @default(0)
+  perCustomerLimit  Int?             @default(1)
+  validFrom         DateTime         @default(now())
+  validUntil        DateTime?
+  isActive          Boolean          @default(true)
+  applicableServices String[]        // Array of service IDs, empty means all services
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  createdById       String?
+  bookings          Booking[]
+  User              User?            @relation(fields: [createdById], references: [id])
+
+  @@index([code])
+  @@index([isActive])
+  @@index([validFrom, validUntil])
+  @@index([createdById])
+}
+
+model BusinessSettings {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  dataType    String   @default("string") // "string", "number", "boolean", "json"
+  description String?
+  category    String?  // "booking", "payment", "notification", "general"
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+  User        User?    @relation(fields: [updatedById], references: [id])
+
+  @@index([key])
+  @@index([category])
+  @@index([updatedById])
 }
 
 enum Role {
@@ -387,4 +439,9 @@ enum NotificationStatus {
   FAILED
   BOUNCED
   UNSUBSCRIBED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
 }

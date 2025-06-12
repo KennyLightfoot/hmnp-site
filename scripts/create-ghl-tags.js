@@ -73,7 +73,10 @@ const requiredTags = {
     { name: 'status:reschedule_requested' },
     { name: 'status:rescheduled_confirmed' },
     { name: 'status:reschedule_abandoned' },
-    { name: 'status:lost_customer' }
+    { name: 'status:lost_customer' },
+    // WORKFLOW-SPECIFIC STATUS TAGS
+    { name: 'status:booking_created_phone' },
+    { name: 'no_pending_payment' }  // Special tag used in workflows
   ],
 
   // Source Tags
@@ -99,7 +102,10 @@ const requiredTags = {
     { name: 'source:google_ads' },
     { name: 'source:instagram_ads' },
     { name: 'source:lead_magnet' },
-    { name: 'source:website_visitor' }
+    { name: 'source:website_visitor' },
+    { name: 'source:contact_form' }, // EXACT match from workflows
+    // GHL Workflow Format (with capital letters and colons)
+    { name: 'Source:Website_Booking' } // EXACT match from workflows
   ],
   
   // Service Type Tags
@@ -119,7 +125,13 @@ const requiredTags = {
     { name: 'service:wedding_officiant' }, // Kept from original script (service_wedding)
     // NEW WORKFLOW SERVICE TAGS
     { name: 'service:emergency' },
-    { name: 'priority:same_day' }
+    { name: 'priority:same_day' },
+    // GHL Workflow Format (with capital letters and colons)
+    { name: 'Service:Standard_Mobile_Notary' }, // EXACT match from workflows
+    { name: 'Service:Loan_Signing_Specialist' }, // EXACT match from workflows
+    { name: 'Service:Extended_Hours_Notary' }, // EXACT match from workflows
+    { name: 'Service:Emergency' }, // EXACT match from workflows
+    { name: 'Priority:Same_Day' } // EXACT match from workflows
   ],
 
   // Workflow & Process Tags
@@ -127,11 +139,17 @@ const requiredTags = {
     { name: 'workflow:welcome_sequence_started' },
     { name: 'workflow:booking_confirmation_sent' },
     { name: 'workflow:confirmation_sent' }, // For workflows - booking confirmation tracking
+    { name: 'workflow:payment_reminder_sent' }, // EXACT match from workflows
     { name: 'reminder:24hr_needed' }, // For workflows - manually added 24hrs before appointment
     { name: 'reminder:2hr_needed' }, // For workflows - manually added 2hrs before appointment
     { name: 'reminder:24hr_sent' },
     { name: 'reminder:2hr_sent' },
     { name: 'reminder:1hr_sent' },
+    // GHL Workflow Format (with capital letters and colons)
+    { name: 'Reminder:24hr_Needed' }, // EXACT match from workflows
+    { name: 'Reminder:24hr_Sent' }, // EXACT match from workflows
+    { name: 'Reminder:2hr_Needed' }, // EXACT match from workflows
+    { name: 'Reminder:2hr_Sent' }, // EXACT match from workflows
     { name: 'marketing:quote_follow_up_complete' },
     { name: 'marketing:testimonial_approved' },
     // NEW WORKFLOW TRACKING TAGS
@@ -153,7 +171,10 @@ const requiredTags = {
     { name: 'customer:with_feedback' }, // General feedback tag
     { name: 'customer:testimonial_provided' }, // If different from marketing:testimonial_approved
     { name: 'customer:referral_source' }, // If different from source:referral
-    { name: 'customer:affiliate_partner' } // If different from source:affiliate
+    { name: 'customer:affiliate_partner' }, // If different from source:affiliate
+    // GHL Workflow Format (with capital letters and colons)
+    { name: 'Client:First_Time' }, // EXACT match from workflows
+    { name: 'Client:Returning' } // EXACT match from workflows
   ],
   
   // Payment & Billing Modifiers (Kept distinct category)
@@ -211,7 +232,10 @@ const requiredTags = {
     { name: 'consent:marketing_opt_in' }, // EXACT match for booking system
     { name: 'consent:marketing' }, // General marketing consent
     { name: 'consent:testimonial' }, // If testimonial can be used
-    { name: 'consent:data_sharing' }
+    { name: 'consent:data_sharing' },
+    // GHL Workflow Format (with capital letters and colons)
+    { name: 'Consent:SMS_Opt_In' }, // EXACT match from workflows
+    { name: 'Consent:Marketing_Opt_In' } // EXACT match from workflows
   ],
 
   // Support & Tickets (Kept from original script, may not be in GHL guide but good to have)
@@ -320,6 +344,43 @@ const requiredTags = {
   downloadTracking: [
     { name: 'downloaded:pricing_guide' },
     { name: 'downloaded:faq_guide' }
+  ],
+
+  // ===== WORKFLOW-SPECIFIC CATEGORIES (FROM WORKFLOW ANALYSIS) =====
+
+  // Urgency Tags (EXACT format from workflows)
+  urgency: [
+    { name: 'urgency:new' },
+    { name: 'urgency:medium' },
+    { name: 'urgency:high' },
+    { name: 'urgency:critical' }
+  ],
+
+  // Lead Tags (EXACT format from workflows)
+  lead: [
+    { name: 'lead:phone_qualified' },
+    { name: 'lead:new' }
+  ],
+
+  // Priority Tags (from workflows)
+  priority: [
+    { name: 'priority:high_touch' }
+  ],
+
+  // Action Tags (from workflows)
+  action: [
+    { name: 'action:manual_review_required' }
+  ],
+
+  // Booking Operation Tags (from workflows)
+  booking: [
+    { name: 'booking:creation_failed' }
+  ],
+
+  // Error Handling Tags (from workflows)
+  errorHandling: [
+    { name: 'webhook_parse_error' },
+    { name: 'booking_response_parse_error' }
   ]
 
   // NOTE: Tags like "Lead Reactivated", "Lead First Contact", "Lead Multiple Inquiries", "Lead Dormant", "Lead Priority"

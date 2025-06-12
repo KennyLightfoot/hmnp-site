@@ -162,6 +162,74 @@ const customFields = [
     placeholder: 'Reason for reschedule'
   },
 
+  // ===== WORKFLOW-SPECIFIC FIELDS (EXACT NAMES FROM WORKFLOWS) =====
+  {
+    name: 'booking_id',
+    dataType: 'TEXT',
+    position: 600,
+    placeholder: 'Booking system ID'
+  },
+  {
+    name: 'payment_url',
+    dataType: 'TEXT',
+    position: 601,
+    placeholder: 'Stripe payment link'
+  },
+  {
+    name: 'payment_amount',
+    dataType: 'MONETORY',
+    position: 602,
+    placeholder: '0.00'
+  },
+  {
+    name: 'urgency_level',
+    dataType: 'TEXT',
+    position: 603,
+    placeholder: 'new, medium, high, critical'
+  },
+  {
+    name: 'service_requested',
+    dataType: 'TEXT',
+    position: 604,
+    placeholder: 'Type of service'
+  },
+  {
+    name: 'preferred_datetime',
+    dataType: 'TEXT',
+    position: 605,
+    placeholder: 'Customer preferred appointment time'
+  },
+  {
+    name: 'service_address',
+    dataType: 'LARGE_TEXT',
+    position: 606,
+    placeholder: 'Where service will be performed'
+  },
+  {
+    name: 'service_price',
+    dataType: 'MONETORY',
+    position: 607,
+    placeholder: '0.00'
+  },
+  {
+    name: 'hours_old',
+    dataType: 'NUMERICAL',
+    position: 608,
+    placeholder: 'Hours since payment pending'
+  },
+  {
+    name: 'appointment_date',
+    dataType: 'DATE',
+    position: 609,
+    placeholder: 'Confirmed appointment date'
+  },
+  {
+    name: 'appointment_time',
+    dataType: 'TEXT',
+    position: 610,
+    placeholder: 'Confirmed appointment time'
+  },
+
   // ===== LEGACY APPOINTMENT FIELDS (from manual) =====
   {
     name: 'cf_appointment_date',
