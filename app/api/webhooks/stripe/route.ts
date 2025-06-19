@@ -1,372 +1,305 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { headers } from 'next/headers';
 import Stripe from 'stripe';
-import { Resend } from 'resend';
-import { sendEmail } from '@/lib/email';
-import {
-  bookingConfirmationEmail,
-  paymentFailedEmail,
-} from '@/lib/email/templates';
-import { sendSms as newSendSms, checkSmsConsent } from '@/lib/sms';
-import { bookingConfirmationSms, paymentFailedSms } from '@/lib/sms/templates';
+import { prisma } from '@/lib/prisma';
+import { BookingStatus } from '@prisma/client';
 import * as ghl from '@/lib/ghl';
-import { addContactToWorkflow } from '@/lib/ghl/management';
 
-const prisma = new PrismaClient();
+// Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-04-30.basil',
+  apiVersion: '2025-01-27.acacia' as any,
 });
-const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Webhook endpoint secret from Stripe Dashboard
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function POST(request: NextRequest) {
-  const body = await request.text();
-  const sig = request.headers.get('stripe-signature')!;
-
-  let event: Stripe.Event;
-
+  console.log('🎯 Stripe webhook received');
+  
   try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
-  } catch (err: any) {
-    console.error('Webhook signature verification failed:', err.message);
-    return NextResponse.json({ error: 'Webhook signature verification failed' }, { status: 400 });
-  }
+    // Get the raw body as text for signature verification
+    const body = await request.text();
+    
+    // Get the signature from headers
+    const sig = headers().get('stripe-signature');
+    
+    if (!sig) {
+      console.error('❌ No stripe-signature header found');
+      return NextResponse.json(
+        { error: 'No signature header' },
+        { status: 400 }
+      );
+    }
 
-  try {
+    // Verify the webhook signature
+    let event: Stripe.Event;
+    try {
+      event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
+    } catch (err: any) {
+      console.error('❌ Webhook signature verification failed:', err.message);
+      return NextResponse.json(
+        { error: `Webhook Error: ${err.message}` },
+        { status: 400 }
+      );
+    }
+
+    console.log(`✅ Webhook verified. Event type: ${event.type}`);
+
+    // Handle the event
     switch (event.type) {
-      case 'checkout.session.completed':
-        await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session);
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        await handleCheckoutSessionCompleted(session);
         break;
-      case 'payment_intent.succeeded':
-        await handlePaymentSuccess(event.data.object as Stripe.PaymentIntent);
+      }
+      
+      case 'payment_intent.succeeded': {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        await handlePaymentIntentSucceeded(paymentIntent);
         break;
-      case 'payment_intent.payment_failed':
-        await handlePaymentFailed(event.data.object as Stripe.PaymentIntent);
+      }
+      
+      case 'payment_intent.payment_failed': {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        await handlePaymentIntentFailed(paymentIntent);
         break;
+      }
+      
+      case 'charge.refunded': {
+        const charge = event.data.object as Stripe.Charge;
+        await handleChargeRefunded(charge);
+        break;
+      }
+      
       default:
         console.log(`Unhandled event type: ${event.type}`);
     }
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error('Error processing webhook:', error);
-    return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
+    console.error('❌ Webhook processing error:', error);
+    return NextResponse.json(
+      { error: 'Webhook processing failed' },
+      { status: 500 }
+    );
   }
 }
 
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
-  console.log('Checkout session completed:', session.id);
-
+  console.log('💳 Processing checkout.session.completed');
+  
+  // Get booking ID from metadata
   const bookingId = session.metadata?.bookingId;
+  
   if (!bookingId) {
-    console.error('No booking ID found in checkout session metadata');
+    console.error('❌ No bookingId in session metadata');
     return;
   }
 
   try {
-    // Update booking status
+    // Update booking status to CONFIRMED
     const booking = await prisma.booking.update({
       where: { id: bookingId },
       data: {
-        status: 'CONFIRMED',
-        depositStatus: 'COMPLETED'
+        status: BookingStatus.CONFIRMED,
+        depositStatus: 'COMPLETED',
+        stripePaymentIntentId: session.payment_intent as string,
       },
       include: {
         service: true,
         User_Booking_signerIdToUser: true,
-        promoCode: true
       }
     });
 
-    // Send confirmation emails
-    await sendConfirmationEmails(booking);
+    console.log(`✅ Booking ${bookingId} updated to CONFIRMED`);
 
-    // Update GHL contact status
-    await updateGHLAfterPayment(booking);
-
-    console.log(`Booking ${bookingId} confirmed successfully via checkout session`);
-  } catch (error) {
-    console.error('Error updating booking after checkout session completion:', error);
-  }
-}
-
-async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
-  console.log('Payment succeeded:', paymentIntent.id);
-
-  const bookingId = paymentIntent.metadata.bookingId;
-  if (!bookingId) {
-    console.error('No booking ID found in payment metadata');
-    return;
-  }
-
-  try {
-    // Update payment record
-    await prisma.payment.updateMany({
-      where: {
-        paymentIntentId: paymentIntent.id,
-        bookingId: bookingId
-      },
-      data: {
-        status: 'COMPLETED',
-        paidAt: new Date(),
-        transactionId: paymentIntent.id
+    // Update GHL contact if we have a contact ID
+    if (booking.ghlContactId) {
+      try {
+        // Remove pending payment tag and add confirmed tag
+        await ghl.removeTagsFromContact(booking.ghlContactId, ['status:booking_pendingpayment']);
+        await ghl.addTagsToContact(booking.ghlContactId, [
+          'status:payment_completed',
+          'status:booking_confirmed'
+        ]);
+        
+        // Update custom fields
+        const customFields = {
+          cf_payment_date: new Date().toLocaleDateString('en-US'),
+          cf_booking_status: 'CONFIRMED',
+          cf_payment_status: 'COMPLETED',
+        };
+        
+        await ghl.updateContact({
+          id: booking.ghlContactId,
+          customField: customFields,
+          locationId: process.env.GHL_LOCATION_ID!,
+        });
+        
+        console.log(`✅ GHL contact ${booking.ghlContactId} updated`);
+      } catch (ghlError) {
+        console.error('❌ Failed to update GHL contact:', ghlError);
+        // Don't fail the webhook - booking is still confirmed
       }
-    });
-
-    // Update booking status
-    const booking = await prisma.booking.update({
-      where: { id: bookingId },
-      data: {
-        status: 'CONFIRMED',
-        depositStatus: 'COMPLETED'
-      },
-      include: {
-        service: true,
-        User_Booking_signerIdToUser: true,
-        promoCode: true
-      }
-    });
-
-    // Send confirmation emails
-    await sendConfirmationEmails(booking);
-
-    // Sync with GHL if needed
-    await syncWithGHL(booking);
-
-    console.log(`Booking ${bookingId} confirmed successfully`);
-  } catch (error) {
-    console.error('Error updating booking after payment success:', error);
-  }
-}
-
-async function handlePaymentFailed(paymentIntent: Stripe.PaymentIntent) {
-  console.log('Payment failed:', paymentIntent.id);
-
-  const bookingId = paymentIntent.metadata.bookingId;
-  if (!bookingId) {
-    console.error('No booking ID found in payment metadata');
-    return;
-  }
-
-  try {
-    // Update payment record
-    await prisma.payment.updateMany({
-      where: {
-        paymentIntentId: paymentIntent.id,
-        bookingId: bookingId
-      },
-      data: {
-        status: 'FAILED'
-      }
-    });
-
-    // Update booking status
-    await prisma.booking.update({
-      where: { id: bookingId },
-      data: {
-        status: 'PAYMENT_PENDING', // Keep as payment pending for retry
-        depositStatus: 'FAILED'
-      }
-    });
-
-    console.log(`Payment failed for booking ${bookingId}`);
-  } catch (error) {
-    console.error('Error updating booking after payment failure:', error);
-  }
-}
-
-async function sendConfirmationEmails(booking: any) {
-  try {
-    // Customer confirmation email
-    if (booking.User_Booking_signerIdToUser?.email) {
-      await resend.emails.send({
-        from: 'notifications@houstonmobilenotary.com',
-        to: booking.User_Booking_signerIdToUser.email,
-        subject: 'Booking Confirmed - Houston Mobile Notary Pros',
-        html: generateCustomerConfirmationEmail(booking)
-      });
     }
 
-    // Admin notification email
-    await resend.emails.send({
-      from: 'notifications@houstonmobilenotary.com',
-      to: process.env.ADMIN_EMAIL || 'admin@houstonmobilenotary.com',
-      subject: 'New Booking Confirmed',
-      html: generateAdminNotificationEmail(booking)
-    });
-
-    // Update notification log
-    await prisma.notificationLog.createMany({
-      data: [
-        {
-          bookingId: booking.id,
-          notificationType: 'BOOKING_CONFIRMATION',
-          method: 'EMAIL',
-          recipientEmail: booking.User_Booking_signerIdToUser?.email,
-          subject: 'Booking Confirmed - Houston Mobile Notary Pros',
-          message: 'Booking confirmation sent to customer',
-          status: 'SENT'
-        },
-        {
-          bookingId: booking.id,
-          notificationType: 'BOOKING_CONFIRMATION',
-          method: 'EMAIL',
-          recipientEmail: process.env.ADMIN_EMAIL || 'admin@houstonmobilenotary.com',
-          subject: 'New Booking Confirmed',
-          message: 'Admin notification sent',
-          status: 'SENT'
-        }
-      ]
-    });
-
-    console.log('Confirmation emails sent successfully');
+    // Send internal notification
+    console.log(`🔔 Payment confirmed for booking ${bookingId}`);
+    
   } catch (error) {
-    console.error('Error sending confirmation emails:', error);
+    console.error('❌ Error updating booking:', error);
+    throw error;
   }
 }
 
-function generateCustomerConfirmationEmail(booking: any): string {
-  const formatDateTime = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      timeZoneName: 'short'
-    }).format(new Date(date));
-  };
-
-  return `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h1 style="color: #2563eb;">Booking Confirmed!</h1>
-      
-      <p>Dear ${booking.User_Booking_signerIdToUser?.name || 'Valued Customer'},</p>
-      
-      <p>Your appointment has been successfully confirmed. Here are your booking details:</p>
-      
-      <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3 style="margin-top: 0;">Appointment Details</h3>
-        <p><strong>Service:</strong> ${booking.service.name}</p>
-        <p><strong>Date & Time:</strong> ${formatDateTime(booking.scheduledDateTime)}</p>
-        <p><strong>Duration:</strong> ${booking.service.durationMinutes} minutes</p>
-        
-        ${booking.addressStreet ? `
-          <p><strong>Location:</strong><br>
-          ${booking.addressStreet}<br>
-          ${booking.addressCity}, ${booking.addressState} ${booking.addressZip}</p>
-        ` : ''}
-        
-        ${booking.promoCode ? `
-          <p><strong>Promo Code Applied:</strong> ${booking.promoCode.code}</p>
-          <p><strong>Discount:</strong> $${booking.promoCodeDiscount}</p>
-        ` : ''}
-        
-        <p><strong>Deposit Paid:</strong> $${booking.depositAmount}</p>
-      </div>
-      
-      <p>We'll send you a reminder 24 hours before your appointment.</p>
-      
-      <p>If you need to reschedule or have any questions, please reply to this email or call us at (713) 487-8918.</p>
-      
-      <p>Thank you for choosing Houston Mobile Notary Pros!</p>
-      
-      <p>Best regards,<br>
-      The Houston Mobile Notary Pros Team</p>
-    </div>
-  `;
+async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {
+  console.log('💳 Processing payment_intent.succeeded');
+  
+  // This might be triggered for various payment scenarios
+  // Check if we have a booking ID in metadata
+  const bookingId = paymentIntent.metadata?.bookingId;
+  
+  if (bookingId) {
+    // Similar logic to checkout session completed
+    console.log(`✅ Payment intent succeeded for booking ${bookingId}`);
+  }
 }
 
-function generateAdminNotificationEmail(booking: any): string {
-  const formatDateTime = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      timeZoneName: 'short'
-    }).format(new Date(date));
-  };
+async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
+  console.log('❌ Processing payment_intent.payment_failed');
+  
+  const bookingId = paymentIntent.metadata?.bookingId;
+  
+  if (!bookingId) {
+    console.error('❌ No bookingId in payment intent metadata');
+    return;
+  }
 
-  return `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h1 style="color: #dc2626;">New Booking Confirmed</h1>
-      
-      <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3 style="margin-top: 0;">Booking Details</h3>
-        <p><strong>Booking ID:</strong> ${booking.id}</p>
-        <p><strong>Customer:</strong> ${booking.User_Booking_signerIdToUser?.name} (${booking.User_Booking_signerIdToUser?.email})</p>
-        <p><strong>Service:</strong> ${booking.service.name}</p>
-        <p><strong>Date & Time:</strong> ${formatDateTime(booking.scheduledDateTime)}</p>
-        <p><strong>Duration:</strong> ${booking.service.durationMinutes} minutes</p>
-        
-        ${booking.addressStreet ? `
-          <p><strong>Location:</strong><br>
-          ${booking.addressStreet}<br>
-          ${booking.addressCity}, ${booking.addressState} ${booking.addressZip}</p>
-        ` : ''}
-        
-        ${booking.locationNotes ? `<p><strong>Location Notes:</strong> ${booking.locationNotes}</p>` : ''}
-        ${booking.notes ? `<p><strong>Customer Notes:</strong> ${booking.notes}</p>` : ''}
-        
-        <p><strong>Total Price:</strong> $${booking.priceAtBooking}</p>
-        <p><strong>Deposit Paid:</strong> $${booking.depositAmount}</p>
-        
-        ${booking.promoCode ? `
-          <p><strong>Promo Code:</strong> ${booking.promoCode.code} (-$${booking.promoCodeDiscount})</p>
-        ` : ''}
-      </div>
-      
-      <p>This booking requires immediate attention for assignment and preparation.</p>
-    </div>
-  `;
-}
-
-async function updateGHLAfterPayment(booking: any) {
   try {
-    // Get the customer email from the booking
-    const customerEmail = booking.User_Booking_signerIdToUser?.email || booking.guestEmail;
-    
-    if (!customerEmail) {
-      console.log('No customer email found for GHL update');
+    // Get booking details
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        service: true,
+        User_Booking_signerIdToUser: true,
+      }
+    });
+
+    if (!booking) {
+      console.error(`❌ Booking ${bookingId} not found`);
       return;
     }
 
-    // Find the contact in GHL
-    const contact = await ghl.getContactByEmail(customerEmail);
-    
-    if (contact?.id) {
-      // Update tags to reflect payment completion
-      const tagsToApply = [
-        'status:booking_confirmed',
-        'payment:completed'
-      ];
-      
-      // Remove pending payment tag and add confirmed tags
-      await ghl.addTagsToContact(contact.id, tagsToApply);
-      
-      // Trigger payment completion workflow if configured
-      if (process.env.GHL_PAYMENT_COMPLETED_WORKFLOW_ID) {
-        try {
-          await addContactToWorkflow(contact.id, process.env.GHL_PAYMENT_COMPLETED_WORKFLOW_ID);
-          console.log(`GHL: Added contact ${contact.id} to payment completion workflow`);
-        } catch (workflowError) {
-          console.error('Error adding contact to payment completion workflow:', workflowError);
-        }
+    // Update payment failed attempts
+    await prisma.booking.update({
+      where: { id: bookingId },
+      data: {
+        depositStatus: 'FAILED',
       }
-      
-      console.log(`GHL: Updated contact ${contact.id} after payment completion`);
-    } else {
-      console.log('GHL: Contact not found for payment update');
+    });
+
+    // Update GHL contact if we have a contact ID
+    if (booking.ghlContactId) {
+      try {
+        // Add failed payment tag
+        await ghl.addTagsToContact(booking.ghlContactId, ['payment:failed']);
+        
+        // Update custom fields
+        const customFields = {
+          cf_payment_status: 'FAILED',
+          cf_payment_failed_attempts: ((parseInt(booking.User_Booking_signerIdToUser?.email || '0') || 0) + 1).toString(),
+        };
+        
+        await ghl.updateContact({
+          id: booking.ghlContactId,
+          customField: customFields,
+          locationId: process.env.GHL_LOCATION_ID!,
+        });
+        
+        console.log(`✅ GHL contact ${booking.ghlContactId} updated with payment failure`);
+      } catch (ghlError) {
+        console.error('❌ Failed to update GHL contact:', ghlError);
+      }
     }
+
+    console.log(`⚠️ Payment failed for booking ${bookingId}`);
+    
   } catch (error) {
-    console.error('Error updating GHL after payment:', error);
+    console.error('❌ Error handling payment failure:', error);
+    throw error;
   }
 }
 
-async function syncWithGHL(booking: any) {
-  // Use the same function as payment completion for consistency
-  await updateGHLAfterPayment(booking);
+async function handleChargeRefunded(charge: Stripe.Charge) {
+  console.log('💸 Processing charge.refunded');
+  
+  // Find the booking by payment intent ID
+  if (!charge.payment_intent) {
+    console.error('❌ No payment intent in charge object');
+    return;
+  }
+
+  try {
+    const booking = await prisma.booking.findFirst({
+      where: {
+        stripePaymentIntentId: charge.payment_intent as string,
+      },
+      include: {
+        service: true,
+      }
+    });
+
+    if (!booking) {
+      console.error(`❌ No booking found for payment intent ${charge.payment_intent}`);
+      return;
+    }
+
+    // Update booking status
+    await prisma.booking.update({
+      where: { id: booking.id },
+      data: {
+        status: BookingStatus.CANCELLED_BY_CLIENT,
+        depositStatus: 'REFUNDED',
+      }
+    });
+
+    // Update GHL contact if we have a contact ID
+    if (booking.ghlContactId) {
+      try {
+        await ghl.addTagsToContact(booking.ghlContactId, [
+          'payment:refunded',
+          'status:booking_cancelled'
+        ]);
+        
+        const customFields = {
+          cf_refund_status: 'PROCESSED',
+          cf_refund_processed_amount: (charge.amount_refunded / 100).toFixed(2),
+          cf_payment_status: 'REFUNDED',
+        };
+        
+        await ghl.updateContact({
+          id: booking.ghlContactId,
+          customField: customFields,
+          locationId: process.env.GHL_LOCATION_ID!,
+        });
+        
+        console.log(`✅ GHL contact ${booking.ghlContactId} updated with refund`);
+      } catch (ghlError) {
+        console.error('❌ Failed to update GHL contact:', ghlError);
+      }
+    }
+
+    console.log(`💸 Refund processed for booking ${booking.id}`);
+    
+  } catch (error) {
+    console.error('❌ Error handling refund:', error);
+    throw error;
+  }
 }
+
+// Disable body parsing for webhook endpoints
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};

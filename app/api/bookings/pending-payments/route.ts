@@ -40,383 +40,220 @@ const updateBookingStatusSchema = z.object({
   newDeadline: z.string().datetime().optional(), // For extending payment deadline
 });
 
+// Request validation schema
+const pendingPaymentsSchema = z.object({
+  contactId: z.string().optional(),
+  limit: z.string().optional().transform(val => val ? parseInt(val) : 50),
+  urgencyLevel: z.enum(['new', 'medium', 'high', 'critical']).optional()
+});
+
 export async function GET(request: NextRequest) {
-  console.log('📋 Pending Payments Query: Request received');
+  console.log('🔍 Fetching pending payments');
   
   try {
-    // Verify webhook signature if secret is configured (for GHL automation requests)
-    if (process.env.GHL_WEBHOOK_SECRET) {
-      const signature = request.headers.get('x-ghl-signature');
-      if (signature) {
-        const authHeader = request.headers.get('authorization');
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-          const token = authHeader.substring(7);
-          // For GET requests with query params, we'll use a different verification approach
-          const queryString = request.url.split('?')[1] || '';
-          const isValid = verifyGHLWebhook(queryString, signature, process.env.GHL_WEBHOOK_SECRET);
-          if (!isValid) {
-            console.error('❌ Invalid webhook signature for GET request');
-            return NextResponse.json({ 
-              success: false, 
-              error: 'Invalid webhook signature' 
-            }, { status: 401 });
-          }
-        }
-      }
-    }
-
-    // Parse and validate query parameters
     const { searchParams } = new URL(request.url);
     const queryParams = Object.fromEntries(searchParams.entries());
-    const validatedQuery = pendingPaymentsQuerySchema.parse(queryParams);
+    
+    // Validate query parameters
+    const { contactId, limit, urgencyLevel } = pendingPaymentsSchema.parse(queryParams);
+    
+    // Verify API key for security
+    const apiKey = request.headers.get('x-api-key');
+    if (apiKey !== process.env.INTERNAL_API_KEY) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
 
-    console.log('✅ Pending Payments Query: Parameters validated', validatedQuery);
-
-    // Build the where clause
-    const whereClause: any = {
+    // Build query conditions
+    const where: any = {
       status: BookingStatus.PAYMENT_PENDING,
+      depositStatus: {
+        in: ['PENDING', 'FAILED']
+      }
     };
 
-    // Filter by creation date if 'since' is provided
-    if (validatedQuery.since) {
-      whereClause.createdAt = {
-        gte: new Date(validatedQuery.since)
-      };
+    // Filter by specific contact if provided
+    if (contactId) {
+      where.ghlContactId = contactId;
     }
 
-    // Filter by GHL contact ID if provided
-    if (validatedQuery.contactId) {
-      whereClause.ghlContactId = validatedQuery.contactId;
-    }
-
-    // Filter by service name if provided
-    if (validatedQuery.serviceName) {
-      whereClause.service = {
-        name: {
-          contains: validatedQuery.serviceName,
-          mode: 'insensitive'
-        }
-      };
-    }
-
-    // Handle expired bookings filter
-    if (!validatedQuery.includeExpired) {
-      // Exclude bookings older than 72 hours (configurable)
-      const expirationHours = parseInt(process.env.PAYMENT_EXPIRATION_HOURS || '72');
-      const expirationDate = new Date();
-      expirationDate.setHours(expirationDate.getHours() - expirationHours);
-      
-      whereClause.createdAt = {
-        ...whereClause.createdAt,
-        gte: expirationDate
-      };
-    }
-
-    // Sort configuration
-    const orderBy: any = {};
-    orderBy[validatedQuery.sortBy] = validatedQuery.sortOrder;
-
-    // Query pending payment bookings
-    const pendingBookings = await prisma.booking.findMany({
-      where: whereClause,
-      include: {
-        service: {
-          select: {
-            id: true,
-            name: true,
-            basePrice: true,
-            depositAmount: true,
-            requiresDeposit: true
-          }
-        },
-        User_Booking_signerIdToUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
+    // Fetch pending payment bookings
+    const bookings = await prisma.booking.findMany({
+      where,
+      take: limit,
+      orderBy: {
+        createdAt: 'asc' // Oldest first for urgency calculation
       },
-      orderBy,
-      take: validatedQuery.limit
-    });
-
-    console.log(`✅ Found ${pendingBookings.length} pending payment bookings`);
-
-    // Transform data for GHL consumption
-    const transformedBookings = pendingBookings.map(booking => {
-      const hoursOld = Math.floor((Date.now() - booking.createdAt.getTime()) / (1000 * 60 * 60));
-      const isExpired = hoursOld >= parseInt(process.env.PAYMENT_EXPIRATION_HOURS || '72');
-      
-      return {
-        bookingId: booking.id,
-        ghlContactId: booking.ghlContactId,
-        customerName: booking.User_Booking_signerIdToUser?.name || 'Guest',
-        customerEmail: booking.User_Booking_signerIdToUser?.email || booking.customerEmail,
-        serviceName: booking.service.name,
-        servicePrice: booking.service.basePrice.toNumber(),
-        depositAmount: booking.service.depositAmount?.toNumber() || 0,
-        scheduledDateTime: booking.scheduledDateTime,
-        createdAt: booking.createdAt,
-        updatedAt: booking.updatedAt,
-        locationInfo: {
-          type: booking.locationType,
-          address: [
-            booking.addressStreet,
-            booking.addressCity,
-            booking.addressState,
-            booking.addressZip
-          ].filter(Boolean).join(', '),
-          notes: booking.locationNotes
-        },
-        paymentInfo: {
-          hoursOld,
-          isExpired,
-          requiresDeposit: booking.service.requiresDeposit,
-          urgencyLevel: hoursOld < 2 ? 'new' : hoursOld < 24 ? 'medium' : hoursOld < 48 ? 'high' : 'critical'
-        },
-        metadata: {
-          leadSource: booking.leadSource,
-          campaignName: booking.campaignName,
-          workflowId: booking.workflowId,
-          notes: booking.notes
-        }
-      };
-    });
-
-    // Calculate summary statistics
-    const summary = {
-      totalPending: transformedBookings.length,
-      newBookings: transformedBookings.filter(b => b.paymentInfo.urgencyLevel === 'new').length,
-      mediumUrgency: transformedBookings.filter(b => b.paymentInfo.urgencyLevel === 'medium').length,
-      highUrgency: transformedBookings.filter(b => b.paymentInfo.urgencyLevel === 'high').length,
-      criticalUrgency: transformedBookings.filter(b => b.paymentInfo.urgencyLevel === 'critical').length,
-      expiredBookings: transformedBookings.filter(b => b.paymentInfo.isExpired).length,
-      totalValue: transformedBookings.reduce((sum, b) => sum + b.servicePrice, 0),
-      totalDepositValue: transformedBookings.reduce((sum, b) => sum + b.depositAmount, 0),
-    };
-
-    return NextResponse.json({
-      success: true,
-      query: validatedQuery,
-      summary,
-      bookings: transformedBookings,
-      pagination: {
-        limit: validatedQuery.limit,
-        total: transformedBookings.length,
-        hasMore: transformedBookings.length === validatedQuery.limit
-      },
-      generatedAt: new Date().toISOString()
-    });
-
-  } catch (error) {
-    console.error('❌ Pending Payments Query error:', error);
-    
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({
-        success: false,
-        error: 'Validation error',
-        issues: error.issues.map(issue => ({
-          field: issue.path.join('.'),
-          message: issue.message
-        }))
-      }, { status: 400 });
-    }
-
-    return NextResponse.json({
-      success: false,
-      error: 'Internal server error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
-  }
-}
-
-export async function PATCH(request: NextRequest) {
-  console.log('📝 Pending Payments Update: Request received');
-  
-  try {
-    // Get raw body for signature verification
-    const rawBody = await request.text();
-    let body: any;
-    
-    try {
-      body = JSON.parse(rawBody);
-    } catch (parseError) {
-      console.error('❌ Failed to parse request body:', parseError);
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Invalid JSON payload' 
-      }, { status: 400 });
-    }
-
-    // Verify webhook signature if secret is configured
-    if (process.env.GHL_WEBHOOK_SECRET) {
-      const signature = request.headers.get('x-ghl-signature');
-      if (!signature) {
-        console.error('❌ Missing webhook signature');
-        return NextResponse.json({ 
-          success: false, 
-          error: 'Missing webhook signature' 
-        }, { status: 401 });
-      }
-
-      const isValid = verifyGHLWebhook(rawBody, signature, process.env.GHL_WEBHOOK_SECRET);
-      if (!isValid) {
-        console.error('❌ Invalid webhook signature');
-        return NextResponse.json({ 
-          success: false, 
-          error: 'Invalid webhook signature' 
-        }, { status: 401 });
-      }
-    }
-
-    // Validate input data
-    const validatedData = updateBookingStatusSchema.parse(body);
-    console.log('✅ Pending Payments Update: Data validated', {
-      bookingId: validatedData.bookingId,
-      action: validatedData.action
-    });
-
-    // Find the booking
-    const booking = await prisma.booking.findUnique({
-      where: { id: validatedData.bookingId },
       include: {
         service: true,
         User_Booking_signerIdToUser: {
-          select: { id: true, name: true, email: true }
+          select: {
+            name: true,
+            email: true,
+            phone: true
+          }
         }
       }
     });
 
-    if (!booking) {
-      return NextResponse.json({
-        success: false,
-        error: 'Booking not found'
-      }, { status: 404 });
-    }
-
-    if (booking.status !== BookingStatus.PAYMENT_PENDING) {
-      return NextResponse.json({
-        success: false,
-        error: `Booking is not in PAYMENT_PENDING status. Current status: ${booking.status}`
-      }, { status: 400 });
-    }
-
-    // Process the action
-    let updateData: any = {
-      updatedAt: new Date(),
-    };
-
-    let ghlTagsToAdd: string[] = [];
-    let ghlTagsToRemove: string[] = [];
-    let actionResult = '';
-
-    switch (validatedData.action) {
-      case 'send_reminder':
-        ghlTagsToAdd.push(`Action:Reminder_Sent_${validatedData.reminderType || 'email'}`);
-        actionResult = `Reminder sent via ${validatedData.reminderType || 'email'}`;
-        break;
-
-      case 'mark_contacted':
-        ghlTagsToAdd.push('Action:Customer_Contacted');
-        actionResult = 'Customer marked as contacted';
-        break;
-
-      case 'extend_payment_deadline':
-        if (validatedData.newDeadline) {
-          updateData.paymentDeadline = new Date(validatedData.newDeadline);
-          ghlTagsToAdd.push('Action:Payment_Deadline_Extended');
-          actionResult = `Payment deadline extended to ${validatedData.newDeadline}`;
-        }
-        break;
-
-      case 'mark_expired':
-        updateData.status = BookingStatus.CANCELLED;
-        updateData.cancellationReason = 'Payment expired';
-        ghlTagsToRemove.push('Status:Booking_PAYMENT_PENDING');
-        ghlTagsToAdd.push('Status:Booking_Payment_Expired');
-        actionResult = 'Booking marked as expired due to non-payment';
-        break;
-
-      case 'send_final_notice':
-        ghlTagsToAdd.push('Action:Final_Payment_Notice_Sent');
-        actionResult = 'Final payment notice sent';
-        break;
-
-      default:
-        return NextResponse.json({
-          success: false,
-          error: `Unknown action: ${validatedData.action}`
-        }, { status: 400 });
-    }
-
-    // Add notes if provided
-    if (validatedData.notes) {
-      updateData.notes = booking.notes ? `${booking.notes}\n\n[${new Date().toISOString()}] ${validatedData.notes}` : validatedData.notes;
-    }
-
-    // Update the booking
-    const updatedBooking = await prisma.booking.update({
-      where: { id: validatedData.bookingId },
-      data: updateData,
-      include: {
-        service: true
+    // Transform bookings to match GHL workflow format
+    const transformedBookings = bookings.map(booking => {
+      const now = new Date();
+      const createdAt = new Date(booking.createdAt);
+      const hoursOld = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60));
+      
+      // Calculate urgency level based on hours old and appointment proximity
+      let calculatedUrgencyLevel = 'new';
+      if (hoursOld > 72) {
+        calculatedUrgencyLevel = 'critical';
+      } else if (hoursOld > 48) {
+        calculatedUrgencyLevel = 'high';
+      } else if (hoursOld > 24) {
+        calculatedUrgencyLevel = 'medium';
       }
-    });
 
-    console.log('✅ Booking updated successfully:', updatedBooking.id);
-
-    // Update GHL contact tags
-    if (booking.ghlContactId && (ghlTagsToAdd.length > 0 || ghlTagsToRemove.length > 0)) {
-      try {
-        if (ghlTagsToAdd.length > 0) {
-          await ghl.addTagsToContact(booking.ghlContactId, ghlTagsToAdd);
-          console.log('✅ GHL tags added:', ghlTagsToAdd);
-        }
+      // Check if appointment is within 24 hours (critical)
+      if (booking.appointmentDateTime) {
+        const appointmentTime = new Date(booking.appointmentDateTime);
+        const hoursUntilAppointment = Math.floor((appointmentTime.getTime() - now.getTime()) / (1000 * 60 * 60));
         
-        if (ghlTagsToRemove.length > 0) {
-          await ghl.removeTagsFromContact(booking.ghlContactId, ghlTagsToRemove);
-          console.log('✅ GHL tags removed:', ghlTagsToRemove);
+        if (hoursUntilAppointment < 24 && hoursUntilAppointment > 0) {
+          calculatedUrgencyLevel = 'critical';
         }
-      } catch (ghlError) {
-        console.error('❌ Failed to update GHL tags:', ghlError);
-        // Don't fail the operation for GHL errors
       }
-    }
+
+      // Only include if matches urgency filter
+      if (urgencyLevel && calculatedUrgencyLevel !== urgencyLevel) {
+        return null;
+      }
+
+      return {
+        bookingId: booking.id,
+        paymentUrl: booking.stripePaymentUrl || `${process.env.NEXTAUTH_URL}/checkout/${booking.id}`,
+        serviceName: booking.service?.name || 'Mobile Notary Service',
+        servicePrice: booking.totalAmount || 75,
+        scheduledDate: booking.appointmentDateTime ? new Date(booking.appointmentDateTime).toLocaleDateString('en-US') : null,
+        scheduledTime: booking.appointmentDateTime ? new Date(booking.appointmentDateTime).toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        }) : null,
+        locationInfo: {
+          address: booking.serviceAddress || 'Address TBD'
+        },
+        paymentInfo: {
+          amount: booking.totalAmount || 75,
+          urgencyLevel: calculatedUrgencyLevel,
+          hoursOld: hoursOld,
+          isExpired: hoursOld > 168 // 1 week
+        },
+        customerInfo: {
+          name: booking.User_Booking_signerIdToUser?.name || 'Unknown',
+          email: booking.User_Booking_signerIdToUser?.email || '',
+          phone: booking.User_Booking_signerIdToUser?.phone || ''
+        }
+      };
+    }).filter(Boolean); // Remove null entries
+
+    console.log(`✅ Found ${transformedBookings.length} pending payments`);
 
     return NextResponse.json({
       success: true,
-      bookingId: updatedBooking.id,
-      action: validatedData.action,
-      result: actionResult,
       data: {
-        bookingId: updatedBooking.id,
-        status: updatedBooking.status,
-        updatedAt: updatedBooking.updatedAt,
-        ghlTagsAdded: ghlTagsToAdd,
-        ghlTagsRemoved: ghlTagsToRemove,
+        bookings: transformedBookings,
+        count: transformedBookings.length,
+        filters: {
+          contactId,
+          urgencyLevel,
+          limit
+        }
       }
     });
 
   } catch (error) {
-    console.error('❌ Pending Payments Update error:', error);
+    console.error('❌ Error fetching pending payments:', error);
     
     if (error instanceof z.ZodError) {
-      return NextResponse.json({
-        success: false,
-        error: 'Validation error',
-        issues: error.issues.map(issue => ({
-          field: issue.path.join('.'),
-          message: issue.message
-        }))
-      }, { status: 400 });
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Invalid query parameters',
+          details: error.errors 
+        },
+        { status: 400 }
+      );
+    }
+    
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Failed to fetch pending payments',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// Handle PATCH requests for updating payment status tracking
+export async function PATCH(request: NextRequest) {
+  console.log('📧 Tracking payment reminder sent');
+  
+  try {
+    const body = await request.json();
+    const { bookingId, action, reminderType, notes } = body;
+    
+    // Verify API key
+    const apiKey = request.headers.get('x-api-key');
+    if (apiKey !== process.env.INTERNAL_API_KEY) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
+    if (!bookingId) {
+      return NextResponse.json(
+        { success: false, error: 'Booking ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // Update booking with reminder tracking
+    const booking = await prisma.booking.update({
+      where: { id: bookingId },
+      data: {
+        notes: notes || `${reminderType} reminder sent via ${action}`,
+        updatedAt: new Date()
+      }
+    });
+
+    console.log(`✅ Payment reminder tracked for booking ${bookingId}`);
+
     return NextResponse.json({
-      success: false,
-      error: 'Internal server error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+      success: true,
+      message: 'Reminder tracking updated',
+      data: {
+        bookingId,
+        action,
+        reminderType,
+        timestamp: new Date().toISOString()
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error tracking payment reminder:', error);
+    
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Failed to track payment reminder',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    );
   }
 }
 

@@ -76,6 +76,7 @@ const requiredTags = {
     { name: 'status:lost_customer' },
     // WORKFLOW-SPECIFIC STATUS TAGS
     { name: 'status:booking_created_phone' },
+    { name: 'status:booking_created' }, // Missing from workflows
     { name: 'no_pending_payment' }  // Special tag used in workflows
   ],
 
@@ -140,6 +141,9 @@ const requiredTags = {
     { name: 'workflow:booking_confirmation_sent' },
     { name: 'workflow:confirmation_sent' }, // For workflows - booking confirmation tracking
     { name: 'workflow:payment_reminder_sent' }, // EXACT match from workflows
+    { name: 'workflow:24hr_reminder_scheduled' }, // Missing from workflows
+    { name: 'workflow:2hr_reminder_scheduled' }, // Missing from workflows
+    { name: 'workflow:complete_booking_system_finished' }, // Missing from workflows
     { name: 'reminder:24hr_needed' }, // For workflows - manually added 24hrs before appointment
     { name: 'reminder:2hr_needed' }, // For workflows - manually added 2hrs before appointment
     { name: 'reminder:24hr_sent' },
@@ -187,7 +191,14 @@ const requiredTags = {
     { name: 'payment:promo_used' },
     // --- Added for full workflow coverage ---
     { name: 'payment:deposit' },
-    { name: 'payment:full' }
+    { name: 'payment:full' },
+    { name: 'payment:rescheduling_fee_due' }, // Missing from workflows
+    { name: 'payment:second_reminder_sent' }, // Missing from workflows
+    { name: 'payment:requires_manual_intervention' }, // Missing from workflows
+    { name: 'payment:failed_attempt' }, // Missing from workflows
+    { name: 'payment_failed:urgent' }, // Missing from workflows
+    { name: 'payment_failed:high' }, // Missing from workflows
+    { name: 'payment_failed:standard' } // Missing from workflows
   ],
 
   // Location & Geography Tags (For booking system)
@@ -359,29 +370,72 @@ const requiredTags = {
   // Lead Tags (EXACT format from workflows)
   lead: [
     { name: 'lead:phone_qualified' },
-    { name: 'lead:new' }
+    { name: 'lead:new' },
+    { name: 'lead:offered_discount' }, // Missing from workflows
+    { name: 'lead:move_to_newsletter' } // Missing from workflows
   ],
 
   // Priority Tags (from workflows)
   priority: [
-    { name: 'priority:high_touch' }
+    { name: 'priority:high_touch' },
+    { name: 'Priority:High_Touch' } // GHL format
   ],
 
   // Action Tags (from workflows)
   action: [
-    { name: 'action:manual_review_required' }
+    { name: 'action:manual_review_required' },
+    { name: 'action:cancel_booking' }, // Missing from workflows
+    { name: 'action:reschedule_booking' } // Missing from workflows
   ],
 
   // Booking Operation Tags (from workflows)
   booking: [
-    { name: 'booking:creation_failed' }
+    { name: 'booking:creation_failed' },
+    { name: 'booking:rescheduled' }, // Missing from workflows
+    { name: 'booking:missing_information' } // Missing from workflows
   ],
 
   // Error Handling Tags (from workflows)
   errorHandling: [
     { name: 'webhook_parse_error' },
-    { name: 'booking_response_parse_error' }
-  ]
+    { name: 'booking_response_parse_error' },
+    { name: 'booking_api_call_failed' }, // Missing from workflows
+    { name: 'api_call_failed' }, // Missing from workflows
+    { name: 'cancellation_api_failed' }, // Missing from workflows
+    { name: 'reschedule_api_failed' } // Missing from workflows
+  ],
+
+  // Cancellation Tags (NEW - from workflows)
+  cancellation: [
+    { name: 'cancelled:by_customer' },
+    { name: 'cancelled:by_provider' },
+    { name: 'cancellation:invalid_request' },
+    { name: 'cancellation:failed' },
+    { name: 'cancellation:requires_manual_processing' }
+  ],
+
+  // Rescheduling Tags (NEW - from workflows)
+  rescheduling: [
+    { name: 'reschedule:successful' },
+    { name: 'reschedule:failed' },
+    { name: 'reschedule:invalid_request' },
+    { name: 'reschedule:requires_manual_processing' },
+    { name: 'reschedule:reminders_reset' }
+  ],
+
+  // Stripe Webhook Tags (NEW - from workflows)
+  stripe: [
+    { name: 'stripe:payment_completed' },
+    { name: 'stripe:payment_failed' },
+    { name: 'stripe:refund_processed' },
+    { name: 'stripe:webhook_processed' }
+  ],
+
+  // Emergency Tags (NEW - from workflows)
+  emergency: [
+    { name: 'emergency:contacted' },
+    { name: 'emergency:needs_second_attempt' }
+  ],
 
   // NOTE: Tags like "Lead Reactivated", "Lead First Contact", "Lead Multiple Inquiries", "Lead Dormant", "Lead Priority"
   // from the original "leadNurturing" category have been integrated into "Status" or might be too granular/workflow-specific.

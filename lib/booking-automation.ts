@@ -599,4 +599,118 @@ export class BookingAutomationService {
 
     return results;
   }
+
+  /**
+   * Auto-complete service based on scheduled time + estimated duration
+   * This provides automation while allowing manual override
+   */
+  static async autoCompleteService(bookingId: string): Promise<{
+    success: boolean;
+    completed: boolean;
+    reason: string;
+  }> {
+    try {
+      const booking = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        include: {
+          service: true,
+          User_Booking_signerIdToUser: true
+        }
+      });
+
+      if (!booking || !booking.scheduledDateTime) {
+        return { success: false, completed: false, reason: 'Booking not found or not scheduled' };
+      }
+
+      // Only auto-complete if booking is currently IN_PROGRESS
+      if (booking.status !== BookingStatus.IN_PROGRESS) {
+        return { success: false, completed: false, reason: 'Booking not in progress' };
+      }
+
+      const now = new Date();
+      const scheduledTime = new Date(booking.scheduledDateTime);
+      const estimatedEndTime = new Date(scheduledTime.getTime() + (booking.service.duration + 30) * 60 * 1000); // Add 30min buffer
+
+      // Auto-complete if current time is past estimated end time
+      if (now > estimatedEndTime) {
+        await prisma.booking.update({
+          where: { id: bookingId },
+          data: { 
+            status: BookingStatus.COMPLETED,
+            actualEndDateTime: now,
+            completedAt: now,
+            updatedAt: now
+          }
+        });
+
+        // Trigger post-service workflows
+        await this.triggerPostServiceWorkflow(bookingId);
+
+        return { 
+          success: true, 
+          completed: true, 
+          reason: `Auto-completed ${Math.floor((now.getTime() - estimatedEndTime.getTime()) / (1000 * 60))} minutes after estimated completion time`
+        };
+      }
+
+      return { 
+        success: true, 
+        completed: false, 
+        reason: `Service still in progress. Estimated completion: ${estimatedEndTime.toLocaleTimeString()}`
+      };
+
+    } catch (error: any) {
+      console.error('Error in auto-complete service:', error);
+      return { success: false, completed: false, reason: error.message };
+    }
+  }
+
+  /**
+   * Manual service completion (for immediate completion)
+   */
+  static async manualCompleteService(bookingId: string, completedBy?: string): Promise<{
+    success: boolean;
+    message: string;
+  }> {
+    try {
+      const booking = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        include: { service: true }
+      });
+
+      if (!booking) {
+        return { success: false, message: 'Booking not found' };
+      }
+
+      if (booking.status === BookingStatus.COMPLETED) {
+        return { success: false, message: 'Booking already completed' };
+      }
+
+      const now = new Date();
+      await prisma.booking.update({
+        where: { id: bookingId },
+        data: { 
+          status: BookingStatus.COMPLETED,
+          actualEndDateTime: now,
+          completedAt: now,
+          updatedAt: now,
+          notes: booking.notes ? 
+            `${booking.notes}\n\nManually completed by: ${completedBy || 'System'}` :
+            `Manually completed by: ${completedBy || 'System'}`
+        }
+      });
+
+      // Trigger post-service workflows
+      await this.triggerPostServiceWorkflow(bookingId);
+
+      return { 
+        success: true, 
+        message: 'Service marked as completed successfully'
+      };
+
+    } catch (error: any) {
+      console.error('Error in manual complete service:', error);
+      return { success: false, message: error.message };
+    }
+  }
 } 

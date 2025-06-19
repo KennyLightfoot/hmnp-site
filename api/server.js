@@ -7,20 +7,25 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import bodyParser from 'body-parser';
 import winston from 'winston';
 import expressWinston from 'express-winston';
 
 // Import middleware and utilities
 import { webhookSecurity } from './middleware/webhookSecurity.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { authenticate, authorize, optionalAuthenticate, apiKeyAuth } from './middleware/auth.js';
+import { sanitizeInputs } from './middleware/validator.js';
+import { applyRateLimit } from './middleware/rateLimiter.js';
+import bodyParser from 'body-parser';
 import { requestLogger } from './middleware/requestLogger.js';
 
 // Import route handlers
 import bookingRoutes from './routes/bookings.js';
 import webhookRoutes from './routes/webhooks.js';
 import healthRoutes from './routes/health.js';
+import calendarRoutes from './routes/calendar.js';
+import adminRoutes from './routes/admin.js';
+import authRoutes from './routes/auth.js';
 
 // Database connection
 import { connectDatabase } from './config/database.js';
@@ -47,47 +52,41 @@ const logger = winston.createLogger({
   ],
 });
 
-// Global rate limiting
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // limit each IP to 100 requests per windowMs
-  message: {
-    error: 'Too many requests from this IP, please try again later.',
-    retryAfter: '15 minutes'
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
 // Enhanced security middleware
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
+      scriptSrc: ["'self'", "'unsafe-inline'", 'cdnjs.cloudflare.com'],
+      styleSrc: ["'self'", "'unsafe-inline'", 'fonts.googleapis.com'],
+      imgSrc: ["'self'", 'data:', 'cdn.example.com'],
+      fontSrc: ["'self'", 'fonts.gstatic.com'],
+      connectSrc: ["'self'", 'api.example.com'],
     },
   },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-  }
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
+
+// Parse JSON requests
+app.use(express.json({ limit: '1mb' }));
+
+// Parse URL-encoded requests
+app.use(express.urlencoded({ extended: true }));
+
+// Input sanitization middleware - after body parsing, before routes
+app.use(sanitizeInputs);
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://houstonmobilenotarypros.com', 'https://services.leadconnectorhq.com']
-    : ['http://localhost:3000', 'https://services.leadconnectorhq.com'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-ghl-signature', 'x-webhook-source']
+  origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
+  credentials: true
 }));
 
-// Apply rate limiting
-app.use(limiter);
+// Advanced rate limiting - granular limits based on route and authentication
+app.use(applyRateLimit);
 
 // Request logging middleware
 app.use(expressWinston.logger({
@@ -96,10 +95,9 @@ app.use(expressWinston.logger({
   msg: "HTTP {{req.method}} {{req.url}}",
   expressFormat: true,
   colorize: false,
-  ignoreRoute: function (req, res) { return false; }
+  ignoreRoute: function () { return false; }
 }));
 
-// Body parsing middleware
 app.use(bodyParser.json({ 
   limit: '10mb',
   verify: (req, res, buf) => {
@@ -115,11 +113,28 @@ app.use(requestLogger);
 // Health check route (no auth required)
 app.use('/health', healthRoutes);
 
-// Webhook routes (with enhanced security)
-app.use('/webhooks', webhookSecurity, webhookRoutes);
+// Authentication routes (login/registration endpoints are public)
+app.use('/api/auth', authRoutes);
 
-// API routes
-app.use('/api/bookings', bookingRoutes);
+// Webhook routes (with enhanced security)
+// Allow access via webhook security or API key
+app.use('/webhooks', (req, res, next) => {
+  // Check for GHL signature first (webhookSecurity)
+  if (req.headers['x-ghl-signature']) {
+    return webhookSecurity(req, res, next);
+  }
+  // Otherwise, check for API key
+  return apiKeyAuth(req, res, next);
+}, webhookRoutes);
+
+// API routes with authentication
+// Public calendar routes (available slots) use optional authentication
+app.use('/api/calendar/available-slots', optionalAuthenticate, calendarRoutes);
+
+// Protected routes requiring authentication
+app.use('/api/bookings', authenticate, bookingRoutes);
+app.use('/api/calendar', authenticate, calendarRoutes);
+app.use('/api/admin', authenticate, authorize(['ADMIN', 'STAFF']), adminRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {
@@ -147,6 +162,10 @@ app.use('*', (req, res) => {
       'GET /api/bookings/pending-payments',
       'POST /api/bookings/sync',
       'PATCH /api/bookings/pending-payments',
+      'GET /api/calendar/available-slots',
+      'GET /api/calendar/service-settings',
+      'GET /api/admin/business-settings',
+      'POST /api/admin/business-settings',
       'POST /webhooks/ghl',
       'POST /webhooks/stripe'
     ]

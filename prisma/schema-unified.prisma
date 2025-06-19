@@ -1,0 +1,619 @@
+// Houston Mobile Notary Pros - Unified Production Schema
+// Consolidates main app + API workflow + auth system
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== AUTHENTICATION & USER MANAGEMENT =====
+
+model User {
+  id                             String                 @id @default(cuid())
+  name                           String?
+  email                          String?                @unique
+  emailVerified                  DateTime?
+  image                          String?
+  role                           Role                   @default(CLIENT)
+  password                       String? // For credential auth
+  active                         Boolean                @default(true)
+  lastLoginAt                    DateTime?
+  createdAt                      DateTime               @default(now())
+  updatedAt                      DateTime               @updatedAt
+  onboardedAt                    DateTime?
+  
+  // Profile fields
+  phone                          String?
+  timezone                       String?                @default("America/Chicago")
+  preferences                    Json? // User preferences as JSON
+  
+  // NextAuth relations
+  accounts                       Account[]
+  sessions                       Session[]
+  
+  // App-specific relations
+  assignments                    Assignment[]           @relation("UserAssignments")
+  uploadedDocs                   AssignmentDocument[]   @relation("UploadedDocs")
+  notaryBookings                 Booking[]              @relation("Booking_notaryIdToUser")
+  signerBookings                 Booking[]              @relation("Booking_signerIdToUser")
+  comments                       Comment[]              @relation("UserComments")
+  downloads                      DownloadLog[]
+  invitationTokens               InvitationToken[]
+  notarizationDocuments          NotarizationDocument[]
+  statusChanges                  StatusHistory[]        @relation("StatusHistoryChangedBy")
+  createdPromoCodes              PromoCode[]
+  updatedBusinessSettings        BusinessSettings[]
+  systemLogs                     SystemLog[]
+  
+  @@index([email])
+  @@index([role])
+  @@index([active])
+  @@index([createdAt])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ===== CORE BUSINESS MODELS =====
+
+model Service {
+  id                 String      @id @default(cuid())
+  name               String      @unique
+  description        String?
+  serviceType        ServiceType
+  duration           Int         @default(30) // minutes (renamed from durationMinutes)
+  price              Decimal     @db.Decimal(10, 2) // renamed from basePrice
+  active             Boolean     @default(true) // renamed from isActive
+  requiresDeposit    Boolean     @default(true)
+  depositAmount      Decimal     @default(25.00) @db.Decimal(10, 2)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  externalCalendarId String?     @unique
+  
+  // Business settings
+  maxAdvanceBookingDays Int?     @default(30)
+  minAdvanceBookingHours Int?    @default(2)
+  bufferTimeMinutes     Int?     @default(15)
+  
+  bookings           Booking[]
+  businessSettings   BusinessSettings[]
+
+  @@index([active])
+  @@index([serviceType])
+  @@index([createdAt])
+}
+
+model Booking {
+  id                          String                 @id @default(cuid())
+  
+  // Core booking info
+  signerId                    String?                // User who booked (null for guests)
+  signerEmail                 String                 // Required for all bookings
+  signerName                  String                 // Required for all bookings  
+  signerPhone                 String?                // Phone number
+  serviceId                   String
+  notaryId                    String?                // Assigned notary
+  
+  // Scheduling
+  scheduledDateTime           DateTime?
+  actualEndDateTime           DateTime?
+  status                      BookingStatus          @default(PAYMENT_PENDING)
+  
+  // Location
+  locationType                LocationType?
+  addressStreet               String?
+  addressCity                 String?
+  addressState                String?
+  addressZip                  String?
+  locationNotes               String?
+  
+  // Pricing & Payment
+  basePrice                   Decimal                @db.Decimal(10, 2) // Original service price
+  promoDiscount               Decimal                @default(0) @db.Decimal(10, 2) // Discount applied
+  finalPrice                  Decimal                @db.Decimal(10, 2) // Final amount to pay
+  depositAmount               Decimal?               @db.Decimal(10, 2)
+  depositStatus               PaymentStatus?         @default(PENDING)
+  paymentIntentId             String?                // Stripe payment intent ID
+  
+  // Booking details
+  numberOfSigners             Int?                   @default(1)
+  documentCount               Int?
+  notes                       String?
+  
+  // Consent & Compliance
+  consentTermsConditions      Boolean                @default(false)
+  consentSmsNotifications     Boolean                @default(false)
+  consentEmailUpdates         Boolean                @default(false)
+  
+  // Lead tracking
+  leadSource                  String?
+  campaignName                String?
+  utmSource                   String?
+  utmMedium                   String?
+  utmCampaign                 String?
+  
+  // Legacy fields (for compatibility)
+  priceAtBooking              Decimal?               @db.Decimal(10, 2) // Deprecated: use finalPrice
+  promoCodeDiscount           Decimal?               @db.Decimal(10, 2) // Deprecated: use promoDiscount
+  customerEmail               String?                // Deprecated: use signerEmail
+  
+  // Integration fields
+  ghlContactId                String?
+  dailyRoomUrl                String?
+  dailyRecordingId            String?
+  kbaStatus                   String?
+  idVerificationStatus        String?
+  notaryJournalEntry          String?
+  stripePaymentUrl            String?                @db.Text
+  
+  // Audit & tracking
+  createdAt                   DateTime               @default(now())
+  updatedAt                   DateTime               @updatedAt
+  confirmationEmailSentAt     DateTime?
+  confirmationSmsSentAt       DateTime?
+  followUpSentAt              DateTime?
+  lastReminderSentAt          DateTime?
+  noShowCheckPerformedAt      DateTime?
+  reminder1hrSentAt           DateTime?
+  reminder24hrSentAt          DateTime?
+  reminder2hrSentAt           DateTime?
+  
+  // Relations
+  signer                      User?                  @relation("Booking_signerIdToUser", fields: [signerId], references: [id])
+  notary                      User?                  @relation("Booking_notaryIdToUser", fields: [notaryId], references: [id])
+  service                     Service                @relation(fields: [serviceId], references: [id])
+  promoCode                   PromoCode?             @relation(fields: [promoCodeId], references: [id])
+  payments                    Payment[]
+  notifications               NotificationLog[]
+  
+  // New field for promo code relation
+  promoCodeId                 String?
+
+  @@index([signerId])
+  @@index([signerEmail])
+  @@index([serviceId])
+  @@index([notaryId])
+  @@index([status])
+  @@index([scheduledDateTime])
+  @@index([createdAt])
+  @@index([leadSource])
+  @@index([ghlContactId])
+}
+
+// ===== ASSIGNMENT & DOCUMENT MANAGEMENT =====
+
+model Assignment {
+  id                   String               @id @default(cuid())
+  reference            String?              @unique
+  title                String
+  status               AssignmentStatus     @default(REQUESTED)
+  partnerAssignedToId  String?
+  propertyAddress      String?
+  borrowerName         String?
+  closingDate          DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  allowPartnerComments Boolean              @default(false)
+  
+  partnerAssignedTo    User?                @relation("UserAssignments", fields: [partnerAssignedToId], references: [id])
+  documents            AssignmentDocument[]
+  comments             Comment[]
+  history              StatusHistory[]
+  
+  @@index([partnerAssignedToId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AssignmentDocument {
+  id                   String                 @id @default(cuid())
+  assignmentId         String
+  key                  String
+  filename             String
+  uploadedAt           DateTime               @default(now())
+  uploadedById         String?
+  
+  assignment           Assignment             @relation(fields: [assignmentId], references: [id])
+  uploadedBy           User?                  @relation("UploadedDocs", fields: [uploadedById], references: [id])
+  downloads            DownloadLog[]
+  notarizationDocs     NotarizationDocument[]
+  
+  @@index([assignmentId])
+  @@index([uploadedById])
+}
+
+model NotarizationDocument {
+  id                   String             @id @default(cuid())
+  assignmentDocumentId String
+  notaryId             String
+  notarizationType     String
+  notarizedAt          DateTime           @default(now())
+  notes                String?
+  
+  assignmentDocument   AssignmentDocument @relation(fields: [assignmentDocumentId], references: [id])
+  notary               User               @relation(fields: [notaryId], references: [id])
+  
+  @@index([assignmentDocumentId])
+  @@index([notaryId])
+}
+
+// ===== PAYMENT & FINANCIAL =====
+
+model Payment {
+  id              String          @id @default(cuid())
+  bookingId       String
+  amount          Decimal         @db.Decimal(10, 2)
+  currency        String          @default("USD")
+  provider        PaymentProvider @default(STRIPE)
+  status          PaymentStatus   @default(PENDING)
+  providerPaymentId String?       // Stripe payment intent ID, etc.
+  providerResponse  Json?         // Full provider response
+  paidAt          DateTime?
+  refundedAt      DateTime?
+  refundAmount    Decimal?        @db.Decimal(10, 2)
+  failureReason   String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  booking         Booking         @relation(fields: [bookingId], references: [id])
+  
+  @@index([bookingId])
+  @@index([status])
+  @@index([provider])
+  @@index([createdAt])
+}
+
+model PromoCode {
+  id                String       @id @default(cuid())
+  code              String       @unique
+  description       String?
+  discountType      DiscountType @default(PERCENTAGE)
+  discountValue     Decimal      @db.Decimal(10, 2)
+  minimumAmount     Decimal?     @db.Decimal(10, 2)
+  maxDiscountAmount Decimal?     @db.Decimal(10, 2)
+  usageLimit        Int?
+  usageCount        Int          @default(0)
+  perCustomerLimit  Int?         @default(1)
+  validFrom         DateTime     @default(now())
+  validUntil        DateTime?
+  active            Boolean      @default(true) // renamed from isActive
+  applicableServices String[]    // Array of service IDs, empty means all services
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  createdById       String?
+  
+  creator           User?        @relation(fields: [createdById], references: [id])
+  bookings          Booking[]
+  
+  @@index([code])
+  @@index([active])
+  @@index([validFrom, validUntil])
+  @@index([createdById])
+}
+
+// ===== NOTIFICATIONS & COMMUNICATION =====
+
+model NotificationLog {
+  id           String             @id @default(cuid())
+  bookingId    String?
+  userId       String?
+  type         NotificationType
+  method       NotificationMethod
+  status       NotificationStatus @default(PENDING)
+  recipient    String             // Email or phone number
+  subject      String?
+  message      String
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+  failedAt     DateTime?
+  errorMessage String?
+  createdAt    DateTime           @default(now())
+  
+  booking      Booking?           @relation(fields: [bookingId], references: [id])
+  
+  @@index([bookingId])
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ===== SYSTEM & ADMIN =====
+
+model BusinessSettings {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  dataType    String   @default("string") // "string", "number", "boolean", "json"
+  description String?
+  category    String?  // "booking", "payment", "notification", "general"
+  serviceId   String?  // Optional: link to specific service
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+  
+  updatedBy   User?    @relation(fields: [updatedById], references: [id])
+  service     Service? @relation(fields: [serviceId], references: [id])
+
+  @@index([key])
+  @@index([category])
+  @@index([serviceId])
+  @@index([updatedById])
+}
+
+model InvitationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  role      Role
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdBy String
+  
+  creator   User     @relation(fields: [createdBy], references: [id])
+  
+  @@index([token])
+  @@index([email])
+  @@index([expiresAt])
+}
+
+// ===== TRACKING & HISTORY =====
+
+model StatusHistory {
+  id           String           @id @default(cuid())
+  assignmentId String
+  status       AssignmentStatus
+  note         String?
+  changedAt    DateTime         @default(now())
+  changedById  String?
+  
+  assignment   Assignment       @relation(fields: [assignmentId], references: [id])
+  changedBy    User?            @relation("StatusHistoryChangedBy", fields: [changedById], references: [id])
+  
+  @@index([assignmentId])
+  @@index([changedById])
+}
+
+model Comment {
+  id           String     @id @default(cuid())
+  text         String
+  createdAt    DateTime   @default(now())
+  assignmentId String
+  authorId     String
+  
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  author       User       @relation("UserComments", fields: [authorId], references: [id])
+
+  @@index([assignmentId])
+  @@index([authorId])
+}
+
+model DownloadLog {
+  id           String             @id @default(cuid())
+  documentId   String
+  userId       String
+  downloadedAt DateTime           @default(now())
+  
+  document     AssignmentDocument @relation(fields: [documentId], references: [id])
+  user         User               @relation(fields: [userId], references: [id])
+  
+  @@index([documentId])
+  @@index([userId])
+}
+
+// ===== SYSTEM MONITORING =====
+
+model SystemAlert {
+  id          String        @id @default(cuid())
+  component   String
+  message     String
+  severity    AlertSeverity @default(MEDIUM)
+  status      AlertStatus   @default(ACTIVE)
+  createdAt   DateTime      @default(now())
+  resolvedAt  DateTime?
+  resolvedBy  String?
+  detail      Json?
+
+  @@index([status])
+  @@index([severity])
+  @@index([createdAt])
+}
+
+model SystemLog {
+  id        String    @id @default(cuid())
+  component String
+  message   String
+  level     LogLevel  @default(INFO)
+  timestamp DateTime  @default(now())
+  metadata  Json?
+  userId    String?
+  
+  user      User?     @relation(fields: [userId], references: [id])
+
+  @@index([level])
+  @@index([component])
+  @@index([timestamp])
+  @@index([userId])
+}
+
+model BackgroundError {
+  id        String   @id @default(cuid())
+  source    String
+  message   String
+  stack     String?
+  createdAt DateTime @default(now())
+  
+  @@index([source])
+  @@index([createdAt])
+}
+
+// ===== ENUMS =====
+
+enum Role {
+  ADMIN     // Full system access
+  STAFF     // Booking management, user management (limited)
+  NOTARY    // Assignment management, own bookings
+  CLIENT    // Own bookings only
+  PARTNER   // Legacy role for assignments
+  SIGNER    // Legacy role - same as CLIENT
+}
+
+enum AssignmentStatus {
+  REQUESTED
+  SCHEDULED
+  IN_PROGRESS
+  SIGNED
+  RETURNED_TO_TITLE
+  COMPLETED
+  ARCHIVED
+}
+
+enum BookingStatus {
+  REQUESTED
+  PAYMENT_PENDING
+  CONFIRMED
+  SCHEDULED
+  AWAITING_CLIENT_ACTION
+  READY_FOR_SERVICE
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED_BY_CLIENT
+  CANCELLED_BY_STAFF
+  REQUIRES_RESCHEDULE
+  ARCHIVED
+  NO_SHOW
+}
+
+enum LocationType {
+  CLIENT_SPECIFIED_ADDRESS
+  OUR_OFFICE
+  REMOTE_ONLINE_NOTARIZATION
+  PUBLIC_PLACE
+}
+
+enum ServiceType {
+  STANDARD_NOTARY
+  EXTENDED_HOURS_NOTARY
+  LOAN_SIGNING_SPECIALIST
+  SPECIALTY_NOTARY_SERVICE
+  BUSINESS_SOLUTIONS
+  SUPPORT_SERVICE
+}
+
+enum PaymentProvider {
+  STRIPE
+  SQUARE
+  PAYPAL
+  MANUAL
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  VOIDED
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMATION
+  PAYMENT_CONFIRMATION
+  APPOINTMENT_REMINDER_24HR
+  APPOINTMENT_REMINDER_2HR
+  APPOINTMENT_REMINDER_1HR
+  APPOINTMENT_REMINDER_NOW
+  BOOKING_CANCELLED
+  BOOKING_RESCHEDULED
+  PAYMENT_FAILED
+  PAYMENT_REMINDER
+  NO_SHOW_CHECK
+  POST_SERVICE_FOLLOWUP
+  REVIEW_REQUEST
+  DOCUMENT_READY
+  DOCUMENT_REMINDER
+  NOTARY_ASSIGNMENT
+  EMERGENCY_NOTIFICATION
+  LEAD_NURTURING
+  PAYMENT_UPDATE
+}
+
+enum NotificationMethod {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  BOUNCED
+  UNSUBSCRIBED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum AlertSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum AlertStatus {
+  ACTIVE
+  RESOLVED
+  ACKNOWLEDGED
+}
+
+enum LogLevel {
+  ERROR
+  WARN
+  INFO
+  DEBUG
+} 

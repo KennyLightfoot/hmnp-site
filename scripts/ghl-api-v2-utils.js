@@ -15,7 +15,7 @@ import 'dotenv/config';
 const GHL_API_V2_BASE_URL = process.env.GHL_API_BASE_URL || 'https://services.leadconnectorhq.com';
 const GHL_API_KEY = process.env.GHL_API_KEY;
 const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
-const GHL_COMPANY_ID = process.env.GHL_COMPANY_ID;
+// const GHL_COMPANY_ID = process.env.GHL_COMPANY_ID; // Currently unused
 
 /**
  * Validates required environment variables for GHL v2 API
@@ -172,6 +172,24 @@ export async function getLocationTags() {
  */
 export async function createLocationTag(tagName) {
   return makeGhlV2Request(`/locations/${GHL_LOCATION_ID}/tags`, 'POST', { name: tagName });
+}
+
+/**
+ * Delete a custom field for a location
+ * @param {string} fieldId - Custom field ID
+ * @returns {Promise<Object>} Deletion result
+ */
+export async function deleteLocationCustomField(fieldId) {
+  return makeGhlV2Request(`/locations/${GHL_LOCATION_ID}/customFields/${fieldId}`, 'DELETE');
+}
+
+/**
+ * Delete a tag for a location
+ * @param {string} tagId - Tag ID
+ * @returns {Promise<Object>} Deletion result
+ */
+export async function deleteLocationTag(tagId) {
+  return makeGhlV2Request(`/locations/${GHL_LOCATION_ID}/tags/${tagId}`, 'DELETE');
 }
 
 /**

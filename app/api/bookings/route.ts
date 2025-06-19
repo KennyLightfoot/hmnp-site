@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { withAuth, AuthConfig } from '@/lib/auth/unified-middleware';
 import { Booking, Service, BookingStatus, LocationType, PaymentProvider, PaymentStatus, Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { trackBookingConfirmation } from '@/lib/tracking';
+import { sendGHLMessage } from '../../../lib/ghl-messaging';
+import { GoogleCalendarService } from '../../../lib/google-calendar';
 // Custom fields temporarily disabled - using standard GHL fields and tags
 
 // Using tags-only approach for optimal business operations
@@ -160,31 +163,18 @@ async function triggerGHLWorkflows(contactId: string, bookingStatus: BookingStat
 }
 
 export async function POST(request: NextRequest) {
-  const ghlLocationId = process.env.GHL_LOCATION_ID;
-  if (!ghlLocationId) {
-    console.error('GHL_LOCATION_ID environment variable is not set.');
-    return NextResponse.json({ error: 'Server configuration error: GHL Location ID is missing.' }, { status: 500 });
-  }
+  return withAuth(request, async ({ user, context }) => {
+    const ghlLocationId = process.env.GHL_LOCATION_ID;
+    if (!ghlLocationId) {
+      console.error('GHL_LOCATION_ID environment variable is not set.');
+      return NextResponse.json({ error: 'Server configuration error: GHL Location ID is missing.' }, { status: 500 });
+    }
 
-  console.log("!!!!!!!!!! /api/bookings POST handler WAS HIT !!!!!!!!!!");
-  try {
-    // Attempt to clone the request to log its body, as request.json() consumes the body
-    const clonedRequest = request.clone();
-    const requestBodyForLog = await clonedRequest.json().catch(() => ({ error: 'Could not parse body for logging' }));
-    console.log("!!!!!!!!!! /api/bookings REQUEST BODY (raw):", JSON.stringify(requestBodyForLog, null, 2));
-  } catch (logError) {
-    console.error("!!!!!!!!!! Error logging request body:", logError);
-  }
-
-  // Get session if available, but don't require it (allow guest bookings)
-  const session = await getServerSession(authOptions);
-
-  // Log session details for debugging
-  console.log("SESSION DETAILS:", JSON.stringify(session, null, 2));
-  
-  let signerUserId: string | null = null;
-  let signerUserEmail: string;
-  let signerUserName: string | null = null;
+    console.log(`[BOOKING] Creating booking - User: ${context.isAuthenticated ? context.userId : 'guest'}`);
+    
+    let signerUserId: string | null = context.isAuthenticated ? context.userId! : null;
+    let signerUserEmail: string;
+    let signerUserName: string | null = null;
   
   try {
     const body = await request.json() as BookingRequestBody;
@@ -439,6 +429,14 @@ export async function POST(request: NextRequest) {
         });
         checkoutUrl = stripeSession.url;
         console.log("!!!!!!!!!! STRIPE CHECKOUT SESSION CREATED !!!!!!!!!! URL:", checkoutUrl);
+        
+        // Store the payment URL in the booking record
+        if (checkoutUrl) {
+          await prisma.booking.update({
+            where: { id: newBooking.id },
+            data: { stripePaymentUrl: checkoutUrl }
+          });
+        }
       } catch (stripeError: any) {
         console.error("!!!!!!!!!! Error creating Stripe session:", stripeError);
         // Log the error but proceed; the booking remains PAYMENT_PENDING.
@@ -490,8 +488,39 @@ export async function POST(request: NextRequest) {
           serviceAddressForGhl = ''; // Or a more descriptive placeholder like 'Location N/A'
         }
 
-        // Using tags-only approach for optimal business operations
-        console.log("GHL: Using tags-only approach for streamlined automation");
+        // Using BOTH tags and custom fields for complete workflow support
+        console.log("GHL: Populating custom fields for workflow automation");
+
+        // Prepare custom fields for GHL workflows
+        const customFields: { [key: string]: string } = {
+          // Core booking fields
+          booking_id: newBooking.id,
+          payment_url: checkoutUrl || '',
+          payment_amount: finalAmountDueAfterDiscount.toString(),
+          
+          // Service details
+          service_requested: service.name,
+          service_address: serviceAddressForGhl,
+          service_price: service.basePrice.toNumber().toString(),
+          
+          // Date/Time fields (all three for compatibility)
+          appointment_date: scheduledDateTime ? 
+            new Date(scheduledDateTime).toLocaleDateString('en-US') : '',
+          appointment_time: scheduledDateTime ? 
+            new Date(scheduledDateTime).toLocaleTimeString('en-US', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            }) : '',
+          appointment_datetime: scheduledDateTime ? 
+            new Date(scheduledDateTime).toISOString()
+              .replace('T', ' ')
+              .substring(0, 19) : '',
+          
+          // Workflow support fields
+          preferred_datetime: scheduledDateTime || '',
+          urgency_level: 'new',
+          hours_old: '0',
+        };
 
         // Define the main GHL contact payload
         const ghlContactPayload: GhlContact = {
@@ -507,7 +536,7 @@ export async function POST(request: NextRequest) {
           source: 'HMNP Website Booking',
           companyName: body.companyName || undefined,
           locationId: ghlLocationId, // CRITICAL: Ensure locationId is included
-          customField: {}, // Using tags-only approach - no custom fields needed
+          customField: customFields, // Populate custom fields for workflows
         };
 
         console.log("GHL Contact Payload (excluding tags):", JSON.stringify(ghlContactPayload, null, 2));
@@ -521,6 +550,15 @@ export async function POST(request: NextRequest) {
           const contactId = ghlContact?.id || ghlContact?.contact?.id;
           
           if (contactId) {
+            // Store GHL contact ID in booking
+            await prisma.booking.update({
+              where: { id: newBooking.id },
+              data: { 
+                ghlContactId: contactId,
+                customerEmail: emailForGhl // Store email for guest bookings
+              }
+            });
+            
             const tagsToApply: string[] = [];
             if (service?.name) {
               tagsToApply.push(`service:${service.name.replace(/\s+/g, '_').toLowerCase()}`);
@@ -529,6 +567,15 @@ export async function POST(request: NextRequest) {
               tagsToApply.push('status:booking_pendingpayment');
             } else if (newBooking.status === BookingStatus.CONFIRMED) {
               tagsToApply.push('status:booking_confirmed');
+            }
+
+            // Add booking created tag for notification workflow
+            tagsToApply.push('status:booking_created');
+            
+            // Check if this is an emergency service
+            if (service?.name && (service.name.toLowerCase().includes('emergency') || service.name.toLowerCase().includes('urgent'))) {
+              tagsToApply.push('Service:Emergency');
+              tagsToApply.push('Priority:Same_Day');
             }
 
             if (isFirstTimeDiscountApplied) {
@@ -562,6 +609,23 @@ export async function POST(request: NextRequest) {
             }
             if (discountAmount > 0) {
               tagsToApply.push('discount:applied');
+            }
+
+            // Create Google Calendar event
+            try {
+              const calendarService = new GoogleCalendarService();
+              const eventId = await calendarService.createBookingEvent(newBooking);
+              
+              // Update booking with calendar event ID
+              await prisma.booking.update({
+                where: { id: newBooking.id },
+                data: { googleCalendarEventId: eventId }
+              });
+              
+              console.log(`✅ Google Calendar event created: ${eventId}`);
+            } catch (calendarError) {
+              console.error('❌ Failed to create Google Calendar event:', calendarError);
+              // Don't fail the booking if calendar creation fails
             }
 
             // Only add tags if we have tags to add and a valid contact ID
@@ -657,6 +721,7 @@ export async function POST(request: NextRequest) {
       { status: statusCode }
     );
   }
+  }, AuthConfig.optional()); // Allow both authenticated and guest users
 } // End of POST function
 
 // Helper function to validate time slot is still available

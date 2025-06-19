@@ -1,249 +1,287 @@
 // lib/ghl/api.ts
+import { ghlApiRequest } from './error-handler';
 
-// GHL API configuration from environment variables
-const GHL_API_BASE_URL = process.env.GHL_API_BASE_URL;
-const GHL_API_KEY = process.env.GHL_API_KEY;
-const GHL_API_VERSION = process.env.GHL_API_VERSION || "V2";
+// GHL Private Integration API configuration from environment variables
+const GHL_API_BASE_URL = process.env.GHL_API_BASE_URL || "https://services.leadconnectorhq.com";
+const GHL_PRIVATE_INTEGRATION_TOKEN = process.env.GHL_PRIVATE_INTEGRATION_TOKEN;
+const GHL_API_VERSION = "2021-07-28"; // Standardized to latest stable version
 const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
+
+// Validation helper for Private Integration setup
+function validateGHLConfig() {
+  if (!GHL_PRIVATE_INTEGRATION_TOKEN) {
+    console.error("GHL_PRIVATE_INTEGRATION_TOKEN is missing. Please set up Private Integration.");
+    throw new Error("GHL Private Integration not configured. See lib/ghl/private-integration-setup.md");
+  }
+  
+  if (!GHL_LOCATION_ID) {
+    console.error("GHL_LOCATION_ID is missing in environment variables.");
+    throw new Error("GHL Location ID is required.");
+  }
+}
 
 // Helper function to search for a contact by email in GHL
 export async function findContactByEmail(email: string, locationId?: string): Promise<any | null> {
-  if (!GHL_API_BASE_URL || !GHL_API_KEY) {
-    console.error("GHL API credentials missing in environment variables.");
-    throw new Error("Server configuration error.");
-  }
+  validateGHLConfig();
   
-  // Use the provided locationId or fall back to the environment variable
-  const locationIdToUse = locationId || GHL_LOCATION_ID;
-  
-  // Add locationId to query params if provided
-  const queryParams: Record<string, string> = { query: email };
-  if (locationIdToUse) {
-    queryParams.locationId = locationIdToUse;
-  }
-  
-  const queryString = new URLSearchParams(queryParams).toString();
-
-  // Change endpoint from /contacts/lookup to /contacts
-  const response = await fetch(`${GHL_API_BASE_URL}/contacts?${queryString}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${GHL_API_KEY}`,
-      Version: GHL_API_VERSION,
-      Accept: "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    // If the API returns 404, it means no contact was found, which is not an error in this context.
-    if (response.status === 404) {
-      return null; // No contact found
+  try {
+    const locationIdToUse = locationId || GHL_LOCATION_ID;
+    const queryParams: Record<string, string> = { query: email };
+    if (locationIdToUse) {
+      queryParams.locationId = locationIdToUse;
     }
-    const errorData = await response.json().catch(() => ({})); // Catch errors if response is not JSON
-    console.error(`Failed to search for contact by email (${email}): ${JSON.stringify(errorData)}`, { status: response.status });
-    // Throw an error for non-404 responses as it indicates a different problem
-    throw new Error(`Failed to search contact: Status ${response.status}`);
-  }
+    
+    const queryString = new URLSearchParams(queryParams).toString();
+    const endpoint = `/contacts?${queryString}`;
+    
+    console.log(`🔍 Searching for contact by email: ${email}`);
+    const data = await ghlApiRequest(endpoint, { method: 'GET' });
+    
+    if (data.contacts && data.contacts.length > 0) {
+      console.log(`✅ Contact found: ${data.contacts[0].id}`);
+      return data.contacts[0];
+    }
 
-  const data = await response.json();
-  // The /contacts endpoint likely returns an array under 'contacts'
-  if (data.contacts && data.contacts.length > 0) {
-    return data.contacts[0]; // Return the first matching contact
+    console.log(`📝 No contact found for email: ${email}`);
+    return null;
+    
+  } catch (error: any) {
+    // Handle 404 as "not found" rather than error
+    if (error.ghlError?.statusCode === 404) {
+      console.log(`📝 No contact found for email: ${email} (404)`);
+      return null;
+    }
+    
+    console.error(`❌ Error searching for contact by email (${email}):`, error.message);
+    throw new Error(`Failed to search contact: ${error.message}`);
   }
-
-  return null; // No contact found
 }
 
 // Helper function to create a contact in GHL
 export async function createContact(contactData: any, locationId?: string): Promise<any> {
-  if (!GHL_API_BASE_URL || !GHL_API_KEY) {
-    console.error("GHL API credentials missing in environment variables.");
-    throw new Error("Server configuration error.");
-  }
+  validateGHLConfig();
   
-  // Use the provided locationId or fall back to the environment variable
-  const locationIdToUse = locationId || GHL_LOCATION_ID;
-  
-  if (!locationIdToUse) {
-    throw new Error("No location ID provided or available in environment.");
-  }
-  
-  const response = await fetch(`${GHL_API_BASE_URL}/contacts`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${GHL_API_KEY}`,
-      Version: GHL_API_VERSION,
-    },
-    body: JSON.stringify({
+  try {
+    const locationIdToUse = locationId || GHL_LOCATION_ID;
+    
+    if (!locationIdToUse) {
+      throw new Error("No location ID provided or available in environment.");
+    }
+    
+    const payload = {
       locationId: locationIdToUse,
       ...contactData,
-    }),
-  });
-
-  if (!response.ok) {
-     const errorData = await response.json().catch(() => ({ message: "Failed to parse error JSON" }));
-
-    // Check for the specific duplicate contact error (common in GHL)
-    if (
-      response.status === 400 &&
-      errorData.message === "This location does not allow duplicated contacts." &&
-      errorData.meta?.contactId
-    ) {
-      console.warn(`Attempted to create duplicate contact for ${contactData.email}. Using existing contact ID: ${errorData.meta.contactId}`);
-      // Return the existing contact ID as if creation was successful
-      return { id: errorData.meta.contactId };
+    };
+    
+    console.log(`👤 Creating contact: ${contactData.email || 'unknown'}`);
+    const response = await ghlApiRequest('/contacts', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    
+    console.log(`✅ Contact created successfully: ${response.id}`);
+    return response;
+    
+  } catch (error: any) {
+    // Handle duplicate contact error
+    if (error.ghlError?.statusCode === 400 && error.message?.includes('duplicate')) {
+      console.warn(`⚠️ Duplicate contact detected for ${contactData.email}, attempting to find existing...`);
+      try {
+        const existingContact = await findContactByEmail(contactData.email, locationId);
+        if (existingContact) {
+          console.log(`✅ Using existing contact: ${existingContact.id}`);
+          return existingContact;
+        }
+      } catch (findError) {
+        console.error(`❌ Failed to find existing contact after duplicate error:`, findError);
+      }
     }
-
-    // If it's a different error, log and throw
-    console.error("GHL Create Contact Error:", errorData);
-    throw new Error(`Failed to create contact: ${JSON.stringify(errorData)}`);
+    
+    console.error(`❌ Error creating contact:`, error.message);
+    throw new Error(`Failed to create contact: ${error.message}`);
   }
-
-  return response.json();
 }
 
 // Helper function to create an opportunity in GHL
 export async function createOpportunity(contactId: string, opportunityData: any, locationId?: string): Promise<any> {
-  if (!GHL_API_BASE_URL || !GHL_API_KEY) {
-    console.error("GHL API credentials missing in environment variables.");
-    throw new Error("Server configuration error.");
-  }
+  validateGHLConfig();
   
-  // Use the provided locationId or fall back to the environment variable
-  const locationIdToUse = locationId || GHL_LOCATION_ID;
-  
-  if (!locationIdToUse) {
-    throw new Error("No location ID provided or available in environment.");
-  }
-  
-  const response = await fetch(`${GHL_API_BASE_URL}/opportunities`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${GHL_API_KEY}`,
-      Version: GHL_API_VERSION,
-    },
-    body: JSON.stringify({
+  try {
+    const locationIdToUse = locationId || GHL_LOCATION_ID;
+    
+    if (!locationIdToUse) {
+      throw new Error("No location ID provided or available in environment.");
+    }
+    
+    const payload = {
       locationId: locationIdToUse,
       contactId: contactId,
       ...opportunityData,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    console.error("GHL Create Opportunity Error:", errorData);
-    throw new Error(`Failed to create opportunity: ${JSON.stringify(errorData)}`);
+    };
+    
+    console.log(`💼 Creating opportunity for contact: ${contactId}`);
+    const response = await ghlApiRequest('/opportunities', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    
+    console.log(`✅ Opportunity created successfully: ${response.id}`);
+    return response;
+    
+  } catch (error: any) {
+    console.error(`❌ Error creating opportunity:`, error.message);
+    throw new Error(`Failed to create opportunity: ${error.message}`);
   }
-
-  return response.json();
 }
 
 // Helper function to update custom fields for a contact
 export async function updateContactCustomFields(contactId: string, customFields: any): Promise<any> {
-   if (!GHL_API_BASE_URL || !GHL_API_KEY) {
-    console.error("GHL API credentials missing in environment variables.");
-    throw new Error("Server configuration error.");
-  }
-  const response = await fetch(`${GHL_API_BASE_URL}/contacts/${contactId}/custom-fields`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${GHL_API_KEY}`,
-      Version: GHL_API_VERSION,
-    },
-    body: JSON.stringify({
+  validateGHLConfig();
+  
+  try {
+    const payload = {
       customFields: customFields,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    console.error("GHL Update Contact Custom Fields Error:", errorData);
-    throw new Error(`Failed to update contact custom fields: ${JSON.stringify(errorData)}`);
+    };
+    
+    console.log(`🔧 Updating custom fields for contact: ${contactId}`);
+    const response = await ghlApiRequest(`/contacts/${contactId}/custom-fields`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+    
+    console.log(`✅ Custom fields updated successfully for contact: ${contactId}`);
+    return response;
+    
+  } catch (error: any) {
+    console.error(`❌ Error updating contact custom fields:`, error.message);
+    throw new Error(`Failed to update contact custom fields: ${error.message}`);
   }
-
-  return response.json();
 }
 
 // Helper function to update custom fields for an opportunity
 export async function updateOpportunityCustomFields(opportunityId: string, customFields: any): Promise<any> {
-   if (!GHL_API_BASE_URL || !GHL_API_KEY) {
-    console.error("GHL API credentials missing in environment variables.");
-    throw new Error("Server configuration error.");
-  }
-  const response = await fetch(`${GHL_API_BASE_URL}/opportunities/${opportunityId}/custom-fields`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${GHL_API_KEY}`,
-      Version: GHL_API_VERSION,
-    },
-    body: JSON.stringify({
+  validateGHLConfig();
+  
+  try {
+    const payload = {
       customFields: customFields,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    console.error("GHL Update Opportunity Custom Fields Error:", errorData);
-    throw new Error(`Failed to update opportunity custom fields: ${JSON.stringify(errorData)}`);
+    };
+    
+    console.log(`🔧 Updating custom fields for opportunity: ${opportunityId}`);
+    const response = await ghlApiRequest(`/opportunities/${opportunityId}/custom-fields`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+    
+    console.log(`✅ Custom fields updated successfully for opportunity: ${opportunityId}`);
+    return response;
+    
+  } catch (error: any) {
+    console.error(`❌ Error updating opportunity custom fields:`, error.message);
+    throw new Error(`Failed to update opportunity custom fields: ${error.message}`);
   }
-
-  return response.json();
 }
 
 // Helper function to create an appointment in GHL
 export async function createAppointment(appointmentData: any, locationId?: string): Promise<any> {
-  if (!GHL_API_BASE_URL || !GHL_API_KEY) {
-    console.error("GHL API credentials missing in environment variables.");
-    throw new Error("Server configuration error.");
-  }
-  
-  // Use the provided locationId or fall back to the environment variable
-  const locationIdToUse = locationId || GHL_LOCATION_ID;
-  
-  if (locationIdToUse && !appointmentData.locationId) {
-    appointmentData.locationId = locationIdToUse;
-  }
+  validateGHLConfig();
   
   try {
-    const url = `${GHL_API_BASE_URL}/calendars/events/appointments`;
+    const locationIdToUse = locationId || GHL_LOCATION_ID;
     
-    // Log the appointment data for troubleshooting
-    console.log("Creating appointment with data:", JSON.stringify({
+    if (locationIdToUse && !appointmentData.locationId) {
+      appointmentData.locationId = locationIdToUse;
+    }
+    
+    console.log(`📅 Creating appointment:`, {
       calendarId: appointmentData.calendarId,
       contactId: appointmentData.contactId,
-      locationId: appointmentData.locationId, 
       title: appointmentData.title,
       startTime: appointmentData.startTime,
       endTime: appointmentData.endTime
-    }));
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${GHL_API_KEY}`,
-        Version: GHL_API_VERSION,
-      },
-      body: JSON.stringify(appointmentData),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error(`GHL Create Appointment API Response Status: ${response.status}`);
-      console.error(`GHL Create Appointment API Response Headers:`, Object.fromEntries(response.headers.entries()));
-      console.error(`GHL Create Appointment API Response Body:`, errorData);
-      throw new Error(`Failed to create appointment: ${JSON.stringify(errorData)}`);
-    }
+    const response = await ghlApiRequest('/calendars/events/appointments', {
+      method: 'POST',
+      body: JSON.stringify(appointmentData)
+    });
 
-    return response.json();
-  } catch (error) {
-    console.error("Error in createAppointment helper:", error);
-    // Re-throw the error so the calling route handler can catch it
-    throw error;
+    console.log(`✅ Appointment created successfully: ${response.id}`);
+    return response;
+    
+  } catch (error: any) {
+    console.error(`❌ Error creating appointment:`, error.message);
+    throw new Error(`Failed to create appointment: ${error.message}`);
+  }
+}
+
+// Helper function to add tags to a contact
+export async function addTagsToContact(contactId: string, tags: string[]): Promise<any> {
+  validateGHLConfig();
+  
+  try {
+    const payload = {
+      tags: tags
+    };
+    
+    console.log(`🏷️ Adding tags to contact ${contactId}:`, tags);
+    const response = await ghlApiRequest(`/contacts/${contactId}/tags`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    
+    console.log(`✅ Tags added successfully to contact: ${contactId}`);
+    return response;
+    
+  } catch (error: any) {
+    console.error(`❌ Error adding tags to contact:`, error.message);
+    throw new Error(`Failed to add tags to contact: ${error.message}`);
+  }
+}
+
+// Helper function to remove tags from a contact
+export async function removeTagsFromContact(contactId: string, tags: string[]): Promise<any> {
+  validateGHLConfig();
+  
+  try {
+    console.log(`🏷️ Removing tags from contact ${contactId}:`, tags);
+    
+    // For removing tags, we need to send each tag removal individually
+    const promises = tags.map(tag => 
+      ghlApiRequest(`/contacts/${contactId}/tags/${encodeURIComponent(tag)}`, {
+        method: 'DELETE'
+      })
+    );
+    
+    await Promise.allSettled(promises);
+    console.log(`✅ Tags removed successfully from contact: ${contactId}`);
+    return { success: true };
+    
+  } catch (error: any) {
+    console.error(`❌ Error removing tags from contact:`, error.message);
+    throw new Error(`Failed to remove tags from contact: ${error.message}`);
+  }
+}
+
+// Helper function to update a contact
+export async function updateContact(contactData: { id: string, [key: string]: any }): Promise<any> {
+  validateGHLConfig();
+  
+  try {
+    const { id, ...updateData } = contactData;
+    
+    console.log(`👤 Updating contact: ${id}`);
+    const response = await ghlApiRequest(`/contacts/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updateData)
+    });
+    
+    console.log(`✅ Contact updated successfully: ${id}`);
+    return response;
+    
+  } catch (error: any) {
+    console.error(`❌ Error updating contact:`, error.message);
+    throw new Error(`Failed to update contact: ${error.message}`);
   }
 }
 

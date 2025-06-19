@@ -31,10 +31,23 @@ interface AppointmentCalendarProps {
   serviceType: ServiceType;
   numberOfSigners: number;
   onTimeSelected: (startTime: string, endTime: string, formattedTime: string, calendarId: string) => void;
-  // TODO: Add prop for existing bookings
+  existingBookings?: {
+    date: string; // YYYY-MM-DD format
+    times: string[]; // Array of booked start times in ISO format
+  }[];
+  serviceDateRange?: {
+    startDate?: Date; // Optional start date for service availability
+    endDate?: Date; // Optional end date for service availability
+  };
 }
 
-export default function AppointmentCalendar({ serviceType, numberOfSigners, onTimeSelected }: AppointmentCalendarProps) {
+export default function AppointmentCalendar({ 
+  serviceType, 
+  numberOfSigners, 
+  onTimeSelected,
+  existingBookings = [], 
+  serviceDateRange = {}
+}: AppointmentCalendarProps) {
   const privacyPolicyLink = "/privacy-policy";
   const termsOfServiceLink = "/terms";
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
@@ -45,6 +58,25 @@ export default function AppointmentCalendar({ serviceType, numberOfSigners, onTi
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [determinedCalendarId, setDeterminedCalendarId] = useState<string>(""); // State to hold the determined ID
+  
+  // Create a map of booked dates and times for quick lookup
+  const [bookedDateMap, setBookedDateMap] = useState<Record<string, string[]>>({});
+  
+  // Process existing bookings on component mount or when they change
+  useEffect(() => {
+    if (existingBookings && existingBookings.length > 0) {
+      const bookingsMap: Record<string, string[]> = {};
+      
+      existingBookings.forEach(booking => {
+        if (!bookingsMap[booking.date]) {
+          bookingsMap[booking.date] = [];
+        }
+        bookingsMap[booking.date] = [...bookingsMap[booking.date], ...booking.times];
+      });
+      
+      setBookedDateMap(bookingsMap);
+    }
+  }, [existingBookings]);
 
   /**
    * Determines the specific GoHighLevel Calendar ID based on the selected service type and number of signers.
@@ -166,6 +198,13 @@ export default function AppointmentCalendar({ serviceType, numberOfSigners, onTi
                 if (start < new Date()) {
                   return null;
                 }
+                
+                // Check if this time slot is already booked
+                const dateKey = format(start, 'yyyy-MM-dd');
+                if (bookedDateMap[dateKey] && bookedDateMap[dateKey].includes(startTimeString)) {
+                  // Skip this slot as it's already booked
+                  return null;
+                }
 
                 // Calculate end time based on duration
                 const end = addHours(start, durationMinutes / 60); // Assuming duration is in minutes
@@ -217,7 +256,7 @@ export default function AppointmentCalendar({ serviceType, numberOfSigners, onTi
 
     fetchSlots();
 
-  }, [selectedDate, serviceType, numberOfSigners]); // Dependencies for the effect
+  }, [selectedDate, serviceType, numberOfSigners, bookedDateMap]); // Dependencies for the effect
 
   const handleDateSelect: SelectSingleEventHandler = (date) => {
     setSelectedDate(date);
@@ -239,10 +278,49 @@ export default function AppointmentCalendar({ serviceType, numberOfSigners, onTi
 
   // Define disabled days logic
   const disabledDays: any[] = [{ before: today }]; // Start with disabling past dates
+  
+  // Disable weekends for essential service
   if (serviceType === 'essential') {
-    disabledDays.push({ dayOfWeek: [0, 6] }); // Also disable weekends for essential
+    disabledDays.push({ dayOfWeek: [0, 6] }); // Disable weekends for essential
   }
-  // TODO: Add logic to disable specific booked dates or dates outside service range
+  
+  // Disable dates outside service range if provided
+  if (serviceDateRange) {
+    if (serviceDateRange.startDate && serviceDateRange.startDate > today) {
+      disabledDays.push({ before: serviceDateRange.startDate }); // Disable dates before service start date
+    }
+    if (serviceDateRange.endDate) {
+      disabledDays.push({ after: serviceDateRange.endDate }); // Disable dates after service end date
+    }
+  }
+  
+  // Disable fully booked dates
+  const fullyBookedDates = Object.keys(bookedDateMap).filter(dateString => {
+    // Check if the date has any bookings
+    if (!bookedDateMap[dateString] || bookedDateMap[dateString].length === 0) {
+      return false;
+    }
+    
+    try {
+      // Parse the date string to a Date object
+      const date = parseISO(dateString);
+      
+      // For this simple check, we'll consider a date fully booked if it has more than 8 bookings
+      // This is a placeholder logic - in a real scenario, you'd need to check against total available slots
+      const bookingsCount = bookedDateMap[dateString].length;
+      return bookingsCount >= 8; // Assuming a fully booked day has 8 or more bookings
+    } catch (error) {
+      console.error(`Error parsing booked date: ${dateString}`, error);
+      return false;
+    }
+  });
+  
+  // Add fully booked dates to disabledDays
+  if (fullyBookedDates.length > 0) {
+    disabledDays.push(...fullyBookedDates.map(dateStr => {
+      return parseISO(dateStr);
+    }));
+  }
 
   return (
     <>

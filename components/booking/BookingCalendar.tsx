@@ -7,22 +7,31 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Clock, CalendarDays } from 'lucide-react';
 import { format, addDays, isSameDay, startOfDay } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import { toast } from '@/components/ui/use-toast';
 
 interface TimeSlot {
-  time: string;
+  startTime: string;
+  endTime: string;
   available: boolean;
+  clientStartTime?: string;
+  clientEndTime?: string;
+  clientTimezone?: string;
+  businessTimezone?: string;
 }
 
 interface AvailabilityResponse {
-  availableSlots: string[];
+  availableSlots: TimeSlot[];
   businessHours: {
     open: string;
     close: string;
     enabled: boolean;
   };
+  businessTimezone: string;
+  clientTimezone: string;
   date: string;
   message?: string;
+  error?: string;
 }
 
 interface BookingCalendarProps {
@@ -41,17 +50,29 @@ export default function BookingCalendar({
   selectedTime
 }: BookingCalendarProps) {
   const [date, setDate] = useState<Date | undefined>(selectedDate);
-  const [timeSlots, setTimeSlots] = useState<string[]>([]);
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [userTimezone, setUserTimezone] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [businessHours, setBusinessHours] = useState<any>(null);
   const [availabilityMessage, setAvailabilityMessage] = useState<string>('');
 
-  // Fetch availability when date changes
+  // Detect user timezone when component mounts
   useEffect(() => {
-    if (date && serviceId && serviceDuration) {
+    try {
+      const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      setUserTimezone(detectedTimezone);
+    } catch (error) {
+      console.warn('Could not detect timezone:', error);
+      setUserTimezone('America/Chicago'); // Fallback
+    }
+  }, []);
+
+  // Fetch availability when date changes or timezone is detected
+  useEffect(() => {
+    if (date && serviceId && serviceDuration && userTimezone) {
       fetchAvailability(date);
     }
-  }, [date, serviceId, serviceDuration]);
+  }, [date, serviceId, serviceDuration, userTimezone]);
 
   const fetchAvailability = async (selectedDate: Date) => {
     setLoading(true);
@@ -63,7 +84,8 @@ export default function BookingCalendar({
       const params = new URLSearchParams({
         date: dateString,
         serviceDuration: serviceDuration.toString(),
-        serviceId: serviceId
+        serviceId: serviceId,
+        timezone: userTimezone // Send user's timezone to API
       });
 
       const response = await fetch(`/api/availability?${params}`);
@@ -106,9 +128,10 @@ export default function BookingCalendar({
     }
   };
 
-  const handleTimeSelect = (time: string) => {
+  const handleTimeSelect = (slot: TimeSlot) => {
     if (date) {
-      onDateTimeSelect(date, time);
+      // Use the business timezone time for backend processing
+      onDateTimeSelect(date, slot.startTime);
     }
   };
 
@@ -174,18 +197,28 @@ export default function BookingCalendar({
                 <span className="ml-2">Loading available times...</span>
               </div>
             ) : timeSlots.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {timeSlots.map((time) => (
-                  <Button
-                    key={time}
-                    variant={selectedTime === time ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleTimeSelect(time)}
-                    className="justify-center"
-                  >
-                    {formatTimeDisplay(time)}
-                  </Button>
-                ))}
+              <div className="space-y-4">
+                {userTimezone && timeSlots[0].clientTimezone && timeSlots[0].clientTimezone !== timeSlots[0].businessTimezone && (
+                  <div className="text-sm p-2 bg-blue-50 rounded-md text-blue-800 mb-3">
+                    <p className="font-medium">Times are displayed in your local timezone: {userTimezone}</p>
+                    <p className="text-xs mt-1">Business is located in {timeSlots[0].businessTimezone} timezone</p>
+                  </div>
+                )}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {timeSlots.map((slot, index) => (
+                    <Button
+                      key={index}
+                      variant={selectedTime === slot.startTime ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleTimeSelect(slot)}
+                      className="justify-center"
+                    >
+                      {slot.clientStartTime 
+                        ? formatTimeDisplay(slot.clientStartTime)
+                        : formatTimeDisplay(slot.startTime)}
+                    </Button>
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="text-center py-8">

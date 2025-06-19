@@ -318,6 +318,105 @@ export async function removeTagsFromContact(contactId: string, tags: string[]): 
 }
 
 /**
+ * Fetches a contact by their ID from GoHighLevel.
+ */
+export async function getContactById(contactId: string): Promise<GhlContact | null> {
+  if (!contactId) {
+    console.error('GHL API: Contact ID is required to get contact by ID.');
+    throw new Error('Contact ID is required to get contact by ID.');
+  }
+  try {
+    console.log(`[getContactById] Fetching contact with ID: ${contactId}`);
+    const response = await callGhlApi(`/contacts/${contactId}`, 'GET');
+    
+    if (response && response.contact) {
+      console.log(`GHL API: Found contact by ID ${contactId}`);
+      return response.contact;
+    } else if (response && response.id) {
+      console.log(`GHL API: Found contact by ID ${contactId}`);
+      return response;
+    }
+    
+    console.log(`GHL API: No contact found for ID ${contactId}`);
+    return null;
+  } catch (error: any) {
+    const errorMessage = error.message || String(error);
+    
+    if (error.response?.status === 404 || errorMessage.includes('404')) {
+      console.log(`GHL API: Contact with ID ${contactId} not found (received 404).`);
+      return null;
+    }
+    
+    console.error(`GHL API: Error fetching contact by ID (${contactId}):`, error);
+    throw error;
+  }
+}
+
+/**
+ * Fetches contacts by tag from GoHighLevel.
+ */
+export async function getContactsByTag(tag: string): Promise<GhlContact[]> {
+  if (!tag) {
+    console.error('GHL API: Tag is required to get contacts by tag.');
+    throw new Error('Tag is required to get contacts by tag.');
+  }
+  
+  const locationId = process.env.GHL_LOCATION_ID;
+  if (!locationId) {
+    throw new Error('GHL_LOCATION_ID environment variable is not set');
+  }
+  
+  try {
+    console.log(`[getContactsByTag] Fetching contacts with tag: ${tag}`);
+    
+    // Use the contacts list endpoint with tag filter
+    const response = await callGhlApi(
+      `/contacts?locationId=${locationId}&tags=${encodeURIComponent(tag)}&limit=100`,
+      'GET'
+    );
+    
+    if (response && response.contacts && Array.isArray(response.contacts)) {
+      console.log(`GHL API: Found ${response.contacts.length} contacts with tag ${tag}`);
+      return response.contacts;
+    } else if (response && Array.isArray(response)) {
+      console.log(`GHL API: Found ${response.length} contacts with tag ${tag}`);
+      return response;
+    }
+    
+    console.log(`GHL API: No contacts found with tag ${tag}`);
+    return [];
+  } catch (error: any) {
+    console.error(`GHL API: Error fetching contacts by tag (${tag}):`, error);
+    throw error;
+  }
+}
+
+/**
+ * Adds tags to a contact by their email address.
+ * This is a convenience function that combines getContactByEmail and addTagsToContact.
+ */
+export async function addTagsToContactByEmail(email: string, tags: string[]): Promise<any> {
+  if (!email || !tags || tags.length === 0) {
+    throw new Error('Email and tags array are required.');
+  }
+  
+  try {
+    // First, find the contact by email
+    const contact = await getContactByEmail(email);
+    
+    if (!contact || !contact.id) {
+      throw new Error(`Contact with email ${email} not found`);
+    }
+    
+    // Then add the tags to the found contact
+    return await addTagsToContact(contact.id, tags);
+  } catch (error) {
+    console.error(`Error adding tags to contact with email ${email}:`, error);
+    throw error;
+  }
+}
+
+/**
  * Returns a hardcoded list of known custom fields for the HMNP application
  * This is used as a fallback when we can't fetch custom fields from the API
  */

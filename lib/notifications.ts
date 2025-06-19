@@ -3,6 +3,8 @@ import { sendEmail } from '@/lib/email';
 import { sendSms, checkSmsConsent } from '@/lib/sms';
 import * as ghl from '@/lib/ghl';
 import { NotificationType, NotificationMethod, NotificationStatus, BookingStatus } from '@prisma/client';
+import { withRetry } from '@/lib/utils/retry';
+import { logger } from '@/lib/logger';
 
 interface NotificationRecipient {
   email?: string;
@@ -352,7 +354,7 @@ export class NotificationService {
   }
 
   /**
-   * Send email notification
+   * Send email notification with retry mechanism
    */
   private async sendEmailNotification(
     to: string,
@@ -360,27 +362,87 @@ export class NotificationService {
     html: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      await sendEmail({ to, subject, html });
+      await withRetry(
+        async () => {
+          await sendEmail({
+            to,
+            subject,
+            html
+          });
+        },
+        {
+          maxRetries: 3,
+          retryDelay: 2000,
+          onRetry: (error, attempt) => {
+            logger.warn(`Email delivery retry attempt ${attempt} for ${to}: ${error.message}`);
+          },
+          isRetryable: (error) => {
+            // Determine if this error is worth retrying
+            // Don't retry invalid email addresses
+            if (error.message && (
+                error.message.includes('invalid email') ||
+                error.message.includes('invalid recipient') ||
+                error.message.includes('rejected')
+              )) {
+              return false;
+            }
+            return true;
+          }
+        }
+      );
       return { success: true };
-    } catch (error: any) {
+    } catch (error) {
+      logger.error(`Failed to send email to ${to} after retries`, { error });
       return { success: false, error: error.message };
     }
   }
 
   /**
-   * Send SMS notification
+   * Send SMS notification with retry mechanism
    */
   private async sendSmsNotification(
     to: string,
     message: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      const result = await sendSms({ to, body: message });
+      // First check for consent
+      const hasConsent = await checkSmsConsent(to);
+      if (!hasConsent) {
+        return { success: false, error: 'No SMS consent provided' };
+      }
+      
+      // Use retry mechanism with the correct function signature
+      const result = await withRetry(
+        async () => {
+          return await sendSms({ to, body: message });
+        },
+        {
+          maxRetries: 3,
+          retryDelay: 2000,
+          onRetry: (error, attempt) => {
+            logger.warn(`SMS delivery retry attempt ${attempt} for ${to}: ${error.message}`);
+          },
+          isRetryable: (error) => {
+            // Don't retry invalid phone numbers
+            if (error.message && (
+                error.message.includes('invalid phone') ||
+                error.message.includes('invalid number') ||
+                error.message.includes('not a valid')
+              )) {
+              return false;
+            }
+            return true;
+          }
+        }
+      );
+      
+      // Return the result from GHL's SMS service
       return { 
         success: result.success, 
         error: result.error 
       };
-    } catch (error: any) {
+    } catch (error) {
+      logger.error(`Failed to send SMS to ${to} after retries`, { error });
       return { success: false, error: error.message };
     }
   }

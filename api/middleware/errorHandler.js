@@ -44,8 +44,42 @@ function handleError(error, req) {
     method: req.method
   };
 
-  // MongoDB/Mongoose errors
-  if (error.name === 'MongoError' || error.name === 'MongoServerError') {
+  // Prisma errors
+  if (error.name === 'PrismaClientKnownRequestError') {
+    errorResponse.error = 'Database Error';
+    
+    // Prisma error codes: https://www.prisma.io/docs/reference/api-reference/error-reference
+    switch (error.code) {
+      case 'P2002': // Unique constraint failed
+        errorResponse.error = 'Duplicate Entry';
+        errorResponse.message = 'A record with this information already exists';
+        errorResponse.statusCode = 409; // Conflict
+        break;
+      case 'P2003': // Foreign key constraint failed
+        errorResponse.error = 'Relationship Error';
+        errorResponse.message = 'Related record not found';
+        errorResponse.statusCode = 400;
+        break;
+      case 'P2025': // Record not found
+        errorResponse.error = 'Not Found';
+        errorResponse.message = 'The requested record was not found';
+        errorResponse.statusCode = 404;
+        break;
+      default:
+        errorResponse.message = 'A database error occurred';
+        errorResponse.statusCode = 500;
+    }
+  }
+  
+  // Prisma validation error
+  else if (error.name === 'PrismaClientValidationError') {
+    errorResponse.error = 'Validation Error';
+    errorResponse.message = 'Invalid data provided to database';
+    errorResponse.statusCode = 400;
+  }
+
+  // MongoDB/Mongoose errors - keeping for backward compatibility
+  else if (error.name === 'MongoError' || error.name === 'MongoServerError') {
     errorResponse.error = 'Database Error';
     errorResponse.message = 'A database error occurred';
     errorResponse.statusCode = 500;
@@ -73,6 +107,13 @@ function handleError(error, req) {
     errorResponse.statusCode = 401;
   }
   
+  // JWT token expired error
+  else if (error.name === 'TokenExpiredError') {
+    errorResponse.error = 'Authentication Error';
+    errorResponse.message = 'Token has expired';
+    errorResponse.statusCode = 401;
+  }
+  
   // Custom API errors
   else if (error instanceof APIError) {
     errorResponse.error = error.message;
@@ -92,6 +133,20 @@ function handleError(error, req) {
     errorResponse.error = 'Payload Too Large';
     errorResponse.message = 'Request payload exceeds size limit';
     errorResponse.statusCode = 413;
+  }
+  
+  // Multer file upload errors
+  else if (error.code === 'LIMIT_FILE_SIZE') {
+    errorResponse.error = 'File Too Large';
+    errorResponse.message = 'Uploaded file exceeds size limit';
+    errorResponse.statusCode = 413;
+  }
+  
+  // Invalid content type
+  else if (error.status === 415) {
+    errorResponse.error = 'Unsupported Media Type';
+    errorResponse.message = 'The content type is not supported';
+    errorResponse.statusCode = 415;
   }
 
   // Set default status code if not set

@@ -1,0 +1,89 @@
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { getQueues } from '@/lib/queue/config';
+import { prisma } from '@/lib/db';
+import { Role } from '@prisma/client';
+
+export async function POST(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  // Check authentication and authorization
+  const session = await getServerSession(authOptions);
+  if (!session?.user || (session.user as any).role !== Role.ADMIN) {
+    return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+    });
+  }
+
+  const bookingId = params.id;
+
+  try {
+    // Find the booking
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        client: true,
+        service: true,
+      }
+    });
+
+    if (!booking) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Booking not found' 
+      }, { status: 404 });
+    }
+
+    // Update the booking status to CONFIRMED
+    const updatedBooking = await prisma.booking.update({
+      where: { id: bookingId },
+      data: { 
+        status: 'CONFIRMED',
+        updatedAt: new Date(),
+      }
+    });
+    
+    // Get queue instance
+    const queues = getQueues();
+    
+    // Add confirmation notification task to queue
+    if (queues && queues.notificationsQueue) {
+      await queues.notificationsQueue.push({
+        type: 'booking-confirmation',
+        bookingId: booking.id,
+        clientId: booking.client?.id,
+        recipientEmail: booking.client?.email,
+        recipientName: booking.client?.name,
+        serviceName: booking.service?.name,
+        scheduledAt: booking.scheduledAt,
+      });
+    }
+
+    // Create a system log entry
+    await prisma.systemLog.create({
+      data: {
+        level: 'INFO',
+        component: 'BOOKING_MANAGER',
+        message: `Admin confirmed booking ID: ${bookingId} for client: ${booking.client?.name}`,
+        timestamp: new Date(),
+      }
+    }).catch(() => {
+      // If the systemLog table doesn't exist yet, we'll just ignore the error
+    });
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Booking confirmed successfully',
+      booking: updatedBooking
+    });
+  } catch (error) {
+    console.error(`Error confirming booking ${bookingId}:`, error);
+    
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Failed to confirm booking' 
+    }, { status: 500 });
+  }
+}

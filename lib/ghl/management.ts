@@ -3,26 +3,26 @@
  * Provides functions to create and manage all GHL entities via API
  */
 
-const GHL_API_BASE_URL = process.env.GHL_API_BASE_URL;
-const GHL_API_KEY = process.env.GHL_API_KEY;
-const GHL_API_VERSION = process.env.GHL_API_VERSION || "2021-07-28";
+const GHL_API_BASE_URL = process.env.GHL_API_BASE_URL || "https://services.leadconnectorhq.com";
+const GHL_PRIVATE_INTEGRATION_TOKEN = process.env.GHL_PRIVATE_INTEGRATION_TOKEN;
+const GHL_API_VERSION = "2021-07-28"; // Standardized to latest stable version
 const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
 
 interface GHLApiConfig {
   baseUrl: string;
-  apiKey: string;
+  privateIntegrationToken: string;
   version: string;
   locationId?: string;
 }
 
 const getGHLConfig = (): GHLApiConfig => {
-  if (!GHL_API_BASE_URL || !GHL_API_KEY) {
-    throw new Error('GHL API credentials missing in environment variables');
+  if (!GHL_API_BASE_URL || !GHL_PRIVATE_INTEGRATION_TOKEN) {
+    throw new Error('GHL Private Integration credentials missing in environment variables. Please set up Private Integration.');
   }
   
   return {
     baseUrl: GHL_API_BASE_URL,
-    apiKey: GHL_API_KEY,
+    privateIntegrationToken: GHL_PRIVATE_INTEGRATION_TOKEN,
     version: GHL_API_VERSION,
     locationId: GHL_LOCATION_ID
   };
@@ -35,7 +35,7 @@ async function makeGHLRequest(endpoint: string, method: 'GET' | 'POST' | 'PUT' |
   const response = await fetch(url, {
     method,
     headers: {
-      'Authorization': `Bearer ${config.apiKey}`,
+      'Authorization': `Bearer ${config.privateIntegrationToken}`,
       'Content-Type': 'application/json',
       'Version': config.version,
     },

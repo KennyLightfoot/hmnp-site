@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { format, toZonedTime, getTimezoneOffset } from 'date-fns-tz';
+import { addMinutes, isBefore, isAfter, isSameDay } from 'date-fns';
 
 const prisma = new PrismaClient();
 
@@ -9,12 +11,17 @@ const availabilityQuerySchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
   serviceId: z.string().min(1, 'Service ID is required'),
   duration: z.string().optional().nullable(), // Optional override for service duration
+  timezone: z.string().optional().default('America/Chicago'), // Client timezone, default to business timezone
 });
 
 interface TimeSlot {
   startTime: string;
   endTime: string;
   available: boolean;
+  clientStartTime?: string;
+  clientEndTime?: string;
+  clientTimezone?: string;
+  businessTimezone?: string;
 }
 
 interface BusinessHours {
@@ -41,17 +48,26 @@ export async function GET(request: NextRequest) {
       date: searchParams.get('date'),
       serviceId: searchParams.get('serviceId'),
       duration: searchParams.get('duration') || searchParams.get('serviceDuration'),
+      timezone: searchParams.get('timezone') || undefined,
     };
 
     // Validate input parameters
     const validatedParams = availabilityQuerySchema.parse(queryParams);
 
-    const requestedDate = new Date(validatedParams.date);
+    // Get business timezone from settings (default to America/Chicago)
+    const businessSettings = await getBusinessSettings();
+    const businessTimezone = businessSettings.business_timezone || 'America/Chicago';
+    const clientTimezone = validatedParams.timezone;
+    
+    // Convert requested date to business timezone for proper availability calculations
+    const requestedDateInClientTz = new Date(`${validatedParams.date}T00:00:00`);
+    const requestedDateInBusinessTz = toZonedTime(requestedDateInClientTz, businessTimezone);
+    
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Don't allow booking for past dates
-    if (requestedDate < today) {
+    // Don't allow booking for past dates (compare in business timezone)
+    if (requestedDateInBusinessTz < today) {
       return NextResponse.json(
         { error: 'Cannot book appointments for past dates' },
         { status: 400 }
@@ -75,11 +91,8 @@ export async function GET(request: NextRequest) {
       ? parseInt(validatedParams.duration)
       : service.durationMinutes;
 
-    // Get business settings for availability logic
-    const businessSettings = await getBusinessSettings();
-
-    // Get business hours for the requested day
-    const dayOfWeek = requestedDate.getDay();
+    // Get business hours for the requested day (using business timezone)
+    const dayOfWeek = requestedDateInBusinessTz.getDay();
     const businessHours = await getBusinessHoursForDay(dayOfWeek, businessSettings);
 
     if (!businessHours) {
@@ -90,8 +103,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Check for blackout dates (holidays, etc.)
-    const isBlackoutDate = await checkBlackoutDate(requestedDate, businessSettings);
+    // Check for blackout dates (holidays, etc.) - check using business timezone
+    const isBlackoutDate = await checkBlackoutDate(requestedDateInBusinessTz, businessSettings);
     if (isBlackoutDate) {
       return NextResponse.json({
         date: validatedParams.date,
@@ -100,24 +113,27 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Get existing bookings for the date
-    const existingBookings = await getExistingBookings(requestedDate);
+    // Get existing bookings for the date (using business timezone)
+    const existingBookings = await getExistingBookings(requestedDateInBusinessTz);
 
     // Calculate lead time (minimum hours before booking)
     const leadTimeHours = getLeadTime(businessSettings);
     const minimumBookingTime = new Date();
     minimumBookingTime.setHours(minimumBookingTime.getHours() + leadTimeHours);
 
-    // Generate available time slots
+    // Calculate available slots (with timezone support)
     const availableSlots = calculateAvailableSlots({
       businessHours,
-      requestedDate,
+      requestedDate: requestedDateInBusinessTz,
       serviceDurationMinutes,
       existingBookings,
       minimumBookingTime,
       businessSettings,
+      businessTimezone,
+      clientTimezone,
     });
 
+    // Include timezone information in the response
     return NextResponse.json({
       date: validatedParams.date,
       availableSlots,
@@ -129,6 +145,11 @@ export async function GET(request: NextRequest) {
       businessHours: {
         startTime: businessHours.startTime,
         endTime: businessHours.endTime,
+      },
+      timezoneInfo: {
+        businessTimezone,
+        clientTimezone,
+        timezoneSupported: true,
       },
     });
 
@@ -239,6 +260,8 @@ function calculateAvailableSlots({
   existingBookings,
   minimumBookingTime,
   businessSettings,
+  businessTimezone = 'America/Chicago',
+  clientTimezone,
 }: {
   businessHours: BusinessHours;
   requestedDate: Date;
@@ -246,6 +269,8 @@ function calculateAvailableSlots({
   existingBookings: any[];
   minimumBookingTime: Date;
   businessSettings: Record<string, string>;
+  businessTimezone?: string;
+  clientTimezone?: string;
 }): TimeSlot[] {
   const slots: TimeSlot[] = [];
   
@@ -295,10 +320,41 @@ function calculateAvailableSlots({
     
     const available = isAfterMinimumTime && !hasConflict;
     
+    // Format times in proper timezone for client
+    const slotStartTime = format(currentSlot, 'HH:mm', {
+      timeZone: businessTimezone
+    });
+    
+    const slotEndTime = format(slotEnd, 'HH:mm', {
+      timeZone: businessTimezone
+    });
+    
+    // If client timezone is different, include offset information
+    let clientStartTime, clientEndTime;
+    if (clientTimezone && clientTimezone !== businessTimezone) {
+      // Convert time to client's timezone
+      const clientSlotStart = toZonedTime(currentSlot, clientTimezone);
+      const clientSlotEnd = toZonedTime(slotEnd, clientTimezone);
+      
+      clientStartTime = format(clientSlotStart, 'HH:mm', {
+        timeZone: clientTimezone
+      });
+      
+      clientEndTime = format(clientSlotEnd, 'HH:mm', {
+        timeZone: clientTimezone
+      });
+    }
+    
     slots.push({
-      startTime: currentSlot.toTimeString().substr(0, 5), // HH:MM format
-      endTime: slotEnd.toTimeString().substr(0, 5),
+      startTime: slotStartTime,
+      endTime: slotEndTime,
       available,
+      ...(clientTimezone && clientTimezone !== businessTimezone ? {
+        clientStartTime,
+        clientEndTime,
+        clientTimezone,
+        businessTimezone
+      } : {})
     });
     
     // Move to next slot

@@ -161,6 +161,31 @@ const customFields = [
     position: 359,
     placeholder: 'Reason for reschedule'
   },
+  // NEW: Additional rescheduling fields
+  {
+    name: 'cf_reschedule_count',
+    dataType: 'NUMERICAL',
+    position: 360,
+    placeholder: '0'
+  },
+  {
+    name: 'cf_reschedule_fee',
+    dataType: 'MONETORY',
+    position: 361,
+    placeholder: '0.00'
+  },
+  {
+    name: 'cf_previous_appointment_date',
+    dataType: 'DATE',
+    position: 362,
+    placeholder: ''
+  },
+  {
+    name: 'cf_previous_appointment_time',
+    dataType: 'TEXT',
+    position: 363,
+    placeholder: 'Previous appointment time'
+  },
 
   // ===== WORKFLOW-SPECIFIC FIELDS (EXACT NAMES FROM WORKFLOWS) =====
   {
@@ -229,6 +254,61 @@ const customFields = [
     position: 610,
     placeholder: 'Confirmed appointment time'
   },
+  {
+    name: 'appointment_datetime',
+    dataType: 'TEXT',
+    position: 611,
+    placeholder: 'YYYY-MM-DD HH:MM (Combined date and time)'
+  },
+  // NEW: Additional integration fields
+  {
+    name: 'cf_stripe_payment_url',
+    dataType: 'TEXT',
+    position: 612,
+    placeholder: 'Stripe checkout session URL'
+  },
+  {
+    name: 'cf_ghl_contact_id',
+    dataType: 'TEXT',
+    position: 613,
+    placeholder: 'GHL contact ID for cross-reference'
+  },
+  {
+    name: 'cf_customer_email',
+    dataType: 'TEXT',
+    position: 614,
+    placeholder: 'Customer email address'
+  },
+  {
+    name: 'cf_lead_source',
+    dataType: 'TEXT',
+    position: 615,
+    placeholder: 'Source of the lead'
+  },
+  {
+    name: 'cf_campaign_name',
+    dataType: 'TEXT',
+    position: 616,
+    placeholder: 'Marketing campaign name'
+  },
+  {
+    name: 'cf_workflow_id',
+    dataType: 'TEXT',
+    position: 617,
+    placeholder: 'GHL workflow ID'
+  },
+  {
+    name: 'cf_stripe_payment_intent_id',
+    dataType: 'TEXT',
+    position: 618,
+    placeholder: 'Stripe payment intent ID'
+  },
+  {
+    name: 'cf_booking_created_date',
+    dataType: 'DATE',
+    position: 619,
+    placeholder: 'Date booking was created'
+  },
 
   // ===== LEGACY APPOINTMENT FIELDS (from manual) =====
   {
@@ -286,6 +366,25 @@ const customFields = [
     dataType: 'DATE',
     position: 21, 
     placeholder: ''
+  },
+  // NEW: Additional cancellation tracking fields
+  {
+    name: 'cf_cancellation_reason',
+    dataType: 'LARGE_TEXT',
+    position: 62,
+    placeholder: 'Reason for cancellation'
+  },
+  {
+    name: 'cf_cancellation_fee',
+    dataType: 'MONETORY',
+    position: 63,
+    placeholder: '0.00'
+  },
+  {
+    name: 'cf_refund_percentage',
+    dataType: 'NUMERICAL',
+    position: 64,
+    placeholder: '0-100'
   },
 
   // ===== PAYMENT & BILLING FIELDS =====
