@@ -55,8 +55,7 @@ export async function POST(request: NextRequest) {
         User_Booking_signerIdToUser: {
           select: {
             name: true,
-            email: true,
-            phone: true
+            email: true
           }
         }
       }
@@ -71,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     // Check if booking can be rescheduled
     if (booking.status === BookingStatus.CANCELLED_BY_CLIENT || 
-        booking.status === BookingStatus.CANCELLED_BY_PROVIDER ||
+        booking.status === BookingStatus.CANCELLED_BY_STAFF ||
         booking.status === BookingStatus.COMPLETED) {
       return NextResponse.json({
         success: false,
@@ -80,7 +79,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Store original appointment details for comparison
-    const originalDateTime = booking.appointmentDateTime;
+    const originalDateTime = booking.scheduledDateTime;
     
     // Check for reschedule fee policy
     let rescheduleFee = 0;
@@ -98,7 +97,7 @@ export async function POST(request: NextRequest) {
 
     // Update booking with new details
     const updateData: any = {
-      appointmentDateTime: newAppointmentTime,
+      scheduledDateTime: newAppointmentTime,
       updatedAt: now,
       notes: booking.notes ? 
         `${booking.notes}\n\n[${now.toISOString()}] Rescheduled: ${reason || `Requested by ${requestedBy}`}` :
@@ -107,13 +106,12 @@ export async function POST(request: NextRequest) {
 
     // Update address if provided
     if (newAddress) {
-      updateData.serviceAddress = newAddress;
+      updateData.addressStreet = newAddress;
     }
 
     // Add reschedule fee if applicable
     if (rescheduleFee > 0) {
-      updateData.additionalFees = (booking.additionalFees || 0) + rescheduleFee;
-      updateData.totalAmount = (booking.totalAmount || 0) + rescheduleFee;
+      updateData.priceAtBooking = Number(booking.priceAtBooking || 0) + rescheduleFee;
     }
 
     const updatedBooking = await prisma.booking.update({
@@ -144,7 +142,7 @@ export async function POST(request: NextRequest) {
         await ghl.addTagsToContact(booking.ghlContactId, tagsToAdd);
 
         // Update custom fields
-        const customFields = {
+        const customFields: any = {
           cf_appointment_date: newAppointmentTime.toLocaleDateString('en-US'),
           cf_appointment_time: newAppointmentTime.toLocaleTimeString('en-US', {
             hour: 'numeric',
@@ -154,7 +152,7 @@ export async function POST(request: NextRequest) {
           cf_reschedule_date: now.toLocaleDateString('en-US'),
           cf_reschedule_reason: reason || `Requested by ${requestedBy}`,
           cf_reschedule_fee: rescheduleFee.toString(),
-          cf_total_amount: updatedBooking.totalAmount?.toString() || '0'
+          cf_total_amount: updatedBooking.priceAtBooking?.toString() || '0'
         };
 
         if (newAddress) {
@@ -164,7 +162,7 @@ export async function POST(request: NextRequest) {
         await ghl.updateContact({
           id: booking.ghlContactId,
           customField: customFields,
-          locationId: process.env.GHL_LOCATION_ID!
+          locationId: process.env.GHL_LOCATION_ID || ""
         });
 
         console.log('✅ GHL contact updated with reschedule details');
@@ -186,15 +184,15 @@ export async function POST(request: NextRequest) {
         hour12: true
       }),
       serviceName: updatedBooking.service?.name || 'Mobile Notary Service',
-      serviceAddress: updatedBooking.serviceAddress,
+      serviceAddress: [updatedBooking.addressStreet, updatedBooking.addressCity, updatedBooking.addressState].filter(Boolean).join(', ') || 'Address TBD',
       rescheduleFee: rescheduleFee,
-      totalAmount: updatedBooking.totalAmount || 0,
+      totalAmount: Number(updatedBooking.priceAtBooking || 0),
       reason: reason || `Requested by ${requestedBy}`,
       hoursUntilOriginal: hoursUntilOriginal,
       customer: {
         name: updatedBooking.User_Booking_signerIdToUser?.name || 'Unknown',
         email: updatedBooking.User_Booking_signerIdToUser?.email || '',
-        phone: updatedBooking.User_Booking_signerIdToUser?.phone || ''
+        phone: ''
       },
       message: rescheduleFee > 0 
         ? `Booking rescheduled successfully. A reschedule fee of $${rescheduleFee} has been added due to short notice.`
@@ -280,7 +278,7 @@ export async function GET(request: NextRequest) {
 
     // Check if booking status allows rescheduling
     if (booking.status === BookingStatus.CANCELLED_BY_CLIENT || 
-        booking.status === BookingStatus.CANCELLED_BY_PROVIDER ||
+        booking.status === BookingStatus.CANCELLED_BY_STAFF ||
         booking.status === BookingStatus.COMPLETED) {
       availability.canReschedule = false;
       availability.reasons.push('Booking cannot be rescheduled in its current status');
@@ -299,7 +297,7 @@ export async function GET(request: NextRequest) {
       // Check for conflicts with other bookings
       const conflictingBooking = await prisma.booking.findFirst({
         where: {
-          appointmentDateTime: proposedTime,
+          scheduledDateTime: proposedTime,
           status: {
             in: [BookingStatus.CONFIRMED, BookingStatus.PAYMENT_PENDING, BookingStatus.IN_PROGRESS]
           },
@@ -315,7 +313,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Calculate fees based on notice period
-      const originalDateTime = booking.appointmentDateTime;
+      const originalDateTime = booking.scheduledDateTime;
       if (originalDateTime) {
         const hoursUntilOriginal = Math.floor((originalDateTime.getTime() - now.getTime()) / (1000 * 60 * 60));
         if (hoursUntilOriginal < 24 && hoursUntilOriginal > 0) {
@@ -357,7 +355,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: {
         bookingId: booking.id,
-        currentDateTime: booking.appointmentDateTime,
+        currentDateTime: booking.scheduledDateTime,
         availability: availability
       }
     });

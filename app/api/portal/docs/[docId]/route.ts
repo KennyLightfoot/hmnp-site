@@ -1,19 +1,21 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import type { Session } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { GetObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { s3 } from "@/lib/s3"
 
 // Secure download redirect for partners. Expires in 2 minutes.
-export async function GET(req: NextRequest, { params }: { params: { docId: string } }) {
+export async function GET(req: NextRequest, context: { params: Promise<{ docId: string }> }) {
   const session = await getServerSession(authOptions)
   const userId = (session?.user as { id?: string })?.id
   if (!userId)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
+  const params = await context.params;
+  
   const doc = await prisma.assignmentDocument.findUnique({
     where: { id: params.docId },
     include: { assignment: { select: { partnerAssignedToId: true } } },

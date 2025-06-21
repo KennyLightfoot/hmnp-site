@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from 'next/navigation';
 import { User, Role } from "@prisma/client";
@@ -30,7 +30,7 @@ export default async function AdminUsersPage() {
   const session = await getServerSession(authOptions);
 
   // 1. Authorization Check: Only Admins allowed
-  if (!session?.user || (session.user as any).role !== Role.ADMIN) {
+  if (!session?.user || session.user.role !== Role.ADMIN) {
     // Redirect non-admins or unauthenticated users
     redirect('/portal'); // Or '/unauthorized', or '/login'
   }

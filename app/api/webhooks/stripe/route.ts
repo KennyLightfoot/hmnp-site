@@ -1,27 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 import { BookingStatus } from '@prisma/client';
 import * as ghl from '@/lib/ghl';
+import { getStripeClient, verifyStripeWebhook } from '@/lib/stripe';
+import { WebhookProcessor } from '@/lib/webhook-processor';
+import type Stripe from 'stripe';
 
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-01-27.acacia' as any,
-});
+// Get Stripe client instance
+const stripe = getStripeClient();
 
-// Webhook endpoint secret from Stripe Dashboard
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+// Webhook endpoint secret from Stripe Dashboard with validation
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+if (!endpointSecret) {
+  console.error('❌ STRIPE_WEBHOOK_SECRET environment variable is not set');
+}
 
 export async function POST(request: NextRequest) {
   console.log('🎯 Stripe webhook received');
+  
+  // Check if Stripe is configured
+  if (!stripe) {
+    console.error('❌ Stripe not configured');
+    return NextResponse.json(
+      { error: 'Stripe not configured' },
+      { status: 500 }
+    );
+  }
+
+  // Check if webhook secret is configured
+  if (!endpointSecret) {
+    console.error('❌ Stripe webhook secret not configured');
+    return NextResponse.json(
+      { error: 'Webhook configuration error' },
+      { status: 500 }
+    );
+  }
   
   try {
     // Get the raw body as text for signature verification
     const body = await request.text();
     
     // Get the signature from headers
-    const sig = headers().get('stripe-signature');
+    const headersList = await headers();
+    const sig = headersList.get('stripe-signature');
     
     if (!sig) {
       console.error('❌ No stripe-signature header found');
@@ -31,10 +54,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify the webhook signature
+    // Verify the webhook signature using our centralized function
     let event: Stripe.Event;
     try {
-      event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
+      event = verifyStripeWebhook(body, sig, endpointSecret);
     } catch (err: any) {
       console.error('❌ Webhook signature verification failed:', err.message);
       return NextResponse.json(
@@ -45,34 +68,53 @@ export async function POST(request: NextRequest) {
 
     console.log(`✅ Webhook verified. Event type: ${event.type}`);
 
-    // Handle the event
+    // Process event with idempotency and race condition protection
+    let result: { success: boolean; skipped: boolean; error?: string };
+
     switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session;
-        await handleCheckoutSessionCompleted(session);
+      case 'checkout.session.completed':
+        result = await WebhookProcessor.processEvent<Stripe.Checkout.Session>(
+          event,
+          handleCheckoutSessionCompleted
+        );
         break;
-      }
       
-      case 'payment_intent.succeeded': {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        await handlePaymentIntentSucceeded(paymentIntent);
+      case 'payment_intent.succeeded':
+        result = await WebhookProcessor.processEvent<Stripe.PaymentIntent>(
+          event,
+          handlePaymentIntentSucceeded
+        );
         break;
-      }
       
-      case 'payment_intent.payment_failed': {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        await handlePaymentIntentFailed(paymentIntent);
+      case 'payment_intent.payment_failed':
+        result = await WebhookProcessor.processEvent<Stripe.PaymentIntent>(
+          event,
+          handlePaymentIntentFailed
+        );
         break;
-      }
       
-      case 'charge.refunded': {
-        const charge = event.data.object as Stripe.Charge;
-        await handleChargeRefunded(charge);
+      case 'charge.refunded':
+        result = await WebhookProcessor.processEvent<Stripe.Charge>(
+          event,
+          handleChargeRefunded
+        );
         break;
-      }
       
       default:
         console.log(`Unhandled event type: ${event.type}`);
+        return NextResponse.json({ received: true });
+    }
+
+    if (!result.success) {
+      console.error(`❌ Failed to process webhook: ${result.error}`);
+      return NextResponse.json(
+        { error: result.error || 'Webhook processing failed' },
+        { status: 500 }
+      );
+    }
+
+    if (result.skipped) {
+      console.log(`⏭️ Webhook processing skipped (already processed or concurrent processing)`);
     }
 
     return NextResponse.json({ received: true });
@@ -85,25 +127,49 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
-  console.log('💳 Processing checkout.session.completed');
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, eventId: string) {
+  console.log(`💳 Processing checkout.session.completed for event ${eventId}`);
   
   // Get booking ID from metadata
   const bookingId = session.metadata?.bookingId;
   
   if (!bookingId) {
-    console.error('❌ No bookingId in session metadata');
-    return;
+    console.error(`❌ No bookingId in session metadata for event ${eventId}`);
+    throw new Error('No bookingId in session metadata');
   }
 
-  try {
+  // Use transaction to ensure data consistency
+  await prisma.$transaction(async (tx) => {
+    // Get booking with current status check
+    const existingBooking = await tx.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        service: true,
+        User_Booking_signerIdToUser: true,
+        Payment: {
+          where: {
+            status: 'PENDING'
+          }
+        }
+      }
+    });
+
+    if (!existingBooking) {
+      throw new Error(`Booking ${bookingId} not found`);
+    }
+
+    // Check if already processed (idempotency at business logic level)
+    if (existingBooking.status === BookingStatus.CONFIRMED && existingBooking.depositStatus === 'COMPLETED') {
+      console.log(`✅ Booking ${bookingId} already confirmed, skipping`);
+      return;
+    }
+
     // Update booking status to CONFIRMED
-    const booking = await prisma.booking.update({
+    const booking = await tx.booking.update({
       where: { id: bookingId },
       data: {
         status: BookingStatus.CONFIRMED,
         depositStatus: 'COMPLETED',
-        stripePaymentIntentId: session.payment_intent as string,
       },
       include: {
         service: true,
@@ -111,9 +177,26 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       }
     });
 
-    console.log(`✅ Booking ${bookingId} updated to CONFIRMED`);
+    // Update Payment records
+    if (session.payment_intent && existingBooking.Payment.length > 0) {
+      await tx.payment.updateMany({
+        where: {
+          bookingId: bookingId,
+          status: 'PENDING',
+          paymentIntentId: session.payment_intent as string
+        },
+        data: {
+          status: 'COMPLETED',
+          paidAt: new Date(),
+          transactionId: session.id,
+          notes: `Checkout session completed: ${session.id}`
+        }
+      });
+    }
 
-    // Update GHL contact if we have a contact ID
+    console.log(`✅ Booking ${bookingId} updated to CONFIRMED via transaction`);
+
+    // GHL integration (outside critical transaction path but still atomic)
     if (booking.ghlContactId) {
       try {
         // Remove pending payment tag and add confirmed tag
@@ -128,31 +211,28 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
           cf_payment_date: new Date().toLocaleDateString('en-US'),
           cf_booking_status: 'CONFIRMED',
           cf_payment_status: 'COMPLETED',
+          cf_payment_method: 'stripe_checkout',
+          cf_checkout_session_id: session.id,
         };
         
         await ghl.updateContact({
           id: booking.ghlContactId,
           customField: customFields,
-          locationId: process.env.GHL_LOCATION_ID!,
+          locationId: process.env.GHL_LOCATION_ID || "",
         });
         
         console.log(`✅ GHL contact ${booking.ghlContactId} updated`);
       } catch (ghlError) {
-        console.error('❌ Failed to update GHL contact:', ghlError);
-        // Don't fail the webhook - booking is still confirmed
+        console.error(`❌ Failed to update GHL contact for booking ${bookingId}:`, ghlError);
+        // Log but don't fail the transaction - booking confirmation is more critical
       }
     }
+  });
 
-    // Send internal notification
-    console.log(`🔔 Payment confirmed for booking ${bookingId}`);
-    
-  } catch (error) {
-    console.error('❌ Error updating booking:', error);
-    throw error;
-  }
+  console.log(`🔔 Payment confirmed for booking ${bookingId} via event ${eventId}`);
 }
 
-async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {
+async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent, eventId: string) {
   console.log('💳 Processing payment_intent.succeeded');
   
   // This might be triggered for various payment scenarios
@@ -165,7 +245,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
   }
 }
 
-async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
+async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, eventId: string) {
   console.log('❌ Processing payment_intent.payment_failed');
   
   const bookingId = paymentIntent.metadata?.bookingId;
@@ -213,7 +293,7 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
         await ghl.updateContact({
           id: booking.ghlContactId,
           customField: customFields,
-          locationId: process.env.GHL_LOCATION_ID!,
+          locationId: process.env.GHL_LOCATION_ID || "",
         });
         
         console.log(`✅ GHL contact ${booking.ghlContactId} updated with payment failure`);
@@ -230,7 +310,7 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
   }
 }
 
-async function handleChargeRefunded(charge: Stripe.Charge) {
+async function handleChargeRefunded(charge: Stripe.Charge, eventId: string) {
   console.log('💸 Processing charge.refunded');
   
   // Find the booking by payment intent ID
@@ -240,14 +320,21 @@ async function handleChargeRefunded(charge: Stripe.Charge) {
   }
 
   try {
-    const booking = await prisma.booking.findFirst({
+    // Find booking by payment intent ID stored in notes or through Payment records
+    const payments = await prisma.payment.findMany({
       where: {
-        stripePaymentIntentId: charge.payment_intent as string,
+        paymentIntentId: charge.payment_intent as string,
       },
       include: {
-        service: true,
+        Booking: {
+          include: {
+            service: true,
+          }
+        }
       }
     });
+
+    const booking = payments.length > 0 ? payments[0].Booking : null;
 
     if (!booking) {
       console.error(`❌ No booking found for payment intent ${charge.payment_intent}`);
@@ -280,7 +367,7 @@ async function handleChargeRefunded(charge: Stripe.Charge) {
         await ghl.updateContact({
           id: booking.ghlContactId,
           customField: customFields,
-          locationId: process.env.GHL_LOCATION_ID!,
+          locationId: process.env.GHL_LOCATION_ID || "",
         });
         
         console.log(`✅ GHL contact ${booking.ghlContactId} updated with refund`);
@@ -297,9 +384,5 @@ async function handleChargeRefunded(charge: Stripe.Charge) {
   }
 }
 
-// Disable body parsing for webhook endpoints
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// Note: In App Router, raw body access is handled via request.text() or request.arrayBuffer()
+// No need for bodyParser configuration like in Pages Router

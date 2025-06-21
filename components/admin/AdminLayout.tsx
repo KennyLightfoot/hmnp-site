@@ -27,7 +27,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   ];
 
   const isActive = (path: string) => {
-    return pathname === path || pathname?.startsWith(`${path}/`);
+    if (!pathname) return false;
+    return pathname === path || pathname.startsWith(`${path}/`);
   };
 
   return (

@@ -3,8 +3,8 @@ import { PrismaClient } from '@prisma/client';
 import Stripe from 'stripe';
 
 const prisma = new PrismaClient();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-04-30.basil',
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2023-10-16',
 });
 
 export async function POST(request: NextRequest) {
@@ -42,8 +42,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate amount (in cents for Stripe)
-    const amountInCents = Math.round(Number(booking.depositAmount) * 100);
+    // Calculate amount using centralized pricing utility
+    const { PricingUtils } = await import('@/lib/pricing-utils');
+    const paymentAmount = PricingUtils.getBookingAmount({
+      priceAtBooking: booking.service.basePrice,
+      depositAmount: booking.depositAmount,
+      service: {
+        requiresDeposit: booking.service.requiresDeposit,
+        depositAmount: booking.service.depositAmount
+      }
+    });
+    const amountInCents = PricingUtils.toCents(paymentAmount);
 
     if (amountInCents <= 0) {
       return NextResponse.json(

@@ -20,7 +20,6 @@ const updateUserSchema = z.object({
   name: z.string().min(1, 'Name is required').optional(),
   email: z.string().email('Valid email is required').optional(),
   role: z.enum(['ADMIN', 'STAFF', 'NOTARY', 'CLIENT']).optional(),
-  active: z.boolean().optional(),
 });
 
 /**

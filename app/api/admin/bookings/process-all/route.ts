@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { getQueues } from '@/lib/queue/config';
 import { prisma } from '@/lib/db';
 import { Role } from '@prisma/client';
@@ -27,17 +27,18 @@ export async function POST() {
     // Find all pending bookings that need processing
     const pendingBookings = await prisma.booking.findMany({
       where: {
-        status: { in: ['PENDING', 'PAYMENT_PENDING'] }
+        status: { in: ['REQUESTED', 'PAYMENT_PENDING'] }
       },
-      select: {
-        id: true,
-        status: true,
+      take: 50,
+      include: {
+        User_Booking_signerIdToUser: true,
+        service: true,
       }
     });
 
     // Add each booking to the queue for processing
     for (const booking of pendingBookings) {
-      await queues.bookingProcessingQueue.push({
+      await queues.bookingProcessingQueue.sendMessage({
         type: 'process-booking',
         bookingId: booking.id,
         action: 'process',

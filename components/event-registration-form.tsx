@@ -33,7 +33,7 @@ const eventRegistrationSchema = z.object({
   phone: z.string().optional().or(z.literal('')),
   numberOfAttendees: z.number().min(1, 'At least one attendee is required.').int().optional(),
   dietaryRestrictions: z.string().optional(),
-  consentToCommunications: z.boolean().optional().default(false),
+  consentToCommunications: z.boolean(),
 }).refine(data => data.eventName || data.selectedEventId, {
     message: 'An event must be specified or selected.',
     path: ['selectedEventId'], // Point error to selector if generic form
@@ -57,6 +57,7 @@ export default function EventRegistrationForm({ eventName, eventId }: EventRegis
     handleSubmit,
     control,
     setValue,
+    watch,
     formState: { errors },
     reset,
   } = useForm<EventRegistrationFormValues>({

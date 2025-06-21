@@ -1,19 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { Role } from '@prisma/client';
-import { randomUUID } from 'crypto'; // For generating unique S3 keys
-
-import { s3 } from '@/lib/s3';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { Role, BookingStatus, LocationType } from '@prisma/client';
 
 export async function POST(
   request: Request,
-  { params }: { params: { sessionId: string } }
+  context: { params: Promise<{ sessionId: string }> }
 ) {
   const session = await getServerSession(authOptions);
+  const params = await context.params;
   const { sessionId } = params;
 
   // 1. Authorization Check
@@ -23,68 +19,66 @@ export async function POST(
   const userId = (session.user as any).id;
 
   try {
-    const notarizationSession = await prisma.notarizationSession.findUnique({
-      where: { id: sessionId },
+    // 2. Validate RON Booking (formerly NotarizationSession)
+    const ronBooking = await prisma.booking.findUnique({
+      where: { 
+        id: sessionId,
+        locationType: LocationType.REMOTE_ONLINE_NOTARIZATION
+      },
+      include: { NotarizationDocument: true }
     });
 
-    if (!notarizationSession) {
-      return NextResponse.json({ error: 'Notarization session not found' }, { status: 404 });
+    if (!ronBooking) {
+      return NextResponse.json({ error: 'RON booking not found' }, { status: 404 });
+    }
+    
+    if (ronBooking.signerId !== userId) {
+      return NextResponse.json({ error: 'Forbidden: You are not the signer for this RON booking.' }, { status: 403 });
     }
 
-    // Ensure the user is the signer for this session
-    if (notarizationSession.signerId !== userId) {
-      return NextResponse.json({ error: 'Forbidden: You are not the signer for this session.' }, { status: 403 });
-    }
-
-    // 2. Get filename and contentType from request body
+    // 3. Parse Request Body
     const body = await request.json();
-    const { filename, contentType } = body;
+    const { filename, fileSize, contentType } = body;
 
-    if (!filename || !contentType) {
-      return NextResponse.json({ error: 'Filename and contentType are required' }, { status: 400 });
+    if (!filename || !fileSize) {
+      return NextResponse.json({ error: 'Missing required fields: filename, fileSize' }, { status: 400 });
     }
 
-    // 3. Generate a unique key for S3
-    const s3Key = `ron_documents/${sessionId}/${randomUUID()}-${filename.replace(/\s+/g, '_')}`;
+    // 4. Generate S3 Key and prepare for upload
+    const timestamp = Date.now();
+    const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const s3Key = `ron-documents/${sessionId}/${timestamp}-${sanitizedFilename}`;
 
-    // 4. Create NotarizationDocument record (before generating presigned URL)
+    // 5. Create NotarizationDocument record
     const documentRecord = await prisma.notarizationDocument.create({
       data: {
-        sessionId: sessionId,
+        id: `doc_${timestamp}_${Math.random().toString(36).substr(2, 9)}`,
         s3Key: s3Key,
         originalFilename: filename,
         uploadedById: userId,
-        // isSigned, signedS3Key, signedAt will be updated later
+        bookingId: sessionId, // Link to the RON booking instead of sessionId
+        updatedAt: new Date(),
       },
     });
 
-    // 5. Generate Presigned URL
-    const expires_in_seconds = 300; // URL valid for 5 minutes
+    // 6. Update booking status if it's the first document
+    if (ronBooking.status === BookingStatus.REQUESTED) {
+      await prisma.booking.update({
+        where: { id: sessionId },
+        data: { status: BookingStatus.AWAITING_CLIENT_ACTION }, // Maps from AWAITING_DOCUMENTS
+      });
+    }
 
-    const command = new PutObjectCommand({
-      Bucket: process.env.S3_BUCKET, // Ensure S3_BUCKET is set in your .env file
-      Key: s3Key,
-      ContentType: contentType,
-      ServerSideEncryption: 'AES256', // Recommended for S3-managed encryption
-    });
-
-    const presignedUrl = await getSignedUrl(s3, command, {
-      expiresIn: expires_in_seconds,
-    });
-    // const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: expires_in_seconds });
-
+    // 7. Return upload details (in a real app, you'd generate S3 presigned URL here)
     return NextResponse.json({
-      presignedUrl,
+      message: 'Document upload initiated successfully.',
       documentId: documentRecord.id,
-      s3Key, // good for client to know where it *should* go
-      expiresIn: expires_in_seconds,
+      s3Key: s3Key,
+      uploadUrl: `/api/s3/upload?key=${encodeURIComponent(s3Key)}`, // Placeholder
     });
 
   } catch (error) {
     console.error('Failed to initiate document upload:', error);
-    if (error instanceof SyntaxError) { // For invalid JSON body
-        return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
-    }
     return NextResponse.json({ error: 'Failed to initiate document upload.' }, { status: 500 });
   }
 }

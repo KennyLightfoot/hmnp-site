@@ -6,8 +6,8 @@ import * as ghl from '@/lib/ghl';
 import Stripe from 'stripe';
 
 // Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-01-27.acacia' as any,
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2023-10-16',
 });
 
 // API key verification
@@ -47,8 +47,7 @@ export async function POST(request: NextRequest) {
         User_Booking_signerIdToUser: {
           select: {
             name: true,
-            email: true,
-            phone: true
+            email: true
           }
         }
       }
@@ -62,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if booking can be cancelled
-    if (booking.status === BookingStatus.CANCELLED_BY_CLIENT || booking.status === BookingStatus.CANCELLED_BY_PROVIDER) {
+    if (booking.status === BookingStatus.CANCELLED_BY_CLIENT || booking.status === BookingStatus.CANCELLED_BY_STAFF) {
       return NextResponse.json({
         success: false,
         error: 'Booking is already cancelled'
@@ -78,7 +77,7 @@ export async function POST(request: NextRequest) {
 
     // Calculate refund amount based on cancellation policy
     const now = new Date();
-    const appointmentTime = booking.appointmentDateTime ? new Date(booking.appointmentDateTime) : new Date();
+    const appointmentTime = booking.scheduledDateTime ? new Date(booking.scheduledDateTime) : new Date();
     const hoursUntilAppointment = Math.floor((appointmentTime.getTime() - now.getTime()) / (1000 * 60 * 60));
     
     let refundPercentage = 0;
@@ -89,20 +88,31 @@ export async function POST(request: NextRequest) {
       refundPercentage = 100; // Full refund
     } else if (hoursUntilAppointment >= 4) {
       refundPercentage = 50; // 50% refund
-      cancellationFee = Math.round((booking.totalAmount || 0) * 0.5);
+      cancellationFee = Math.round(Number(booking.priceAtBooking || 0) * 0.5);
     } else {
       refundPercentage = 0; // No refund
-      cancellationFee = booking.totalAmount || 0;
+      cancellationFee = Number(booking.priceAtBooking || 0);
     }
 
-    const refundAmount = Math.round((booking.totalAmount || 0) * (refundPercentage / 100));
+    const refundAmount = Math.round(Number(booking.priceAtBooking || 0) * (refundPercentage / 100));
 
     // Process Stripe refund if payment was made
     let stripeRefundId = null;
-    if (booking.stripePaymentIntentId && refundAmount > 0) {
+    
+    // Get payment records for this booking to find payment intent ID
+    const payments = await prisma.payment.findMany({
+      where: { 
+        bookingId: booking.id,
+        status: 'COMPLETED',
+        paymentIntentId: { not: null }
+      },
+      select: { paymentIntentId: true }
+    });
+    
+    if (payments.length > 0 && payments[0].paymentIntentId && refundAmount > 0) {
       try {
         const refund = await stripe.refunds.create({
-          payment_intent: booking.stripePaymentIntentId,
+          payment_intent: payments[0].paymentIntentId,
           amount: refundAmount * 100, // Convert to cents
           reason: 'requested_by_customer',
           metadata: {
@@ -124,12 +134,9 @@ export async function POST(request: NextRequest) {
     const updatedBooking = await prisma.booking.update({
       where: { id: bookingId },
       data: {
-        status: initiatedBy === 'customer' ? BookingStatus.CANCELLED_BY_CLIENT : BookingStatus.CANCELLED_BY_PROVIDER,
-        depositStatus: refundAmount > 0 ? 'REFUNDED' : 'FORFEITED',
-        cancellationReason: reason || `Cancelled by ${initiatedBy}`,
-        cancellationDate: now,
-        refundAmount: refundAmount,
-        stripeRefundId: stripeRefundId,
+        status: initiatedBy === 'customer' ? BookingStatus.CANCELLED_BY_CLIENT : BookingStatus.CANCELLED_BY_STAFF,
+        depositStatus: refundAmount > 0 ? 'REFUNDED' : 'FAILED',
+        notes: reason || `Cancelled by ${initiatedBy}`,
         updatedAt: now
       }
     });
@@ -169,7 +176,7 @@ export async function POST(request: NextRequest) {
         await ghl.updateContact({
           id: booking.ghlContactId,
           customField: customFields,
-          locationId: process.env.GHL_LOCATION_ID!
+          locationId: process.env.GHL_LOCATION_ID || ''
         });
 
         console.log('✅ GHL contact updated with cancellation details');
@@ -182,7 +189,7 @@ export async function POST(request: NextRequest) {
     // Prepare response
     const responseData = {
       bookingId: booking.id,
-      originalDateTime: booking.appointmentDateTime,
+      originalDateTime: booking.scheduledDateTime,
       cancellationDate: now,
       reason: reason || `Cancelled by ${initiatedBy}`,
       refundAmount: refundAmount,

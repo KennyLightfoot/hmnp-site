@@ -9,7 +9,7 @@ import { z } from 'zod';
 // Environment variable validation schema
 const envSchema = z.object({
   // App Configuration
-  NODE_ENV: z.enum(['development', 'staging', 'production']).default('development'),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   NEXTAUTH_URL: z.string().url().optional(),
   NEXTAUTH_SECRET: z.string().min(32, 'NEXTAUTH_SECRET must be at least 32 characters'),
   
@@ -97,7 +97,7 @@ export const vercelConfig = {
   // App
   isProduction: env.NODE_ENV === 'production',
   isDevelopment: env.NODE_ENV === 'development',
-  isStaging: env.NODE_ENV === 'staging',
+  isStaging: env.VERCEL_ENV === 'preview',
   
   // URLs
   nextAuthUrl: env.NEXTAUTH_URL || (
@@ -271,8 +271,8 @@ export const isVercel = !!process.env.VERCEL;
  * Helper to get the current environment
  */
 export const getCurrentEnvironment = (): 'development' | 'staging' | 'production' => {
-  if (vercelConfig.vercel.env === 'production') return 'production';
-  if (vercelConfig.vercel.env === 'preview') return 'staging';
+  if (env.NODE_ENV === 'production') return 'production';
+  if (env.VERCEL_ENV === 'preview') return 'staging'; // Use VERCEL_ENV for staging
   return 'development';
 };
 

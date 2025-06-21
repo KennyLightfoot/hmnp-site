@@ -1,6 +1,6 @@
 "use client"
 
-import { type ReactNode, useState } from "react"
+import { type ReactNode, useState, useEffect } from "react"
 
 interface ApiDataWrapperProps<T> {
   /** Function to fetch data */
@@ -63,11 +63,11 @@ export function ApiDataWrapper<T>({
   }
 
   // Fetch data on mount if requested
-  useState(() => {
+  useEffect(() => {
     if (fetchOnMount) {
       fetchData()
     }
-  })
+  }, [fetchOnMount])
 
   if (loading) {
     return <>{loadingComponent}</>
@@ -88,10 +88,10 @@ function DefaultLoading() {
   )
 }
 
-function DefaultError({ message }: Error, retry: () => void) {
+function DefaultError(error: Error, retry: () => void) {
   return (
     <div className="p-4 border border-red-300 bg-red-50 rounded-md">
-      <p className="text-red-700 mb-2">Error loading data: {message}</p>
+      <p className="text-red-700 mb-2">Error loading data: {error.message}</p>
       <button
         onClick={retry}
         className="px-3 py-1 bg-[#002147] text-white rounded-md hover:bg-[#003167] transition-colors"

@@ -110,7 +110,7 @@ export function PartnerReferralForm() {
         />
 
         <hr className="my-6" />
-        <h3 classID="text-xl font-medium text-gray-700">Referred Person's Details</h3>
+        <h3 className="text-xl font-medium text-gray-700">Referred Person's Details</h3>
 
         <FormField
           control={form.control}

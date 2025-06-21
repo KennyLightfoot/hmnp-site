@@ -26,7 +26,9 @@ export default function AssignmentsFilterControls({
 
   // Update URL search parameters
   const updateSearchParams = useCallback((newSearch: string, newStatus: string) => {
-    const params = new URLSearchParams(searchParams.toString()); // Use current params as base
+    if (!pathname) return; // Handle case where pathname might be null
+    
+    const params = new URLSearchParams(searchParams?.toString() || ''); // Use current params as base
     if (newSearch) {
       params.set('search', newSearch);
     } else {

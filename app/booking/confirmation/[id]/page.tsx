@@ -35,7 +35,7 @@ interface BookingDetails {
 
 export default function BookingConfirmationPage() {
   const params = useParams();
-  const bookingId = params.id as string;
+  const bookingId = params?.id as string;
   
   const [booking, setBooking] = useState<BookingDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);

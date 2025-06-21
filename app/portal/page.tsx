@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth"
 import { redirect } from 'next/navigation'
 import { Metadata } from "next";
 import { Suspense } from 'react';
@@ -13,24 +13,25 @@ export const metadata: Metadata = {
 
 // Define the props for the page, including searchParams
 interface PortalAssignmentsPageProps {
-  searchParams?: {
+  searchParams?: Promise<{
     page?: string;
     search?: string;
     status?: string;
     // other params if any
-  };
+  }>;
 }
 
 const PAGE_SIZE = 15; // Define items per page
 
 export default async function PortalAssignmentsPage({ searchParams }: PortalAssignmentsPageProps) {
+  const resolvedSearchParams = searchParams ? await searchParams : {};
   const session = await getServerSession(authOptions)
 
   if (!session?.user) {
     redirect('/login')
   }
 
-  const user = session.user as any;
+  const user = session.user;
   const userId = user.id as string;
   const userRole = user.role as string;
 

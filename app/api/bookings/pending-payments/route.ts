@@ -15,8 +15,8 @@ function verifyGHLWebhook(payload: string, signature: string, secret: string): b
     .digest('hex');
   
   return crypto.timingSafeEqual(
-    Buffer.from(signature.replace('sha256=', '')),
-    Buffer.from(expectedSignature)
+    new Uint8Array(Buffer.from(signature.replace('sha256=', ''))),
+    new Uint8Array(Buffer.from(expectedSignature))
   );
 }
 
@@ -91,8 +91,7 @@ export async function GET(request: NextRequest) {
         User_Booking_signerIdToUser: {
           select: {
             name: true,
-            email: true,
-            phone: true
+            email: true
           }
         }
       }
@@ -115,8 +114,8 @@ export async function GET(request: NextRequest) {
       }
 
       // Check if appointment is within 24 hours (critical)
-      if (booking.appointmentDateTime) {
-        const appointmentTime = new Date(booking.appointmentDateTime);
+      if (booking.scheduledDateTime) {
+        const appointmentTime = new Date(booking.scheduledDateTime);
         const hoursUntilAppointment = Math.floor((appointmentTime.getTime() - now.getTime()) / (1000 * 60 * 60));
         
         if (hoursUntilAppointment < 24 && hoursUntilAppointment > 0) {
@@ -133,18 +132,18 @@ export async function GET(request: NextRequest) {
         bookingId: booking.id,
         paymentUrl: booking.stripePaymentUrl || `${process.env.NEXTAUTH_URL}/checkout/${booking.id}`,
         serviceName: booking.service?.name || 'Mobile Notary Service',
-        servicePrice: booking.totalAmount || 75,
-        scheduledDate: booking.appointmentDateTime ? new Date(booking.appointmentDateTime).toLocaleDateString('en-US') : null,
-        scheduledTime: booking.appointmentDateTime ? new Date(booking.appointmentDateTime).toLocaleTimeString('en-US', {
+        servicePrice: Number(booking.priceAtBooking || 75),
+        scheduledDate: booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleDateString('en-US') : null,
+        scheduledTime: booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleTimeString('en-US', {
           hour: 'numeric',
           minute: '2-digit',
           hour12: true
         }) : null,
         locationInfo: {
-          address: booking.serviceAddress || 'Address TBD'
+          address: [booking.addressStreet, booking.addressCity, booking.addressState].filter(Boolean).join(', ') || 'Address TBD'
         },
         paymentInfo: {
-          amount: booking.totalAmount || 75,
+          amount: Number(booking.priceAtBooking || 75),
           urgencyLevel: calculatedUrgencyLevel,
           hoursOld: hoursOld,
           isExpired: hoursOld > 168 // 1 week
@@ -152,7 +151,7 @@ export async function GET(request: NextRequest) {
         customerInfo: {
           name: booking.User_Booking_signerIdToUser?.name || 'Unknown',
           email: booking.User_Booking_signerIdToUser?.email || '',
-          phone: booking.User_Booking_signerIdToUser?.phone || ''
+          phone: ''
         }
       };
     }).filter(Boolean); // Remove null entries
@@ -257,49 +256,6 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
-// Health check and documentation endpoint
-export async function GET_DOCUMENTATION() {
-  return NextResponse.json({
-    endpoint: '/api/bookings/pending-payments',
-    description: 'Query and manage pending payment bookings for GHL automation',
-    methods: {
-      GET: {
-        description: 'Query pending payment bookings',
-        queryParameters: {
-          since: 'ISO datetime string - filter by creation date',
-          limit: 'Number (1-100, default: 25) - limit results',
-          includeExpired: 'Boolean (default: false) - include expired payments',
-          contactId: 'String - filter by GHL contact ID',
-          serviceName: 'String - filter by service name',
-          sortBy: 'Enum: createdAt|scheduledDateTime|updatedAt (default: createdAt)',
-          sortOrder: 'Enum: asc|desc (default: desc)'
-        },
-        exampleUrl: '/api/bookings/pending-payments?limit=10&since=2024-01-01T00:00:00Z&includeExpired=false'
-      },
-      PATCH: {
-        description: 'Update booking status and trigger actions',
-        bodyParameters: {
-          bookingId: 'String - required booking ID',
-          action: 'Enum: send_reminder|mark_contacted|extend_payment_deadline|mark_expired|send_final_notice',
-          notes: 'String - optional notes to add',
-          reminderType: 'Enum: email|sms|call - for send_reminder action',
-          newDeadline: 'ISO datetime string - for extend_payment_deadline action'
-        },
-        exampleBody: {
-          bookingId: 'booking_123',
-          action: 'send_reminder',
-          reminderType: 'email',
-          notes: 'Sent urgent payment reminder'
-        }
-      }
-    },
-    authentication: 'x-ghl-signature header with webhook secret (optional)',
-    responseFormat: {
-      success: 'Boolean',
-      query: 'Object - echoed query parameters',
-      summary: 'Object - statistics about pending payments',
-      bookings: 'Array - transformed booking objects',
-      pagination: 'Object - pagination info'
-    }
-  });
-} 
+// Note: API documentation has been moved to separate docs endpoint
+// GET: Query pending payment bookings with filters
+// PATCH: Update booking status and trigger actions 

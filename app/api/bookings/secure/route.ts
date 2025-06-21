@@ -6,7 +6,7 @@ import { BookingStatus, LocationType, Role } from '@prisma/client';
 import Stripe from 'stripe';
 
 const stripe = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' }) 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' }) 
   : null;
 
 // Comprehensive booking validation schema
@@ -63,20 +63,16 @@ export async function POST(request: NextRequest) {
       const booking = await prisma.$transaction(async (tx) => {
         // 1. Validate service exists and is active
         const service = await tx.service.findUnique({
-          where: { id: validatedData.serviceId },
-          include: { 
-            businessSettings: true,
-            calendarSettings: true 
-          }
+          where: { id: validatedData.serviceId }
         });
 
-        if (!service || !service.active) {
+        if (!service || !service.isActive) {
           throw new Error('Service not available');
         }
 
         // 2. Validate time slot availability
         const scheduledDateTime = new Date(validatedData.scheduledDateTime);
-        await validateTimeSlotAvailability(tx, scheduledDateTime, service.duration);
+        await validateTimeSlotAvailability(tx, scheduledDateTime, service.durationMinutes);
 
         // 3. Calculate pricing with promo code validation
         const pricing = await calculateBookingPricing(tx, service, validatedData.promoCode);
@@ -115,11 +111,6 @@ export async function POST(request: NextRequest) {
         // 5. Create the booking
         const newBooking = await tx.booking.create({
           data: {
-            // Customer Information
-            signerEmail: validatedData.customerEmail,
-            signerName: validatedData.customerName,
-            signerPhone: validatedData.customerPhone,
-            
             // Service & Timing
             serviceId: validatedData.serviceId,
             scheduledDateTime: scheduledDateTime,
@@ -133,37 +124,26 @@ export async function POST(request: NextRequest) {
             locationNotes: validatedData.locationNotes,
             
             // Pricing
-            basePrice: pricing.basePrice,
-            promoDiscount: pricing.promoDiscount,
-            finalPrice: pricing.finalPrice,
+            priceAtBooking: pricing.basePrice,
             promoCodeId: pricing.promoCodeInfo?.id,
+            promoCodeDiscount: pricing.promoDiscount,
             
             // Status
             status: pricing.finalPrice > 0 ? BookingStatus.PAYMENT_PENDING : BookingStatus.CONFIRMED,
+            depositStatus: pricing.finalPrice > 0 ? 'PENDING' : 'COMPLETED',
             
             // User Association (null for guests)
             signerId: bookingUserId,
             
-            // Additional Details
-            numberOfSigners: validatedData.numberOfSigners || 1,
-            documentCount: validatedData.documentCount,
-            notes: validatedData.notes,
+            // Customer info for guest bookings
+            customerEmail: validatedData.customerEmail,
             
-            // Consent Tracking
-            consentTermsConditions: validatedData.consentTermsConditions,
-            consentSmsNotifications: validatedData.consentSmsNotifications || false,
-            consentEmailUpdates: validatedData.consentEmailUpdates || false,
+            // Additional Details
+            notes: validatedData.notes,
             
             // Lead Tracking
             leadSource: validatedData.leadSource,
             campaignName: validatedData.campaignName,
-            utmSource: validatedData.utmSource,
-            utmMedium: validatedData.utmMedium,
-            utmCampaign: validatedData.utmCampaign,
-            
-            // Timestamps
-            createdAt: new Date(),
-            updatedAt: new Date(),
           },
           include: {
             service: true,
@@ -178,8 +158,10 @@ export async function POST(request: NextRequest) {
         let paymentClientSecret: string | undefined;
         if (pricing.finalPrice > 0 && stripe) {
           try {
+            const { PricingUtils } = await import('@/lib/pricing-utils');
+            const paymentAmount = pricing.finalPrice; // Use the calculated final price
             const paymentIntent = await stripe.paymentIntents.create({
-              amount: Math.round(pricing.finalPrice * 100), // Convert to cents
+              amount: PricingUtils.toCents(paymentAmount), // Use centralized conversion
               currency: 'usd',
               metadata: {
                 bookingId: newBooking.id,
@@ -192,10 +174,16 @@ export async function POST(request: NextRequest) {
 
             paymentClientSecret = paymentIntent.client_secret || undefined;
 
-            // Update booking with payment intent ID
-            await tx.booking.update({
-              where: { id: newBooking.id },
-              data: { paymentIntentId: paymentIntent.id }
+            // Create Payment record instead of storing in notes
+            await tx.payment.create({
+              data: {
+                bookingId: newBooking.id,
+                amount: pricing.finalPrice,
+                status: 'PENDING',
+                provider: 'STRIPE',
+                paymentIntentId: paymentIntent.id,
+                notes: 'Booking deposit payment'
+              }
             });
 
           } catch (stripeError) {
@@ -227,14 +215,14 @@ export async function POST(request: NextRequest) {
           id: booking.booking.id,
           status: booking.booking.status,
           scheduledDateTime: booking.booking.scheduledDateTime,
-          finalPrice: booking.booking.finalPrice,
+          finalPrice: Number(booking.booking.priceAtBooking) - Number(booking.booking.promoCodeDiscount || 0),
           service: {
             name: booking.booking.service.name,
-            duration: booking.booking.service.duration,
+            duration: booking.booking.service.durationMinutes,
           },
           paymentClientSecret: booking.paymentClientSecret,
         },
-        message: booking.booking.finalPrice > 0 
+        message: (Number(booking.booking.priceAtBooking) - Number(booking.booking.promoCodeDiscount || 0)) > 0 
           ? 'Booking created successfully. Please complete payment.'
           : 'Booking confirmed successfully!',
       }, { status: 201 });
@@ -365,10 +353,11 @@ async function validateTimeSlotAvailability(
 }
 
 async function calculateBookingPricing(tx: any, service: any, promoCodeStr?: string) {
+  const basePrice = Number(service.basePrice);
   let pricing = {
-    basePrice: service.price,
+    basePrice: basePrice,
     promoDiscount: 0,
-    finalPrice: service.price,
+    finalPrice: basePrice,
     promoCodeInfo: undefined as any,
   };
 
@@ -376,10 +365,10 @@ async function calculateBookingPricing(tx: any, service: any, promoCodeStr?: str
     const promoCode = await tx.promoCode.findFirst({
       where: {
         code: promoCodeStr,
-        active: true,
+        isActive: true,
         OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } },
+          { validUntil: null },
+          { validUntil: { gt: new Date() } },
         ],
       },
     });
@@ -387,20 +376,20 @@ async function calculateBookingPricing(tx: any, service: any, promoCodeStr?: str
     if (promoCode) {
       let discount = 0;
       if (promoCode.discountType === 'PERCENTAGE') {
-        discount = (service.price * promoCode.discountValue) / 100;
+        discount = (basePrice * Number(promoCode.discountValue)) / 100;
       } else if (promoCode.discountType === 'FIXED_AMOUNT') {
-        discount = promoCode.discountValue;
+        discount = Number(promoCode.discountValue);
       }
 
-      discount = Math.min(discount, service.price); // Don't let discount exceed price
+      discount = Math.min(discount, basePrice); // Don't let discount exceed price
       
       pricing.promoDiscount = discount;
-      pricing.finalPrice = service.price - discount;
+      pricing.finalPrice = basePrice - discount;
       pricing.promoCodeInfo = {
         id: promoCode.id,
         code: promoCode.code,
         discountType: promoCode.discountType,
-        discountValue: promoCode.discountValue,
+        discountValue: Number(promoCode.discountValue),
       };
     }
   }

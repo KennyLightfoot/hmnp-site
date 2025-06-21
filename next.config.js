@@ -1,8 +1,50 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ['@aws-sdk/client-s3'],
+  serverExternalPackages: ['@aws-sdk/client-s3'],
+  
+  // TypeScript configuration for memory optimization
+  typescript: {
+    // Ignore type errors during build to reduce memory usage
+    // Remove this in production after fixing all type issues
+    ignoreBuildErrors: false,
   },
+  
+  // Optimize build performance and memory usage
+  experimental: {
+    // Enable modern build optimizations
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    // Disable memory-intensive features during build
+    webpackMemoryOptimizations: true,
+  },
+  
+  // Webpack optimizations
+  webpack: (config, { dev, isServer }) => {
+    // Reduce memory usage during builds
+    if (!dev && !isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          maxSize: 200000, // 200KB chunks
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+              maxSize: 200000,
+            },
+          },
+        },
+      };
+      
+      // Memory optimization
+      config.infrastructureLogging = { level: 'error' };
+      config.stats = { warnings: false };
+    }
+    
+    return config;
+  },
+  
   headers: async () => {
     return [
       {

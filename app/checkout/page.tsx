@@ -11,7 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
 
 // Make sure to set your Stripe publishable key in .env.local
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
 interface CheckoutFormProps {
   clientSecret: string;
@@ -40,7 +40,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret, bookingId, pa
       return;
     }
 
-    const { error, paymentIntent } = await stripe.confirmPayment({
+    const result = await stripe.confirmPayment({
       elements,
       confirmParams: {
         // Make sure to change this to your payment completion page
@@ -50,32 +50,27 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret, bookingId, pa
       // redirect: 'if_required',
     });
 
-    if (error) {
+    // Handle the result from Stripe's confirmPayment
+    if (result.error) {
       // This point will only be reached if there is an immediate error when
       // confirming the payment. Show error to your customer (for example, payment details incomplete)
-      setErrorMessage(error.message || "An unexpected error occurred.");
+      setErrorMessage(result.error.message || "An unexpected error occurred.");
       toast({
         title: "Payment Failed",
-        description: error.message || "An unexpected error occurred during payment.",
+        description: result.error.message || "An unexpected error occurred during payment.",
         variant: "destructive",
       });
-    } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-      toast({
-        title: "Payment Successful!",
-        description: "Your payment has been processed successfully.",
-        variant: "success",
-      });
-      // Backend will confirm and update booking status via webhook, but we can redirect optimistically.
-      // Or, we can wait for a webhook confirmation before redirecting if critical.
-      router.push(`/booking-confirmation?bookingId=${bookingId}&payment_intent=${paymentIntentId}&status=succeeded`);
-    } else if (paymentIntent) {
-      // Handle other payment statuses like 'processing' or 'requires_action'
-      setErrorMessage(`Payment status: ${paymentIntent.status}. Please follow any instructions provided.`);
+    } else {
+      // No immediate error - this doesn't guarantee success, the payment could still require action
+      // We should check the PaymentIntent status separately
       toast({
         title: "Payment Processing",
-        description: `Payment status: ${paymentIntent.status}. You might be redirected or asked for further action.`,
+        description: "Your payment is being processed. Redirecting...",
         variant: "default",
       });
+      
+      // Redirect to booking confirmation where we'll check the actual payment status
+      router.push(`/booking-confirmation?bookingId=${bookingId}&payment_intent=${paymentIntentId}&status=processing`);
     }
     setIsLoading(false);
   };
@@ -120,10 +115,12 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const cs = searchParams.get('clientSecret');
-    const bid = searchParams.get('bookingId');
-    const pid = searchParams.get('paymentIntentId');
-    const amt = searchParams.get('amount');
+    if (!searchParams) return;
+    
+    const cs = searchParams?.get('clientSecret');
+    const bid = searchParams?.get('bookingId');
+    const pid = searchParams?.get('paymentIntentId');
+    const amt = searchParams?.get('amount');
 
     if (cs && bid && pid && amt) {
       setClientSecret(cs);

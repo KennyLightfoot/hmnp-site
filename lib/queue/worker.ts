@@ -1,25 +1,24 @@
-import { logger } from '../logger';
 import { NotificationType, NotificationMethod, BookingStatus } from '@prisma/client';
-import { prisma } from '../prisma';
-import { getQueues, createQueues } from './config';
-import { QueueJob, JobResult, NotificationJob, BookingProcessingJob, PaymentProcessingJob } from './types';
 import { NotificationService } from '../notifications';
+import { getQueues } from './config';
+import { QueueJob, NotificationJob, BookingProcessingJob, PaymentProcessingJob } from './types';
+import { logger } from '../logger';
 import { Queue } from '@upstash/queue';
 
 /**
- * Queue worker service for processing background jobs
+ * QueueWorker processes jobs from the various queues
  */
 export class QueueWorker {
-  private static instance: QueueWorker;
-  private isProcessing = false;
-  private queues: ReturnType<typeof createQueues>;
-
+  private static instance: QueueWorker | null = null;
+  private isRunning = false;
+  private notificationManager: NotificationService;
+  
   private constructor() {
-    this.queues = getQueues();
+    this.notificationManager = NotificationService.getInstance();
   }
-
+  
   /**
-   * Get singleton instance
+   * Get singleton instance of QueueWorker
    */
   public static getInstance(): QueueWorker {
     if (!QueueWorker.instance) {
@@ -27,406 +26,559 @@ export class QueueWorker {
     }
     return QueueWorker.instance;
   }
-
+  
   /**
-   * Process a notification job
+   * Clear the singleton instance (for testing purposes)
    */
-  private async processNotificationJob(job: NotificationJob): Promise<JobResult> {
-    logger.info(`Processing notification job ${job.id} of type ${job.notificationType}`);
-    
-    try {
-      if (job.bookingId) {
-        // Process notifications tied to a booking
-        const { bookingId, templateId, notificationType, templateData } = job;
-        
-        let result;
-        if (bookingId) {
-          // Send notification for this booking
-          result = await NotificationService.sendNotification({
-            bookingId,
-            type: notificationType as NotificationType,
-            recipient: { email: job.recipientId || 'unknown' },
-            content: job.message ? { message: job.message } : { subject: templateId || '', message: templateId || '' },
-            methods: [NotificationMethod.EMAIL],
-          });
-        } else if (job.message) {
-          // Use direct message if provided
-          result = await NotificationService.sendNotification({
-            type: NotificationType.CUSTOM,
-            recipient: { email: job.recipientId || 'unknown' },
-            content: { message: job.message },
-            methods: [NotificationMethod.EMAIL],
-            bookingId: job.bookingId || undefined
-          });
-        }
-
-        return {
-          success: true,
-          jobId: job.id || 'unknown',
-          processedAt: new Date(),
-          result,
-        };
-      }
-      
-      throw new Error('Invalid notification job: missing required fields');
-    } catch (error: Error | unknown) {
-      logger.error(`Error processing notification job: ${error?.message || 'Unknown error'}`, { error, jobId: job.id });
-      return {
-        success: false,
-        jobId: job.id || 'unknown',
-        processedAt: new Date(),
-        error: error.message || 'Unknown error',
-      };
-    }
+  public static clearInstance(): void {
+    QueueWorker.instance = null;
   }
-
+  
   /**
-   * Process a booking processing job
+   * Start processing jobs from all queues
    */
-  private async processBookingJob(job: BookingProcessingJob): Promise<JobResult> {
-    logger.info(`Processing booking job ${job.id} for booking ${job.bookingId} - action: ${job.action}`);
-    
-    try {
-      const { bookingId, action, metadata } = job;
-      
-      // Implement booking processing logic based on the action
-      // This would likely interact with a booking service
-      let result;
-      
-      switch (action) {
-        case 'confirm':
-          // Logic for confirming a booking
-          // result = await bookingService.confirmBooking(bookingId);
-          result = { status: 'confirmed', bookingId };
-          break;
-          
-        case 'cancel':
-          // Logic for cancelling a booking
-          // result = await bookingService.cancelBooking(bookingId, metadata?.reason);
-          result = { status: 'cancelled', bookingId };
-          break;
-          
-        case 'reschedule':
-          // Logic for rescheduling
-          // result = await bookingService.rescheduleBooking(bookingId, metadata?.newDateTime);
-          result = { status: 'rescheduled', bookingId };
-          break;
-          
-        case 'reminder':
-          // Logic for sending a reminder
-          const bookingDetails = await prisma.booking.findUnique({
-            where: { id: job.bookingId },
-            include: { User_Booking_signerIdToUser: true }
-          });
-          
-          if (bookingDetails) {
-            result = await NotificationService.sendNotification({
-              bookingId: job.bookingId,
-              type: NotificationType.BOOKING_CONFIRMATION,
-              recipient: { 
-                email: bookingDetails.User_Booking_signerIdToUser?.email || 'unknown',
-                firstName: bookingDetails.User_Booking_signerIdToUser?.name?.split(' ')[0]
-              },
-              content: {
-                subject: 'Booking Confirmed',
-                message: `Your booking has been confirmed for ${new Date(bookingDetails.scheduledDateTime).toLocaleString()}`
-              },
-              methods: [NotificationMethod.EMAIL]
-            });
-          } else {
-            throw new Error(`Booking not found: ${job.bookingId}`);
-          }
-          break;
-          
-        case 'follow-up':
-          // Logic for sending a follow-up
-          const bookingDetails = await prisma.booking.findUnique({
-            where: { id: job.bookingId },
-            include: { User_Booking_signerIdToUser: true }
-          });
-          
-          if (bookingDetails) {
-            result = await NotificationService.sendNotification({
-              bookingId: job.bookingId,
-              type: NotificationType.BOOKING_UPDATE,
-              recipient: { 
-                email: bookingDetails.User_Booking_signerIdToUser?.email || 'unknown',
-                firstName: bookingDetails.User_Booking_signerIdToUser?.name?.split(' ')[0]
-              },
-              content: {
-                subject: 'Booking Updated',
-                message: `Your booking has been updated`
-              },
-              methods: [NotificationMethod.EMAIL]
-            });
-          } else {
-            throw new Error(`Booking not found: ${job.bookingId}`);
-          }
-          break;
-          
-        case 'payment-check':
-          // Logic for checking payment status
-          // result = await paymentService.checkBookingPaymentStatus(bookingId);
-          result = { status: 'checked', bookingId };
-          break;
-          
-        default:
-          throw new Error(`Unknown booking action: ${action}`);
-      }
-      
-      return {
-        success: true,
-        jobId: job.id || 'unknown',
-        processedAt: new Date(),
-        result,
-      };
-    } catch (error: Error | unknown) {
-      logger.error(`Error processing booking job: ${error?.message || 'Unknown error'}`, { error, jobId: job.id });
-      return {
-        success: false,
-        jobId: job.id || 'unknown',
-        processedAt: new Date(),
-        error: error.message || 'Unknown error',
-      };
-    }
-  }
-
-  /**
-   * Process a payment processing job
-   */
-  private async processPaymentJob(job: PaymentProcessingJob): Promise<JobResult> {
-    logger.info(`Processing payment job ${job.id} - action: ${job.action}`);
-    
-    try {
-      const { paymentId, bookingId, action, amount, currency, metadata } = job;
-      
-      // Implement payment processing logic
-      // This would interact with your payment service/provider
-      let result;
-      
-      switch (action) {
-        case 'create':
-          // Create a payment intent
-          // result = await paymentService.createPaymentIntent(amount, currency, bookingId, metadata);
-          result = { status: 'created', paymentId: 'pi_mock123', bookingId };
-          break;
-          
-        case 'capture':
-          // Capture a previously authorized payment
-          // result = await paymentService.capturePayment(paymentId);
-          result = { status: 'captured', paymentId };
-          break;
-          
-        case 'refund':
-          // Process a refund
-          // result = await paymentService.refundPayment(paymentId, amount);
-          result = { status: 'refunded', paymentId, amount };
-          break;
-          
-        case 'check-status':
-          // Check payment status
-          // result = await paymentService.checkPaymentStatus(paymentId || bookingId);
-          result = { status: 'paid', paymentId, bookingId };
-          break;
-          
-        default:
-          throw new Error(`Unknown payment action: ${action}`);
-      }
-      
-      return {
-        success: true,
-        jobId: job.id || 'unknown',
-        processedAt: new Date(),
-        result,
-      };
-    } catch (error: Error | unknown) {
-      logger.error(`Error processing payment job: ${error?.message || 'Unknown error'}`, { error, jobId: job.id });
-      return {
-        success: false,
-        jobId: job.id || 'unknown',
-        processedAt: new Date(),
-        error: error.message || 'Unknown error',
-      };
-    }
-  }
-
-  /**
-   * Process a job from any queue based on its type
-   */
-  public async processJob(job: QueueJob): Promise<JobResult> {
-    try {
-      switch (job.type) {
-        case 'notification':
-          return await this.processNotificationJob(job as NotificationJob);
-          
-        case 'booking-processing':
-          return await this.processBookingJob(job as BookingProcessingJob);
-          
-        case 'payment-processing':
-          return await this.processPaymentJob(job as PaymentProcessingJob);
-          
-        default:
-          return {
-            success: false,
-            jobId: job.id || 'unknown',
-            processedAt: new Date(),
-            error: `Unknown job type: ${job.type}`,
-          };
-      }
-    } catch (error: Error | unknown) {
-      logger.error(`Error processing job: ${error?.message || 'Unknown error'}`, { error, jobId: job.id });
-      return {
-        success: false,
-        jobId: job.id || 'unknown',
-        processedAt: new Date(),
-        error: error.message || 'Unknown error during job processing',
-      };
-    }
-  }
-
-  /**
-   * Start processing jobs from the queues
-   */
-  public async startProcessing(): Promise<void> {
-    if (this.isProcessing) {
+  public async start(): Promise<void> {
+    if (this.isRunning) {
+      logger.warn('Worker is already running', 'QUEUE_WORKER');
       return;
     }
     
-    this.isProcessing = true;
-    logger.info('Starting queue worker processing...');
+    this.isRunning = true;
+    logger.info('Starting queue worker', 'QUEUE_WORKER');
     
-    const queues = this.queues;
+    try {
+      // Start processing each queue concurrently
+      await Promise.all([
+        this.processNotificationQueue(),
+        this.processBookingQueue(), 
+        this.processPaymentQueue()
+      ]);
+    } catch (error) {
+      logger.error('Error starting queue processing:', 'QUEUE_WORKER', error as Error);
+    }
+  }
+  
+  /**
+   * Stop the worker
+   */
+  public stop(): void {
+    this.isRunning = false;
+    logger.info('Stopping queue worker', 'QUEUE_WORKER');
+  }
+  
+  /**
+   * Process notification jobs
+   */
+  private async processNotificationQueue(): Promise<void> {
+    const queues = getQueues();
     if (!queues) {
-      logger.error('Failed to start queue worker: Queue configuration is missing');
-      this.isProcessing = false;
+      logger.warn('Queue not available for notification processing', 'QUEUE_WORKER');
       return;
     }
     
+    await this.processQueue(queues.notificationsQueue, 'notifications');
+  }
+  
+  /**
+   * Process notification job
+   */
+  private async processNotificationJob(job: NotificationJob): Promise<void> {
+    logger.info(`Processing notification job ${job.id} of type ${job.notificationType}`, 'QUEUE_WORKER');
+    
     try {
-      // Start processing jobs from each queue
-      // This will run in the background
-      Promise.all([
-        this.processQueue(queues.notificationsQueue, 'notifications'),
-        this.processQueue(queues.bookingProcessingQueue, 'booking-processing'),
-        this.processQueue(queues.paymentProcessingQueue, 'payment-processing'),
-      ]).catch((error: Error | unknown) => {
-        logger.error('Error in queue processing:', error);
-        this.isProcessing = false;
+      // Extract job data
+      const { bookingId, templateId, notificationType, templateData } = job;
+      
+      // Send notification using NotificationManager
+      const result = await this.notificationManager.sendNotification({
+        bookingId: bookingId || '',
+        templateId,
+        type: notificationType as NotificationType,
+        templateData,
+        method: NotificationMethod.EMAIL, // Default to email, could be configurable
       });
       
-      logger.info('Queue worker processing started successfully');
-    } catch (error: Error | unknown) {
-      logger.error('Error starting queue processing:', error);
-      this.isProcessing = false;
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to send notification');
+      }
+      
+      logger.info(`Successfully processed notification job ${job.id}`, 'QUEUE_WORKER');
+    } catch (error) {
+      logger.error(`Error processing notification job: ${error instanceof Error ? error.message : 'Unknown error'}`, 'QUEUE_WORKER', { error, jobId: job.id });
+      
+      // Re-throw to trigger retry mechanism
+      throw {
+        message: error instanceof Error ? error.message : 'Unknown error during notification processing',
+        jobId: job.id,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
     }
   }
   
   /**
-   * Stop processing jobs
+   * Process booking jobs
    */
-  public stopProcessing(): void {
-    this.isProcessing = false;
-    logger.info('Queue worker processing stopped');
+  private async processBookingQueue(): Promise<void> {
+    const queues = getQueues();
+    if (!queues) {
+      logger.warn('Queue not available for booking processing', 'QUEUE_WORKER');
+      return;
+    }
+    
+    await this.processQueue(queues.bookingProcessingQueue, 'booking-processing');
   }
   
   /**
-   * Process a specific queue
+   * Process booking job
    */
-  private async processQueue(queue: Queue<QueueJob>, queueName: string): Promise<void> {
-    logger.info(`Started processing ${queueName} queue`);
+  private async processBookingJob(job: BookingProcessingJob): Promise<void> {
+    logger.info(`Processing booking job ${job.id} for booking ${job.bookingId}`, 'QUEUE_WORKER');
     
-    while (this.isProcessing) {
-      try {
-        // Try to get a job from the queue
-        const job = await queue.dequeue();
-        
-        if (job) {
-          logger.info(`Processing job from ${queueName} queue:`, job.id);
-          const result = await this.processJob(job);
-          
-          if (!result.success && job.retryCount && job.maxRetries && job.retryCount < job.maxRetries) {
-            // Retry the job if it failed and has retries left
-            const updatedJob = {
-              ...job,
-              retryCount: (job.retryCount || 0) + 1,
-            };
-            
-            logger.info(`Retrying job ${job.id} (${updatedJob.retryCount}/${job.maxRetries})`);
-            await queue.enqueue(updatedJob);
-          }
-        } else {
-          // No jobs in the queue, wait before checking again
-          await new Promise(resolve => setTimeout(resolve, 5000));
-        }
-      } catch (error: Error | unknown) {
-        // Safe error handling when job might be undefined
-        const jobId = job && 'id' in job ? job.id : 'unknown';
-        logger.error(`Error processing ${queueName} queue: ${error?.message || 'Unknown error'}`, { jobId, error });
-        await new Promise(resolve => setTimeout(resolve, 10000));
+    try {
+      // Handle different booking actions
+      switch (job.action) {
+        case 'confirm':
+          await this.handleBookingConfirmation(job);
+          break;
+        case 'reminder':
+          await this.handleBookingReminder(job);
+          break;
+        case 'cancel':
+          await this.handleBookingCancellation(job);
+          break;
+        case 'reschedule':
+        case 'follow-up':
+        case 'payment-check':
+          // These actions can use the same confirmation flow for now
+          await this.handleBookingConfirmation(job);
+          break;
+        default:
+          throw new Error(`Unknown booking action: ${job.action}`);
       }
+      
+      logger.info(`Successfully processed booking job ${job.id}`, 'QUEUE_WORKER');
+    } catch (error) {
+      logger.error(`Error processing booking job: ${error instanceof Error ? error.message : 'Unknown error'}`, 'QUEUE_WORKER', { error, jobId: job.id });
+      
+      throw {
+        message: error instanceof Error ? error.message : 'Unknown error during booking processing',
+        jobId: job.id,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+  
+  /**
+   * Handle booking confirmation
+   */
+  private async handleBookingConfirmation(job: BookingProcessingJob): Promise<void> {
+        const result = await this.notificationManager.sendNotification({
+      bookingId: job.bookingId,
+      type: NotificationType.BOOKING_CONFIRMATION,
+      method: NotificationMethod.EMAIL,
+      templateData: job.metadata,
+    });
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to send booking confirmation');
     }
   }
 
   /**
-   * Process all pending jobs in all queues once, useful for serverless environments
+   * Handle booking reminder
    */
-  public async processPendingJobs(): Promise<{ processed: number; errors: number }> {
-    const queues = this.queues;
+  private async handleBookingReminder(job: BookingProcessingJob): Promise<void> {
+    // Determine reminder type based on job metadata
+    const reminderType = job.metadata?.reminderType || '24hr';
+
+    let notificationType: NotificationType;
+    switch (reminderType) {
+      case '24hr':
+        notificationType = NotificationType.APPOINTMENT_REMINDER_24HR;
+        break;
+      case '2hr':
+        notificationType = NotificationType.APPOINTMENT_REMINDER_2HR;
+        break;
+      case '1hr':
+        notificationType = NotificationType.APPOINTMENT_REMINDER_1HR;
+        break;
+      default:
+        notificationType = NotificationType.APPOINTMENT_REMINDER_24HR;
+    }
+
+    const result = await this.notificationManager.sendNotification({
+      bookingId: job.bookingId,
+      type: notificationType,
+      method: NotificationMethod.EMAIL,
+      templateData: job.metadata,
+    });
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to send booking reminder');
+    }
+  }
+
+  /**
+   * Handle booking cancellation
+   */
+  private async handleBookingCancellation(job: BookingProcessingJob): Promise<void> {
+    const result = await this.notificationManager.sendNotification({
+      bookingId: job.bookingId,
+      type: NotificationType.BOOKING_CANCELLED,
+      method: NotificationMethod.EMAIL,
+      templateData: job.metadata,
+    });
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to send cancellation notification');
+    }
+  }
+  
+  /**
+   * Process payment jobs
+   */
+  private async processPaymentQueue(): Promise<void> {
+    const queues = getQueues();
     if (!queues) {
-      logger.error('Failed to process pending jobs: Queue configuration is missing');
-      return { processed: 0, errors: 0 };
+      logger.warn('Queue not available for payment processing', 'QUEUE_WORKER');
+      return;
     }
     
+    await this.processQueue(queues.paymentProcessingQueue, 'payment-processing');
+  }
+  
+  /**
+   * Process payment job
+   */
+  private async processPaymentJob(job: PaymentProcessingJob): Promise<void> {
+    logger.info(`Processing payment job ${job.id} for action ${job.action}`, 'QUEUE_WORKER');
+    
+    try {
+      // Handle different payment actions
+      switch (job.action) {
+        case 'create':
+          await this.handlePaymentCreate(job);
+          break;
+        case 'capture':
+          await this.handlePaymentCapture(job);
+          break;
+        case 'refund':
+          await this.handlePaymentRefund(job);
+          break;
+        case 'check-status':
+          await this.handlePaymentStatusCheck(job);
+          break;
+        default:
+          throw new Error(`Unknown payment action: ${job.action}`);
+      }
+      
+      logger.info(`Successfully processed payment job ${job.id}`, 'QUEUE_WORKER');
+    } catch (error) {
+      logger.error(`Error processing payment job: ${error instanceof Error ? error.message : 'Unknown error'}`, 'QUEUE_WORKER', { error, jobId: job.id });
+      
+      throw {
+        message: error instanceof Error ? error.message : 'Unknown error during payment processing',
+        jobId: job.id,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+  
+  /**
+   * Handle payment creation
+   */
+  private async handlePaymentCreate(job: PaymentProcessingJob): Promise<void> {
+    const result = await this.notificationManager.sendNotification({
+      bookingId: job.bookingId || '',
+      type: NotificationType.PAYMENT_CONFIRMATION,
+      method: NotificationMethod.EMAIL,
+      templateData: job.metadata,
+    });
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to send payment creation notification');
+    }
+  }
+  
+  /**
+   * Handle payment capture
+   */
+  private async handlePaymentCapture(job: PaymentProcessingJob): Promise<void> {
+    const result = await this.notificationManager.sendNotification({
+      bookingId: job.bookingId || '',
+      type: NotificationType.PAYMENT_CONFIRMATION,
+      method: NotificationMethod.EMAIL,
+      templateData: job.metadata,
+    });
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to send payment capture notification');
+    }
+  }
+  
+  /**
+   * Handle payment refund
+   */
+  private async handlePaymentRefund(job: PaymentProcessingJob): Promise<void> {
+    const result = await this.notificationManager.sendNotification({
+      bookingId: job.bookingId || '',
+      type: NotificationType.PAYMENT_FAILED,
+      method: NotificationMethod.EMAIL,
+      templateData: job.metadata,
+    });
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to send payment refund notification');
+    }
+  }
+  
+  /**
+   * Handle payment status check
+   */
+  private async handlePaymentStatusCheck(job: PaymentProcessingJob): Promise<void> {
+    // For status checks, we might not need to send notifications
+    // This is mainly for internal processing
+    logger.info(`Payment status check completed for payment ${job.paymentId}`, 'QUEUE_WORKER');
+  }
+  
+  /**
+   * Generic queue processor that handles receiving and processing jobs
+   */
+  private async processQueue(queue: Queue, queueName: string): Promise<void> {
+    while (this.isRunning) {
+      try {
+        // Receive message from queue with 30 second timeout
+        const message = await queue.receiveMessage<QueueJob>(30000);
+        
+        if (!message) {
+          // No message received, continue polling
+          continue;
+        }
+        
+        const job = message.body;
+        const jobId = message.streamId;
+        
+        try {
+          // Process the job based on its type
+          switch (job.type) {
+            case 'notification':
+              await this.processNotificationJob(job as NotificationJob);
+              break;
+            case 'booking-processing':
+              await this.processBookingJob(job as BookingProcessingJob);
+              break;
+            case 'payment-processing':
+              await this.processPaymentJob(job as PaymentProcessingJob);
+              break;
+            default:
+              logger.error(`Unknown job type: ${(job as any).type}`, 'QUEUE_WORKER', {
+                jobId: jobId || 'unknown',
+                job,
+                error: `Unknown job type: ${(job as any).type}`,
+              });
+              continue;
+          }
+          
+          // Verify the message was processed successfully
+          await queue.verifyMessage(jobId);
+          logger.info(`Successfully processed and verified job ${jobId}`, 'QUEUE_WORKER');
+          
+        } catch (error) {
+          logger.error(`Error processing job: ${error instanceof Error ? error.message : 'Unknown error'}`, 'QUEUE_WORKER', { error, jobId });
+          
+          // Handle retry logic here if needed
+          throw {
+            jobId,
+            error: error instanceof Error ? error.message : 'Unknown error during job processing',
+          };
+        }
+        
+      } catch (error) {
+        if (this.isRunning) {
+          logger.error('Error in queue processing:', 'QUEUE_WORKER', error as Error);
+          // Wait a bit before retrying to avoid tight error loops
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+      }
+    }
+    
+    if (!this.isRunning) {
+      logger.error('Error starting queue processing:', 'QUEUE_WORKER', error as Error);
+    }
+  }
+
+  /**
+   * Process all pending jobs from all queues on-demand
+   * Used by API endpoints to trigger processing
+   */
+  public async processPendingJobs(): Promise<{ processed: number; errors: number }> {
+    logger.info('Processing pending jobs on-demand', 'QUEUE_WORKER');
+    
+    let totalProcessed = 0;
+    let totalErrors = 0;
+    
+    const queues = getQueues();
+    if (!queues) {
+      logger.warn('Queue not available for processing pending jobs', 'QUEUE_WORKER');
+      return { processed: 0, errors: 1 };
+    }
+    
+    // Process a limited number of jobs from each queue to avoid timeouts
+    const maxJobsPerQueue = 10;
+    
+    try {
+      // Process notification queue
+      const notificationResult = await this.processPendingJobsFromQueue(
+        queues.notificationsQueue, 
+        'notification', 
+        maxJobsPerQueue
+      );
+      totalProcessed += notificationResult.processed;
+      totalErrors += notificationResult.errors;
+      
+      // Process booking queue
+      const bookingResult = await this.processPendingJobsFromQueue(
+        queues.bookingProcessingQueue, 
+        'booking-processing', 
+        maxJobsPerQueue
+      );
+      totalProcessed += bookingResult.processed;
+      totalErrors += bookingResult.errors;
+      
+      // Process payment queue
+      const paymentResult = await this.processPendingJobsFromQueue(
+        queues.paymentProcessingQueue, 
+        'payment-processing', 
+        maxJobsPerQueue
+      );
+      totalProcessed += paymentResult.processed;
+      totalErrors += paymentResult.errors;
+      
+    } catch (error) {
+      logger.error('Error during pending jobs processing:', 'QUEUE_WORKER', error as Error);
+      totalErrors++;
+    }
+    
+    logger.info(`Completed pending jobs processing: ${totalProcessed} processed, ${totalErrors} errors`, 'QUEUE_WORKER');
+    return { processed: totalProcessed, errors: totalErrors };
+  }
+
+  /**
+   * Process a single job on-demand
+   * Used by API endpoints to process specific jobs
+   */
+  public async processJob(job: QueueJob): Promise<{
+    success: boolean;
+    jobId: string;
+    processedAt: Date;
+    error?: string;
+    result?: any;
+  }> {
+    const jobId = job.id || `manual-${Date.now()}`;
+    const processedAt = new Date();
+    
+    logger.info(`Processing single job ${jobId} of type ${job.type}`, 'QUEUE_WORKER');
+    
+    try {
+      // Process the job based on its type
+      switch (job.type) {
+        case 'notification':
+          await this.processNotificationJob(job as NotificationJob);
+          break;
+        case 'booking-processing':
+          await this.processBookingJob(job as BookingProcessingJob);
+          break;
+        case 'payment-processing':
+          await this.processPaymentJob(job as PaymentProcessingJob);
+          break;
+        default:
+          throw new Error(`Unknown job type: ${job.type}`);
+      }
+      
+      logger.info(`Successfully processed single job ${jobId}`, 'QUEUE_WORKER');
+      return {
+        success: true,
+        jobId,
+        processedAt,
+        result: { jobType: job.type, processed: true }
+      };
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error during single job processing';
+      logger.error(`Error processing single job ${jobId}: ${errorMessage}`, 'QUEUE_WORKER', { error, jobId });
+      
+      return {
+        success: false,
+        jobId,
+        processedAt,
+        error: errorMessage
+      };
+    }
+  }
+
+  /**
+   * Helper method to process pending jobs from a specific queue
+   */
+  private async processPendingJobsFromQueue(
+    queue: Queue, 
+    queueType: string, 
+    maxJobs: number
+  ): Promise<{ processed: number; errors: number }> {
     let processed = 0;
     let errors = 0;
     
     try {
-      // Process jobs from each queue once
-      const queueItems = [
-        { queue: queues.notificationsQueue, name: 'notifications' },
-        { queue: queues.bookingProcessingQueue, name: 'booking-processing' },
-        { queue: queues.paymentProcessingQueue, name: 'payment-processing' },
-      ];
-      
-      for (const { queue, name } of queueItems) {
-        logger.info(`Processing pending jobs from ${name} queue`);
+      for (let i = 0; i < maxJobs; i++) {
+        // Try to receive a message with a short timeout
+        const message = await queue.receiveMessage<QueueJob>(1000); // 1 second timeout
         
-        // Process up to 10 jobs from each queue
-        for (let i = 0; i < 10; i++) {
-          const job = await queue.dequeue();
+        if (!message) {
+          // No more messages in queue
+          break;
+        }
+        
+        const job = message.body;
+        const jobId = message.streamId;
+        
+        try {
+          // Process the job
+          await this.processJobByType(job);
           
-          if (job) {
-            logger.info(`Processing job from ${name} queue:`, job.id);
-            const result = await this.processJob(job);
-            
-            if (result.success) {
-              processed++;
-            } else {
-              errors++;
-              
-              if (job.retryCount && job.maxRetries && job.retryCount < job.maxRetries) {
-                // Retry the job if it failed and has retries left
-                const updatedJob = {
-                  ...job,
-                  retryCount: (job.retryCount || 0) + 1,
-                };
-                
-                logger.info(`Retrying job ${job.id} (${updatedJob.retryCount}/${job.maxRetries})`);
-                await queue.enqueue(updatedJob);
-              }
-            }
-          } else {
-            // No more jobs in this queue
-            break;
-          }
+          // Verify the message was processed successfully
+          await queue.verifyMessage(jobId);
+          processed++;
+          
+          logger.info(`Successfully processed ${queueType} job ${jobId}`, 'QUEUE_WORKER');
+          
+        } catch (error) {
+          errors++;
+          logger.error(`Error processing ${queueType} job ${jobId}: ${error instanceof Error ? error.message : 'Unknown error'}`, 'QUEUE_WORKER', { error, jobId });
         }
       }
-      
-      logger.info(`Finished processing pending jobs. Processed: ${processed}, Errors: ${errors}`);
-      return { processed, errors };
     } catch (error) {
-      logger.error('Error processing pending jobs:', error);
-      return { processed, errors };
+      logger.error(`Error processing pending jobs from ${queueType} queue:`, 'QUEUE_WORKER', error as Error);
+      errors++;
+    }
+    
+    return { processed, errors };
+  }
+
+  /**
+   * Helper method to process a job by its type
+   */
+  private async processJobByType(job: QueueJob): Promise<void> {
+    switch (job.type) {
+      case 'notification':
+        await this.processNotificationJob(job as NotificationJob);
+        break;
+      case 'booking-processing':
+        await this.processBookingJob(job as BookingProcessingJob);
+        break;
+      case 'payment-processing':
+        await this.processPaymentJob(job as PaymentProcessingJob);
+        break;
+      default:
+        throw new Error(`Unknown job type: ${job.type}`);
     }
   }
 }

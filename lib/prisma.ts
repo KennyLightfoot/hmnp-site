@@ -1,17 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+/**
+ * @deprecated Use lib/prisma-singleton.ts instead
+ * This file is kept for backwards compatibility during migration
+ */
 
-declare global {
-  // allow global `var` declarations
-  // eslint-disable-next-line no-unused-vars
-  var prisma: PrismaClient | undefined;
-}
-
-export const prisma =
-  global.prisma ||
-  new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-  });
-
-if (process.env.NODE_ENV !== 'production') {
-  global.prisma = prisma;
-}
+// Re-export from the new singleton
+export { prisma, disconnectPrisma, prismaHealthCheck } from './prisma-singleton';

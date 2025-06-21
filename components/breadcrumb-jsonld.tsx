@@ -4,6 +4,12 @@ import Link from "next/link"
 
 export default function BreadcrumbJSONLD() {
   const pathname = usePathname()
+  
+  // Handle case where pathname might be null
+  if (!pathname) {
+    return null
+  }
+  
   // Convert pathname into breadcrumb segments
   const segments = pathname.split("/").filter(Boolean)
   const breadcrumbItems = segments.map((seg, idx) => {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { BookingStatus, LocationType } from '@prisma/client';
+import { BookingStatus, LocationType, Role } from '@prisma/client';
 import { z } from 'zod';
 import * as ghl from '@/lib/ghl';
 import crypto from 'crypto';
@@ -16,8 +16,8 @@ function verifyGHLWebhook(payload: string, signature: string, secret: string): b
     .digest('hex');
   
   return crypto.timingSafeEqual(
-    Buffer.from(signature.replace('sha256=', '')),
-    Buffer.from(expectedSignature)
+    new Uint8Array(Buffer.from(signature.replace('sha256=', ''))),
+    new Uint8Array(Buffer.from(expectedSignature))
   );
 }
 
@@ -89,7 +89,7 @@ const phoneBookingSchema = z.object({
   customerPhone: z.string().min(10, 'Valid phone number is required'),
   serviceName: z.string().min(1, 'Service name is required'),
   scheduledDateTime: z.string().datetime('Valid datetime is required'),
-  locationType: z.enum(['CLIENT_SPECIFIED_ADDRESS', 'NOTARY_LOCATION', 'VIRTUAL']).default('CLIENT_SPECIFIED_ADDRESS'),
+  locationType: z.enum(['CLIENT_SPECIFIED_ADDRESS', 'OUR_OFFICE', 'REMOTE_ONLINE_NOTARIZATION', 'PUBLIC_PLACE']).default('CLIENT_SPECIFIED_ADDRESS'),
   addressStreet: z.string().optional(),
   addressCity: z.string().optional(),
   addressState: z.string().optional(),
@@ -157,8 +157,7 @@ export async function POST(request: NextRequest) {
         data: {
           email: validatedData.customerEmail,
           name: validatedData.customerName,
-          phone: validatedData.customerPhone,
-          role: 'CLIENT'
+          role: 'SIGNER'
         }
       });
     }
@@ -173,14 +172,13 @@ export async function POST(request: NextRequest) {
     // Create booking
     const newBooking = await prisma.booking.create({
       data: {
-        signerUserId: user.id,
+        signerId: user.id,
         serviceId: service.id,
-        appointmentDateTime: new Date(validatedData.scheduledDateTime),
-        serviceAddress: serviceAddress,
+        scheduledDateTime: new Date(validatedData.scheduledDateTime),
         ghlContactId: validatedData.contactId,
         status: service.requiresDeposit ? BookingStatus.PAYMENT_PENDING : BookingStatus.CONFIRMED,
-        depositStatus: service.requiresDeposit ? 'PENDING' : 'NOT_REQUIRED',
-        totalAmount: service.basePrice,
+        depositStatus: service.requiresDeposit ? 'PENDING' : 'COMPLETED',
+        priceAtBooking: service.basePrice,
         leadSource: validatedData.leadSource,
         notes: validatedData.notes ? `Phone booking: ${validatedData.notes}` : 'Booking created via phone call',
         locationType: validatedData.locationType,
@@ -201,16 +199,18 @@ export async function POST(request: NextRequest) {
     if (service.requiresDeposit) {
       paymentUrl = `${process.env.NEXTAUTH_URL}/checkout/${newBooking.id}`;
       
-      // Update booking with payment URL
+      // Note: Payment URL can be stored in notes or handled separately
       await prisma.booking.update({
         where: { id: newBooking.id },
-        data: { stripePaymentUrl: paymentUrl }
+        data: { 
+          notes: newBooking.notes ? `${newBooking.notes}\nPayment URL: ${paymentUrl}` : `Payment URL: ${paymentUrl}`
+        }
       });
     }
 
     // Update GHL contact with booking information
     try {
-      const customFields = {
+      const customFields: Record<string, any> = {
         cf_booking_id: newBooking.id,
         cf_booking_status: newBooking.status,
         cf_service_type: service.name,
@@ -232,7 +232,7 @@ export async function POST(request: NextRequest) {
       await ghl.updateContact({
         id: validatedData.contactId,
         customField: customFields,
-        locationId: process.env.GHL_LOCATION_ID!
+        locationId: process.env.GHL_LOCATION_ID || ""
       });
 
       // Add appropriate tags
@@ -278,7 +278,7 @@ export async function POST(request: NextRequest) {
       customer: {
         name: user.name,
         email: user.email,
-        phone: user.phone
+        phone: ''
       }
     };
 

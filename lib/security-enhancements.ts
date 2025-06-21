@@ -78,7 +78,7 @@ class SecurityEnhancer {
     this.blockedIPs.add(ip);
     await cache.set(`blocked:${ip}`, { reason, timestamp: new Date() }, { ttl: 86400 });
     
-    logger.error('IP blocked', 'SECURITY', { ip, reason });
+    logger.error('IP blocked', 'SECURITY', new Error(`IP blocked: ${ip}, reason: ${reason}`), { ip, reason });
   }
 
   private isIPBlocked(ip: string): boolean {

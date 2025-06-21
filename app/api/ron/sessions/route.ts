@@ -1,46 +1,68 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { Role, NotarizationStatus } from '@prisma/client';
+import { Role, BookingStatus, LocationType } from '@prisma/client';
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
 
-  // 1. Authorization Check: Only authenticated SIGNERS can create sessions
-  // We cast session.user to `any` to access the custom `role` and `id` property
-  if (!session?.user || (session.user as any).role !== Role.SIGNER) {
-    return NextResponse.json({ error: 'Forbidden: Only signers can create sessions.' }, { status: 403 });
+  // 1. Authorization Check
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
-  const signerId = (session.user as any).id;
+  const userId = (session.user as any).id;
 
   try {
-    // 2. Create new Notarization Session
-    // For MVP, we're not taking any specific booking details like preferred time yet.
-    // The session is created, and further details (scheduling, document upload) will follow.
-    const newNotarizationSession = await prisma.notarizationSession.create({
-      data: {
-        signerId: signerId,
-        status: NotarizationStatus.PENDING_CONFIRMATION,
-        // notaryId can be assigned later by an admin or a system process
-        // scheduledDateTime can be set when the session is confirmed/scheduled
-      },
-      include: { // Include signer details in the response
-        signer: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
+    // 2. Parse Request Body (if needed for additional session parameters)
+    const body = await request.json();
+    const { serviceId, notes } = body;
+
+    // 3. Find or create a RON service
+    let ronService = await prisma.service.findFirst({
+      where: { 
+        serviceType: 'SPECIALTY_NOTARY_SERVICE',
+        name: { contains: 'Remote Online Notarization' }
+      }
     });
 
-    return NextResponse.json(newNotarizationSession, { status: 201 });
+    if (!ronService) {
+      ronService = await prisma.service.create({
+        data: {
+          name: 'Remote Online Notarization',
+          serviceType: 'SPECIALTY_NOTARY_SERVICE',
+          durationMinutes: 60,
+          basePrice: 50.00,
+          isActive: true,
+          requiresDeposit: true,
+          depositAmount: 25.00
+        }
+      });
+    }
+
+    // 4. Create New RON Booking (instead of NotarizationSession)
+    const newRonBooking = await prisma.booking.create({
+      data: {
+        signerId: userId,
+        serviceId: serviceId || ronService.id,
+        status: BookingStatus.REQUESTED, // Maps from PENDING_CONFIRMATION
+        locationType: LocationType.REMOTE_ONLINE_NOTARIZATION,
+        priceAtBooking: ronService.basePrice,
+        depositAmount: ronService.depositAmount,
+        notes: notes || 'Remote Online Notarization session',
+        // RON sessions don't have a specific scheduled time initially
+        // scheduledDateTime will be set when notary is assigned
+      },
+      include: {
+        service: true,
+        NotarizationDocument: true
+      }
+    });
+
+    return NextResponse.json(newRonBooking, { status: 201 });
 
   } catch (error) {
-    console.error('Failed to create notarization session:', error);
-    return NextResponse.json({ error: 'Failed to create notarization session.' }, { status: 500 });
+    console.error('Failed to create RON session:', error);
+    return NextResponse.json({ error: 'Failed to create RON session.' }, { status: 500 });
   }
 }

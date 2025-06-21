@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { Role, NotarizationStatus } from '@prisma/client';
+import { Role, BookingStatus, LocationType } from '@prisma/client';
 
 export async function POST(
   request: Request,
-  { params }: { params: { sessionId: string; documentId: string } }
+  context: { params: Promise<{ sessionId: string; documentId: string }> }
 ) {
   const session = await getServerSession(authOptions);
+  const params = await context.params;
   const { sessionId, documentId } = params;
 
   // 1. Authorization Check
@@ -18,17 +19,20 @@ export async function POST(
   const userId = (session.user as any).id;
 
   try {
-    // 2. Validate Session and User
-    const notarizationSession = await prisma.notarizationSession.findUnique({
-      where: { id: sessionId },
-      include: { documents: true }, // Include documents to check count later
+    // 2. Validate RON Booking and User
+    const ronBooking = await prisma.booking.findUnique({
+      where: { 
+        id: sessionId,
+        locationType: LocationType.REMOTE_ONLINE_NOTARIZATION
+      },
+      include: { NotarizationDocument: true }, // Include documents to check count later
     });
 
-    if (!notarizationSession) {
-      return NextResponse.json({ error: 'Notarization session not found' }, { status: 404 });
+    if (!ronBooking) {
+      return NextResponse.json({ error: 'RON booking not found' }, { status: 404 });
     }
-    if (notarizationSession.signerId !== userId) {
-      return NextResponse.json({ error: 'Forbidden: You are not the signer for this session.' }, { status: 403 });
+    if (ronBooking.signerId !== userId) {
+      return NextResponse.json({ error: 'Forbidden: You are not the signer for this RON booking.' }, { status: 403 });
     }
 
     // 3. Validate Document
@@ -39,8 +43,8 @@ export async function POST(
     if (!documentRecord) {
       return NextResponse.json({ error: 'Document record not found' }, { status: 404 });
     }
-    if (documentRecord.sessionId !== sessionId) {
-      return NextResponse.json({ error: 'Document does not belong to this session' }, { status: 400 });
+    if (documentRecord.bookingId !== sessionId) {
+      return NextResponse.json({ error: 'Document does not belong to this RON booking' }, { status: 400 });
     }
     if (documentRecord.uploadedById !== userId) {
       return NextResponse.json({ error: 'Forbidden: You did not initiate this document upload.' }, { status: 403 });
@@ -56,24 +60,24 @@ export async function POST(
       },
     });
 
-    // 5. Optionally, update session status if all expected docs are uploaded
+    // 5. Optionally, update booking status if all expected docs are uploaded
     // This is a simplified check. A real app might need more complex logic
     // (e.g., knowing how many documents are expected).
     // For now, we'll assume if at least one document is confirmed, the status can move.
-    if (notarizationSession.status === NotarizationStatus.AWAITING_DOCUMENTS || 
-        notarizationSession.status === NotarizationStatus.PENDING_CONFIRMATION || 
-        notarizationSession.status === NotarizationStatus.CONFIRMED) {
+    if (ronBooking.status === BookingStatus.AWAITING_CLIENT_ACTION || 
+        ronBooking.status === BookingStatus.REQUESTED || 
+        ronBooking.status === BookingStatus.CONFIRMED) {
       
-      // Check if this confirmed document is part of the session's documents
-      const allSessionDocsConfirmed = notarizationSession.documents.every(doc => 
+      // Check if this confirmed document is part of the booking's documents
+      const allBookingDocsConfirmed = ronBooking.NotarizationDocument.every(doc => 
         doc.id === documentId || 
         (doc.updatedAt.getTime() > doc.createdAt.getTime()) // A naive check for 'confirmed'
       );
 
-      if(allSessionDocsConfirmed && notarizationSession.documents.length > 0) {
-        await prisma.notarizationSession.update({
+      if(allBookingDocsConfirmed && ronBooking.NotarizationDocument.length > 0) {
+        await prisma.booking.update({
             where: { id: sessionId },
-            data: { status: NotarizationStatus.DOCUMENTS_UPLOADED },
+            data: { status: BookingStatus.READY_FOR_SERVICE }, // Maps from DOCUMENTS_UPLOADED
         });
       }
     }
@@ -81,7 +85,7 @@ export async function POST(
     return NextResponse.json({ 
       message: 'Document upload confirmed successfully.',
       documentId: updatedDocument.id,
-      newStatus: notarizationSession.status === NotarizationStatus.DOCUMENTS_UPLOADED ? NotarizationStatus.DOCUMENTS_UPLOADED : notarizationSession.status
+      newStatus: ronBooking.status === BookingStatus.READY_FOR_SERVICE ? BookingStatus.READY_FOR_SERVICE : ronBooking.status
     });
 
   } catch (error) {

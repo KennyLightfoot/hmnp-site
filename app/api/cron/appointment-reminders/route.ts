@@ -202,7 +202,7 @@ async function checkForNoShows() {
         // Send no-show check notification
         const recipient = {
           email: booking.User_Booking_signerIdToUser?.email || undefined,
-          phone: null, // Will be fetched from GHL
+          phone: undefined, // Will be fetched from GHL
           firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0]
         };
 

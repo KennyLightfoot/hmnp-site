@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma-singleton';
+import { mapPrismaToFrontend, getServiceDisplayName } from '@/lib/types/service-types';
 
 export async function GET() {
   try {
@@ -65,20 +64,24 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       services: {
-        all: services.map(service => ({
-          id: service.id,
-          name: service.name,
-          description: service.description,
-          type: service.serviceType,
-          typeLabel: serviceTypeLabels[service.serviceType] || service.serviceType,
-          duration: service.durationMinutes,
-          basePrice: Number(service.basePrice),
-          requiresDeposit: service.requiresDeposit,
-          depositAmount: service.requiresDeposit ? Number(service.depositAmount) : 0,
-          hasCalendarIntegration: !!service.externalCalendarId,
-          createdAt: service.createdAt,
-          updatedAt: service.updatedAt,
-        })),
+        all: services.map(service => {
+          const frontendType = mapPrismaToFrontend(service.serviceType);
+          return {
+            id: service.id,
+            key: frontendType, // Frontend-compatible key for forms
+            name: service.name,
+            description: service.description,
+            type: service.serviceType, // Prisma enum
+            typeLabel: getServiceDisplayName(frontendType),
+            duration: service.durationMinutes,
+            basePrice: Number(service.basePrice),
+            requiresDeposit: service.requiresDeposit,
+            depositAmount: service.requiresDeposit ? Number(service.depositAmount) : 0,
+            hasCalendarIntegration: !!service.externalCalendarId,
+            createdAt: service.createdAt,
+            updatedAt: service.updatedAt,
+          };
+        }),
         byType: servicesByType,
         typeLabels: serviceTypeLabels,
       },

@@ -9,30 +9,17 @@ import {
   PaymentProvider, 
   NotificationType, 
   NotificationMethod,
-  User 
+  User,
+  Booking,
+  Service as PrismaService
 } from '@prisma/client';
 
 /**
- * Booking model with related entities
+ * Booking model with related entities - matches actual Prisma structure
  */
-export interface BookingWithRelations {
-  id: string;
-  customerId: string;
-  serviceId: string;
-  status: BookingStatus;
-  appointmentDate: Date;
-  endDate: Date;
-  duration: number;
-  notes?: string | null;
-  cancelReason?: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  signerId?: string | null;
-  
-  // Relations
+export type BookingWithRelations = Booking & {
+  service?: PrismaService | null;
   User_Booking_signerIdToUser?: User | null;
-  customer: User;
-  service: Service;
   Payment?: Payment[] | null;
   notifications?: Notification[] | null;
 }
@@ -61,18 +48,7 @@ export interface Payment {
 /**
  * Service model with related entities
  */
-export interface Service {
-  id: string;
-  name: string;
-  description?: string | null;
-  duration: number;
-  price: number;
-  currency: string;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  
-  // Relations
+export type Service = PrismaService & {
   bookings?: BookingWithRelations[] | null;
 }
 

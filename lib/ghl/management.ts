@@ -417,7 +417,7 @@ export async function createCompleteNewLead(leadData: {
 export async function confirmBookingWorkflow(bookingData: {
   contactId: string;
   calendarId: string;
-  appointmentDateTime: string;
+  scheduledDateTime: string;
   serviceType: string;
   numberOfSigners: number;
   serviceAddress: string;
@@ -429,8 +429,8 @@ export async function confirmBookingWorkflow(bookingData: {
     const appointment = await createAppointment({
       calendarId: bookingData.calendarId,
       contactId: bookingData.contactId,
-      startTime: bookingData.appointmentDateTime,
-      endTime: new Date(new Date(bookingData.appointmentDateTime).getTime() + 60 * 60 * 1000).toISOString(), // +1 hour
+      startTime: bookingData.scheduledDateTime,
+      endTime: new Date(new Date(bookingData.scheduledDateTime).getTime() + 60 * 60 * 1000).toISOString(), // +1 hour
       title: `${bookingData.serviceType} - ${bookingData.numberOfSigners} signer(s)`,
       address: bookingData.serviceAddress,
       appointmentStatus: 'confirmed'
@@ -471,7 +471,7 @@ export async function confirmBookingWorkflow(bookingData: {
     // 5. Add note
     await addContactNote(
       bookingData.contactId,
-      `Booking confirmed for ${bookingData.appointmentDateTime}. Service: ${bookingData.serviceType}, Location: ${bookingData.serviceAddress}`
+              `Booking confirmed for ${bookingData.scheduledDateTime}. Service: ${bookingData.serviceType}, Location: ${bookingData.serviceAddress}`
     );
 
     return {

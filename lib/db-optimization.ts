@@ -57,7 +57,7 @@ class DatabaseOptimizer {
           }
         },
         orderBy: {
-          appointmentDateTime: 'asc'
+          scheduledDateTime: 'asc'
         }
       });
 
@@ -97,7 +97,7 @@ class DatabaseOptimizer {
       
       const [bookings, totalCount] = await Promise.all([
         prisma.booking.findMany({
-          where: { signerUserId: userId },
+          where: { signerId: userId },
           include: {
             service: {
               select: {
@@ -114,7 +114,7 @@ class DatabaseOptimizer {
           take: limit
         }),
         prisma.booking.count({
-          where: { signerUserId: userId }
+          where: { signerId: userId }
         })
       ]);
 

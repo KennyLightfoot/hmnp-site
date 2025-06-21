@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   
   const triggerTime = new Date().toISOString();
   
-  logger.info(`Cron test endpoint triggered at ${triggerTime}`, {
+  logger.info(`Cron test endpoint triggered at ${triggerTime}`, 'CRON_TEST', {
     isCronRequest,
     headers: Object.fromEntries(request.headers.entries())
   });

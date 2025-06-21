@@ -19,6 +19,9 @@ export default function BookingConfirmationPage() {
   const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null)
 
   useEffect(() => {
+    // Only access localStorage on the client side
+    if (typeof window === 'undefined') return;
+    
     // Retrieve booking information from localStorage
     const reference = localStorage.getItem("bookingReference")
     const details = localStorage.getItem("bookingDetails")

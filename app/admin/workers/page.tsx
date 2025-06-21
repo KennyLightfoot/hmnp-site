@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from 'next/navigation';
 import { Role } from "@prisma/client";
@@ -39,7 +39,7 @@ export default async function AdminWorkersPage() {
   const session = await getServerSession(authOptions);
 
   // Authorization Check: Only Admins allowed
-  if (!session?.user || (session.user as any).role !== Role.ADMIN) {
+  if (!session?.user || session.user.role !== Role.ADMIN) {
     redirect('/portal'); // Redirect non-admins
   }
 
@@ -103,10 +103,10 @@ export default async function AdminWorkersPage() {
   };
 
   // Status badge renderer
-  const StatusBadge = ({ status }) => {
+  const StatusBadge = ({ status }: { status: string }) => {
     switch (status) {
       case 'RUNNING':
-        return <Badge variant="success" className="flex items-center gap-1"><Activity className="h-3 w-3" /> Running</Badge>;
+        return <Badge variant="default" className="flex items-center gap-1"><Activity className="h-3 w-3" /> Running</Badge>;
       case 'STOPPED':
         return <Badge variant="secondary" className="flex items-center gap-1"><Pause className="h-3 w-3" /> Stopped</Badge>;
       case 'PAUSED':

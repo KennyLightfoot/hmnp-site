@@ -307,8 +307,8 @@ async function checkTimeBasedConditions(
     return hoursFromCreation >= hoursAfter;
   }
 
-  if (hoursBefore && booking.appointmentDateTime) {
-    const hoursUntilAppointment = (booking.appointmentDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      if (hoursBefore && booking.scheduledDateTime) {
+      const hoursUntilAppointment = (booking.scheduledDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
     return hoursUntilAppointment <= hoursBefore && hoursUntilAppointment > 0;
   }
 

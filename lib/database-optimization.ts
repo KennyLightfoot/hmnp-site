@@ -87,7 +87,7 @@ class DatabaseOptimizer {
           }
         },
         orderBy: {
-          appointmentDateTime: 'asc'
+          scheduledDateTime: 'asc'
         }
       });
 
@@ -133,16 +133,16 @@ class DatabaseOptimizer {
       // Use raw query for better performance on large datasets
       const bookings = await prisma.$queryRaw`
         SELECT 
-          "appointmentDateTime",
+          "scheduledDateTime",
           "service"."durationMinutes"
         FROM "Booking" b
         INNER JOIN "Service" service ON b."serviceId" = service.id
         WHERE 
-          b."appointmentDateTime" >= ${startOfDay} 
-          AND b."appointmentDateTime" <= ${endOfDay}
+                  b."scheduledDateTime" >= ${startOfDay}
+        AND b."scheduledDateTime" <= ${endOfDay}
           AND b."status" IN ('CONFIRMED', 'IN_PROGRESS')
           AND (${serviceId}::text = 'all' OR b."serviceId" = ${serviceId})
-        ORDER BY b."appointmentDateTime"
+        ORDER BY b."scheduledDateTime"
       `;
 
       const duration = Date.now() - startTime;

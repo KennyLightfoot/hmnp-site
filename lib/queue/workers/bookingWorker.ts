@@ -20,9 +20,9 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
     const booking = await withRetry(() => prisma.booking.findUnique({
       where: { id: job.bookingId },
       include: {
-        client: true,
+        User_Booking_signerIdToUser: true,
         service: true,
-        location: true
+        Payment: true,
       }
     }), { maxRetries: 3 });
     

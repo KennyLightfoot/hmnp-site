@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from 'next/navigation';
 import { Role } from "@prisma/client";
@@ -20,6 +20,7 @@ import {
   RefreshCw, CheckCircle, XCircle, Clock, Calendar, RotateCw, Ban, CalendarCheck, CalendarX
 } from "lucide-react";
 import { getQueues } from "@/lib/queue/config";
+import { BookingWithRelations } from "@/lib/types/prisma";
 
 // Helper function to format dates
 const formatDateTime = (date: Date | string | null | undefined) => {
@@ -31,27 +32,27 @@ export default async function AdminBookingsPage() {
   const session = await getServerSession(authOptions);
 
   // Authorization Check: Only Admins allowed
-  if (!session?.user || (session.user as any).role !== Role.ADMIN) {
+  if (!session?.user || session.user.role !== Role.ADMIN) {
     redirect('/portal'); // Redirect non-admins
   }
 
-  // Fetch booking data
-  let pendingBookings = [];
-  let confirmedBookings = [];
-  let cancelledBookings = [];
+  // Fetch booking data  
+  let pendingBookings: BookingWithRelations[] = [];
+  let confirmedBookings: BookingWithRelations[] = [];
+  let cancelledBookings: BookingWithRelations[] = [];
   
   try {
     // Fetch pending bookings
     pendingBookings = await prisma.booking.findMany({
       where: {
-        status: { in: ['PENDING', 'PAYMENT_PENDING'] },
+        status: { in: ['REQUESTED', 'PAYMENT_PENDING'] },
       },
       orderBy: {
-        scheduledAt: 'asc',
+        scheduledDateTime: 'asc',
       },
       take: 50,
       include: {
-        client: true,
+        User_Booking_signerIdToUser: true,
         service: true,
       }
     });
@@ -60,14 +61,14 @@ export default async function AdminBookingsPage() {
     confirmedBookings = await prisma.booking.findMany({
       where: {
         status: 'CONFIRMED',
-        scheduledAt: { gte: new Date() }
+        scheduledDateTime: { gte: new Date() }
       },
       orderBy: {
-        scheduledAt: 'asc',
+        scheduledDateTime: 'asc',
       },
       take: 50,
       include: {
-        client: true,
+        User_Booking_signerIdToUser: true,
         service: true,
       }
     });
@@ -75,14 +76,14 @@ export default async function AdminBookingsPage() {
     // Fetch cancelled bookings
     cancelledBookings = await prisma.booking.findMany({
       where: {
-        status: 'CANCELLED',
+        status: { in: ['CANCELLED_BY_CLIENT', 'CANCELLED_BY_STAFF'] },
       },
       orderBy: {
         updatedAt: 'desc',
       },
       take: 50,
       include: {
-        client: true,
+        User_Booking_signerIdToUser: true,
         service: true,
       }
     });
@@ -108,22 +109,23 @@ export default async function AdminBookingsPage() {
   }
 
   // Status badge renderer
-  const StatusBadge = ({ status }) => {
+  const StatusBadge = ({ status }: { status: string }) => {
     switch (status) {
-      case 'PENDING':
-        return <Badge variant="outline" className="flex items-center gap-1"><Clock className="h-3 w-3" /> Pending</Badge>;
+      case 'REQUESTED':
+        return <Badge variant="outline" className="flex items-center gap-1"><Clock className="h-3 w-3" /> Requested</Badge>;
       case 'PAYMENT_PENDING':
         return <Badge variant="secondary" className="flex items-center gap-1"><RotateCw className="h-3 w-3" /> Payment Pending</Badge>;
       case 'CONFIRMED':
-        return <Badge variant="success" className="flex items-center gap-1"><CheckCircle className="h-3 w-3" /> Confirmed</Badge>;
-      case 'CANCELLED':
+        return <Badge variant="default" className="flex items-center gap-1"><CheckCircle className="h-3 w-3" /> Confirmed</Badge>;
+      case 'CANCELLED_BY_CLIENT':
+      case 'CANCELLED_BY_STAFF':
         return <Badge variant="destructive" className="flex items-center gap-1"><XCircle className="h-3 w-3" /> Cancelled</Badge>;
       case 'COMPLETED':
         return <Badge variant="default" className="flex items-center gap-1"><CalendarCheck className="h-3 w-3" /> Completed</Badge>;
       case 'NO_SHOW':
         return <Badge variant="destructive" className="flex items-center gap-1"><Ban className="h-3 w-3" /> No Show</Badge>;
-      case 'RESCHEDULED':
-        return <Badge variant="warning" className="flex items-center gap-1"><CalendarX className="h-3 w-3" /> Rescheduled</Badge>;
+      case 'REQUIRES_RESCHEDULE':
+        return <Badge variant="secondary" className="flex items-center gap-1"><CalendarX className="h-3 w-3" /> Needs Reschedule</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -165,8 +167,9 @@ export default async function AdminBookingsPage() {
           <CardContent>
             <div className="text-3xl font-bold">
               {confirmedBookings.filter(booking => {
+                if (!booking.scheduledDateTime) return false;
                 const today = new Date();
-                const bookingDate = new Date(booking.scheduledAt);
+                const bookingDate = new Date(booking.scheduledDateTime);
                 return (
                   bookingDate.getDate() === today.getDate() &&
                   bookingDate.getMonth() === today.getMonth() &&
@@ -223,9 +226,9 @@ export default async function AdminBookingsPage() {
                   )}
                   {pendingBookings.map((booking) => (
                     <TableRow key={booking.id}>
-                      <TableCell>{booking.client?.name || '-'}</TableCell>
+                      <TableCell>{booking.User_Booking_signerIdToUser?.name || '-'}</TableCell>
                       <TableCell>{booking.service?.name || '-'}</TableCell>
-                      <TableCell>{formatDateTime(booking.scheduledAt)}</TableCell>
+                      <TableCell>{formatDateTime(booking.scheduledDateTime)}</TableCell>
                       <TableCell>
                         <StatusBadge status={booking.status} />
                       </TableCell>
@@ -278,10 +281,10 @@ export default async function AdminBookingsPage() {
                   )}
                   {confirmedBookings.map((booking) => (
                     <TableRow key={booking.id}>
-                      <TableCell>{booking.client?.name || '-'}</TableCell>
+                      <TableCell>{booking.User_Booking_signerIdToUser?.name || '-'}</TableCell>
                       <TableCell>{booking.service?.name || '-'}</TableCell>
-                      <TableCell>{formatDateTime(booking.scheduledAt)}</TableCell>
-                      <TableCell>{booking.duration || '-'} min</TableCell>
+                      <TableCell>{formatDateTime(booking.scheduledDateTime)}</TableCell>
+                      <TableCell>{booking.service?.durationMinutes || '-'} min</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <Button size="sm" variant="outline" asChild>
@@ -331,9 +334,9 @@ export default async function AdminBookingsPage() {
                   )}
                   {cancelledBookings.map((booking) => (
                     <TableRow key={booking.id}>
-                      <TableCell>{booking.client?.name || '-'}</TableCell>
+                      <TableCell>{booking.User_Booking_signerIdToUser?.name || '-'}</TableCell>
                       <TableCell>{booking.service?.name || '-'}</TableCell>
-                      <TableCell>{formatDateTime(booking.scheduledAt)}</TableCell>
+                      <TableCell>{formatDateTime(booking.scheduledDateTime)}</TableCell>
                       <TableCell>{formatDateTime(booking.updatedAt)}</TableCell>
                       <TableCell>
                         <Button size="sm" variant="outline" asChild>

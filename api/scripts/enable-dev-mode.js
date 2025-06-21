@@ -7,7 +7,7 @@
 
 // Set development mode environment variable
 process.env.DEV_MODE = 'true';
-process.env.NODE_ENV = 'development';
+// NOTE: NODE_ENV is automatically managed by Next.js - don't set it manually
 
 console.log('🔧 Development mode enabled');
 console.log('⚠️ Using simulated authentication (ADMIN role)');

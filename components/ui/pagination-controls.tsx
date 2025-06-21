@@ -22,7 +22,9 @@ export function PaginationControls({ currentPage, totalCount, pageSize }: Pagina
   }
 
   const changePage = (newPage: number) => {
-    const params = new URLSearchParams(searchParams.toString())
+    if (!pathname) return; // Handle case where pathname might be null
+    
+    const params = new URLSearchParams(searchParams?.toString() || '')
     params.set('page', newPage.toString())
     router.push(`${pathname}?${params.toString()}`)
   }

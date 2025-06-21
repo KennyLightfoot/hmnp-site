@@ -1223,6 +1223,8 @@ Houston Mobile Notary Pros</p>
 ---
 
 ## 🔔 **WORKFLOW 5: NEW BOOKING NOTIFICATION SYSTEM** ⭐⭐⭐⭐⭐
+4e0c0f96-cb2c-4996-a3bf-37d68b6386c9
+
 **Workflow ID:** booking-notification-system
 
 ### **Step 1: Create Workflow**
@@ -3123,7 +3125,9 @@ return fetch(url, fetchOptions)
 ---
 
 ## 🔔 **ENHANCED WORKFLOW: STRIPE WEBHOOK PROCESSOR** ⭐⭐⭐⭐⭐ **NEW!**
-**Workflow ID:** stripe-webhook-processor
+92af220e-293d-4c3a-9c69-404ce17340a0
+
+**Workflow ID:** 92af220e-293d-4c3a-9c69-404ce17340a0
 
 ### **Step 1: Create Workflow**
 1. **Name:** `🔔 Stripe Payment Event Processor`

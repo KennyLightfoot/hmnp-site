@@ -18,6 +18,8 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import AppointmentCalendar from "@/components/appointment-calendar"
 import Link from "next/link"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { LocationType } from "@prisma/client"
+import { FrontendServiceType, isValidFrontendServiceType } from "@/lib/types/service-types"
 
 // Define the form schema using Zod
 const formSchema = z.object({
@@ -162,7 +164,7 @@ export default function BookingPageClient() {
   const { formState, watch, setValue } = form
   const { errors, isValid } = formState
 
-  const serviceType = watch("serviceType") as ServiceType
+  const serviceType = watch("serviceType")
   const numberOfSigners = watch("numberOfSigners")
   const appointmentStartTime = watch("appointmentStartTime")
   const appointmentFormattedTime = watch("appointmentFormattedTime")
@@ -238,6 +240,15 @@ export default function BookingPageClient() {
         return "Notary Service"
     }
   }
+
+  // Function to validate and map service types
+  const mapServiceTypeForCalendar = (serviceType: string): FrontendServiceType => {
+    if (isValidFrontendServiceType(serviceType)) {
+      return serviceType;
+    }
+    console.warn(`Invalid service type: ${serviceType}, defaulting to essential`);
+    return "essential"; // Safe fallback
+  };
 
   // Updated handleTimeSelected to accept calendarId
   const handleTimeSelected = (startTime: string, endTime: string, formattedTime: string, calendarId: string) => {
@@ -373,7 +384,7 @@ export default function BookingPageClient() {
           toast({
             title: "Payment Required",
             description: "Redirecting to secure payment...",
-            variant: "default", // Or 'info'
+            variant: "default",
           });
           router.push(`/checkout?bookingId=${result.booking.id}&paymentIntentId=${result.payment.paymentIntentId}&clientSecret=${result.payment.clientSecret}&amount=${result.payment.amount}`);
         } else {
@@ -566,7 +577,7 @@ export default function BookingPageClient() {
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <AppointmentCalendar 
-                      serviceType={serviceType} 
+                      serviceType={mapServiceTypeForCalendar(serviceType)} 
                       numberOfSigners={numberOfSigners}
                       onTimeSelected={handleTimeSelected}
                     />
@@ -735,7 +746,7 @@ export default function BookingPageClient() {
                     </div>
 
                     {/* BEGIN: Mileage Fee Notice Alert */}
-                    <Alert variant="info" className="mt-4 mb-4 border-blue-400 bg-blue-50 text-blue-700 dark:border-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
+                    <Alert className="mt-4 mb-4 border-blue-400 bg-blue-50 text-blue-700 dark:border-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
                       <AlertTriangle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                       <AlertTitle className="font-semibold text-blue-800 dark:text-blue-200">Mileage Fee Notice</AlertTitle>
                       <AlertDescription className="text-sm">

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { Role } from '@prisma/client';
+import { Role, AlertStatus } from '@prisma/client';
 
 export async function POST() {
   // Check authentication and authorization
@@ -17,10 +17,10 @@ export async function POST() {
     // Update all active alerts to resolved
     const updateResult = await prisma.systemAlert.updateMany({
       where: {
-        status: 'ACTIVE',
+        status: AlertStatus.ACTIVE,
       },
       data: {
-        status: 'RESOLVED',
+        status: AlertStatus.RESOLVED,
         resolvedAt: new Date(),
         resolvedBy: (session.user as any).email || 'admin',
       }

@@ -59,7 +59,7 @@ export function AssignmentForm({ initialData, onSubmitSuccess }: AssignmentFormP
       closingDate: initialData?.closingDate ? new Date(initialData.closingDate) : null,
       partnerAssignedToId: initialData?.partnerAssignedToId || null,
       allowPartnerComments: initialData?.allowPartnerComments ?? false,
-      reference: (initialData as any)?.reference || '', // Assuming reference might be on initialData
+      reference: initialData?.reference || '',
     },
   });
 

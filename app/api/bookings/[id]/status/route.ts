@@ -5,9 +5,10 @@ import { prisma } from '@/lib/prisma';
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params;
     const { id: bookingId } = params;
     const body = await request.json();
     const { status, notes, triggeredBy } = body;
@@ -50,9 +51,10 @@ export async function PATCH(
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params;
     const { id: bookingId } = params;
 
     // Get current booking status and details

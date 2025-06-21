@@ -44,11 +44,11 @@ export class QueueClient {
         retryCount: 0,
       };
       
-      const jobId = await queues.notificationsQueue.enqueue(fullJob);
-      logger.info(`Enqueued notification job ${jobId}`);
+      const jobId = await queues.notificationsQueue.sendMessage(fullJob) as string;
+      logger.info(`Enqueued notification job ${jobId}`, 'QUEUE');
       return jobId;
     } catch (error) {
-      logger.error('Failed to enqueue notification:', error);
+      logger.error('Failed to enqueue notification:', 'QUEUE', error as Error);
       return null;
     }
   }
@@ -60,7 +60,7 @@ export class QueueClient {
     try {
       const queues = getQueues();
       if (!queues) {
-        logger.warn('Queue not available, skipping booking job enqueue');
+        logger.warn('Queue not available, skipping booking job enqueue', 'QUEUE');
         return null;
       }
       
@@ -72,11 +72,11 @@ export class QueueClient {
         retryCount: 0,
       };
       
-      const jobId = await queues.bookingProcessingQueue.enqueue(fullJob);
-      logger.info(`Enqueued booking job ${jobId} for booking ${job.bookingId}`);
+      const jobId = await queues.bookingProcessingQueue.sendMessage(fullJob) as string;
+      logger.info(`Enqueued booking job ${jobId} for booking ${job.bookingId}`, 'QUEUE');
       return jobId;
     } catch (error) {
-      logger.error('Failed to enqueue booking job:', error);
+      logger.error('Failed to enqueue booking job:', 'QUEUE', error as Error);
       return null;
     }
   }
@@ -88,7 +88,7 @@ export class QueueClient {
     try {
       const queues = getQueues();
       if (!queues) {
-        logger.warn('Queue not available, skipping payment job enqueue');
+        logger.warn('Queue not available, skipping payment job enqueue', 'QUEUE');
         return null;
       }
       
@@ -100,11 +100,11 @@ export class QueueClient {
         retryCount: 0,
       };
       
-      const jobId = await queues.paymentProcessingQueue.enqueue(fullJob);
-      logger.info(`Enqueued payment job ${jobId} for action ${job.action}`);
+      const jobId = await queues.paymentProcessingQueue.sendMessage(fullJob) as string;
+      logger.info(`Enqueued payment job ${jobId} for action ${job.action}`, 'QUEUE');
       return jobId;
     } catch (error) {
-      logger.error('Failed to enqueue payment job:', error);
+      logger.error('Failed to enqueue payment job:', 'QUEUE', error as Error);
       return null;
     }
   }
@@ -125,11 +125,11 @@ export class QueueClient {
           return await this.enqueuePaymentJob(job as PaymentProcessingJob);
           
         default:
-          logger.error(`Unknown job type: ${(job as any).type}`);
+          logger.error(`Unknown job type: ${(job as any).type}`, 'QUEUE');
           return null;
       }
     } catch (error) {
-      logger.error('Failed to enqueue job:', error);
+      logger.error('Failed to enqueue job:', 'QUEUE', error as Error);
       return null;
     }
   }
@@ -138,20 +138,45 @@ export class QueueClient {
    * Schedule a job to run at a specific time
    */
   public async scheduleJob(job: QueueJob, scheduledTime: Date): Promise<string | null> {
-    // In Upstash Queue, there's no native scheduling feature
-    // We'll implement this by adding a scheduledFor field to the job
-    // and our worker will check if it's time to process it
+    // In Upstash Queue, we can use delay for scheduling
+    // Calculate delay in seconds from now
     
     try {
+      const delayInSeconds = Math.max(0, Math.floor((scheduledTime.getTime() - Date.now()) / 1000));
+      
+      const queues = getQueues();
+      if (!queues) {
+        logger.warn('Queue not available, skipping scheduled job');
+        return null;
+      }
+      
       const scheduledJob = {
         ...job,
         scheduledFor: scheduledTime,
         createdAt: new Date(),
       };
       
-      return await this.enqueueJob(scheduledJob);
+      let jobId: string | null = null;
+      
+             switch (job.type) {
+         case 'notification':
+           jobId = await queues.notificationsQueue.sendMessage(scheduledJob, delayInSeconds) as string;
+           break;
+         case 'booking-processing':
+           jobId = await queues.bookingProcessingQueue.sendMessage(scheduledJob, delayInSeconds) as string;
+           break;
+         case 'payment-processing':
+           jobId = await queues.paymentProcessingQueue.sendMessage(scheduledJob, delayInSeconds) as string;
+           break;
+        default:
+          logger.error(`Unknown job type: ${(job as any).type}`);
+          return null;
+      }
+      
+             logger.info(`Scheduled job ${jobId} to run at ${scheduledTime.toISOString()}`, 'QUEUE');
+       return jobId;
     } catch (error) {
-      logger.error('Failed to schedule job:', error);
+      logger.error('Failed to schedule job:', 'QUEUE', error as Error);
       return null;
     }
   }

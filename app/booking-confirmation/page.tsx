@@ -73,9 +73,9 @@ export default function BookingConfirmationPage() {
       setError("Could not load booking confirmation details: Invalid page parameters.");
       return;
     }
-    const bid = searchParams.get('bookingId');
-    const pStatus = searchParams.get('status'); // e.g., 'succeeded' from Stripe redirect
-    const pIntentId = searchParams.get('payment_intent');
+    const bid = searchParams?.get('bookingId');
+    const pStatus = searchParams?.get('status'); // e.g., 'succeeded' from Stripe redirect
+    const pIntentId = searchParams?.get('payment_intent');
 
     if (bid) {
       setBookingId(bid);

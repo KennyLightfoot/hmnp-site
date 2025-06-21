@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth-config';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/db';
 import { Role } from '@prisma/client';
@@ -279,17 +279,17 @@ export const AuthConfig = {
   /**
    * Admin only
    */
-  adminOnly: () => ({ required: true, roles: [Role.ADMIN] }),
+  adminOnly: () => ({ required: true, allowGuest: false, roles: [Role.ADMIN] }),
   
   /**
    * Staff and admin
    */
-  staffOrAdmin: () => ({ required: true, roles: [Role.ADMIN, Role.STAFF] }),
+  staffOrAdmin: () => ({ required: true, allowGuest: false, roles: [Role.ADMIN, Role.STAFF] }),
   
   /**
    * Booking management access (admin, staff, notary)
    */
-  bookingAccess: () => ({ required: true, roles: [Role.ADMIN, Role.STAFF, Role.NOTARY] }),
+  bookingAccess: () => ({ required: true, allowGuest: false, roles: [Role.ADMIN, Role.STAFF, Role.NOTARY] }),
 
   /**
    * Any authenticated user

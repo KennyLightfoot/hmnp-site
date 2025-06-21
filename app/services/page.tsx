@@ -48,256 +48,257 @@ export const metadata = {
   },
 }
 
-export const services = [
-  {
-    slug: "standard",
-    name: "Standard Notary",
-    price: "$75+",
-    tagline: "On-time, every time.",
-    description:
-      "On-site notarizations of standard documents (POAs, affidavits, contracts) between 9 am–5 pm.",
-    link: "/services/standard",
-    icon: FileText,
-    features: [
-      "POAs, affidavits, contracts",
-      "Service between 9 am - 5 pm",
-      "Travel within 15 miles included",
-    ],
-    bgColor: "bg-[#002147]",
-    borderColor: "border-t-[#002147]",
-    buttonVariant: "outline" as "outline" | "default",
-    textColor: "text-[#002147]",
-    hoverBgColor: "hover:bg-[#002147]",
-    hoverTextColor: "hover:text-white",
-  },
-  {
-    slug: "priority",
-    name: "Priority Mobile Notary",
-    price: "$100",
-    tagline: "Urgent notarization, 2-hour response.",
-    description:
-      "Guaranteed 2-hour response for urgent notarization needs, available 7am-9pm daily.",
-    link: "/services/priority",
-    icon: Clock,
-    features: [
-      "2-hour response guarantee",
-      "Service 7am-9pm daily",
-      "Up to 5 documents, 2 signers",
-    ],
-    bgColor: "bg-[#A52A2A]",
-    borderColor: "border-t-[#A52A2A]",
-    buttonVariant: "default" as "outline" | "default",
-    textColor: "text-white",
-    hoverBgColor: "hover:bg-[#8B0000]",
-    isPopular: true,
-  },
-  {
-    slug: "extended",
-    name: "Extended Hours Notary",
-    price: "$100+",
-    tagline: "When 9–5 just won't cut it.",
-    description:
-      "Same-day or after-hours service (7 am–9 pm) for when 9–5 won't cut it.",
-    link: "/services/extended",
-    icon: Calendar,
-    features: [
-      "Same-day or after-hours",
-      "Service between 7 am - 9 pm",
-      "Flexible scheduling",
-    ],
-    bgColor: "bg-[#002147]",
-    borderColor: "border-t-[#002147]",
-    buttonVariant: "outline" as "outline" | "default",
-    textColor: "text-[#002147]",
-    hoverBgColor: "hover:bg-[#002147]",
-    hoverTextColor: "hover:text-white",
-  },
-  {
-    slug: "loan-signing",
-    name: "Loan Signing Specialist",
-    price: "$200+",
-    tagline: "Paperwork pros you can trust.",
-    description:
-      "Certified loan signings, including all trip-chain, remote online signings, and courier returns.",
-    link: "/services/loan-signing",
-    icon: Briefcase,
-    features: [
-      "Certified loan signings",
-      "RON and courier returns",
-      "Meticulous & professional",
-    ],
-    bgColor: "bg-[#002147]",
-    borderColor: "border-t-[#002147]",
-    buttonVariant: "outline" as "outline" | "default",
-    textColor: "text-[#002147]",
-    hoverBgColor: "hover:bg-[#002147]",
-    hoverTextColor: "hover:text-white",
-  },
-  {
-    slug: "estate-planning",
-    name: "Estate Planning Package",
-    price: "$250+",
-    tagline: "Secure your legacy, simply.",
-    description:
-      "A comprehensive package for notarizing all your estate documents—Wills, Trusts, POAs, and more.",
-    link: "/services/estate-planning", // Links to the main service page
-    icon: Shield,
-    features: [
-      "Notarize up to 10 documents",
-      "Includes up to 4 signers",
-      "Mobile service to your location",
-    ],
-    bgColor: "bg-[#002147]",
-    borderColor: "border-t-[#002147]",
-    buttonVariant: "outline" as "outline" | "default",
-    textColor: "text-[#002147]",
-    hoverBgColor: "hover:bg-[#002147]",
-    hoverTextColor: "hover:text-white",
-  },
-  {
-    slug: "specialty",
-    name: "Specialty Notary Services",
-    price: "$150+",
-    tagline: "Complex docs handled.",
-    description:
-      "Apostilles, embassy certifications, translations, and other complex notarial acts.",
-    link: "/services/specialty",
-    icon: Award,
-    features: [
-      "Apostilles, translations",
-      "Embassy certifications",
-      "Expert handling of unique needs",
-    ],
-    bgColor: "bg-[#002147]",
-    borderColor: "border-t-[#002147]",
-    buttonVariant: "outline" as "outline" | "default",
-    textColor: "text-[#002147]",
-    hoverBgColor: "hover:bg-[#002147]",
-    hoverTextColor: "hover:text-white",
-  },
-  {
-    slug: "business",
-    name: "Business Notary Solutions",
-    price: "$250+",
-    tagline: "Keep your business moving.",
-    description:
-      "Volume signings, block-booking discounts, corporate account setups, and recurring appointments.",
-    link: "/services/business",
-    icon: Building,
-    features: [
-      "Volume & block-booking discounts",
-      "Corporate accounts",
-      "Recurring appointments",
-    ],
-    bgColor: "bg-[#002147]",
-    borderColor: "border-t-[#002147]",
-    buttonVariant: "outline" as "outline" | "default",
-    textColor: "text-[#002147]",
-    hoverBgColor: "hover:bg-[#002147]",
-    hoverTextColor: "hover:text-white",
-  },
-  {
-    slug: "extras",
-    name: "Extras & Fees",
-    price: "See details",
-    tagline: "Transparent pricing, no surprises.",
-    description:
-      "Mileage Fee: $0.50/mile • After-Hours Fee: $30 • Weekend Fee: $40",
-    link: "/services/extras",
-    icon: ListPlus,
-    features: [
-      "Mileage Fee: $0.50/mile",
-      "After-Hours Fee: $30",
-      "Weekend Fee: $40",
-    ],
-    bgColor: "bg-[#002147]",
-    borderColor: "border-t-[#002147]",
-    buttonVariant: "outline" as "outline" | "default",
-    textColor: "text-[#002147]",
-    hoverBgColor: "hover:bg-[#002147]",
-    hoverTextColor: "hover:text-white",
-  },
-];
-
-// Updated FAQ data
-const serviceFaqs = [
-  {
-    id: "service-difference",
-    question: "What's the difference between your service packages?",
-    answer: (
-      <p>
-        Our services are designed to meet diverse needs:
-        <strong className="block mt-2">Standard Notary:</strong> For on-site notarizations of standard documents (POAs, affidavits, contracts) during 9 am–5 pm.
-        <strong className="block mt-2">Priority Mobile Notary:</strong> Guaranteed 2-hour response for urgent notarization needs, available 7am-9pm daily.
-        <strong className="block mt-2">Extended Hours Notary:</strong> Offers same-day or after-hours service (7 am–9 pm) for urgent needs outside standard business hours.
-        <strong className="block mt-2">Loan Signing Specialist:</strong> Provides certified loan signings, including remote online notarizations (RON) and courier services.
-        <strong className="block mt-2">Specialty Notary Services:</strong> Covers complex notarial acts like apostilles, embassy certifications, and translations.
-        <strong className="block mt-2">Business Notary Solutions:</strong> Caters to businesses with volume signings, block-booking discounts, and corporate account setups.
-        Each service ensures professionalism and precision. Please check individual service details for specifics.
-      </p>
-    ),
-  },
-  {
-    id: "service-area",
-    question: "How far do you travel for your services?",
-    answer: (
-      <p>
-        We serve clients within a 20-mile radius of ZIP code 77591 at no additional travel fee. For locations beyond
-        this radius, we charge $0.50 per mile. Our Priority Service extends to a 35-mile radius. We can travel to most
-        locations in the greater Houston area.
-      </p>
-    ),
-  },
-  {
-    id: "weekend-availability",
-    question: "Do you offer weekend services?",
-    answer: (
-      <p>
-        Yes, we offer weekend services for all our service packages with a $50 weekend surcharge. Our Priority Service
-        is available 7 days a week from 7am-9pm, including weekends. Weekend appointments should be booked at least 48
-        hours in advance when possible.
-      </p>
-    ),
-  },
-  {
-    id: "prevent-mistakes",
-    question: "I'm worried about making a mistake on important documents. How do you help prevent that?",
-    answer: (
-      <p>
-        We understand! Our process is built on precision and clarity. We guide you patiently, explain documents
-        clearly, and double-check everything – from ID verification to signatures and dates – to ensure accuracy
-        and prevent errors that could cause future issues. Your confidence is our priority.
-      </p>
-    ),
-  },
-  {
-    id: "hmnp-difference",
-    question: "What makes your notary service different from others?",
-    answer: (
-      <p>
-        Beyond convenience, we're committed to a higher standard of care. This means arriving early and
-        professionally, explaining everything without jargon, ensuring every detail is accurate, and following
-        through diligently. We believe every signing deserves this level of dedication for your peace of mind.
-      </p>
-    ),
-  },
-  {
-    id: "notary-process",
-    question: "What is the mobile notary process like?",
-    answer: (
-      <p>
-        We aim for a clear, calm, and professional experience every time. We've outlined our entire mobile notary process
-        from start to finish for your convenience. Please visit our{" "}
-        <Link href="/what-to-expect" className="text-[#A52A2A] hover:underline font-medium">
-          What to Expect page
-        </Link>{" "}
-        for a detailed guide.
-      </p>
-    ),
-  },
-]
-
 export default function ServicesPage() {
+  // Move services array inside the component
+  const services = [
+    {
+      slug: "standard",
+      name: "Standard Notary",
+      price: "$75+",
+      tagline: "On-time, every time.",
+      description:
+        "On-site notarizations of standard documents (POAs, affidavits, contracts) between 9 am–5 pm.",
+      link: "/services/standard",
+      icon: FileText,
+      features: [
+        "POAs, affidavits, contracts",
+        "Service between 9 am - 5 pm",
+        "Travel within 15 miles included",
+      ],
+      bgColor: "bg-[#002147]",
+      borderColor: "border-t-[#002147]",
+      buttonVariant: "outline" as "outline" | "default",
+      textColor: "text-[#002147]",
+      hoverBgColor: "hover:bg-[#002147]",
+      hoverTextColor: "hover:text-white",
+    },
+    {
+      slug: "priority",
+      name: "Priority Mobile Notary",
+      price: "$100",
+      tagline: "Urgent notarization, 2-hour response.",
+      description:
+        "Guaranteed 2-hour response for urgent notarization needs, available 7am-9pm daily.",
+      link: "/services/priority",
+      icon: Clock,
+      features: [
+        "2-hour response guarantee",
+        "Service 7am-9pm daily",
+        "Up to 5 documents, 2 signers",
+      ],
+      bgColor: "bg-[#A52A2A]",
+      borderColor: "border-t-[#A52A2A]",
+      buttonVariant: "default" as "outline" | "default",
+      textColor: "text-white",
+      hoverBgColor: "hover:bg-[#8B0000]",
+      isPopular: true,
+    },
+    {
+      slug: "extended",
+      name: "Extended Hours Notary",
+      price: "$100+",
+      tagline: "When 9–5 just won't cut it.",
+      description:
+        "Same-day or after-hours service (7 am–9 pm) for when 9–5 won't cut it.",
+      link: "/services/extended",
+      icon: Calendar,
+      features: [
+        "Same-day or after-hours",
+        "Service between 7 am - 9 pm",
+        "Flexible scheduling",
+      ],
+      bgColor: "bg-[#002147]",
+      borderColor: "border-t-[#002147]",
+      buttonVariant: "outline" as "outline" | "default",
+      textColor: "text-[#002147]",
+      hoverBgColor: "hover:bg-[#002147]",
+      hoverTextColor: "hover:text-white",
+    },
+    {
+      slug: "loan-signing",
+      name: "Loan Signing Specialist",
+      price: "$200+",
+      tagline: "Paperwork pros you can trust.",
+      description:
+        "Certified loan signings, including all trip-chain, remote online signings, and courier returns.",
+      link: "/services/loan-signing",
+      icon: Briefcase,
+      features: [
+        "Certified loan signings",
+        "RON and courier returns",
+        "Meticulous & professional",
+      ],
+      bgColor: "bg-[#002147]",
+      borderColor: "border-t-[#002147]",
+      buttonVariant: "outline" as "outline" | "default",
+      textColor: "text-[#002147]",
+      hoverBgColor: "hover:bg-[#002147]",
+      hoverTextColor: "hover:text-white",
+    },
+    {
+      slug: "estate-planning",
+      name: "Estate Planning Package",
+      price: "$250+",
+      tagline: "Secure your legacy, simply.",
+      description:
+        "A comprehensive package for notarizing all your estate documents—Wills, Trusts, POAs, and more.",
+      link: "/services/estate-planning", // Links to the main service page
+      icon: Shield,
+      features: [
+        "Notarize up to 10 documents",
+        "Includes up to 4 signers",
+        "Mobile service to your location",
+      ],
+      bgColor: "bg-[#002147]",
+      borderColor: "border-t-[#002147]",
+      buttonVariant: "outline" as "outline" | "default",
+      textColor: "text-[#002147]",
+      hoverBgColor: "hover:bg-[#002147]",
+      hoverTextColor: "hover:text-white",
+    },
+    {
+      slug: "specialty",
+      name: "Specialty Notary Services",
+      price: "$150+",
+      tagline: "Complex docs handled.",
+      description:
+        "Apostilles, embassy certifications, translations, and other complex notarial acts.",
+      link: "/services/specialty",
+      icon: Award,
+      features: [
+        "Apostilles, translations",
+        "Embassy certifications",
+        "Expert handling of unique needs",
+      ],
+      bgColor: "bg-[#002147]",
+      borderColor: "border-t-[#002147]",
+      buttonVariant: "outline" as "outline" | "default",
+      textColor: "text-[#002147]",
+      hoverBgColor: "hover:bg-[#002147]",
+      hoverTextColor: "hover:text-white",
+    },
+    {
+      slug: "business",
+      name: "Business Notary Solutions",
+      price: "$250+",
+      tagline: "Keep your business moving.",
+      description:
+        "Volume signings, block-booking discounts, corporate account setups, and recurring appointments.",
+      link: "/services/business",
+      icon: Building,
+      features: [
+        "Volume & block-booking discounts",
+        "Corporate accounts",
+        "Recurring appointments",
+      ],
+      bgColor: "bg-[#002147]",
+      borderColor: "border-t-[#002147]",
+      buttonVariant: "outline" as "outline" | "default",
+      textColor: "text-[#002147]",
+      hoverBgColor: "hover:bg-[#002147]",
+      hoverTextColor: "hover:text-white",
+    },
+    {
+      slug: "extras",
+      name: "Extras & Fees",
+      price: "See details",
+      tagline: "Transparent pricing, no surprises.",
+      description:
+        "Mileage Fee: $0.50/mile • After-Hours Fee: $30 • Weekend Fee: $40",
+      link: "/services/extras",
+      icon: ListPlus,
+      features: [
+        "Mileage Fee: $0.50/mile",
+        "After-Hours Fee: $30",
+        "Weekend Fee: $40",
+      ],
+      bgColor: "bg-[#002147]",
+      borderColor: "border-t-[#002147]",
+      buttonVariant: "outline" as "outline" | "default",
+      textColor: "text-[#002147]",
+      hoverBgColor: "hover:bg-[#002147]",
+      hoverTextColor: "hover:text-white",
+    },
+  ];
+
+  // Updated FAQ data
+  const serviceFaqs = [
+    {
+      id: "service-difference",
+      question: "What's the difference between your service packages?",
+      answer: (
+        <p>
+          Our services are designed to meet diverse needs:
+          <strong className="block mt-2">Standard Notary:</strong> For on-site notarizations of standard documents (POAs, affidavits, contracts) during 9 am–5 pm.
+          <strong className="block mt-2">Priority Mobile Notary:</strong> Guaranteed 2-hour response for urgent notarization needs, available 7am-9pm daily.
+          <strong className="block mt-2">Extended Hours Notary:</strong> Offers same-day or after-hours service (7 am–9 pm) for urgent needs outside standard business hours.
+          <strong className="block mt-2">Loan Signing Specialist:</strong> Provides certified loan signings, including remote online notarizations (RON) and courier services.
+          <strong className="block mt-2">Specialty Notary Services:</strong> Covers complex notarial acts like apostilles, embassy certifications, and translations.
+          <strong className="block mt-2">Business Notary Solutions:</strong> Caters to businesses with volume signings, block-booking discounts, and corporate account setups.
+          Each service ensures professionalism and precision. Please check individual service details for specifics.
+        </p>
+      ),
+    },
+    {
+      id: "service-area",
+      question: "How far do you travel for your services?",
+      answer: (
+        <p>
+          We serve clients within a 20-mile radius of ZIP code 77591 at no additional travel fee. For locations beyond
+          this radius, we charge $0.50 per mile. Our Priority Service extends to a 35-mile radius. We can travel to most
+          locations in the greater Houston area.
+        </p>
+      ),
+    },
+    {
+      id: "weekend-availability",
+      question: "Do you offer weekend services?",
+      answer: (
+        <p>
+          Yes, we offer weekend services for all our service packages with a $50 weekend surcharge. Our Priority Service
+          is available 7 days a week from 7am-9pm, including weekends. Weekend appointments should be booked at least 48
+          hours in advance when possible.
+        </p>
+      ),
+    },
+    {
+      id: "prevent-mistakes",
+      question: "I'm worried about making a mistake on important documents. How do you help prevent that?",
+      answer: (
+        <p>
+          We understand! Our process is built on precision and clarity. We guide you patiently, explain documents
+          clearly, and double-check everything – from ID verification to signatures and dates – to ensure accuracy
+          and prevent errors that could cause future issues. Your confidence is our priority.
+        </p>
+      ),
+    },
+    {
+      id: "hmnp-difference",
+      question: "What makes your notary service different from others?",
+      answer: (
+        <p>
+          Beyond convenience, we're committed to a higher standard of care. This means arriving early and
+          professionally, explaining everything without jargon, ensuring every detail is accurate, and following
+          through diligently. We believe every signing deserves this level of dedication for your peace of mind.
+        </p>
+      ),
+    },
+    {
+      id: "notary-process",
+      question: "What is the mobile notary process like?",
+      answer: (
+        <p>
+          We aim for a clear, calm, and professional experience every time. We've outlined our entire mobile notary process
+          from start to finish for your convenience. Please visit our{" "}
+          <Link href="/what-to-expect" className="text-[#A52A2A] hover:underline font-medium">
+            What to Expect page
+          </Link>{" "}
+          for a detailed guide.
+        </p>
+      ),
+    },
+  ]
+
   return (
     <div className="container mx-auto px-4 py-12">
       {/* Hero Section */}

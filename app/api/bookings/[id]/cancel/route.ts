@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { cancellationReschedulingService } from '@/lib/cancellation-rescheduling'
 
 export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const bookingId = params.id
+    const params = await context.params;
+    const bookingId = params.id;
     const body = await request.json()
     
     const { reason, requestedBy, cancellationFeeWaived } = body
@@ -52,10 +53,11 @@ export async function POST(
 // Get cancellation info (fees, refund calculation) without processing
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const bookingId = params.id
+    const params = await context.params;
+    const bookingId = params.id;
 
     // Calculate what the refund would be
     const refundCalculation = await cancellationReschedulingService.calculateRefund(bookingId)

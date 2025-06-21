@@ -1,118 +1,232 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { Role } from '@prisma/client'; // Assuming Role enum is available
-import { Button } from '@/components/ui/button'; // Assuming you have a Button component
-import { useToast } from '@/components/ui/use-toast'; // Assuming you have a Toast component
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-// Define a type for the session object for clarity
-interface NotarizationSession {
+// Update interface to match Booking model structure
+interface RonBooking {
   id: string;
   status: string;
+  signerId: string;
+  serviceId: string;
+  locationType: string;
   createdAt: string;
-  // Add other fields as needed from your API response
+  updatedAt: string;
+  priceAtBooking: number;
+  depositAmount?: number;
+  notes?: string;
+  service?: {
+    name: string;
+    description?: string;
+  };
+  NotarizationDocument?: Array<{
+    id: string;
+    originalFilename: string;
+    uploadedAt: string;
+    isSigned: boolean;
+  }>;
 }
 
-export default function SignerDashboardPage() {
-  const { data: session, status: authStatus } = useSession();
-  const router = useRouter();
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [newlyCreatedSession, setNewlyCreatedSession] = useState<NotarizationSession | null>(null);
+export default function RONDashboard() {
+  const { data: session, status } = useSession();
+  const [ronBookings, setRonBookings] = useState<RonBooking[]>([]);
+  const [newlyCreatedBooking, setNewlyCreatedBooking] = useState<RonBooking | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (authStatus === 'unauthenticated') {
-      router.push('/login');
+    if (session?.user) {
+      fetchRonBookings();
     }
-    // Also check role if session is available
-    if (authStatus === 'authenticated' && (session?.user as any)?.role !== Role.SIGNER) {
-      // Redirect to a generic home page or an unauthorized page if not a SIGNER
-      toast({
-        title: 'Access Denied',
-        description: 'This page is for signers only.',
-        variant: 'destructive',
-      });
-      router.push('/'); 
-    }
-  }, [authStatus, session, router, toast]);
+  }, [session]);
 
-  const handleStartNewSession = async () => {
-    setIsLoading(true);
-    setNewlyCreatedSession(null);
+  const fetchRonBookings = async () => {
     try {
-      const res = await fetch('/api/ron/sessions', {
+      // Fetch RON bookings (bookings with locationType = REMOTE_ONLINE_NOTARIZATION)
+      const response = await fetch('/api/bookings?locationType=REMOTE_ONLINE_NOTARIZATION');
+      if (response.ok) {
+        const bookings = await response.json();
+        setRonBookings(bookings);
+      } else {
+        console.error('Failed to fetch RON bookings');
+      }
+    } catch (error) {
+      console.error('Error fetching RON bookings:', error);
+    }
+  };
+
+  const createNewRONBooking = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/ron/sessions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          notes: 'New Remote Online Notarization session'
+        }),
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to start new session');
+      if (response.ok) {
+        const data = await response.json();
+        setNewlyCreatedBooking(data as RonBooking);
+        // Refresh the bookings list
+        await fetchRonBookings();
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to create RON booking:', errorData.error);
+        alert(`Failed to create RON booking: ${errorData.error}`);
       }
-
-      setNewlyCreatedSession(data as NotarizationSession);
-      toast({
-        title: 'Session Created',
-        description: `New notarization session ID: ${data.id} created successfully.`,
-      });
-      // Optionally, redirect to a page to manage this specific session, e.g., document upload
-      // router.push(`/ron/session/${data.id}`); 
-
-    } catch (err: any) {
-      console.error('Error starting new session:', err);
-      toast({
-        title: 'Error',
-        description: err.message || 'An unexpected error occurred.',
-        variant: 'destructive',
-      });
+    } catch (error) {
+      console.error('Error creating RON booking:', error);
+      alert('Error creating RON booking. Please try again.');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  if (authStatus === 'loading') {
-    return <p>Loading dashboard...</p>;
+  const getStatusDisplay = (status: string) => {
+    const statusMap: { [key: string]: string } = {
+      'REQUESTED': 'Requested',
+      'AWAITING_CLIENT_ACTION': 'Awaiting Documents',
+      'READY_FOR_SERVICE': 'Documents Uploaded',
+      'CONFIRMED': 'Confirmed',
+      'SCHEDULED': 'Scheduled',
+      'IN_PROGRESS': 'In Progress',
+      'COMPLETED': 'Completed',
+      'CANCELLED_BY_CLIENT': 'Cancelled by Client',
+      'CANCELLED_BY_STAFF': 'Cancelled by Staff'
+    };
+    return statusMap[status] || status;
+  };
+
+  const getStatusColor = (status: string) => {
+    const colorMap: { [key: string]: string } = {
+      'REQUESTED': 'text-blue-600',
+      'AWAITING_CLIENT_ACTION': 'text-yellow-600',
+      'READY_FOR_SERVICE': 'text-green-600',
+      'CONFIRMED': 'text-green-600',
+      'SCHEDULED': 'text-purple-600',
+      'IN_PROGRESS': 'text-orange-600',
+      'COMPLETED': 'text-green-800',
+      'CANCELLED_BY_CLIENT': 'text-red-600',
+      'CANCELLED_BY_STAFF': 'text-red-600'
+    };
+    return colorMap[status] || 'text-gray-600';
+  };
+
+  if (status === 'loading') {
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
 
-  // Ensure session is loaded and user is a SIGNER before rendering content
-  if (authStatus === 'authenticated' && (session?.user as any)?.role === Role.SIGNER) {
-    return (
-      <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-6">Signer Dashboard</h1>
-        
-        <div className="mb-8">
-          <Button onClick={handleStartNewSession} disabled={isLoading}>
-            {isLoading ? 'Starting Session...' : 'Start New Notarization Session'}
-          </Button>
-        </div>
+  if (!session) {
+    return <div className="flex justify-center items-center min-h-screen">Please log in to access the RON Dashboard.</div>;
+  }
 
-        {newlyCreatedSession && (
-          <div className="mt-6 p-4 border rounded-md bg-green-50 dark:bg-green-900/20">
-            <h2 className="text-xl font-semibold">New Session Details:</h2>
-            <p>Session ID: {newlyCreatedSession.id}</p>
-            <p>Status: {newlyCreatedSession.status}</p>
-            <p>Created At: {new Date(newlyCreatedSession.createdAt).toLocaleString()}</p>
-            {/* Next step could be a link/button to upload documents for this session */}
-            {/* <Button onClick={() => router.push(`/ron/session/${newlyCreatedSession.id}/documents`)} className="mt-2">Upload Documents</Button> */}
-          </div>
-        )}
-        
-        {/* Placeholder for listing existing sessions */}
-        <div className="mt-10">
-          <h2 className="text-xl font-semibold">Your Notarization Sessions</h2>
-          <p className="text-gray-500">Existing sessions will be listed here.</p>
-          {/* TODO: Fetch and display list of user's sessions */}
-        </div>
+  return (
+    <div className="container mx-auto p-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">Remote Online Notarization Dashboard</h1>
+        <p className="text-gray-600 mt-2">Manage your remote notarization sessions</p>
       </div>
-    );
-  }
 
-  // Fallback for users who are authenticated but not SIGNERS (already handled by redirect, but good practice)
-  // Or if authStatus is 'unauthenticated' and redirect hasn't happened yet.
-  return <p>Access Denied or Redirecting...</p>; 
+      <div className="mb-6">
+        <Button 
+          onClick={createNewRONBooking} 
+          disabled={loading}
+          className="mb-4"
+        >
+          {loading ? 'Creating...' : 'Create New RON Session'}
+        </Button>
+
+        {newlyCreatedBooking && (
+          <Card className="mb-4 border-green-200 bg-green-50">
+            <CardHeader>
+              <CardTitle className="text-green-800">New RON Session Created!</CardTitle>
+              <CardDescription>
+                Session ID: {newlyCreatedBooking.id}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-green-700">
+                Status: <span className={getStatusColor(newlyCreatedBooking.status)}>
+                  {getStatusDisplay(newlyCreatedBooking.status)}
+                </span>
+              </p>
+              <p className="text-sm text-green-700 mt-1">
+                You can now upload documents for this session.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Your RON Sessions</h2>
+        
+        {ronBookings.length === 0 ? (
+          <Card>
+            <CardContent className="p-6 text-center">
+              <p className="text-gray-500">No RON sessions found. Create your first session above!</p>
+            </CardContent>
+          </Card>
+        ) : (
+          ronBookings.map((booking) => (
+            <Card key={booking.id}>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg">RON Session {booking.id.slice(-8)}</CardTitle>
+                    <CardDescription>
+                      Created: {new Date(booking.createdAt).toLocaleDateString()}
+                    </CardDescription>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(booking.status)}`}>
+                    {getStatusDisplay(booking.status)}
+                  </span>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium">Service</p>
+                    <p className="text-sm text-gray-600">{booking.service?.name || 'Remote Online Notarization'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Price</p>
+                    <p className="text-sm text-gray-600">${booking.priceAtBooking}</p>
+                  </div>
+                  {booking.NotarizationDocument && booking.NotarizationDocument.length > 0 && (
+                    <div className="col-span-1 md:col-span-2">
+                      <p className="text-sm font-medium mb-2">Documents ({booking.NotarizationDocument.length})</p>
+                      <div className="space-y-1">
+                        {booking.NotarizationDocument.map((doc) => (
+                          <div key={doc.id} className="flex justify-between items-center text-sm">
+                            <span className="text-gray-600">{doc.originalFilename}</span>
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              doc.isSigned ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {doc.isSigned ? 'Signed' : 'Pending'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {booking.notes && (
+                    <div className="col-span-1 md:col-span-2">
+                      <p className="text-sm font-medium">Notes</p>
+                      <p className="text-sm text-gray-600">{booking.notes}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+    </div>
+  );
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { withAuth, AuthConfig } from '@/lib/auth/unified-middleware';
 import { Booking, Service, BookingStatus, LocationType, PaymentProvider, PaymentStatus, Prisma } from '@prisma/client';
 import { z } from 'zod';
@@ -62,7 +62,7 @@ import { convertCustomFieldsArrayToObject } from '@/lib/ghl'; // Import the new 
 import type { GhlContact, GhlCustomField } from '@/lib/ghl'; // Import GHL types
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-const stripe = stripeSecretKey ? new Stripe(stripeSecretKey, { apiVersion: '2025-04-30.basil' as const }) : null;
+const stripe = stripeSecretKey ? new Stripe(stripeSecretKey, { apiVersion: '2023-10-16' }) : null;
 
 // Input validation schema for booking creation
 const createBookingSchema = z.object({
@@ -162,6 +162,77 @@ async function triggerGHLWorkflows(contactId: string, bookingStatus: BookingStat
   }
 }
 
+export async function GET(request: NextRequest) {
+  return withAuth(request, async ({ user, context }) => {
+    try {
+      const { searchParams } = new URL(request.url);
+      const locationType = searchParams.get('locationType') as LocationType | null;
+      const status = searchParams.get('status') as BookingStatus | null;
+      const page = parseInt(searchParams.get('page') || '1');
+      const limit = parseInt(searchParams.get('limit') || '10');
+
+      // Build where clause based on user role and filters
+      let whereClause: any = {};
+
+      if (context.isAuthenticated) {
+        if (context.canViewAllBookings) {
+          // Admin/Staff can see all bookings
+          if (locationType) {
+            whereClause.locationType = locationType;
+          }
+          if (status) {
+            whereClause.status = status;
+          }
+        } else {
+          // Regular users can only see their own bookings
+          whereClause.signerId = context.userId;
+          if (locationType) {
+            whereClause.locationType = locationType;
+          }
+          if (status) {
+            whereClause.status = status;
+          }
+        }
+      } else {
+        // Guest users cannot access booking list
+        return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      }
+
+      const [bookings, total] = await Promise.all([
+        prisma.booking.findMany({
+          where: whereClause,
+          include: {
+            service: true,
+            promoCode: true,
+            User_Booking_signerIdToUser: context.canViewAllBookings ? {
+              select: { id: true, name: true, email: true }
+            } : false,
+            NotarizationDocument: true, // Include RON documents
+          },
+          orderBy: { createdAt: 'desc' },
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+        prisma.booking.count({ where: whereClause }),
+      ]);
+
+      return NextResponse.json({
+        bookings,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit),
+        },
+      });
+
+    } catch (error) {
+      console.error('[BOOKING] Retrieval failed:', error);
+      return NextResponse.json({ error: 'Failed to retrieve bookings' }, { status: 500 });
+    }
+  }, AuthConfig.authenticated()); // Require authentication for viewing bookings
+}
+
 export async function POST(request: NextRequest) {
   return withAuth(request, async ({ user, context }) => {
     const ghlLocationId = process.env.GHL_LOCATION_ID;
@@ -186,12 +257,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email is required for booking' }, { status: 400 });
     }
 
-    // If authenticated, use session data and verify user exists
-    if (session?.user?.id) {
-      signerUserId = session.user.id;
-      // If logged in, prefer session email over form email for security
-      signerUserEmail = session.user.email || body.email;
-      signerUserName = session.user.name ?? null;
+    // If authenticated, use user data and verify user exists
+    if (context.isAuthenticated && user.isAuthenticated) {
+      signerUserId = user.id;
+      // If logged in, prefer user email over form email for security
+      signerUserEmail = user.email || body.email;
+      signerUserName = user.name ?? null;
       
       console.log("Authenticated booking with USER IDs:", {
         signerUserId,
@@ -430,11 +501,13 @@ export async function POST(request: NextRequest) {
         checkoutUrl = stripeSession.url;
         console.log("!!!!!!!!!! STRIPE CHECKOUT SESSION CREATED !!!!!!!!!! URL:", checkoutUrl);
         
-        // Store the payment URL in the booking record
+        // Store the payment URL in the booking notes
         if (checkoutUrl) {
           await prisma.booking.update({
             where: { id: newBooking.id },
-            data: { stripePaymentUrl: checkoutUrl }
+            data: { 
+              notes: newBooking.notes ? `${newBooking.notes}\nPayment URL: ${checkoutUrl}` : `Payment URL: ${checkoutUrl}`
+            }
           });
         }
       } catch (stripeError: any) {
@@ -614,13 +687,16 @@ export async function POST(request: NextRequest) {
             // Create Google Calendar event
             try {
               const calendarService = new GoogleCalendarService();
-              const eventId = await calendarService.createBookingEvent(newBooking);
+              const event = await calendarService.createBookingEvent(newBooking);
+              const eventId = event?.id || null;
               
               // Update booking with calendar event ID
-              await prisma.booking.update({
-                where: { id: newBooking.id },
-                data: { googleCalendarEventId: eventId }
-              });
+              if (eventId) {
+                await prisma.booking.update({
+                  where: { id: newBooking.id },
+                  data: { googleCalendarEventId: eventId }
+                });
+              }
               
               console.log(`✅ Google Calendar event created: ${eventId}`);
             } catch (calendarError) {

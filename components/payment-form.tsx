@@ -27,14 +27,10 @@ const refundPolicyLink = "/refund-policy";
 const paymentFormSchema = z.object({
   invoiceNumber: z.string().optional(),
   serviceDescription: z.string().optional(),
-  paymentAmount: z.preprocess(
-    (val) => (val === '' || val === undefined || val === null) ? undefined : parseFloat(String(val)),
-    z.number({
-      required_error: 'Payment amount is required.',
-      invalid_type_error: 'Payment amount must be a valid number.',
-    }).positive({ message: 'Payment amount must be positive.' })
-      .transform(val => parseFloat(val.toFixed(2))) // Ensure two decimal places
-  ),
+  paymentAmount: z.coerce.number({
+    required_error: 'Payment amount is required.',
+    invalid_type_error: 'Payment amount must be a valid number.',
+  }).positive({ message: 'Payment amount must be positive.' }).optional(),
   cardholderName: z.string().min(1, { message: 'Cardholder name is required.' }),
   email: z.string().email({ message: 'A valid email is required for your receipt.' }),
   // Billing address fields (optional but recommended for AVS checks)
@@ -42,7 +38,7 @@ const paymentFormSchema = z.object({
   billingAddressCity: z.string().optional(),
   billingAddressState: z.string().optional(),
   billingAddressZip: z.string().optional(),
-  billingAddressCountry: z.string().optional().default('US'), // Default to US
+  billingAddressCountry: z.string().optional(),
   consentToTerms: z.boolean().refine(val => val === true, {
     message: 'You must agree to the terms and refund policy.',
   }),
@@ -79,7 +75,7 @@ const CheckoutForm: React.FC<PaymentFormProps & { onSuccessfulPayment: () => voi
     defaultValues: {
       invoiceNumber: defaultInvoiceNumber || '',
       serviceDescription: defaultServiceDescription || '',
-      paymentAmount: defaultPaymentAmount || undefined,
+      paymentAmount: defaultPaymentAmount,
       cardholderName: '',
       email: '',
       billingAddressStreet: '',

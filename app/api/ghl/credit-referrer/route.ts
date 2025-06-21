@@ -27,10 +27,16 @@ export async function POST(request: Request) {
     }
 
     // 1. Fetch all GHL custom fields to map keys to IDs
-    const ghlLocationCustomFields = await ghl.getLocationCustomFields();
+    const ghlLocationId = process.env.GHL_LOCATION_ID;
+    if (!ghlLocationId) {
+      return NextResponse.json({ error: 'GHL_LOCATION_ID environment variable is not configured' }, { status: 500 });
+    }
+    const ghlLocationCustomFields = await ghl.getLocationCustomFields(ghlLocationId);
     const ghlCustomFieldMap = new Map<string, string>();
     ghlLocationCustomFields.forEach(field => {
-      if (field.key) ghlCustomFieldMap.set(field.key, field.id);
+      if (field.key && field.id) {
+        ghlCustomFieldMap.set(field.key, field.id as string);
+      }
     });
 
     const referredByFieldKey = 'cf_referred_by_name_or_email'; // As per WORKFLOW_AUTOMATION_ROADMAP.md

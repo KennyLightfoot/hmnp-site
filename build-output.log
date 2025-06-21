@@ -1,0 +1,21 @@
+
+> hmnp-site@0.1.0 build /home/fleece-johnson/HMNP-Site/hmnp-site
+> cross-env NODE_OPTIONS='--max-old-space-size=4096' prisma generate && cross-env NODE_OPTIONS='--max-old-space-size=4096' next build && next-sitemap
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.8.2) to ./node_modules/.pnpm/@prisma+client@6.7.0_prisma@6.8.2_typescript@5.6.2__typescript@5.6.2/node_modules/@prisma/client in 955ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+
+   ▲ Next.js 15.3.3
+   - Environments: .env.local, .env
+   - Experiments (use with caution):
+     ✓ webpackMemoryOptimizations
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 2.6min
+   Linting and checking validity of types ...

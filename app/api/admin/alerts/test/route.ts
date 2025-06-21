@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { Role } from '@prisma/client';
+import { Role, AlertSeverity } from '@prisma/client';
 import { getQueues } from '@/lib/queue/config';
 
 export async function POST() {
@@ -24,7 +24,7 @@ export async function POST() {
       queueWorkers: true,
       notifications: true,
       storage: true,
-      issues: [] as Array<{component: string, message: string, severity: string}>
+      issues: [] as Array<{component: string, message: string, severity: AlertSeverity}>
     };
 
     // Check database connectivity
@@ -35,7 +35,7 @@ export async function POST() {
       healthResults.issues.push({
         component: 'Database',
         message: 'Cannot connect to database',
-        severity: 'CRITICAL'
+        severity: AlertSeverity.CRITICAL
       });
     }
 
@@ -46,7 +46,7 @@ export async function POST() {
       healthResults.issues.push({
         component: 'QueueService',
         message: 'Queue service is unavailable',
-        severity: 'HIGH'
+        severity: AlertSeverity.HIGH
       });
     }
 

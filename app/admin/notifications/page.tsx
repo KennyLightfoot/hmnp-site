@@ -1,8 +1,9 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from 'next/navigation';
 import { Role } from "@prisma/client";
+import type { NotificationLog } from "@prisma/client";
 import {
   Table,
   TableBody,
@@ -31,70 +32,47 @@ export default async function AdminNotificationsPage() {
   const session = await getServerSession(authOptions);
 
   // Authorization Check: Only Admins allowed
-  if (!session?.user || (session.user as any).role !== Role.ADMIN) {
+  if (!session?.user || session.user.role !== Role.ADMIN) {
     redirect('/portal'); // Redirect non-admins
   }
 
   // Fetch notification data
-  let scheduledNotifications = [];
-  let sentNotifications = [];
-  let failedNotifications = [];
+  let scheduledNotifications: NotificationLog[] = [];
+  let sentNotifications: NotificationLog[] = [];
+  let failedNotifications: NotificationLog[] = [];
   
   try {
-    // Fetch scheduled notifications (pending)
-    scheduledNotifications = await prisma.scheduledNotification.findMany({
+    // Fetch pending notifications
+    scheduledNotifications = await prisma.notificationLog.findMany({
       where: {
-        sentAt: null,
         status: 'PENDING',
       },
       orderBy: {
-        scheduledFor: 'asc',
+        createdAt: 'asc',
       },
       take: 50,
-      include: {
-        booking: {
-          include: {
-            client: true,
-          }
-        }
-      }
     });
 
     // Fetch sent notifications (last 50)
-    sentNotifications = await prisma.scheduledNotification.findMany({
+    sentNotifications = await prisma.notificationLog.findMany({
       where: {
-        sentAt: { not: null },
-        status: 'SENT',
+        status: { in: ['SENT', 'DELIVERED'] },
       },
       orderBy: {
         sentAt: 'desc',
       },
       take: 50,
-      include: {
-        booking: {
-          include: {
-            client: true,
-          }
-        }
-      }
     });
 
     // Fetch failed notifications
-    failedNotifications = await prisma.scheduledNotification.findMany({
+    failedNotifications = await prisma.notificationLog.findMany({
       where: {
-        status: 'FAILED',
+        status: { in: ['FAILED', 'BOUNCED'] },
       },
       orderBy: {
-        updatedAt: 'desc',
+        createdAt: 'desc',
       },
       take: 50,
-      include: {
-        booking: {
-          include: {
-            client: true,
-          }
-        }
-      }
     });
   } catch (error) {
     console.error("Failed to fetch notifications:", error);
@@ -124,13 +102,15 @@ export default async function AdminNotificationsPage() {
   }
 
   // Status badge renderer
-  const StatusBadge = ({ status }) => {
+  const StatusBadge = ({ status }: { status: string }) => {
     switch (status) {
       case 'PENDING':
         return <Badge variant="outline" className="flex items-center gap-1"><Clock className="h-3 w-3" /> Pending</Badge>;
       case 'SENT':
-        return <Badge variant="success" className="flex items-center gap-1"><CheckCircle className="h-3 w-3" /> Sent</Badge>;
+      case 'DELIVERED':
+        return <Badge variant="default" className="flex items-center gap-1"><CheckCircle className="h-3 w-3" /> Sent</Badge>;
       case 'FAILED':
+      case 'BOUNCED':
         return <Badge variant="destructive" className="flex items-center gap-1"><XCircle className="h-3 w-3" /> Failed</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
@@ -239,11 +219,11 @@ export default async function AdminNotificationsPage() {
                   )}
                   {scheduledNotifications.map((notification) => (
                     <TableRow key={notification.id}>
-                      <TableCell>{notification.type}</TableCell>
+                      <TableCell>{notification.notificationType}</TableCell>
                       <TableCell>
-                        {notification.booking?.client?.name || notification.recipient || "-"}
+                        {notification.recipientEmail || notification.recipientPhone || "-"}
                       </TableCell>
-                      <TableCell>{formatDateTime(notification.scheduledFor)}</TableCell>
+                      <TableCell>{formatDateTime(notification.createdAt)}</TableCell>
                       <TableCell>
                         <StatusBadge status={notification.status} />
                       </TableCell>
@@ -288,9 +268,9 @@ export default async function AdminNotificationsPage() {
                   )}
                   {sentNotifications.map((notification) => (
                     <TableRow key={notification.id}>
-                      <TableCell>{notification.type}</TableCell>
+                      <TableCell>{notification.notificationType}</TableCell>
                       <TableCell>
-                        {notification.booking?.client?.name || notification.recipient || "-"}
+                        {notification.recipientEmail || notification.recipientPhone || "-"}
                       </TableCell>
                       <TableCell>{formatDateTime(notification.sentAt)}</TableCell>
                       <TableCell>
@@ -331,14 +311,14 @@ export default async function AdminNotificationsPage() {
                   )}
                   {failedNotifications.map((notification) => (
                     <TableRow key={notification.id}>
-                      <TableCell>{notification.type}</TableCell>
+                      <TableCell>{notification.notificationType}</TableCell>
                       <TableCell>
-                        {notification.booking?.client?.name || notification.recipient || "-"}
+                        {notification.recipientEmail || notification.recipientPhone || "-"}
                       </TableCell>
-                      <TableCell>{formatDateTime(notification.updatedAt)}</TableCell>
+                      <TableCell>{formatDateTime(notification.createdAt)}</TableCell>
                       <TableCell>
-                        <div className="max-w-xs truncate" title={notification.error || ''}>
-                          {notification.error || 'Unknown error'}
+                        <div className="max-w-xs truncate" title={notification.errorMessage || ''}>
+                          {notification.errorMessage || 'Unknown error'}
                         </div>
                       </TableCell>
                       <TableCell>

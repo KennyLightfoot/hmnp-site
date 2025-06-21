@@ -1,4 +1,5 @@
 import { Queue } from '@upstash/queue';
+import { Redis } from '@upstash/redis';
 
 // Environment variables will be needed for production
 const UPSTASH_REDIS_REST_URL = process.env.UPSTASH_REDIS_REST_URL;
@@ -14,23 +15,26 @@ export const createQueues = () => {
   }
 
   try {
+    // Create Redis instance for queues
+    const redis = new Redis({
+      url: UPSTASH_REDIS_REST_URL || 'redis://localhost:6379',
+      token: UPSTASH_REDIS_REST_TOKEN || 'dev-token',
+    });
+
     // Create queues for different job types
     const notificationsQueue = new Queue({
-      url: UPSTASH_REDIS_REST_URL || 'https://valid-url-for-dev-mode.upstash.io',
-      token: UPSTASH_REDIS_REST_TOKEN || 'token-for-dev-mode',
-      name: 'notifications', // Queue name 
+      redis,
+      queueName: 'notifications',
     });
 
     const bookingProcessingQueue = new Queue({
-      url: UPSTASH_REDIS_REST_URL || 'https://valid-url-for-dev-mode.upstash.io',
-      token: UPSTASH_REDIS_REST_TOKEN || 'token-for-dev-mode',
-      name: 'booking-processing', // Queue name
+      redis,
+      queueName: 'booking-processing',
     });
 
     const paymentProcessingQueue = new Queue({
-      url: UPSTASH_REDIS_REST_URL || 'https://valid-url-for-dev-mode.upstash.io',
-      token: UPSTASH_REDIS_REST_TOKEN || 'token-for-dev-mode',
-      name: 'payment-processing', // Queue name
+      redis,
+      queueName: 'payment-processing',
     });
 
     return {

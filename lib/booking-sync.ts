@@ -252,10 +252,10 @@ export async function fullSyncBookingWithGHL(bookingId: string): Promise<Booking
       cf_booking_id: booking.id,
       cf_booking_status: booking.status,
       cf_service_type: booking.service?.name || 'Unknown',
-      cf_appointment_date: booking.appointmentDateTime ? 
-        new Date(booking.appointmentDateTime).toLocaleDateString('en-US') : '',
-      cf_appointment_time: booking.appointmentDateTime ? 
-        new Date(booking.appointmentDateTime).toLocaleTimeString('en-US', {
+              cf_appointment_date: booking.scheduledDateTime ?
+          new Date(booking.scheduledDateTime).toLocaleDateString('en-US') : '',
+        cf_appointment_time: booking.scheduledDateTime ?
+          new Date(booking.scheduledDateTime).toLocaleTimeString('en-US', {
           hour: 'numeric',
           minute: '2-digit',
           hour12: true

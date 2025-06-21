@@ -702,3 +702,57 @@ export async function testGetLocationDetails(): Promise<any> {
 
 // Add other GHL helper functions as needed (e.g., createOpportunity, getCalendars, etc.)
 // ensuring they follow the pattern of not using Location-Id header and passing locationId in body/path as per GHL docs for PITs.
+
+/**
+ * Update a contact in GHL
+ * This is a wrapper around upsertContact for backward compatibility
+ */
+export async function updateContact(contactData: GhlContact): Promise<any> {
+  if (!contactData.id && !contactData.email) {
+    throw new Error('Contact ID or email is required to update a contact');
+  }
+
+  try {
+    // If we have an ID, update directly
+    if (contactData.id) {
+      const updateData = {
+        locationId: contactData.locationId || process.env.GHL_LOCATION_ID,
+        ...contactData
+      };
+
+      const response = await callGhlApi(`/contacts/${contactData.id}`, 'PUT', updateData);
+      console.log(`GHL API: Updated contact ${contactData.id}`);
+      return response;
+    } else {
+      // If we only have email, use upsertContact
+      return await upsertContact(contactData);
+    }
+  } catch (error: any) {
+    console.error(`GHL API: Error updating contact:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Update contact custom fields
+ * Helper function to update only custom fields of a contact
+ */
+export async function updateContactCustomFields(contactId: string, customFields: Record<string, any>): Promise<any> {
+  if (!contactId) {
+    throw new Error('Contact ID is required to update custom fields');
+  }
+
+  try {
+    const updateData = {
+      locationId: process.env.GHL_LOCATION_ID,
+      customField: customFields
+    };
+
+    const response = await callGhlApi(`/contacts/${contactId}`, 'PUT', updateData);
+    console.log(`GHL API: Updated custom fields for contact ${contactId}`);
+    return response;
+  } catch (error: any) {
+    console.error(`GHL API: Error updating contact custom fields:`, error);
+    throw error;
+  }
+}

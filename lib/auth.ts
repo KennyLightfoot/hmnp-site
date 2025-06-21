@@ -2,8 +2,13 @@
 // It provides stub functions that can be replaced with actual auth implementation later
 
 import { getServerSession, type NextAuthOptions } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "./db"
+
+// Import authOptions from the new location
+import { authOptions } from "@/lib/auth-config"
+
+// Re-export authOptions for other modules
+export { authOptions }
 
 // Stub function for getting the current session
 export async function getSession() {

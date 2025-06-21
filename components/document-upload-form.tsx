@@ -50,6 +50,7 @@ export default function DocumentUploadForm() {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
     reset,
     watch,
@@ -171,7 +172,7 @@ export default function DocumentUploadForm() {
 
         <div>
             <Label htmlFor="documentType" className="block text-sm font-medium text-gray-700 mb-1">Document Type (Optional)</Label>
-            <Select onValueChange={(value) => setValue('documentType', value as any, { shouldValidate: true })} defaultValue={control._defaultValues.documentType}>
+            <Select onValueChange={(value) => setValue('documentType', value as typeof documentTypes[number], { shouldValidate: true })} defaultValue={control._defaultValues.documentType}>
                 <SelectTrigger id="documentType">
                 <SelectValue placeholder="Select document type..." />
                 </SelectTrigger>

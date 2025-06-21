@@ -1,8 +1,9 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from 'next/navigation';
 import { Role } from "@prisma/client";
+import type { SystemAlert, SystemLog } from "@prisma/client";
 import {
   Table,
   TableBody,
@@ -32,14 +33,14 @@ export default async function AdminAlertsPage() {
   const session = await getServerSession(authOptions);
 
   // Authorization Check: Only Admins allowed
-  if (!session?.user || (session.user as any).role !== Role.ADMIN) {
+  if (!session?.user || session.user.role !== Role.ADMIN) {
     redirect('/portal'); // Redirect non-admins
   }
 
   // Fetch system alerts data
-  let activeAlerts = [];
-  let resolvedAlerts = [];
-  let systemLogs = [];
+  let activeAlerts: SystemAlert[] = [];
+  let resolvedAlerts: SystemAlert[] = [];
+  let systemLogs: SystemLog[] = [];
   
   try {
     // These queries may fail if the tables don't exist yet
@@ -111,14 +112,14 @@ export default async function AdminAlertsPage() {
   }
 
   // Severity badge renderer
-  const SeverityBadge = ({ severity }) => {
+  const SeverityBadge = ({ severity }: { severity: string }) => {
     switch (severity) {
       case 'CRITICAL':
         return <Badge variant="destructive" className="flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Critical</Badge>;
       case 'HIGH':
         return <Badge variant="destructive" className="flex items-center gap-1"><AlertCircle className="h-3 w-3" /> High</Badge>;
       case 'MEDIUM':
-        return <Badge variant="warning" className="flex items-center gap-1"><AlertCircle className="h-3 w-3" /> Medium</Badge>;
+        return <Badge variant="secondary" className="flex items-center gap-1"><AlertCircle className="h-3 w-3" /> Medium</Badge>;
       case 'LOW':
         return <Badge variant="outline" className="flex items-center gap-1"><Info className="h-3 w-3" /> Low</Badge>;
       default:
@@ -127,12 +128,12 @@ export default async function AdminAlertsPage() {
   };
 
   // Log level badge renderer
-  const LogLevelBadge = ({ level }) => {
+  const LogLevelBadge = ({ level }: { level: string }) => {
     switch (level) {
       case 'ERROR':
         return <Badge variant="destructive">Error</Badge>;
       case 'WARN':
-        return <Badge variant="warning">Warning</Badge>;
+        return <Badge variant="secondary">Warning</Badge>;
       case 'INFO':
         return <Badge variant="secondary">Info</Badge>;
       case 'DEBUG':

@@ -147,10 +147,30 @@ async function checkRedis(): Promise<HealthStatus | undefined> {
   }
 
   const startTime = Date.now();
+  
+  // For now, return a placeholder since Redis is optional
+  // This avoids build-time import issues
+  return {
+    status: 'warn',
+    responseTime: Date.now() - startTime,
+    message: 'Redis health check disabled (module not available at build time)',
+    lastChecked: new Date().toISOString(),
+  };
+
+  /* TODO: Enable Redis health check when Redis module is available
   try {
-    // Dynamically import Redis client
-    const { createClient } = await import('redis');
-    const client = createClient({ url: process.env.REDIS_URL });
+    // Try to dynamically import Redis client, but handle if it's not available
+    const redisModule = await import('redis').catch(() => null);
+    if (!redisModule) {
+      return {
+        status: 'warn',
+        responseTime: Date.now() - startTime,
+        message: 'Redis module not available',
+        lastChecked: new Date().toISOString(),
+      };
+    }
+
+    const client = redisModule.createClient({ url: process.env.REDIS_URL });
     
     await client.connect();
     await client.ping();
@@ -170,6 +190,7 @@ async function checkRedis(): Promise<HealthStatus | undefined> {
       lastChecked: new Date().toISOString(),
     };
   }
+  */
 }
 
 async function checkStripe(): Promise<HealthStatus | undefined> {

@@ -94,10 +94,10 @@ export async function POST(request: NextRequest) {
         );
     }
   } catch (error) {
-    logger.error('Queue API error:', error);
+    logger.error('Queue API error:', error instanceof Error ? error : new Error(String(error)));
     
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
@@ -136,10 +136,10 @@ export async function GET(request: NextRequest) {
     });
     
   } catch (error) {
-    logger.error('Queue API error:', error);
+    logger.error('Queue API error:', error instanceof Error ? error : new Error(String(error)));
     
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

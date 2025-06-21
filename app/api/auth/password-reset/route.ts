@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       message: 'If an account with that email exists, you will receive a password reset link.',
     };
 
-    if (!user) {
+    if (!user || !user.email) {
       // Still return success but don't send email
       return NextResponse.json(successResponse);
     }
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
         email: user.email, 
         type: 'password-reset' 
       },
-      process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET!,
+      process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'fallback-secret',
       { expiresIn: '1h' }
     );
 
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       try {
         await resend.emails.send({
           from: process.env.FROM_EMAIL || 'notifications@houstonmobilenotarypros.com',
-          to: user.email,
+          to: user.email!,
           subject: 'Reset Your Password - HMNP',
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -133,7 +133,7 @@ export async function PATCH(request: NextRequest) {
     try {
       decoded = jwt.verify(
         token, 
-        process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET!
+        process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'fallback-secret'
       );
     } catch (jwtError) {
       return NextResponse.json(

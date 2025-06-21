@@ -1,33 +1,32 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { Role } from '@prisma/client';
 
 // POST /api/assignments/[assignmentId]/comments
 export async function POST(
   request: Request,
-  { params }: { params: { assignmentId: string } }
+  context: { params: Promise<{ assignmentId: string }> }
 ) {
-  const session = await getServerSession(authOptions);
-
-  // 1. Authentication Check
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const userId = session.user.id;
-  // Explicitly type user role from session if necessary, assuming it's available
-  const userRole = (session.user as any).role as Role;
-
-  const { assignmentId } = params;
-
-  // 2. Authorization and Validation
-  if (!assignmentId) {
-    return NextResponse.json({ error: 'Assignment ID is required' }, { status: 400 });
-  }
-
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const params = await context.params;
+    const assignmentId = params.assignmentId;
+
+    const userId = session.user.id;
+    // Explicitly type user role from session if necessary, assuming it's available
+    const userRole = (session.user as any).role as Role;
+
+    // 2. Authorization and Validation
+    if (!assignmentId) {
+      return NextResponse.json({ error: 'Assignment ID is required' }, { status: 400 });
+    }
+
     const assignment = await prisma.assignment.findUnique({
       where: { id: assignmentId },
       select: { allowPartnerComments: true }, // Only select needed field
@@ -85,7 +84,7 @@ export async function POST(
     return NextResponse.json(newComment, { status: 201 }); // 201 Created
 
   } catch (error) {
-    console.error(`Failed to create comment for assignment ${assignmentId}:`, error);
+    console.error('Failed to create comment for assignment:', error);
     return NextResponse.json({ error: 'Failed to create comment' }, { status: 500 });
   }
 } 

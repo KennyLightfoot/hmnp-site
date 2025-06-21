@@ -29,13 +29,21 @@ const supportTicketSchema = z.object({
   phone: z.string().optional().or(z.literal('')),
   issueCategory: z.enum(issueCategories, { required_error: 'Please select an issue category.' }),
   description: z.string().min(20, { message: 'Please provide a detailed description (at least 20 characters).' }),
-  urgency: z.enum(urgencyLevels).optional().default('Medium'),
+  urgency: z.enum(urgencyLevels),
   fileUpload: z.custom<FileList>().optional() // Placeholder for file upload
     .refine(files => !files || files.length === 0 || files[0].size <= 5 * 1024 * 1024, `Max file size is 5MB.`) // Example validation
     .refine(files => !files || files.length === 0 || ['image/jpeg', 'image/png', 'application/pdf'].includes(files[0].type), `Only JPG, PNG, or PDF files are allowed.`),
 });
 
-type SupportTicketFormValues = z.infer<typeof supportTicketSchema>;
+interface SupportTicketFormValues {
+  name: string;
+  email: string;
+  phone?: string;
+  issueCategory: typeof issueCategories[number];
+  description: string;
+  urgency: typeof urgencyLevels[number];
+  fileUpload?: FileList;
+}
 
 export default function SupportTicketForm() {
   const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
@@ -45,18 +53,19 @@ export default function SupportTicketForm() {
     register,
     handleSubmit,
     control, // For Shadcn Select compatibility
+    setValue,
     formState: { errors },
     reset,
     watch,
   } = useForm<SupportTicketFormValues>({
-    resolver: zodResolver(supportTicketSchema),
+    resolver: zodResolver(supportTicketSchema) as any,
     defaultValues: {
       name: '',
       email: '',
       phone: '',
       issueCategory: undefined,
       description: '',
-      urgency: 'Medium',
+      urgency: 'Medium' as const,
       fileUpload: undefined,
     },
   });
@@ -151,7 +160,7 @@ export default function SupportTicketForm() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
                 <Label htmlFor="issueCategory" className="block text-sm font-medium text-gray-700 mb-1">Issue Category</Label>
-                <Select onValueChange={(value) => setValue('issueCategory', value as any, { shouldValidate: true })} defaultValue={control._defaultValues.issueCategory}>
+                <Select onValueChange={(value) => setValue('issueCategory', value as typeof issueCategories[number], { shouldValidate: true })} defaultValue={control._defaultValues.issueCategory}>
                     <SelectTrigger id="issueCategory" className={errors.issueCategory ? 'border-red-500' : ''}>
                     <SelectValue placeholder="Select a category..." />
                     </SelectTrigger>
@@ -165,7 +174,7 @@ export default function SupportTicketForm() {
             </div>
             <div>
                 <Label htmlFor="urgency" className="block text-sm font-medium text-gray-700 mb-1">Urgency Level</Label>
-                <Select onValueChange={(value) => setValue('urgency', value as any, { shouldValidate: true })} defaultValue={control._defaultValues.urgency || 'Medium'}>
+                <Select onValueChange={(value) => setValue('urgency', value as typeof urgencyLevels[number], { shouldValidate: true })} defaultValue={control._defaultValues.urgency || 'Medium'}>
                     <SelectTrigger id="urgency">
                     <SelectValue placeholder="Select urgency..." />
                     </SelectTrigger>

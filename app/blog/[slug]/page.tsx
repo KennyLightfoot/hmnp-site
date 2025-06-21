@@ -8,7 +8,7 @@ import type { Metadata, ResolvingMetadata } from 'next'
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com';
 
 type Props = {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 // Function to generate metadata dynamically
@@ -16,7 +16,8 @@ export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const slug = params.slug
+  const resolvedParams = await params;
+  const slug = resolvedParams.slug
   try {
     const post = await getPostData(slug)
 
@@ -70,10 +71,11 @@ export async function generateStaticParams() {
   return paths.map(p => ({ slug: p.params.slug }))
 }
 
-export default async function PostPage({ params }: { params: { slug: string } }) {
+export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   let post: PostData | null = null;
+  const resolvedParams = await params;
   try {
-    post = await getPostData(params.slug)
+    post = await getPostData(resolvedParams.slug)
   } catch (error) {
       console.error("Failed to fetch post data:", error);
       notFound(); // Render the 404 page if post isn't found

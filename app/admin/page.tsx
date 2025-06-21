@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { redirect } from 'next/navigation';
 import { Role } from "@prisma/client";
 import { prisma } from "@/lib/db";
@@ -11,7 +11,7 @@ export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
 
   // Authorization Check: Only Admins allowed
-  if (!session?.user || (session.user as any).role !== Role.ADMIN) {
+  if (!session?.user || session.user.role !== Role.ADMIN) {
     redirect('/portal'); // Redirect non-admins
   }
 
@@ -27,18 +27,19 @@ export default async function AdminDashboard() {
     prisma.booking.count(),
     prisma.booking.count({
       where: {
-        status: { in: ['PENDING', 'PAYMENT_PENDING'] }
+        status: { in: ['REQUESTED', 'PAYMENT_PENDING'] }
       }
     }),
-    prisma.client.count(),
+    prisma.user.count({
+      where: { role: 'SIGNER' }
+    }),
     prisma.payment.aggregate({
       where: { status: 'COMPLETED' },
       _sum: { amount: true }
     }),
-    prisma.scheduledNotification.count({
+    prisma.notificationLog.count({
       where: {
-        sentAt: null,
-        scheduledFor: { gte: new Date() }
+        status: 'PENDING'
       }
     }),
     prisma.systemAlert.count({
@@ -50,7 +51,7 @@ export default async function AdminDashboard() {
   const totalRevenueFormatted = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD'
-  }).format(totalRevenue?._sum?.amount || 0);
+  }).format(totalRevenue?._sum?.amount?.toNumber() || 0);
 
   const dashboardItems = [
     {

@@ -10,7 +10,6 @@ const updateUserSchema = z.object({
   name: z.string().min(1, 'Name is required').optional(),
   email: z.string().email('Valid email is required').optional(),
   role: z.enum(['ADMIN', 'STAFF', 'NOTARY', 'CLIENT']).optional(),
-  active: z.boolean().optional(),
 });
 
 /**
@@ -19,19 +18,20 @@ const updateUserSchema = z.object({
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  return withAuth(request, async ({ user, context }) => {
-    if (!context.isAuthenticated) {
+  return withAuth(request, async ({ user, context: authContext }) => {
+    if (!authContext.isAuthenticated) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     try {
-      const targetUserId = params.id;
+      const params = await context.params;
+      const userId = params.id;
 
       // Get target user
       const targetUser = await prisma.user.findUnique({
-        where: { id: targetUserId },
+        where: { id: userId },
         select: {
           id: true,
           name: true,
@@ -49,7 +49,7 @@ export async function GET(
 
       // Check permission to view this user
       const canViewUser = hasPermission(user, Actions.READ, Resources.USER, targetUser) ||
-                          (context.isAuthenticated && context.userId === targetUserId); // Can view own profile
+                          (authContext.isAuthenticated && authContext.userId === userId); // Can view own profile
 
       if (!canViewUser) {
         return NextResponse.json({ error: 'Permission denied' }, { status: 403 });
@@ -80,14 +80,15 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  return withAuth(request, async ({ user, context }) => {
-    if (!context.isAuthenticated) {
+  return withAuth(request, async ({ user, context: authContext }) => {
+    if (!authContext.isAuthenticated) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     try {
+      const params = await context.params;
       const targetUserId = params.id;
       const body = await request.json();
       const validatedData = updateUserSchema.parse(body);
@@ -104,7 +105,7 @@ export async function PATCH(
 
       // Check permission to update this user
       const canUpdateUser = hasPermission(user, Actions.UPDATE, Resources.USER, targetUser) ||
-                            (context.isAuthenticated && context.userId === targetUserId); // Can update own profile
+                            (authContext.isAuthenticated && authContext.userId === targetUserId); // Can update own profile
 
       if (!canUpdateUser) {
         return NextResponse.json({ error: 'Permission denied' }, { status: 403 });
@@ -121,7 +122,7 @@ export async function PATCH(
         }
 
         // Can't change your own role
-        if (context.userId === targetUserId) {
+        if (authContext.userId === targetUserId) {
           return NextResponse.json(
             { error: 'Cannot change your own role' },
             { status: 400 }
@@ -154,7 +155,6 @@ export async function PATCH(
         updateData.emailVerified = null; // Reset email verification
       }
       if (validatedData.role) updateData.role = validatedData.role as Role;
-      if (validatedData.active !== undefined) updateData.active = validatedData.active;
 
       // Update user
       const updatedUser = await prisma.user.update({
@@ -203,14 +203,15 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  return withAuth(request, async ({ user, context }) => {
-    if (!context.isAuthenticated) {
+  return withAuth(request, async ({ user, context: authContext }) => {
+    if (!authContext.isAuthenticated) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     try {
+      const params = await context.params;
       const targetUserId = params.id;
 
       // Get target user
@@ -229,7 +230,7 @@ export async function DELETE(
       }
 
       // Can't delete yourself
-      if (context.userId === targetUserId) {
+      if (authContext.userId === targetUserId) {
         return NextResponse.json(
           { error: 'Cannot delete your own account' },
           { status: 400 }
@@ -246,8 +247,8 @@ export async function DELETE(
         }),
         prisma.assignment.count({
           where: {
-            notaryId: targetUserId,
-            status: { in: ['ASSIGNED', 'IN_PROGRESS'] }
+            partnerAssignedToId: targetUserId,
+            status: { in: ['SCHEDULED', 'IN_PROGRESS'] }
           }
         })
       ]);
@@ -265,11 +266,10 @@ export async function DELETE(
         );
       }
 
-      // Soft delete - deactivate user instead of hard delete
+      // Soft delete - modify email to prevent conflicts
       const deletedUser = await prisma.user.update({
         where: { id: targetUserId },
         data: {
-          active: false,
           email: `deleted_${Date.now()}_${targetUser.email}`, // Prevent email conflicts
           updatedAt: new Date(),
         },
@@ -277,13 +277,12 @@ export async function DELETE(
           id: true,
           name: true,
           email: true,
-          active: true,
         }
       });
 
       return NextResponse.json({
         success: true,
-        message: 'User deactivated successfully',
+        message: 'User deleted successfully',
         user: deletedUser,
       });
 

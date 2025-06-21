@@ -12,15 +12,16 @@ import FaqSection from "@/components/faq-section"
 import { notFound } from "next/navigation"
 
 interface PageProps {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 export function generateStaticParams() {
   return SERVICE_AREAS.map((a) => ({ slug: a.slug }))
 }
 
-export function generateMetadata({ params }: PageProps): Metadata {
-  const area = getServiceAreaBySlug(params.slug)
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const area = getServiceAreaBySlug(resolvedParams.slug)
   if (!area) return { title: "Not Found" }
   return {
     title: area.title,
@@ -29,11 +30,12 @@ export function generateMetadata({ params }: PageProps): Metadata {
   }
 }
 
-export default function ServiceAreaDynamicPage({ params }: PageProps) {
-  const area = getServiceAreaBySlug(params.slug)
+export default async function ServiceAreaDynamicPage({ params }: PageProps) {
+  const resolvedParams = await params;
+  const area = getServiceAreaBySlug(resolvedParams.slug)
   if (!area) notFound()
-  const info = CITY_INFO[params.slug]
-  const faqs = CITY_FAQS[params.slug] || []
+  const info = CITY_INFO[resolvedParams.slug]
+  const faqs = CITY_FAQS[resolvedParams.slug] || []
 
   return (
     <>

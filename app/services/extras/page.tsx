@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ChevronLeft, Check, DollarSign, MapPin, Clock, CalendarDays, Info } from 'lucide-react'
+import { ChevronLeft, Check, DollarSign, MapPin, Clock, CalendarDays, Info, Users, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import MiniFAQ from '@/components/mini-faq'

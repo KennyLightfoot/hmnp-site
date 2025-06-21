@@ -503,7 +503,119 @@ export class NotificationService {
 
     return pendingNotifications;
   }
+
+  /**
+   * Instance method for sendNotification to match worker API expectations
+   */
+  async sendNotification(options: {
+    bookingId: string;
+    type: NotificationType;
+    method?: NotificationMethod;
+    templateId?: string;
+    templateData?: Record<string, any>;
+  }): Promise<{ success: boolean; error?: string }> {
+    try {
+      // Get booking to determine recipient
+      const booking = await prisma.booking.findUnique({
+        where: { id: options.bookingId },
+        include: {
+          User_Booking_signerIdToUser: true,
+          service: true
+        }
+      });
+
+      if (!booking) {
+        return { success: false, error: `Booking ${options.bookingId} not found` };
+      }
+
+      const recipient: NotificationRecipient = {
+        email: booking.customerEmail || booking.User_Booking_signerIdToUser?.email,
+        firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0],
+        lastName: booking.User_Booking_signerIdToUser?.name?.split(' ').slice(1).join(' ')
+      };
+
+      // Default to email if no method specified
+      const methods = options.method ? [options.method] : [NotificationMethod.EMAIL];
+      
+      // Generate content based on type and template data
+      const content = await this.generateNotificationContent(options.type, options.templateData || {});
+
+      const result = await this.sendInstanceNotification({
+        bookingId: options.bookingId,
+        type: options.type,
+        recipient,
+        content,
+        methods
+      });
+
+      return { 
+        success: result.success, 
+        error: result.success ? undefined : result.results[0]?.error || 'Failed to send notification'
+      };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
+  /**
+   * Generate notification content based on type and data
+   */
+  private async generateNotificationContent(
+    type: NotificationType, 
+    data: Record<string, any>
+  ): Promise<NotificationContent> {
+    // This is a basic implementation - you might want to use proper templates
+    const templates: Record<NotificationType, { subject: string; message: string }> = {
+      [NotificationType.BOOKING_CONFIRMATION]: {
+        subject: 'Booking Confirmation',
+        message: 'Your booking has been confirmed.'
+      },
+      [NotificationType.APPOINTMENT_REMINDER_24HR]: {
+        subject: '24 Hour Reminder',
+        message: 'Reminder: You have an appointment in 24 hours.'
+      },
+      [NotificationType.APPOINTMENT_REMINDER_2HR]: {
+        subject: '2 Hour Reminder',
+        message: 'Reminder: You have an appointment in 2 hours.'
+      },
+      [NotificationType.APPOINTMENT_REMINDER_1HR]: {
+        subject: '1 Hour Reminder',
+        message: 'Reminder: You have an appointment in 1 hour.'
+      },
+      [NotificationType.PAYMENT_CONFIRMATION]: {
+        subject: 'Payment Confirmed',
+        message: 'Your payment has been confirmed.'
+      },
+      [NotificationType.PAYMENT_REMINDER]: {
+        subject: 'Payment Reminder',
+        message: 'Please complete your payment.'
+      },
+      [NotificationType.PAYMENT_FAILED]: {
+        subject: 'Payment Failed',
+        message: 'Your payment could not be processed.'
+      },
+      [NotificationType.BOOKING_CANCELLED]: {
+        subject: 'Booking Cancelled',
+        message: 'Your booking has been cancelled.'
+      },
+      // Add more templates as needed
+    } as any;
+
+    const template = templates[type] || {
+      subject: 'Notification',
+      message: 'You have a new notification.'
+    };
+
+    return {
+      subject: template.subject,
+      message: template.message,
+      metadata: data
+    };
+  }
 }
+
+// Export NotificationManager as an alias to NotificationService for backward compatibility
+export const NotificationManager = NotificationService;
 
 // Export convenience functions for common notification types
 export const sendBookingConfirmation = async (bookingId: string) => {
@@ -519,7 +631,7 @@ export const sendBookingConfirmation = async (bookingId: string) => {
 
   const recipient = {
     email: booking.User_Booking_signerIdToUser.email,
-    phone: null, // Will be fetched from GHL if needed
+    phone: undefined, // Will be fetched from GHL if needed
     firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
   };
 
@@ -575,7 +687,7 @@ export const sendAppointmentReminder = async (
 
   const recipient = {
     email: booking.User_Booking_signerIdToUser.email,
-    phone: null,
+    phone: undefined,
     firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
   };
 

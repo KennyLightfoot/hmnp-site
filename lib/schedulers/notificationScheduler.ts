@@ -58,7 +58,7 @@ export class NotificationScheduler {
    */
   public initialize(): void {
     if (this.initialized) {
-      logger.warn('NotificationScheduler already initialized');
+      logger.warn('NotificationScheduler already initialized', 'NOTIFICATION_SCHEDULER');
       return;
     }
     
@@ -69,7 +69,7 @@ export class NotificationScheduler {
     this.startFollowUpCheck();
     
     this.initialized = true;
-    logger.info('NotificationScheduler initialized successfully');
+    logger.info('NotificationScheduler initialized successfully', 'NOTIFICATION_SCHEDULER');
   }
   
   /**
@@ -79,7 +79,7 @@ export class NotificationScheduler {
     this.scheduledJobs.forEach(job => job.stop());
     this.scheduledJobs = [];
     this.initialized = false;
-    logger.info('NotificationScheduler stopped');
+    logger.info('NotificationScheduler stopped', 'NOTIFICATION_SCHEDULER');
   }
   
   /**
@@ -88,7 +88,7 @@ export class NotificationScheduler {
   private startShortTermReminderCheck(): void {
     const job = cron.schedule(this.CHECK_SCHEDULES.shortTermReminders, async () => {
       try {
-        logger.info('Running short-term reminder check');
+        logger.info('Running short-term reminder check', 'NOTIFICATION_SCHEDULER');
         
         const now = new Date();
         const twoHoursLater = addHours(now, 2);
@@ -111,25 +111,25 @@ export class NotificationScheduler {
           }
         });
         
-        logger.info(`Found ${bookings.length} bookings for short-term reminders`);
+        logger.info(`Found ${bookings.length} bookings for short-term reminders`, 'NOTIFICATION_SCHEDULER');
         
         for (const booking of bookings) {
           const hoursUntil = differenceInHours(booking.scheduledDateTime, now);
           
           // Send 2-hour reminder
           if (hoursUntil <= 2 && hoursUntil > 1 && !booking.reminder2hrSentAt) {
-            logger.info(`Sending 2-hour reminder for booking ${booking.id}`);
+            logger.info(`Sending 2-hour reminder for booking ${booking.id}`, 'NOTIFICATION_SCHEDULER');
             await sendAppointmentReminder(booking.id, '2hr');
           }
           
           // Send 1-hour reminder
           if (hoursUntil <= 1 && hoursUntil > 0 && !booking.reminder1hrSentAt) {
-            logger.info(`Sending 1-hour reminder for booking ${booking.id}`);
+            logger.info(`Sending 1-hour reminder for booking ${booking.id}`, 'NOTIFICATION_SCHEDULER');
             await sendAppointmentReminder(booking.id, '1hr');
           }
         }
       } catch (error) {
-        logger.error('Error in short-term reminder check:', error);
+        logger.error('Error in short-term reminder check', 'NOTIFICATION_SCHEDULER', error as Error);
       }
     });
     
@@ -142,7 +142,7 @@ export class NotificationScheduler {
   private startDailyReminderCheck(): void {
     const job = cron.schedule(this.CHECK_SCHEDULES.dailyReminders, async () => {
       try {
-        logger.info('Running 24-hour reminder check');
+        logger.info('Running 24-hour reminder check', 'NOTIFICATION_SCHEDULER');
         
         const now = new Date();
         const tomorrowMin = addHours(now, 23);
@@ -166,14 +166,14 @@ export class NotificationScheduler {
           }
         });
         
-        logger.info(`Found ${bookings.length} bookings for 24-hour reminders`);
+        logger.info(`Found ${bookings.length} bookings for 24-hour reminders`, 'NOTIFICATION_SCHEDULER');
         
         for (const booking of bookings) {
-          logger.info(`Sending 24-hour reminder for booking ${booking.id}`);
+          logger.info(`Sending 24-hour reminder for booking ${booking.id}`, 'NOTIFICATION_SCHEDULER');
           await sendAppointmentReminder(booking.id, '24hr');
         }
       } catch (error) {
-        logger.error('Error in 24-hour reminder check:', error);
+        logger.error('Error in 24-hour reminder check', 'NOTIFICATION_SCHEDULER', error as Error);
       }
     });
     
@@ -186,7 +186,7 @@ export class NotificationScheduler {
   private startNoShowCheck(): void {
     const job = cron.schedule(this.CHECK_SCHEDULES.noShowChecks, async () => {
       try {
-        logger.info('Running no-show check');
+        logger.info('Running no-show check', 'NOTIFICATION_SCHEDULER');
         
         const now = new Date();
         const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000);
@@ -208,23 +208,25 @@ export class NotificationScheduler {
           }
         });
         
-        logger.info(`Found ${potentialNoShows.length} potential no-shows`);
+        logger.info(`Found ${potentialNoShows.length} potential no-shows`, 'NOTIFICATION_SCHEDULER');
         
         for (const booking of potentialNoShows) {
           // Send no-show notification
-          await NotificationService.sendNotification({
-            bookingId: booking.id,
-            type: NotificationType.NO_SHOW_CHECK,
-            recipient: {
-              email: booking.User_Booking_signerIdToUser.email,
-              firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
-            },
-            content: {
-              subject: `Missed Appointment - Houston Mobile Notary Pros`,
-              message: `We've noticed your scheduled notary appointment was set for today but we haven't connected. Please contact us to reschedule.`
-            },
-            methods: ['EMAIL']
-          });
+          if (booking.User_Booking_signerIdToUser?.email) {
+            await NotificationService.sendNotification({
+              bookingId: booking.id,
+              type: NotificationType.NO_SHOW_CHECK,
+              recipient: {
+                email: booking.User_Booking_signerIdToUser.email,
+                firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
+              },
+              content: {
+                subject: `Missed Appointment - Houston Mobile Notary Pros`,
+                message: `We've noticed your scheduled notary appointment was set for today but we haven't connected. Please contact us to reschedule.`
+              },
+              methods: ['EMAIL']
+            });
+          }
           
           // Update booking status
           await prisma.booking.update({
@@ -232,10 +234,10 @@ export class NotificationScheduler {
             data: { noShowCheckPerformedAt: now }
           });
           
-          logger.info(`No-show check completed for booking ${booking.id}`);
+          logger.info(`No-show check completed for booking ${booking.id}`, 'NOTIFICATION_SCHEDULER');
         }
       } catch (error) {
-        logger.error('Error in no-show check:', error);
+        logger.error('Error in no-show check', 'NOTIFICATION_SCHEDULER', error as Error);
       }
     });
     
@@ -248,7 +250,7 @@ export class NotificationScheduler {
   private startPaymentExpirationCheck(): void {
     const job = cron.schedule(this.CHECK_SCHEDULES.paymentExpirations, async () => {
       try {
-        logger.info('Running payment expiration check');
+        logger.info('Running payment expiration check', 'NOTIFICATION_SCHEDULER');
         
         // Get expiration threshold from environment (default to 24 hours)
         const expirationHours = parseInt(process.env.PAYMENT_EXPIRATION_HOURS || '24');
@@ -267,7 +269,7 @@ export class NotificationScheduler {
           }
         });
         
-        logger.info(`Found ${expiredPayments.length} expired payments`);
+        logger.info(`Found ${expiredPayments.length} expired payments`, 'NOTIFICATION_SCHEDULER');
         
         for (const booking of expiredPayments) {
           // Update booking status
@@ -284,24 +286,26 @@ export class NotificationScheduler {
           });
           
           // Send expiration notification
-          await NotificationService.sendNotification({
-            bookingId: booking.id,
-            type: NotificationType.PAYMENT_FAILED,
-            recipient: {
-              email: booking.User_Booking_signerIdToUser.email,
-              firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
-            },
-            content: {
-              subject: `Payment Expired - Houston Mobile Notary Pros`,
-              message: `Your booking payment has expired. Please contact us or book again if you still need notary services.`
-            },
-            methods: ['EMAIL']
-          });
+          if (booking.User_Booking_signerIdToUser?.email) {
+            await NotificationService.sendNotification({
+              bookingId: booking.id,
+              type: NotificationType.PAYMENT_FAILED,
+              recipient: {
+                email: booking.User_Booking_signerIdToUser.email,
+                firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
+              },
+              content: {
+                subject: `Payment Expired - Houston Mobile Notary Pros`,
+                message: `Your booking payment has expired. Please contact us or book again if you still need notary services.`
+              },
+              methods: ['EMAIL']
+            });
+          }
           
-          logger.info(`Payment marked as expired for booking ${booking.id}`);
+          logger.info(`Payment marked as expired for booking ${booking.id}`, 'NOTIFICATION_SCHEDULER');
         }
       } catch (error) {
-        logger.error('Error in payment expiration check:', error);
+        logger.error('Error in payment expiration check', 'NOTIFICATION_SCHEDULER', error as Error);
       }
     });
     
@@ -314,7 +318,7 @@ export class NotificationScheduler {
   private startFollowUpCheck(): void {
     const job = cron.schedule(this.CHECK_SCHEDULES.followUps, async () => {
       try {
-        logger.info('Running follow-up check');
+        logger.info('Running follow-up check', 'NOTIFICATION_SCHEDULER');
         
         const now = new Date();
         const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -336,23 +340,25 @@ export class NotificationScheduler {
           }
         });
         
-        logger.info(`Found ${needFollowUp.length} bookings needing follow-up`);
+        logger.info(`Found ${needFollowUp.length} bookings needing follow-up`, 'NOTIFICATION_SCHEDULER');
         
         for (const booking of needFollowUp) {
           // Send follow-up notification
-          await NotificationService.sendNotification({
-            bookingId: booking.id,
-            type: NotificationType.POST_SERVICE_FOLLOWUP,
-            recipient: {
-              email: booking.User_Booking_signerIdToUser.email,
-              firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
-            },
-            content: {
-              subject: `Thank You for Using Houston Mobile Notary Pros`,
-              message: `We hope your recent notary service met your expectations. We'd appreciate your feedback and a review if you were satisfied with our service.`
-            },
-            methods: ['EMAIL']
-          });
+          if (booking.User_Booking_signerIdToUser?.email) {
+            await NotificationService.sendNotification({
+              bookingId: booking.id,
+              type: NotificationType.POST_SERVICE_FOLLOWUP,
+              recipient: {
+                email: booking.User_Booking_signerIdToUser.email,
+                firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
+              },
+              content: {
+                subject: `Thank You for Using Houston Mobile Notary Pros`,
+                message: `We hope your recent notary service met your expectations. We'd appreciate your feedback and a review if you were satisfied with our service.`
+              },
+              methods: ['EMAIL']
+            });
+          }
           
           // Update follow-up timestamp
           await prisma.booking.update({
@@ -360,10 +366,10 @@ export class NotificationScheduler {
             data: { followUpSentAt: now }
           });
           
-          logger.info(`Follow-up sent for booking ${booking.id}`);
+          logger.info(`Follow-up sent for booking ${booking.id}`, 'NOTIFICATION_SCHEDULER');
         }
       } catch (error) {
-        logger.error('Error in follow-up check:', error);
+        logger.error('Error in follow-up check', 'NOTIFICATION_SCHEDULER', error as Error);
       }
     });
     
@@ -376,7 +382,7 @@ export class NotificationScheduler {
    */
   public async runImmediateCheck(): Promise<void> {
     try {
-      logger.info('Running immediate notification check');
+      logger.info('Running immediate notification check', 'NOTIFICATION_SCHEDULER');
       
       // Get all active bookings
       const activeBookings = await prisma.booking.findMany({
@@ -399,7 +405,7 @@ export class NotificationScheduler {
         const pendingNotifications = await NotificationService.checkPendingNotifications(booking.id);
         
         if (pendingNotifications.length > 0) {
-          logger.info(`Found ${pendingNotifications.length} pending notifications for booking ${booking.id}`);
+          logger.info(`Found ${pendingNotifications.length} pending notifications for booking ${booking.id}`, 'NOTIFICATION_SCHEDULER');
           
           // Process each notification type
           for (const notificationType of pendingNotifications) {
@@ -421,10 +427,10 @@ export class NotificationScheduler {
         }
       }
       
-      logger.info(`Immediate check complete. Sent ${totalNotificationsSent} notifications`);
+      logger.info(`Immediate check complete. Sent ${totalNotificationsSent} notifications`, 'NOTIFICATION_SCHEDULER');
       
     } catch (error) {
-      logger.error('Error in immediate notification check:', error);
+      logger.error('Error in immediate notification check', 'NOTIFICATION_SCHEDULER', error as Error);
       throw error;
     }
   }

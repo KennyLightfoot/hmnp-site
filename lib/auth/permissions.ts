@@ -123,7 +123,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     },
   ],
 
-  [Role.CLIENT]: [
+  [Role.SIGNER]: [
     // Client can only manage their own bookings
     { 
       action: Actions.CREATE, 
@@ -159,6 +159,46 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
       condition: (user, targetUser) => targetUser?.id === user.id // Only own profile
     },
     { action: Actions.READ, resource: Resources.SERVICE },
+  ],
+
+  [Role.PARTNER]: [
+    // Partner can manage assignments and their bookings
+    { 
+      action: Actions.READ, 
+      resource: Resources.BOOKING,
+      condition: (user, booking) => booking?.notaryId === user.id || booking?.signerId === user.id
+    },
+    { 
+      action: Actions.UPDATE, 
+      resource: Resources.BOOKING,
+      condition: (user, booking) => booking?.notaryId === user.id
+    },
+    { 
+      action: Actions.READ, 
+      resource: Resources.USER,
+      condition: (user, targetUser) => targetUser?.id === user.id // Only own profile
+    },
+    { 
+      action: Actions.UPDATE, 
+      resource: Resources.USER,
+      condition: (user, targetUser) => targetUser?.id === user.id // Only own profile
+    },
+    { action: Actions.READ, resource: Resources.SERVICE },
+    { 
+      action: Actions.READ, 
+      resource: Resources.ASSIGNMENT,
+      condition: (user, assignment) => assignment?.partnerAssignedToId === user.id
+    },
+    { 
+      action: Actions.UPDATE, 
+      resource: Resources.ASSIGNMENT,
+      condition: (user, assignment) => assignment?.partnerAssignedToId === user.id
+    },
+    { 
+      action: Actions.MANAGE, 
+      resource: Resources.DOCUMENT,
+      condition: (user, document) => document?.assignmentNotaryId === user.id
+    },
   ],
 };
 
@@ -269,17 +309,19 @@ export function isNotary(user: AuthUser | GuestUser): boolean {
 }
 
 export function isClient(user: AuthUser | GuestUser): boolean {
-  return user.isAuthenticated && (user as AuthUser).role === Role.CLIENT;
+  return user.isAuthenticated && (user as AuthUser).role === Role.SIGNER;
 }
 
 export function isStaffOrHigher(user: AuthUser | GuestUser): boolean {
-  return user.isAuthenticated && 
-    [(Role.ADMIN), (Role.STAFF)].includes((user as AuthUser).role);
+  if (!user.isAuthenticated) return false;
+  const role = (user as AuthUser).role;
+  return role === Role.ADMIN || role === Role.STAFF;
 }
 
 export function isNotaryOrHigher(user: AuthUser | GuestUser): boolean {
-  return user.isAuthenticated && 
-    [Role.ADMIN, Role.STAFF, Role.NOTARY].includes((user as AuthUser).role);
+  if (!user.isAuthenticated) return false;
+  const role = (user as AuthUser).role;
+  return role === Role.ADMIN || role === Role.STAFF || role === Role.NOTARY || role === Role.PARTNER;
 }
 
 /**

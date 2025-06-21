@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth-config';
 import { BookingAutomationService } from '@/lib/booking-automation';
 import { Role } from '@prisma/client';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   // Check authentication and authorization
   const session = await getServerSession(authOptions);
@@ -16,6 +16,8 @@ export async function POST(
     });
   }
 
+  // Await the params in Next.js 15
+  const params = await context.params;
   const bookingId = params.id;
 
   try {

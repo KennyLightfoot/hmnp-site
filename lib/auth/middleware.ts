@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/db';
 import { Role } from '@prisma/client';
@@ -94,7 +94,7 @@ export async function authMiddleware(
       const token = authHeader.split(' ')[1];
       
       try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'fallback-secret') as any;
         
         // Verify user exists in database
         const dbUser = await prisma.user.findUnique({

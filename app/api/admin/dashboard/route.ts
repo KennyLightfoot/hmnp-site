@@ -113,17 +113,10 @@ async function getBookingStatistics() {
   ]);
 
   // Get service popularity
-  const serviceStats = await prisma.booking.groupBy({
+  const serviceGrouped = await prisma.booking.groupBy({
     by: ['serviceId'],
     _count: {
       serviceId: true
-    },
-    include: {
-      service: {
-        select: {
-          name: true
-        }
-      }
     },
     orderBy: {
       _count: {
@@ -133,11 +126,30 @@ async function getBookingStatistics() {
     take: 5
   });
 
+  // Get service names for the top services
+  const serviceIds = serviceGrouped.map(item => item.serviceId);
+  const services = await prisma.service.findMany({
+    where: {
+      id: { in: serviceIds }
+    },
+    select: {
+      id: true,
+      name: true
+    }
+  });
+
+  // Combine the data
+  const serviceStats = serviceGrouped.map(item => ({
+    serviceId: item.serviceId,
+    _count: item._count,
+    service: services.find(service => service.id === item.serviceId)
+  }));
+
   // Get upcoming bookings
   const upcomingBookings = await prisma.booking.count({
     where: {
       status: BookingStatus.CONFIRMED,
-      appointmentDateTime: {
+      scheduledDateTime: {
         gte: now,
         lte: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) // Next 7 days
       }
@@ -197,7 +209,7 @@ async function getRevenueStatistics() {
       createdAt: { gte: startOfMonth }
     },
     _sum: {
-      totalAmount: true
+      priceAtBooking: true
     }
   });
 
@@ -211,7 +223,7 @@ async function getRevenueStatistics() {
       }
     },
     _sum: {
-      totalAmount: true
+      priceAtBooking: true
     }
   });
 
@@ -219,7 +231,7 @@ async function getRevenueStatistics() {
   const dailyRevenue = await prisma.$queryRaw`
     SELECT 
       DATE(created_at) as date,
-      SUM(total_amount) as revenue,
+      SUM(price_at_booking) as revenue,
       COUNT(*) as bookings
     FROM "Booking"
     WHERE 
@@ -236,7 +248,7 @@ async function getRevenueStatistics() {
       createdAt: { gte: startOfMonth }
     },
     _avg: {
-      totalAmount: true
+      priceAtBooking: true
     }
   });
 
@@ -246,12 +258,12 @@ async function getRevenueStatistics() {
       status: BookingStatus.PAYMENT_PENDING
     },
     _sum: {
-      totalAmount: true
+      priceAtBooking: true
     }
   });
 
-  const currentRevenue = Number(currentMonthRevenue._sum.totalAmount || 0);
-  const previousRevenue = Number(lastMonthRevenue._sum.totalAmount || 0);
+  const currentRevenue = Number(currentMonthRevenue._sum?.priceAtBooking?.toNumber() || 0);
+  const previousRevenue = Number(lastMonthRevenue._sum?.priceAtBooking?.toNumber() || 0);
   const revenueGrowth = previousRevenue > 0 
     ? Math.round(((currentRevenue - previousRevenue) / previousRevenue) * 100)
     : 0;
@@ -260,8 +272,8 @@ async function getRevenueStatistics() {
     currentMonth: currentRevenue,
     lastMonth: previousRevenue,
     growth: revenueGrowth,
-    avgBookingValue: Number(avgBookingValue._avg.totalAmount || 0),
-    pendingRevenue: Number(pendingRevenue._sum.totalAmount || 0),
+    avgBookingValue: Number(avgBookingValue._avg?.priceAtBooking?.toNumber() || 0),
+    pendingRevenue: Number(pendingRevenue._sum?.priceAtBooking?.toNumber() || 0),
     dailyRevenue: dailyRevenue.slice(0, 30), // Last 30 days
     projectedMonthly: currentRevenue * (new Date().getDate() > 0 ? (30 / new Date().getDate()) : 1)
   };
@@ -333,7 +345,7 @@ async function getRecentActivity() {
       customerName: booking.User_Booking_signerIdToUser?.name || 'Guest',
       serviceName: booking.service?.name || 'Unknown',
       status: booking.status,
-      amount: booking.totalAmount,
+      amount: booking.priceAtBooking?.toNumber() || 0,
       createdAt: booking.createdAt
     }))
   };

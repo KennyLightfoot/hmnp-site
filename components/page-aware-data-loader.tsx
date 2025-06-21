@@ -17,9 +17,9 @@ export default function PageAwareDataLoader({ userId, userRole, pageSize }: Page
   const [isPending, startTransition] = useTransition();
   const [data, setData] = useState<{ assignments: AssignmentData[]; totalAssignments: number; error?: string } | null>(null);
 
-  const currentPage = parseInt(searchParams.get('page') || '1', 10);
-  const currentSearch = searchParams.get('search') || undefined; // Pass undefined if empty for cleaner action params
-  const currentStatus = searchParams.get('status') || undefined; // Pass undefined if empty
+  const currentPage = parseInt(searchParams?.get('page') || '1', 10);
+  const currentSearch = searchParams?.get('search') || undefined; // Pass undefined if empty for cleaner action params
+  const currentStatus = searchParams?.get('status') || undefined; // Pass undefined if empty
 
   useEffect(() => {
     startTransition(async () => {

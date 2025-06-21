@@ -16,14 +16,22 @@ const referralFormSchema = z.object({
   referrerContact: z.string().min(1, { message: 'Your contact information (email or phone) is required.' }),
   referralName: z.string().min(1, { message: "The referral's name is required." }),
   referralContact: z.string().min(1, { message: "The referral's contact information (email or phone) is required." }),
-  referralContactPreference: z.enum(['Email', 'Phone', 'Either'], { required_error: 'Please select a contact preference for the referral.' }).optional().default('Either'),
+  referralContactPreference: z.enum(['Email', 'Phone', 'Either']),
   notes: z.string().optional(),
   consentFromReferrer: z.boolean().refine(val => val === true, {
     message: 'You must confirm that you have informed the person and they consent to being contacted.',
   }),
 });
 
-type ReferralFormValues = z.infer<typeof referralFormSchema>;
+interface ReferralFormValues {
+  referrerName: string;
+  referrerContact: string;
+  referralName: string;
+  referralContact: string;
+  referralContactPreference: 'Email' | 'Phone' | 'Either';
+  notes?: string;
+  consentFromReferrer: boolean;
+}
 
 export default function ReferralForm() {
   const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
@@ -36,13 +44,13 @@ export default function ReferralForm() {
     formState: { errors },
     reset,
   } = useForm<ReferralFormValues>({
-    resolver: zodResolver(referralFormSchema),
+    resolver: zodResolver(referralFormSchema) as any,
     defaultValues: {
       referrerName: '',
       referrerContact: '',
       referralName: '',
       referralContact: '',
-      referralContactPreference: 'Either',
+      referralContactPreference: 'Either' as const,
       notes: '',
       consentFromReferrer: false,
     },

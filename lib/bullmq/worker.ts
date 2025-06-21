@@ -116,7 +116,6 @@ export class BullQueueWorker {
       };
     }
   }
-  }
   
   // Process a booking job with proper error handling
   private async processBookingJob(job: Bull.Job<BookingProcessingJob>): Promise<JobResult> {
@@ -543,93 +542,6 @@ export class BullQueueWorker {
         jobId: job.id?.toString() || 'unknown',
         processedAt: new Date(),
         error: error.message || 'Unknown error'
-      };
-    }
-      switch (action) {
-        case 'create':
-          // Create a new payment record
-          const createResult = await this.createPayment(bookingId!, amount, currency, metadata);
-          return {
-            success: true,
-            jobId: job.id?.toString() || 'unknown',
-            processedAt: new Date(),
-            result: createResult
-          };
-          
-        case 'capture':
-          // Capture an authorized payment
-          const captureResult = await this.capturePayment(paymentId!, metadata);
-          
-          // Update GHL with payment status
-          if (captureResult.success && bookingId) {
-            const booking = await prisma.booking.findUnique({
-              where: { id: bookingId },
-              include: { User_Booking_signerIdToUser: true }
-            });
-            
-            if (booking) {
-              await this.updateGHLPaymentStatus(booking, 'completed');
-            }
-          }
-          
-          return {
-            success: true,
-            jobId: job.id?.toString() || 'unknown',
-            processedAt: new Date(),
-            result: captureResult
-          };
-          
-        case 'refund':
-          // Process a payment refund
-          const refundResult = await this.refundPayment(paymentId!, amount, metadata);
-          
-          // Update GHL with refund status
-          if (refundResult.success && bookingId) {
-            const booking = await prisma.booking.findUnique({
-              where: { id: bookingId },
-              include: { User_Booking_signerIdToUser: true }
-            });
-            
-            if (booking) {
-              await this.updateGHLPaymentStatus(booking, 'refunded');
-            }
-          }
-          
-          return {
-            success: true,
-            jobId: job.id?.toString() || 'unknown',
-            processedAt: new Date(),
-            result: refundResult
-          };
-          
-        case 'check-status':
-          // Check payment status with payment provider
-          const checkResult = await this.checkPaymentStatus(paymentId || '', bookingId || '');
-          return {
-            success: true,
-            jobId: job.id?.toString() || 'unknown',
-            processedAt: new Date(),
-            result: checkResult
-          };
-          
-        default:
-          throw new Error(`Unknown payment action: ${action}`);
-      }
-    } catch (error: any) {
-      logger.error(`Error processing payment job: ${error?.message || 'Unknown error'}`, { error, jobId: job.id });
-      
-      // Determine if we should retry based on error type and retry count
-      const shouldRetry = jobData.retryCount < (jobData.maxRetries || 3);
-      
-      if (shouldRetry) {
-        throw error; // This will trigger Bull's retry mechanism
-      }
-      
-      return {
-        success: false,
-        jobId: job.id?.toString() || 'unknown',
-        processedAt: new Date(),
-        error: error.message || 'Unknown error',
       };
     }
   }

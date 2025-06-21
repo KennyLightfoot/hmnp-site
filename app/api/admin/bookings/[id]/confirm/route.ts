@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth-config';
 import { getQueues } from '@/lib/queue/config';
 import { prisma } from '@/lib/db';
-import { Role } from '@prisma/client';
+import { Role, BookingStatus } from '@prisma/client';
+import { BookingAutomationService } from '@/lib/booking-automation';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   // Check authentication and authorization
   const session = await getServerSession(authOptions);
@@ -17,6 +18,7 @@ export async function POST(
     });
   }
 
+  const params = await context.params;
   const bookingId = params.id;
 
   try {
@@ -24,7 +26,7 @@ export async function POST(
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        client: true,
+        User_Booking_signerIdToUser: true,
         service: true,
       }
     });
@@ -40,7 +42,7 @@ export async function POST(
     const updatedBooking = await prisma.booking.update({
       where: { id: bookingId },
       data: { 
-        status: 'CONFIRMED',
+        status: BookingStatus.CONFIRMED,
         updatedAt: new Date(),
       }
     });
@@ -50,14 +52,14 @@ export async function POST(
     
     // Add confirmation notification task to queue
     if (queues && queues.notificationsQueue) {
-      await queues.notificationsQueue.push({
+      await queues.notificationsQueue.sendMessage({
         type: 'booking-confirmation',
         bookingId: booking.id,
-        clientId: booking.client?.id,
-        recipientEmail: booking.client?.email,
-        recipientName: booking.client?.name,
+        clientId: booking.User_Booking_signerIdToUser?.id,
+        recipientEmail: booking.User_Booking_signerIdToUser?.email,
+        recipientName: booking.User_Booking_signerIdToUser?.name,
         serviceName: booking.service?.name,
-        scheduledAt: booking.scheduledAt,
+        scheduledAt: booking.scheduledDateTime,
       });
     }
 
@@ -66,7 +68,7 @@ export async function POST(
       data: {
         level: 'INFO',
         component: 'BOOKING_MANAGER',
-        message: `Admin confirmed booking ID: ${bookingId} for client: ${booking.client?.name}`,
+        message: `Admin confirmed booking ID: ${bookingId} for client: ${booking.User_Booking_signerIdToUser?.name}`,
         timestamp: new Date(),
       }
     }).catch(() => {

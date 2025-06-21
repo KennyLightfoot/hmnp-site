@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
-import { calculateTotalPrice, SERVICE_AREA_RADIUS } from "@/lib/pricing"
+import { calculateTotalPrice, DEFAULT_SERVICE_AREA_RADIUS } from "@/lib/pricing"
 
 export default function ServiceCalculator() {
   const [serviceType, setServiceType] = useState("essential")
@@ -32,10 +32,29 @@ export default function ServiceCalculator() {
     totalPrice: 0,
   })
 
+  // Map UI service types to API service types
+  const mapServiceTypeToAPI = (uiServiceType: string): "standardNotary" | "extendedHoursNotary" | "loanSigningSpecialist" | "specialtyNotaryService" | "businessSolutions" | "supportService" => {
+    switch (uiServiceType) {
+      case "essential":
+        return "standardNotary"
+      case "priority":
+        return "extendedHoursNotary"
+      case "loanSigning":
+        return "loanSigningSpecialist"
+      case "reverseMortgage":
+        return "loanSigningSpecialist"
+      case "specialty":
+        return "specialtyNotaryService"
+      default:
+        return "standardNotary"
+    }
+  }
+
   // Calculate pricing whenever inputs change
   useEffect(() => {
+    const apiServiceType = mapServiceTypeToAPI(serviceType)
     const newPricing = calculateTotalPrice({
-      serviceType,
+      serviceType: apiServiceType,
       numberOfSigners,
       distance,
       isWeekend,
@@ -116,7 +135,7 @@ export default function ServiceCalculator() {
             </Label>
             <Select
               value={numberOfSigners.toString()}
-              onValueChange={(value) => setNumberOfSigners(Number.parseInt(value))}
+              onValueChange={(value: string) => setNumberOfSigners(Number.parseInt(value))}
             >
               <SelectTrigger id="numberOfSigners">
                 <SelectValue placeholder="Select number of signers" />
@@ -146,12 +165,12 @@ export default function ServiceCalculator() {
               max={50}
               step={1}
               value={[distance]}
-              onValueChange={(value) => setDistance(value[0])}
+              onValueChange={(value: number[]) => setDistance(value[0])}
               className="py-4"
             />
             <div className="flex justify-between text-xs text-gray-500">
               <span>1 mile</span>
-              <span className="text-[#A52A2A]">{SERVICE_AREA_RADIUS} miles (free service area)</span>
+              <span className="text-[#A52A2A]">{DEFAULT_SERVICE_AREA_RADIUS} miles (free service area)</span>
               <span>50 miles</span>
             </div>
           </div>
@@ -268,7 +287,7 @@ export default function ServiceCalculator() {
             {pricing.travelFee > 0 && (
               <div className="flex justify-between">
                 <span className="text-gray-600">
-                  Extended Travel Fee ({distance - SERVICE_AREA_RADIUS} miles beyond service area):
+                  Extended Travel Fee ({distance - DEFAULT_SERVICE_AREA_RADIUS} miles beyond service area):
                 </span>
                 <span className="font-medium">${pricing.travelFee.toFixed(2)}</span>
               </div>

@@ -406,7 +406,7 @@ export default function BookingPage() {
                     value={formData.locationType}
                     onChange={(e) => setFormData(prev => ({ 
                       ...prev, 
-                      locationType: e.target.value as any 
+                      locationType: e.target.value as 'CLIENT_SPECIFIED_ADDRESS' | 'PUBLIC_PLACE'
                     }))}
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                     required

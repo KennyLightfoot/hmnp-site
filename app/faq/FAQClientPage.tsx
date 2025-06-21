@@ -2086,16 +2086,13 @@ export default function FAQClientPage() {
                     Contact Us
                   </Button>
                 </Link>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-[#002147]"
-                  as="a"
+                <a
                   href="tel:+18326174285"
+                  className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-11 px-8 border-white text-white hover:bg-white hover:text-[#002147]"
                 >
                   <Phone className="mr-2 h-5 w-5" />
                   (832) 617-4285
-                </Button>
+                </a>
               </div>
             </div>
             <div className="bg-white/10 p-6 rounded-lg">

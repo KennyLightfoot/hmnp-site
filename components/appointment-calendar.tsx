@@ -276,51 +276,35 @@ export default function AppointmentCalendar({
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Set to start of today for comparison
 
-  // Define disabled days logic
-  const disabledDays: any[] = [{ before: today }]; // Start with disabling past dates
-  
-  // Disable weekends for essential service
-  if (serviceType === 'essential') {
-    disabledDays.push({ dayOfWeek: [0, 6] }); // Disable weekends for essential
-  }
-  
-  // Disable dates outside service range if provided
-  if (serviceDateRange) {
-    if (serviceDateRange.startDate && serviceDateRange.startDate > today) {
-      disabledDays.push({ before: serviceDateRange.startDate }); // Disable dates before service start date
-    }
-    if (serviceDateRange.endDate) {
-      disabledDays.push({ after: serviceDateRange.endDate }); // Disable dates after service end date
-    }
-  }
-  
-  // Disable fully booked dates
-  const fullyBookedDates = Object.keys(bookedDateMap).filter(dateString => {
-    // Check if the date has any bookings
-    if (!bookedDateMap[dateString] || bookedDateMap[dateString].length === 0) {
-      return false;
+  // Create a function to determine if a date should be disabled
+  const isDateDisabled = (date: Date): boolean => {
+    // If loading, disable all dates
+    if (isLoading) return true;
+    
+    // Disable past dates
+    if (date < today) return true;
+    
+    // Disable weekends for essential service
+    if (serviceType === 'essential') {
+      const dayOfWeek = date.getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) return true; // Sunday or Saturday
     }
     
-    try {
-      // Parse the date string to a Date object
-      const date = parseISO(dateString);
-      
-      // For this simple check, we'll consider a date fully booked if it has more than 8 bookings
-      // This is a placeholder logic - in a real scenario, you'd need to check against total available slots
-      const bookingsCount = bookedDateMap[dateString].length;
-      return bookingsCount >= 8; // Assuming a fully booked day has 8 or more bookings
-    } catch (error) {
-      console.error(`Error parsing booked date: ${dateString}`, error);
-      return false;
+    // Disable dates outside service range if provided
+    if (serviceDateRange) {
+      if (serviceDateRange.startDate && date < serviceDateRange.startDate) return true;
+      if (serviceDateRange.endDate && date > serviceDateRange.endDate) return true;
     }
-  });
-  
-  // Add fully booked dates to disabledDays
-  if (fullyBookedDates.length > 0) {
-    disabledDays.push(...fullyBookedDates.map(dateStr => {
-      return parseISO(dateStr);
-    }));
-  }
+    
+    // Check if date is fully booked
+    const dateString = format(date, 'yyyy-MM-dd');
+    if (bookedDateMap[dateString]) {
+      const bookingsCount = bookedDateMap[dateString].length;
+      if (bookingsCount >= 8) return true; // Fully booked threshold
+    }
+    
+    return false;
+  };
 
   return (
     <>
@@ -360,7 +344,7 @@ export default function AppointmentCalendar({
             mode="single"
             selected={selectedDate}
             onSelect={handleDateSelect}
-            disabled={isLoading || disabledDays}
+            disabled={isDateDisabled}
             showOutsideDays
             fixedWeeks
             classNames={{

@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { redirect, notFound } from 'next/navigation'
 import { User, Assignment, AssignmentStatus, Role, AssignmentDocument, StatusHistory, Comment } from "@prisma/client"
@@ -46,9 +46,9 @@ type AssignmentWithDetails = Assignment & {
 };
 
 type AssignmentDetailPageProps = {
-  params: {
+  params: Promise<{
     assignmentId: string;
-  };
+  }>;
 };
 
 export default async function AssignmentDetailPage({ params }: AssignmentDetailPageProps) {
@@ -63,7 +63,7 @@ export default async function AssignmentDetailPage({ params }: AssignmentDetailP
     redirect('/login');
   }
 
-  const user = session.user as any; // Assuming custom Session type or 'any' for now
+  const user = session.user;
   const userId = user.id as string;
   const userRole = user.role as Role; // Use the Role enum
 

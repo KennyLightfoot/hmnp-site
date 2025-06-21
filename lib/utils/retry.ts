@@ -27,7 +27,7 @@ const defaultOptions: Required<RetryOptions> = {
   useExponentialBackoff: true,
   isRetryable: () => true, // By default, retry all errors
   onRetry: (error, attemptNumber) => {
-    logger.warn(`Retry attempt ${attemptNumber} after error: ${error.message}`);
+    logger.warn(`Retry attempt ${attemptNumber} after error: ${error instanceof Error ? error.message : String(error)}`, 'RETRY');
   },
 };
 
@@ -55,11 +55,7 @@ export async function withRetry<T>(
       const isRetryable = config.isRetryable(error);
       
       if (isLastAttempt || !isRetryable) {
-        logger.error(`Operation failed after ${attempt} attempts: ${error.message}`, { 
-          error,
-          attempts: attempt,
-          maxRetries: config.maxRetries,
-        });
+        logger.error(`Operation failed after ${attempt} attempts: ${error instanceof Error ? error.message : String(error)}`, 'RETRY', error instanceof Error ? error : new Error(String(error)));
         throw error;
       }
       
@@ -73,7 +69,7 @@ export async function withRetry<T>(
       config.onRetry(error, attempt);
       
       // Log retry attempt
-      logger.info(`Retrying operation (${attempt}/${config.maxRetries}) after ${delay}ms delay`);
+      logger.info(`Retrying operation (${attempt}/${config.maxRetries}) after ${delay}ms delay`, 'RETRY');
       
       // Wait before next retry
       await new Promise(resolve => setTimeout(resolve, delay));

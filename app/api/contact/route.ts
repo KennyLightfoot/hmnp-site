@@ -72,7 +72,7 @@ async function sendEmailNotification(formData: any) {
     from: `Contact Form <${emailFrom}>`,
     to: [notificationEmailTo],
     subject: `New Contact Form Submission: ${subject}`,
-    replyTo: email,
+    reply_to: email,
     html: `
         <h1>New Contact Form Submission</h1>
         <p><strong>Name:</strong> ${firstName} ${lastName}</p>
@@ -106,14 +106,14 @@ export async function POST(request: Request) {
     let allCustomFields: GhlCustomField[] = [];
 
     try {
-      allCustomFields = await getLocationCustomFields() || [];
+      allCustomFields = await getLocationCustomFields(GHL_LOCATION_ID!) || [];
     } catch (error) {
       console.error("Failed to fetch GHL custom fields:", error);
     }
 
     const findCustomFieldId = (keyToSearch: string) => {
       const field = allCustomFields.find(cf => cf.key === keyToSearch);
-      return field ? field.id : undefined;
+      return field && field.id ? field.id : undefined;
     };
 
     const customFieldsPayload = [];

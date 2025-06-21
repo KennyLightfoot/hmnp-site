@@ -1,22 +1,23 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { redirect, notFound } from 'next/navigation';
 import { Role, Assignment } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { AssignmentForm } from "@/components/portal/AssignmentForm";
 
 type EditAssignmentPageProps = {
-  params: {
+  params: Promise<{
     assignmentId: string;
-  };
+  }>;
 };
 
 export default async function EditAssignmentPage({ params }: EditAssignmentPageProps) {
   const session = await getServerSession(authOptions);
-  const { assignmentId } = params;
+  const resolvedParams = await params;
+  const { assignmentId } = resolvedParams;
 
   // Authorization Check: Only Staff/Admin can edit assignments
-  const userRole = (session?.user as any)?.role;
+  const userRole = session?.user?.role;
   if (!session?.user || (userRole !== Role.ADMIN && userRole !== Role.STAFF)) {
     redirect('/portal'); // Or /unauthorized
   }

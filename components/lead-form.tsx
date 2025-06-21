@@ -20,7 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { trackLead, type LeadTrackingData } from "@/lib/tracking";
 
@@ -74,6 +74,7 @@ export default function LeadForm({
   campaignName,
 }: LeadFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
   // Separate state for global submission error, RHF handles field errors
   const [submissionError, setSubmissionError] = useState<string | null>(null);
 
@@ -139,7 +140,10 @@ export default function LeadForm({
       if (successRedirectUrl) {
         router.push(successRedirectUrl);
       } else if (!onSuccess) {
-        toast.success(result.message || "Form submitted successfully!");
+        toast({
+          title: "Success!",
+          description: result.message || "Form submitted successfully!",
+        });
         form.reset();
       }
 
@@ -160,7 +164,11 @@ export default function LeadForm({
       if (onError) {
         onError(new Error(errorMessage));
       } else {
-        toast.error(errorMessage);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: errorMessage,
+        });
       }
     }
   }

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { Role } from '@prisma/client';
 import bcrypt from 'bcrypt';
@@ -8,12 +8,19 @@ import bcrypt from 'bcrypt';
 const SALT_ROUNDS = 10; // Standard recommendation for bcrypt
 
 // PUT /api/admin/users/[userId]/set-password
-export async function PUT(
+export async function POST(
   request: Request,
-  { params }: { params: { userId: string } }
+  context: { params: Promise<{ userId: string }> }
 ) {
   const session = await getServerSession(authOptions);
-  const targetUserId = params.userId;
+  
+  // Check if user is authenticated and is an admin
+  if (!session?.user || (session.user as any).role !== Role.ADMIN) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const params = await context.params;
+  const userId = params.userId;
 
   // 1. Authorization Check: Only Admins can set passwords
   if (!session?.user || session.user.role !== Role.ADMIN) {
@@ -45,7 +52,7 @@ export async function PUT(
   try {
     // 4. Check if target user exists
     const userExists = await prisma.user.findUnique({
-      where: { id: targetUserId },
+      where: { id: userId },
       select: { id: true }, // Only select necessary field
     });
 
@@ -58,7 +65,7 @@ export async function PUT(
 
     // 6. Update the user's password in the database
     await prisma.user.update({
-      where: { id: targetUserId },
+      where: { id: userId },
       data: {
         password: hashedPassword,
       },
