@@ -1,0 +1,16 @@
+{
+    "install": [
+      "corepack enable",
+      "corepack prepare pnpm@10.11.0 --activate",
+      "pnpm install",
+      "pnpm run build:fast"
+    ],
+    "start": "",
+    "terminals": [
+      {
+        "name": "Next.js Dev Server",
+        "command": "pnpm dev"
+      }
+    ]
+  }
+  
