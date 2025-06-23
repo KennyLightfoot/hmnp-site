@@ -77,7 +77,7 @@ class DatabaseOptimizer {
               durationMinutes: true
             }
           },
-          User_Booking_signerIdToUser: {
+          signer: {
             select: {
               id: true,
               name: true,

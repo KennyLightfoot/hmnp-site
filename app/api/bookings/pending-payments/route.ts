@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
       },
       include: {
         service: true,
-        User_Booking_signerIdToUser: {
+        signer: {
           select: {
             name: true,
             email: true
@@ -149,8 +149,8 @@ export async function GET(request: NextRequest) {
           isExpired: hoursOld > 168 // 1 week
         },
         customerInfo: {
-          name: booking.User_Booking_signerIdToUser?.name || 'Unknown',
-          email: booking.User_Booking_signerIdToUser?.email || '',
+          name: booking.signer?.name || 'Unknown',
+          email: booking.signer?.email || '',
           phone: ''
         }
       };

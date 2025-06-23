@@ -61,7 +61,7 @@ export async function GET(
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        User_Booking_signerIdToUser: {
+        signer: {
           select: {
             id: true,
             name: true,
@@ -123,7 +123,7 @@ export async function GET(
         scheduledDateTime: booking.scheduledDateTime,
         createdAt: booking.createdAt,
         updatedAt: booking.updatedAt,
-        user: booking.User_Booking_signerIdToUser,
+        user: booking.signer,
         service: booking.service,
         payments: booking.Payment,
         recentNotifications: booking.NotificationLog

@@ -212,7 +212,7 @@ function checkResourceOwnership(getResourceOwnerId) {
 }
 
 // Development mode for testing (development only)
-const isDevelopment = process.env.NODE_ENV === 'development' || process.env.DEV_MODE === 'true';
+const isDevelopment = process.env.DEV_MODE === 'true';
 
 /**
  * Development mode authentication middleware

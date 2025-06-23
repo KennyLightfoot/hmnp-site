@@ -45,10 +45,10 @@ class DatabaseOptimizer {
             select: {
               id: true,
               name: true,
-              basePrice: true
+              price: true
             }
           },
-          User_Booking_signerIdToUser: {
+          signer: {
             select: {
               id: true,
               name: true,
@@ -103,7 +103,7 @@ class DatabaseOptimizer {
               select: {
                 id: true,
                 name: true,
-                basePrice: true
+                price: true
               }
             }
           },

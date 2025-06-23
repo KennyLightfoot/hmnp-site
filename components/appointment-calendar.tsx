@@ -187,7 +187,7 @@ export default function AppointmentCalendar({
 
         // Check if slots exist for the selected date and it's an array
         if (Array.isArray(slotsForDate)) {
-          const durationMinutes = getDuration(serviceType);
+          const duration = getDuration(serviceType);
 
           // Map API response (array of start time strings) to TimeSlot structure
           let slotsFromApi: TimeSlot[] = slotsForDate
@@ -207,7 +207,7 @@ export default function AppointmentCalendar({
                 }
 
                 // Calculate end time based on duration
-                const end = addHours(start, durationMinutes / 60); // Assuming duration is in minutes
+                const end = addHours(start, duration / 60); // Assuming duration is in minutes
 
                 return {
                   startTime: startTimeString,

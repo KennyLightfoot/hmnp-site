@@ -145,7 +145,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
       where: { id: bookingId },
       include: {
         service: true,
-        User_Booking_signerIdToUser: true,
+        signer: true,
         Payment: {
           where: {
             status: 'PENDING'
@@ -173,7 +173,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
       },
       include: {
         service: true,
-        User_Booking_signerIdToUser: true,
+        signer: true,
       }
     });
 
@@ -261,7 +261,7 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, ev
       where: { id: bookingId },
       include: {
         service: true,
-        User_Booking_signerIdToUser: true,
+        signer: true,
       }
     });
 
@@ -287,7 +287,7 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, ev
         // Update custom fields
         const customFields = {
           cf_payment_status: 'FAILED',
-          cf_payment_failed_attempts: ((parseInt(booking.User_Booking_signerIdToUser?.email || '0') || 0) + 1).toString(),
+          cf_payment_failed_attempts: ((parseInt(booking.signer?.email || '0') || 0) + 1).toString(),
         };
         
         await ghl.updateContact({

@@ -26,7 +26,7 @@ export async function POST(
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        User_Booking_signerIdToUser: true,
+        signer: true,
         service: true,
       }
     });
@@ -55,9 +55,9 @@ export async function POST(
       await queues.notificationsQueue.sendMessage({
         type: 'booking-confirmation',
         bookingId: booking.id,
-        clientId: booking.User_Booking_signerIdToUser?.id,
-        recipientEmail: booking.User_Booking_signerIdToUser?.email,
-        recipientName: booking.User_Booking_signerIdToUser?.name,
+        clientId: booking.signer?.id,
+        recipientEmail: booking.signer?.email,
+        recipientName: booking.signer?.name,
         serviceName: booking.service?.name,
         scheduledAt: booking.scheduledDateTime,
       });
@@ -68,7 +68,7 @@ export async function POST(
       data: {
         level: 'INFO',
         component: 'BOOKING_MANAGER',
-        message: `Admin confirmed booking ID: ${bookingId} for client: ${booking.User_Booking_signerIdToUser?.name}`,
+        message: `Admin confirmed booking ID: ${bookingId} for client: ${booking.signer?.name}`,
         timestamp: new Date(),
       }
     }).catch(() => {

@@ -123,7 +123,20 @@ export async function getPresignedUploadUrl(
     return { error: "Unauthorized" };
   }
 
-  // TODO: Add check to ensure assignmentId exists and is valid?
+  // Validate assignment exists before proceeding. We purposely do NOT expose
+  // any information about the assignment back to the client other than an
+  // error if it is not found. This prevents creation of orphaned S3 objects
+  // and guarantees that the returned presigned post is always linked to a
+  // valid record that the current user can access later.
+
+  const assignmentExists = await prisma.assignment.findUnique({
+    where: { id: assignmentId },
+    select: { id: true },
+  });
+
+  if (!assignmentExists) {
+    return { error: 'Assignment not found' };
+  }
 
   try {
     // Use the injected dependency

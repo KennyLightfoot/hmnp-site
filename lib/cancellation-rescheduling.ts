@@ -103,7 +103,7 @@ export class CancellationReschedulingService {
         include: {
           service: true,
           Payment: true,
-          User_Booking_signerIdToUser: true,
+          signer: true,
           User_Booking_notaryIdToUser: true
         }
       })
@@ -237,7 +237,7 @@ export class CancellationReschedulingService {
         where: { id: request.bookingId },
         include: {
           service: true,
-          User_Booking_signerIdToUser: true
+          signer: true
         }
       })
 
@@ -348,9 +348,9 @@ export class CancellationReschedulingService {
       }`
 
       const recipient = {
-        email: booking.User_Booking_signerIdToUser.email,
-        phone: booking.User_Booking_signerIdToUser.phone,
-        firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
+        email: booking.signer.email,
+        phone: booking.signer.phone,
+        firstName: booking.signer.name?.split(' ')[0]
       }
 
       const content = {
@@ -372,7 +372,7 @@ export class CancellationReschedulingService {
 
       // Notify staff
       const staffMessage = `Booking ${booking.id} has been cancelled by ${request.requestedBy}. 
-        Client: ${booking.User_Booking_signerIdToUser.name}
+        Client: ${booking.signer.name}
         Original time: ${booking.scheduledDateTime?.toLocaleString()}
         Reason: ${request.reason || 'Not provided'}
         Refund amount: $${refundCalculation.netRefund}`
@@ -399,9 +399,9 @@ export class CancellationReschedulingService {
       } We'll send you reminders as the appointment approaches.`
 
       const recipient = {
-        email: booking.User_Booking_signerIdToUser.email,
-        phone: booking.User_Booking_signerIdToUser.phone,
-        firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
+        email: booking.signer.email,
+        phone: booking.signer.phone,
+        firstName: booking.signer.name?.split(' ')[0]
       }
 
       const content = {
@@ -432,9 +432,9 @@ export class CancellationReschedulingService {
   private async updateGHLForCancellation(booking: any, refundCalculation: RefundCalculation): Promise<void> {
     try {
       // Get contact ID first
-      const contact = await ghl.getContactByEmail(booking.User_Booking_signerIdToUser.email)
+      const contact = await ghl.getContactByEmail(booking.signer.email)
       if (!contact || !contact.id) {
-        console.warn(`Contact not found in GHL for email: ${booking.User_Booking_signerIdToUser.email}`)
+        console.warn(`Contact not found in GHL for email: ${booking.signer.email}`)
         return
       }
 
@@ -446,7 +446,7 @@ export class CancellationReschedulingService {
 
       // Update custom fields using upsertContact
       await ghl.upsertContact({
-        email: booking.User_Booking_signerIdToUser.email,
+        email: booking.signer.email,
         customFields: [
           { id: 'cf_last_booking_status', value: 'CANCELLED' },
           { id: 'cf_last_cancellation_date', value: new Date().toISOString() },
@@ -465,9 +465,9 @@ export class CancellationReschedulingService {
   private async updateGHLForReschedule(booking: any, newDateTime: Date): Promise<void> {
     try {
       // Get contact ID first
-      const contact = await ghl.getContactByEmail(booking.User_Booking_signerIdToUser.email)
+      const contact = await ghl.getContactByEmail(booking.signer.email)
       if (!contact || !contact.id) {
-        console.warn(`Contact not found in GHL for email: ${booking.User_Booking_signerIdToUser.email}`)
+        console.warn(`Contact not found in GHL for email: ${booking.signer.email}`)
         return
       }
 
@@ -476,7 +476,7 @@ export class CancellationReschedulingService {
       ])
 
       await ghl.upsertContact({
-        email: booking.User_Booking_signerIdToUser.email,
+        email: booking.signer.email,
         customFields: [
           { id: 'cf_booking_date_time', value: newDateTime.toISOString() },
           { id: 'cf_last_reschedule_date', value: new Date().toISOString() }

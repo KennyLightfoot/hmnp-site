@@ -8,6 +8,7 @@ import { BookingStatus } from '@prisma/client';
 import { logger, logBookingEvent } from './logger';
 import * as ghl from './ghl/api';
 import { ghlApiRequest } from './ghl/error-handler';
+import { BookingWithUserAndService } from './types/prismaHelpers';
 
 export interface BookingSyncResult {
   success: boolean;
@@ -58,8 +59,8 @@ export async function updateBookingStatus(
       where: { id: bookingId },
       include: {
         service: true,
-        User_Booking_signerIdToUser: {
-          select: { name: true, email: true, phone: true }
+        signer: {
+          select: { name: true, email: true }
         }
       }
     });
@@ -86,11 +87,10 @@ export async function updateBookingStatus(
       where: { id: bookingId },
       data: {
         status: newStatus,
-        statusUpdatedAt: new Date(),
+        updatedAt: new Date(),
         notes: reason ? 
           `${booking.notes || ''}\n\n[${new Date().toISOString()}] Status changed to ${newStatus}: ${reason}`.trim() :
           booking.notes,
-        updatedAt: new Date(),
         ...metadata
       }
     });
@@ -168,7 +168,7 @@ async function syncBookingWithGHL(booking: any, status: BookingStatus, reason?: 
       tagsToAdd.push('status:booking_pendingpayment');
       break;
     case BookingStatus.CANCELLED_BY_CLIENT:
-    case BookingStatus.CANCELLED_BY_PROVIDER:
+    case BookingStatus.CANCELLED_BY_STAFF:
       tagsToAdd.push('status:booking_cancelled');
       break;
     case BookingStatus.COMPLETED:
@@ -180,15 +180,12 @@ async function syncBookingWithGHL(booking: any, status: BookingStatus, reason?: 
   }
 
   // Update custom fields
-  const customFields = {
+  const customFields: any = {
     cf_booking_status: status,
     cf_status_updated_at: new Date().toISOString(),
-    cf_booking_id: booking.id
+    cf_booking_id: booking.id,
+    ...(reason ? { cf_last_status_reason: reason } : {})
   };
-
-  if (reason) {
-    customFields.cf_last_status_reason = reason;
-  }
 
   // Remove old tags
   if (tagsToRemove.length > 0) {
@@ -229,8 +226,8 @@ export async function fullSyncBookingWithGHL(bookingId: string): Promise<Booking
       where: { id: bookingId },
       include: {
         service: true,
-        User_Booking_signerIdToUser: {
-          select: { name: true, email: true, phone: true }
+        signer: {
+          select: { name: true, email: true }
         }
       }
     });

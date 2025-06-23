@@ -49,10 +49,10 @@ interface BookingData {
 interface Service {
   id: string;
   name: string;
-  basePrice: number;
+  price: number;
   duration: number; // in minutes
   category: string;
-  isActive: boolean;
+  active: boolean;
 }
 
 interface PricingCalculation {
@@ -90,7 +90,7 @@ class BookingService {
     additionalServices: string[] = [],
     promoCode?: string
   ): PricingCalculation {
-    const basePrice = service.basePrice;
+    const price = service.price;
     const travelFee = this.calculateTravelFee(distance);
     
     // Additional services pricing
@@ -115,18 +115,18 @@ class BookingService {
     };
     
     const discountRate = promoCode ? (promoDiscounts[promoCode] || 0) : 0;
-    const subtotal = basePrice + travelFee + additionalServicesFee;
+    const subtotal = price + travelFee + additionalServicesFee;
     const discount = subtotal * discountRate;
     const totalPrice = subtotal - discount;
     
     return {
-      basePrice,
+      basePrice: price,
       travelFee,
       additionalServicesFee,
       discount,
       totalPrice: Math.round(totalPrice * 100) / 100, // Round to 2 decimal places
       breakdown: {
-        service: basePrice,
+        service: price,
         travel: travelFee,
         additional: additionalServicesFee,
         discount: discount,
@@ -249,10 +249,10 @@ describe('BookingService', () => {
     const mockService: Service = {
       id: '1',
       name: 'Essential Notary Services',
-      basePrice: 75,
+      price: 75,
       duration: 60,
       category: 'essential',
-      isActive: true,
+      active: true,
     };
 
     it('should calculate base pricing correctly', () => {
@@ -479,10 +479,10 @@ describe('Booking Edge Cases', () => {
     const service: Service = {
       id: '1',
       name: 'Test Service',
-      basePrice: 33.33,
+      price: 33.33,
       duration: 60,
       category: 'test',
-      isActive: true,
+      active: true,
     };
     
     const pricing = BookingService.calculatePricing(service, 11.7, [], 'FIRST20');

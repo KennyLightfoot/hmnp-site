@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/db';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
 
 // Input validation schema
 const validatePromoCodeSchema = z.object({
   code: z.string().min(1, 'Promo code is required'),
   serviceId: z.string().min(1, 'Service ID is required'),
-  basePrice: z.number().min(0, 'Base price must be non-negative'),
+  price: z.number().min(0, 'Base price must be non-negative'),
 });
 
 export async function POST(request: NextRequest) {
@@ -17,7 +15,7 @@ export async function POST(request: NextRequest) {
     
     // Validate input data
     const validatedData = validatePromoCodeSchema.parse(body);
-    const { code, serviceId, basePrice } = validatedData;
+    const { code, serviceId, price } = validatedData;
 
     // Find the promo code
     const promoCode = await prisma.promoCode.findUnique({
@@ -33,12 +31,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if promo code is active
-    if (!promoCode.isActive) {
+    if (!promoCode.active) {
       return NextResponse.json({
         success: false,
         valid: false,
         error: 'This promo code is no longer active',
-      });
+      }, { status: 400 });
     }
 
     // Check date validity
@@ -78,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check minimum amount requirement
-    if (promoCode.minimumAmount && basePrice < Number(promoCode.minimumAmount)) {
+    if (promoCode.minimumAmount && price < Number(promoCode.minimumAmount)) {
       return NextResponse.json({
         success: false,
         valid: false,
@@ -90,7 +88,7 @@ export async function POST(request: NextRequest) {
     let discountAmount = 0;
     
     if (promoCode.discountType === 'PERCENTAGE') {
-      discountAmount = basePrice * (Number(promoCode.discountValue) / 100);
+      discountAmount = price * (Number(promoCode.discountValue) / 100);
     } else {
       discountAmount = Number(promoCode.discountValue);
     }
@@ -101,9 +99,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Ensure discount doesn't exceed base price
-    discountAmount = Math.min(discountAmount, basePrice);
+    discountAmount = Math.min(discountAmount, price);
 
-    const finalPrice = Math.max(0, basePrice - discountAmount);
+    const finalPrice = Math.max(0, price - discountAmount);
 
     return NextResponse.json({
       success: true,
@@ -122,11 +120,11 @@ export async function POST(request: NextRequest) {
         remainingUses: promoCode.usageLimit ? promoCode.usageLimit - promoCode.usageCount : null,
       },
       pricing: {
-        basePrice,
+        basePrice: price,
         discountAmount,
         finalPrice,
         savings: discountAmount,
-        discountPercentage: basePrice > 0 ? Math.round((discountAmount / basePrice) * 100) : 0,
+        discountPercentage: price > 0 ? Math.round((discountAmount / price) * 100) : 0,
       },
     });
 
@@ -154,6 +152,6 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   } finally {
-    await prisma.$disconnect();
+    // singleton - no disconnect needed
   }
 } 

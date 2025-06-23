@@ -66,13 +66,13 @@ export async function POST(request: NextRequest) {
           where: { id: validatedData.serviceId }
         });
 
-        if (!service || !service.isActive) {
+        if (!service || !service.active) {
           throw new Error('Service not available');
         }
 
         // 2. Validate time slot availability
         const scheduledDateTime = new Date(validatedData.scheduledDateTime);
-        await validateTimeSlotAvailability(tx, scheduledDateTime, service.durationMinutes);
+        await validateTimeSlotAvailability(tx, scheduledDateTime, service.duration);
 
         // 3. Calculate pricing with promo code validation
         const pricing = await calculateBookingPricing(tx, service, validatedData.promoCode);
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
             locationNotes: validatedData.locationNotes,
             
             // Pricing
-            priceAtBooking: pricing.basePrice,
+            priceAtBooking: pricing.price,
             promoCodeId: pricing.promoCodeInfo?.id,
             promoCodeDiscount: pricing.promoDiscount,
             
@@ -148,9 +148,9 @@ export async function POST(request: NextRequest) {
           include: {
             service: true,
             promoCode: true,
-            User_Booking_signerIdToUser: {
+            signer: context.canViewAllBookings ? {
               select: { id: true, name: true, email: true }
-            }
+            } : false,
           }
         });
 
@@ -218,7 +218,7 @@ export async function POST(request: NextRequest) {
           finalPrice: Number(booking.booking.priceAtBooking) - Number(booking.booking.promoCodeDiscount || 0),
           service: {
             name: booking.booking.service.name,
-            duration: booking.booking.service.durationMinutes,
+            duration: booking.booking.service.duration,
           },
           paymentClientSecret: booking.paymentClientSecret,
         },
@@ -288,7 +288,7 @@ export async function GET(request: NextRequest) {
           include: {
             service: true,
             promoCode: true,
-            User_Booking_signerIdToUser: context.canViewAllBookings ? {
+            signer: context.canViewAllBookings ? {
               select: { id: true, name: true, email: true }
             } : false,
           },
@@ -320,9 +320,9 @@ export async function GET(request: NextRequest) {
 async function validateTimeSlotAvailability(
   tx: any,
   scheduledDateTime: Date,
-  serviceDurationMinutes: number
+  duration: number
 ) {
-  const endTime = new Date(scheduledDateTime.getTime() + serviceDurationMinutes * 60000);
+  const endTime = new Date(scheduledDateTime.getTime() + duration * 60000);
 
   const conflictingBookings = await tx.booking.findMany({
     where: {
@@ -353,11 +353,11 @@ async function validateTimeSlotAvailability(
 }
 
 async function calculateBookingPricing(tx: any, service: any, promoCodeStr?: string) {
-  const basePrice = Number(service.basePrice);
+  const price = Number(service.price);
   let pricing = {
-    basePrice: basePrice,
+          price: price,
     promoDiscount: 0,
-    finalPrice: basePrice,
+    finalPrice: price,
     promoCodeInfo: undefined as any,
   };
 
@@ -365,7 +365,7 @@ async function calculateBookingPricing(tx: any, service: any, promoCodeStr?: str
     const promoCode = await tx.promoCode.findFirst({
       where: {
         code: promoCodeStr,
-        isActive: true,
+        active: true,
         OR: [
           { validUntil: null },
           { validUntil: { gt: new Date() } },
@@ -376,15 +376,15 @@ async function calculateBookingPricing(tx: any, service: any, promoCodeStr?: str
     if (promoCode) {
       let discount = 0;
       if (promoCode.discountType === 'PERCENTAGE') {
-        discount = (basePrice * Number(promoCode.discountValue)) / 100;
+        discount = (price * Number(promoCode.discountValue)) / 100;
       } else if (promoCode.discountType === 'FIXED_AMOUNT') {
         discount = Number(promoCode.discountValue);
       }
 
-      discount = Math.min(discount, basePrice); // Don't let discount exceed price
+      discount = Math.min(discount, price); // Don't let discount exceed price
       
       pricing.promoDiscount = discount;
-      pricing.finalPrice = basePrice - discount;
+      pricing.finalPrice = price - discount;
       pricing.promoCodeInfo = {
         id: promoCode.id,
         code: promoCode.code,

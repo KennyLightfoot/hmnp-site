@@ -48,7 +48,7 @@ export class BullScheduler {
       logger.info('Bull scheduler initialized successfully');
       return true;
     } catch (error) {
-      logger.error('Failed to initialize Bull scheduler:', error);
+      logger.error('Failed to initialize Bull scheduler', 'BULL_SCHEDULER', error as Error);
       return false;
     }
   }
@@ -74,7 +74,7 @@ export class BullScheduler {
             }
           },
           include: {
-            booking: true
+            Booking: true
           }
         });
         
@@ -94,7 +94,7 @@ export class BullScheduler {
         }
         
       } catch (error) {
-        logger.error('Error during payment expiration check:', error);
+        logger.error('Error during payment expiration check', 'BULL_SCHEDULER', error as Error);
       }
     });
 
@@ -112,11 +112,11 @@ export class BullScheduler {
       logger.info('Running scheduled payment status updates...');
       
       try {
-        // Find payments that need status updates (pending, processing, or authorized)
+        // Find payments that need status updates (still pending or recently failed)
         const payments = await prisma.payment.findMany({
           where: {
             status: {
-              in: ['PENDING', 'PROCESSING', 'AUTHORIZED']
+              in: ['PENDING', 'FAILED']
             },
             // Only check payments created in the last 24 hours
             createdAt: {
@@ -129,7 +129,7 @@ export class BullScheduler {
         
         // Queue status check jobs with different priorities based on status
         for (const payment of payments) {
-          const priority = payment.status === 'PROCESSING' ? 5 : 10;
+          const priority = payment.status === 'FAILED' ? 5 : 10;
           
           await this.queueClient.enqueuePaymentJob({
             paymentId: payment.id,
@@ -143,7 +143,7 @@ export class BullScheduler {
         }
         
       } catch (error) {
-        logger.error('Error during payment status updates:', error);
+        logger.error('Error during payment status updates', 'BULL_SCHEDULER', error as Error);
       }
     });
 
@@ -167,15 +167,15 @@ export class BullScheduler {
         
         const bookingsNeedingReminders = await prisma.booking.findMany({
           where: {
-            status: 'AWAITING_CONFIRMATION',
+            status: 'AWAITING_CLIENT_ACTION',
             createdAt: {
               lt: twentyFourHoursAgo,
               gt: fortyEightHoursAgo // Only send reminders for bookings created in the last 24-48 hours
             },
             // Check if we haven't sent a reminder in the last 24 hours
-            notifications: {
+            NotificationLog: {
               none: {
-                type: 'CONFIRMATION_REMINDER',
+                notificationType: 'APPOINTMENT_REMINDER_24HR',
                 createdAt: {
                   gt: twentyFourHoursAgo
                 }
@@ -183,7 +183,7 @@ export class BullScheduler {
             }
           },
           include: {
-            customer: true
+            signer: true
           }
         });
         
@@ -194,18 +194,18 @@ export class BullScheduler {
           await this.queueClient.enqueueNotification({
             notificationType: 'confirmation_reminder',
             bookingId: booking.id,
-            recipientId: booking.customer.email,
+            recipientId: booking.signer?.email ?? '',
             templateId: 'booking-confirmation-reminder',
             templateData: {
-              customerName: booking.customer.name,
+              customerName: booking.signer?.name ?? '',
               bookingId: booking.id,
-              bookingDate: booking.appointmentDate
+              bookingDate: booking.scheduledDateTime
             }
           });
         }
         
       } catch (error) {
-        logger.error('Error during booking confirmation reminders:', error);
+        logger.error('Error during booking confirmation reminders', 'BULL_SCHEDULER', error as Error);
       }
     });
 

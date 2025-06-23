@@ -12,8 +12,8 @@ export function generateBookingReference(): string {
   return `${prefix}-${timestamp}-${random}`;
 }
 
-export function calculateServiceEndTime(startTime: Date, durationMinutes: number): Date {
-  return new Date(startTime.getTime() + durationMinutes * 60 * 1000);
+export function calculateServiceEndTime(startTime: Date, duration: number): Date {
+  return new Date(startTime.getTime() + duration * 60 * 1000);
 }
 
 export function formatDateTime(date: Date): string {

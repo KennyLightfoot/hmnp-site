@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { Role } from '@prisma/client';
+import { randomUUID } from 'crypto';
+import { sendEmail } from '@/lib/email';
 
 // POST /api/admin/users/invite
 export async function POST(request: Request) {
@@ -65,8 +67,29 @@ export async function POST(request: Request) {
       }
     });
 
-    // TODO: Implement email sending with an invitation token/link here
-    // using Resend or another email service.
+    // 5. Generate invitation token and send email
+    const token = randomUUID();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+    await prisma.invitationToken.create({
+      data: {
+        id: randomUUID(),
+        token,
+        email,
+        userId: newUser.id,
+        expiresAt,
+        updatedAt: new Date(),
+      },
+    });
+
+    const inviteLink = `${process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL || 'https://houstonmobilenotarypros.com'}/invite/accept?token=${token}`;
+
+    try {
+      const emailContent = invitationEmail({ inviteLink, email });
+      await sendEmail({ to: email, ...emailContent });
+    } catch (e) {
+      console.error('Failed to send invitation email:', e);
+    }
 
     return NextResponse.json(newUser, { status: 201 }); // 201 Created
 
@@ -74,4 +97,20 @@ export async function POST(request: Request) {
     console.error(`Failed to invite user ${email}:`, error);
     return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
   }
+}
+
+// --- Helper: Build invitation email content ---
+type InvitationEmailParams = { inviteLink: string; email: string };
+type EmailContent = { subject: string; html: string };
+
+function invitationEmail({ inviteLink, email }: InvitationEmailParams): EmailContent {
+  return {
+    subject: "You're invited to Houston Mobile Notary Pros",
+    html: `
+      <p>You have been invited to join Houston Mobile Notary Pros.</p>
+      <p>Please click the link below to set your password and activate your account:</p>
+      <p><a href="${inviteLink}">${inviteLink}</a></p>
+      <p>If you did not expect this invitation, you can safely ignore this email.</p>
+    `,
+  };
 } 

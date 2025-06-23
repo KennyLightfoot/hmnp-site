@@ -30,11 +30,12 @@ interface ApiService {
   id: string;
   name: string;
   description?: string | null;
-  basePrice: number;
+  price: number;
   depositAmount?: number | null;
   requiresDeposit: boolean;
-  durationMinutes: number;
+  duration: number;
   serviceType?: ServiceType;
+  active: boolean;
 }
 
 // Updated schema for new booking system
@@ -138,7 +139,7 @@ export function ServiceBookingForm() {
   // Validate promo code when it changes
   useEffect(() => {
     if (watchedPromoCode && watchedPromoCode.trim() && selectedService) {
-      validatePromoCode(watchedPromoCode.trim(), selectedService.id, selectedService.basePrice);
+      validatePromoCode(watchedPromoCode.trim(), selectedService.id, selectedService.price);
     } else {
       setPromoValidation(null);
     }
@@ -312,7 +313,7 @@ export function ServiceBookingForm() {
                   {services.length === 0 && <p className="p-4 text-sm text-gray-500">Loading services...</p>}
                   {services.map((service) => (
                     <SelectItem key={service.id} value={service.id}>
-                      {service.name} - ${service.basePrice}
+                      {service.name} - ${service.price}
                       {service.requiresDeposit && service.depositAmount && (
                         <span className="text-sm text-muted-foreground ml-2">
                           (${service.depositAmount} deposit)

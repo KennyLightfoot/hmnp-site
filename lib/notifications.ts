@@ -6,9 +6,10 @@ import { NotificationType, NotificationMethod, NotificationStatus, BookingStatus
 import { withRetry } from '@/lib/utils/retry';
 import { logger } from '@/lib/logger';
 
+type NullableString = string | null | undefined;
 interface NotificationRecipient {
-  email?: string;
-  phone?: string;
+  email?: NullableString;
+  phone?: NullableString;
   firstName?: string;
   lastName?: string;
 }
@@ -21,12 +22,14 @@ interface NotificationContent {
 
 interface SendNotificationOptions {
   bookingId: string;
-  type: NotificationType;
+  type: NotificationType | string;
   recipient: NotificationRecipient;
   content: NotificationContent;
   methods: NotificationMethod[];
   skipDuplicateCheck?: boolean;
   forceResend?: boolean;
+  // Allow extra legacy fields without type errors
+  [key: string]: any;
 }
 
 export class NotificationService {
@@ -188,7 +191,7 @@ export class NotificationService {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        User_Booking_signerIdToUser: true,
+        signer: true,
         service: true
       }
     });
@@ -197,8 +200,10 @@ export class NotificationService {
       throw new Error(`Booking ${bookingId} not found`);
     }
 
+    const normalizedType = type as NotificationType;
+
     // Check if this booking should receive this type of notification
-    if (!this.shouldReceiveNotification(booking.status, type)) {
+    if (!this.shouldReceiveNotification(booking.status, normalizedType)) {
       console.log(`Booking ${bookingId} with status ${booking.status} should not receive ${type} notifications`);
       return { success: false, results: [] };
     }
@@ -222,7 +227,7 @@ export class NotificationService {
         if (!skipDuplicateCheck && !forceResend) {
           const alreadySent = await this.hasNotificationBeenSent(
             bookingId,
-            type,
+            normalizedType,
             method,
             recipientIdentifier
           );
@@ -238,7 +243,7 @@ export class NotificationService {
           }
         }
 
-        let sendResult = { success: false, error: 'Unknown error' };
+        let sendResult: { success: boolean; error?: string } = { success: false, error: 'Unknown error' };
 
         // Send via appropriate method
         if (method === NotificationMethod.EMAIL && recipient.email) {
@@ -280,7 +285,7 @@ export class NotificationService {
         const notificationLog = await prisma.notificationLog.create({
           data: {
             bookingId,
-            notificationType: type,
+            notificationType: normalizedType,
             method,
             recipientEmail: method === NotificationMethod.EMAIL ? recipient.email : null,
             recipientPhone: method === NotificationMethod.SMS ? recipient.phone : null,
@@ -300,7 +305,7 @@ export class NotificationService {
         });
 
         // Update booking with notification timestamp
-        await this.updateBookingNotificationTimestamp(bookingId, type);
+        await this.updateBookingNotificationTimestamp(bookingId, normalizedType);
 
       } catch (error: any) {
         console.error(`Error sending ${method} notification for booking ${bookingId}:`, error);
@@ -464,7 +469,7 @@ export class NotificationService {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        User_Booking_signerIdToUser: true,
+        signer: true,
         service: true
       }
     });
@@ -519,7 +524,7 @@ export class NotificationService {
       const booking = await prisma.booking.findUnique({
         where: { id: options.bookingId },
         include: {
-          User_Booking_signerIdToUser: true,
+          signer: true,
           service: true
         }
       });
@@ -529,20 +534,22 @@ export class NotificationService {
       }
 
       const recipient: NotificationRecipient = {
-        email: booking.customerEmail || booking.User_Booking_signerIdToUser?.email,
-        firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0],
-        lastName: booking.User_Booking_signerIdToUser?.name?.split(' ').slice(1).join(' ')
+        email: booking.customerEmail || booking.signer?.email,
+        firstName: booking.signer?.name?.split(' ')[0],
+        lastName: booking.signer?.name?.split(' ').slice(1).join(' ')
       };
 
       // Default to email if no method specified
       const methods = options.method ? [options.method] : [NotificationMethod.EMAIL];
       
+      const typeEnum = options.type as NotificationType;
+
       // Generate content based on type and template data
-      const content = await this.generateNotificationContent(options.type, options.templateData || {});
+      const content = await this.generateNotificationContent(typeEnum, options.templateData || {});
 
       const result = await this.sendInstanceNotification({
         bookingId: options.bookingId,
-        type: options.type,
+        type: typeEnum,
         recipient,
         content,
         methods
@@ -550,7 +557,7 @@ export class NotificationService {
 
       return { 
         success: result.success, 
-        error: result.success ? undefined : result.results[0]?.error || 'Failed to send notification'
+        error: result.success ? undefined : (result.results[0]?.error || 'Failed to send notification')
       };
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
@@ -612,6 +619,225 @@ export class NotificationService {
       metadata: data
     };
   }
+
+  async sendPaymentRequestNotification(
+    bookingId: string,
+    paymentId: string,
+    amount: number,
+    currency: string = 'USD'
+  ): Promise<any> {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { signer: true, service: true }
+    });
+    if (!booking) throw new Error('Booking not found');
+
+    const recipient: NotificationRecipient = {
+      email: booking.signer?.email,
+      firstName: booking.signer?.name?.split(' ')[0]
+    };
+
+    const content: NotificationContent = {
+      subject: 'Payment Request',
+      message: `Please complete your payment of ${amount} ${currency}.`,
+      metadata: { paymentId, amount, currency }
+    };
+
+    return await NotificationService.sendNotification({
+      bookingId,
+      type: NotificationType.PAYMENT_REMINDER,
+      recipient,
+      content,
+      methods: [NotificationMethod.EMAIL, NotificationMethod.SMS]
+    });
+  }
+
+  async sendPaymentReceivedNotification(
+    bookingId: string,
+    amount: number,
+    currency: string = 'USD'
+  ): Promise<any> {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { signer: true, service: true }
+    });
+    if (!booking) throw new Error('Booking not found');
+
+    const recipient: NotificationRecipient = {
+      email: booking.signer?.email,
+      firstName: booking.signer?.name?.split(' ')[0]
+    };
+
+    const content: NotificationContent = {
+      subject: 'Payment Received',
+      message: `We have received your payment of ${amount} ${currency}. Thank you!`,
+      metadata: { amount, currency }
+    };
+
+    return await NotificationService.sendNotification({
+      bookingId,
+      type: NotificationType.PAYMENT_CONFIRMATION,
+      recipient,
+      content,
+      methods: [NotificationMethod.EMAIL, NotificationMethod.SMS]
+    });
+  }
+
+  async sendPaymentExpiredNotification(bookingId: string): Promise<any> {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { signer: true, service: true }
+    });
+    if (!booking) throw new Error('Booking not found');
+
+    const recipient: NotificationRecipient = {
+      email: booking.signer?.email,
+      firstName: booking.signer?.name?.split(' ')[0]
+    };
+
+    const content: NotificationContent = {
+      subject: 'Payment Expired',
+      message: 'Your payment link has expired. Please contact us to continue.',
+      metadata: {}
+    };
+
+    return await NotificationService.sendNotification({
+      bookingId,
+      type: NotificationType.PAYMENT_FAILED,
+      recipient,
+      content,
+      methods: [NotificationMethod.EMAIL, NotificationMethod.SMS]
+    });
+  }
+
+  async sendRefundNotification(
+    bookingId: string,
+    amount: number,
+    currency: string = 'USD',
+    reason: string
+  ): Promise<any> {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { signer: true, service: true }
+    });
+    if (!booking) throw new Error('Booking not found');
+
+    const recipient: NotificationRecipient = {
+      email: booking.signer?.email,
+      firstName: booking.signer?.name?.split(' ')[0]
+    };
+
+    const content: NotificationContent = {
+      subject: 'Refund Processed',
+      message: `A refund of ${amount} ${currency} has been processed. Reason: ${reason}.`,
+      metadata: { amount, currency, reason }
+    };
+
+    return await NotificationService.sendNotification({
+      bookingId,
+      type: NotificationType.PAYMENT_UPDATE,
+      recipient,
+      content,
+      methods: [NotificationMethod.EMAIL, NotificationMethod.SMS]
+    });
+  }
+
+  async sendBookingCancellation(
+    bookingId: string,
+    reason: string = 'No reason provided',
+    cancelledBy: string = 'SYSTEM'
+  ): Promise<any> {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { signer: true, service: true }
+    });
+    if (!booking) throw new Error('Booking not found');
+
+    const recipient: NotificationRecipient = {
+      email: booking.signer?.email,
+      firstName: booking.signer?.name?.split(' ')[0]
+    };
+
+    const content: NotificationContent = {
+      subject: 'Booking Cancelled',
+      message: `Your booking has been cancelled. Reason: ${reason}.`,
+      metadata: { cancelledBy }
+    };
+
+    return await NotificationService.sendNotification({
+      bookingId,
+      type: NotificationType.BOOKING_CANCELLED,
+      recipient,
+      content,
+      methods: [NotificationMethod.EMAIL, NotificationMethod.SMS]
+    });
+  }
+
+  async sendBookingReschedule(
+    bookingId: string,
+    oldDateTime: Date
+  ): Promise<any> {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { signer: true, service: true }
+    });
+    if (!booking) throw new Error('Booking not found');
+
+    const recipient: NotificationRecipient = {
+      email: booking.signer?.email,
+      firstName: booking.signer?.name?.split(' ')[0]
+    };
+
+    const content: NotificationContent = {
+      subject: 'Booking Rescheduled',
+      message: `Your booking has been rescheduled from ${oldDateTime.toLocaleString()} to ${booking.scheduledDateTime?.toLocaleString()}.`,
+      metadata: { oldDateTime }
+    };
+
+    return await NotificationService.sendNotification({
+      bookingId,
+      type: NotificationType.BOOKING_RESCHEDULED,
+      recipient,
+      content,
+      methods: [NotificationMethod.EMAIL, NotificationMethod.SMS]
+    });
+  }
+
+  async sendAppointmentFollowUp(bookingId: string): Promise<any> {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { signer: true, service: true }
+    });
+    if (!booking) throw new Error('Booking not found');
+
+    const recipient: NotificationRecipient = {
+      email: booking.signer?.email,
+      firstName: booking.signer?.name?.split(' ')[0]
+    };
+
+    const content: NotificationContent = {
+      subject: 'We hope your appointment went well',
+      message: 'Thank you for choosing us! Let us know if you have any feedback.',
+      metadata: {}
+    };
+
+    return await NotificationService.sendNotification({
+      bookingId,
+      type: NotificationType.POST_SERVICE_FOLLOWUP,
+      recipient,
+      content,
+      methods: [NotificationMethod.EMAIL, NotificationMethod.SMS]
+    });
+  }
+
+  async sendBookingConfirmation(bookingId: string): Promise<any> {
+    return await sendBookingConfirmation(bookingId);
+  }
+
+  // Default to 24hr reminder when called without specifying reminder type
+  async sendAppointmentReminder(bookingId: string): Promise<any> {
+    return await sendAppointmentReminder(bookingId, '24hr');
+  }
 }
 
 // Export NotificationManager as an alias to NotificationService for backward compatibility
@@ -622,7 +848,7 @@ export const sendBookingConfirmation = async (bookingId: string) => {
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
     include: {
-      User_Booking_signerIdToUser: true,
+      signer: true,
       service: true
     }
   });
@@ -630,9 +856,9 @@ export const sendBookingConfirmation = async (bookingId: string) => {
   if (!booking) throw new Error('Booking not found');
 
   const recipient = {
-    email: booking.User_Booking_signerIdToUser.email,
+    email: booking.customerEmail || booking.signer?.email,
     phone: undefined, // Will be fetched from GHL if needed
-    firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
+    firstName: booking.signer?.name?.split(' ')[0]
   };
 
   // Get phone from GHL if email exists
@@ -640,7 +866,7 @@ export const sendBookingConfirmation = async (bookingId: string) => {
     try {
       const ghlContact = await ghl.getContactByEmail(recipient.email);
       if (ghlContact?.phone) {
-        recipient.phone = ghlContact.phone;
+        recipient.phone = ghlContact.phone ?? recipient.phone;
       }
     } catch (error) {
       console.warn('Could not fetch phone from GHL:', error);
@@ -672,7 +898,7 @@ export const sendAppointmentReminder = async (
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
     include: {
-      User_Booking_signerIdToUser: true,
+      signer: true,
       service: true
     }
   });
@@ -686,9 +912,9 @@ export const sendAppointmentReminder = async (
   };
 
   const recipient = {
-    email: booking.User_Booking_signerIdToUser.email,
+    email: booking.signer?.email,
     phone: undefined,
-    firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
+    firstName: booking.signer?.name?.split(' ')[0]
   };
 
   // Get phone from GHL
@@ -696,7 +922,7 @@ export const sendAppointmentReminder = async (
     try {
       const ghlContact = await ghl.getContactByEmail(recipient.email);
       if (ghlContact?.phone) {
-        recipient.phone = ghlContact.phone;
+        recipient.phone = ghlContact.phone ?? recipient.phone;
       }
     } catch (error) {
       console.warn('Could not fetch phone from GHL:', error);

@@ -1,12 +1,13 @@
+import path from 'path'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   serverExternalPackages: ['@aws-sdk/client-s3'],
   
   // TypeScript configuration for memory optimization
   typescript: {
-    // Ignore type errors during build to reduce memory usage
-    // Remove this in production after fixing all type issues
-    ignoreBuildErrors: false,
+    // Skip Next.js separate type-check step – we run `pnpm type-check` in CI instead.
+    ignoreBuildErrors: true,
   },
   
   // Optimize build performance and memory usage
@@ -19,6 +20,12 @@ const nextConfig = {
   
   // Webpack optimizations
   webpack: (config, { dev, isServer }) => {
+    // Allow imports like "@/lib/db" to resolve to project root
+    config.resolve = config.resolve || {}
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      '@': path.resolve(process.cwd()),
+    }
     // Reduce memory usage during builds
     if (!dev && !isServer) {
       config.optimization = {

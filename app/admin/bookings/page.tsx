@@ -284,7 +284,7 @@ export default async function AdminBookingsPage() {
                       <TableCell>{booking.User_Booking_signerIdToUser?.name || '-'}</TableCell>
                       <TableCell>{booking.service?.name || '-'}</TableCell>
                       <TableCell>{formatDateTime(booking.scheduledDateTime)}</TableCell>
-                      <TableCell>{booking.service?.durationMinutes || '-'} min</TableCell>
+                      <TableCell>{booking.service?.duration || '-'} min</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <Button size="sm" variant="outline" asChild>

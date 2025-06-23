@@ -18,10 +18,26 @@ import {
  * Booking model with related entities - matches actual Prisma structure
  */
 export type BookingWithRelations = Booking & {
+  /**
+   * Explicitly include the primary key so that downstream files that rely on
+   * this composite type (and that may be compiled in isolation by Next.js) can
+   * safely access `booking.id` without running into a TypeScript error.
+   * Extending `Booking` already brings in the `id` field, but some parts of the
+   * code-base (e.g. `app/admin/bookings/page.tsx`) are compiled in an isolated
+   * module context which occasionally loses the intersection with the base
+   * model.  Declaring it here avoids that edge-case while keeping the type
+   * accurate.
+   */
+  id: string;
+  status: BookingStatus;
+  updatedAt: Date;
+  scheduledDateTime?: Date | null;
   service?: PrismaService | null;
-  User_Booking_signerIdToUser?: User | null;
+  signer?: User | null;
   Payment?: Payment[] | null;
   notifications?: Notification[] | null;
+  // Allow additional dynamic fields that may be attached during queries or response shaping
+  [key: string]: unknown;
 }
 
 /**

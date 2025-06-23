@@ -2,7 +2,7 @@ import { PrismaClient, Service, PromoCode } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 export interface PricingCalculation {
-  basePrice: number;
+  price: number;
   discount: number;
   finalPrice: number;
   depositAmount: number;
@@ -35,14 +35,14 @@ export class PricingUtils {
     service: Service,
     promoCode?: PromoCode | null
   ): PricingCalculation {
-    const basePrice = Number(service.basePrice);
+    const price = Number(service.price);
     const depositAmount = service.requiresDeposit ? Number(service.depositAmount) : 0;
 
     let discount = 0;
     let promoDiscount = 0;
 
     // Calculate promo code discount
-    if (promoCode && promoCode.isActive) {
+    if (promoCode && promoCode.active) {
       const now = new Date();
       const validFrom = new Date(promoCode.validFrom);
       const validUntil = promoCode.validUntil ? new Date(promoCode.validUntil) : null;
@@ -50,13 +50,13 @@ export class PricingUtils {
       // Check if promo code is currently valid
       if (now >= validFrom && (!validUntil || now <= validUntil)) {
         if (promoCode.discountType === 'PERCENTAGE') {
-          promoDiscount = (basePrice * Number(promoCode.discountValue)) / 100;
+          promoDiscount = (price * Number(promoCode.discountValue)) / 100;
         } else if (promoCode.discountType === 'FIXED_AMOUNT') {
           promoDiscount = Number(promoCode.discountValue);
         }
 
         // Apply minimum amount check
-        if (promoCode.minimumAmount && basePrice < Number(promoCode.minimumAmount)) {
+        if (promoCode.minimumAmount && price < Number(promoCode.minimumAmount)) {
           promoDiscount = 0;
         }
 
@@ -69,18 +69,18 @@ export class PricingUtils {
       }
     }
 
-    const finalPrice = Math.max(0, basePrice - discount);
+    const finalPrice = Math.max(0, price - discount);
     const totalDue = service.requiresDeposit ? depositAmount : finalPrice;
 
     return {
-      basePrice,
+      price,
       discount,
       finalPrice,
       depositAmount,
       totalDue,
       currency: this.CURRENCY,
       breakdown: {
-        servicePrice: basePrice,
+        servicePrice: price,
         promoDiscount,
         depositRequired: service.requiresDeposit,
         paymentRequired: totalDue > 0,

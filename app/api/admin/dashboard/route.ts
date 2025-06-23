@@ -330,7 +330,7 @@ async function getRecentActivity() {
           name: true
         }
       },
-      User_Booking_signerIdToUser: {
+      signer: {
         select: {
           name: true,
           email: true
@@ -342,7 +342,7 @@ async function getRecentActivity() {
   return {
     recentBookings: recentBookings.map(booking => ({
       id: booking.id,
-      customerName: booking.User_Booking_signerIdToUser?.name || 'Guest',
+      customerName: booking.signer?.name || 'Guest',
       serviceName: booking.service?.name || 'Unknown',
       status: booking.status,
       amount: booking.priceAtBooking?.toNumber() || 0,

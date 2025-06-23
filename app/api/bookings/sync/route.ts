@@ -178,7 +178,7 @@ export async function POST(request: NextRequest) {
         ghlContactId: validatedData.contactId,
         status: service.requiresDeposit ? BookingStatus.PAYMENT_PENDING : BookingStatus.CONFIRMED,
         depositStatus: service.requiresDeposit ? 'PENDING' : 'COMPLETED',
-        priceAtBooking: service.basePrice,
+        priceAtBooking: service.price,
         leadSource: validatedData.leadSource,
         notes: validatedData.notes ? `Phone booking: ${validatedData.notes}` : 'Booking created via phone call',
         locationType: validatedData.locationType,
@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
       },
       include: {
         service: true,
-        User_Booking_signerIdToUser: true
+        signer: true
       }
     });
 
@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
           hour12: true
         }),
         cf_service_address: serviceAddress,
-        cf_total_amount: service.basePrice.toString(),
+                  cf_total_amount: service.price.toString(),
         cf_lead_source: validatedData.leadSource
       };
 
@@ -263,8 +263,8 @@ export async function POST(request: NextRequest) {
     const responseData = {
       bookingId: newBooking.id,
       serviceName: service.name,
-      servicePrice: service.basePrice,
-      totalAmount: service.basePrice,
+                servicePrice: service.price,
+          totalAmount: service.price,
       scheduledDate: new Date(validatedData.scheduledDateTime).toLocaleDateString('en-US'),
       scheduledTime: new Date(validatedData.scheduledDateTime).toLocaleTimeString('en-US', {
         hour: 'numeric',

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/db';
 import Stripe from 'stripe';
 
-const prisma = new PrismaClient();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2023-10-16',
 });
@@ -23,7 +22,7 @@ export async function POST(request: NextRequest) {
       where: { id: bookingId },
       include: {
         service: true,
-        User_Booking_signerIdToUser: true,
+        signer: true,
         promoCode: true
       }
     });
@@ -45,7 +44,7 @@ export async function POST(request: NextRequest) {
     // Calculate amount using centralized pricing utility
     const { PricingUtils } = await import('@/lib/pricing-utils');
     const paymentAmount = PricingUtils.getBookingAmount({
-      priceAtBooking: booking.service.basePrice,
+      priceAtBooking: booking.service.price,
       depositAmount: booking.depositAmount,
       service: {
         requiresDeposit: booking.service.requiresDeposit,
@@ -72,14 +71,14 @@ export async function POST(request: NextRequest) {
         bookingId: booking.id,
         serviceId: booking.serviceId,
         customerId: booking.signerId || '',
-        customerEmail: booking.User_Booking_signerIdToUser?.email || '',
+        customerEmail: booking.signer?.email || '',
         serviceName: booking.service.name,
         promoCode: booking.promoCode?.code || '',
         originalAmount: booking.service.depositAmount.toString(),
         discountAmount: booking.promoCodeDiscount?.toString() || '0'
       },
-      description: `Deposit for ${booking.service.name} - ${booking.User_Booking_signerIdToUser?.name}`,
-      receipt_email: booking.User_Booking_signerIdToUser?.email || undefined,
+      description: `Deposit for ${booking.service.name} - ${booking.signer?.name}`,
+      receipt_email: booking.signer?.email || undefined,
     });
 
     // Store payment intent ID in the database
@@ -110,7 +109,7 @@ export async function POST(request: NextRequest) {
         id: booking.id,
         service: booking.service.name,
         scheduledDateTime: booking.scheduledDateTime,
-        customer: booking.User_Booking_signerIdToUser?.name,
+        customer: booking.signer?.name,
         promoCode: booking.promoCode ? {
           code: booking.promoCode.code,
           discountAmount: booking.promoCodeDiscount

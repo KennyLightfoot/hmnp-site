@@ -26,15 +26,15 @@ async function testBookingGhlEndToEnd() {
     // 1. Get an active service from the database
     console.log('Fetching active service from database...');
     const service = await prisma.service.findFirst({
-      where: { isActive: true },
-      select: { id: true, name: true, serviceType: true, basePrice: true }
+      where: { active: true },
+      select: { id: true, name: true, serviceType: true, price: true }
     });
     
     if (!service) {
       throw new Error('No active services found in the database. Please add a service first.');
     }
     
-    console.log(`Found service: ${service.name} (${service.id}) - Type: ${service.serviceType} - Price: $${service.basePrice}`);
+    console.log(`Found service: ${service.name} (${service.id}) - Type: ${service.serviceType} - Price: $${service.price}`);
 
     // 2. First create a test user to associate with the booking
     console.log('\nCreating test user in database...');
@@ -66,12 +66,12 @@ async function testBookingGhlEndToEnd() {
         addressZip: '12345',
         notes: 'This is a test booking created by the GHL integration test script',
         // Required decimal field for price
-        priceAtBooking: new Prisma.Decimal(service.basePrice.toString()),
+        priceAtBooking: new Prisma.Decimal(service.price.toString()),
         createdAt: new Date(),
         updatedAt: new Date()
       },
       include: {
-        User_Booking_signerIdToUser: true, // Include the related user data
+        signer: true, // Include the related user data
         service: true
       }
     });

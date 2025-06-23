@@ -1,0 +1,14 @@
+{
+  "name": "🔔 Stripe Payment Event Processor",
+  "triggerTags": ["stripe:payment_completed", "stripe:payment_failed", "stripe:refund_processed"],
+  "overview": "Centralised handler for all Stripe webhook tags – cleans up status tags, updates custom fields and notifies humans.",
+  "keySteps": [
+    "Validation Gate – ensure cf_stripe_payment_intent_id or cf_booking_id exists",
+    "Branch on tag → completed / failed / refund",
+    "Completed: remove pending tags, add status:payment_completed & confirmation email",
+    "Failed: add payment:failed_attempt tag, urgency:critical, send update-payment email + urgent task",
+    "Refund: send refund processed email, update cf_refund_amount/date",
+    "Cleanup: remove stripe:* trigger tags, add stripe:webhook_processed, set cf_last_stripe_webhook_date"
+  ],
+  "notes": "This workflow relies on GHL webhooks created in Section 4 and the server-side route at /api/webhooks/stripe which applies the trigger tags."
+} 

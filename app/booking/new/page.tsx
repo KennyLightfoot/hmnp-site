@@ -17,9 +17,12 @@ interface Service {
   id: string;
   name: string;
   description: string;
-  durationMinutes: number;
-  basePrice: number;
+  duration: number;
+  price: number;
+  serviceType: string;
+  requiresDeposit: boolean;
   depositAmount: number;
+  active: boolean;
 }
 
 const STEPS = [
@@ -89,10 +92,10 @@ function NewBookingContent() {
                       <div className="flex justify-between items-center">
                         <div>
                           <span className="text-sm text-muted-foreground">Duration: </span>
-                          <span>{service.durationMinutes} minutes</span>
+                          <span>{service.duration} minutes</span>
                         </div>
                         <div className="text-right">
-                          <div className="text-2xl font-bold">${service.basePrice}</div>
+                          <div className="text-2xl font-bold">${service.price}</div>
                           <div className="text-sm text-muted-foreground">
                             ${service.depositAmount} deposit
                           </div>
@@ -110,7 +113,7 @@ function NewBookingContent() {
         return selectedService ? (
           <BookingCalendar
             serviceId={selectedService.id}
-            serviceDuration={selectedService.durationMinutes}
+            serviceDuration={selectedService.duration}
             onDateTimeSelect={(date, time) => {
               console.log('Selected:', date, time);
               // Handle date/time selection

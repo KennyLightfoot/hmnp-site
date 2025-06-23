@@ -77,13 +77,13 @@ class IntelligentAssistant {
       }
 
       // Prepare context for AI
-      const aiContext = await this.buildCustomerContext(context);
+      const aiContextStr = await this.buildCustomerContext(context);
       
       // Call AI service
       const aiResponse = await this.callAIService({
         system: this.getSystemPrompt('customer_service'),
         user: message,
-        context: aiContext
+        context: { summary: aiContextStr }
       });
 
       const response: AIResponse = {
@@ -215,7 +215,7 @@ class IntelligentAssistant {
       const analysis = await this.callAIService({
         system: this.getSystemPrompt('customer_analysis'),
         user: JSON.stringify(customerData),
-        context: { task: 'customer_insights' }
+        context: { task: 'customer_insights' },
       });
 
       const insights: CustomerInsight = {
@@ -403,7 +403,7 @@ class IntelligentAssistant {
   }
 
   private getSystemPrompt(type: string): string {
-    const prompts = {
+    const prompts: Record<string, string> = {
       customer_service: `You are an expert customer service AI for Houston Mobile Notary Pros. 
         Provide helpful, professional, and accurate information about notary services. 
         Always be courteous and solution-oriented. If you're unsure, recommend speaking with a human agent.`,
@@ -507,14 +507,14 @@ class IntelligentAssistant {
   private async gatherCustomerData(customerId: string) {
     // Gather comprehensive customer data
     const bookings = await prisma.booking.findMany({
-      where: { signerUserId: customerId },
-      include: { service: true }
+      where: { signerId: customerId },
+      include: { service: true },
     });
 
     return {
       totalBookings: bookings.length,
-      totalSpent: bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0),
-      averageBookingValue: bookings.length > 0 ? bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0) / bookings.length : 0,
+      totalSpent: bookings.reduce((sum: number, b: any) => sum + ((b as any).totalAmount || 0), 0),
+      averageBookingValue: bookings.length > 0 ? bookings.reduce((sum: number, b: any) => sum + ((b as any).totalAmount || 0), 0) / bookings.length : 0,
       lastBookingDate: bookings.length > 0 ? bookings[bookings.length - 1].createdAt : null,
       preferredServices: bookings.map(b => b.service?.name).filter(Boolean),
       bookingFrequency: bookings.length > 0 ? this.calculateFrequency(bookings) : 0
@@ -555,7 +555,7 @@ class IntelligentAssistant {
   }
 
   private calculateDailyAverages(bookings: any[]) {
-    const dailyCounts = {};
+    const dailyCounts: Record<string, number> = {};
     bookings.forEach(booking => {
       const date = new Date(booking.createdAt).toISOString().split('T')[0];
       dailyCounts[date] = (dailyCounts[date] || 0) + 1;
@@ -565,7 +565,7 @@ class IntelligentAssistant {
   }
 
   private calculateServiceDistribution(bookings: any[]) {
-    const distribution = {};
+    const distribution: Record<string, number> = {};
     bookings.forEach(booking => {
       const service = booking.service?.name || 'Unknown';
       distribution[service] = (distribution[service] || 0) + 1;
@@ -575,10 +575,10 @@ class IntelligentAssistant {
   }
 
   private calculateDailyRevenue(bookings: any[]) {
-    const dailyRevenue = {};
+    const dailyRevenue: Record<string, number> = {};
     bookings.forEach(booking => {
       const date = new Date(booking.createdAt).toISOString().split('T')[0];
-      dailyRevenue[date] = (dailyRevenue[date] || 0) + (booking.totalAmount || 0);
+      dailyRevenue[date] = (dailyRevenue[date] || 0) + ((booking as any).totalAmount || 0);
     });
     
     return dailyRevenue;

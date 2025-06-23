@@ -79,7 +79,18 @@ app.use(sanitizeInputs);
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : '*',
+  origin: (() => {
+    // Allow explicit origins from env; fallback is environment-aware
+    if (process.env.ALLOWED_ORIGINS) {
+      return process.env.ALLOWED_ORIGINS.split(',');
+    }
+    // In development we can safely allow all origins for local testing
+    if (process.env.NODE_ENV === 'development') {
+      return '*';
+    }
+    // In production default to the primary site domain to prevent wildcard exposure
+    return process.env.NEXT_PUBLIC_SITE_URL || 'https://houstonmobilenotarypros.com';
+  })(),
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
   credentials: true
@@ -203,9 +214,9 @@ async function startServer() {
       logger.info(`💾 Database: Neon PostgreSQL with Prisma`);
       logger.info(`🔒 Security features enabled: Helmet, CORS, Rate Limiting`);
       logger.info(`📡 Webhook endpoints ready for GHL integration`);
-      
+
       if (process.env.NODE_ENV === 'development') {
-        console.log('\n🔧 Development Mode - Available Endpoints:');
+        console.log('\n�� Development Mode - Available Endpoints:');
         console.log(`   GET  http://localhost:${PORT}/health`);
         console.log(`   GET  http://localhost:${PORT}/api/bookings/pending-payments`);
         console.log(`   POST http://localhost:${PORT}/api/bookings/sync`);
@@ -224,4 +235,4 @@ async function startServer() {
 startServer().catch((error) => {
   logger.error('Failed to start server:', error);
   process.exit(1);
-}); 
+});

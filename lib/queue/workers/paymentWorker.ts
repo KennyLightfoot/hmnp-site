@@ -33,16 +33,12 @@ export async function processPaymentJob(job: PaymentProcessingJob): Promise<JobR
         // Get booking to verify it exists
         const booking = await prisma.booking.findUnique({
           where: { id: job.bookingId },
-          include: { User_Booking_signerIdToUser: true, service: true }
+          include: { signer: true, service: true }
         });
         
         if (!booking) {
           throw new Error(`Booking ${job.bookingId} not found`);
         }
-        
-        // Calculate payment expiration (24 hours from now by default)
-        const expiresAt = new Date();
-        expiresAt.setHours(expiresAt.getHours() + 24);
         
         // Create payment record
         const payment = await withRetry(async () => {
@@ -52,7 +48,6 @@ export async function processPaymentJob(job: PaymentProcessingJob): Promise<JobR
               amount: job.amount,
               currency: job.currency || 'USD',
               status: 'PENDING',
-              expiresAt,
               metadata: job.metadata || {}
             }
           });
@@ -97,7 +92,7 @@ export async function processPaymentJob(job: PaymentProcessingJob): Promise<JobR
         // Get payment to verify it exists and is in valid state
         const payment = await prisma.payment.findUnique({
           where: { id: job.paymentId },
-          include: { booking: true }
+          include: { Booking: true }
         });
         
         if (!payment) {
@@ -257,19 +252,20 @@ export async function processPaymentJob(job: PaymentProcessingJob): Promise<JobR
           
           // Check for expired payments
           const now = new Date();
-          if (payment.status === 'PENDING' && payment.expiresAt && payment.expiresAt < now) {
+          const expiryTime = new Date(payment.createdAt.getTime() + 24 * 60 * 60 * 1000);
+          if (payment.status === 'PENDING' && expiryTime < now) {
             // Update expired payment
             await withRetry(async () => {
               await prisma.payment.update({
                 where: { id: job.paymentId },
-                data: { status: 'EXPIRED' }
+                data: { status: 'FAILED' }
               });
               
               // If there's a booking, update its status too
               if (payment.bookingId) {
                 await prisma.booking.update({
                   where: { id: payment.bookingId },
-                  data: { status: 'PAYMENT_EXPIRED' }
+                  data: { status: 'CANCELLED_BY_CLIENT' }
                 });
                 
                 // Send payment expired notification
@@ -285,7 +281,7 @@ export async function processPaymentJob(job: PaymentProcessingJob): Promise<JobR
                 paymentId: payment.id,
                 bookingId: payment.bookingId,
                 previousStatus: payment.status,
-                newStatus: 'EXPIRED',
+                newStatus: 'FAILED',
                 expired: true
               }
             };
@@ -326,18 +322,19 @@ export async function processPaymentJob(job: PaymentProcessingJob): Promise<JobR
           
           // Check for expired payments
           const now = new Date();
-          if (payment.status === 'PENDING' && payment.expiresAt && payment.expiresAt < now) {
+          const expiryTime = new Date(payment.createdAt.getTime() + 24 * 60 * 60 * 1000);
+          if (payment.status === 'PENDING' && expiryTime < now) {
             // Update expired payment
             await withRetry(async () => {
               await prisma.payment.update({
                 where: { id: payment.id },
-                data: { status: 'EXPIRED' }
+                data: { status: 'FAILED' }
               });
               
               // Update booking status
               await prisma.booking.update({
                 where: { id: job.bookingId },
-                data: { status: 'PAYMENT_EXPIRED' }
+                data: { status: 'CANCELLED_BY_CLIENT' }
               });
               
               // Send payment expired notification
@@ -352,7 +349,7 @@ export async function processPaymentJob(job: PaymentProcessingJob): Promise<JobR
                 paymentId: payment.id,
                 bookingId: job.bookingId,
                 previousStatus: payment.status,
-                newStatus: 'EXPIRED',
+                newStatus: 'FAILED',
                 expired: true
               }
             };

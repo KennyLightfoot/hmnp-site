@@ -31,9 +31,9 @@ export async function POST(request: Request) {
         data: {
           name: 'Remote Online Notarization',
           serviceType: 'SPECIALTY_NOTARY_SERVICE',
-          durationMinutes: 60,
-          basePrice: 50.00,
-          isActive: true,
+          duration: 60,
+          price: 50.00,
+          active: true,
           requiresDeposit: true,
           depositAmount: 25.00
         }
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
         serviceId: serviceId || ronService.id,
         status: BookingStatus.REQUESTED, // Maps from PENDING_CONFIRMATION
         locationType: LocationType.REMOTE_ONLINE_NOTARIZATION,
-        priceAtBooking: ronService.basePrice,
+        priceAtBooking: ronService.price,
         depositAmount: ronService.depositAmount,
         notes: notes || 'Remote Online Notarization session',
         // RON sessions don't have a specific scheduled time initially

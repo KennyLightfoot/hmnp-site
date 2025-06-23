@@ -129,7 +129,7 @@ export class BullQueueWorker {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
-          User_Booking_signerIdToUser: true,
+          signer: true,
           service: true,
           Payment: true
         }
@@ -185,9 +185,13 @@ export class BullQueueWorker {
           // Send reminder notification
           const reminderResult = await NotificationService.sendNotification({
             bookingId,
-            type: NotificationType.APPOINTMENT_REMINDER,
+            type: NotificationType.APPOINTMENT_REMINDER_24HR,
             recipient: {
-              email: booking.User_Booking_signerIdToUser?.email || booking.email || '',
+              email: booking.signer?.email || booking.customerEmail || '',
+            },
+            content: {
+              subject: 'Appointment Reminder',
+              message: 'This is a reminder for your upcoming appointment.',
             },
             methods: [NotificationMethod.EMAIL],
           });
@@ -202,9 +206,13 @@ export class BullQueueWorker {
           // Send follow-up notification after service
           const followUpResult = await NotificationService.sendNotification({
             bookingId,
-            type: NotificationType.SERVICE_FOLLOWUP,
+            type: NotificationType.POST_SERVICE_FOLLOWUP,
             recipient: {
-              email: booking.User_Booking_signerIdToUser?.email || booking.email || '',
+              email: booking.signer?.email || booking.customerEmail || '',
+            },
+            content: {
+              subject: 'How did we do?',
+              message: 'We hope your service went well. Let us know if you have any feedback!',
             },
             methods: [NotificationMethod.EMAIL],
           });
@@ -232,7 +240,7 @@ export class BullQueueWorker {
       logger.error(`Error processing booking job: ${error?.message || 'Unknown error'}`, { error, jobId: job.id });
       
       // Determine if we should retry based on error type and retry count
-      const shouldRetry = jobData.retryCount < (jobData.maxRetries || 3);
+      const shouldRetry = (jobData.retryCount ?? 0) < (jobData.maxRetries || 3);
       
       if (shouldRetry) {
         throw error; // This will trigger Bull's retry mechanism
@@ -257,14 +265,14 @@ export class BullQueueWorker {
       });
       
       // Send confirmation email
-      await notificationService.sendNotification({
+      await NotificationService.sendNotification({
         bookingId: booking.id,
         type: NotificationType.BOOKING_CONFIRMATION,
-        recipient: { email: booking.User_Booking_signerIdToUser?.email || booking.email || '' },
+        recipient: { email: booking.signer?.email || booking.customerEmail || '' },
         methods: [NotificationMethod.EMAIL],
         content: {
           subject: 'Your booking is confirmed',
-          body: `Your booking for ${booking.service?.name || 'our service'} has been confirmed.`
+          message: `Your booking for ${booking.service?.name || 'our service'} has been confirmed.`
         }
       });
       
@@ -298,14 +306,14 @@ export class BullQueueWorker {
       });
       
       // Send cancellation email
-      await notificationService.sendNotification({
+      await NotificationService.sendNotification({
         bookingId: booking.id,
         type: NotificationType.BOOKING_CANCELLED,
-        recipient: { email: booking.User_Booking_signerIdToUser?.email || booking.email || '' },
+        recipient: { email: booking.signer?.email || booking.customerEmail || '' },
         methods: [NotificationMethod.EMAIL],
         content: {
           subject: 'Your booking has been cancelled',
-          body: `Your booking for ${booking.service?.name || 'our service'} has been cancelled. ${reason ? 'Reason: ' + reason : ''}`
+          message: `Your booking for ${booking.service?.name || 'our service'} has been cancelled. ${reason ? 'Reason: ' + reason : ''}`
         }
       });
       
@@ -335,14 +343,14 @@ export class BullQueueWorker {
       });
       
       // Send reschedule notification
-      await notificationService.sendNotification({
+      await NotificationService.sendNotification({
         bookingId: booking.id,
         type: NotificationType.BOOKING_RESCHEDULED,
-        recipient: { email: booking.User_Booking_signerIdToUser?.email || booking.email || '' },
+        recipient: { email: booking.signer?.email || booking.customerEmail || '' },
         methods: [NotificationMethod.EMAIL],
         content: {
           subject: 'Your booking has been rescheduled',
-          body: `Your booking for ${booking.service?.name || 'our service'} has been rescheduled to ${new Date(newDateTime).toLocaleString()}.`
+          message: `Your booking for ${booking.service?.name || 'our service'} has been rescheduled to ${new Date(newDateTime).toLocaleString()}.`
         }
       });
       
@@ -384,7 +392,7 @@ export class BullQueueWorker {
   private async syncBookingToGHL(booking: any, eventType: 'created' | 'confirmed' | 'cancelled' | 'rescheduled'): Promise<any> {
     try {
       // Skip GHL sync if no email is available
-      const userEmail = booking.User_Booking_signerIdToUser?.email || booking.email;
+      const userEmail = booking.signer?.email || booking.customerEmail;
       if (!userEmail) {
         logger.warn(`Cannot sync booking ${booking.id} to GHL: No email available`);
         return { success: false, reason: 'No email available' };
@@ -474,7 +482,7 @@ export class BullQueueWorker {
           if (captureResult.success && bookingId) {
             const booking = await prisma.booking.findUnique({
               where: { id: bookingId },
-              include: { User_Booking_signerIdToUser: true }
+              include: { signer: true }
             });
             
             if (booking) {
@@ -497,7 +505,7 @@ export class BullQueueWorker {
           if (refundResult.success && bookingId) {
             const booking = await prisma.booking.findUnique({
               where: { id: bookingId },
-              include: { User_Booking_signerIdToUser: true }
+              include: { signer: true }
             });
             
             if (booking) {
@@ -559,8 +567,8 @@ export class BullQueueWorker {
         throw new Error(`Booking not found: ${bookingId}`);
       }
       
-      // Use service basePrice if amount not specified
-      const paymentAmount = amount || Number(booking.service?.basePrice || 0);
+      // Use service price if amount not specified
+      const paymentAmount = amount || Number(booking.service?.price || 0);
       const paymentCurrency = currency || 'USD';
       
       if (paymentAmount <= 0) {
@@ -575,12 +583,12 @@ export class BullQueueWorker {
           provider: PaymentProvider.STRIPE,
           status: PaymentStatus.PENDING,
           notes: metadata?.notes || null,
-          externalReference: metadata?.paymentIntentId || null
+          paymentIntentId: metadata?.paymentIntentId || null
         }
       });
       
       // If payment needs to be processed immediately with Stripe
-      if (metadata?.processImmediately && payment.externalId) {
+      if (metadata?.processImmediately && payment.paymentIntentId) {
         // Call Stripe API to confirm payment intent
         // This would use your Stripe service
         // Mocked for now
@@ -620,7 +628,7 @@ export class BullQueueWorker {
         where: { id: paymentId },
         data: {
           status: PaymentStatus.COMPLETED,
-          completedAt: new Date(),
+          paidAt: new Date(),
           notes: payment.notes 
             ? `${payment.notes}\n\nCaptured: ${new Date().toISOString()}` 
             : `Captured: ${new Date().toISOString()}`
@@ -630,7 +638,8 @@ export class BullQueueWorker {
       // Update booking status if needed
       if (updatedPayment.bookingId) {
         const booking = await prisma.booking.findUnique({
-          where: { id: updatedPayment.bookingId }
+          where: { id: updatedPayment.bookingId },
+          include: { signer: true }
         });
         
         if (booking && (booking.status === BookingStatus.PAYMENT_PENDING || booking.status === BookingStatus.REQUESTED)) {
@@ -742,7 +751,7 @@ export class BullQueueWorker {
   private async updateGHLPaymentStatus(booking: any, status: 'completed' | 'refunded' | 'failed'): Promise<any> {
     try {
       // Skip GHL update if no email is available
-      const userEmail = booking.User_Booking_signerIdToUser?.email || booking.email;
+      const userEmail = booking.signer?.email || booking.customerEmail;
       if (!userEmail) {
         logger.warn(`Cannot update GHL payment status: No email available for booking ${booking.id}`);
         return { success: false, reason: 'No email available' };
@@ -851,7 +860,7 @@ export class BullQueueWorker {
       
       logger.info('All Bull queue processors started successfully');
     } catch (error) {
-      logger.error('Error starting Bull queue processors:', error);
+      logger.error('Error starting Bull queue processors', 'BULL_QUEUE_WORKER', error as Error);
       this.isProcessing = false;
     }
   }
@@ -874,7 +883,7 @@ export class BullQueueWorker {
       this.isProcessing = false;
       logger.info('All Bull queue processors stopped');
     } catch (error) {
-      logger.error('Error stopping Bull queue processors:', error);
+      logger.error('Error stopping Bull queue processors', 'BULL_QUEUE_WORKER', error as Error);
     }
   }
 }

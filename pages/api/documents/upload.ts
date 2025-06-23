@@ -2,6 +2,9 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable'; // Using formidable for parsing multipart/form-data
 import { S3Client, PutObjectCommand, PutObjectCommandOutput } from "@aws-sdk/client-s3";
 import fs from 'fs'; // Needed for reading file stream if formidable saves to temp
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import { NextAuthOptions } from 'next-auth';
 
 // Environment variable checks
 const awsAccessKeyId = process.env.AWS_ACCESS_KEY_ID_HMNP;
@@ -54,7 +57,11 @@ export default async function handler(
     return res.status(405).json({ message: `Method ${req.method} Not Allowed` });
   }
 
-  // TODO: Implement robust authentication/authorization if users should be logged in
+  // Enforce authentication – only logged-in users may upload documents.
+  const session = await getServerSession(req, res, authOptions as NextAuthOptions);
+  if (!session?.user?.id) {
+    return res.status(401).json({ message: 'Unauthorized: Please sign in.' });
+  }
 
   const form = formidable({
     maxFileSize: MAX_FILE_SIZE_BYTES,
@@ -114,12 +121,28 @@ export default async function handler(
     });
 
     // --- 3. TODO: Virus/Malware Scanning ---
-    // Placeholder: Before uploading to S3, scan the file at uploadedFile.filepath
-    // Example: const scanResult = await scanFile(uploadedFile.filepath);
-    // if (!scanResult.isSafe) {
-    //   fs.unlinkSync(uploadedFile.filepath); // Delete temp file
-    //   return res.status(400).json({ message: 'Malware detected in file.' });
-    // }
+    // Malware scan before upload (uses optional Lambda/HTTP AV micro-service)
+    if (process.env.MALWARE_SCAN_ENDPOINT) {
+      try {
+        const scanRes = await fetch(process.env.MALWARE_SCAN_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/octet-stream' },
+          body: fs.createReadStream(uploadedFile.filepath) as NodeJS.ReadableStream,
+        });
+        const scanJson = await scanRes.json();
+        if (!scanRes.ok || !scanJson.safe) {
+          fs.unlinkSync(uploadedFile.filepath);
+          return res.status(400).json({ message: 'The uploaded file failed the malware scan.' });
+        }
+      } catch (scanErr) {
+        console.error('Malware scan error:', scanErr);
+        // Fail closed: reject unknown scan errors in prod
+        if (process.env.NODE_ENV === 'production') {
+          fs.unlinkSync(uploadedFile.filepath);
+          return res.status(500).json({ message: 'Document scanning failed. Please try again later.' });
+        }
+      }
+    }
 
     // --- 4. Secure AWS S3 Upload ---
     const s3BucketName = process.env.S3_BUCKET_NAME_HMNP;

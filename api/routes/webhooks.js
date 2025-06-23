@@ -4,12 +4,13 @@
  */
 
 import express from 'express';
-import Booking from '../models/Booking.js';
+import BookingService from '../models/Booking.js';
 import { APIError, asyncHandler } from '../middleware/errorHandler.js';
 import { ghlWebhookSecurity, stripeWebhookSecurity } from '../middleware/webhookSecurity.js';
 import { webhookRequestLogger } from '../middleware/requestLogger.js';
 import { ghlIntegration } from '../services/ghlIntegration.js';
 import winston from 'winston';
+import { getPrismaClient } from '../config/database.js';
 
 const router = express.Router();
 
@@ -24,6 +25,8 @@ const logger = winston.createLogger({
     new winston.transports.File({ filename: 'logs/webhooks.log' })
   ]
 });
+
+const prisma = getPrismaClient();
 
 // Apply webhook request logging to all routes
 router.use(webhookRequestLogger);
@@ -331,7 +334,7 @@ async function handlePaymentSuccess(paymentIntent, traceId) {
   }
 
   try {
-    const booking = await Booking.findOne({ bookingId });
+    const booking = await findBooking({ bookingId });
     if (!booking) {
       logger.error('Booking not found for payment success', {
         traceId,
@@ -342,12 +345,12 @@ async function handlePaymentSuccess(paymentIntent, traceId) {
     }
 
     // Update booking payment status
-    booking.payment.status = 'completed';
-    booking.payment.paidAt = new Date();
-    booking.payment.stripePaymentIntentId = paymentIntent.id;
-    booking.scheduling.status = 'confirmed';
-    
-    await booking.save();
+    await updateBookingPaymentStatus(bookingId, {
+      paymentStatus: 'completed',
+      paymentCompletedAt: new Date(),
+      stripePaymentIntentId: paymentIntent.id,
+      status: 'confirmed',
+    });
 
     // Update GHL contact
     await ghlIntegration.removeTag(booking.customer.ghlContactId, 'status:booking_pendingpayment');
@@ -386,7 +389,7 @@ async function handlePaymentFailed(paymentIntent, traceId) {
   }
 
   try {
-    const booking = await Booking.findOne({ bookingId });
+    const booking = await findBooking({ bookingId });
     if (!booking) {
       logger.error('Booking not found for payment failure', {
         traceId,
@@ -396,9 +399,9 @@ async function handlePaymentFailed(paymentIntent, traceId) {
     }
 
     // Update booking payment status
-    booking.payment.status = 'failed';
-    
-    await booking.save();
+    await updateBookingPaymentStatus(bookingId, {
+      paymentStatus: 'failed',
+    });
 
     // Update GHL contact and trigger failed payment workflow
     await ghlIntegration.addTag(booking.customer.ghlContactId, 'status:payment_failed');
@@ -439,7 +442,7 @@ async function handlePaymentCanceled(paymentIntent, traceId) {
 
   if (bookingId) {
     // Trigger abandoned booking recovery
-    const booking = await Booking.findOne({ bookingId });
+    const booking = await findBooking({ bookingId });
     if (booking) {
       await ghlIntegration.addTag(booking.customer.ghlContactId, 'status:booking_abandoned');
     }
@@ -461,9 +464,25 @@ async function handleChargeDispute(charge, traceId) {
  * Helper Functions
  */
 
+async function findBooking(filter) {
+  if (filter.bookingId) {
+    return await prisma.apiBooking.findFirst({ where: { bookingId: filter.bookingId } });
+  }
+  if (filter['customer.ghlContactId']) {
+    return await prisma.apiBooking.findFirst({ where: { ghlContactId: filter['customer.ghlContactId'] } });
+  }
+  return null;
+}
+
+async function updateBookingPaymentStatus(bookingId, data) {
+  const booking = await prisma.apiBooking.findFirst({ where: { bookingId } });
+  if (!booking) return null;
+  return prisma.apiBooking.update({ where: { id: booking.id }, data });
+}
+
 async function updateBookingFromTag(contactId, tag, traceId) {
   try {
-    const booking = await Booking.findOne({ 'customer.ghlContactId': contactId });
+    const booking = await findBooking({ 'customer.ghlContactId': contactId });
     if (!booking) return;
 
     const statusMap = {
@@ -475,8 +494,9 @@ async function updateBookingFromTag(contactId, tag, traceId) {
 
     const newStatus = statusMap[tag];
     if (newStatus && booking.payment.status !== newStatus) {
-      booking.payment.status = newStatus;
-      await booking.save();
+      await updateBookingPaymentStatus(booking.bookingId, {
+        paymentStatus: newStatus,
+      });
 
       logger.info('Booking status updated from tag', {
         traceId,
@@ -527,7 +547,7 @@ async function scheduleAppointmentReminders(contactId, appointmentDate, traceId)
 
 async function updateBookingWorkflowStatus(contactId, workflowName, status, traceId) {
   try {
-    const booking = await Booking.findOne({ 'customer.ghlContactId': contactId });
+    const booking = await findBooking({ 'customer.ghlContactId': contactId });
     if (!booking) return;
 
     const workflow = booking.automation.workflowsTriggered.find(w => w.workflowName === workflowName);
@@ -540,7 +560,9 @@ async function updateBookingWorkflowStatus(contactId, workflowName, status, trac
       });
     }
 
-    await booking.save();
+    await updateBookingPaymentStatus(booking.bookingId, {
+      paymentStatus: status,
+    });
 
     logger.info('Booking workflow status updated', {
       traceId,

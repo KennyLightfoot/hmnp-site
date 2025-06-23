@@ -93,14 +93,14 @@ export async function POST(request: Request) {
     }
 
     // Calculate appointment duration based on service type and number of signers
-    let durationMinutes = 30 // Default duration
+    let duration = 30 // Default duration
     if (calendarId === "loan-signing" || calendarId === "reverse-mortgage") {
-      durationMinutes = 90 // Loan signings take longer
+      duration = 90 // Loan signings take longer
     } else if (serviceType === 'priority') {
-        durationMinutes = 60;
+        duration = 60;
     } else if (serviceType === 'essential' && numberOfSigners > 1) {
         // Maybe adjust essential duration based on signers? e.g., 45 for 2, 60 for 3+
-        durationMinutes = numberOfSigners === 2 ? 45 : 60;
+        duration = numberOfSigners === 2 ? 45 : 60;
     }
     // Note: The GHL /appointments endpoint might not use duration directly, but rather rely on startTime and endTime.
     // Ensure endTime provided by the frontend accurately reflects the duration.

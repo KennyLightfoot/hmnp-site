@@ -63,7 +63,7 @@ interface ApiService {
   id: string;
   key: string; // Should match values in serviceType enum e.g., "essential", "loan-signing"
   name: string; // For display name
-  basePrice: number;
+  price: number;
   requiresDeposit: boolean;
   depositAmount: number | null;
   // Add other relevant fields from your Service model in Prisma if needed for display
@@ -531,7 +531,7 @@ export default function BookingPageClient() {
                                   >
                                     <span className="font-semibold">{service.name}</span>
                                     <span className="text-lg font-bold text-[#002147] mt-auto pt-2">
-                                      ${service.basePrice}
+                                      ${service.price}
                                       {service.requiresDeposit && service.depositAmount && (
                                         <span className="text-xs font-normal text-gray-500 block">(${service.depositAmount} deposit)</span>
                                       )}

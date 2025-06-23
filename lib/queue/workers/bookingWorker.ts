@@ -1,5 +1,5 @@
 import { BookingProcessingJob, JobResult } from '../types';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, BookingStatus, PaymentStatus } from '@prisma/client';
 import { NotificationService } from '@/lib/notifications';
 import { logger } from '@/lib/logger';
 import { withRetry } from '@/lib/utils/retry';
@@ -20,7 +20,7 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
     const booking = await withRetry(() => prisma.booking.findUnique({
       where: { id: job.bookingId },
       include: {
-        User_Booking_signerIdToUser: true,
+        signer: true,
         service: true,
         Payment: true,
       }
@@ -67,11 +67,11 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
         const cancelReason = job.metadata?.reason || 'No reason provided';
         const cancelledBy = job.metadata?.cancelledBy || 'SYSTEM';
         
-        let cancellationStatus = 'CANCELLED_BY_SYSTEM';
+        let cancellationStatus: BookingStatus = BookingStatus.CANCELLED_BY_STAFF;
         if (cancelledBy === 'CLIENT') {
-          cancellationStatus = 'CANCELLED_BY_CLIENT';
+          cancellationStatus = BookingStatus.CANCELLED_BY_CLIENT;
         } else if (cancelledBy === 'STAFF') {
-          cancellationStatus = 'CANCELLED_BY_STAFF';
+          cancellationStatus = BookingStatus.CANCELLED_BY_STAFF;
         }
         
         const updatedBooking = await withRetry(async () => {
@@ -128,7 +128,7 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
           });
           
           // Send reschedule notification
-          await notificationService.sendBookingReschedule(job.bookingId, oldDateTime);
+          await notificationService.sendBookingReschedule(job.bookingId, oldDateTime ?? new Date());
           
           return result;
         }, { maxRetries: 3 });
@@ -140,8 +140,8 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
           result: { 
             updated: true, 
             bookingId: job.bookingId,
-            oldDateTime: oldDateTime.toISOString(),
-            newDateTime: updatedBooking.scheduledDateTime.toISOString()
+            oldDateTime: (oldDateTime ?? new Date()).toISOString(),
+            newDateTime: (updatedBooking.scheduledDateTime ?? new Date()).toISOString()
           }
         };
       }
@@ -201,9 +201,8 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
         }
         
         const now = new Date();
-        const paymentExpired = payment.status === 'PENDING' && 
-          payment.expiresAt && 
-          payment.expiresAt < now;
+        const expiryTime = new Date(payment.createdAt.getTime() + 24 * 60 * 60 * 1000);
+        const paymentExpired = payment.status === 'PENDING' && expiryTime < now;
         
         if (paymentExpired) {
           logger.info(`Payment ${payment.id} for booking ${job.bookingId} has expired`);
@@ -212,14 +211,14 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
             // Update payment status
             await prisma.payment.update({
               where: { id: payment.id },
-              data: { status: 'EXPIRED' }
+              data: { status: PaymentStatus.FAILED }
             });
             
             // Update booking status if necessary
             if (booking.status === 'PAYMENT_PENDING') {
               await prisma.booking.update({
                 where: { id: job.bookingId },
-                data: { status: 'PAYMENT_EXPIRED' }
+                data: { status: BookingStatus.CANCELLED_BY_CLIENT }
               });
             }
             

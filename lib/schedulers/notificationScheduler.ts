@@ -106,7 +106,7 @@ export class NotificationScheduler {
             }
           },
           include: {
-            User_Booking_signerIdToUser: true,
+            signer: true,
             service: true
           }
         });
@@ -161,7 +161,7 @@ export class NotificationScheduler {
             reminder24hrSentAt: null // Only where 24hr reminder hasn't been sent
           },
           include: {
-            User_Booking_signerIdToUser: true,
+            signer: true,
             service: true
           }
         });
@@ -203,7 +203,7 @@ export class NotificationScheduler {
             noShowCheckPerformedAt: null // No-show check hasn't run yet
           },
           include: {
-            User_Booking_signerIdToUser: true,
+            signer: true,
             service: true
           }
         });
@@ -212,13 +212,13 @@ export class NotificationScheduler {
         
         for (const booking of potentialNoShows) {
           // Send no-show notification
-          if (booking.User_Booking_signerIdToUser?.email) {
+          if (booking.signer?.email) {
             await NotificationService.sendNotification({
               bookingId: booking.id,
               type: NotificationType.NO_SHOW_CHECK,
               recipient: {
-                email: booking.User_Booking_signerIdToUser.email,
-                firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
+                email: booking.signer.email,
+                firstName: booking.signer.name?.split(' ')[0]
               },
               content: {
                 subject: `Missed Appointment - Houston Mobile Notary Pros`,
@@ -265,7 +265,7 @@ export class NotificationScheduler {
             }
           },
           include: {
-            User_Booking_signerIdToUser: true
+            signer: true
           }
         });
         
@@ -286,13 +286,13 @@ export class NotificationScheduler {
           });
           
           // Send expiration notification
-          if (booking.User_Booking_signerIdToUser?.email) {
+          if (booking.signer?.email) {
             await NotificationService.sendNotification({
               bookingId: booking.id,
               type: NotificationType.PAYMENT_FAILED,
               recipient: {
-                email: booking.User_Booking_signerIdToUser.email,
-                firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
+                email: booking.signer.email,
+                firstName: booking.signer.name?.split(' ')[0]
               },
               content: {
                 subject: `Payment Expired - Houston Mobile Notary Pros`,
@@ -335,7 +335,7 @@ export class NotificationScheduler {
             followUpSentAt: null
           },
           include: {
-            User_Booking_signerIdToUser: true,
+            signer: true,
             service: true
           }
         });
@@ -344,13 +344,13 @@ export class NotificationScheduler {
         
         for (const booking of needFollowUp) {
           // Send follow-up notification
-          if (booking.User_Booking_signerIdToUser?.email) {
+          if (booking.signer?.email) {
             await NotificationService.sendNotification({
               bookingId: booking.id,
               type: NotificationType.POST_SERVICE_FOLLOWUP,
               recipient: {
-                email: booking.User_Booking_signerIdToUser.email,
-                firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
+                email: booking.signer.email,
+                firstName: booking.signer.name?.split(' ')[0]
               },
               content: {
                 subject: `Thank You for Using Houston Mobile Notary Pros`,

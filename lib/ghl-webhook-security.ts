@@ -61,9 +61,20 @@ export function verifyGHLWebhook(
       .digest('hex');
 
     // Perform timing-safe comparison
+    const receivedBuf = Buffer.from(cleanSignature, 'hex');
+    const expectedBuf = Buffer.from(expectedSignature, 'hex');
+
+    // Ensure both buffers are same length to prevent errors
+    if (receivedBuf.length !== expectedBuf.length) {
+      return {
+        isValid: false,
+        error: 'Signature length mismatch'
+      };
+    }
+
     const isSignatureValid = crypto.timingSafeEqual(
-      Buffer.from(cleanSignature, 'hex'),
-      Buffer.from(expectedSignature, 'hex')
+      receivedBuf as unknown as NodeJS.ArrayBufferView,
+      expectedBuf as unknown as NodeJS.ArrayBufferView
     );
 
     if (!isSignatureValid) {

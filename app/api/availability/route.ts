@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { format, toZonedTime, getTimezoneOffset } from 'date-fns-tz';
 import { addMinutes, isBefore, isAfter, isSameDay } from 'date-fns';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/db';
 
 // Input validation schema
 const availabilityQuerySchema = z.object({
@@ -79,7 +77,7 @@ export async function GET(request: NextRequest) {
       where: { id: validatedParams.serviceId },
     });
 
-    if (!service || !service.isActive) {
+    if (!service || !service.active) {
       return NextResponse.json(
         { error: 'Service not found or inactive' },
         { status: 404 }
@@ -87,9 +85,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Get service duration (use override if provided, otherwise service default)
-    const serviceDurationMinutes = validatedParams.duration 
+        const serviceDurationMinutes = validatedParams.duration
       ? parseInt(validatedParams.duration)
-      : service.durationMinutes;
+      : service.duration;
 
     // Get business hours for the requested day (using business timezone)
     const dayOfWeek = requestedDateInBusinessTz.getDay();
@@ -140,7 +138,7 @@ export async function GET(request: NextRequest) {
       serviceInfo: {
         name: service.name,
         duration: serviceDurationMinutes,
-        price: service.basePrice,
+        price: service.price,
       },
       businessHours: {
         startTime: businessHours.startTime,
@@ -168,7 +166,7 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   } finally {
-    await prisma.$disconnect();
+    // singleton - do not disconnect
   }
 }
 
@@ -312,7 +310,7 @@ function calculateAvailableSlots({
       
       const bookingStart = new Date(booking.scheduledDateTime);
       const bookingEnd = new Date(bookingStart);
-      bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.service.durationMinutes + bufferTimeMinutes);
+              bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.service.duration + bufferTimeMinutes);
       
       // Check if there's any overlap
       return (currentSlot < bookingEnd && slotEnd > bookingStart);

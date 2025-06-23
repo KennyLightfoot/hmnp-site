@@ -73,12 +73,12 @@ class AIAssistant {
 
       // Gather customer data
       const bookings = await prisma.booking.findMany({
-        where: { signerUserId: customerId },
-        include: { service: true }
+        where: { signerId: customerId },
+        include: { service: true },
       });
 
       // Calculate insights
-      const totalSpent = bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+      const totalSpent = bookings.reduce((sum: number, b: any) => sum + ((b as any).totalAmount || 0), 0);
       const preferredServices = this.getPreferredServices(bookings);
       const riskScore = this.calculateRiskScore(bookings);
       
@@ -151,7 +151,7 @@ class AIAssistant {
     content: string;
     subject?: string;
   }> {
-    const templates = {
+    const templates: Record<'email' | 'sms', any> = {
       email: {
         professional: {
           subject: `Your ${context.serviceType} appointment confirmation`,
@@ -204,7 +204,7 @@ class AIAssistant {
 
   private calculateConfidence(message: string, intent: string): number {
     // Simple confidence calculation
-    const keywords = {
+    const keywords: Record<string, string[]> = {
       booking_request: ['book', 'appointment', 'schedule'],
       booking_change: ['cancel', 'reschedule', 'change'],
       pricing_inquiry: ['price', 'cost', 'fee', 'charge'],
@@ -227,7 +227,7 @@ class AIAssistant {
     message: string,
     context: any
   ): Promise<string> {
-    const responses = {
+    const responses: Record<string, string> = {
       booking_request: "I'd be happy to help you schedule an appointment! Let me connect you with our booking system or a team member who can assist you with available times and services.",
       
       booking_change: "I understand you need to make changes to your appointment. Let me help you with that. I can connect you with our booking team to reschedule or cancel your appointment.",
@@ -243,7 +243,7 @@ class AIAssistant {
   }
 
   private getPreferredServices(bookings: any[]): string[] {
-    const serviceCounts = {};
+    const serviceCounts: Record<string, number> = {};
     
     bookings.forEach(booking => {
       const serviceName = booking.service?.name || 'Unknown';

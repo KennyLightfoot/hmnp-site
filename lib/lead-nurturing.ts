@@ -449,13 +449,13 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
           }
         },
         include: {
-          User_Booking_signerIdToUser: true
+          signer: true
         }
       })
 
       for (const booking of incompleteBookings) {
         // Check if user has email before processing
-        const userEmail = booking.User_Booking_signerIdToUser.email
+        const userEmail = booking.signer.email
         if (!userEmail) {
           console.warn(`Skipping booking ${booking.id} - no email for user`)
           continue
@@ -528,14 +528,14 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
           }
         },
         include: {
-          User_Booking_signerIdToUser: true
+          signer: true
         },
         distinct: ['signerId']
       })
 
       for (const booking of inactiveClients) {
         // Check if user has email before processing
-        const userEmail = booking.User_Booking_signerIdToUser.email
+        const userEmail = booking.signer.email
         if (!userEmail) {
           console.warn(`Skipping booking ${booking.id} - no email for user`)
           continue
@@ -809,7 +809,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
       if (condition.type === 'BOOKING_COMPLETED') {
         const booking = await prisma.booking.findFirst({
           where: {
-            User_Booking_signerIdToUser: {
+            signer: {
               email: enrollment.contactEmail
             },
             status: BookingStatus.COMPLETED,

@@ -40,7 +40,7 @@ export async function updateBookingStatus(
       where: { id: bookingId },
       include: {
         service: true,
-        User_Booking_signerIdToUser: {
+        signer: {
           select: { name: true, email: true, phone: true }
         }
       }
@@ -135,7 +135,7 @@ async function syncBookingWithGHL(booking: any, status: BookingStatus, reason?: 
       tagsToAdd.push('status:booking_pendingpayment');
       break;
     case BookingStatus.CANCELLED_BY_CLIENT:
-    case BookingStatus.CANCELLED_BY_PROVIDER:
+    case BookingStatus.CANCELLED_BY_STAFF:
       tagsToAdd.push('status:booking_cancelled');
       break;
     case BookingStatus.COMPLETED:

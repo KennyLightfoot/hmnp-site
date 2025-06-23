@@ -1,0 +1,52 @@
+{
+  "name": "💳 Enhanced Payment Follow-up System",
+  "triggerTag": "status:booking_pendingpayment",
+  "overview": "Recovers pending payments automatically with urgency-based reminders and tasks.",
+  "steps": [
+    {
+      "type": "Custom Code",
+      "name": "Check Payment Status via API (GET /api/bookings/pending-payments)",
+      "description": "Looks up the most recent unpaid booking for the contact, stores details in custom fields and tags urgency."
+    },
+    {
+      "type": "If/Else",
+      "name": "No Pending Payment?",
+      "condition": "Contact has tag no_pending_payment",
+      "yesPath": [
+        { "type": "Send Email", "template": "no_payment_found" },
+        { "type": "End Workflow" }
+      ],
+      "noPath": ["continue"]
+    },
+    { "type": "Wait", "duration": "10 minutes" },
+    {
+      "type": "If/Else",
+      "name": "Urgency Router",
+      "condition": "Contact has tag urgency:high OR urgency:critical",
+      "yesPath": [
+        { "type": "Send Email", "template": "payment_reminder_high" }
+      ],
+      "noPath": [
+        { "type": "Send Email", "template": "payment_reminder_medium" }
+      ]
+    },
+    { "type": "Custom Code", "name": "Track Reminder Email Sent (PATCH /api/bookings/pending-payments)" },
+    { "type": "Add Tag", "tag": "workflow:payment_reminder_sent" },
+    {
+      "type": "Create Task",
+      "title": "💳 Payment follow-up: {{contact.firstName}} – ${{cf_payment_amount}}",
+      "due": "now + 2h",
+      "priority": "high if urgency high/critical"
+    },
+    {
+      "type": "If/Else",
+      "name": "Still Pending? Schedule Auto Follow-up",
+      "condition": "Contact DOES NOT have tag status:payment_completed",
+      "yesPath": [
+        { "type": "Wait", "duration": "24 hours" },
+        { "type": "If/Else", "condition": "Contact DOES NOT have tag status:payment_completed", "yesPath": [ { "type": "Send Email", "template": "payment_reminder_second" }, { "type": "Add Tag", "tag": "payment:second_reminder_sent" } ] }
+      ]
+    }
+  ],
+  "notes": "Import this JSON, double-check email templates are mapped, and verify the API key variable 'INTERNAL_API_KEY' is present in properties for the Custom Code actions." 
+} 

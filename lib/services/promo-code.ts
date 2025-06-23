@@ -72,7 +72,7 @@ class PromoCodeService {
       }
 
       // Check if promo code is active
-      if (!promoCode.isActive) {
+      if (!promoCode.active) {
         return {
           isValid: false,
           error: 'Promo code is no longer active'
@@ -193,7 +193,7 @@ class PromoCodeService {
       const bookings = await prisma.booking.findMany({
         where: {
           promoCodeId,
-          User_Booking_signerIdToUser: {
+          signer: {
             email: customerEmail
           }
         }
@@ -229,7 +229,7 @@ class PromoCodeService {
   }
 
   async listPromoCodes(filters?: {
-    isActive?: boolean;
+    active?: boolean;
     createdById?: string;
     page?: number;
     limit?: number;
@@ -244,8 +244,8 @@ class PromoCodeService {
       const skip = (page - 1) * limit;
 
       const where: any = {};
-      if (filters?.isActive !== undefined) {
-        where.isActive = filters.isActive;
+          if (filters?.active !== undefined) {
+      where.active = filters.active;
       }
       if (filters?.createdById) {
         where.createdById = filters.createdById;
@@ -302,7 +302,7 @@ class PromoCodeService {
     try {
       return await prisma.promoCode.update({
         where: { id },
-        data: { isActive: false }
+        data: { active: false }
       });
     } catch (error) {
       console.error('Error deactivating promo code:', error);

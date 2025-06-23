@@ -167,14 +167,15 @@ class BookingModel {
       // Calculate current urgency and hours old
       const enrichedBookings = bookings.map(booking => {
         const hoursOld = this.calculateHoursOld(booking.createdAt);
-        const urgencyLevel = this.calculateUrgencyLevel(hoursOld, booking.paymentAmount);
-        
+        const computedUrgencyLevel = this.calculateUrgencyLevel(hoursOld, booking.paymentAmount);
+
         return {
           ...booking,
+          originalUrgencyLevel: booking.urgencyLevel, // keep track of stored value
           hoursOld,
-          urgencyLevel,
+          urgencyLevel: computedUrgencyLevel,
           paymentInfo: {
-            urgencyLevel,
+            urgencyLevel: computedUrgencyLevel,
             hoursOld,
             remindersSent: booking.remindersSent,
             lastReminderAt: booking.lastReminderAt,
@@ -186,7 +187,7 @@ class BookingModel {
 
       // Update urgency levels in database
       for (const booking of enrichedBookings) {
-        if (booking.urgencyLevel !== booking.urgencyLevel) {
+        if (booking.originalUrgencyLevel !== booking.urgencyLevel) {
           await prisma.apiBooking.update({
             where: { id: booking.id },
             data: { 

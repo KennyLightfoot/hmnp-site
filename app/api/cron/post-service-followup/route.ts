@@ -49,7 +49,7 @@ export async function POST(request: Request) {
         // For now, we'll assume no duplicate prevention mechanism exists
       },
       include: {
-        User_Booking_signerIdToUser: {
+        signer: {
           select: { email: true, name: true },
         },
         service: {
@@ -71,14 +71,14 @@ export async function POST(request: Request) {
       try {
         results.processed++;
 
-        if (!booking.User_Booking_signerIdToUser?.email || !booking.User_Booking_signerIdToUser?.name) {
+        if (!booking.signer?.email || !booking.signer?.name) {
           results.errors.push(`Booking ${booking.id}: Missing user email or name`);
           continue;
         }
 
         const clientDetails = {
-          firstName: booking.User_Booking_signerIdToUser.name,
-          email: booking.User_Booking_signerIdToUser.email,
+          firstName: booking.signer.name,
+          email: booking.signer.email,
         };
 
         // Prepare booking details for templates

@@ -7,12 +7,12 @@ interface Service {
   id: string;
   name: string;
   description: string;
-  type: string;
-  typeLabel: string;
+  price: number;
+  serviceType: string;
   duration: number;
-  basePrice: number;
   requiresDeposit: boolean;
   depositAmount: number;
+  active: boolean;
 }
 
 interface TimeSlot {
@@ -151,7 +151,7 @@ export default function BookingPage() {
         body: JSON.stringify({
           code,
           serviceId: selectedService.id,
-          basePrice: selectedService.basePrice,
+          price: selectedService.price,
         }),
       });
       
@@ -231,13 +231,13 @@ export default function BookingPage() {
   };
 
   const calculatePrice = () => {
-    if (!selectedService) return { basePrice: 0, discount: 0, finalPrice: 0 };
+    if (!selectedService) return { price: 0, discount: 0, finalPrice: 0 };
     
-    const basePrice = selectedService.basePrice;
+    const price = selectedService.price;
     const discount = promoCodeValidation?.valid ? promoCodeValidation.pricing.discountAmount : 0;
-    const finalPrice = basePrice - discount;
+    const finalPrice = price - discount;
     
-    return { basePrice, discount, finalPrice };
+    return { price, discount, finalPrice };
   };
 
   return (
@@ -290,7 +290,7 @@ export default function BookingPage() {
                     <p className="text-gray-600 text-sm mt-2">{service.description}</p>
                     <div className="flex justify-between items-center mt-3">
                       <span className="text-sm text-gray-500">{service.duration} minutes</span>
-                      <span className="font-bold text-[#A52A2A]">${service.basePrice}</span>
+                      <span className="font-bold text-[#A52A2A]">${service.price}</span>
                     </div>
                   </div>
                 ))}
@@ -532,8 +532,8 @@ export default function BookingPage() {
 
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span>Base Price:</span>
-                    <span>${calculatePrice().basePrice}</span>
+                    <span>Price:</span>
+                    <span>${calculatePrice().price}</span>
                   </div>
                   {calculatePrice().discount > 0 && (
                     <div className="flex justify-between text-green-600">

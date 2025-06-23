@@ -1,5 +1,5 @@
 import Bull from 'bull';
-import Redis from 'ioredis';
+import Redis, { RedisOptions } from 'ioredis';
 import { logger } from '../logger';
 
 // Redis connection configuration
@@ -18,7 +18,7 @@ const defaultJobOptions = {
 };
 
 // Redis client options
-const redisOptions: Redis.RedisOptions = {
+const redisOptions: RedisOptions = {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
 };
@@ -33,7 +33,7 @@ export const createRedisClient = () => {
   try {
     return new Redis(REDIS_URL, redisOptions);
   } catch (error) {
-    logger.error('Failed to create Redis client:', error);
+    logger.error('Failed to create Redis client', 'BULLMQ_CONFIG', error as Error);
     throw error;
   }
 };
@@ -53,7 +53,7 @@ const createQueue = (name: string) => {
       defaultJobOptions,
     });
   } catch (error) {
-    logger.error(`Failed to create queue ${name}:`, error);
+    logger.error(`Failed to create queue ${name}`, 'BULLMQ_CONFIG', error as Error);
     throw error;
   }
 };
@@ -82,7 +82,7 @@ export const createQueues = () => {
       paymentProcessingQueue,
     };
   } catch (error) {
-    logger.error('Error initializing Bull queues:', error);
+    logger.error('Error initializing Bull queues', 'BULLMQ_CONFIG', error as Error);
     return null;
   }
 };

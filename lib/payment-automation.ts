@@ -2,6 +2,7 @@ import { prisma } from './prisma'
 import { BookingStatus, PaymentStatus, PaymentProvider } from '@prisma/client'
 import { NotificationService } from './notifications'
 import * as ghl from './ghl'
+import { NotificationMethod } from '@prisma/client'
 
 export interface PaymentReminderConfig {
   intervals: number[] // Hours after payment due
@@ -25,7 +26,7 @@ interface PaymentServiceNotificationRecipient {
 
 interface BookingWithUserAndService {
   id: string;
-  User_Booking_signerIdToUser?: {
+  signer?: {
     email: string | null;
     name?: string | null;
     phone?: string | null;
@@ -33,6 +34,7 @@ interface BookingWithUserAndService {
   service?: {
     name?: string | null;
   } | null;
+  scheduledDateTime?: Date | null;
 }
 
 export class PaymentAutomationService {
@@ -91,7 +93,7 @@ export class PaymentAutomationService {
           Payment: {
             where: { status: PaymentStatus.PENDING }
           },
-          User_Booking_signerIdToUser: true,
+          signer: true,
           service: true
         }
       })
@@ -165,7 +167,7 @@ export class PaymentAutomationService {
    */
   private async sendPaymentReminder(booking: BookingWithUserAndService, payment: any, reminderNumber: number): Promise<void> {
     try {
-      if (!booking?.User_Booking_signerIdToUser?.email) {
+      if (!booking?.signer?.email) {
         throw new Error('Booking is missing required user information');
       }
 
@@ -192,34 +194,38 @@ export class PaymentAutomationService {
         bookingId: booking.id,
         type: 'PAYMENT_REMINDER',
         recipient: {
-          email: booking.User_Booking_signerIdToUser.email,
-          firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0] || 'there',
+          email: booking.signer?.email || undefined,
+          firstName: booking.signer?.name?.split(' ')[0] || 'there',
         },
         content: {
           subject: isUrgent ? 'URGENT: Payment Reminder' : 'Friendly Payment Reminder',
           message: `${baseMessage} ${reminderMessage}`,
           metadata: {
             reminderNumber,
-            paymentAmount: payment.amount,
+            paymentAmount: Number(payment.amount),
             paymentId: payment.id
           }
         },
-        methods: ['EMAIL']
+        methods: [NotificationMethod.EMAIL]
       })
 
       // Send SMS reminder if urgent
-      if (isUrgent && booking.User_Booking_signerIdToUser?.phone) {
+      if (isUrgent && booking.signer?.phone) {
         await NotificationService.sendNotification({
           bookingId: booking.id,
           type: 'PAYMENT_REMINDER',
-          recipientPhone: booking.User_Booking_signerIdToUser?.phone,
-          message: reminderMessage.replace(paymentLink, 'Check your email for payment link'),
-          method: 'SMS',
-          metadata: {
-            reminderNumber,
-            paymentAmount: payment.amount,
-            paymentId: payment.id
-          }
+          recipient: {
+            phone: booking.signer.phone
+          },
+          content: {
+            message: reminderMessage.replace(paymentLink, 'Check your email for payment link'),
+            metadata: {
+              reminderNumber,
+              paymentAmount: Number(payment.amount),
+              paymentId: payment.id
+            }
+          },
+          methods: [NotificationMethod.SMS]
         })
       }
 
@@ -257,7 +263,7 @@ export class PaymentAutomationService {
           }
         },
         include: {
-          User_Booking_signerIdToUser: true,
+          signer: true,
           service: true,
           Payment: true
         }
@@ -286,7 +292,7 @@ export class PaymentAutomationService {
    */
   private async autoCancelBooking(booking: any, reason: string): Promise<void> {
     try {
-      if (!booking?.User_Booking_signerIdToUser?.email) {
+      if (!booking?.signer?.email) {
         throw new Error('Booking is missing required user information');
       }
 
@@ -319,8 +325,8 @@ export class PaymentAutomationService {
         bookingId: booking.id,
         type: 'BOOKING_CANCELLED',
         recipient: {
-          email: booking.User_Booking_signerIdToUser.email,
-          firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0] || 'there',
+          email: booking.signer?.email || undefined,
+          firstName: booking.signer?.name?.split(' ')[0] || 'there',
         },
         content: {
           subject: 'Your Booking Has Been Cancelled',
@@ -333,9 +339,9 @@ export class PaymentAutomationService {
       })
 
       // Update GHL if we have user email
-      if (booking.User_Booking_signerIdToUser?.email) {
+      if (booking.signer?.email) {
         try {
-          const contact = await ghl.getContactByEmail(booking.User_Booking_signerIdToUser.email);
+          const contact = await ghl.getContactByEmail(booking.signer.email);
           if (contact?.id) {
             await ghl.addTagsToContact(contact.id, [
               'status:auto_cancelled_nonpayment',
@@ -387,7 +393,7 @@ export class PaymentAutomationService {
           Booking: {
             include: {
               service: true,
-              User_Booking_signerIdToUser: true
+              signer: true
             }
           }
         }
@@ -403,8 +409,8 @@ export class PaymentAutomationService {
 
       const originalAmount = Number(payment.amount);
     const remainingBalance = originalAmount - amountPaid;
-    const userEmail = payment.Booking.User_Booking_signerIdToUser?.email;
-    const userName = payment.Booking.User_Booking_signerIdToUser?.name;
+    const userEmail = payment.Booking.signer?.email;
+    const userName = payment.Booking.signer?.name;
 
     if (remainingBalance <= 0) {
       // Full payment received
@@ -461,8 +467,8 @@ export class PaymentAutomationService {
     })
 
     // Send partial payment notification
-    // const userEmail = payment.Booking?.User_Booking_signerIdToUser?.email; // Already declared above
-    // const userName = payment.Booking?.User_Booking_signerIdToUser?.name; // Already declared above
+    // const userEmail = payment.Booking?.signer?.email; // Already declared above
+    // const userName = payment.Booking?.signer?.name; // Already declared above
     
     if (userEmail) {
       try {
@@ -492,7 +498,7 @@ export class PaymentAutomationService {
     }
 
     // Update GHL if we have user email
-    // const userEmail = payment.Booking.User_Booking_signerIdToUser?.email; // Already declared above
+    // const userEmail = payment.Booking.signer?.email; // Already declared above
     if (userEmail) {
       try {
         const contact = await ghl.getContactByEmail(userEmail);
@@ -539,7 +545,7 @@ export class PaymentAutomationService {
         Booking: {
           include: {
             service: true,
-            User_Booking_signerIdToUser: true
+            signer: true
           }
         }
       }
@@ -565,9 +571,9 @@ export class PaymentAutomationService {
       }
     });
 
-    const userEmail = payment.Booking.User_Booking_signerIdToUser?.email;
-    const userName = payment.Booking.User_Booking_signerIdToUser?.name;
-    // Phone is not available on User_Booking_signerIdToUser based on current types/query
+    const userEmail = payment.Booking.signer?.email;
+    const userName = payment.Booking.signer?.name;
+    // Phone is not available on signer based on current types/query
     const userPhone: string | null = null;
 
     if (userEmail) {
@@ -639,7 +645,7 @@ export class PaymentAutomationService {
   private async updateGHLForPaymentReminder(booking: BookingWithUserAndService, reminderNumber: number): Promise<void> {
     try {
       // Get contact ID first
-      const userEmail = booking.User_Booking_signerIdToUser?.email;
+      const userEmail = booking.signer?.email;
       if (!userEmail) {
         console.warn(`User email not found for booking ID: ${booking.id} in updateGHLForPaymentReminder`);
         return;

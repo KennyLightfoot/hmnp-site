@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       where: { id: bookingId },
       include: {
         service: true,
-        User_Booking_signerIdToUser: {
+        signer: {
           select: {
             name: true,
             email: true
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
       data: updateData,
       include: {
         service: true,
-        User_Booking_signerIdToUser: true
+        signer: true
       }
     });
 
@@ -190,8 +190,8 @@ export async function POST(request: NextRequest) {
       reason: reason || `Requested by ${requestedBy}`,
       hoursUntilOriginal: hoursUntilOriginal,
       customer: {
-        name: updatedBooking.User_Booking_signerIdToUser?.name || 'Unknown',
-        email: updatedBooking.User_Booking_signerIdToUser?.email || '',
+        name: updatedBooking.signer?.name || 'Unknown',
+        email: updatedBooking.signer?.email || '',
         phone: ''
       },
       message: rescheduleFee > 0 

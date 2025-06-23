@@ -1,0 +1,23 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: |
+  Security is paramount. Always follow best practices to protect user data and maintain trust.
+globs:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+alwaysApply: true
+---
+
+# Security Best Practices
+
+- Use HTTPS for all communications.
+- Store passwords securely (e.g., bcrypt hashing).
+- Implement proper authentication and authorization mechanisms.
+- Regularly update dependencies to patch vulnerabilities.
+- Monitor for security breaches and respond promptly.

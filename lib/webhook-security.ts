@@ -49,16 +49,31 @@ export function verifyGHLWebhook(
     // Remove 'sha256=' prefix if present
     const cleanSignature = signature.replace(/^sha256=/, '');
     
+    // Create buffers for comparison
+    const receivedBuf = Buffer.from(cleanSignature, 'hex');
+    const expectedBuf = Buffer.from(expectedSignature, 'hex');
+
+    // Ensure both digests are same length before secure comparison
+    if (receivedBuf.length !== expectedBuf.length) {
+      logSecurityEvent('GHL webhook signature length mismatch', {
+        requestId,
+        expectedLength: expectedBuf.length,
+        receivedLength: receivedBuf.length,
+        payloadLength: payload.length
+      });
+      return false;
+    }
+
     const isValid = crypto.timingSafeEqual(
-      Buffer.from(cleanSignature, 'hex'),
-      Buffer.from(expectedSignature, 'hex')
+      receivedBuf as unknown as NodeJS.ArrayBufferView,
+      expectedBuf as unknown as NodeJS.ArrayBufferView
     );
 
     if (!isValid) {
       logSecurityEvent('GHL webhook signature verification failed', {
         requestId,
-        expectedLength: expectedSignature.length,
-        receivedLength: cleanSignature.length,
+        expectedLength: expectedBuf.length,
+        receivedLength: receivedBuf.length,
         payloadLength: payload.length
       });
     } else {
@@ -140,9 +155,22 @@ export function verifyStripeWebhook(
       .update(`${timestamp}.${payload}`, 'utf8')
       .digest('hex');
 
+    const v1Buf = Buffer.from(v1Signature, 'hex');
+    const expectedBuf = Buffer.from(expectedSignature, 'hex');
+
+    if (v1Buf.length !== expectedBuf.length) {
+      logSecurityEvent('Stripe webhook signature length mismatch', {
+        requestId,
+        expectedLength: expectedBuf.length,
+        receivedLength: v1Buf.length,
+        payloadLength: payload.length
+      });
+      return false;
+    }
+
     const isValid = crypto.timingSafeEqual(
-      Buffer.from(v1Signature, 'hex'),
-      Buffer.from(expectedSignature, 'hex')
+      v1Buf as unknown as NodeJS.ArrayBufferView,
+      expectedBuf as unknown as NodeJS.ArrayBufferView
     );
 
     if (!isValid) {

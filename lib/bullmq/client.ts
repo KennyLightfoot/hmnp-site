@@ -6,6 +6,7 @@ import {
   PaymentProcessingJob 
 } from '../queue/types';
 import { logger } from '../logger';
+import type { JobOptions } from 'bull';
 
 /**
  * BullQueueClient provides methods to enqueue jobs to Bull queues with enhanced
@@ -69,7 +70,7 @@ export class BullQueueClient {
       logger.info(`Enqueued notification job ${queuedJob.id} with priority ${priority}`);
       return queuedJob.id?.toString() || null;
     } catch (error) {
-      logger.error('Failed to enqueue notification to Bull queue:', error);
+      logger.error('Failed to enqueue notification to Bull queue', 'BULL_QUEUE_CLIENT', error as Error);
       return null;
     }
   }
@@ -116,7 +117,7 @@ export class BullQueueClient {
       logger.info(`Enqueued booking job ${queuedJob.id} for booking ${job.bookingId} with priority ${priority}`);
       return queuedJob.id?.toString() || null;
     } catch (error) {
-      logger.error('Failed to enqueue booking job to Bull queue:', error);
+      logger.error('Failed to enqueue booking job to Bull queue', 'BULL_QUEUE_CLIENT', error as Error);
       return null;
     }
   }
@@ -148,7 +149,7 @@ export class BullQueueClient {
       if (job.action === 'refund') priority = 3;
       
       // Configure job options based on the action type
-      const jobOptions: Bull.JobOptions = {
+      const jobOptions: JobOptions = {
         priority,
         attempts: fullJob.maxRetries,
         removeOnComplete: 100,
@@ -165,7 +166,7 @@ export class BullQueueClient {
       logger.info(`Enqueued payment job ${queuedJob.id} for action ${job.action} with priority ${priority}`);
       return queuedJob.id?.toString() || null;
     } catch (error) {
-      logger.error('Failed to enqueue payment job to Bull queue:', error);
+      logger.error('Failed to enqueue payment job to Bull queue', 'BULL_QUEUE_CLIENT', error as Error);
       return null;
     }
   }
@@ -186,11 +187,11 @@ export class BullQueueClient {
           return await this.enqueuePaymentJob(job as PaymentProcessingJob);
           
         default:
-          logger.error(`Unknown job type: ${(job as any).type}`);
+          logger.error(`Unknown job type: ${(job as any).type}`, 'BULL_QUEUE_CLIENT');
           return null;
       }
     } catch (error) {
-      logger.error('Failed to enqueue job to Bull queue:', error);
+      logger.error('Failed to enqueue job to Bull queue', 'BULL_QUEUE_CLIENT', error as Error);
       return null;
     }
   }
@@ -231,7 +232,7 @@ export class BullQueueClient {
           jobType = 'process-payment';
           break;
         default:
-          logger.error(`Unknown job type for scheduling: ${(job as any).type}`);
+          logger.error(`Unknown job type for scheduling: ${(job as any).type}`, 'BULL_QUEUE_CLIENT');
           return null;
       }
       
@@ -245,7 +246,7 @@ export class BullQueueClient {
       logger.info(`Scheduled ${job.type} job ${queuedJob.id} for ${scheduledTime.toISOString()}`);
       return queuedJob.id?.toString() || null;
     } catch (error) {
-      logger.error('Failed to schedule job with Bull:', error);
+      logger.error('Failed to schedule job with Bull', 'BULL_QUEUE_CLIENT', error as Error);
       return null;
     }
   }
@@ -275,7 +276,7 @@ export class BullQueueClient {
         timestamp: new Date().toISOString()
       };
     } catch (error) {
-      logger.error('Failed to get job counts:', error);
+      logger.error('Failed to get job counts', 'BULL_QUEUE_CLIENT', error as Error);
       return { error: 'Failed to get job counts' };
     }
   }

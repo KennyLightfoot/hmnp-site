@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/db';
 import { promoCodeService } from '@/lib/services/promo-code';
 import { settingsService } from '@/lib/services/settings';
 import { addMinutes, startOfDay, format, parse } from 'date-fns';
-
-const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,7 +44,7 @@ export async function POST(request: NextRequest) {
       where: { id: serviceId }
     });
 
-    if (!service || !service.isActive) {
+    if (!service || !service.active) {
       return NextResponse.json(
         { error: 'Service not found or inactive' },
         { status: 404 }
@@ -99,9 +97,9 @@ export async function POST(request: NextRequest) {
     // Check for conflicts
     const hasConflict = conflictingBookings.some(booking => {
       const bookingStart = new Date(booking.scheduledDateTime!);
-      const bookingEnd = addMinutes(bookingStart, booking.service.durationMinutes + bookingSettings.bufferTimeMinutes);
+      const bookingEnd = addMinutes(bookingStart, booking.service.duration + bookingSettings.bufferTimeMinutes);
       const requestedStart = requestedDateTime;
-      const requestedEnd = addMinutes(requestedDateTime, service.durationMinutes + bookingSettings.bufferTimeMinutes);
+      const requestedEnd = addMinutes(requestedDateTime, service.duration + bookingSettings.bufferTimeMinutes);
       
       return (
         (requestedStart >= bookingStart && requestedStart < bookingEnd) ||
@@ -170,7 +168,7 @@ export async function POST(request: NextRequest) {
         addressState,
         addressZip,
         locationNotes,
-        priceAtBooking: service.basePrice,
+        priceAtBooking: service.price,
         depositAmount,
         depositStatus: 'PENDING',
         promoCodeId: promoCodeData?.id,
@@ -179,7 +177,7 @@ export async function POST(request: NextRequest) {
       },
       include: {
         service: true,
-        User_Booking_signerIdToUser: true,
+        signer: true,
         promoCode: true
       }
     });
@@ -196,12 +194,12 @@ export async function POST(request: NextRequest) {
         status: booking.status,
         service: {
           name: booking.service.name,
-          durationMinutes: booking.service.durationMinutes,
-          basePrice: booking.service.basePrice
+                  duration: booking.service.duration,
+        price: booking.service.price
         },
         customer: {
-          name: booking.User_Booking_signerIdToUser?.name,
-          email: booking.User_Booking_signerIdToUser?.email
+                  name: booking.signer?.name,
+        email: booking.signer?.email
         },
         depositAmount: booking.depositAmount,
         promoCode: promoCodeData ? {

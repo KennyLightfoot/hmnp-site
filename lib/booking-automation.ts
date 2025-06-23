@@ -1,6 +1,6 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from './prisma';
 import { BookingStatus } from '@prisma/client';
-import { NotificationService } from '@/lib/notifications';
+import { NotificationService } from './notifications';
 import { NotificationType, NotificationMethod } from '@prisma/client';
 
 export class BookingAutomationService {
@@ -21,7 +21,7 @@ export class BookingAutomationService {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
-          User_Booking_signerIdToUser: true,
+          signer: true,
           service: true,
           Payment: true
         }
@@ -220,7 +220,7 @@ export class BookingAutomationService {
    */
   private static async sendBookingConfirmation(bookingId: string): Promise<void> {
     try {
-      const { sendBookingConfirmation } = await import('@/lib/notifications');
+      const { sendBookingConfirmation } = await import('./notifications');
       await sendBookingConfirmation(bookingId);
     } catch (error: any) {
       console.error(`Error sending booking confirmation for ${bookingId}:`, error);
@@ -244,7 +244,7 @@ export class BookingAutomationService {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
-          User_Booking_signerIdToUser: true,
+          signer: true,
           service: true
         }
       });
@@ -252,8 +252,8 @@ export class BookingAutomationService {
       if (!booking) return;
 
       const recipient = {
-        email: booking.User_Booking_signerIdToUser.email,
-        firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
+        email: booking.signer?.email ?? booking.customerEmail ?? '',
+        firstName: booking.signer?.name?.split(' ')[0] ?? '',
       };
 
       const content = {
@@ -286,7 +286,7 @@ export class BookingAutomationService {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
-          User_Booking_signerIdToUser: true,
+          signer: true,
           service: true
         }
       });
@@ -294,8 +294,8 @@ export class BookingAutomationService {
       if (!booking) return;
 
       const recipient = {
-        email: booking.User_Booking_signerIdToUser.email,
-        firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
+        email: booking.signer?.email ?? booking.customerEmail ?? '',
+        firstName: booking.signer?.name?.split(' ')[0] ?? '',
       };
 
       const content = {
@@ -358,7 +358,7 @@ export class BookingAutomationService {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
-          User_Booking_signerIdToUser: true,
+          signer: true,
           service: true
         }
       });
@@ -366,8 +366,8 @@ export class BookingAutomationService {
       if (!booking) return;
 
       const recipient = {
-        email: booking.User_Booking_signerIdToUser.email,
-        firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
+        email: booking.signer?.email ?? booking.customerEmail ?? '',
+        firstName: booking.signer?.name?.split(' ')[0] ?? '',
       };
 
       const isByClient = cancellationType === BookingStatus.CANCELLED_BY_CLIENT;
@@ -614,7 +614,7 @@ export class BookingAutomationService {
         where: { id: bookingId },
         include: {
           service: true,
-          User_Booking_signerIdToUser: true
+          signer: true
         }
       });
 
@@ -629,7 +629,8 @@ export class BookingAutomationService {
 
       const now = new Date();
       const scheduledTime = new Date(booking.scheduledDateTime);
-      const estimatedEndTime = new Date(scheduledTime.getTime() + (booking.service.duration + 30) * 60 * 1000); // Add 30min buffer
+      const serviceDurationMins = booking.service?.duration ?? 60; // default 60 mins
+      const estimatedEndTime = new Date(scheduledTime.getTime() + (serviceDurationMins + 30) * 60 * 1000); // Add 30min buffer
 
       // Auto-complete if current time is past estimated end time
       if (now > estimatedEndTime) {
@@ -638,7 +639,6 @@ export class BookingAutomationService {
           data: { 
             status: BookingStatus.COMPLETED,
             actualEndDateTime: now,
-            completedAt: now,
             updatedAt: now
           }
         });
@@ -692,7 +692,6 @@ export class BookingAutomationService {
         data: { 
           status: BookingStatus.COMPLETED,
           actualEndDateTime: now,
-          completedAt: now,
           updatedAt: now,
           notes: booking.notes ? 
             `${booking.notes}\n\nManually completed by: ${completedBy || 'System'}` :

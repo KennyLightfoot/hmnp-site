@@ -23,17 +23,17 @@ export const createQueues = () => {
 
     // Create queues for different job types
     const notificationsQueue = new Queue({
-      redis,
+      redis: redis as any,
       queueName: 'notifications',
     });
 
     const bookingProcessingQueue = new Queue({
-      redis,
+      redis: redis as any,
       queueName: 'booking-processing',
     });
 
     const paymentProcessingQueue = new Queue({
-      redis,
+      redis: redis as any,
       queueName: 'payment-processing',
     });
 

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/db';
 
 export async function GET(
   request: Request,
@@ -27,19 +25,19 @@ export async function GET(
             id: true,
             name: true,
             description: true,
-            durationMinutes: true,
-            basePrice: true,
+            duration: true,
+            price: true,
             serviceType: true,
           },
         },
-        User_Booking_signerIdToUser: {
+        signer: {
           select: {
             id: true,
             name: true,
             email: true,
           },
         },
-        User_Booking_notaryIdToUser: {
+        notary: {
           select: {
             id: true,
             name: true,
@@ -93,23 +91,23 @@ export async function GET(
         id: booking.service.id,
         name: booking.service.name,
         description: booking.service.description,
-        duration: booking.service.durationMinutes,
-        basePrice: booking.service.basePrice,
+        duration: booking.service.duration,
+        price: booking.service.price,
         type: booking.service.serviceType,
       },
       
       // Customer Information
-      customer: booking.User_Booking_signerIdToUser ? {
-        id: booking.User_Booking_signerIdToUser.id,
-        name: booking.User_Booking_signerIdToUser.name,
-        email: booking.User_Booking_signerIdToUser.email,
+      customer: booking.signer ? {
+        id: booking.signer.id,
+        name: booking.signer.name,
+        email: booking.signer.email,
       } : null,
       
       // Notary Information (if assigned)
-      notary: booking.User_Booking_notaryIdToUser ? {
-        id: booking.User_Booking_notaryIdToUser.id,
-        name: booking.User_Booking_notaryIdToUser.name,
-        email: booking.User_Booking_notaryIdToUser.email,
+      notary: booking.notary ? {
+        id: booking.notary.id,
+        name: booking.notary.name,
+        email: booking.notary.email,
       } : null,
       
       // Location Information
@@ -126,7 +124,7 @@ export async function GET(
       
       // Pricing Information
       pricing: {
-        basePrice: Number(booking.service.basePrice),
+        price: Number(booking.service.price),
         priceAtBooking: Number(booking.priceAtBooking),
         promoDiscount: booking.promoCodeDiscount ? Number(booking.promoCodeDiscount) : 0,
         depositAmount: booking.depositAmount ? Number(booking.depositAmount) : 0,
@@ -191,7 +189,7 @@ export async function GET(
       { status: 500 }
     );
   } finally {
-    await prisma.$disconnect();
+    // singleton: do not disconnect
   }
 }
 
@@ -233,7 +231,7 @@ export async function PATCH(
       },
       include: {
         service: true,
-        User_Booking_signerIdToUser: true,
+        signer: true,
         promoCode: true,
       },
     });
@@ -258,6 +256,6 @@ export async function PATCH(
       { status: 500 }
     );
   } finally {
-    await prisma.$disconnect();
+    // singleton: do not disconnect
   }
 } 

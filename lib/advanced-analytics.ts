@@ -99,6 +99,19 @@ export interface PerformanceMetrics {
   benchmarks: Record<string, { value: number; status: 'ABOVE' | 'BELOW' | 'MEETING' }>;
 }
 
+// ---------------------------------------------------------------------------------------------
+// Typings & utility aliases (added to reduce implicit-any and enum-string mismatches)
+// ---------------------------------------------------------------------------------------------
+
+type BenchmarkStatus = 'ABOVE' | 'BELOW' | 'MEETING';
+
+interface Benchmark {
+  value: number;
+  status: BenchmarkStatus;
+}
+
+type BenchmarksMap = Record<string, Benchmark>;
+
 class AdvancedAnalytics {
   /**
    * Generate comprehensive analytics report
@@ -300,8 +313,14 @@ class AdvancedAnalytics {
       // Calculate KPIs
       const kpis = {
         totalBookings: bookings.length,
-        totalRevenue: bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0),
-        averageBookingValue: bookings.length > 0 ? bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0) / bookings.length : 0,
+        totalRevenue: bookings.reduce((sum: number, b: any) => {
+          const amt = (b as any).totalAmount ?? 0;
+          return sum + amt;
+        }, 0),
+        averageBookingValue: bookings.length > 0 ? bookings.reduce((sum: number, b: any) => {
+          const amt = (b as any).totalAmount ?? 0;
+          return sum + amt;
+        }, 0) / bookings.length : 0,
         conversionRate: this.calculateConversionRate(bookings),
         customerSatisfaction: 4.5, // Mock data
         netPromoterScore: 67, // Mock data
@@ -317,10 +336,19 @@ class AdvancedAnalytics {
       };
 
       // Industry benchmarks (mock data)
-      const benchmarks = {
-        conversionRate: { value: 0.15, status: kpis.conversionRate >= 0.15 ? 'MEETING' : 'BELOW' as const },
-        customerSatisfaction: { value: 4.0, status: kpis.customerSatisfaction >= 4.0 ? 'ABOVE' : 'BELOW' as const },
-        averageBookingValue: { value: 150, status: kpis.averageBookingValue >= 150 ? 'MEETING' : 'BELOW' as const }
+      const benchmarks: BenchmarksMap = {
+        conversionRate: {
+          value: 0.15,
+          status: kpis.conversionRate >= 0.15 ? 'MEETING' : 'BELOW',
+        },
+        customerSatisfaction: {
+          value: 4.0,
+          status: kpis.customerSatisfaction >= 4.0 ? 'ABOVE' : 'BELOW',
+        },
+        averageBookingValue: {
+          value: 150,
+          status: kpis.averageBookingValue >= 150 ? 'MEETING' : 'BELOW',
+        },
       };
 
       return { kpis, trends, benchmarks };
@@ -354,16 +382,16 @@ class AdvancedAnalytics {
   }
 
   private segmentCustomers(customers: any[]): Record<string, any[]> {
-    const segments = {
+    const segments: Record<string, any[]> = {
       'High Value': [],
       'Regular': [],
       'Occasional': [],
-      'New': []
+      'New': [],
     };
 
     customers.forEach(customer => {
       const bookings = customer.Booking_Booking_signerIdToUser || [];
-      const totalSpent = bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+      const totalSpent = bookings.reduce((sum: number, b: any) => sum + ((b as any).totalAmount || 0), 0);
       const bookingCount = bookings.length;
 
       if (totalSpent > 500 && bookingCount > 3) {
@@ -384,9 +412,9 @@ class AdvancedAnalytics {
   }
 
   private calculateAverageValue(customers: any[]): number {
-    const totalValue = customers.reduce((sum, customer) => {
+    const totalValue = customers.reduce((sum: number, customer: any) => {
       const bookings = customer.Booking_Booking_signerIdToUser || [];
-      return sum + bookings.reduce((bookingSum, booking) => bookingSum + (booking.totalAmount || 0), 0);
+      return sum + bookings.reduce((bookingSum: number, booking: any) => bookingSum + ((booking as any).totalAmount || 0), 0);
     }, 0);
 
     return customers.length > 0 ? totalValue / customers.length : 0;
@@ -408,11 +436,11 @@ class AdvancedAnalytics {
   }
 
   private getSegmentCharacteristics(segmentName: string, customers: any[]): string[] {
-    const characteristics = {
+    const characteristics: Record<string, string[]> = {
       'High Value': ['Frequent bookings', 'High spend', 'Multiple services', 'Long-term customers'],
       'Regular': ['Consistent usage', 'Moderate spend', 'Service loyalty'],
       'Occasional': ['Infrequent usage', 'Price sensitive', 'Specific needs'],
-      'New': ['Recent acquisition', 'Potential for growth', 'Onboarding stage']
+      'New': ['Recent acquisition', 'Potential for growth', 'Onboarding stage'],
     };
 
     return characteristics[segmentName] || [];
@@ -592,7 +620,7 @@ class AdvancedAnalytics {
 
   private calculateAverageLTV(bookings: any[]): number {
     // Simplified LTV calculation
-    return bookings.reduce((sum, booking) => sum + (booking.totalAmount || 0), 0) * 2.5; // Multiply by estimated lifetime multiplier
+    return bookings.reduce((sum, booking) => sum + ((booking as any).totalAmount || 0), 0) * 2.5; // Multiply by estimated lifetime multiplier
   }
 }
 

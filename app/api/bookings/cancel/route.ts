@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       where: { id: bookingId },
       include: {
         service: true,
-        User_Booking_signerIdToUser: {
+        signer: {
           select: {
             name: true,
             email: true

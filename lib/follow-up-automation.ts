@@ -256,7 +256,8 @@ export async function checkTimeBasedFollowUps(): Promise<void> {
       ghlContactId: { not: null }
     },
     include: {
-      service: true
+      service: true,
+      signer: true
     }
   });
 
@@ -391,7 +392,7 @@ async function executeFollowUpAction(followUp: ScheduledFollowUp): Promise<void>
     where: { id: followUp.bookingId },
     include: {
       service: true,
-      User_Booking_signerIdToUser: true
+      signer: true
     }
   });
 

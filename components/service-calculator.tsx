@@ -21,15 +21,12 @@ export default function ServiceCalculator() {
   const [needsOvernightHandling, setNeedsOvernightHandling] = useState(false)
   const [needsBilingualService, setNeedsBilingualService] = useState(false)
   const [pricing, setPricing] = useState({
-    basePrice: 0,
-    extraSignersFee: 0,
-    travelFee: 0,
-    weekendHolidayFee: 0,
-    afterHoursFee: 0,
-    extraDocumentsFee: 0,
-    overnightHandlingFee: 0,
-    bilingualFee: 0,
-    totalPrice: 0,
+    price: 0,
+    discount: 0,
+    finalPrice: 0,
+    promoCodeDiscount: 0,
+    depositAmount: 0,
+    depositRequired: false,
   })
 
   // Map UI service types to API service types
@@ -274,7 +271,7 @@ export default function ServiceCalculator() {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-gray-600">Base Price ({getServiceName()}):</span>
-              <span className="font-medium">${pricing.basePrice.toFixed(2)}</span>
+              <span className="font-medium">${pricing.price.toFixed(2)}</span>
             </div>
 
             {pricing.extraSignersFee > 0 && (
@@ -332,7 +329,7 @@ export default function ServiceCalculator() {
 
             <div className="border-t border-gray-200 my-2 pt-2 flex justify-between text-lg font-bold">
               <span>Estimated Total:</span>
-              <span className="text-[#002147]">${pricing.totalPrice.toFixed(2)}</span>
+              <span className="text-[#002147]">${pricing.finalPrice.toFixed(2)}</span>
             </div>
           </div>
         </div>

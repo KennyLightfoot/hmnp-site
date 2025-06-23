@@ -87,7 +87,7 @@ export class UnifiedBookingService {
       
       // 2. Get service details
       const service = await prisma.service.findUnique({
-        where: { id: validatedData.serviceId, isActive: true },
+        where: { id: validatedData.serviceId, active: true },
       });
       
       if (!service) {
@@ -123,7 +123,7 @@ export class UnifiedBookingService {
             locationNotes: validatedData.locationNotes,
             
             // Pricing
-            priceAtBooking: pricing.basePrice,
+            priceAtBooking: pricing.price,
             promoCodeId: pricing.promoCodeId,
             promoCodeDiscount: pricing.discountAmount,
             depositAmount: pricing.depositRequired ? pricing.depositAmount : null,
@@ -141,7 +141,7 @@ export class UnifiedBookingService {
           include: {
             service: true,
             promoCode: true,
-            User_Booking_signerIdToUser: {
+            signer: {
               select: { id: true, name: true, email: true }
             }
           }
@@ -215,7 +215,7 @@ export class UnifiedBookingService {
    * Calculate pricing with promo codes and discounts
    */
   private static async calculatePricing(service: any, data: UnifiedBookingRequest) {
-    let basePrice = Number(service.basePrice);
+    let price = Number(service.price);
     let discountAmount = 0;
     let promoCodeId: string | undefined;
     
@@ -224,13 +224,13 @@ export class UnifiedBookingService {
       const promoCode = await prisma.promoCode.findUnique({
         where: { 
           code: data.promoCode,
-          isActive: true,
+          active: true,
         }
       });
       
       if (promoCode && promoCode.validUntil && promoCode.validUntil > new Date()) {
         if (promoCode.discountType === 'PERCENTAGE') {
-          discountAmount = (basePrice * Number(promoCode.discountValue)) / 100;
+          discountAmount = (price * Number(promoCode.discountValue)) / 100;
         } else {
           discountAmount = Number(promoCode.discountValue);
         }
@@ -238,12 +238,12 @@ export class UnifiedBookingService {
       }
     }
     
-    const finalAmount = Math.max(0, basePrice - discountAmount);
+    const finalAmount = Math.max(0, price - discountAmount);
     const depositRequired = service.requiresDeposit && finalAmount > 0;
     const depositAmount = depositRequired ? Number(service.depositAmount) : 0;
     
     return {
-      basePrice,
+      price,
       discountAmount,
       finalAmount,
       depositRequired,
