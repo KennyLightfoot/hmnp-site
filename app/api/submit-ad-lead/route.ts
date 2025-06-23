@@ -5,23 +5,32 @@ import {
   GhlCustomField,
 } from '@/lib/ghl';
 
-// IMPORTANT: Define your GHL Custom Field IDs here or load from environment variables
-const GHL_CUSTOM_FIELD_IDS: Record<string, string> = {
-  // Ad Tracking Fields
-  cf_ad_platform: process.env.GHL_CF_ID_AD_PLATFORM || 'ID_FOR_AD_PLATFORM_FIELD',
-  cf_utm_source: process.env.GHL_CF_ID_UTM_SOURCE || 'ID_FOR_UTM_SOURCE_FIELD',
-  cf_utm_medium: process.env.GHL_CF_ID_UTM_MEDIUM || 'ID_FOR_UTM_MEDIUM_FIELD',
-  cf_utm_campaign: process.env.GHL_CF_ID_UTM_CAMPAIGN || 'ID_FOR_UTM_CAMPAIGN_FIELD',
-  cf_utm_term: process.env.GHL_CF_ID_UTM_TERM || 'ID_FOR_UTM_TERM_FIELD',
-  cf_utm_content: process.env.GHL_CF_ID_UTM_CONTENT || 'ID_FOR_UTM_CONTENT_FIELD',
-  cf_ad_campaign_name: process.env.GHL_CF_ID_AD_CAMPAIGN_NAME || 'ID_FOR_AD_CAMPAIGN_NAME_FIELD',
-  cf_ad_campaign_id: process.env.GHL_CF_ID_AD_CAMPAIGN_ID || 'ID_FOR_AD_CAMPAIGN_ID_FIELD',
-  cf_ad_group_id: process.env.GHL_CF_ID_AD_GROUP_ID || 'ID_FOR_AD_GROUP_ID_FIELD',
-  cf_ad_id: process.env.GHL_CF_ID_AD_ID || 'ID_FOR_AD_ID_FIELD',
-  cf_landing_page_url: process.env.GHL_CF_ID_LANDING_PAGE_URL || 'ID_FOR_LANDING_PAGE_URL_FIELD',
-  cf_preferred_call_time: process.env.GHL_CF_ID_PREFERRED_CALL_TIME || 'ID_FOR_PREFERRED_CALL_TIME',
-  cf_call_request_reason: process.env.GHL_CF_ID_CALL_REQUEST_REASON || 'ID_FOR_CALL_REQUEST_REASON',
+// GHL Custom Field IDs - validate environment variables
+const GHL_CUSTOM_FIELDS = {
+  cf_ad_platform: process.env.GHL_CF_ID_AD_PLATFORM,
+  cf_utm_source: process.env.GHL_CF_ID_UTM_SOURCE,
+  cf_utm_medium: process.env.GHL_CF_ID_UTM_MEDIUM,
+  cf_utm_campaign: process.env.GHL_CF_ID_UTM_CAMPAIGN,
+  cf_utm_term: process.env.GHL_CF_ID_UTM_TERM,
+  cf_utm_content: process.env.GHL_CF_ID_UTM_CONTENT,
+  cf_ad_campaign_name: process.env.GHL_CF_ID_AD_CAMPAIGN_NAME,
+  cf_ad_campaign_id: process.env.GHL_CF_ID_AD_CAMPAIGN_ID,
+  cf_ad_group_id: process.env.GHL_CF_ID_AD_GROUP_ID,
+  cf_ad_id: process.env.GHL_CF_ID_AD_ID,
+  cf_landing_page_url: process.env.GHL_CF_ID_LANDING_PAGE_URL,
+  cf_preferred_call_time: process.env.GHL_CF_ID_PREFERRED_CALL_TIME,
+  cf_call_request_reason: process.env.GHL_CF_ID_CALL_REQUEST_REASON,
 };
+
+// Validate critical GHL fields are configured
+const missingFields = Object.entries(GHL_CUSTOM_FIELDS)
+  .filter(([key, value]) => !value)
+  .map(([key]) => key);
+
+if (missingFields.length > 0) {
+  console.warn(`⚠️ Missing GHL custom field IDs: ${missingFields.join(', ')}`);
+  console.warn('Ad tracking may be incomplete without these environment variables');
+}
 
 // Placeholder for opportunity creation
 async function createOpportunity(opportunityData: Record<string, unknown>): Promise<Record<string, unknown>> {
@@ -54,18 +63,18 @@ export async function POST(request: NextRequest) {
 
     // Process UTM data
     if (utmData) {
-      if (utmData.utm_source && GHL_CUSTOM_FIELD_IDS.cf_utm_source) ghlCustomFields.push({ id: GHL_CUSTOM_FIELD_IDS.cf_utm_source, value: utmData.utm_source });
-      if (utmData.utm_medium && GHL_CUSTOM_FIELD_IDS.cf_utm_medium) ghlCustomFields.push({ id: GHL_CUSTOM_FIELD_IDS.cf_utm_medium, value: utmData.utm_medium });
-      if (utmData.utm_campaign && GHL_CUSTOM_FIELD_IDS.cf_utm_campaign) ghlCustomFields.push({ id: GHL_CUSTOM_FIELD_IDS.cf_utm_campaign, value: utmData.utm_campaign });
-      if (utmData.utm_term && GHL_CUSTOM_FIELD_IDS.cf_utm_term) ghlCustomFields.push({ id: GHL_CUSTOM_FIELD_IDS.cf_utm_term, value: utmData.utm_term });
-      if (utmData.utm_content && GHL_CUSTOM_FIELD_IDS.cf_utm_content) ghlCustomFields.push({ id: GHL_CUSTOM_FIELD_IDS.cf_utm_content, value: utmData.utm_content });
+      if (utmData.utm_source && GHL_CUSTOM_FIELDS.cf_utm_source) ghlCustomFields.push({ id: GHL_CUSTOM_FIELDS.cf_utm_source, value: utmData.utm_source });
+      if (utmData.utm_medium && GHL_CUSTOM_FIELDS.cf_utm_medium) ghlCustomFields.push({ id: GHL_CUSTOM_FIELDS.cf_utm_medium, value: utmData.utm_medium });
+      if (utmData.utm_campaign && GHL_CUSTOM_FIELDS.cf_utm_campaign) ghlCustomFields.push({ id: GHL_CUSTOM_FIELDS.cf_utm_campaign, value: utmData.utm_campaign });
+      if (utmData.utm_term && GHL_CUSTOM_FIELDS.cf_utm_term) ghlCustomFields.push({ id: GHL_CUSTOM_FIELDS.cf_utm_term, value: utmData.utm_term });
+      if (utmData.utm_content && GHL_CUSTOM_FIELDS.cf_utm_content) ghlCustomFields.push({ id: GHL_CUSTOM_FIELDS.cf_utm_content, value: utmData.utm_content });
     }
 
     // Process customFieldsFromProps
     if (customFieldsFromProps) {
       for (const key in customFieldsFromProps) {
-        if (GHL_CUSTOM_FIELD_IDS[key]) {
-          ghlCustomFields.push({ id: GHL_CUSTOM_FIELD_IDS[key], value: customFieldsFromProps[key] });
+        if (GHL_CUSTOM_FIELDS[key]) {
+          ghlCustomFields.push({ id: GHL_CUSTOM_FIELDS[key], value: customFieldsFromProps[key] });
         } else {
           console.warn(`No GHL Custom Field ID mapping found for prop: ${key}`);
         }
@@ -73,17 +82,17 @@ export async function POST(request: NextRequest) {
     }
     
     // Add other fixed custom fields
-    if (landingPageUrl && GHL_CUSTOM_FIELD_IDS.cf_landing_page_url) {
-      ghlCustomFields.push({ id: GHL_CUSTOM_FIELD_IDS.cf_landing_page_url, value: landingPageUrl });
+    if (landingPageUrl && GHL_CUSTOM_FIELDS.cf_landing_page_url) {
+      ghlCustomFields.push({ id: GHL_CUSTOM_FIELDS.cf_landing_page_url, value: landingPageUrl });
     }
-    if (campaignName && GHL_CUSTOM_FIELD_IDS.cf_ad_campaign_name) {
-      ghlCustomFields.push({ id: GHL_CUSTOM_FIELD_IDS.cf_ad_campaign_name, value: campaignName });
+    if (campaignName && GHL_CUSTOM_FIELDS.cf_ad_campaign_name) {
+      ghlCustomFields.push({ id: GHL_CUSTOM_FIELDS.cf_ad_campaign_name, value: campaignName });
     }
-    if (preferredCallTime && GHL_CUSTOM_FIELD_IDS.cf_preferred_call_time) {
-      ghlCustomFields.push({ id: GHL_CUSTOM_FIELD_IDS.cf_preferred_call_time, value: preferredCallTime });
+    if (preferredCallTime && GHL_CUSTOM_FIELDS.cf_preferred_call_time) {
+      ghlCustomFields.push({ id: GHL_CUSTOM_FIELDS.cf_preferred_call_time, value: preferredCallTime });
     }
-    if (callRequestReason && GHL_CUSTOM_FIELD_IDS.cf_call_request_reason) {
-      ghlCustomFields.push({ id: GHL_CUSTOM_FIELD_IDS.cf_call_request_reason, value: callRequestReason });
+    if (callRequestReason && GHL_CUSTOM_FIELDS.cf_call_request_reason) {
+      ghlCustomFields.push({ id: GHL_CUSTOM_FIELDS.cf_call_request_reason, value: callRequestReason });
     }
 
     // 2. Prepare Contact Data for GHL

@@ -15,6 +15,7 @@ const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 if (!endpointSecret) {
   console.error('❌ STRIPE_WEBHOOK_SECRET environment variable is not set');
+  throw new Error('Critical: STRIPE_WEBHOOK_SECRET environment variable is required for webhook security');
 }
 
 export async function POST(request: NextRequest) {

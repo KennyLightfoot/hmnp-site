@@ -159,6 +159,8 @@ export async function POST(request: NextRequest) {
     const booking = await prisma.booking.create({
       data: {
         signerId: user.id,
+        signerEmail: user.email,
+        signerName: user.name,
         serviceId,
         scheduledDateTime: requestedDateTime,
         status: 'PAYMENT_PENDING',
@@ -168,7 +170,10 @@ export async function POST(request: NextRequest) {
         addressState,
         addressZip,
         locationNotes,
+        basePrice: service.price,
         priceAtBooking: service.price,
+        finalPrice: Math.max(0, Number(service.price) - discountAmount),
+        promoDiscount: discountAmount,
         depositAmount,
         depositStatus: 'PENDING',
         promoCodeId: promoCodeData?.id,

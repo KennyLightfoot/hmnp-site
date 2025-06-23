@@ -429,8 +429,16 @@ export async function POST(request: NextRequest) {
       addressState: addressState,
       addressZip: addressZip,
       locationNotes: locationNotes,
-      priceAtBooking: priceAtBooking,
+      // Pricing fields - both legacy and new required fields
+      priceAtBooking: priceAtBooking, // Legacy field
+      basePrice: service.price, // Required field
+      promoDiscount: discountAmount, // Required field with default 0
+      finalPrice: finalAmountDueAfterDiscount, // Required field
       notes: notes,
+      // Required fields for all bookings
+      signerEmail: signerUserEmail,
+      signerName: signerUserName || 'Guest Client',
+      signerPhone: phone || null,
       // Additional fields from form for guest bookings will be stored in GHL only
     };
     

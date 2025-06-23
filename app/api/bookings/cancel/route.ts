@@ -5,8 +5,15 @@ import { z } from 'zod';
 import * as ghl from '@/lib/ghl';
 import Stripe from 'stripe';
 
+// Validate Stripe configuration
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+if (!STRIPE_SECRET_KEY) {
+  console.error('❌ STRIPE_SECRET_KEY environment variable is not set');
+  throw new Error('Stripe configuration missing: STRIPE_SECRET_KEY is required');
+}
+
 // Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+const stripe = new Stripe(STRIPE_SECRET_KEY, {
   apiVersion: '2023-10-16',
 });
 
@@ -173,10 +180,16 @@ export async function POST(request: NextRequest) {
           cf_hours_until_appointment: hoursUntilAppointment.toString()
         };
 
+        const ghlLocationId = process.env.GHL_LOCATION_ID;
+        if (!ghlLocationId) {
+          console.warn('⚠️ GHL_LOCATION_ID not configured, skipping contact update');
+          throw new Error('GHL_LOCATION_ID environment variable is required for contact updates');
+        }
+
         await ghl.updateContact({
           id: booking.ghlContactId,
           customField: customFields,
-          locationId: process.env.GHL_LOCATION_ID || ''
+          locationId: ghlLocationId
         });
 
         console.log('✅ GHL contact updated with cancellation details');

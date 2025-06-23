@@ -44,19 +44,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(successResponse);
     }
 
-    // Generate reset token (expires in 1 hour)
+    // Generate JWT token for password reset
+    const jwtSecret = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET;
+    if (!jwtSecret) {
+      console.error('❌ JWT_SECRET or NEXTAUTH_SECRET environment variable is required');
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+
     const resetToken = jwt.sign(
-      { 
-        userId: user.id, 
-        email: user.email, 
-        type: 'password-reset' 
-      },
-      process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'fallback-secret',
+      { userId: user.id, email: user.email, type: 'password_reset' },
+      jwtSecret,
       { expiresIn: '1h' }
     );
 
-    // Create reset URL
-    const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+    const baseUrl = process.env.NEXTAUTH_URL;
+    if (!baseUrl) {
+      console.error('❌ NEXTAUTH_URL environment variable is required');
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
 
     // Send reset email if Resend is configured
     if (process.env.RESEND_API_KEY) {

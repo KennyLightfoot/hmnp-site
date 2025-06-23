@@ -100,7 +100,7 @@ export class UnifiedBookingService {
       // 4. Handle user creation/lookup
       const bookingUser = await this.handleUserLookup(validatedData, options);
       
-      // 5. Create booking in transaction
+      // 5. Create booking with all related data in a transaction
       const result = await prisma.$transaction(async (tx) => {
         
         // Create the booking
@@ -110,8 +110,13 @@ export class UnifiedBookingService {
             serviceId: service.id,
             scheduledDateTime: new Date(validatedData.scheduledDateTime),
             
-            // User association
+            // Required signer fields
             signerId: bookingUser?.id,
+            signerEmail: validatedData.customerEmail,
+            signerName: validatedData.customerName,
+            signerPhone: validatedData.customerPhone,
+            
+            // User association (deprecated field but keeping for compatibility)
             customerEmail: validatedData.customerEmail,
             
             // Location
@@ -122,8 +127,11 @@ export class UnifiedBookingService {
             addressZip: validatedData.addressZip,
             locationNotes: validatedData.locationNotes,
             
-            // Pricing
+            // Pricing - using new required fields
+            basePrice: pricing.price,
             priceAtBooking: pricing.price,
+            finalPrice: pricing.finalAmount,
+            promoDiscount: pricing.discountAmount,
             promoCodeId: pricing.promoCodeId,
             promoCodeDiscount: pricing.discountAmount,
             depositAmount: pricing.depositRequired ? pricing.depositAmount : null,
@@ -159,6 +167,10 @@ export class UnifiedBookingService {
           paymentClientSecret,
           pricing
         };
+      }, {
+        maxWait: 5000,    // Wait up to 5 seconds to acquire transaction  
+        timeout: 30000,   // Transaction timeout of 30 seconds
+        isolationLevel: 'ReadCommitted' // Balance consistency with performance
       });
       
       // 6. Handle GHL integration

@@ -7,13 +7,33 @@ import {
   addTagsToContact,
   GhlCustomField,
 } from '@/lib/ghl';
+import { z } from 'zod';
 
 const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
 const GHL_CONTACT_FORM_WORKFLOW_ID = process.env.GHL_CONTACT_FORM_WORKFLOW_ID;
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const notificationEmailTo = process.env.CONTACT_FORM_RECEIVER_EMAIL || 'your-receiving-email@example.com';
-const emailFrom = process.env.CONTACT_FORM_SENDER_EMAIL || 'noreply@yourdomain.com';
+
+// Email configuration with proper validation
+const CONTACT_FORM_CONFIG = {
+  receiverEmail: process.env.CONTACT_FORM_RECEIVER_EMAIL,
+  senderEmail: process.env.CONTACT_FORM_SENDER_EMAIL,
+  resendApiKey: process.env.RESEND_API_KEY
+};
+
+// Validate email configuration
+if (!CONTACT_FORM_CONFIG.receiverEmail) {
+  console.error('❌ CONTACT_FORM_RECEIVER_EMAIL environment variable is required');
+}
+if (!CONTACT_FORM_CONFIG.senderEmail) {
+  console.error('❌ CONTACT_FORM_SENDER_EMAIL environment variable is required');
+}
+if (!CONTACT_FORM_CONFIG.resendApiKey) {
+  console.warn('⚠️ RESEND_API_KEY not configured - contact form emails will not be sent');
+}
+
+const notificationEmailTo = CONTACT_FORM_CONFIG.receiverEmail || 'your-receiving-email@example.com';
+const emailFrom = CONTACT_FORM_CONFIG.senderEmail || 'noreply@yourdomain.com';
 
 async function createNoteForGHL(contactId: string, message: string) {
   if (!contactId || !process.env.GHL_API_BASE_URL || !process.env.GHL_API_KEY) {
@@ -64,7 +84,7 @@ async function triggerGHLWorkflow(contactId: string) {
 
 async function sendEmailNotification(formData: any) {
   const { firstName, lastName, email, phone, subject, message, smsConsent, preferredCallTime, callRequestReason } = formData;
-  if (!process.env.RESEND_API_KEY || notificationEmailTo === 'your-receiving-email@example.com' || emailFrom === 'noreply@yourdomain.com') {
+  if (!CONTACT_FORM_CONFIG.resendApiKey || notificationEmailTo === 'your-receiving-email@example.com' || emailFrom === 'noreply@yourdomain.com') {
     console.warn("Resend API key or email addresses not configured, skipping email notification.");
     return { error: null };
   }
@@ -95,12 +115,26 @@ async function sendEmailNotification(formData: any) {
 
 export async function POST(request: Request) {
   try {
-    const data = await request.json();
-    const { firstName, lastName, email, phone, subject, message, smsConsent, preferredCallTime, callRequestReason, termsAccepted } = data;
+    const rawData = await request.json();
+    
+    // Validate input data with Zod
+    const contactFormSchema = z.object({
+      firstName: z.string().min(1, 'First name is required'),
+      lastName: z.string().min(1, 'Last name is required'),
+      email: z.string().email('Valid email address is required'),
+      phone: z.string().min(10, 'Valid phone number is required'),
+      subject: z.string().min(1, 'Subject is required'),
+      message: z.string().min(1, 'Message is required'),
+      smsConsent: z.boolean().default(false),
+      preferredCallTime: z.string().optional(),
+      callRequestReason: z.string().optional(),
+      termsAccepted: z.boolean().refine(val => val === true, {
+        message: 'You must accept the terms and conditions'
+      })
+    });
 
-    if (!firstName || !lastName || !email || !phone || !subject || !message || typeof termsAccepted !== 'boolean' || !termsAccepted) {
-      return NextResponse.json({ success: false, message: 'Missing required fields or terms not accepted.' }, { status: 400 });
-    }
+    const data = contactFormSchema.parse(rawData);
+    const { firstName, lastName, email, phone, subject, message, smsConsent, preferredCallTime, callRequestReason, termsAccepted } = data;
 
     let ghlContactId: string | null = null;
     let allCustomFields: GhlCustomField[] = [];
@@ -208,6 +242,22 @@ export async function POST(request: Request) {
 
   } catch (error) {
     console.error("Contact form API error:", error);
+    
+    // Handle Zod validation errors
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Validation failed",
+          errors: error.errors.map(err => ({
+            field: err.path.join('.'),
+            message: err.message
+          }))
+        },
+        { status: 400 }
+      );
+    }
+    
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
     return NextResponse.json(
       { success: false, message: errorMessage },

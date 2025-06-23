@@ -115,6 +115,12 @@ export async function POST(request: NextRequest) {
             serviceId: validatedData.serviceId,
             scheduledDateTime: scheduledDateTime,
             
+            // Required signer fields (use customer info for guest bookings)
+            signerId: bookingUserId,
+            signerEmail: validatedData.customerEmail,
+            signerName: validatedData.customerName,
+            signerPhone: validatedData.customerPhone,
+            
             // Location
             locationType: validatedData.locationType,
             addressStreet: validatedData.addressStreet,
@@ -123,8 +129,11 @@ export async function POST(request: NextRequest) {
             addressZip: validatedData.addressZip,
             locationNotes: validatedData.locationNotes,
             
-            // Pricing
+            // Pricing - using new required fields
+            basePrice: pricing.price,
             priceAtBooking: pricing.price,
+            finalPrice: pricing.finalPrice,
+            promoDiscount: pricing.promoDiscount,
             promoCodeId: pricing.promoCodeInfo?.id,
             promoCodeDiscount: pricing.promoDiscount,
             
@@ -132,10 +141,7 @@ export async function POST(request: NextRequest) {
             status: pricing.finalPrice > 0 ? BookingStatus.PAYMENT_PENDING : BookingStatus.CONFIRMED,
             depositStatus: pricing.finalPrice > 0 ? 'PENDING' : 'COMPLETED',
             
-            // User Association (null for guests)
-            signerId: bookingUserId,
-            
-            // Customer info for guest bookings
+            // Customer info for guest bookings (deprecated fields but keeping for compatibility)
             customerEmail: validatedData.customerEmail,
             
             // Additional Details
@@ -193,6 +199,10 @@ export async function POST(request: NextRequest) {
         }
 
         return { booking: newBooking, paymentClientSecret };
+      }, {
+        maxWait: 5000,    // Wait up to 5 seconds to acquire transaction
+        timeout: 30000,   // Transaction timeout of 30 seconds
+        isolationLevel: 'ReadCommitted' // Prevent phantom reads while allowing concurrent access
       });
 
       // 7. Post-booking actions (outside transaction)
