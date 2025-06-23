@@ -11,6 +11,12 @@ export function buildCustomField(
   value: string | string[] | undefined,
   fieldDescription: string
 ): { id: string; value: string | string[] } | null {
+  // Guard against process being undefined during build time
+  if (typeof process === 'undefined' || !process.env) {
+    console.warn(`Build time warning: process.env not available for ${envVarName}`);
+    return null;
+  }
+  
   const fieldId = process.env[envVarName];
   if (!fieldId) {
     console.error(`GHL Custom Field ID Error: Environment variable ${envVarName} for '${fieldDescription}' is not set. This field will be skipped.`);
