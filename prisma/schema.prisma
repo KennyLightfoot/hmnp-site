@@ -432,6 +432,7 @@ model User {
   notaryProfile                  NotaryProfile?
   journalEntries                 NotaryJournal[]
   createdFeatureFlags            FeatureFlag[]
+  pushSubscriptions              PushSubscription[]
 
   @@index([active])
   @@index([createdAt])
@@ -710,4 +711,22 @@ model FeatureFlag {
   
   @@index([environment])
   @@map("feature_flags")
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String
+  p256dh    String
+  auth      String
+  userAgent String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Unique constraint to prevent duplicate subscriptions
+  @@unique([userId, endpoint], name: "userId_endpoint")
+  @@map("push_subscriptions")
 }

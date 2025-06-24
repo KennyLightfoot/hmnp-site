@@ -239,6 +239,28 @@ export class ProofAPI {
       method: 'DELETE',
     });
   }
+
+  /**
+   * Get completed document from a Proof transaction
+   */
+  public async getCompletedDocument(transactionId: string): Promise<{ downloadUrl: string } | null> {
+    try {
+      const response = await this.request<{ documentUrl?: string }>(`transactions/${transactionId}/document`, {
+        method: 'GET'
+      })
+
+      if (response.status === 'completed' && response.documentUrl) {
+        return {
+          downloadUrl: response.documentUrl
+        }
+      }
+
+      return null
+    } catch (error) {
+      logger.error('Failed to get completed document', 'PROOF', error as Error)
+      throw error
+    }
+  }
 }
 
 /**
