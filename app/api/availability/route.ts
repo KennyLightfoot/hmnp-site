@@ -49,6 +49,8 @@ export async function GET(request: NextRequest) {
       timezone: searchParams.get('timezone') || undefined,
     };
 
+    console.log('Availability API called with params:', queryParams);
+
     // Validate input parameters
     const validatedParams = availabilityQuerySchema.parse(queryParams);
 
@@ -73,9 +75,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Get service details
-    const service = await prisma.service.findUnique({
-      where: { id: validatedParams.serviceId },
-    });
+    let service;
+    try {
+      service = await prisma.service.findUnique({
+        where: { id: validatedParams.serviceId },
+      });
+    } catch (error) {
+      console.error('Error fetching service:', error);
+      throw new Error(`Failed to fetch service: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
 
     if (!service || !service.active) {
       return NextResponse.json(
@@ -153,6 +161,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Availability API error:', error);
+    console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace available');
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -161,8 +170,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Return more detailed error information in development
+    const isDevelopment = process.env.NODE_ENV === 'development';
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: isDevelopment ? error instanceof Error ? error.message : 'Unknown error' : 'Internal server error',
+        ...(isDevelopment && { details: error instanceof Error ? error.stack : undefined })
+      },
       { status: 500 }
     );
   } finally {
@@ -172,14 +186,23 @@ export async function GET(request: NextRequest) {
 
 // Helper function to get business settings
 async function getBusinessSettings() {
-  const settings = await prisma.businessSettings.findMany({
-    where: { category: 'booking' },
-  });
+  try {
+    const settings = await prisma.businessSettings.findMany({
+      where: { category: 'booking' },
+    });
 
-  return settings.reduce((acc, setting) => {
-    acc[setting.key] = setting.value;
-    return acc;
-  }, {} as Record<string, string>);
+    const businessSettings = settings.reduce((acc, setting) => {
+      acc[setting.key] = setting.value;
+      return acc;
+    }, {} as Record<string, string>);
+
+    console.log('Business settings loaded:', Object.keys(businessSettings));
+    return businessSettings;
+  } catch (error) {
+    console.error('Error fetching business settings:', error);
+    // Return empty settings object on error - will use defaults
+    return {};
+  }
 }
 
 // Helper function to get business hours for a specific day
@@ -222,26 +245,35 @@ async function checkBlackoutDate(date: Date, businessSettings: Record<string, st
 
 // Helper function to get existing bookings for a date
 async function getExistingBookings(date: Date) {
-  const startOfDay = new Date(date);
-  startOfDay.setHours(0, 0, 0, 0);
-  
-  const endOfDay = new Date(date);
-  endOfDay.setHours(23, 59, 59, 999);
+  try {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
 
-  return await prisma.booking.findMany({
-    where: {
-      scheduledDateTime: {
-        gte: startOfDay,
-        lte: endOfDay,
+    const bookings = await prisma.booking.findMany({
+      where: {
+        scheduledDateTime: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+        status: {
+          notIn: ['CANCELLED_BY_CLIENT', 'CANCELLED_BY_STAFF', 'NO_SHOW', 'ARCHIVED'],
+        },
       },
-      status: {
-        notIn: ['CANCELLED_BY_CLIENT', 'CANCELLED_BY_STAFF', 'NO_SHOW', 'ARCHIVED'],
+      include: {
+        Service: true,
       },
-    },
-    include: {
-      service: true,
-    },
-  });
+    });
+
+    console.log(`Found ${bookings.length} existing bookings for ${date.toDateString()}`);
+    return bookings;
+  } catch (error) {
+    console.error('Error fetching existing bookings:', error);
+    // Return empty array on error - will show all slots as available
+    return [];
+  }
 }
 
 // Helper function to get lead time

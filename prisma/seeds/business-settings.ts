@@ -246,7 +246,11 @@ export async function seedBusinessSettings() {
           category: setting.category,
           updatedAt: new Date(),
         },
-        create: setting,
+        create: {
+          id: `bs_${setting.key}`,
+          ...setting,
+          updatedAt: new Date(),
+        },
       });
     }
 
@@ -257,7 +261,8 @@ export async function seedBusinessSettings() {
   }
 }
 
-if (require.main === module) {
+// Check if this file is being run directly (ES module equivalent of require.main === module)
+if (import.meta.url === `file://${process.argv[1]}`) {
   seedBusinessSettings()
     .catch((e) => {
       console.error(e);

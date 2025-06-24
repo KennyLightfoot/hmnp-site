@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   Users, Clipboard, Calendar, CreditCard, Bell, AlertTriangle,
-  Settings, BarChart4, LogOut, Menu, X
+  Settings, BarChart4, LogOut, Menu, X, MapPin, Package, TrendingUp
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -18,8 +18,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: BarChart4 },
+    { name: 'Analytics', href: '/admin/analytics', icon: TrendingUp },
     { name: 'Bookings', href: '/admin/bookings', icon: Calendar },
     { name: 'Clients', href: '/admin/clients', icon: Users },
+    { name: 'Services', href: '/admin/services', icon: Package },
+    { name: 'Service Areas', href: '/admin/service-areas', icon: MapPin },
     { name: 'Payments', href: '/admin/payments', icon: CreditCard },
     { name: 'Notifications', href: '/admin/notifications', icon: Bell },
     { name: 'System Alerts', href: '/admin/alerts', icon: AlertTriangle },
