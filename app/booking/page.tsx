@@ -530,7 +530,7 @@ export default function BookingPage() {
                   <div className="flex justify-between">
                     <span>Date & Time:</span>
                     <span className="font-medium">
-                      {selectedDate} at {selectedTimeSlot?.startTime}
+                      {selectedDate && format(selectedDate, 'PPP')} at {selectedTimeSlot?.startTime}
                     </span>
                   </div>
                   <div className="flex justify-between">

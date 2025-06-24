@@ -235,7 +235,7 @@ async function setupCompleteSystem() {
     console.log(`  ✅ Business Settings: ${businessSettingsCount} configured`);
 
     console.log('\n🚀 Next Steps:');
-    console.log('1. Visit /booking/new to test the booking flow');
+    console.log('1. Visit /booking to test the booking flow');
     console.log('2. Try promo codes: WELCOME10, SAVE25, LOANSIGNING15, PRIORITY20');
     console.log('3. Check availability API: /api/availability');
     console.log('4. Configure payment processing environment variables');

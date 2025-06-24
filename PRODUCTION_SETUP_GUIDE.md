@@ -61,7 +61,7 @@ NEXTAUTH_URL="https://yourdomain.com"
 
 **🎯 Booking Flow Test:**
 
-1. **Visit Booking Page:** Navigate to `/booking/new`
+1. **Visit Booking Page:** Navigate to `/booking`
 2. **Select Service:** Choose any of the 4 active services
 3. **Pick Date/Time:** Test calendar availability
 4. **Apply Promo Code:** Try these codes:

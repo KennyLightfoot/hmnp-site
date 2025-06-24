@@ -37,7 +37,7 @@ async function setupBookingSystem() {
 
     console.log('\n🎉 Booking system setup complete!');
     console.log('\nNext steps:');
-    console.log('1. Visit /booking/new to test the new booking flow');
+    console.log('1. Visit /booking to test the booking flow');
     console.log('2. Try promo codes: WELCOME10, SAVE25');
     console.log('3. Configure business hours in the admin panel (when ready)');
 

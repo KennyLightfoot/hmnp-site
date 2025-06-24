@@ -125,7 +125,7 @@ async function testBookingAPIs() {
     console.log('✅ Business Settings - Configure via database');
 
     console.log('\n🚀 Next Steps:');
-    console.log('1. Visit http://localhost:3000/booking/new to test full booking flow');
+    console.log('1. Visit http://localhost:3000/booking to test full booking flow');
     console.log('2. Try each promo code in the frontend');
     console.log('3. Test mobile responsiveness');
     console.log('4. Verify email notifications (check logs)');

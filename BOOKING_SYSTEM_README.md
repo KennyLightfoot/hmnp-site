@@ -30,7 +30,7 @@ pnpm setup:booking
 ```
 
 ### 2. **Test the New Booking Flow**
-- Visit: `/booking/new`
+- Visit: `/booking`
 - Try the step-by-step booking process
 - Test with sample promo codes: `WELCOME10`, `SAVE25`
 
