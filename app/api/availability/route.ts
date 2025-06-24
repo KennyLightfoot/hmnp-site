@@ -342,7 +342,11 @@ function calculateAvailableSlots({
       
       const bookingStart = new Date(booking.scheduledDateTime);
       const bookingEnd = new Date(bookingStart);
-              bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.service.duration + bufferTimeMinutes);
+      
+      // FIX: Use correct relation name 'Service' (capital S) and add defensive checks.
+      // Fallback to the primary service's duration if the booked service's duration isn't available for some reason.
+      const duration = booking.Service?.duration ?? serviceDurationMinutes;
+      bookingEnd.setMinutes(bookingEnd.getMinutes() + duration + bufferTimeMinutes);
       
       // Check if there's any overlap
       return (currentSlot < bookingEnd && slotEnd > bookingStart);

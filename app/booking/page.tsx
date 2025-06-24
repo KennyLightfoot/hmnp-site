@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { DayPicker } from 'react-day-picker';
+import { format } from 'date-fns';
+import 'react-day-picker/dist/style.css';
 
 interface Service {
   id: string;
@@ -53,7 +56,7 @@ export default function BookingPage() {
   // State management
   const [services, setServices] = useState<Service[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
-  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | null>(null);
   const [promoCodeValidation, setPromoCodeValidation] = useState<any>(null);
@@ -99,7 +102,8 @@ export default function BookingPage() {
   // Load availability when service and date are selected
   useEffect(() => {
     if (selectedService && selectedDate) {
-      fetchAvailability(selectedDate, selectedService.id);
+      fetchAvailability(format(selectedDate, 'yyyy-MM-dd'), selectedService.id);
+      setSelectedTimeSlot(null); // Reset time slot when date changes
     }
   }, [selectedService, selectedDate]);
 
@@ -303,53 +307,66 @@ export default function BookingPage() {
             <div className="border-b pb-6">
               <h2 className="text-xl font-semibold mb-4">Step 2: Select Date & Time</h2>
               
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Date
-                </label>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => {
-                    setSelectedDate(e.target.value);
-                    setSelectedTimeSlot(null);
-                  }}
-                  min={getMinDate()}
-                  max={getMaxDate()}
-                  className="border border-gray-300 rounded-md px-3 py-2"
-                  required
-                />
-              </div>
-
-              {selectedDate && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Available Time Slots
+                    Select Date
                   </label>
-                  <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
-                    {availableSlots.map((slot, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        disabled={!slot.available}
-                        className={`p-3 rounded border text-sm font-medium ${
-                          selectedTimeSlot?.startTime === slot.startTime
-                            ? 'bg-[#A52A2A] text-white border-[#A52A2A]'
-                            : slot.available
-                            ? 'bg-white text-gray-700 border-gray-300 hover:border-[#A52A2A]'
-                            : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                        }`}
-                        onClick={() => {
-                          setSelectedTimeSlot(slot);
-                          setCurrentStep(Math.max(currentStep, 3));
-                        }}
-                      >
-                        {slot.startTime}
-                      </button>
-                    ))}
-                  </div>
+                  <DayPicker
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    disabled={{ before: new Date() }}
+                    initialFocus
+                    className="border rounded-lg p-4 bg-white"
+                    classNames={{
+                      caption: "flex justify-center items-center h-10",
+                      caption_label: "text-lg font-bold text-[#002147]",
+                      nav_button: "h-8 w-8 flex items-center justify-center rounded-full hover:bg-gray-100",
+                      head_row: "flex justify-around text-gray-600",
+                      head_cell: "w-10 h-10 flex items-center justify-center font-semibold",
+                      row: "flex w-full mt-2 justify-around",
+                      cell: "h-10 w-10 flex items-center justify-center",
+                      day: "h-10 w-10 rounded-full hover:bg-red-50 transition-colors",
+                      day_selected: "bg-[#002147] text-white font-bold hover:bg-[#002147]",
+                      day_today: "font-bold text-[#A52A2A]",
+                      day_disabled: "text-gray-300 cursor-not-allowed",
+                    }}
+                  />
                 </div>
-              )}
+
+                {selectedDate && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Available Time Slots for {format(selectedDate, 'PPP')}
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {isLoading && <p>Loading...</p>}
+                      {!isLoading && availableSlots.length === 0 && <p>No slots available for this date.</p>}
+                      {availableSlots.map((slot, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          disabled={!slot.available}
+                          className={`p-3 rounded border text-sm font-medium transition-colors ${
+                            selectedTimeSlot?.startTime === slot.startTime
+                              ? 'bg-[#A52A2A] text-white border-[#A52A2A]'
+                              : slot.available
+                              ? 'bg-white text-gray-700 border-gray-300 hover:border-[#A52A2A] hover:bg-red-50'
+                              : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                          }`}
+                          onClick={() => {
+                            setSelectedTimeSlot(slot);
+                            setCurrentStep(Math.max(currentStep, 3));
+                          }}
+                        >
+                          {slot.startTime}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
