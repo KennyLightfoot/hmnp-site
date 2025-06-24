@@ -1,6 +1,3 @@
-// Houston Mobile Notary Pros - Unified Production Schema
-// Consolidates main app + API workflow + auth system
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,53 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ===== AUTHENTICATION & USER MANAGEMENT =====
-
-model User {
-  id                             String                 @id @default(cuid())
-  name                           String?
-  email                          String?                @unique
-  emailVerified                  DateTime?
-  image                          String?
-  role                           Role                   @default(CLIENT)
-  password                       String? // For credential auth
-  active                         Boolean                @default(true)
-  lastLoginAt                    DateTime?
-  createdAt                      DateTime               @default(now())
-  updatedAt                      DateTime               @updatedAt
-  onboardedAt                    DateTime?
-  
-  // Profile fields
-  phone                          String?
-  timezone                       String?                @default("America/Chicago")
-  preferences                    Json? // User preferences as JSON
-  
-  // NextAuth relations
-  accounts                       Account[]
-  sessions                       Session[]
-  
-  // App-specific relations
-  assignments                    Assignment[]           @relation("UserAssignments")
-  uploadedDocs                   AssignmentDocument[]   @relation("UploadedDocs")
-  notaryBookings                 Booking[]              @relation("Booking_notaryIdToUser")
-  signerBookings                 Booking[]              @relation("Booking_signerIdToUser")
-  comments                       Comment[]              @relation("UserComments")
-  downloads                      DownloadLog[]
-  invitationTokens               InvitationToken[]
-  notarizationDocuments          NotarizationDocument[]
-  statusChanges                  StatusHistory[]        @relation("StatusHistoryChangedBy")
-  createdPromoCodes              PromoCode[]
-  updatedBusinessSettings        BusinessSettings[]
-  systemLogs                     SystemLog[]
-  
-  @@index([email])
-  @@index([role])
-  @@index([active])
-  @@index([createdAt])
-}
-
 model Account {
-  id                String  @id @default(cuid())
+  id                String  @id
   userId            String
   type              String
   provider          String
@@ -68,20 +20,423 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
 }
 
+model Assignment {
+  id                   String               @id
+  reference            String?              @unique
+  title                String
+  status               AssignmentStatus     @default(REQUESTED)
+  partnerAssignedToId  String?
+  propertyAddress      String?
+  borrowerName         String?
+  closingDate          DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime
+  allowPartnerComments Boolean              @default(false)
+  User                 User?                @relation(fields: [partnerAssignedToId], references: [id])
+  AssignmentDocument   AssignmentDocument[]
+  Comment              Comment[]
+  StatusHistory        StatusHistory[]
+
+  @@index([createdAt])
+  @@index([partnerAssignedToId])
+  @@index([status])
+}
+
+model AssignmentDocument {
+  id                   String                 @id
+  assignmentId         String
+  key                  String
+  filename             String
+  uploadedAt           DateTime               @default(now())
+  uploadedById         String?
+  Assignment           Assignment             @relation(fields: [assignmentId], references: [id])
+  User                 User?                  @relation(fields: [uploadedById], references: [id])
+  DownloadLog          DownloadLog[]
+  NotarizationDocument NotarizationDocument[]
+
+  @@index([assignmentId])
+  @@index([uploadedById])
+}
+
+model BackgroundError {
+  id        String   @id
+  source    String
+  message   String
+  stack     String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([source])
+}
+
+model Booking {
+  id                          String            @id
+  signerId                    String?
+  serviceId                   String
+  notaryId                    String?
+  scheduledDateTime           DateTime?
+  actualEndDateTime           DateTime?
+  status                      BookingStatus     @default(PAYMENT_PENDING)
+  locationType                LocationType?
+  addressStreet               String?
+  addressCity                 String?
+  addressState                String?
+  addressZip                  String?
+  locationNotes               String?
+  priceAtBooking              Decimal?          @db.Decimal(10, 2)
+  notes                       String?
+  dailyRoomUrl                String?
+  dailyRecordingId            String?
+  kbaStatus                   String?
+  idVerificationStatus        String?
+  notaryJournalEntry          String?
+  createdAt                   DateTime          @default(now())
+  updatedAt                   DateTime
+  confirmationEmailSentAt     DateTime?
+  confirmationSmsSentAt       DateTime?
+  followUpSentAt              DateTime?
+  lastReminderSentAt          DateTime?
+  noShowCheckPerformedAt      DateTime?
+  reminder1hrSentAt           DateTime?
+  reminder24hrSentAt          DateTime?
+  reminder2hrSentAt           DateTime?
+  depositAmount               Decimal?          @db.Decimal(10, 2)
+  depositStatus               PaymentStatus?    @default(PENDING)
+  promoCodeDiscount           Decimal?          @db.Decimal(10, 2)
+  promoCodeId                 String?
+  campaignName                String?
+  customerEmail               String?
+  ghlContactId                String?
+  leadSource                  String?
+  stripePaymentUrl            String?
+  basePrice                   Decimal           @db.Decimal(10, 2)
+  consentEmailUpdates         Boolean           @default(false)
+  consentSmsNotifications     Boolean           @default(false)
+  consentTermsConditions      Boolean           @default(false)
+  documentCount               Int?
+  finalPrice                  Decimal           @db.Decimal(10, 2)
+  numberOfSigners             Int?              @default(1)
+  paymentIntentId             String?
+  promoDiscount               Decimal           @default(0) @db.Decimal(10, 2)
+  proofAccessLink             String?
+  proofNotarizationRecordId   String?
+  proofStatus                 String?
+  proofTransactionId          String?           @unique
+  signerEmail                 String
+  signerName                  String
+  signerPhone                 String?
+  utmCampaign                 String?
+  utmMedium                   String?
+  utmSource                   String?
+  witnessType                 WitnessSource?   @map("witness_type")
+  witnessFee                  Decimal?          @default(0) @map("witness_fee") @db.Decimal(5, 2)
+  mileageMiles                Decimal?          @map("mileage_miles") @db.Decimal(5, 2)
+  mileageFee                  Decimal?          @default(0) @map("mileage_fee") @db.Decimal(5, 2)
+  urgencyLevel                String?           @default("standard") @map("urgency_level")
+  urgencyFee                  Decimal?          @default(0) @map("urgency_fee") @db.Decimal(5, 2)
+  estimatedCompletionTime     DateTime?       @map("estimated_completion_time")
+  notaryTravelTimeMinutes     Int?              @map("notary_travel_time_minutes")
+  googleMapsDistanceMatrix    Json?             @map("google_maps_distance_matrix")
+  serviceAreaId               String?           @map("service_area_id")
+  User_Booking_notaryIdToUser User?             @relation("Booking_notaryIdToUser", fields: [notaryId], references: [id])
+  PromoCode                   PromoCode?        @relation(fields: [promoCodeId], references: [id])
+  Service                     Service           @relation(fields: [serviceId], references: [id])
+  User_Booking_signerIdToUser User?             @relation("Booking_signerIdToUser", fields: [signerId], references: [id])
+  NotificationLog             NotificationLog[]
+  Payment                     Payment[]
+  serviceArea                 ServiceArea?      @relation(fields: [serviceAreaId], references: [id])
+  journalEntries              NotaryJournal[]
+
+  @@index([createdAt])
+  @@index([ghlContactId])
+  @@index([leadSource])
+  @@index([notaryId])
+  @@index([scheduledDateTime])
+  @@index([serviceId])
+  @@index([signerEmail])
+  @@index([signerId])
+  @@index([status])
+  @@index([urgencyLevel])
+  @@index([serviceAreaId])
+}
+
+model BusinessSettings {
+  id          String   @id
+  key         String   @unique
+  value       String
+  dataType    String   @default("string")
+  description String?
+  category    String?
+  updatedAt   DateTime
+  updatedById String?
+  serviceId   String?
+  Service     Service? @relation(fields: [serviceId], references: [id])
+  User        User?    @relation(fields: [updatedById], references: [id])
+
+  @@index([category])
+  @@index([key])
+  @@index([serviceId])
+  @@index([updatedById])
+}
+
+model Comment {
+  id           String     @id
+  text         String
+  createdAt    DateTime   @default(now())
+  assignmentId String
+  authorId     String
+  Assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  User         User       @relation(fields: [authorId], references: [id])
+
+  @@index([assignmentId])
+  @@index([authorId])
+}
+
+model DownloadLog {
+  id                 String             @id
+  documentId         String
+  userId             String
+  downloadedAt       DateTime           @default(now())
+  AssignmentDocument AssignmentDocument @relation(fields: [documentId], references: [id])
+  User               User               @relation(fields: [userId], references: [id])
+
+  @@index([documentId])
+  @@index([userId])
+}
+
+model InvitationToken {
+  id        String    @id
+  token     String    @unique
+  email     String
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  createdBy String
+  role      Role
+  usedAt    DateTime?
+  User      User      @relation(fields: [createdBy], references: [id])
+
+  @@index([email])
+  @@index([expiresAt])
+  @@index([token])
+}
+
+model NotarizationDocument {
+  id                   String             @id
+  assignmentDocumentId String
+  notarizationType     String
+  notarizedAt          DateTime           @default(now())
+  notaryId             String
+  notes                String?
+  AssignmentDocument   AssignmentDocument @relation(fields: [assignmentDocumentId], references: [id])
+  User                 User               @relation(fields: [notaryId], references: [id])
+
+  @@index([assignmentDocumentId])
+  @@index([notaryId])
+}
+
+model NotificationLog {
+  id           String             @id
+  bookingId    String?
+  method       NotificationMethod
+  subject      String?
+  message      String
+  sentAt       DateTime?
+  status       NotificationStatus @default(PENDING)
+  errorMessage String?
+  createdAt    DateTime           @default(now())
+  deliveredAt  DateTime?
+  failedAt     DateTime?
+  recipient    String
+  type         NotificationType
+  userId       String?
+  Booking      Booking?           @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId])
+  @@index([createdAt])
+  @@index([status])
+  @@index([type])
+  @@index([userId])
+}
+
+model Payment {
+  id                String          @id
+  bookingId         String
+  amount            Decimal         @db.Decimal(10, 2)
+  status            PaymentStatus   @default(PENDING)
+  provider          PaymentProvider @default(STRIPE)
+  paidAt            DateTime?
+  refundedAt        DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime
+  currency          String          @default("USD")
+  failureReason     String?
+  providerPaymentId String?
+  providerResponse  Json?
+  refundAmount      Decimal?        @db.Decimal(10, 2)
+  Booking           Booking         @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId])
+  @@index([createdAt])
+  @@index([provider])
+  @@index([status])
+}
+
+model PromoCode {
+  id                 String       @id
+  code               String       @unique
+  description        String?
+  discountType       DiscountType @default(PERCENTAGE)
+  discountValue      Decimal      @db.Decimal(10, 2)
+  minimumAmount      Decimal?     @db.Decimal(10, 2)
+  maxDiscountAmount  Decimal?     @db.Decimal(10, 2)
+  usageLimit         Int?
+  usageCount         Int          @default(0)
+  perCustomerLimit   Int?         @default(1)
+  validFrom          DateTime     @default(now())
+  validUntil         DateTime?
+  applicableServices String[]
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime
+  createdById        String?
+  active             Boolean      @default(true)
+  Booking            Booking[]
+  User               User?        @relation(fields: [createdById], references: [id])
+
+  @@index([active])
+  @@index([code])
+  @@index([createdById])
+  @@index([validFrom, validUntil])
+}
+
+model Service {
+  id                     String             @id
+  name                   String             @unique
+  description            String?
+  serviceType            ServiceType
+  requiresDeposit        Boolean            @default(true)
+  depositAmount          Decimal            @default(25.00) @db.Decimal(10, 2)
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime
+  externalCalendarId     String?            @unique
+  active                 Boolean            @default(true)
+  bufferTimeMinutes      Int?               @default(15)
+  duration               Int                @default(30)
+  maxAdvanceBookingDays  Int?               @default(30)
+  minAdvanceBookingHours Int?               @default(2)
+  price                  Decimal            @db.Decimal(10, 2)
+  Booking                Booking[]
+  BusinessSettings       BusinessSettings[]
+
+  @@index([active])
+  @@index([createdAt])
+  @@index([serviceType])
+}
+
 model Session {
-  id           String   @id @default(cuid())
+  id           String   @id
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
+}
+
+model StatusHistory {
+  id           String           @id
+  assignmentId String
+  status       AssignmentStatus
+  note         String?
+  changedAt    DateTime         @default(now())
+  changedById  String?
+  Assignment   Assignment       @relation(fields: [assignmentId], references: [id])
+  User         User?            @relation(fields: [changedById], references: [id])
+
+  @@index([assignmentId])
+  @@index([changedById])
+}
+
+model SystemAlert {
+  id         String        @id
+  component  String
+  message    String
+  severity   AlertSeverity @default(MEDIUM)
+  status     AlertStatus   @default(ACTIVE)
+  createdAt  DateTime      @default(now())
+  resolvedAt DateTime?
+  resolvedBy String?
+  detail     Json?
+
+  @@index([createdAt])
+  @@index([severity])
+  @@index([status])
+}
+
+model SystemLog {
+  id        String   @id
+  component String
+  message   String
+  level     LogLevel @default(INFO)
+  timestamp DateTime @default(now())
+  metadata  Json?
+  userId    String?
+  User      User?    @relation(fields: [userId], references: [id])
+
+  @@index([component])
+  @@index([level])
+  @@index([timestamp])
+  @@index([userId])
+}
+
+model User {
+  id                             String                 @id
+  name                           String?
+  email                          String?                @unique
+  emailVerified                  DateTime?
+  image                          String?
+  role                           Role                   @default(CLIENT)
+  createdAt                      DateTime               @default(now())
+  updatedAt                      DateTime
+  onboardedAt                    DateTime?
+  password                       String?
+  active                         Boolean                @default(true)
+  lastLoginAt                    DateTime?
+  phone                          String?
+  preferences                    Json?
+  timezone                       String?                @default("America/Chicago")
+  Account                        Account[]
+  Assignment                     Assignment[]
+  AssignmentDocument             AssignmentDocument[]
+  Booking_Booking_notaryIdToUser Booking[]              @relation("Booking_notaryIdToUser")
+  Booking_Booking_signerIdToUser Booking[]              @relation("Booking_signerIdToUser")
+  BusinessSettings               BusinessSettings[]
+  Comment                        Comment[]
+  DownloadLog                    DownloadLog[]
+  InvitationToken                InvitationToken[]
+  NotarizationDocument           NotarizationDocument[]
+  PromoCode                      PromoCode[]
+  Session                        Session[]
+  StatusHistory                  StatusHistory[]
+  SystemLog                      SystemLog[]
+  customerPreferences            Json?                  @map("customer_preferences")
+  notaryAvailability             Json?                  @map("notary_availability")
+  marketingConsent               Boolean                @default(false) @map("marketing_consent")
+  smsConsent                     Boolean                @default(false) @map("sms_consent")
+  pushNotificationToken          String?                @map("push_notification_token")
+  notaryProfile                  NotaryProfile?
+  journalEntries                 NotaryJournal[]
+  createdFeatureFlags            FeatureFlag[]
+
+  @@index([active])
+  @@index([createdAt])
+  @@index([email])
+  @@index([role])
 }
 
 model VerificationToken {
@@ -92,408 +447,17 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// ===== CORE BUSINESS MODELS =====
-
-model Service {
-  id                 String      @id @default(cuid())
-  name               String      @unique
-  description        String?
-  serviceType        ServiceType
-  duration           Int         @default(30) // minutes (renamed from durationMinutes)
-  price              Decimal     @db.Decimal(10, 2) // renamed from basePrice
-  active             Boolean     @default(true) // renamed from isActive
-  requiresDeposit    Boolean     @default(true)
-  depositAmount      Decimal     @default(25.00) @db.Decimal(10, 2)
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
-  externalCalendarId String?     @unique
-  
-  // Business settings
-  maxAdvanceBookingDays Int?     @default(30)
-  minAdvanceBookingHours Int?    @default(2)
-  bufferTimeMinutes     Int?     @default(15)
-  
-  bookings           Booking[]
-  businessSettings   BusinessSettings[]
-
-  @@index([active])
-  @@index([serviceType])
-  @@index([createdAt])
+enum AlertSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
 }
 
-model Booking {
-  id                          String                 @id @default(cuid())
-  
-  // Core booking info
-  signerId                    String?                // User who booked (null for guests)
-  signerEmail                 String                 // Required for all bookings
-  signerName                  String                 // Required for all bookings  
-  signerPhone                 String?                // Phone number
-  serviceId                   String
-  notaryId                    String?                // Assigned notary
-  
-  // Scheduling
-  scheduledDateTime           DateTime?
-  actualEndDateTime           DateTime?
-  status                      BookingStatus          @default(PAYMENT_PENDING)
-  
-  // Location
-  locationType                LocationType?
-  addressStreet               String?
-  addressCity                 String?
-  addressState                String?
-  addressZip                  String?
-  locationNotes               String?
-  
-  // Pricing & Payment
-  basePrice                   Decimal                @db.Decimal(10, 2) // Original service price
-  promoDiscount               Decimal                @default(0) @db.Decimal(10, 2) // Discount applied
-  finalPrice                  Decimal                @db.Decimal(10, 2) // Final amount to pay
-  depositAmount               Decimal?               @db.Decimal(10, 2)
-  depositStatus               PaymentStatus?         @default(PENDING)
-  paymentIntentId             String?                // Stripe payment intent ID
-  
-  // Booking details
-  numberOfSigners             Int?                   @default(1)
-  documentCount               Int?
-  notes                       String?
-  
-  // Consent & Compliance
-  consentTermsConditions      Boolean                @default(false)
-  consentSmsNotifications     Boolean                @default(false)
-  consentEmailUpdates         Boolean                @default(false)
-  
-  // Lead tracking
-  leadSource                  String?
-  campaignName                String?
-  utmSource                   String?
-  utmMedium                   String?
-  utmCampaign                 String?
-  
-  // Legacy fields (for compatibility)
-  priceAtBooking              Decimal?               @db.Decimal(10, 2) // Deprecated: use finalPrice
-  promoCodeDiscount           Decimal?               @db.Decimal(10, 2) // Deprecated: use promoDiscount
-  customerEmail               String?                // Deprecated: use signerEmail
-  
-  // Integration fields
-  ghlContactId                String?
-  dailyRoomUrl                String?
-  dailyRecordingId            String?
-  kbaStatus                   String?
-  idVerificationStatus        String?
-  notaryJournalEntry          String?
-  stripePaymentUrl            String?                @db.Text
-  
-  // Audit & tracking
-  createdAt                   DateTime               @default(now())
-  updatedAt                   DateTime               @updatedAt
-  confirmationEmailSentAt     DateTime?
-  confirmationSmsSentAt       DateTime?
-  followUpSentAt              DateTime?
-  lastReminderSentAt          DateTime?
-  noShowCheckPerformedAt      DateTime?
-  reminder1hrSentAt           DateTime?
-  reminder24hrSentAt          DateTime?
-  reminder2hrSentAt           DateTime?
-  
-  // Relations
-  signer                      User?                  @relation("Booking_signerIdToUser", fields: [signerId], references: [id])
-  notary                      User?                  @relation("Booking_notaryIdToUser", fields: [notaryId], references: [id])
-  service                     Service                @relation(fields: [serviceId], references: [id])
-  promoCode                   PromoCode?             @relation(fields: [promoCodeId], references: [id])
-  payments                    Payment[]
-  notifications               NotificationLog[]
-  
-  // New field for promo code relation
-  promoCodeId                 String?
-
-  @@index([signerId])
-  @@index([signerEmail])
-  @@index([serviceId])
-  @@index([notaryId])
-  @@index([status])
-  @@index([scheduledDateTime])
-  @@index([createdAt])
-  @@index([leadSource])
-  @@index([ghlContactId])
-}
-
-// ===== ASSIGNMENT & DOCUMENT MANAGEMENT =====
-
-model Assignment {
-  id                   String               @id @default(cuid())
-  reference            String?              @unique
-  title                String
-  status               AssignmentStatus     @default(REQUESTED)
-  partnerAssignedToId  String?
-  propertyAddress      String?
-  borrowerName         String?
-  closingDate          DateTime?
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
-  allowPartnerComments Boolean              @default(false)
-  
-  partnerAssignedTo    User?                @relation("UserAssignments", fields: [partnerAssignedToId], references: [id])
-  documents            AssignmentDocument[]
-  comments             Comment[]
-  history              StatusHistory[]
-  
-  @@index([partnerAssignedToId])
-  @@index([status])
-  @@index([createdAt])
-}
-
-model AssignmentDocument {
-  id                   String                 @id @default(cuid())
-  assignmentId         String
-  key                  String
-  filename             String
-  uploadedAt           DateTime               @default(now())
-  uploadedById         String?
-  
-  assignment           Assignment             @relation(fields: [assignmentId], references: [id])
-  uploadedBy           User?                  @relation("UploadedDocs", fields: [uploadedById], references: [id])
-  downloads            DownloadLog[]
-  notarizationDocs     NotarizationDocument[]
-  
-  @@index([assignmentId])
-  @@index([uploadedById])
-}
-
-model NotarizationDocument {
-  id                   String             @id @default(cuid())
-  assignmentDocumentId String
-  notaryId             String
-  notarizationType     String
-  notarizedAt          DateTime           @default(now())
-  notes                String?
-  
-  assignmentDocument   AssignmentDocument @relation(fields: [assignmentDocumentId], references: [id])
-  notary               User               @relation(fields: [notaryId], references: [id])
-  
-  @@index([assignmentDocumentId])
-  @@index([notaryId])
-}
-
-// ===== PAYMENT & FINANCIAL =====
-
-model Payment {
-  id              String          @id @default(cuid())
-  bookingId       String
-  amount          Decimal         @db.Decimal(10, 2)
-  currency        String          @default("USD")
-  provider        PaymentProvider @default(STRIPE)
-  status          PaymentStatus   @default(PENDING)
-  providerPaymentId String?       // Stripe payment intent ID, etc.
-  providerResponse  Json?         // Full provider response
-  paidAt          DateTime?
-  refundedAt      DateTime?
-  refundAmount    Decimal?        @db.Decimal(10, 2)
-  failureReason   String?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-  
-  booking         Booking         @relation(fields: [bookingId], references: [id])
-  
-  @@index([bookingId])
-  @@index([status])
-  @@index([provider])
-  @@index([createdAt])
-}
-
-model PromoCode {
-  id                String       @id @default(cuid())
-  code              String       @unique
-  description       String?
-  discountType      DiscountType @default(PERCENTAGE)
-  discountValue     Decimal      @db.Decimal(10, 2)
-  minimumAmount     Decimal?     @db.Decimal(10, 2)
-  maxDiscountAmount Decimal?     @db.Decimal(10, 2)
-  usageLimit        Int?
-  usageCount        Int          @default(0)
-  perCustomerLimit  Int?         @default(1)
-  validFrom         DateTime     @default(now())
-  validUntil        DateTime?
-  active            Boolean      @default(true) // renamed from isActive
-  applicableServices String[]    // Array of service IDs, empty means all services
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
-  createdById       String?
-  
-  creator           User?        @relation(fields: [createdById], references: [id])
-  bookings          Booking[]
-  
-  @@index([code])
-  @@index([active])
-  @@index([validFrom, validUntil])
-  @@index([createdById])
-}
-
-// ===== NOTIFICATIONS & COMMUNICATION =====
-
-model NotificationLog {
-  id           String             @id @default(cuid())
-  bookingId    String?
-  userId       String?
-  type         NotificationType
-  method       NotificationMethod
-  status       NotificationStatus @default(PENDING)
-  recipient    String             // Email or phone number
-  subject      String?
-  message      String
-  sentAt       DateTime?
-  deliveredAt  DateTime?
-  failedAt     DateTime?
-  errorMessage String?
-  createdAt    DateTime           @default(now())
-  
-  booking      Booking?           @relation(fields: [bookingId], references: [id])
-  
-  @@index([bookingId])
-  @@index([userId])
-  @@index([type])
-  @@index([status])
-  @@index([createdAt])
-}
-
-// ===== SYSTEM & ADMIN =====
-
-model BusinessSettings {
-  id          String   @id @default(cuid())
-  key         String   @unique
-  value       String
-  dataType    String   @default("string") // "string", "number", "boolean", "json"
-  description String?
-  category    String?  // "booking", "payment", "notification", "general"
-  serviceId   String?  // Optional: link to specific service
-  updatedAt   DateTime @updatedAt
-  updatedById String?
-  
-  updatedBy   User?    @relation(fields: [updatedById], references: [id])
-  service     Service? @relation(fields: [serviceId], references: [id])
-
-  @@index([key])
-  @@index([category])
-  @@index([serviceId])
-  @@index([updatedById])
-}
-
-model InvitationToken {
-  id        String   @id @default(cuid())
-  token     String   @unique
-  email     String
-  role      Role
-  createdAt DateTime @default(now())
-  expiresAt DateTime
-  usedAt    DateTime?
-  createdBy String
-  
-  creator   User     @relation(fields: [createdBy], references: [id])
-  
-  @@index([token])
-  @@index([email])
-  @@index([expiresAt])
-}
-
-// ===== TRACKING & HISTORY =====
-
-model StatusHistory {
-  id           String           @id @default(cuid())
-  assignmentId String
-  status       AssignmentStatus
-  note         String?
-  changedAt    DateTime         @default(now())
-  changedById  String?
-  
-  assignment   Assignment       @relation(fields: [assignmentId], references: [id])
-  changedBy    User?            @relation("StatusHistoryChangedBy", fields: [changedById], references: [id])
-  
-  @@index([assignmentId])
-  @@index([changedById])
-}
-
-model Comment {
-  id           String     @id @default(cuid())
-  text         String
-  createdAt    DateTime   @default(now())
-  assignmentId String
-  authorId     String
-  
-  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  author       User       @relation("UserComments", fields: [authorId], references: [id])
-
-  @@index([assignmentId])
-  @@index([authorId])
-}
-
-model DownloadLog {
-  id           String             @id @default(cuid())
-  documentId   String
-  userId       String
-  downloadedAt DateTime           @default(now())
-  
-  document     AssignmentDocument @relation(fields: [documentId], references: [id])
-  user         User               @relation(fields: [userId], references: [id])
-  
-  @@index([documentId])
-  @@index([userId])
-}
-
-// ===== SYSTEM MONITORING =====
-
-model SystemAlert {
-  id          String        @id @default(cuid())
-  component   String
-  message     String
-  severity    AlertSeverity @default(MEDIUM)
-  status      AlertStatus   @default(ACTIVE)
-  createdAt   DateTime      @default(now())
-  resolvedAt  DateTime?
-  resolvedBy  String?
-  detail      Json?
-
-  @@index([status])
-  @@index([severity])
-  @@index([createdAt])
-}
-
-model SystemLog {
-  id        String    @id @default(cuid())
-  component String
-  message   String
-  level     LogLevel  @default(INFO)
-  timestamp DateTime  @default(now())
-  metadata  Json?
-  userId    String?
-  
-  user      User?     @relation(fields: [userId], references: [id])
-
-  @@index([level])
-  @@index([component])
-  @@index([timestamp])
-  @@index([userId])
-}
-
-model BackgroundError {
-  id        String   @id @default(cuid())
-  source    String
-  message   String
-  stack     String?
-  createdAt DateTime @default(now())
-  
-  @@index([source])
-  @@index([createdAt])
-}
-
-// ===== ENUMS =====
-
-enum Role {
-  ADMIN     // Full system access
-  STAFF     // Booking management, user management (limited)
-  NOTARY    // Assignment management, own bookings
-  CLIENT    // Own bookings only
-  PARTNER   // Legacy role for assignments
-  SIGNER    // Legacy role - same as CLIENT
+enum AlertStatus {
+  ACTIVE
+  RESOLVED
+  ACKNOWLEDGED
 }
 
 enum AssignmentStatus {
@@ -522,6 +486,11 @@ enum BookingStatus {
   NO_SHOW
 }
 
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
 enum LocationType {
   CLIENT_SPECIFIED_ADDRESS
   OUR_OFFICE
@@ -529,30 +498,27 @@ enum LocationType {
   PUBLIC_PLACE
 }
 
-enum ServiceType {
-  STANDARD_NOTARY
-  EXTENDED_HOURS_NOTARY
-  LOAN_SIGNING_SPECIALIST
-  SPECIALTY_NOTARY_SERVICE
-  BUSINESS_SOLUTIONS
-  SUPPORT_SERVICE
+enum LogLevel {
+  ERROR
+  WARN
+  INFO
+  DEBUG
 }
 
-enum PaymentProvider {
-  STRIPE
-  SQUARE
-  PAYPAL
-  MANUAL
-  OTHER
+enum NotificationMethod {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
 }
 
-enum PaymentStatus {
+enum NotificationStatus {
   PENDING
-  COMPLETED
+  SENT
+  DELIVERED
   FAILED
-  REFUNDED
-  PARTIALLY_REFUNDED
-  VOIDED
+  BOUNCED
+  UNSUBSCRIBED
 }
 
 enum NotificationType {
@@ -577,43 +543,171 @@ enum NotificationType {
   PAYMENT_UPDATE
 }
 
-enum NotificationMethod {
-  EMAIL
-  SMS
-  PUSH
-  IN_APP
+enum PaymentProvider {
+  STRIPE
+  SQUARE
+  PAYPAL
+  MANUAL
+  OTHER
 }
 
-enum NotificationStatus {
+enum PaymentStatus {
   PENDING
-  SENT
-  DELIVERED
+  COMPLETED
   FAILED
-  BOUNCED
-  UNSUBSCRIBED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  VOIDED
 }
 
-enum DiscountType {
-  PERCENTAGE
-  FIXED_AMOUNT
+enum Role {
+  ADMIN
+  STAFF
+  PARTNER
+  SIGNER
+  NOTARY
+  CLIENT
 }
 
-enum AlertSeverity {
-  CRITICAL
-  HIGH
-  MEDIUM
-  LOW
+enum ServiceType {
+  STANDARD_NOTARY
+  EXTENDED_HOURS_NOTARY
+  LOAN_SIGNING_SPECIALIST
+  SPECIALTY_NOTARY_SERVICE
+  BUSINESS_SOLUTIONS
+  SUPPORT_SERVICE
 }
 
-enum AlertStatus {
-  ACTIVE
-  RESOLVED
-  ACKNOWLEDGED
+// Additional enums for v1.2 functionality
+enum WitnessSource {
+  CUSTOMER_PROVIDED
+  STAFF_PROVIDED  
+  PROOF_PROVIDED
 }
 
-enum LogLevel {
-  ERROR
-  WARN
-  INFO
-  DEBUG
+enum UrgencyLevel {
+  STANDARD
+  SAME_DAY
+  EMERGENCY
+}
+
+// New models for v1.2 specification
+
+model NotaryProfile {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  commissionNumber      String?  @map("commission_number")
+  commissionExpiry      DateTime? @map("commission_expiry")
+  baseAddress           String?  @map("base_address")
+  serviceRadiusMiles    Int      @default(25) @map("service_radius_miles")
+  isActive              Boolean  @default(true) @map("is_active")
+  emergencyContact      String?  @map("emergency_contact")
+  preferredServiceTypes String[] @map("preferred_service_types")
+  dailyCapacity         Int      @default(8) @map("daily_capacity")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("notary_profiles")
+}
+
+model NotaryJournal {
+  id               String   @id @default(cuid())
+  bookingId        String?  @map("booking_id")
+  notaryId         String   @map("notary_id")
+  entryDate        DateTime @map("entry_date") @db.Date
+  journalNumber    Int?     @map("journal_number")
+  documentType     String?  @map("document_type")
+  signerName       String?  @map("signer_name")
+  signerIdType     String?  @map("signer_id_type")
+  signerIdState    String?  @map("signer_id_state")
+  notarialActType  String?  @map("notarial_act_type")
+  feeCharged       Decimal? @map("fee_charged") @db.Decimal(10, 2)
+  location         String?
+  additionalNotes  String?  @map("additional_notes")
+  createdAt        DateTime @default(now()) @map("created_at")
+  
+  booking Booking? @relation(fields: [bookingId], references: [id])
+  notary  User     @relation(fields: [notaryId], references: [id])
+  
+  @@unique([notaryId, journalNumber])
+  @@index([bookingId])
+  @@index([notaryId, entryDate])
+  @@map("notary_journal")
+}
+
+model ServiceArea {
+  id                    String   @id @default(cuid())
+  name                  String
+  description           String?
+  polygonCoordinates    Json?    @map("polygon_coordinates")
+  serviceFeeMultiplier  Decimal  @default(1.0) @map("service_fee_multiplier") @db.Decimal(3, 2)
+  active                Boolean  @default(true)
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  
+  bookings Booking[]
+  
+  @@index([active])
+  @@map("service_areas")
+}
+
+model MileageCache {
+  id                   String   @id @default(cuid())
+  originAddress        String   @map("origin_address")
+  destinationAddress   String   @map("destination_address")
+  distanceMiles        Decimal? @map("distance_miles") @db.Decimal(5, 2)
+  durationMinutes      Int?     @map("duration_minutes")
+  googleMapsResponse   Json?    @map("google_maps_response")
+  lastCalculated       DateTime @default(now()) @map("last_calculated")
+  hitCount             Int      @default(1) @map("hit_count")
+  
+  @@unique([originAddress, destinationAddress])
+  @@index([lastCalculated])
+  @@map("mileage_cache")
+}
+
+model DailyMetric {
+  date                  DateTime @id @db.Date
+  totalBookings         Int      @default(0) @map("total_bookings")
+  mobileBookings        Int      @default(0) @map("mobile_bookings")
+  ronBookings           Int      @default(0) @map("ron_bookings")
+  completedBookings     Int      @default(0) @map("completed_bookings")
+  cancelledBookings     Int      @default(0) @map("cancelled_bookings")
+  totalRevenue          Decimal  @default(0) @map("total_revenue") @db.Decimal(10, 2)
+  mobileRevenue         Decimal  @default(0) @map("mobile_revenue") @db.Decimal(10, 2)
+  ronRevenue            Decimal  @default(0) @map("ron_revenue") @db.Decimal(10, 2)
+  proofCosts            Decimal  @default(0) @map("proof_costs") @db.Decimal(10, 2)
+  mileageCosts          Decimal  @default(0) @map("mileage_costs") @db.Decimal(10, 2)
+  stripeFees            Decimal  @default(0) @map("stripe_fees") @db.Decimal(10, 2)
+  netRevenue            Decimal  @default(0) @map("net_revenue") @db.Decimal(10, 2)
+  marginPercentage      Decimal? @map("margin_percentage") @db.Decimal(5, 2)
+  averageBookingValue   Decimal? @map("average_booking_value") @db.Decimal(10, 2)
+  conversionRate        Decimal? @map("conversion_rate") @db.Decimal(5, 2)
+  customerSatisfaction  Decimal? @map("customer_satisfaction") @db.Decimal(3, 2)
+  newCustomers          Int      @default(0) @map("new_customers")
+  repeatCustomers       Int      @default(0) @map("repeat_customers")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  
+  @@map("daily_metrics")
+}
+
+model FeatureFlag {
+  key               String   @id
+  enabled           Boolean  @default(false)
+  description       String?
+  rolloutPercentage Int      @default(0) @map("rollout_percentage")
+  targetRoles       String[] @map("target_roles")
+  targetUsers       String[] @map("target_users")
+  environment       String   @default("development")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  createdBy         String?  @map("created_by")
+  
+  creator User? @relation(fields: [createdBy], references: [id])
+  
+  @@index([environment])
+  @@map("feature_flags")
 }

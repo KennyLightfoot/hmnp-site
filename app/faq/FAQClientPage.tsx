@@ -464,24 +464,26 @@ const faqs: FAQ[] = [
     answer: (
       <div>
         <p>
-          Currently, Houston Mobile Notary Pros focuses on providing in-person mobile notary and loan signing services.
-          We do not offer Remote Online Notarization (RON) at this time.
+          <strong>Yes!</strong> Houston Mobile Notary Pros now offers Texas-compliant Remote Online Notarization (RON) services. 
+          Our RON platform allows you to get documents notarized from anywhere with secure video technology.
         </p>
         <p className="mt-2">
-          RON allows notarizations to be performed remotely using audiovisual technology. While it offers convenience in
-          some situations, our mobile service provides face-to-face verification and assistance directly at your
-          location.
+          <strong>RON Pricing (Texas Law Compliant):</strong>
         </p>
-        {/* Optional: Add if considering RON in the future */}
-        {/* <p className="mt-2">
-          We are continuously evaluating our service offerings and may consider adding RON in the future. Please check back
-          for updates.
-        </p> */}
+        <ul className="mt-2 ml-4 list-disc space-y-1">
+          <li>Standard Acknowledgment: $35 ($25 RON fee + $10 first signature)</li>
+          <li>Additional Signers: +$1 each</li>
+          <li>Oath/Affirmation: $35 ($25 RON fee + $10 oath fee)</li>
+        </ul>
+        <p className="mt-2">
+          All RON services comply with Texas Government Code §406.111 and §406.024. We provide identity verification, 
+          secure recording, and electronic seal application. No additional technology or platform fees.
+        </p>
       </div>
     ),
     category: "services",
-    keywords: ["ron", "remote", "online", "notarization", "virtual", "video", "webcam"],
-    relatedQuestions: ["services-offered", "why-mobile-notary"],
+    keywords: ["ron", "remote", "online", "notarization", "virtual", "video", "webcam", "texas", "compliant"],
+    relatedQuestions: ["services-offered", "pricing-structure"],
   },
   {
     id: "documents-notarized",

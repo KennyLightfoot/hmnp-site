@@ -3,6 +3,7 @@ import { BookingStatus } from '@prisma/client';
 
 export class GoogleCalendarService {
   private calendar;
+  private static instance: GoogleCalendarService;
   
   constructor() {
     let auth;
@@ -33,6 +34,14 @@ export class GoogleCalendarService {
     }
     
     this.calendar = google.calendar({ version: 'v3', auth });
+  }
+
+  // Lazy loading pattern to avoid instantiation during build
+  public static getInstance(): GoogleCalendarService {
+    if (!GoogleCalendarService.instance) {
+      GoogleCalendarService.instance = new GoogleCalendarService();
+    }
+    return GoogleCalendarService.instance;
   }
   
   async createBookingEvent(booking: any) {
@@ -166,4 +175,26 @@ Special Instructions: ${booking.specialInstructions || 'None'}
   }
 }
 
-export const googleCalendar = new GoogleCalendarService(); 
+// Export a function to get the instance instead of creating it at module level
+export function getGoogleCalendar(): GoogleCalendarService {
+  try {
+    return GoogleCalendarService.getInstance();
+  } catch (error) {
+    console.warn('Google Calendar service not available:', error);
+    throw error;
+  }
+}
+
+// For backward compatibility, but only when not in build mode
+export const googleCalendar = (() => {
+  // Don't instantiate during build time
+  if (typeof window === 'undefined' && process.env.NODE_ENV !== 'production') {
+    return null as any;
+  }
+  try {
+    return GoogleCalendarService.getInstance();
+  } catch (error) {
+    console.warn('Google Calendar service not available during build:', error);
+    return null as any;
+  }
+})(); 

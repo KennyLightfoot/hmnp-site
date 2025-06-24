@@ -241,6 +241,58 @@ In compliance with Texas Government Code:
 | First Signature | $6 | $69 | $75 | $10 |
 | Oath (Loan Closing) | $8 | $142 | $150 | $10 |
 
+## 🌐 Remote Online Notarization (RON) - Texas Compliant
+
+### **RON Fee Structure (Texas Gov't Code §406.111 & §406.024)**
+
+**Statutory Fee Caps:**
+| Service Component | Texas Maximum | Our Fee |
+|-------------------|---------------|---------|
+| RON Service Fee (per notarization) | $25.00 | $25.00 |
+| Acknowledgment - First Signature | $10.00 | $10.00 |
+| Acknowledgment - Each Additional | $1.00 | $1.00 |
+| Oath/Affirmation | $10.00 | $10.00 |
+| Other Notarial Acts | $10.00 | $10.00 |
+
+### **RON Service Packages**
+
+#### 📋 Standard RON Acknowledgment
+**Base Rate: $35.00**
+- RON Service Fee: $25.00
+- First Signature: $10.00
+- **Additional Signers**: +$1.00 each
+
+#### 🤝 RON Oath/Affirmation
+**Base Rate: $35.00**
+- RON Service Fee: $25.00
+- Oath Fee: $10.00
+
+#### 🏢 RON Business Documents
+**Starting at: $35.00**
+- Multiple documents may require separate notarizations
+- Each notarization: $25.00 RON + applicable notarial fees
+
+### **RON Compliance Features**
+✅ Identity Verification (Credential Analysis)  
+✅ Knowledge-Based Authentication (KBA)  
+✅ Secure Audio-Video Recording  
+✅ Electronic Seal & Signature  
+✅ 5-Year Record Retention  
+✅ Permanent Fee Book Documentation  
+
+### **What's Included - No Extra Charges**
+- Document upload/download
+- Session recording
+- Electronic seal application
+- Digital certificate verification
+- Secure document delivery
+
+### **RON Restrictions per Texas Law**
+❌ No technology surcharges beyond $25 RON fee  
+❌ No travel fees (remote service)  
+❌ No platform or convenience fees  
+❌ No document handling fees  
+
 ### 🏡 Loan Signing Services
 **$150 Fee Breakdown**:
 - Notarial Fees: $14 (2 signatures @ $6+$1×8)

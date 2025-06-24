@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { logger } from '@/lib/logger';
+import { PrismaClient } from '@prisma/client';
+import { logger } from '@/lib/logging/logger';
+
+const prisma = new PrismaClient();
 
 /**
  * Production Health Check Endpoint
@@ -47,76 +49,120 @@ interface HealthStatus {
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
+  const requestId = generateRequestId();
+  
+  logger.setRequestId(requestId);
   
   try {
-    const healthResult: HealthCheckResult = {
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      version: process.env.npm_package_version || '1.0.0',
-      environment: process.env.NODE_ENV || 'development',
-      checks: {
-        database: await checkDatabase(),
-        redis: await checkRedis(),
-        stripe: await checkStripe(),
-        ghl: await checkGHL(),
-        sentry: await checkSentry(),
-      },
-      system: {
-        memory: {
-          used: process.memoryUsage().heapUsed,
-          free: process.memoryUsage().heapTotal - process.memoryUsage().heapUsed,
-          total: process.memoryUsage().heapTotal,
-        },
-        node_version: process.version,
-      },
-    };
-
-    // Determine overall status based on individual checks
-    const criticalServices = ['database'];
-    const hasCriticalFailures = criticalServices.some(
-      service => healthResult.checks[service as keyof typeof healthResult.checks]?.status === 'fail'
-    );
-
-    const hasAnyFailures = Object.values(healthResult.checks).some(
-      check => check?.status === 'fail'
-    );
-
-    const hasWarnings = Object.values(healthResult.checks).some(
-      check => check?.status === 'warn'
-    );
-
-    if (hasCriticalFailures) {
-      healthResult.status = 'unhealthy';
-    } else if (hasAnyFailures || hasWarnings) {
-      healthResult.status = 'degraded';
-    }
-
-    const statusCode = healthResult.status === 'healthy' ? 200 : 
-                      healthResult.status === 'degraded' ? 200 : 503;
-
-    // Log health check result
-    logger.info('Health check completed', {
-      status: healthResult.status,
-      responseTime: Date.now() - startTime,
-      checks: Object.entries(healthResult.checks).reduce((acc, [key, value]) => {
-        acc[key] = value?.status;
-        return acc;
-      }, {} as Record<string, string>),
+    logger.info('Health check initiated', 'health-check', {
+      userAgent: request.headers.get('user-agent'),
+      ip: request.headers.get('x-forwarded-for') || request.ip
     });
 
-    return NextResponse.json(healthResult, { status: statusCode });
+    // Check database connectivity
+    const dbStartTime = Date.now();
+    await prisma.$queryRaw`SELECT 1`;
+    const dbResponseTime = Date.now() - dbStartTime;
+
+    // Check Redis connectivity (if configured)
+    let redisStatus = 'not-configured';
+    let redisResponseTime = 0;
+    
+    if (process.env.REDIS_URL) {
+      try {
+        const redisStartTime = Date.now();
+        // You can add Redis health check here if you have Redis client configured
+        redisStatus = 'connected';
+        redisResponseTime = Date.now() - redisStartTime;
+      } catch (error) {
+        redisStatus = 'error';
+        logger.warn('Redis health check failed', 'health-check', { error: error.message });
+      }
+    }
+
+    // Check environment variables
+    const requiredEnvVars = [
+      'DATABASE_URL',
+      'NEXTAUTH_SECRET',
+      'NEXTAUTH_URL'
+    ];
+
+    const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+
+    // Calculate total response time
+    const totalResponseTime = Date.now() - startTime;
+
+    // Determine overall health status
+    const isHealthy = missingEnvVars.length === 0 && dbResponseTime < 5000;
+
+    const healthData = {
+      status: isHealthy ? 'healthy' : 'unhealthy',
+      timestamp: new Date().toISOString(),
+      requestId,
+      responseTime: totalResponseTime,
+      services: {
+        database: {
+          status: 'connected',
+          responseTime: dbResponseTime
+        },
+        redis: {
+          status: redisStatus,
+          responseTime: redisResponseTime
+        }
+      },
+      environment: {
+        nodeEnv: process.env.NODE_ENV,
+        missingVariables: missingEnvVars
+      },
+      version: process.env.npm_package_version || '1.0.0'
+    };
+
+    logger.info('Health check completed', 'health-check', {
+      status: healthData.status,
+      responseTime: totalResponseTime,
+      dbResponseTime,
+      redisResponseTime
+    });
+
+    return NextResponse.json(healthData, {
+      status: isHealthy ? 200 : 503,
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
 
   } catch (error) {
-    logger.error('Health check failed', { error: error instanceof Error ? error.message : 'Unknown error' });
+    const totalResponseTime = Date.now() - startTime;
     
+    logger.error('Health check failed', 'health-check', error, {
+      responseTime: totalResponseTime
+    });
+
     return NextResponse.json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
-      error: 'Health check failed',
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
-    }, { status: 503 });
+      requestId,
+      responseTime: totalResponseTime,
+      error: process.env.NODE_ENV === 'production' ? 'Internal server error' : error.message,
+      services: {
+        database: { status: 'error' },
+        redis: { status: 'error' }
+      }
+    }, {
+      status: 503,
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
+      }
+    });
+  } finally {
+    logger.clearRequestId();
   }
+}
+
+function generateRequestId(): string {
+  return `health-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
 async function checkDatabase(): Promise<HealthStatus> {

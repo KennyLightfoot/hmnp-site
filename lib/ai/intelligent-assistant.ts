@@ -1,8 +1,9 @@
 /**
- * Advanced AI Integration System
+ * Advanced AI Integration System - Powered by Google Gemini
  * Provides intelligent customer service, predictive analytics, and automated decision making
  */
 
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { logger } from '../logger';
 import { cache, cacheTTL } from '../cache';
 import { prisma } from '../prisma';
@@ -46,13 +47,27 @@ export interface PredictiveAnalytics {
   }>;
 }
 
-class IntelligentAssistant {
-  private apiKey: string;
-  private baseUrl: string;
+export class IntelligentAssistant {
+  private genAI: GoogleGenerativeAI;
+  private model: any;
 
   constructor() {
-    this.apiKey = process.env.OPENAI_API_KEY || '';
-    this.baseUrl = 'https://api.openai.com/v1';
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || '';
+    if (!apiKey) {
+      logger.warn('Gemini API key not found, using fallback responses', 'AI');
+    }
+    
+    this.genAI = new GoogleGenerativeAI(apiKey);
+    // Using Gemini 2.5 Flash for optimal cost/performance balance and advanced reasoning
+    this.model = this.genAI.getGenerativeModel({ 
+      model: "gemini-2.5-flash",
+      generationConfig: {
+        temperature: 0.7,
+        topP: 0.9,
+        topK: 40,
+        maxOutputTokens: 2048,
+      },
+    });
   }
 
   /**
@@ -79,8 +94,8 @@ class IntelligentAssistant {
       // Prepare context for AI
       const aiContextStr = await this.buildCustomerContext(context);
       
-      // Call AI service
-      const aiResponse = await this.callAIService({
+      // Call Gemini AI service
+      const aiResponse = await this.callGeminiService({
         system: this.getSystemPrompt('customer_service'),
         user: message,
         context: { summary: aiContextStr }
@@ -212,7 +227,7 @@ class IntelligentAssistant {
       const customerData = await this.gatherCustomerData(customerId);
       
       // AI analysis
-      const analysis = await this.callAIService({
+      const analysis = await this.callGeminiService({
         system: this.getSystemPrompt('customer_analysis'),
         user: JSON.stringify(customerData),
         context: { task: 'customer_insights' },
@@ -257,7 +272,7 @@ class IntelligentAssistant {
       const historicalData = await this.gatherHistoricalData(timeframe);
       
       // AI prediction
-      const prediction = await this.callAIService({
+      const prediction = await this.callGeminiService({
         system: this.getSystemPrompt('predictive_analytics'),
         user: JSON.stringify(historicalData),
         context: { task: 'demand_forecasting', timeframe }
@@ -302,7 +317,7 @@ class IntelligentAssistant {
     try {
       const prompt = this.buildContentPrompt(type, context);
       
-      const response = await this.callAIService({
+      const response = await this.callGeminiService({
         system: this.getSystemPrompt('content_generation'),
         user: prompt,
         context: { type, audience: context.audience }
@@ -323,65 +338,71 @@ class IntelligentAssistant {
   /**
    * Private helper methods
    */
-  private async callAIService(params: {
+  private async callGeminiService(params: {
     system: string;
     user: string;
     context: Record<string, any>;
   }): Promise<any> {
-    // Mock AI response for now - replace with actual OpenAI API call
-    const mockResponse = {
-      content: "This is a mock AI response. In production, this would call OpenAI API.",
-      confidence: 0.85,
-      intent: 'information_request',
-      entities: {},
-      suggestedActions: ['provide_information'],
-      escalationRequired: false,
-      lifetimeValue: 1250,
-      riskScore: 0.2,
-      preferredServices: ['Essential Notary Service'],
-      communicationPreference: 'email',
-      nextBestAction: 'follow_up_service_reminder',
-      churnProbability: 0.15,
-      bookingForecast: [
-        {
-          date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          predictedBookings: 12,
+    try {
+      // Build the prompt with system instructions and context
+      const fullPrompt = `${params.system}
+
+CONTEXT: ${JSON.stringify(params.context, null, 2)}
+
+USER MESSAGE: ${params.user}
+
+Please respond in JSON format with the following structure:
+{
+  "content": "Your response to the user",
+  "confidence": 0.85,
+  "intent": "detected_intent",
+  "entities": {},
+  "suggestedActions": ["action1", "action2"],
+  "escalationRequired": false
+}`;
+
+      // Generate response from Gemini
+      const result = await this.model.generateContent(fullPrompt);
+      const response = await result.response;
+      const text = response.text();
+
+      // Parse JSON response
+      let parsedResponse;
+      try {
+        parsedResponse = JSON.parse(text);
+      } catch (parseError) {
+        // If JSON parsing fails, create a structured response
+        parsedResponse = {
+          content: text,
           confidence: 0.8,
-          factors: ['historical_trend', 'seasonal_pattern']
-        }
-      ],
-      revenueProjection: {
-        nextMonth: 15000,
-        nextQuarter: 45000,
-        confidence: 0.75
-      },
-      capacityRecommendations: [
-        {
-          timeSlot: '09:00-12:00',
-          recommendedCapacity: 3,
-          reasoning: 'High demand period based on historical data'
-        }
-      ],
-      subject: 'Your Houston Notary Service Appointment',
-      callToAction: 'Book your appointment today!',
-      personalizations: {
-        customerName: '[Customer Name]',
-        serviceType: '[Service Type]'
+          intent: 'general_inquiry',
+          entities: {},
+          suggestedActions: ['provide_more_info'],
+          escalationRequired: false
+        };
       }
-    };
 
-    // Track AI usage
-    monitoring.trackPerformance({
-      metric: 'ai_api_calls',
-      value: 1,
-      unit: 'count',
-      tags: {
-        type: params.context.task || 'general',
-        system: 'openai'
-      }
-    });
+      // Monitor AI usage
+      await monitoring.recordMetric('ai_service_call', 1, {
+        model: 'gemini-2.5-flash',
+        intent: parsedResponse.intent,
+        confidence: parsedResponse.confidence
+      });
 
-    return mockResponse;
+      return parsedResponse;
+    } catch (error) {
+      logger.error('Gemini AI service call failed', 'AI', error as Error);
+      
+      // Return mock response for development/fallback
+      return {
+        content: "I understand you're looking for assistance with notary services. Let me connect you with someone who can help you right away.",
+        confidence: 0.6,
+        intent: 'general_inquiry',
+        entities: {},
+        suggestedActions: ['escalate_to_human'],
+        escalationRequired: true
+      };
+    }
   }
 
   private async buildCustomerContext(context: any): Promise<string> {

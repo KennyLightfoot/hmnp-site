@@ -198,3 +198,165 @@ export function calculateTotalPrice({
     serviceSpecificNotes,
   };
 }
+
+// Texas-Compliant RON Pricing (Gov't Code §406.111 and §406.024)
+export const RON_FEES = {
+  // RON service fee per Gov't Code §406.111 (max $25 per notarization)
+  ronServiceFee: 25.00,
+  
+  // Notarial act fees per Gov't Code §406.024 (as amended 9-1-2023)
+  acknowledgmentFirstSignature: 10.00,
+  acknowledgmentAdditionalSignature: 1.00,
+  oathAffirmation: 10.00,
+  otherNotarialAct: 10.00,
+  
+  // Maximum caps for compliance
+  maxRonServiceFee: 25.00,
+  maxAcknowledgmentFirst: 10.00,
+  maxAcknowledgmentAdditional: 1.00,
+  maxOathAffirmation: 10.00,
+  maxOtherNotarialAct: 10.00,
+};
+
+// Texas RON Pricing Calculator - Ensures compliance with state law
+export function calculateTexasCompliantRONPrice(
+  numberOfNotarizations: number,
+  notarialActType: 'acknowledgment' | 'oath' | 'other' = 'acknowledgment',
+  numberOfSigners: number = 1
+): {
+  ronServiceFee: number;
+  notarialActFee: number;
+  totalFee: number;
+  breakdown: string[];
+  complianceNotes: string[];
+} {
+  const breakdown: string[] = [];
+  const complianceNotes: string[] = [];
+  
+  // Calculate RON service fee (Gov't Code §406.111)
+  const ronServiceFee = numberOfNotarizations * RON_FEES.ronServiceFee;
+  breakdown.push(`RON Service Fee (${numberOfNotarizations} notarization${numberOfNotarizations > 1 ? 's' : ''}): $${ronServiceFee.toFixed(2)}`);
+  complianceNotes.push(`TX Gov't Code §406.111: $${RON_FEES.ronServiceFee} per online notarization`);
+  
+  // Calculate notarial act fee (Gov't Code §406.024)
+  let notarialActFee = 0;
+  
+  if (notarialActType === 'acknowledgment') {
+    // First signature: $10, additional signatures: $1 each
+    notarialActFee = RON_FEES.acknowledgmentFirstSignature;
+    if (numberOfSigners > 1) {
+      notarialActFee += (numberOfSigners - 1) * RON_FEES.acknowledgmentAdditionalSignature;
+    }
+    breakdown.push(`Acknowledgment Fee (${numberOfSigners} signer${numberOfSigners > 1 ? 's' : ''}): $${notarialActFee.toFixed(2)}`);
+    if (numberOfSigners > 1) {
+      breakdown.push(`  - First signature: $${RON_FEES.acknowledgmentFirstSignature.toFixed(2)}`);
+      breakdown.push(`  - Additional signatures (${numberOfSigners - 1}): $${((numberOfSigners - 1) * RON_FEES.acknowledgmentAdditionalSignature).toFixed(2)}`);
+    }
+    complianceNotes.push(`TX Gov't Code §406.024: $${RON_FEES.acknowledgmentFirstSignature} first signature + $${RON_FEES.acknowledgmentAdditionalSignature} each additional`);
+  } else if (notarialActType === 'oath') {
+    notarialActFee = RON_FEES.oathAffirmation;
+    breakdown.push(`Oath/Affirmation Fee: $${notarialActFee.toFixed(2)}`);
+    complianceNotes.push(`TX Gov't Code §406.024: $${RON_FEES.oathAffirmation} per oath/affirmation`);
+  } else {
+    notarialActFee = RON_FEES.otherNotarialAct;
+    breakdown.push(`Other Notarial Act Fee: $${notarialActFee.toFixed(2)}`);
+    complianceNotes.push(`TX Gov't Code §406.024: $${RON_FEES.otherNotarialAct} per other notarial act`);
+  }
+  
+  const totalFee = ronServiceFee + notarialActFee;
+  breakdown.push(`Total: $${totalFee.toFixed(2)}`);
+  
+  // Add compliance notes
+  complianceNotes.push('All fees must be recorded in permanent fee book per Gov\'t Code §603.006');
+  complianceNotes.push('Audio-video recording retained for 5 years per Gov\'t Code §406.108');
+  
+  return {
+    ronServiceFee,
+    notarialActFee,
+    totalFee,
+    breakdown,
+    complianceNotes
+  };
+}
+
+// Helper function to determine appropriate RON pricing for a service
+export function getRONServicePricing(serviceType: string, numberOfSigners: number = 1): {
+  standardPrice: number;
+  compliancePrice: number;
+  recommended: 'standard' | 'compliance';
+  explanation: string;
+} {
+  // Calculate Texas-compliant pricing
+  const complianceCalculation = calculateTexasCompliantRONPrice(1, 'acknowledgment', numberOfSigners);
+  
+  // Current pricing from our system
+  let standardPrice = 50.00; // Default RON standard
+  switch (serviceType.toLowerCase()) {
+    case 'loan':
+    case 'loan_signing_specialist':
+      standardPrice = 125.00;
+      break;
+    case 'business':
+    case 'business_solutions':
+      standardPrice = 75.00;
+      break;
+    default:
+      standardPrice = 50.00;
+  }
+  
+  const compliancePrice = complianceCalculation.totalFee;
+  
+  return {
+    standardPrice,
+    compliancePrice,
+    recommended: compliancePrice < standardPrice ? 'compliance' : 'standard',
+    explanation: compliancePrice < standardPrice 
+      ? `Texas law caps RON fees at $${compliancePrice.toFixed(2)} for this service type`
+      : `Current pricing of $${standardPrice.toFixed(2)} is within Texas legal limits`
+  };
+}
+
+// Validate RON pricing against Texas legal limits
+export function validateRONPricing(
+  ronFee: number,
+  notarialFee: number,
+  numberOfNotarizations: number = 1,
+  numberOfSigners: number = 1
+): {
+  isCompliant: boolean;
+  violations: string[];
+  maxAllowedTotal: number;
+  recommendations: string[];
+} {
+  const violations: string[] = [];
+  const recommendations: string[] = [];
+  
+  // Check RON service fee compliance
+  const maxRonFee = numberOfNotarizations * RON_FEES.maxRonServiceFee;
+  if (ronFee > maxRonFee) {
+    violations.push(`RON service fee $${ronFee.toFixed(2)} exceeds legal maximum of $${maxRonFee.toFixed(2)}`);
+  }
+  
+  // Check notarial act fee compliance (assuming acknowledgment as most common)
+  const maxNotarialFee = RON_FEES.maxAcknowledgmentFirst + 
+                         (numberOfSigners > 1 ? (numberOfSigners - 1) * RON_FEES.maxAcknowledgmentAdditional : 0);
+  if (notarialFee > maxNotarialFee) {
+    violations.push(`Notarial act fee $${notarialFee.toFixed(2)} exceeds legal maximum of $${maxNotarialFee.toFixed(2)}`);
+  }
+  
+  const maxAllowedTotal = maxRonFee + maxNotarialFee;
+  
+  if (violations.length === 0) {
+    recommendations.push('Pricing is compliant with Texas RON regulations');
+  } else {
+    recommendations.push(`Adjust pricing to comply with Texas Gov't Code §406.111 and §406.024`);
+    recommendations.push(`Maximum allowed total: $${maxAllowedTotal.toFixed(2)}`);
+  }
+  
+  return {
+    isCompliant: violations.length === 0,
+    violations,
+    maxAllowedTotal,
+    recommendations
+  };
+}
