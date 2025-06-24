@@ -202,9 +202,9 @@ export async function GET(request: NextRequest) {
         prisma.booking.findMany({
           where: whereClause,
           include: {
-            service: true,
+            Service: true,
             promoCode: true,
-                    signer: context.canViewAllBookings ? {
+                    User_Booking_signerIdToUser: context.canViewAllBookings ? {
           select: { id: true, name: true, email: true }
         } : false,
             NotarizationDocument: true, // Include RON documents
@@ -397,8 +397,8 @@ export async function POST(request: NextRequest) {
 
     type BookingWithRelations = Prisma.BookingGetPayload<{
       include: {
-        service: true;
-        signer: { select: { id: true; name: true; email: true } };
+        Service: true;
+        User_Booking_signerIdToUser: { select: { id: true; name: true; email: true } };
       };
     }>;
     
@@ -456,10 +456,10 @@ export async function POST(request: NextRequest) {
     let newBooking: any = await prisma.booking.create({
       data: bookingData,
       include: {
-        service: true,
+        Service: true,
                 // Only include user relation if we have a signerId
         ...(signerUserId ? {
-          signer: {
+          User_Booking_signerIdToUser: {
             select: { id: true, name: true, email: true } 
           }
         } : {})
@@ -528,8 +528,8 @@ export async function POST(request: NextRequest) {
     // --- GHL API Integration: Upsert Contact & Apply Tags/Fields ---
     try {
       // Use signerUserEmail which is always populated, and signerUserName for guest details
-          const emailForGhl = signerUserId ? newBooking.signer?.email : signerUserEmail;
-    let nameForGhl = signerUserId ? newBooking.signer?.name : signerUserName;
+          const emailForGhl = signerUserId ? newBooking.User_Booking_signerIdToUser?.email : signerUserEmail;
+    let nameForGhl = signerUserId ? newBooking.User_Booking_signerIdToUser?.name : signerUserName;
 
       // Fallback for name if it's still null (e.g. guest didn't provide full name but might have provided first/last)
       if (!nameForGhl && (body.firstName || body.lastName)) {
@@ -818,7 +818,7 @@ async function validateTimeSlotAvailability(
   serviceEndTime.setMinutes(serviceEndTime.getMinutes() + duration);
   
   // Check for conflicting bookings
-  type BookingWithService = Prisma.BookingGetPayload<{ include: { service: true } }>;
+  type BookingWithService = Prisma.BookingGetPayload<{ include: { Service: true } }>;
 
   const conflictingBookings: BookingWithService[] = await tx.booking.findMany({
     where: {
@@ -831,7 +831,7 @@ async function validateTimeSlotAvailability(
       },
     },
     include: {
-      service: true,
+      Service: true,
     },
   });
   
@@ -840,7 +840,7 @@ async function validateTimeSlotAvailability(
     
     const bookingStart = new Date(booking.scheduledDateTime);
     const bookingEnd = new Date(bookingStart);
-          bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.service.duration);
+          bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.Service.duration);
     
     // Check for overlap
     return (scheduledDateTime < bookingEnd && serviceEndTime > bookingStart);

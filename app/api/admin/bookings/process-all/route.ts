@@ -31,8 +31,8 @@ export async function POST() {
       },
       take: 50,
       include: {
-        signer: true,
-        service: true,
+        User_Booking_signerIdToUser: true,
+        Service: true,
       }
     });
 

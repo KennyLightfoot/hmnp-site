@@ -53,7 +53,7 @@ export default async function AdminBookingsPage() {
       take: 50,
       include: {
         User_Booking_signerIdToUser: true,
-        service: true,
+        Service: true,
       }
     });
 
@@ -69,7 +69,7 @@ export default async function AdminBookingsPage() {
       take: 50,
       include: {
         User_Booking_signerIdToUser: true,
-        service: true,
+        Service: true,
       }
     });
 
@@ -84,7 +84,7 @@ export default async function AdminBookingsPage() {
       take: 50,
       include: {
         User_Booking_signerIdToUser: true,
-        service: true,
+        Service: true,
       }
     });
   } catch (error) {
@@ -227,7 +227,7 @@ export default async function AdminBookingsPage() {
                   {pendingBookings.map((booking) => (
                     <TableRow key={booking.id}>
                       <TableCell>{booking.User_Booking_signerIdToUser?.name || '-'}</TableCell>
-                      <TableCell>{booking.service?.name || '-'}</TableCell>
+                      <TableCell>{booking.Service?.name || '-'}</TableCell>
                       <TableCell>{formatDateTime(booking.scheduledDateTime)}</TableCell>
                       <TableCell>
                         <StatusBadge status={booking.status} />
@@ -282,9 +282,9 @@ export default async function AdminBookingsPage() {
                   {confirmedBookings.map((booking) => (
                     <TableRow key={booking.id}>
                       <TableCell>{booking.User_Booking_signerIdToUser?.name || '-'}</TableCell>
-                      <TableCell>{booking.service?.name || '-'}</TableCell>
+                      <TableCell>{booking.Service?.name || '-'}</TableCell>
                       <TableCell>{formatDateTime(booking.scheduledDateTime)}</TableCell>
-                      <TableCell>{booking.service?.duration || '-'} min</TableCell>
+                      <TableCell>{booking.Service?.duration || '-'} min</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <Button size="sm" variant="outline" asChild>
@@ -335,7 +335,7 @@ export default async function AdminBookingsPage() {
                   {cancelledBookings.map((booking) => (
                     <TableRow key={booking.id}>
                       <TableCell>{booking.User_Booking_signerIdToUser?.name || '-'}</TableCell>
-                      <TableCell>{booking.service?.name || '-'}</TableCell>
+                      <TableCell>{booking.Service?.name || '-'}</TableCell>
                       <TableCell>{formatDateTime(booking.scheduledDateTime)}</TableCell>
                       <TableCell>{formatDateTime(booking.updatedAt)}</TableCell>
                       <TableCell>

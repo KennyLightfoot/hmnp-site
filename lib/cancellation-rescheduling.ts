@@ -30,7 +30,7 @@ export class CancellationReschedulingService {
   private notificationService: NotificationService
 
   constructor() {
-    this.notificationService = new NotificationService()
+    this.notificationService = NotificationService.getInstance()
   }
 
   /**

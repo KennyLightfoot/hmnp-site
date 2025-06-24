@@ -54,7 +54,7 @@ export async function POST(request: Request) {
         // scheduledDateTime will be set when notary is assigned
       },
       include: {
-        service: true,
+        Service: true,
         NotarizationDocument: true
       }
     });

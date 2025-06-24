@@ -87,8 +87,8 @@ export async function GET(request: NextRequest) {
         createdAt: 'asc' // Oldest first for urgency calculation
       },
       include: {
-        service: true,
-        signer: {
+        Service: true,
+        User_Booking_signerIdToUser: {
           select: {
             name: true,
             email: true
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
       return {
         bookingId: booking.id,
         paymentUrl: booking.stripePaymentUrl || `${process.env.NEXTAUTH_URL}/checkout/${booking.id}`,
-        serviceName: booking.service?.name || 'Mobile Notary Service',
+        serviceName: booking.Service?.name || 'Mobile Notary Service',
         servicePrice: Number(booking.priceAtBooking || 75),
         scheduledDate: booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleDateString('en-US') : null,
         scheduledTime: booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleTimeString('en-US', {
@@ -149,8 +149,8 @@ export async function GET(request: NextRequest) {
           isExpired: hoursOld > 168 // 1 week
         },
         customerInfo: {
-          name: booking.signer?.name || 'Unknown',
-          email: booking.signer?.email || '',
+          name: booking.User_Booking_signerIdToUser?.name || 'Unknown',
+          email: booking.User_Booking_signerIdToUser?.email || '',
           phone: ''
         }
       };

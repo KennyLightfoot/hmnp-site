@@ -181,9 +181,8 @@ export async function POST(request: NextRequest) {
         notes
       },
       include: {
-        service: true,
-        signer: true,
-        promoCode: true
+        Service: true,
+        User_Booking_signerIdToUser: true,
       }
     });
 
@@ -204,7 +203,7 @@ export async function POST(request: NextRequest) {
         },
         customer: {
                   name: booking.signer?.name,
-        email: booking.signer?.email
+        email: booking.User_Booking_signerIdToUser?.email
         },
         depositAmount: booking.depositAmount,
         promoCode: promoCodeData ? {

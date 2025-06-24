@@ -20,7 +20,7 @@ export async function GET(
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        service: {
+        Service: {
           select: {
             id: true,
             name: true,
@@ -30,21 +30,21 @@ export async function GET(
             serviceType: true,
           },
         },
-        signer: {
+        User_Booking_signerIdToUser: {
           select: {
             id: true,
             name: true,
             email: true,
           },
         },
-        notary: {
+        User_Booking_notaryIdToUser: {
           select: {
             id: true,
             name: true,
             email: true,
           },
         },
-        promoCode: {
+        PromoCode: {
           select: {
             id: true,
             code: true,
@@ -88,26 +88,26 @@ export async function GET(
       
       // Service Information
       service: {
-        id: booking.service.id,
-        name: booking.service.name,
-        description: booking.service.description,
-        duration: booking.service.duration,
-        price: booking.service.price,
-        type: booking.service.serviceType,
+        id: booking.Service.id,
+        name: booking.Service.name,
+        description: booking.Service.description,
+        duration: booking.Service.duration,
+        price: booking.Service.price,
+        type: booking.Service.serviceType,
       },
       
       // Customer Information
-      customer: booking.signer ? {
-        id: booking.signer.id,
-        name: booking.signer.name,
-        email: booking.signer.email,
+      customer: booking.User_Booking_signerIdToUser ? {
+        id: booking.User_Booking_signerIdToUser.id,
+        name: booking.User_Booking_signerIdToUser.name,
+        email: booking.User_Booking_signerIdToUser.email,
       } : null,
       
       // Notary Information (if assigned)
-      notary: booking.notary ? {
-        id: booking.notary.id,
-        name: booking.notary.name,
-        email: booking.notary.email,
+      notary: booking.User_Booking_notaryIdToUser ? {
+        id: booking.User_Booking_notaryIdToUser.id,
+        name: booking.User_Booking_notaryIdToUser.name,
+        email: booking.User_Booking_notaryIdToUser.email,
       } : null,
       
       // Location Information
@@ -124,16 +124,16 @@ export async function GET(
       
       // Pricing Information
       pricing: {
-        price: Number(booking.service.price),
+        price: Number(booking.Service.price),
         priceAtBooking: Number(booking.priceAtBooking),
         promoDiscount: booking.promoCodeDiscount ? Number(booking.promoCodeDiscount) : 0,
         depositAmount: booking.depositAmount ? Number(booking.depositAmount) : 0,
         depositStatus: booking.depositStatus,
-        promoCode: booking.promoCode ? {
-          code: booking.promoCode.code,
-          description: booking.promoCode.description,
-          discountType: booking.promoCode.discountType,
-          discountValue: Number(booking.promoCode.discountValue),
+        promoCode: booking.PromoCode ? {
+          code: booking.PromoCode.code,
+          description: booking.PromoCode.description,
+          discountType: booking.PromoCode.discountType,
+          discountValue: Number(booking.PromoCode.discountValue),
         } : null,
       },
       
@@ -230,9 +230,9 @@ export async function PATCH(
         updatedAt: new Date(),
       },
       include: {
-        service: true,
-        signer: true,
-        promoCode: true,
+        Service: true,
+        User_Booking_signerIdToUser: true,
+        PromoCode: true,
       },
     });
 

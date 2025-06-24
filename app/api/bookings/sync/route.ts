@@ -187,8 +187,8 @@ export async function POST(request: NextRequest) {
         addressState: validatedData.addressState
       },
       include: {
-        service: true,
-        signer: true
+        Service: true,
+        User_Booking_signerIdToUser: true
       }
     });
 
@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
           hour12: true
         }),
         cf_service_address: serviceAddress,
-                  cf_total_amount: service.price.toString(),
+        cf_total_amount: service.price.toString(),
         cf_lead_source: validatedData.leadSource
       };
 
@@ -263,8 +263,8 @@ export async function POST(request: NextRequest) {
     const responseData = {
       bookingId: newBooking.id,
       serviceName: service.name,
-                servicePrice: service.price,
-          totalAmount: service.price,
+      servicePrice: service.price,
+      totalAmount: service.price,
       scheduledDate: new Date(validatedData.scheduledDateTime).toLocaleDateString('en-US'),
       scheduledTime: new Date(validatedData.scheduledDateTime).toLocaleTimeString('en-US', {
         hour: 'numeric',
@@ -321,4 +321,4 @@ export async function GET() {
     timestamp: new Date().toISOString(),
     availableServices: Object.keys(SERVICE_NAME_MAP)
   });
-} 
+}

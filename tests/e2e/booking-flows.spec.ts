@@ -410,5 +410,4 @@ test.describe('Integration Points', () => {
   });
 });
 
-// Additional test for error handling and edge cases
-}); 
+// Additional test for error handling and edge cases 

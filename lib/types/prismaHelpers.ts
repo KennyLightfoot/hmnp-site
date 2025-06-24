@@ -8,14 +8,14 @@ import { Prisma } from '@prisma/client';
 
 export type BookingWithService = Prisma.BookingGetPayload<{
   include: {
-    service: true;
+    Service: true;
   };
 }>;
 
 export type BookingWithUserAndService = Prisma.BookingGetPayload<{
   include: {
-    service: true;
-    signer: true;
+    Service: true;
+    User_Booking_signerIdToUser: true;
   };
 }>;
 

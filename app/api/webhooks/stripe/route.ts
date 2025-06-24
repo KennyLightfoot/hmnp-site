@@ -145,8 +145,8 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
     const existingBooking = await tx.booking.findUnique({
       where: { id: bookingId },
       include: {
-        service: true,
-        signer: true,
+        User_Booking_signerIdToUser: true,
+        Service: true,
         Payment: {
           where: {
             status: 'PENDING'
@@ -173,8 +173,8 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
         depositStatus: 'COMPLETED',
       },
       include: {
-        service: true,
-        signer: true,
+        User_Booking_signerIdToUser: true,
+        Service: true,
       }
     });
 
@@ -184,12 +184,12 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
         where: {
           bookingId: bookingId,
           status: 'PENDING',
-          paymentIntentId: session.payment_intent as string
+          providerPaymentId: session.payment_intent as string
         },
         data: {
           status: 'COMPLETED',
           paidAt: new Date(),
-          transactionId: session.id,
+          providerPaymentId: session.payment_intent as string,
           notes: `Checkout session completed: ${session.id}`
         }
       });
@@ -261,8 +261,8 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, ev
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        service: true,
-        signer: true,
+        User_Booking_signerIdToUser: true,
+        Service: true,
       }
     });
 
@@ -288,7 +288,7 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, ev
         // Update custom fields
         const customFields = {
           cf_payment_status: 'FAILED',
-          cf_payment_failed_attempts: ((parseInt(booking.signer?.email || '0') || 0) + 1).toString(),
+          cf_payment_failed_attempts: ((parseInt(booking.User_Booking_signerIdToUser?.email || '0') || 0) + 1).toString(),
         };
         
         await ghl.updateContact({
@@ -321,15 +321,16 @@ async function handleChargeRefunded(charge: Stripe.Charge, eventId: string) {
   }
 
   try {
-    // Find booking by payment intent ID stored in notes or through Payment records
+    // Find booking by payment intent ID stored in providerPaymentId field
     const payments = await prisma.payment.findMany({
       where: {
-        paymentIntentId: charge.payment_intent as string,
+        providerPaymentId: charge.payment_intent as string,
       },
       include: {
         Booking: {
           include: {
-            service: true,
+            User_Booking_signerIdToUser: true,
+            Service: true,
           }
         }
       }

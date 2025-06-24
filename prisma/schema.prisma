@@ -144,6 +144,9 @@ model Booking {
   notaryTravelTimeMinutes     Int?              @map("notary_travel_time_minutes")
   googleMapsDistanceMatrix    Json?             @map("google_maps_distance_matrix")
   serviceAreaId               String?           @map("service_area_id")
+  googleCalendarEventId       String?           @map("google_calendar_event_id")
+  completedAt                 DateTime?         @map("completed_at")
+  actualStartDateTime         DateTime?         @map("actual_start_date_time")
   User_Booking_notaryIdToUser User?             @relation("Booking_notaryIdToUser", fields: [notaryId], references: [id])
   PromoCode                   PromoCode?        @relation(fields: [promoCodeId], references: [id])
   Service                     Service           @relation(fields: [serviceId], references: [id])
@@ -152,6 +155,14 @@ model Booking {
   Payment                     Payment[]
   serviceArea                 ServiceArea?      @relation(fields: [serviceAreaId], references: [id])
   journalEntries              NotaryJournal[]
+  totalSigners                Int?              @default(1) @map("total_signers")
+  primarySignerConfirmed      Boolean           @default(false) @map("primary_signer_confirmed")
+  allSignersConfirmed         Boolean           @default(false) @map("all_signers_confirmed")
+  documentUploadDeadline      DateTime?         @map("document_upload_deadline")
+  customInstructions          String?           @map("custom_instructions")
+  bookingSigners              BookingSigner[]
+  bookingDocuments            BookingDocument[]
+  bookingAddons               BookingAddon[]
 
   @@index([createdAt])
   @@index([ghlContactId])
@@ -279,6 +290,7 @@ model Payment {
   providerPaymentId String?
   providerResponse  Json?
   refundAmount      Decimal?        @db.Decimal(10, 2)
+  notes             String?
   Booking           Booking         @relation(fields: [bookingId], references: [id])
 
   @@index([bookingId])
@@ -433,6 +445,10 @@ model User {
   journalEntries                 NotaryJournal[]
   createdFeatureFlags            FeatureFlag[]
   pushSubscriptions              PushSubscription[]
+  bookingSigners                 BookingSigner[]        @relation("BookingSigner_userId")
+  uploadedDocuments              BookingDocument[]      @relation("BookingDocument_uploadedBy")
+  verifiedDocuments              BookingDocument[]      @relation("BookingDocument_verifiedBy")
+  approvedAddons                 BookingAddon[]         @relation("BookingAddon_approvedBy")
 
   @@index([active])
   @@index([createdAt])
@@ -729,4 +745,104 @@ model PushSubscription {
   // Unique constraint to prevent duplicate subscriptions
   @@unique([userId, endpoint], name: "userId_endpoint")
   @@map("push_subscriptions")
+}
+
+model BookingSigner {
+  id                    String   @id @default(cuid())
+  bookingId             String   @map("booking_id")
+  signerId              String?  @map("signer_id") // Optional - for registered users
+  signerName            String   @map("signer_name")
+  signerEmail           String   @map("signer_email")
+  signerPhone           String?  @map("signer_phone")
+  signerRole            String   @default("PRIMARY") @map("signer_role") // PRIMARY, SECONDARY, WITNESS, etc.
+  idVerificationStatus  String   @default("PENDING") @map("id_verification_status") // PENDING, VERIFIED, FAILED
+  signatureStatus       String   @default("PENDING") @map("signature_status") // PENDING, SIGNED, DECLINED
+  notificationPreference String  @default("EMAIL") @map("notification_preference") // EMAIL, SMS, BOTH
+  specialInstructions   String?  @map("special_instructions")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  user    User?   @relation("BookingSigner_userId", fields: [signerId], references: [id])
+  
+  @@index([bookingId])
+  @@index([signerId])
+  @@index([signerEmail])
+  @@map("booking_signers")
+}
+
+// Enhanced Document Management for Phase 1
+model BookingDocument {
+  id                String   @id @default(cuid())
+  bookingId         String   @map("booking_id")
+  documentName      String   @map("document_name")
+  documentType      String   @map("document_type") // CONTRACT, ID_DOCUMENT, SUPPORTING_DOC, etc.
+  s3Key             String   @map("s3_key")
+  s3Bucket          String   @map("s3_bucket")
+  fileName          String   @map("file_name")
+  fileSize          Int      @map("file_size")
+  mimeType          String   @map("mime_type")
+  uploadedBy        String?  @map("uploaded_by") // User ID who uploaded
+  uploadedAt        DateTime @default(now()) @map("uploaded_at")
+  isRequired        Boolean  @default(false) @map("is_required")
+  isVerified        Boolean  @default(false) @map("is_verified")
+  verifiedBy        String?  @map("verified_by")
+  verifiedAt        DateTime? @map("verified_at")
+  notes             String?
+  
+  // Relations
+  booking     Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  uploadedByUser User? @relation("BookingDocument_uploadedBy", fields: [uploadedBy], references: [id])
+  verifiedByUser User? @relation("BookingDocument_verifiedBy", fields: [verifiedBy], references: [id])
+  
+  @@index([bookingId])
+  @@index([documentType])
+  @@index([uploadedBy])
+  @@map("booking_documents")
+}
+
+// Service Add-ons for customization
+model ServiceAddon {
+  id                String  @id @default(cuid())
+  name              String
+  description       String?
+  addonType         String  // WITNESS, APOSTILLE, EXTRA_COPY, RUSH_SERVICE, etc.
+  price             Decimal @db.Decimal(10, 2)
+  isActive          Boolean @default(true) @map("is_active")
+  requiresApproval  Boolean @default(false) @map("requires_approval")
+  maxQuantity       Int?    @map("max_quantity")
+  applicableServices String[] @map("applicable_services") // Service IDs this addon applies to
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  bookingAddons BookingAddon[]
+  
+  @@index([addonType])
+  @@index([isActive])
+  @@map("service_addons")
+}
+
+model BookingAddon {
+  id          String  @id @default(cuid())
+  bookingId   String  @map("booking_id")
+  addonId     String  @map("addon_id")
+  quantity    Int     @default(1)
+  unitPrice   Decimal @db.Decimal(10, 2) @map("unit_price")
+  totalPrice  Decimal @db.Decimal(10, 2) @map("total_price")
+  isApproved  Boolean @default(true) @map("is_approved")
+  approvedBy  String? @map("approved_by")
+  approvedAt  DateTime? @map("approved_at")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  // Relations
+  booking    Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  addon      ServiceAddon @relation(fields: [addonId], references: [id])
+  approver   User?        @relation("BookingAddon_approvedBy", fields: [approvedBy], references: [id])
+  
+  @@index([bookingId])
+  @@index([addonId])
+  @@map("booking_addons")
 }

@@ -28,9 +28,9 @@ export async function POST(request: NextRequest) {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        service: true,
-        signer: true,
-        promoCode: true
+        Service: true,
+        User_Booking_signerIdToUser: true,
+        PromoCode: true
       }
     });
 
@@ -51,11 +51,11 @@ export async function POST(request: NextRequest) {
     // Calculate amount using centralized pricing utility
     const { PricingUtils } = await import('@/lib/pricing-utils');
     const paymentAmount = PricingUtils.getBookingAmount({
-      priceAtBooking: booking.service.price,
+      priceAtBooking: booking.Service.price,
       depositAmount: booking.depositAmount,
       service: {
-        requiresDeposit: booking.service.requiresDeposit,
-        depositAmount: booking.service.depositAmount
+        requiresDeposit: booking.Service.requiresDeposit,
+        depositAmount: booking.Service.depositAmount
       }
     });
     const amountInCents = PricingUtils.toCents(paymentAmount);
@@ -78,14 +78,14 @@ export async function POST(request: NextRequest) {
         bookingId: booking.id,
         serviceId: booking.serviceId,
         customerId: booking.signerId || '',
-        customerEmail: booking.signer?.email || '',
-        serviceName: booking.service.name,
-        promoCode: booking.promoCode?.code || '',
-        originalAmount: booking.service.depositAmount.toString(),
+        customerEmail: booking.User_Booking_signerIdToUser?.email || '',
+        serviceName: booking.Service.name,
+        promoCode: booking.PromoCode?.code || '',
+        originalAmount: booking.Service.depositAmount.toString(),
         discountAmount: booking.promoCodeDiscount?.toString() || '0'
       },
-      description: `Deposit for ${booking.service.name} - ${booking.signer?.name}`,
-      receipt_email: booking.signer?.email || undefined,
+      description: `Deposit for ${booking.Service.name} - ${booking.User_Booking_signerIdToUser?.name}`,
+      receipt_email: booking.User_Booking_signerIdToUser?.email || undefined,
     });
 
     // Store payment intent ID in the database
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
         status: 'PENDING',
         provider: 'STRIPE',
         providerPaymentId: paymentIntent.id,
-        notes: 'Deposit payment'
+        // Payment notes are handled in the new schema
       }
     });
 
@@ -114,11 +114,11 @@ export async function POST(request: NextRequest) {
       amount: amountInCents,
       booking: {
         id: booking.id,
-        service: booking.service.name,
+        service: booking.Service.name,
         scheduledDateTime: booking.scheduledDateTime,
-        customer: booking.signer?.name,
-        promoCode: booking.promoCode ? {
-          code: booking.promoCode.code,
+        customer: booking.User_Booking_signerIdToUser?.name,
+        promoCode: booking.PromoCode ? {
+          code: booking.PromoCode.code,
           discountAmount: booking.promoCodeDiscount
         } : null
       }

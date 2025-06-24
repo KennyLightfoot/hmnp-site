@@ -51,8 +51,8 @@ export async function POST(request: NextRequest) {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        service: true,
-        signer: {
+        Service: true,
+        User_Booking_signerIdToUser: {
           select: {
             name: true,
             email: true
@@ -118,8 +118,8 @@ export async function POST(request: NextRequest) {
       where: { id: bookingId },
       data: updateData,
       include: {
-        service: true,
-        signer: true
+        Service: true,
+        User_Booking_signerIdToUser: true
       }
     });
 
@@ -183,15 +183,15 @@ export async function POST(request: NextRequest) {
         minute: '2-digit',
         hour12: true
       }),
-      serviceName: updatedBooking.service?.name || 'Mobile Notary Service',
+      serviceName: updatedBooking.Service?.name || 'Mobile Notary Service',
       serviceAddress: [updatedBooking.addressStreet, updatedBooking.addressCity, updatedBooking.addressState].filter(Boolean).join(', ') || 'Address TBD',
       rescheduleFee: rescheduleFee,
       totalAmount: Number(updatedBooking.priceAtBooking || 0),
       reason: reason || `Requested by ${requestedBy}`,
       hoursUntilOriginal: hoursUntilOriginal,
       customer: {
-        name: updatedBooking.signer?.name || 'Unknown',
-        email: updatedBooking.signer?.email || '',
+        name: updatedBooking.User_Booking_signerIdToUser?.name || 'Unknown',
+        email: updatedBooking.User_Booking_signerIdToUser?.email || '',
         phone: ''
       },
       message: rescheduleFee > 0 
@@ -258,7 +258,7 @@ export async function GET(request: NextRequest) {
     // Find the booking
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
-      include: { service: true }
+      include: { Service: true }
     });
 
     if (!booking) {
