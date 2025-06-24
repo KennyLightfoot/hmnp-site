@@ -43,6 +43,7 @@ export class BullScheduler {
       this.schedulePaymentExpirationChecks();
       this.schedulePaymentStatusUpdates();
       this.scheduleBookingConfirmationReminders();
+      this.scheduleCancelUnpaidDeposits();
 
       this.isInitialized = true;
       logger.info('Bull scheduler initialized successfully');
@@ -211,6 +212,105 @@ export class BullScheduler {
 
     this.cronJobs.set('booking-confirmation-reminders', job);
     logger.info('Booking confirmation reminders scheduled to run every 4 hours');
+  }
+
+  /**
+   * Schedule automated slot release for unpaid deposits
+   * Phase 0-B: Runs every 15 minutes to find bookings in PAYMENT_PENDING older than 2 hrs 
+   * and sets status to CANCELLED_BY_SYSTEM
+   */
+  private scheduleCancelUnpaidDeposits(): void {
+    // Run every 15 minutes
+    const job = cron.schedule('*/15 * * * *', async () => {
+      logger.info('Running scheduled unpaid deposit cancellation check...');
+      
+      try {
+        // Find bookings in PAYMENT_PENDING status older than 2 hours
+        const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+        
+        const unpaidBookings = await prisma.booking.findMany({
+          where: {
+            status: 'PAYMENT_PENDING',
+            createdAt: {
+              lt: twoHoursAgo
+            }
+          },
+          include: {
+            signer: true,
+            Service: true
+          }
+        });
+        
+        logger.info(`Found ${unpaidBookings.length} unpaid bookings to cancel`);
+        
+        let cancelledCount = 0;
+        
+        // Cancel each unpaid booking
+        for (const booking of unpaidBookings) {
+          try {
+            await prisma.booking.update({
+              where: { id: booking.id },
+              data: { 
+                status: 'CANCELLED_BY_SYSTEM',
+                notes: booking.notes ? 
+                  `${booking.notes}\n\nAuto-cancelled: Payment not received within 2 hours` :
+                  'Auto-cancelled: Payment not received within 2 hours'
+              }
+            });
+            
+            // Cancel any pending payments for this booking
+            await prisma.payment.updateMany({
+              where: { 
+                bookingId: booking.id,
+                status: 'PENDING'
+              },
+              data: { 
+                status: 'VOIDED',
+                notes: 'Auto-cancelled due to non-payment',
+                updatedAt: new Date()
+              }
+            });
+            
+            cancelledCount++;
+            
+            // Send slot released notification to ops
+            await this.queueClient.enqueueNotification({
+              notificationType: 'slot_released',
+              recipientId: 'ops@houstonmobilenotary.com', // Replace with actual ops email
+              templateId: 'slot-released-ops',
+              templateData: {
+                bookingId: booking.id,
+                serviceName: booking.Service?.name || 'Unknown Service',
+                customerName: booking.signer?.name || 'Unknown',
+                customerEmail: booking.signer?.email || 'Unknown',
+                scheduledDateTime: booking.scheduledDateTime?.toISOString() || 'TBD',
+                cancelledAt: new Date().toISOString(),
+                reason: 'Payment not received within 2 hours'
+              },
+              metadata: {
+                reason: 'automated_slot_release',
+                originalStatus: 'PAYMENT_PENDING'
+              }
+            });
+            
+            logger.info(`Cancelled booking ${booking.id} due to unpaid deposit`);
+            
+          } catch (error) {
+            logger.error(`Error cancelling booking ${booking.id}:`, error as Error);
+          }
+        }
+        
+        if (cancelledCount > 0) {
+          logger.info(`Successfully cancelled ${cancelledCount} unpaid bookings`);
+        }
+        
+      } catch (error) {
+        logger.error('Error during unpaid deposit cancellation', 'BULL_SCHEDULER', error as Error);
+      }
+    });
+
+    this.cronJobs.set('cancel-unpaid-deposits', job);
+    logger.info('Unpaid deposit cancellation scheduled to run every 15 minutes');
   }
 
   /**
