@@ -12,12 +12,19 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 // Conditional LaunchDarkly import - graceful degradation
 let useFlags: any
-try {
-  const launchDarkly = require('@launchdarkly/react-client-sdk')
-  useFlags = launchDarkly.useFlags
-} catch {
-  // Fallback when LaunchDarkly isn't installed
-  useFlags = () => ({ useEnhancedBookingFlow: false })
+
+// Only try LaunchDarkly in client environment
+if (typeof window !== 'undefined') {
+  try {
+    const launchDarkly = require('@launchdarkly/react-client-sdk')
+    useFlags = launchDarkly.useFlags
+  } catch {
+    // NEW: Phase 2-A - Enable enhanced booking flow by default for testing
+    useFlags = () => ({ useEnhancedBookingFlow: true })
+  }
+} else {
+  // Server-side fallback
+  useFlags = () => ({ useEnhancedBookingFlow: true })
 }
 
 interface Service {
@@ -65,6 +72,45 @@ interface BookingFormData {
 export default function BookingPage() {
   const { useEnhancedBookingFlow } = useFlags()
   
+  // Enhanced booking submission handler
+  const handleEnhancedBookingSubmit = async (bookingData: any) => {
+    try {
+      // Use RON-specific endpoint if it's a RON booking
+      const endpoint = bookingData.isRONService 
+        ? '/api/bookings/enhanced-ron'
+        : '/api/bookings/enhanced';
+        
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Booking submission failed');
+      }
+
+      const result = await response.json();
+      console.log('Enhanced booking submitted:', result);
+      
+      // Redirect to confirmation page
+      if (result.success) {
+        window.location.href = `/booking-confirmation?id=${result.booking.id}`;
+      }
+    } catch (error) {
+      console.error('Booking submission error:', error);
+      throw error;
+    }
+  };
+  
+  // Simple booking form submission handler  
+  const handleSimpleBookingSubmit = (data: any) => {
+    // Handle simple booking form submission
+    console.log('Simple booking submitted:', data);
+  };
+  
   return (
     <div className="container mx-auto py-6 px-4 max-w-4xl">
       <div className="mb-6">
@@ -76,9 +122,9 @@ export default function BookingPage() {
       
       <Suspense fallback={<BookingFormSkeleton />}>
         {useEnhancedBookingFlow ? (
-          <EnhancedBookingWizard />
+          <EnhancedBookingWizard onBookingSubmit={handleEnhancedBookingSubmit} />
         ) : (
-          <BookingForm />
+          <BookingForm onSubmit={handleSimpleBookingSubmit} />
         )}
       </Suspense>
     </div>

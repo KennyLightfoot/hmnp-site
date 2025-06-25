@@ -36,7 +36,8 @@ function Providers({ children, session }: ProvidersProps) {
 // Conditional LaunchDarkly wrapper - graceful degradation
 let WrappedProviders = Providers
 
-if (ldClientId) {
+// Only try LaunchDarkly in client environment
+if (typeof window !== 'undefined' && ldClientId) {
   try {
     const { withLDProvider } = require('@launchdarkly/react-client-sdk')
     WrappedProviders = withLDProvider({
