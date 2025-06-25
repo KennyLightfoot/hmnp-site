@@ -16,7 +16,7 @@ let useFlags: any
 // Only try LaunchDarkly in client environment
 if (typeof window !== 'undefined') {
   try {
-    const launchDarkly = require('@launchdarkly/react-client-sdk')
+    const launchDarkly = require('launchdarkly-react-client-sdk')
     useFlags = launchDarkly.useFlags
   } catch {
     // NEW: Phase 2-A - Enable enhanced booking flow by default for testing

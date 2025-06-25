@@ -17,3 +17,6 @@
 {"level":"info","message":"💾 Database: Neon PostgreSQL with Prisma","service":"houston-mobile-notary-api","timestamp":"2025-06-11T23:10:54.872Z"}
 {"level":"info","message":"🔒 Security features enabled: Helmet, CORS, Rate Limiting","service":"houston-mobile-notary-api","timestamp":"2025-06-11T23:10:54.872Z"}
 {"level":"info","message":"📡 Webhook endpoints ready for GHL integration","service":"houston-mobile-notary-api","timestamp":"2025-06-11T23:10:54.873Z"}
+{"level":"error","message":"Failed to load historical data","metadata":{},"requestId":"","service":{"error":{"clientVersion":"6.8.2","name":"PrismaClientValidationError"}},"timestamp":"2025-06-25T05:36:07.022Z"}
+{"level":"error","message":"Failed to load historical data","metadata":{},"requestId":"","service":{"error":{"clientVersion":"6.8.2","name":"PrismaClientValidationError"}},"timestamp":"2025-06-25T05:37:16.808Z"}
+{"level":"error","message":"Failed to load historical data","metadata":{},"requestId":"","service":{"error":{"clientVersion":"6.8.2","name":"PrismaClientValidationError"}},"timestamp":"2025-06-25T05:43:24.145Z"}

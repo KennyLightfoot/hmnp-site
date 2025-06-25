@@ -39,7 +39,7 @@ let WrappedProviders = Providers
 // Only try LaunchDarkly in client environment
 if (typeof window !== 'undefined' && ldClientId) {
   try {
-    const { withLDProvider } = require('@launchdarkly/react-client-sdk')
+    const { withLDProvider } = require('launchdarkly-react-client-sdk')
     WrappedProviders = withLDProvider({
       clientSideID: ldClientId,
       context: {

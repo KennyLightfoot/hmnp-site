@@ -114,6 +114,7 @@
     "jsonwebtoken": "^9.0.2",
     "launchdarkly-js-client-sdk": "^3.6.0",
     "launchdarkly-node-server-sdk": "^7.0.0",
+    "launchdarkly-react-client-sdk": "^3.8.1",
     "leaflet": "^1.9.4",
     "leaflet-draw": "^1.0.4",
     "lucide-react": "^0.298.0",
