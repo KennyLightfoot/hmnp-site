@@ -5,9 +5,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { withLDProvider } from '@launchdarkly/react-client-sdk'
 
-// LaunchDarkly configuration
+// LaunchDarkly configuration with fallback
 const ldClientId = process.env.NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_ID || ''
 
 interface ProvidersProps {
@@ -34,14 +33,25 @@ function Providers({ children, session }: ProvidersProps) {
   )
 }
 
-// Wrap with LaunchDarkly provider if client ID is available
-export default ldClientId ? withLDProvider({
-  clientSideID: ldClientId,
-  context: {
-    kind: 'user',
-    anonymous: true
-  },
-  options: {
-    bootstrap: 'localStorage'
+// Conditional LaunchDarkly wrapper - graceful degradation
+let WrappedProviders = Providers
+
+if (ldClientId) {
+  try {
+    const { withLDProvider } = require('@launchdarkly/react-client-sdk')
+    WrappedProviders = withLDProvider({
+      clientSideID: ldClientId,
+      context: {
+        kind: 'user',
+        anonymous: true
+      },
+      options: {
+        bootstrap: 'localStorage'
+      }
+    })(Providers)
+  } catch (error) {
+    console.log('LaunchDarkly not available, using fallback provider')
   }
-})(Providers) : Providers
+}
+
+export default WrappedProviders

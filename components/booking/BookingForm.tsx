@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,7 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { User, MapPin, Phone, Mail, Building, MessageSquare } from 'lucide-react';
+import { User, MapPin, Phone, Mail, Building, MessageSquare, Users, FileText, Clock, DollarSign } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { useUTMParams } from '@/hooks/use-utm-params';
 
 const bookingFormSchema = z.object({
   // Customer Information
@@ -29,6 +33,17 @@ const bookingFormSchema = z.object({
   
   // Additional Information
   notes: z.string().optional(),
+
+  // Phase 1-C: New fields
+  signerCount: z.number().int().min(1, 'Signer count must be at least 1'),
+  documentCount: z.number().int().min(1, 'Document count must be at least 1'),
+
+  // UTM tracking fields - Phase 1-C
+  utmSource: z.string().optional(),
+  utmMedium: z.string().optional(),
+  utmCampaign: z.string().optional(),
+  utmTerm: z.string().optional(),
+  utmContent: z.string().optional(),
 });
 
 type BookingFormData = z.infer<typeof bookingFormSchema>;
@@ -93,6 +108,8 @@ const US_STATES = [
 ];
 
 export default function BookingForm({ onSubmit, loading = false, initialData }: BookingFormProps) {
+  const utmParams = useUTMParams();
+  
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingFormSchema),
     defaultValues: {
@@ -106,11 +123,31 @@ export default function BookingForm({ onSubmit, loading = false, initialData }: 
       addressZip: initialData?.addressZip || '',
       locationNotes: initialData?.locationNotes || '',
       notes: initialData?.notes || '',
+      signerCount: initialData?.signerCount || 1,
+      documentCount: initialData?.documentCount || 1,
+      // Auto-populate UTM params from URL/localStorage
+      utmSource: initialData?.utmSource || utmParams.utmSource || '',
+      utmMedium: initialData?.utmMedium || utmParams.utmMedium || '',
+      utmCampaign: initialData?.utmCampaign || utmParams.utmCampaign || '',
+      utmTerm: initialData?.utmTerm || utmParams.utmTerm || '',
+      utmContent: initialData?.utmContent || utmParams.utmContent || '',
     }
   });
 
+  // Update form values when UTM params change
+  useEffect(() => {
+    if (utmParams.utmSource) form.setValue('utmSource', utmParams.utmSource);
+    if (utmParams.utmMedium) form.setValue('utmMedium', utmParams.utmMedium);
+    if (utmParams.utmCampaign) form.setValue('utmCampaign', utmParams.utmCampaign);
+    if (utmParams.utmTerm) form.setValue('utmTerm', utmParams.utmTerm);
+    if (utmParams.utmContent) form.setValue('utmContent', utmParams.utmContent);
+  }, [utmParams, form]);
+
   const locationType = form.watch('locationType');
   const requiresAddress = locationType === 'CLIENT_SPECIFIED_ADDRESS' || locationType === 'PUBLIC_PLACE';
+  
+  // Check if we have any UTM parameters to show the section
+  const hasUTMParams = Object.values(utmParams).some(value => value);
 
   const handleSubmit = (data: BookingFormData) => {
     // Only require address fields if location type needs them
@@ -385,6 +422,134 @@ export default function BookingForm({ onSubmit, loading = false, initialData }: 
             />
           </CardContent>
         </Card>
+
+        {/* Signer and Document Count */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Signer and Document Count
+            </CardTitle>
+            <CardDescription>
+              Please specify the number of signers and documents for your appointment.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FormField
+              control={form.control}
+              name="signerCount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Number of Signers</FormLabel>
+                  <FormControl>
+                    <Input type="number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="documentCount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Number of Documents</FormLabel>
+                  <FormControl>
+                    <Input type="number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
+        {/* UTM Tracking */}
+        {hasUTMParams && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                UTM Tracking
+              </CardTitle>
+              <CardDescription>
+                Please provide UTM tracking information for your appointment.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="utmSource"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>UTM Source</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="utmMedium"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>UTM Medium</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="utmCampaign"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>UTM Campaign</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="utmTerm"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>UTM Term</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="utmContent"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>UTM Content</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Submit Button */}
         <Button 

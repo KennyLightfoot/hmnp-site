@@ -5,11 +5,20 @@ import { useSearchParams } from 'next/navigation';
 import { DayPicker } from 'react-day-picker';
 import { format } from 'date-fns';
 import 'react-day-picker/dist/style.css';
-import { useFlags } from '@launchdarkly/react-client-sdk'
 import { Suspense } from 'react'
 import BookingForm from '@/components/booking/BookingForm'
 import EnhancedBookingWizard from '@/components/booking/EnhancedBookingWizard'
 import { Skeleton } from '@/components/ui/skeleton'
+
+// Conditional LaunchDarkly import - graceful degradation
+let useFlags: any
+try {
+  const launchDarkly = require('@launchdarkly/react-client-sdk')
+  useFlags = launchDarkly.useFlags
+} catch {
+  // Fallback when LaunchDarkly isn't installed
+  useFlags = () => ({ useEnhancedBookingFlow: false })
+}
 
 interface Service {
   id: string;
