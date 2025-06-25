@@ -17,6 +17,14 @@ import MultiSignerForm, { SignerInfo } from './MultiSignerForm';
 import DocumentUpload, { BookingDocument } from './DocumentUpload';
 import ServiceAddons, { SelectedAddon } from './ServiceAddons';
 
+// NEW IMPORTS: Add the missing integrations for Phase 2-A
+import AppointmentCalendar from '@/components/appointment-calendar';
+import RealTimePricing from './RealTimePricing';
+import { DistanceService } from '@/lib/maps/distance';
+
+// NEW IMPORTS: Phase 2-C Payment Mode Selection
+import PaymentModeSelector from './PaymentModeSelector';
+
 interface Service {
   id: string;
   name: string;
@@ -33,9 +41,20 @@ interface EnhancedBookingData {
   serviceId: string;
   service?: Service;
   
+  // NEW Phase 2-B: RON Support
+  isRONService?: boolean;
+  ronIdentityVerification?: {
+    kbaRequired?: boolean;
+    idDocumentTypes?: string[];
+    hasGovernmentId?: boolean;
+    governmentIdType?: string;
+    isFirstTimeRON?: boolean;
+    specialIdRequirements?: string;
+  };
+  
   // Scheduling
   scheduledDateTime: string;
-  locationType: 'CLIENT_SPECIFIED_ADDRESS' | 'PUBLIC_PLACE';
+  locationType: 'CLIENT_SPECIFIED_ADDRESS' | 'PUBLIC_PLACE' | 'REMOTE_ONLINE_NOTARIZATION';
   addressStreet: string;
   addressCity: string;
   addressState: string;
@@ -56,6 +75,14 @@ interface EnhancedBookingData {
   promoCode?: string;
   urgencyLevel: 'standard' | 'same-day' | 'emergency';
   
+  // NEW: Distance and pricing fields for Phase 2-A
+  distanceMiles?: number;
+  travelFee?: number;
+  estimatedTravelTime?: number;
+  
+  // NEW: Phase 2-C Payment fields
+  paymentMode: 'full' | 'deposit';
+  
   // Consent
   termsAccepted: boolean;
   smsNotifications: boolean;
@@ -69,6 +96,14 @@ const WIZARD_STEPS = [
     description: 'Choose your notary service',
     icon: Settings,
     required: true
+  },
+  {
+    id: 'ron-verification',
+    title: 'Identity Verification',
+    description: 'RON identity requirements',
+    icon: Users,
+    required: true,
+    showIf: (data: EnhancedBookingData) => data.isRONService === true
   },
   {
     id: 'signers',
@@ -122,8 +157,13 @@ export default function EnhancedBookingWizard({
   const [isLoading, setIsLoading] = useState(false);
   const [services, setServices] = useState<Service[]>(availableServices);
   
+  // NEW: Phase 2-A state for distance calculations
+  const [isCalculatingDistance, setIsCalculatingDistance] = useState(false);
+  const [distanceError, setDistanceError] = useState<string | null>(null);
+  
   const [bookingData, setBookingData] = useState<EnhancedBookingData>({
     serviceId: '',
+    isRONService: false,
     scheduledDateTime: '',
     locationType: 'CLIENT_SPECIFIED_ADDRESS',
     addressStreet: '',
@@ -140,6 +180,7 @@ export default function EnhancedBookingWizard({
     documents: [],
     selectedAddons: [],
     urgencyLevel: 'standard',
+    paymentMode: 'deposit', // Default to deposit mode
     termsAccepted: false,
     smsNotifications: true,
     emailUpdates: true,
@@ -172,6 +213,51 @@ export default function EnhancedBookingWizard({
 
   const updateBookingData = (updates: Partial<EnhancedBookingData>) => {
     setBookingData(prev => ({ ...prev, ...updates }));
+    
+    // NEW: Phase 2-A - Auto-calculate distance when address changes
+    if (updates.addressStreet || updates.addressCity || updates.addressState || updates.addressZip) {
+      const newData = { ...bookingData, ...updates };
+      if (newData.addressStreet && newData.addressCity && newData.addressState && newData.addressZip) {
+        calculateDistance(newData);
+      }
+    }
+  };
+
+  // NEW: Phase 2-A - Distance calculation function
+  const calculateDistance = async (data: EnhancedBookingData) => {
+    const fullAddress = `${data.addressStreet}, ${data.addressCity}, ${data.addressState} ${data.addressZip}`;
+    
+    setIsCalculatingDistance(true);
+    setDistanceError(null);
+    
+    try {
+      const result = await DistanceService.calculateDistance(fullAddress);
+      
+      if (result.isWithinServiceArea) {
+        const travelFee = DistanceService.calculateTravelFee(result.distance.miles);
+        
+        updateBookingData({
+          distanceMiles: result.distance.miles,
+          travelFee: travelFee,
+          estimatedTravelTime: result.duration.minutes
+        });
+        
+        if (result.warnings.length > 0) {
+          toast({
+            title: "Distance Notice",
+            description: result.warnings.join('. '),
+            variant: "default",
+          });
+        }
+      } else {
+        setDistanceError(`Location is outside our service area (${result.distance.miles} miles). Please contact us for special arrangements.`);
+      }
+    } catch (error) {
+      console.error('Distance calculation error:', error);
+      setDistanceError('Unable to calculate distance. Travel fees will be determined during booking confirmation.');
+    } finally {
+      setIsCalculatingDistance(false);
+    }
   };
 
   const selectedService = services.find(s => s.id === bookingData.serviceId);
@@ -183,6 +269,13 @@ export default function EnhancedBookingWizard({
       case 'service':
         return !!bookingData.serviceId;
         
+      case 'ron-verification':
+        if (!bookingData.isRONService) return true; // Skip if not RON
+        return !!(bookingData.ronIdentityVerification?.hasGovernmentId !== undefined &&
+                 bookingData.ronIdentityVerification?.isFirstTimeRON !== undefined &&
+                 (bookingData.ronIdentityVerification?.hasGovernmentId === false || 
+                  bookingData.ronIdentityVerification?.governmentIdType));
+        
       case 'signers':
         return bookingData.signers.length > 0 && 
                bookingData.signers.every(s => s.name && s.email) &&
@@ -193,9 +286,14 @@ export default function EnhancedBookingWizard({
         return true;
         
       case 'scheduling':
-        return !!bookingData.scheduledDateTime && 
-               !!bookingData.addressStreet && 
-               !!bookingData.addressCity;
+        const hasDateTime = !!bookingData.scheduledDateTime;
+        if (bookingData.isRONService) {
+          // RON only needs date/time, no address
+          return hasDateTime;
+        } else {
+          // Mobile service needs address
+          return hasDateTime && !!bookingData.addressStreet && !!bookingData.addressCity;
+        }
                
       case 'addons':
         // Optional step - always valid
@@ -228,7 +326,60 @@ export default function EnhancedBookingWizard({
   const calculateTotalPrice = () => {
     const servicePrice = selectedService?.price || 0;
     const addonsPrice = bookingData.selectedAddons.reduce((total, addon) => total + addon.totalPrice, 0);
-    return servicePrice + addonsPrice;
+    const travelFee = bookingData.travelFee || 0;
+    return servicePrice + addonsPrice + travelFee;
+  };
+
+  // NEW: Phase 2-A - Real-time pricing inputs for the pricing component
+  const getPricingInputs = () => {
+    // Convert our Service to ServiceData format expected by RealTimePricing
+    const serviceData = selectedService ? {
+      id: selectedService.id,
+      name: selectedService.name,
+      price: selectedService.price,
+      requiresDeposit: selectedService.requiresDeposit,
+      depositAmount: selectedService.depositAmount,
+      duration: selectedService.duration
+    } : undefined;
+    
+    return {
+      service: serviceData,
+      numberOfSigners: bookingData.signers.length,
+      distance: bookingData.distanceMiles || 0,
+      extraDocuments: bookingData.documents.length,
+      isWeekend: false, // TODO: Calculate based on scheduledDateTime
+      isHoliday: false, // TODO: Calculate based on scheduledDateTime
+      isAfterHours: false, // TODO: Calculate based on scheduledDateTime
+      needsOvernightHandling: bookingData.urgencyLevel === 'emergency',
+      needsBilingualService: false, // TODO: Add bilingual option to form
+      promoCode: bookingData.promoCode,
+      urgencyLevel: bookingData.urgencyLevel
+    };
+  };
+
+  // NEW: Phase 2-B - Check if service is RON compatible
+  const isServiceRONCapable = (service: Service) => {
+    return service.serviceType === 'REMOTE_ONLINE_NOTARIZATION' || 
+           service.name.toLowerCase().includes('remote') ||
+           service.name.toLowerCase().includes('ron');
+  };
+
+  // NEW: Phase 2-B - Handle RON service toggle
+  const handleRONToggle = (isRON: boolean) => {
+    updateBookingData({ 
+      isRONService: isRON,
+      locationType: isRON ? 'REMOTE_ONLINE_NOTARIZATION' : 'CLIENT_SPECIFIED_ADDRESS',
+      // Reset location fields if switching to RON
+      ...(isRON ? {
+        addressStreet: '',
+        addressCity: '',
+        addressState: 'TX',
+        addressZip: '',
+        distanceMiles: undefined,
+        travelFee: undefined,
+        estimatedTravelTime: undefined
+      } : {})
+    });
   };
 
   const handleSubmit = async () => {
@@ -242,7 +393,15 @@ export default function EnhancedBookingWizard({
 
     setIsLoading(true);
     try {
-      await onBookingSubmit(bookingData);
+      // Enhanced booking data with payment mode
+      const enhancedBookingData = {
+        ...bookingData,
+        paymentMode: bookingData.paymentMode, // Pass payment mode to backend
+        totalAmount: calculateTotalPrice(),
+        depositAmount: selectedService?.depositAmount || 0
+      };
+      
+      await onBookingSubmit(enhancedBookingData);
     } catch (error) {
       console.error('Booking submission error:', error);
       toast({
@@ -268,6 +427,77 @@ export default function EnhancedBookingWizard({
               <h2 className="text-xl font-semibold mb-2">Choose Your Service</h2>
               <p className="text-muted-foreground">Select the notary service you need</p>
             </div>
+
+            {/* NEW: Phase 2-B - RON Toggle */}
+            {selectedService && isServiceRONCapable(selectedService) && (
+              <Card className="border-2 border-blue-200 bg-blue-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-blue-800">
+                    🌐 Remote Online Notarization (RON) Available
+                  </CardTitle>
+                  <CardDescription className="text-blue-700">
+                    This service can be completed online from anywhere! No travel required.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div 
+                      className={`cursor-pointer p-4 border-2 rounded-lg transition-all ${
+                        !bookingData.isRONService 
+                          ? 'border-blue-500 bg-blue-100' 
+                          : 'border-gray-300 bg-white hover:border-blue-300'
+                      }`}
+                      onClick={() => handleRONToggle(false)}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className={`w-4 h-4 rounded-full border-2 ${
+                          !bookingData.isRONService ? 'bg-blue-500 border-blue-500' : 'border-gray-400'
+                        }`} />
+                        <h3 className="font-semibold">Mobile Service</h3>
+                      </div>
+                      <p className="text-sm text-gray-600">Notary comes to your location</p>
+                      <ul className="text-xs text-gray-500 mt-2 space-y-1">
+                        <li>• In-person service</li>
+                        <li>• Travel fees may apply</li>
+                        <li>• Flexible scheduling</li>
+                      </ul>
+                    </div>
+                    
+                    <div 
+                      className={`cursor-pointer p-4 border-2 rounded-lg transition-all ${
+                        bookingData.isRONService 
+                          ? 'border-green-500 bg-green-100' 
+                          : 'border-gray-300 bg-white hover:border-green-300'
+                      }`}
+                      onClick={() => handleRONToggle(true)}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className={`w-4 h-4 rounded-full border-2 ${
+                          bookingData.isRONService ? 'bg-green-500 border-green-500' : 'border-gray-400'
+                        }`} />
+                        <h3 className="font-semibold">Remote Online (RON)</h3>
+                      </div>
+                      <p className="text-sm text-gray-600">Complete entirely online</p>
+                      <ul className="text-xs text-gray-500 mt-2 space-y-1">
+                        <li>• No travel required</li>
+                        <li>• Same legal validity</li>
+                        <li>• Texas compliant</li>
+                        <li>• Available 24/7</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  {bookingData.isRONService && (
+                    <Alert className="mt-4 border-green-200 bg-green-50">
+                      <AlertDescription className="text-green-800">
+                        <strong>RON Selected:</strong> You'll complete this notarization via secure video call. 
+                        Identity verification and document upload will be required before your appointment.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </CardContent>
+              </Card>
+            )}
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {services.map((service) => (
@@ -292,6 +522,12 @@ export default function EnhancedBookingWizard({
                         )}
                       </div>
                     </div>
+                    {/* NEW: RON compatibility indicator */}
+                    {isServiceRONCapable(service) && (
+                      <Badge variant="outline" className="border-blue-400 text-blue-700 bg-blue-50">
+                        RON Available
+                      </Badge>
+                    )}
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">{service.description}</p>
@@ -306,6 +542,183 @@ export default function EnhancedBookingWizard({
                 </Card>
               ))}
             </div>
+          </div>
+        );
+
+      case 'ron-verification':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Identity Verification for RON</h2>
+              <p className="text-muted-foreground">
+                Remote Online Notarization requires identity verification to comply with Texas law
+              </p>
+            </div>
+
+            <Card className="border-amber-200 bg-amber-50">
+              <CardHeader>
+                <CardTitle className="text-amber-800">Required for RON Session</CardTitle>
+                <CardDescription className="text-amber-700">
+                  Texas Government Code requires the following identity verification steps
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium">
+                    Do you have a current government-issued photo ID? *
+                  </label>
+                  <div className="space-y-2">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        name="hasGovernmentId"
+                        checked={bookingData.ronIdentityVerification?.hasGovernmentId === true}
+                        onChange={() => updateBookingData({
+                          ronIdentityVerification: {
+                            ...bookingData.ronIdentityVerification,
+                            hasGovernmentId: true,
+                            kbaRequired: false,
+                            idDocumentTypes: ['DRIVERS_LICENSE', 'PASSPORT', 'STATE_ID'],
+                            isFirstTimeRON: false
+                          }
+                        })}
+                        className="w-4 h-4"
+                      />
+                      <span>Yes, I have a valid government-issued photo ID</span>
+                    </label>
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        name="hasGovernmentId"
+                        checked={bookingData.ronIdentityVerification?.hasGovernmentId === false}
+                        onChange={() => updateBookingData({
+                          ronIdentityVerification: {
+                            ...bookingData.ronIdentityVerification,
+                            hasGovernmentId: false,
+                            kbaRequired: true,
+                            idDocumentTypes: [],
+                            isFirstTimeRON: true
+                          }
+                        })}
+                        className="w-4 h-4"
+                      />
+                      <span>No, I need Knowledge-Based Authentication (KBA)</span>
+                    </label>
+                  </div>
+                </div>
+
+                {bookingData.ronIdentityVerification?.hasGovernmentId && (
+                  <div className="space-y-3 p-4 border border-green-200 bg-green-50 rounded">
+                    <label className="block text-sm font-medium text-green-800">
+                      Type of ID you'll present *
+                    </label>
+                    <select
+                      value={bookingData.ronIdentityVerification?.governmentIdType || ''}
+                      onChange={(e) => updateBookingData({
+                        ronIdentityVerification: {
+                          ...bookingData.ronIdentityVerification,
+                          governmentIdType: e.target.value,
+                          hasGovernmentId: true,
+                          kbaRequired: false,
+                          idDocumentTypes: [e.target.value],
+                          isFirstTimeRON: false
+                        }
+                      })}
+                      className="w-full px-3 py-2 border rounded-md"
+                    >
+                      <option value="">Select ID type...</option>
+                      <option value="DRIVERS_LICENSE">Driver's License</option>
+                      <option value="STATE_ID">State ID Card</option>
+                      <option value="PASSPORT">US Passport</option>
+                      <option value="MILITARY_ID">Military ID</option>
+                    </select>
+                    <p className="text-sm text-green-700">
+                      ✓ You'll show this ID to the notary during your video session
+                    </p>
+                  </div>
+                )}
+
+                {bookingData.ronIdentityVerification?.kbaRequired && (
+                  <div className="space-y-3 p-4 border border-blue-200 bg-blue-50 rounded">
+                    <h4 className="font-medium text-blue-800">Knowledge-Based Authentication (KBA)</h4>
+                    <p className="text-sm text-blue-700">
+                      Since you don't have a government ID, you'll answer questions about your personal 
+                      history that only you would know (credit history, previous addresses, etc.).
+                    </p>
+                    <Alert>
+                      <AlertDescription>
+                        KBA verification typically takes 5-10 minutes and happens before your notary session.
+                      </AlertDescription>
+                    </Alert>
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium">
+                    Is this your first time using Remote Online Notarization?
+                  </label>
+                  <div className="space-y-2">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        name="isFirstTimeRON"
+                        checked={bookingData.ronIdentityVerification?.isFirstTimeRON === true}
+                        onChange={() => updateBookingData({
+                          ronIdentityVerification: {
+                            ...bookingData.ronIdentityVerification,
+                            isFirstTimeRON: true
+                          }
+                        })}
+                        className="w-4 h-4"
+                      />
+                      <span>Yes, this is my first RON session</span>
+                    </label>
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        name="isFirstTimeRON"
+                        checked={bookingData.ronIdentityVerification?.isFirstTimeRON === false}
+                        onChange={() => updateBookingData({
+                          ronIdentityVerification: {
+                            ...bookingData.ronIdentityVerification,
+                            isFirstTimeRON: false
+                          }
+                        })}
+                        className="w-4 h-4"
+                      />
+                      <span>No, I've used RON before</span>
+                    </label>
+                  </div>
+                </div>
+
+                {bookingData.ronIdentityVerification?.isFirstTimeRON && (
+                  <Alert className="border-blue-200 bg-blue-50">
+                    <AlertDescription className="text-blue-800">
+                      <strong>First-time RON user:</strong> We'll send you a brief tutorial video 
+                      and technical requirements before your appointment.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium">
+                    Special Requirements (Optional)
+                  </label>
+                  <textarea
+                    value={bookingData.ronIdentityVerification?.specialIdRequirements || ''}
+                    onChange={(e) => updateBookingData({
+                      ronIdentityVerification: {
+                        ...bookingData.ronIdentityVerification,
+                        specialIdRequirements: e.target.value
+                      }
+                    })}
+                    placeholder="Any accessibility needs, preferred language, or special circumstances..."
+                    className="w-full px-3 py-2 border rounded-md"
+                    rows={3}
+                  />
+                </div>
+              </CardContent>
+            </Card>
           </div>
         );
 
@@ -340,23 +753,7 @@ export default function EnhancedBookingWizard({
               <p className="text-muted-foreground">Choose date, time, and location</p>
             </div>
             
-            {/* Date/Time Selection - Integrate with existing calendar component */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
-                  Appointment Date & Time
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  Calendar integration would go here - using existing AppointmentCalendar component
-                </p>
-                {/* Placeholder for calendar integration */}
-              </CardContent>
-            </Card>
-
-            {/* Location Details */}
+            {/* Location Details - Now with distance calculation */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -409,8 +806,79 @@ export default function EnhancedBookingWizard({
                     />
                   </div>
                 </div>
+                
+                {/* NEW: Distance calculation status */}
+                {isCalculatingDistance && (
+                  <div className="flex items-center gap-2 text-blue-600">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    <span className="text-sm">Calculating distance...</span>
+                  </div>
+                )}
+                
+                {distanceError && (
+                  <Alert>
+                    <AlertDescription className="text-amber-600">
+                      {distanceError}
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
+                {bookingData.distanceMiles && (
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+                    <div className="flex justify-between items-center text-sm">
+                      <span>Distance from Houston:</span>
+                      <span className="font-medium">{bookingData.distanceMiles} miles</span>
+                    </div>
+                    {bookingData.travelFee && bookingData.travelFee > 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span>Travel fee:</span>
+                        <span className="font-medium text-green-600">${bookingData.travelFee.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {bookingData.estimatedTravelTime && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span>Estimated travel time:</span>
+                        <span className="font-medium">{bookingData.estimatedTravelTime} minutes</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Location Notes (Optional)</label>
+                  <textarea
+                    value={bookingData.locationNotes || ''}
+                    onChange={(e) => updateBookingData({ locationNotes: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-md"
+                    placeholder="Gate code, parking instructions, apartment number, etc."
+                    rows={2}
+                  />
+                </div>
               </CardContent>
             </Card>
+
+            {/* Date/Time Selection - NOW WITH REAL CALENDAR */}
+            {selectedService && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    Appointment Date & Time
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <AppointmentCalendar
+                    serviceType={selectedService.serviceType as any}
+                    numberOfSigners={bookingData.signers.length}
+                    onTimeSelected={(startTime, endTime, formattedTime, calendarId) => {
+                      updateBookingData({ 
+                        scheduledDateTime: startTime 
+                      });
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            )}
           </div>
         );
 
@@ -474,22 +942,16 @@ export default function EnhancedBookingWizard({
               </CardContent>
             </Card>
 
-            {/* Total Price */}
-            <Card className="bg-green-50 border-green-200">
-              <CardHeader>
-                <CardTitle className="text-green-800">Total Cost</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-green-600">
-                  ${calculateTotalPrice().toFixed(2)}
-                </div>
-                {selectedService?.requiresDeposit && (
-                  <p className="text-sm text-green-700 mt-1">
-                    ${selectedService.depositAmount} deposit required to confirm
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+            {/* NEW: Phase 2-C Payment Mode Selection */}
+            <PaymentModeSelector
+              totalAmount={calculateTotalPrice()}
+              depositAmount={selectedService?.depositAmount || 0}
+              requiresDeposit={selectedService?.requiresDeposit || false}
+              selectedMode={bookingData.paymentMode}
+              onModeChange={(mode) => updateBookingData({ paymentMode: mode })}
+              isRONService={bookingData.isRONService}
+              className="border-green-200"
+            />
 
             {/* Terms & Conditions */}
             <div className="flex items-center space-x-2">
@@ -520,7 +982,7 @@ export default function EnhancedBookingWizard({
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-7xl mx-auto p-6">
       {/* Progress Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
@@ -570,12 +1032,67 @@ export default function EnhancedBookingWizard({
         </div>
       </div>
 
-      {/* Step Content */}
-      <Card className="mb-8">
-        <CardContent className="p-8">
-          {renderStepContent()}
-        </CardContent>
-      </Card>
+      {/* Main Content - NEW: Two-column layout for Phase 2-A */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        {/* Step Content */}
+        <div className="lg:col-span-2">
+          <Card>
+            <CardContent className="p-8">
+              {renderStepContent()}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* NEW: Real-time Pricing Panel - Shows after service selection */}
+        {currentStep > 0 && selectedService && (
+          <div className="lg:col-span-1">
+            <div className="sticky top-6">
+              <RealTimePricing
+                inputs={getPricingInputs()}
+                onPricingCalculated={(pricing) => {
+                  // Update booking data with calculated pricing if needed
+                  if (pricing.travelFee !== bookingData.travelFee) {
+                    setBookingData(prev => ({
+                      ...prev,
+                      travelFee: pricing.travelFee
+                    }));
+                  }
+                }}
+                showBreakdown={true}
+                className="border-2 border-green-200"
+              />
+              
+              {/* Quick Summary Card */}
+              <Card className="mt-4 bg-slate-50">
+                <CardContent className="p-4">
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Service:</span>
+                      <span className="font-medium">{selectedService.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Signers:</span>
+                      <span className="font-medium">{bookingData.signers.length}</span>
+                    </div>
+                    {bookingData.distanceMiles && (
+                      <div className="flex justify-between">
+                        <span>Distance:</span>
+                        <span className="font-medium">{bookingData.distanceMiles} miles</span>
+                      </div>
+                    )}
+                    {bookingData.selectedAddons.length > 0 && (
+                      <div className="flex justify-between">
+                        <span>Add-ons:</span>
+                        <span className="font-medium">{bookingData.selectedAddons.length}</span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Navigation */}
       <div className="flex items-center justify-between">

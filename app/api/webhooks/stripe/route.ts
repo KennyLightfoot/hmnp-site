@@ -100,6 +100,21 @@ export async function POST(request: NextRequest) {
           handleChargeRefunded
         );
         break;
+        
+      // NEW: Phase 2-C - Enhanced payment status handling
+      case 'invoice.payment_succeeded':
+        result = await WebhookProcessor.processEvent<Stripe.Invoice>(
+          event,
+          handleInvoicePaymentSucceeded
+        );
+        break;
+        
+      case 'invoice.payment_failed':
+        result = await WebhookProcessor.processEvent<Stripe.Invoice>(
+          event,
+          handleInvoicePaymentFailed
+        );
+        break;
       
       default:
         console.log(`Unhandled event type: ${event.type}`);
@@ -382,6 +397,153 @@ async function handleChargeRefunded(charge: Stripe.Charge, eventId: string) {
     
   } catch (error) {
     console.error('❌ Error handling refund:', error);
+    throw error;
+  }
+}
+
+// NEW: Phase 2-C Enhanced webhook handlers
+async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice, eventId: string) {
+  console.log(`💰 Processing invoice.payment_succeeded for event ${eventId}`);
+  
+  const bookingId = invoice.metadata?.bookingId;
+  const paymentMode = invoice.metadata?.paymentMode || 'full';
+  
+  if (!bookingId) {
+    console.error(`❌ No bookingId in invoice metadata for event ${eventId}`);
+    return;
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const booking = await tx.booking.findUnique({
+        where: { id: bookingId },
+        include: {
+          Service: true,
+          bookingSigners: true,
+        }
+      });
+
+      if (!booking) {
+        throw new Error(`Booking ${bookingId} not found`);
+      }
+
+      // Determine payment status based on mode and amount
+      const totalAmount = Number(booking.finalPrice);
+      const paidAmount = invoice.amount_paid ? invoice.amount_paid / 100 : 0;
+      
+      let paymentStatus: 'COMPLETED' = 'COMPLETED';
+      let bookingStatus = BookingStatus.CONFIRMED;
+      let isPartialPayment = false;
+      
+      if (paymentMode === 'deposit' && paidAmount < totalAmount) {
+        isPartialPayment = true;
+        // Booking still confirmed with deposit, but we track partial payment separately
+      }
+
+              // Update booking
+        await tx.booking.update({
+          where: { id: bookingId },
+          data: {
+            status: bookingStatus,
+            depositStatus: 'COMPLETED',
+          }
+        });
+
+        // Update payment record
+        await tx.payment.updateMany({
+          where: {
+            bookingId: bookingId,
+            status: 'PENDING'
+          },
+          data: {
+            status: paymentStatus,
+            paidAt: new Date(),
+            notes: paymentMode === 'deposit' ? 
+              `Deposit payment completed. Remaining: $${(totalAmount - paidAmount).toFixed(2)}` :
+              'Full payment completed'
+          }
+        });
+
+        // If partial payment, create record for remaining balance
+        if (isPartialPayment) {
+          const remainingAmount = totalAmount - paidAmount;
+          await tx.payment.create({
+            data: {
+              id: `payment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+              bookingId: bookingId,
+              amount: remainingAmount,
+              status: 'PENDING',
+              provider: 'STRIPE',
+              currency: 'USD',
+              updatedAt: new Date(),
+              notes: `Remaining balance after deposit payment of $${paidAmount.toFixed(2)}`,
+            }
+          });
+        }
+
+      console.log(`✅ Invoice payment processed for booking ${bookingId}, status: ${paymentStatus}`);
+    });
+
+    // GHL integration for payment status
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId }
+    });
+
+    if (booking?.ghlContactId) {
+      try {
+        const tags = paymentMode === 'deposit' ? 
+          ['payment:deposit_completed', 'status:partial_paid'] :
+          ['payment:full_completed', 'status:payment_completed'];
+          
+        await ghl.addTagsToContact(booking.ghlContactId, tags);
+        
+        console.log(`✅ GHL contact ${booking.ghlContactId} updated with payment status`);
+      } catch (ghlError) {
+        console.error('❌ Failed to update GHL contact:', ghlError);
+      }
+    }
+
+  } catch (error) {
+    console.error('❌ Error handling invoice payment:', error);
+    throw error;
+  }
+}
+
+async function handleInvoicePaymentFailed(invoice: Stripe.Invoice, eventId: string) {
+  console.log(`❌ Processing invoice.payment_failed for event ${eventId}`);
+  
+  const bookingId = invoice.metadata?.bookingId;
+  
+  if (!bookingId) {
+    console.error(`❌ No bookingId in invoice metadata for event ${eventId}`);
+    return;
+  }
+
+  try {
+    // Update payment status to failed
+    await prisma.payment.updateMany({
+      where: {
+        bookingId: bookingId,
+        status: 'PENDING'
+      },
+      data: {
+        status: 'FAILED',
+        notes: `Payment failed: ${invoice.last_finalization_error?.message || 'Unknown error'}`
+      }
+    });
+
+    // Update booking status
+    await prisma.booking.update({
+      where: { id: bookingId },
+      data: {
+        depositStatus: 'FAILED',
+      }
+    });
+
+    console.log(`⚠️ Invoice payment failed for booking ${bookingId}`);
+
+  } catch (error) {
+    console.error('❌ Error handling invoice payment failure:', error);
     throw error;
   }
 }

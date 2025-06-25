@@ -5,18 +5,26 @@ import { prisma } from '@/lib/db';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
+  apiVersion: '2023-10-16',
 });
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     const body = await request.json();
-    const { bookingId, paymentMode = 'full' } = body;
+    const { bookingId, paymentMode = 'deposit' } = body;
 
+    // Enhanced validation
     if (!bookingId) {
       return NextResponse.json(
         { error: 'Booking ID is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!['full', 'deposit'].includes(paymentMode)) {
+      return NextResponse.json(
+        { error: 'Invalid payment mode. Must be "full" or "deposit"' },
         { status: 400 }
       );
     }
@@ -47,20 +55,33 @@ export async function POST(request: NextRequest) {
     ) || 0;
     const totalAmount = Number(booking.finalPrice) + addonTotal;
 
-    // Determine payment amount based on mode
+    // Enhanced payment amount calculation
     let paymentAmount = totalAmount;
+    let remainingBalance = 0;
+    
     if (paymentMode === 'deposit' && booking.Service.requiresDeposit) {
       paymentAmount = Number(booking.Service.depositAmount);
+      remainingBalance = totalAmount - paymentAmount;
+      
+      // Validate deposit amount doesn't exceed total
+      if (paymentAmount >= totalAmount) {
+        paymentAmount = totalAmount;
+        remainingBalance = 0;
+      }
     }
 
-    // Create line items for Stripe
+    // Create line items for Stripe with better descriptions
     const lineItems = [
       {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: booking.Service.name,
-            description: `Scheduled for ${booking.scheduledDateTime.toLocaleDateString()}`,
+            name: `${booking.Service.name}${paymentMode === 'deposit' ? ' (Deposit)' : ''}`,
+            description: `Scheduled for ${booking.scheduledDateTime?.toLocaleDateString() || 'TBD'}${
+              paymentMode === 'deposit' && remainingBalance > 0 
+                ? ` • Remaining balance: $${remainingBalance.toFixed(2)}` 
+                : ''
+            }`,
           },
           unit_amount: Math.round(Number(booking.finalPrice) * 100),
         },
@@ -85,12 +106,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Enhanced metadata for multi-signer tracking
+    // Enhanced metadata for better tracking
     const metadata: Record<string, string> = {
       bookingId: booking.id,
       serviceId: booking.serviceId,
       totalSigners: (booking.totalSigners || 1).toString(),
       paymentMode,
+      totalAmount: totalAmount.toFixed(2),
+      paymentAmount: paymentAmount.toFixed(2),
+      remainingBalance: remainingBalance.toFixed(2),
+      isRONService: booking.locationType === 'REMOTE_ONLINE_NOTARIZATION' ? 'true' : 'false',
     };
 
     // Add primary signer info
@@ -98,6 +123,10 @@ export async function POST(request: NextRequest) {
     if (primarySigner) {
       metadata.primarySignerEmail = primarySigner.signerEmail;
       metadata.primarySignerName = primarySigner.signerName;
+    } else if (booking.signerEmail && booking.signerName) {
+      // Fallback to booking-level signer info
+      metadata.primarySignerEmail = booking.signerEmail;
+      metadata.primarySignerName = booking.signerName;
     }
 
     // Create Stripe checkout session
@@ -118,12 +147,14 @@ export async function POST(request: NextRequest) {
     // Create payment record
     await prisma.payment.create({
       data: {
+        id: `payment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         bookingId: booking.id,
         amount: paymentAmount,
         status: 'PENDING',
         provider: 'STRIPE',
         providerPaymentId: checkoutSession.id,
         currency: 'USD',
+        updatedAt: new Date(),
         notes: paymentMode === 'deposit' ? 'Deposit payment' : 'Full payment',
       },
     });
