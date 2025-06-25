@@ -220,8 +220,8 @@ export default function YelpGeneralNotaryLandingPage() {
                   <h3 className="text-xl font-bold">Need Immediate Service?</h3>
                 </div>
                 <p className="mb-4">Call us directly for same-day appointments and urgent notarizations.</p>
-                <a href="tel:YOUR_PHONE_NUMBER" className="bg-white text-[#A52A2A] px-6 py-3 rounded-lg font-bold hover:bg-slate-100 transition-colors inline-block">
-                  Call Now: YOUR_PHONE_NUMBER
+                <a href="tel:+18326174285" className="bg-white text-[#A52A2A] px-6 py-3 rounded-lg font-bold hover:bg-slate-100 transition-colors inline-block">
+                  Call Now: (832) 617-4285
                 </a>
               </section>
             </div>

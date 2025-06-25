@@ -194,7 +194,7 @@ const FacebookCampaignPage: NextPage = () => {
                   <p className="text-lg mb-6">This 30% discount is only available for 24 hours and exclusively for Facebook users. Book now to secure your savings!</p>
                   <div className="flex items-center justify-center space-x-4">
                     <Phone className="h-5 w-5" />
-                    <span className="text-lg font-semibold">Need immediate help? Call: YOUR_PHONE_NUMBER</span>
+                    <span className="text-lg font-semibold">Need immediate help? Call: (832) 617-4285</span>
                   </div>
                 </div>
               </section>

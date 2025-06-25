@@ -102,8 +102,8 @@ const GMBContactPage: NextPage = () => {
                     <Phone className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
                     <div>
                       <h3 className="text-xl font-bold text-[#002147] mb-1">Call Us</h3>
-                      <a href="tel:YOUR_PHONE_NUMBER" className="text-lg text-[#A52A2A] hover:underline font-semibold">
-                        YOUR_PHONE_NUMBER_DISPLAY
+                      <a href="tel:+18326174285" className="text-lg text-[#A52A2A] hover:underline font-semibold">
+                        (832) 617-4285
                       </a>
                       <p className="text-sm text-gray-600 mt-1">Available 7 days a week, 8 AM - 8 PM</p>
                     </div>
@@ -115,8 +115,8 @@ const GMBContactPage: NextPage = () => {
                     <Mail className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
                     <div>
                       <h3 className="text-xl font-bold text-[#002147] mb-1">Email Us</h3>
-                      <a href="mailto:YOUR_EMAIL_ADDRESS" className="text-lg text-[#A52A2A] hover:underline font-semibold">
-                        YOUR_EMAIL_ADDRESS
+                      <a href="mailto:contact@houstonmobilenotarypros.com" className="text-lg text-[#A52A2A] hover:underline font-semibold">
+                        contact@houstonmobilenotarypros.com
                       </a>
                       <p className="text-sm text-gray-600 mt-1">We respond within 1 hour during business hours</p>
                     </div>

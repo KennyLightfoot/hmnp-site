@@ -9,7 +9,17 @@ export default function HeroSection() {
     <section className="relative py-20 md:py-28 overflow-hidden">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
-        <Image src="/hero-background.jpg" alt="Houston skyline background for Houston Mobile Notary Pros" fill className="object-cover" priority />
+        <Image 
+          src="/hero-background.jpg" 
+          alt="Houston skyline background for Houston Mobile Notary Pros" 
+          fill 
+          className="object-cover" 
+          priority
+          sizes="100vw"
+          quality={85}
+          placeholder="blur"
+          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+        />
         <div className="absolute inset-0 bg-gradient-to-r from-[#002147]/90 to-[#002147]/70"></div>
       </div>
 
@@ -22,13 +32,28 @@ export default function HeroSection() {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
               Your Important Signings, <span className="text-[#91A3B0]">Handled with Care & Precision</span>
             </h1>
+            
+            {/* Guarantee Banner */}
+            <div className="bg-gradient-to-r from-[#003C2D] to-[#005544] border border-[#91A3B0] rounded-lg px-6 py-4 my-6">
+              <div className="flex items-center justify-center">
+                <svg className="w-6 h-6 text-yellow-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-yellow-400">OUR GUARANTEE</div>
+                  <div className="text-white font-semibold">Flawless the first time—or we pay the redraw fee</div>
+                  <div className="text-xs text-gray-300 mt-1">*Terms apply. Valid for notarization errors due to our oversight.</div>
+                </div>
+              </div>
+            </div>
+            
             <p className="text-xl text-gray-100">
-              Stop the confusion and delays. Houston Mobile Notary Pros offers professional, reliable service, ensuring every document is handled correctly and clearly explained.
+              Stop the confusion and delays. We eliminate sloppy signings that kill funding with our professional, reliable service, ensuring every document is handled correctly and clearly explained.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link href="/booking">
                 <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white w-full sm:w-auto">
-                  Book Now
+                  Book Your Service Now
                 </Button>
               </Link>
               <Link href="/services">
