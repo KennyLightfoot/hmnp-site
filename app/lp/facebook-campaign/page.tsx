@@ -209,6 +209,7 @@ const FacebookCampaignPage: NextPage = () => {
                   </div>
                   <div className="text-3xl font-bold text-green-600 mb-2">Save $22.50</div>
                   <div className="text-gray-600">Regular $75 → <span className="font-bold text-green-600">Now $52.50</span></div>
+                  <div className="text-xs text-gray-500 mt-1">Standard Mobile Notary • ≤ 4 docs • ≤ 2 signers • ≤ 15 mi travel</div>
                 </div>
 
                 <LeadForm

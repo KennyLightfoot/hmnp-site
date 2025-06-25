@@ -63,30 +63,51 @@ export function StructuredData({ nonce }: StructuredDataProps) {
       ratingValue: "5",
       reviewCount: "35",
     },
-    makesOffer: [
+    offers: [
       {
         "@type": "Offer",
-        itemOffered: {
-          "@type": "Service",
-          name: "24/7 Loan Signing Houston",
-          description: "Emergency and after-hours loan signing services with guarantee of flawless service"
-        }
+        "name": "Quick-Stamp Local",
+        "description": "Fast and simple local notary service for basic documents",
+        "price": "50.00",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock",
+        "validFrom": new Date().toISOString()
       },
       {
         "@type": "Offer", 
-        itemOffered: {
-          "@type": "Service",
-          name: "Houston Mobile Notary",
-          description: "Professional mobile notary services at your location with satisfaction guarantee"
-        }
+        "name": "Standard Mobile Notary",
+        "description": "Professional mobile notary service for standard documents",
+        "price": "75.00",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock",
+        "validFrom": new Date().toISOString()
       },
       {
         "@type": "Offer",
-        itemOffered: {
-          "@type": "Service", 
-          name: "Houston Loan Signing Agent",
-          description: "Certified loan signing specialists for real estate transactions"
-        }
+        "name": "Extended Hours Mobile",
+        "description": "Extended hours and same-day notary service with premium scheduling",
+        "price": "100.00", 
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock",
+        "validFrom": new Date().toISOString()
+      },
+      {
+        "@type": "Offer",
+        "name": "Loan Signing Specialist", 
+        "description": "Expert loan signing and real estate closing services",
+        "price": "150.00",
+        "priceCurrency": "USD", 
+        "availability": "https://schema.org/InStock",
+        "validFrom": new Date().toISOString()
+      },
+      {
+        "@type": "Offer",
+        "name": "Remote Online Notarization (RON)",
+        "description": "Secure online notarization with credential analysis and KBA",
+        "price": "25.00",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock", 
+        "validFrom": new Date().toISOString()
       }
     ],
   }

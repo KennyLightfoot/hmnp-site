@@ -325,54 +325,318 @@ export default function ServicesPage() {
   </div>
 </section>
 
-      {/* Service Categories Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-        {services.map((service) => (
-          <Card
-            key={service.slug}
-            className={`shadow-md hover:shadow-lg transition-all duration-300 border-t-4 ${service.borderColor} ${service.isPopular ? 'shadow-xl hover:shadow-2xl' : ''}`}
-          >
-            {service.isPopular && (
-              <div className={`absolute top-0 right-0 ${service.bgColor} text-white px-3 py-1 text-xs font-medium rounded-bl-lg -mt-1`}>
-                MOST POPULAR
+      {/* Service Cards */}
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        {/* Quick-Stamp Local - NEW per SOP */}
+        <Card className="relative overflow-hidden border-2 border-[#91A3B0]/20 hover:border-[#A52A2A]/30 transition-all duration-300 hover:shadow-xl">
+          <div className="absolute top-0 left-0 bg-[#A52A2A] text-white px-3 py-1 text-xs font-bold rounded-br-lg">
+            NEW
+          </div>
+          <CardHeader className="pb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-[#A52A2A]/10 rounded-lg flex items-center justify-center">
+                <Clock className="h-6 w-6 text-[#A52A2A]" />
               </div>
-            )}
-            <CardHeader className="pb-2">
-              <div className="flex items-center mb-2">
-                <div className={`${service.bgColor} p-2 rounded-full mr-3`}>
-                  <service.icon className="h-5 w-5 text-white" />
-                </div>
-                <CardTitle className="text-[#002147]">{service.name}</CardTitle>
+              <div>
+                <CardTitle className="text-xl text-[#002147]">Quick-Stamp Local</CardTitle>
+                <CardDescription className="text-[#91A3B0]">Fast & simple local signings</CardDescription>
               </div>
-              <CardDescription>{service.tagline}</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <div className="flex items-baseline mb-4">
-                <p className="text-3xl font-bold text-[#002147]">{service.price}</p>
-                {service.price !== "See details" && !service.price.includes("/") && <span className="ml-2 text-gray-500">starting at</span>}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-baseline space-x-2">
+              <span className="text-3xl font-bold text-[#A52A2A]">$50</span>
+              <span className="text-sm text-gray-500">starting at</span>
+            </div>
+            
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>≤ 1 document, ≤ 2 stamps</span>
               </div>
-              <p className="text-sm text-gray-600 mb-4 h-20 overflow-hidden">{service.description}</p> {/* Added fixed height and overflow hidden for uniform look */}
-              <ul className="space-y-3 mb-6">
-                {service.features?.slice(0, 3).map((feature, index) => ( // Display up to 3 features
-                  <li key={index} className="flex items-start">
-                    <Check className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-            <CardFooter className="pt-0">
-              <Link href={service.link} className="w-full">
-                <Button
-                  variant={service.buttonVariant || 'outline'}
-                  className={`w-full ${service.buttonVariant === 'outline' ? `${service.borderColor ? `border-[${service.borderColor.split('-')[2]}]` : 'border-[#002147]'} ${service.textColor || 'text-[#002147]'} ${service.hoverBgColor || 'hover:bg-[#002147]'} ${service.hoverTextColor || 'hover:text-white'}` : `${service.bgColor} ${service.textColor || 'text-white'} ${service.hoverBgColor || 'hover:bg-[#8B0000]'}`}`}
-                >
-                  Learn More
-                </Button>
-              </Link>
-            </CardFooter>
-          </Card>
-        ))}
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>1 signer included</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>≤ 10 miles travel included</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>Perfect for simple documents</span>
+              </div>
+            </div>
+            
+            <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+              <strong>Add-ons:</strong> Extra stamp $5 ea. • Extra signer $10 ea.
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button asChild className="w-full bg-[#A52A2A] hover:bg-[#8B0000]">
+              <Link href="/booking?service=quick-stamp-local">Book Quick-Stamp</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Standard Mobile Notary - Updated pricing */}
+        <Card className="border-2 border-[#91A3B0]/20 hover:border-[#A52A2A]/30 transition-all duration-300 hover:shadow-xl">
+          <CardHeader className="pb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-[#002147]/10 rounded-lg flex items-center justify-center">
+                <FileText className="h-6 w-6 text-[#002147]" />
+              </div>
+              <div>
+                <CardTitle className="text-xl text-[#002147]">Standard Mobile Notary</CardTitle>
+                <CardDescription className="text-[#91A3B0]">Professional document notarization</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-baseline space-x-2">
+              <span className="text-3xl font-bold text-[#A52A2A]">$75</span>
+              <span className="text-sm text-gray-500">base price</span>
+            </div>
+            
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>≤ 4 documents included</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>≤ 2 signers included</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>≤ 15 miles travel included</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>9 AM – 5 PM weekdays</span>
+              </div>
+            </div>
+            
+            <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+              <strong>Add-ons:</strong> Extra doc $10 ea. • Extra signer $5 ea.
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button asChild className="w-full bg-[#002147] hover:bg-[#001a38]">
+              <Link href="/booking?service=standard-notary">Book Standard</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Extended Hours Mobile - Updated pricing */}
+        <Card className="border-2 border-[#91A3B0]/20 hover:border-[#A52A2A]/30 transition-all duration-300 hover:shadow-xl">
+          <CardHeader className="pb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-[#A52A2A]/10 rounded-lg flex items-center justify-center">
+                <Clock className="h-6 w-6 text-[#A52A2A]" />
+              </div>
+              <div>
+                <CardTitle className="text-xl text-[#002147]">Extended Hours Mobile</CardTitle>
+                <CardDescription className="text-[#91A3B0]">Flexible scheduling & same-day service</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-baseline space-x-2">
+              <span className="text-3xl font-bold text-[#A52A2A]">$100</span>
+              <span className="text-sm text-gray-500">base price</span>
+            </div>
+            
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>≤ 4 documents included</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>≤ 2 signers included</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>≤ 15 miles travel included</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>7 AM – 9 PM daily</span>
+              </div>
+            </div>
+            
+            <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+              <strong>Add-ons:</strong> Same-day +$25 after 3 PM • Night (9 PM – 7 AM) +$50 • Extra doc $10 ea. • Extra signer $5 ea.
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button asChild className="w-full bg-[#A52A2A] hover:bg-[#8B0000]">
+              <Link href="/booking?service=extended-hours">Book Extended Hours</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Loan Signing Specialist - Updated pricing */}
+        <Card className="border-2 border-[#91A3B0]/20 hover:border-[#A52A2A]/30 transition-all duration-300 hover:shadow-xl">
+          <CardHeader className="pb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-[#002147]/10 rounded-lg flex items-center justify-center">
+                <Briefcase className="h-6 w-6 text-[#002147]" />
+              </div>
+              <div>
+                <CardTitle className="text-xl text-[#002147]">Loan Signing Specialist</CardTitle>
+                <CardDescription className="text-[#91A3B0]">Expert real estate closings</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-baseline space-x-2">
+              <span className="text-3xl font-bold text-[#A52A2A]">$150</span>
+              <span className="text-sm text-gray-500">flat fee</span>
+            </div>
+            
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>Single package included</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>≤ 4 signers included</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>Print 2 sets included</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>≤ 2 hours table time</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>FedEx drop included</span>
+              </div>
+            </div>
+            
+            <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+              <strong>Add-ons:</strong> Rush print +$20 • Scan-back +$15
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button asChild className="w-full bg-[#002147] hover:bg-[#001a38]">
+              <Link href="/booking?service=loan-signing">Book Loan Signing</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Remote Online Notarization (RON) - Updated pricing */}
+        <Card className="border-2 border-[#91A3B0]/20 hover:border-[#A52A2A]/30 transition-all duration-300 hover:shadow-xl">
+          <CardHeader className="pb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-[#A52A2A]/10 rounded-lg flex items-center justify-center">
+                <Users className="h-6 w-6 text-[#A52A2A]" />
+              </div>
+              <div>
+                <CardTitle className="text-xl text-[#002147]">Remote Online Notarization (RON)</CardTitle>
+                <CardDescription className="text-[#91A3B0]">Secure online notarization</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-baseline space-x-2">
+              <span className="text-2xl font-bold text-[#A52A2A]">$25</span>
+              <span className="text-sm text-gray-500">/session +</span>
+              <span className="text-2xl font-bold text-[#A52A2A]">$5</span>
+              <span className="text-sm text-gray-500">/seal</span>
+            </div>
+            
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>Credential Analysis included</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>KBA verification included</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>Audio-video recording</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>Texas statewide service</span>
+              </div>
+            </div>
+            
+            <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+              <strong>Add-ons:</strong> Extra signer $10 ea.
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button asChild className="w-full bg-[#A52A2A] hover:bg-[#8B0000]">
+              <Link href="/ron/dashboard">Start RON Session</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Business Solutions - Updated pricing */}
+        <Card className="border-2 border-[#91A3B0]/20 hover:border-[#A52A2A]/30 transition-all duration-300 hover:shadow-xl">
+          <CardHeader className="pb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-[#002147]/10 rounded-lg flex items-center justify-center">
+                <Building className="h-6 w-6 text-[#002147]" />
+              </div>
+              <div>
+                <CardTitle className="text-xl text-[#002147]">Business Subscription</CardTitle>
+                <CardDescription className="text-[#91A3B0]">Ongoing business needs</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex items-baseline space-x-2">
+                <span className="text-xl font-bold text-[#A52A2A]">$125</span>
+                <span className="text-sm text-gray-500">/month</span>
+                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Essentials</span>
+              </div>
+              <div className="flex items-baseline space-x-2">
+                <span className="text-xl font-bold text-[#A52A2A]">$349</span>
+                <span className="text-sm text-gray-500">/month</span>
+                <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Growth</span>
+              </div>
+            </div>
+            
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span><strong>Essentials:</strong> Up to 10 RON seals/mo</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span><strong>Growth:</strong> Up to 40 RON seals/mo</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>10% off mobile rates</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span><strong>Growth:</strong> 1 free loan signing</span>
+              </div>
+            </div>
+            
+            <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+              <strong>Overage:</strong> Essentials $5/seal • Growth $4/seal
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button asChild className="w-full bg-[#002147] hover:bg-[#001a38]">
+              <Link href="/services/business">View Business Plans</Link>
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
 
       {/* What to Expect Call-out */}

@@ -284,7 +284,7 @@ export default function ServiceCalculator() {
             {pricing.travelFee > 0 && (
               <div className="flex justify-between">
                 <span className="text-gray-600">
-                  Extended Travel Fee ({distance - DEFAULT_SERVICE_AREA_RADIUS} miles beyond service area):
+                  Travel Fee ({distance - DEFAULT_SERVICE_AREA_RADIUS} miles beyond 15-mile base radius from ZIP 77591):
                 </span>
                 <span className="font-medium">${pricing.travelFee.toFixed(2)}</span>
               </div>

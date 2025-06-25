@@ -42,9 +42,11 @@ export interface GeofenceResult {
 
 export class DistanceService {
   private static readonly GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-  private static readonly BASE_LOCATION = "Houston, TX"; // Our service center
-  private static readonly MAX_SERVICE_RADIUS = 25; // miles
-  private static readonly FREE_SERVICE_RADIUS = 15; // miles
+  private static readonly BASE_LOCATION = "77591"; // Our service center ZIP code
+  private static readonly BASE_LOCATION_FULL = "Texas City, TX 77591"; // Full address for Google Maps
+  private static readonly MAX_SERVICE_RADIUS = 50; // miles (extended per SOP)
+  private static readonly FREE_SERVICE_RADIUS = 15; // miles (15-mile base radius per SOP)
+  private static readonly TRAVEL_FEE_PER_MILE = 0.50; // $0.50/mile beyond free radius per SOP
   private static readonly METERS_TO_MILES = 0.000621371;
 
   /**
@@ -60,7 +62,7 @@ export class DistanceService {
 
     try {
       const url = new URL('https://maps.googleapis.com/maps/api/distancematrix/json');
-      url.searchParams.set('origins', this.BASE_LOCATION);
+      url.searchParams.set('origins', this.BASE_LOCATION_FULL);
       url.searchParams.set('destinations', destination);
       url.searchParams.set('units', 'imperial');
       url.searchParams.set('mode', 'driving');
@@ -128,9 +130,9 @@ export class DistanceService {
       warnings.push(`Location is ${distance.toFixed(1)} miles away, beyond our standard ${this.MAX_SERVICE_RADIUS}-mile service area.`);
       recommendations.push('Consider contacting us directly to discuss special arrangements.');
     } else if (distance > this.FREE_SERVICE_RADIUS) {
-      warnings.push(`Travel fee will apply for distances beyond ${this.FREE_SERVICE_RADIUS} miles.`);
-      const travelFee = (distance - this.FREE_SERVICE_RADIUS) * 0.50;
-      recommendations.push(`Additional travel fee: $${travelFee.toFixed(2)}`);
+      warnings.push(`Travel fee will apply for distances beyond ${this.FREE_SERVICE_RADIUS} miles from ZIP 77591.`);
+      const travelFee = (distance - this.FREE_SERVICE_RADIUS) * this.TRAVEL_FEE_PER_MILE;
+      recommendations.push(`Additional travel fee: $${travelFee.toFixed(2)} ($${this.TRAVEL_FEE_PER_MILE}/mile beyond ${this.FREE_SERVICE_RADIUS}-mile base radius)`);
     }
 
     // Duration-based recommendations
@@ -152,13 +154,13 @@ export class DistanceService {
   }
 
   /**
-   * Calculate travel fee based on distance
+   * Calculate travel fee based on distance (SOP: 15-mile base radius from 77591, $0.50/mile beyond)
    */
   static calculateTravelFee(distanceMiles: number): number {
     if (distanceMiles <= this.FREE_SERVICE_RADIUS) {
       return 0;
     }
-    return (distanceMiles - this.FREE_SERVICE_RADIUS) * 0.50; // $0.50 per mile beyond free radius
+    return (distanceMiles - this.FREE_SERVICE_RADIUS) * this.TRAVEL_FEE_PER_MILE;
   }
 
   /**

@@ -988,22 +988,21 @@ const faqs: FAQ[] = [
     answer: (
       <div>
         <p>
-          Our standard service packages (Essential, Priority, Loan Signing, etc.) include travel within a 20-mile
+          Our standard service packages (Essential, Priority, Loan Signing, etc.) include travel within a 15-mile
           radius of our base location in Texas City (ZIP 77591).
         </p>
         <p className="mt-2">
-          For locations beyond this initial 20-mile radius, an additional travel fee applies. This fee is calculated at
-          <strong>$0.50 per mile for the round trip distance traveled *beyond* the first 20 miles each way</strong> (i.e., beyond 40 miles round trip).
+          For locations beyond this initial 15-mile radius, an additional travel fee applies. This fee is calculated at
+          <strong>$0.50 per mile for the one-way distance traveled beyond the first 15 miles</strong>.
         </p>
         <p className="mt-2">
-          Example: If your location is 30 miles from 77591:
+          Example: If your location is 25 miles from 77591:
         </p>
         <ul className="list-disc list-inside mt-1 space-y-1 text-sm">
-          <li>One way distance: 30 miles</li>
-          <li>Round trip distance: 60 miles</li>
-          <li>Included round trip distance: 40 miles (20 miles each way)</li>
-          <li>Billable round trip distance: 20 miles (60 total - 40 included)</li>
-          <li>Additional Travel Fee: 20 miles * $0.50/mile = $10.00</li>
+          <li>Distance from ZIP 77591: 25 miles</li>
+          <li>Included distance (no fee): 15 miles</li>
+          <li>Billable distance: 10 miles (25 - 15 included)</li>
+          <li>Additional Travel Fee: 10 miles × $0.50/mile = $5.00</li>
         </ul>
         <p className="mt-2">
           We use standard mapping services (like Google Maps) to determine the distance from ZIP 77591 to your signing

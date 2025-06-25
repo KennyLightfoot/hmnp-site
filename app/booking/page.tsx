@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { trackQuoteRequested } from '@/lib/tracking';
 
 interface Service {
   id: string;
@@ -102,6 +103,18 @@ export default function BookingPage() {
       fetchAvailability(selectedDate, selectedService.id);
     }
   }, [selectedService, selectedDate]);
+
+  // Track quote request when service is selected
+  useEffect(() => {
+    if (selectedService) {
+      trackQuoteRequested({
+        service_type: selectedService.name,
+        estimated_value: selectedService.price,
+        lead_source: 'website_booking_form',
+        urgency_level: 'standard' // Could be enhanced based on user selection
+      });
+    }
+  }, [selectedService]);
 
   const fetchServices = async () => {
     try {

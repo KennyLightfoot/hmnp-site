@@ -5,13 +5,14 @@ import bcrypt from 'bcrypt'
 const prisma = new PrismaClient()
 const SALT_ROUNDS = 10
 
-// --- Configuration ---
-const ADMIN_EMAIL = "admin@houstonmobilenotarypros.com"
-const ADMIN_PASSWORD = "Hmnp128174"
+// --- HNIC Configuration per SOP ---
+const ADMIN_EMAIL = "contact@houstonmobilenotarypros.com"
+const ADMIN_PASSWORD = "Hmnp128174!"
+const ADMIN_DISPLAY_NAME = "Houston Mobile Notary Pros" // or "HNIC" to flex
 // --- End Configuration ---
 
 async function main() {
-  console.log(`Attempting to set password for admin user: ${ADMIN_EMAIL}`)
+  console.log(`Attempting to set password for HNIC admin user: ${ADMIN_DISPLAY_NAME} (${ADMIN_EMAIL})`)
 
   if (!ADMIN_PASSWORD || ADMIN_PASSWORD.length < 8) {
     console.error("Error: ADMIN_PASSWORD must be at least 8 characters long.")
@@ -50,7 +51,7 @@ async function main() {
       data: { password: hashedPassword },
     })
 
-    console.log(`Successfully updated password for ${ADMIN_EMAIL}`)
+    console.log(`Successfully updated password for ${ADMIN_DISPLAY_NAME} (${ADMIN_EMAIL})`)
 
   } catch (error) {
     console.error("An error occurred:", error)

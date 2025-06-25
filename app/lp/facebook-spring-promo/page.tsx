@@ -91,6 +91,9 @@ export default function FacebookSpringPromoLandingPage() {
               <p className="text-xl text-white/90 mb-8 leading-relaxed">
                 Don't miss out on this exclusive spring promotion! Get professional mobile notary services 
                 at an unbeatable price. Perfect for all your document needs - from real estate to estate planning.
+                <span className="block mt-4 text-lg font-semibold text-yellow-300">
+                  "Flawless the first time—or we pay the redraw fee"
+                </span>
               </p>
               
               {/* Urgency Timer */}

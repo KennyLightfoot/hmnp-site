@@ -5,7 +5,7 @@ import { authOptions } from '@/lib/auth';
 import { withAuth, AuthConfig } from '@/lib/auth/unified-middleware';
 import { Booking, Service, BookingStatus, LocationType, PaymentProvider, PaymentStatus, Prisma } from '@prisma/client';
 import { z } from 'zod';
-import { trackBookingConfirmation } from '@/lib/tracking';
+import { trackBookingConfirmation, trackLoanSigningBooked, trackRONCompleted, trackSameDayServiceRequested, trackAfterHoursServiceRequested } from '@/lib/tracking';
 import { sendGHLMessage } from '../../../lib/ghl-messaging';
 import { GoogleCalendarService } from '../../../lib/google-calendar';
 // Custom fields temporarily disabled - using standard GHL fields and tags
@@ -764,7 +764,79 @@ export async function POST(request: NextRequest) {
       // For now, logging the error and continuing is consistent with previous intent.
     }
 
-    // ... (rest of the code remains the same)
+    // Send booking confirmation notification
+    if (newBooking && newBooking.service) {
+      try {
+        // Enhanced SOP tracking based on service type and booking details
+        const serviceType = newBooking.service.serviceType;
+        const serviceName = newBooking.service.name;
+        const bookingValue = Number(newBooking.finalPrice);
+        
+        // Determine if special SOP events should be tracked
+        const isLoanSigning = serviceType === 'LOAN_SIGNING_SPECIALIST' || 
+                             serviceName.toLowerCase().includes('loan');
+        const isRON = serviceName.toLowerCase().includes('ron') || 
+                     serviceName.toLowerCase().includes('remote online');
+        const isSameDay = newBooking.urgencyLevel === 'same-day';
+        const isAfterHours = newBooking.urgencyLevel === 'emergency' || 
+                           (newBooking.scheduledDateTime && 
+                            (new Date(newBooking.scheduledDateTime).getHours() >= 21 || 
+                             new Date(newBooking.scheduledDateTime).getHours() < 7));
+
+        // Track appropriate SOP events
+        if (isLoanSigning) {
+          trackLoanSigningBooked({
+            booking_id: newBooking.id,
+            booking_value: bookingValue,
+            loan_type: 'standard', // Could be enhanced based on booking notes
+            signer_count: newBooking.booking_number_of_signers || 1,
+            rush_service: isSameDay,
+            scan_back_requested: false // Could be enhanced based on service addons
+          });
+        } else if (isRON) {
+          trackRONCompleted({
+            session_id: newBooking.id,
+            service_value: bookingValue,
+            signer_count: newBooking.booking_number_of_signers || 1,
+            document_type: 'standard', // Could be enhanced based on booking details
+            completion_time_minutes: 30 // Estimated, could be tracked from actual session
+          });
+        } else {
+          // Standard booking tracking
+          trackBookingConfirmation({
+            booking_id: newBooking.id,
+            service_type: serviceName,
+            booking_value: bookingValue,
+            customer_type: isFirstTimeClient ? 'new' : 'returning',
+            payment_method: 'stripe'
+          });
+        }
+
+        // Track special service requests per SOP
+        if (isSameDay && !isLoanSigning) {
+          trackSameDayServiceRequested({
+            service_type: serviceName,
+            base_value: Number(newBooking.service.price),
+            surcharge_applied: 25, // SOP: $25 same-day fee
+            request_time: new Date().toISOString(),
+            urgency_reason: 'same_day_request'
+          });
+        }
+
+        if (isAfterHours && !isLoanSigning) {
+          trackAfterHoursServiceRequested({
+            service_type: serviceName,
+            base_value: Number(newBooking.service.price),
+            after_hours_fee: 50, // SOP: $50 after-hours fee
+            requested_time: newBooking.scheduledDateTime?.toISOString() || new Date().toISOString()
+          });
+        }
+
+               } catch (trackingError) {
+         console.error('SOP Tracking Error:', trackingError);
+         // Don't fail the booking if tracking fails
+       }
+     }
       // Return the created booking and checkoutUrl (which may be null if payment not needed or Stripe failed)
       const newBookingWithRelations = newBooking as BookingWithRelations;
       // Add guestName to the response if it was a guest booking for easier frontend display

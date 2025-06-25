@@ -17,7 +17,7 @@ import {
   CheckCircle 
 } from 'lucide-react';
 import { PricingUtils } from '@/lib/pricing-utils';
-import { calculateTotalPrice, calculateTravelFee, RON_FEES, calculateTexasCompliantRONPrice } from '@/lib/pricing';
+import { calculateTotalPrice, calculateTravelFee, RON_FEES, calculateTexasCompliantRONPrice, BASE_PRICES, ADDITIONAL_FEES } from '@/lib/pricing';
 
 export interface ServiceData {
   id: string;
@@ -26,6 +26,7 @@ export interface ServiceData {
   requiresDeposit: boolean;
   depositAmount: number;
   duration?: number;
+  serviceType?: string;
 }
 
 export interface PricingInputs {
@@ -81,14 +82,14 @@ export default function RealTimePricing({
     error?: string;
   } | null>(null);
 
-  // Calculate travel fee based on distance
+  // Calculate travel fee based on distance (SOP: 15-mile base radius from 77591, $0.50/mile beyond)
   const calculateTravelFee = (distance: number): number => {
-    const freeRadius = 15; // 15 miles free
-    const ratePerMile = 0.50;
+    const freeRadius = 15; // 15-mile base radius from ZIP 77591 per SOP
+    const ratePerMile = 0.50; // $0.50/mile beyond base radius per SOP
     return distance > freeRadius ? (distance - freeRadius) * ratePerMile : 0;
   };
 
-  // Calculate pricing based on inputs
+  // Calculate pricing based on inputs - Updated for SOP v2.0
   const pricing = useMemo((): PricingCalculation => {
     if (!inputs.service) {
       return {
@@ -118,46 +119,120 @@ export default function RealTimePricing({
     const isRONService = service.name.toLowerCase().includes('ron') || 
                         service.name.toLowerCase().includes('remote online');
     
+    // Check for Quick-Stamp Local service
+    const isQuickStampLocal = service.name.toLowerCase().includes('quick-stamp') ||
+                             service.name.toLowerCase().includes('quick stamp');
+    
     let basePrice = service.price;
     let extraSignersFee = 0;
     let breakdown: string[] = [];
     
+    // Handle RON pricing per SOP
     if (isRONService) {
-      // Use Texas-compliant RON pricing
-      const ronPricing = calculateTexasCompliantRONPrice(1, 'acknowledgment', inputs.numberOfSigners);
-      basePrice = ronPricing.totalFee;
-      extraSignersFee = 0; // Already included in RON calculation
+      // RON: $25/session + $5/seal per SOP
+      const sessionFee = 25; // Base session fee per SOP
+      const sealFee = inputs.numberOfSigners * 5; // $5 per signer/seal per SOP
+      basePrice = sessionFee + sealFee;
+      breakdown.push(`RON Session: $${sessionFee}`);
+      breakdown.push(`Notary Seals (${inputs.numberOfSigners}): $${sealFee}`);
+    }
+    // Handle Quick-Stamp Local pricing per SOP  
+    else if (isQuickStampLocal) {
+      // Quick-Stamp Local: $50 base (1 signer, ≤2 stamps, ≤10 mi travel)
+      basePrice = 50;
+      breakdown.push(`Quick-Stamp Local Base: $${basePrice}`);
       
-      // Add RON-specific breakdown
-      breakdown.push(`${service.name}: $${basePrice.toFixed(2)} (TX Compliant)`);
-      breakdown.push(`  - RON Service Fee: $${ronPricing.ronServiceFee.toFixed(2)}`);
-      breakdown.push(`  - Notarial Act Fee: $${ronPricing.notarialActFee.toFixed(2)}`);
+      // Extra signers: $10 each (base covers 1 signer)
       if (inputs.numberOfSigners > 1) {
-        breakdown.push(`  - Includes ${inputs.numberOfSigners} signers`);
+        extraSignersFee = (inputs.numberOfSigners - 1) * 10;
+        breakdown.push(`Extra signers (${inputs.numberOfSigners - 1}): $${extraSignersFee}`);
       }
-    } else {
-      // Use standard mobile notary pricing
-      extraSignersFee = Math.max(0, inputs.numberOfSigners - 1) * 10;
-      if (basePrice > 0) breakdown.push(`${service.name}: $${basePrice}`);
-      if (extraSignersFee > 0) breakdown.push(`Additional signers (${inputs.numberOfSigners - 1}): $${extraSignersFee}`);
+      
+      // Note: Stamp count logic would need to be added to inputs interface
+      // For now, assuming standard stamp count
+    }
+    // Handle other services per SOP
+    else {
+      // Standard Notary: Base covers up to 2 signers, $5 each additional
+      // Extended Hours: Base covers up to 2 signers, $5 each additional  
+      // Loan Signing: Base covers up to 4 signers, $10 each additional
+      
+      const serviceName = service.name.toLowerCase();
+      
+      if (serviceName.includes('standard')) {
+        // Standard Notary: $75 base, covers 2 signers, $5 each extra
+        if (inputs.numberOfSigners > 2) {
+          extraSignersFee = (inputs.numberOfSigners - 2) * 5;
+          breakdown.push(`Extra signers (${inputs.numberOfSigners - 2}): $${extraSignersFee}`);
+        }
+        
+        // Extra documents: $10 each beyond 4 docs
+        if (inputs.extraDocuments > 0) {
+          const extraDocFee = inputs.extraDocuments * 10;
+          breakdown.push(`Extra documents (${inputs.extraDocuments}): $${extraDocFee}`);
+        }
+      }
+      else if (serviceName.includes('extended')) {
+        // Extended Hours: $100 base, covers 2 signers, $5 each extra  
+        if (inputs.numberOfSigners > 2) {
+          extraSignersFee = (inputs.numberOfSigners - 2) * 5;
+          breakdown.push(`Extra signers (${inputs.numberOfSigners - 2}): $${extraSignersFee}`);
+        }
+        
+        // Same-day service after 3 pm: +$25
+        if (inputs.urgencyLevel === 'same-day') {
+          const sameDayFee = 25;
+          breakdown.push(`Same-day service: $${sameDayFee}`);
+        }
+        
+        // After-hours service (9 pm – 7 am): +$50
+        if (inputs.isAfterHours) {
+          const afterHoursFee = 50;
+          breakdown.push(`After-hours service: $${afterHoursFee}`);
+        }
+      }
+      else if (serviceName.includes('loan')) {
+        // Loan Signing: $150 flat fee, covers 4 signers
+        if (inputs.numberOfSigners > 4) {
+          extraSignersFee = (inputs.numberOfSigners - 4) * 10;
+          breakdown.push(`Extra signers (${inputs.numberOfSigners - 4}): $${extraSignersFee}`);
+        }
+      }
     }
 
-    // Calculate additional fees (RON services don't have travel fees)
-    const travelFee = isRONService ? 0 : calculateTravelFee(inputs.distance);
-    const weekendHolidayFee = (inputs.isWeekend || inputs.isHoliday) ? 40 : 0;
-    const afterHoursFee = inputs.isAfterHours ? 30 : 0;
-    const extraDocumentsFee = isRONService ? 0 : inputs.extraDocuments * 5; // RON docs handled separately
+    // Calculate travel fee with service-specific radius
+    let travelFee = 0;
+    if (!isRONService) { // RON has no travel fee
+      let serviceRadius = 15; // Default 15-mile radius per SOP
+      
+      if (isQuickStampLocal) {
+        serviceRadius = 10; // Quick-Stamp has 10-mile radius per SOP
+      } else if (serviceName.includes('loan')) {
+        serviceRadius = 30; // Loan signing has 30-mile radius per SOP
+      }
+      
+      travelFee = inputs.distance > serviceRadius ? 
+        (inputs.distance - serviceRadius) * 0.50 : 0; // $0.50/mile per SOP
+    }
+
+    // Other fees (kept for compatibility)
+    const weekendHolidayFee = inputs.isWeekend || inputs.isHoliday ? 40 : 0;
+    const afterHoursFee = inputs.isAfterHours && !serviceName.includes('extended') ? 50 : 0;
+    const extraDocumentsFee = inputs.extraDocuments * 10; // $10 per extra doc per SOP
     const overnightHandlingFee = inputs.needsOvernightHandling ? 35 : 0;
     const bilingualFee = inputs.needsBilingualService ? 20 : 0;
     
-    // Urgency fee
+    // Urgency fees per SOP
     let urgencyFee = 0;
-    if (inputs.urgencyLevel === 'same-day') urgencyFee = 25;
-    if (inputs.urgencyLevel === 'emergency') urgencyFee = 50;
+    if (inputs.urgencyLevel === 'same-day' && !serviceName.includes('extended')) {
+      urgencyFee = 25; // Same-day fee per SOP
+    } else if (inputs.urgencyLevel === 'emergency') {
+      urgencyFee = 50; // Emergency/after-hours fee per SOP  
+    }
 
     const subtotal = basePrice + extraSignersFee + travelFee + weekendHolidayFee + 
-                     afterHoursFee + extraDocumentsFee + overnightHandlingFee + 
-                     bilingualFee + urgencyFee;
+                    afterHoursFee + extraDocumentsFee + overnightHandlingFee + 
+                    bilingualFee + urgencyFee;
 
     const promoDiscount = promoValidation?.isValid ? promoValidation.discount : 0;
     const finalPrice = Math.max(0, subtotal - promoDiscount);
@@ -169,8 +244,8 @@ export default function RealTimePricing({
     const paymentDue = paymentType === 'deposit' ? depositAmount : finalPrice;
 
     // Continue with existing breakdown logic for non-RON fees
-    if (!isRONService && extraSignersFee > 0) {
-      breakdown.push(`Additional signers (${inputs.numberOfSigners - 1}): $${extraSignersFee}`);
+    if (!isRONService && !isQuickStampLocal && extraSignersFee > 0) {
+      breakdown.push(`Additional signers (${inputs.numberOfSigners - (serviceName.includes('loan') ? 4 : 2)}): $${extraSignersFee}`);
     }
     if (travelFee > 0) breakdown.push(`Travel (${inputs.distance.toFixed(1)} miles): $${travelFee.toFixed(2)}`);
     if (weekendHolidayFee > 0) breakdown.push(`Weekend/Holiday: $${weekendHolidayFee}`);
@@ -256,16 +331,16 @@ export default function RealTimePricing({
   };
 
   const getTravelWarning = () => {
-    if (inputs.distance > 25) {
+    if (inputs.distance > 50) {
       return {
         type: 'error' as const,
-        message: `Service area exceeded. We typically serve within 25 miles of Houston. Additional coordination may be required for ${inputs.distance.toFixed(1)} mile distance.`
+        message: `Service area exceeded. We typically serve within 50 miles of ZIP 77591. Additional coordination may be required for ${inputs.distance.toFixed(1)} mile distance.`
       };
     }
     if (inputs.distance > 15) {
       return {
         type: 'warning' as const,
-        message: `Travel fee applies for distances beyond 15 miles. ${formatCurrency(pricing.travelFee)} added for ${inputs.distance.toFixed(1)} mile distance.`
+        message: `Travel fee applies for distances beyond 15 miles from ZIP 77591. ${formatCurrency(pricing.travelFee)} added for ${inputs.distance.toFixed(1)} mile distance.`
       };
     }
     return null;
