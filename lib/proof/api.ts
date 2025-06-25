@@ -111,8 +111,16 @@ export class ProofAPI {
     this.apiKey = apiKey || PROOF_CONFIG.apiKey || '';
     this.baseUrl = baseUrl || PROOF_CONFIG.baseUrl;
 
-    if (!this.apiKey) {
-      throw new ProofAPIError('Proof API key is required');
+    // Only require API key during runtime, not build time
+    if (!this.apiKey && process.env.NODE_ENV !== 'development' && typeof window === 'undefined') {
+      // During build time, we may not have all env vars - only throw if we're definitely in production runtime
+      const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || 
+                         process.env.NODE_ENV === undefined ||
+                         process.argv.includes('build');
+      
+      if (!isBuildTime) {
+        throw new ProofAPIError('Proof API key is required');
+      }
     }
   }
 
@@ -123,6 +131,11 @@ export class ProofAPI {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
+    // Runtime check for API key
+    if (!this.apiKey) {
+      throw new ProofAPIError('Proof API key is required for API calls');
+    }
+
     // Use v2 for production API (per latest Proof docs)
     const apiVersion = PROOF_CONFIG.environment === 'production' ? 'v2' : 'v1';
     const url = `${this.baseUrl}/${apiVersion}/${endpoint}`;
