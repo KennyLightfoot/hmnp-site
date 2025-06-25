@@ -24,7 +24,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState, useEffect } from 'react';
-import AppointmentCalendar, { ServiceType } from "@/components/appointment-calendar";
+import BookingCalendar from "@/components/booking/BookingCalendar";
+import { ServiceType } from "@/lib/types/service-types";
 
 interface ApiService {
   id: string;
@@ -342,21 +343,17 @@ export function ServiceBookingForm() {
           )}
         />
 
-        {selectedService && selectedService.serviceType && watchedNumberOfSigners && watchedNumberOfSigners > 0 && (
+        {selectedService && selectedService.id && watchedNumberOfSigners && watchedNumberOfSigners > 0 && (
           <div className="my-6 p-4 border rounded-md bg-slate-50">
             <h3 className="text-lg font-semibold mb-3 text-gray-800">Select Appointment Time</h3>
-            <AppointmentCalendar
-              serviceType={selectedService.serviceType}
-              numberOfSigners={watchedNumberOfSigners}
-              onTimeSelected={handleTimeSelected}
+            <BookingCalendar
+              serviceId={selectedService.id}
+              serviceDuration={selectedService.duration}
+              onDateTimeSelect={(date, time) => {
+                // Update form with selected date and time
+                form.setValue("appointmentDateTime", time);
+              }}
             />
-            {selectedSlot && (
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                <p className="text-sm font-medium text-blue-700">
-                  Selected Time: <span className="font-bold">{selectedSlot.formattedTime}</span>
-                </p>
-              </div>
-            )}
           </div>
         )}
 

@@ -67,7 +67,14 @@ export async function GET(request: NextRequest) {
     // Don't allow booking for past dates (compare in business timezone)
     if (requestedDateInBusinessTz < today) {
       return NextResponse.json(
-        { error: 'Cannot book appointments for past dates' },
+        { 
+          error: 'Cannot book appointments for past dates',
+          availableSlots: [],
+          date: validatedParams.date,
+          message: 'Selected date is in the past. Please choose a future date.',
+          businessHours: null,
+          serviceInfo: null
+        },
         { status: 400 }
       );
     }
@@ -79,13 +86,20 @@ export async function GET(request: NextRequest) {
 
     if (!service || !service.active) {
       return NextResponse.json(
-        { error: 'Service not found or inactive' },
+        { 
+          error: 'Service not found or inactive',
+          availableSlots: [],
+          date: validatedParams.date,
+          message: 'The requested service is not available. Please contact us for assistance.',
+          businessHours: null,
+          serviceInfo: null
+        },
         { status: 404 }
       );
     }
 
     // Get service duration (use override if provided, otherwise service default)
-        const serviceDurationMinutes = validatedParams.duration
+    const serviceDurationMinutes = validatedParams.duration
       ? parseInt(validatedParams.duration)
       : service.duration;
 
@@ -97,7 +111,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         date: validatedParams.date,
         availableSlots: [],
-        message: 'No business hours configured for this day',
+        message: 'No business hours configured for this day. We are closed.',
+        businessHours: null,
+        serviceInfo: {
+          name: service.name,
+          duration: serviceDurationMinutes,
+          price: service.price,
+        },
       });
     }
 
@@ -107,7 +127,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         date: validatedParams.date,
         availableSlots: [],
-        message: 'This date is not available for bookings',
+        message: 'This date is not available for bookings due to holiday or blackout date.',
+        businessHours: {
+          startTime: businessHours.startTime,
+          endTime: businessHours.endTime,
+        },
+        serviceInfo: {
+          name: service.name,
+          duration: serviceDurationMinutes,
+          price: service.price,
+        },
       });
     }
 
@@ -131,6 +160,18 @@ export async function GET(request: NextRequest) {
       clientTimezone,
     });
 
+    // Provide helpful message based on availability
+    let message = '';
+    if (availableSlots.length === 0) {
+      if (existingBookings.length > 0) {
+        message = 'All time slots are booked for this date. Please try another date.';
+      } else {
+        message = 'No available time slots meet the minimum booking requirements for this date.';
+      }
+    } else {
+      message = `${availableSlots.filter(slot => slot.available).length} time slots available.`;
+    }
+
     // Include timezone information in the response
     return NextResponse.json({
       date: validatedParams.date,
@@ -149,6 +190,14 @@ export async function GET(request: NextRequest) {
         clientTimezone,
         timezoneSupported: true,
       },
+      message,
+      metadata: {
+        totalSlotsGenerated: availableSlots.length,
+        availableSlotsCount: availableSlots.filter(slot => slot.available).length,
+        existingBookingsCount: existingBookings.length,
+        leadTimeHours,
+        requestedDuration: serviceDurationMinutes,
+      }
     });
 
   } catch (error) {
@@ -156,13 +205,22 @@ export async function GET(request: NextRequest) {
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid parameters', details: error.errors },
+        { 
+          error: 'Invalid parameters', 
+          details: error.errors,
+          availableSlots: [],
+          message: 'Please check your request parameters and try again.'
+        },
         { status: 400 }
       );
     }
 
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        availableSlots: [],
+        message: 'An unexpected error occurred. Please try again later.'
+      },
       { status: 500 }
     );
   } finally {
@@ -310,7 +368,7 @@ function calculateAvailableSlots({
       
       const bookingStart = new Date(booking.scheduledDateTime);
       const bookingEnd = new Date(bookingStart);
-              bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.service.duration + bufferTimeMinutes);
+      bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.service.duration + bufferTimeMinutes);
       
       // Check if there's any overlap
       return (currentSlot < bookingEnd && slotEnd > bookingStart);

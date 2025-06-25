@@ -5,10 +5,11 @@ import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Clock, CalendarDays } from 'lucide-react';
-import { format, addDays, isSameDay, startOfDay } from 'date-fns';
+import { Loader2, Clock, CalendarDays, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
+import { format, addDays, isSameDay, startOfDay, isToday, isTomorrow } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 import { toast } from '@/components/ui/use-toast';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface TimeSlot {
   startTime: string;
@@ -23,15 +24,19 @@ interface TimeSlot {
 interface AvailabilityResponse {
   availableSlots: TimeSlot[];
   businessHours: {
-    open: string;
-    close: string;
-    enabled: boolean;
+    startTime: string;
+    endTime: string;
   };
   businessTimezone: string;
   clientTimezone: string;
   date: string;
   message?: string;
   error?: string;
+  serviceInfo?: {
+    name: string;
+    duration: number;
+    price: number;
+  };
 }
 
 interface BookingCalendarProps {
@@ -55,6 +60,8 @@ export default function BookingCalendar({
   const [loading, setLoading] = useState(false);
   const [businessHours, setBusinessHours] = useState<any>(null);
   const [availabilityMessage, setAvailabilityMessage] = useState<string>('');
+  const [retryCount, setRetryCount] = useState(0);
+  const [serviceInfo, setServiceInfo] = useState<any>(null);
 
   // Detect user timezone when component mounts
   useEffect(() => {
@@ -74,10 +81,12 @@ export default function BookingCalendar({
     }
   }, [date, serviceId, serviceDuration, userTimezone]);
 
-  const fetchAvailability = async (selectedDate: Date) => {
-    setLoading(true);
-    setTimeSlots([]);
-    setAvailabilityMessage('');
+  const fetchAvailability = async (selectedDate: Date, retry = false) => {
+    if (!retry) {
+      setLoading(true);
+      setTimeSlots([]);
+      setAvailabilityMessage('');
+    }
 
     try {
       const dateString = format(selectedDate, 'yyyy-MM-dd');
@@ -85,53 +94,97 @@ export default function BookingCalendar({
         date: dateString,
         serviceDuration: serviceDuration.toString(),
         serviceId: serviceId,
-        timezone: userTimezone // Send user's timezone to API
+        timezone: userTimezone
       });
 
-      const response = await fetch(`/api/availability?${params}`);
+      const response = await fetch(`/api/availability?${params}`, {
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
+      
       const data: AvailabilityResponse = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch availability');
+        throw new Error(data.error || `Server error: ${response.status}`);
       }
 
-      setTimeSlots(data.availableSlots);
+      // Filter only available slots
+      const availableSlots = data.availableSlots?.filter(slot => slot.available) || [];
+      
+      setTimeSlots(availableSlots);
       setBusinessHours(data.businessHours);
+      setServiceInfo(data.serviceInfo);
       setAvailabilityMessage(data.message || '');
+      setRetryCount(0);
 
-      if (data.availableSlots.length === 0 && data.message) {
-        toast({
-          title: 'No availability',
-          description: data.message,
-          variant: 'destructive'
-        });
+      if (availableSlots.length === 0) {
+        const message = data.message || 'No available time slots for this date.';
+        setAvailabilityMessage(message);
+        
+        if (!retry) {
+          toast({
+            title: 'No availability',
+            description: message,
+            variant: 'default'
+          });
+        }
       }
     } catch (error) {
       console.error('Error fetching availability:', error);
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to load availability',
-        variant: 'destructive'
-      });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load availability';
+      setAvailabilityMessage(errorMessage);
+      
+      if (!retry) {
+        toast({
+          title: 'Error loading availability',
+          description: errorMessage,
+          variant: 'destructive'
+        });
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDateSelect = (newDate: Date | undefined) => {
-    if (newDate) {
-      setDate(newDate);
-      // Clear selected time when date changes
-      if (selectedTime) {
-        onDateTimeSelect(newDate, '');
-      }
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (!selectedDate) return;
+    
+    setDate(selectedDate);
+    setTimeSlots([]);
+    setAvailabilityMessage('');
+    
+    // Clear any previously selected time since we're changing dates
+    if (date && !isSameDay(date, selectedDate)) {
+      // Date changed, clear selection
     }
   };
 
-  const handleTimeSelect = (slot: TimeSlot) => {
-    if (date) {
-      // Use the business timezone time for backend processing
-      onDateTimeSelect(date, slot.startTime);
+  const handleTimeSelect = (timeSlot: TimeSlot) => {
+    if (!date) return;
+    
+    try {
+      onDateTimeSelect(date, timeSlot.startTime);
+      
+      toast({
+        title: 'Time selected',
+        description: `${getDateLabel(date)} at ${formatTimeDisplay(timeSlot.startTime)}`,
+        variant: 'default'
+      });
+    } catch (error) {
+      console.error('Error selecting time:', error);
+      toast({
+        title: 'Selection failed',
+        description: 'Unable to select this time slot. Please try again.',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleRetry = () => {
+    if (date && retryCount < 3) {
+      setRetryCount(prev => prev + 1);
+      fetchAvailability(date, true);
     }
   };
 
@@ -142,24 +195,44 @@ export default function BookingCalendar({
   };
 
   const formatTimeDisplay = (time: string) => {
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    return `${displayHour}:${minutes} ${ampm}`;
+    try {
+      const [hours, minutes] = time.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+      return `${displayHour}:${minutes} ${ampm}`;
+    } catch (error) {
+      return time; // Fallback to original if parsing fails
+    }
+  };
+
+  const getDateLabel = (selectedDate: Date) => {
+    if (isToday(selectedDate)) return 'Today';
+    if (isTomorrow(selectedDate)) return 'Tomorrow';
+    return format(selectedDate, 'EEEE, MMMM do');
   };
 
   return (
     <div className="space-y-6">
+      {/* Service Info Banner */}
+      {serviceInfo && (
+        <Alert className="border-blue-200 bg-blue-50">
+          <CheckCircle2 className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-blue-800">
+            <strong>{serviceInfo.name}</strong> - Duration: {serviceInfo.duration} minutes - Starting at ${serviceInfo.price}
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Calendar Selection */}
-      <Card>
+      <Card className="shadow-sm hover:shadow-md transition-shadow">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <CalendarDays className="h-5 w-5" />
+            <CalendarDays className="h-5 w-5 text-blue-600" />
             Select a Date
           </CardTitle>
           <CardDescription>
-            Choose your preferred appointment date
+            Choose your preferred appointment date. Available dates are highlighted.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -168,84 +241,104 @@ export default function BookingCalendar({
             selected={date}
             onSelect={handleDateSelect}
             disabled={disabledDays}
-            className="rounded-md border"
+            className="rounded-md border mx-auto"
+            classNames={{
+              day_selected: "bg-blue-600 text-white hover:bg-blue-700",
+              day_today: "bg-blue-100 text-blue-900 font-semibold",
+            }}
           />
         </CardContent>
       </Card>
 
-      {/* Time Slots */}
+      {/* Time Selection */}
       {date && (
-        <Card>
+        <Card className="shadow-sm hover:shadow-md transition-shadow">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Available Times
+              <Clock className="h-5 w-5 text-blue-600" />
+              Select a Time for {getDateLabel(date)}
             </CardTitle>
             <CardDescription>
-              {format(date, 'EEEE, MMMM do, yyyy')}
               {businessHours && (
-                <span className="block text-sm text-muted-foreground mt-1">
-                  Business hours: {formatTimeDisplay(businessHours.open)} - {formatTimeDisplay(businessHours.close)}
-                </span>
+                <>Available times based on business hours: {businessHours.startTime} - {businessHours.endTime}</>
               )}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin" />
-                <span className="ml-2">Loading available times...</span>
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+                  <p className="text-gray-600">Loading available times...</p>
+                </div>
+              </div>
+            ) : availabilityMessage && timeSlots.length === 0 ? (
+              <div className="text-center py-8">
+                <AlertCircle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Available Times</h3>
+                <p className="text-gray-600 mb-4">{availabilityMessage}</p>
+                {retryCount < 3 && (
+                  <Button 
+                    variant="outline" 
+                    onClick={handleRetry}
+                    className="mr-2"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Try Again
+                  </Button>
+                )}
+                <Button 
+                  variant="outline" 
+                  onClick={() => setDate(undefined)}
+                >
+                  Choose Different Date
+                </Button>
               </div>
             ) : timeSlots.length > 0 ? (
               <div className="space-y-4">
-                {userTimezone && timeSlots[0].clientTimezone && timeSlots[0].clientTimezone !== timeSlots[0].businessTimezone && (
-                  <div className="text-sm p-2 bg-blue-50 rounded-md text-blue-800 mb-3">
-                    <p className="font-medium">Times are displayed in your local timezone: {userTimezone}</p>
-                    <p className="text-xs mt-1">Business is located in {timeSlots[0].businessTimezone} timezone</p>
-                  </div>
-                )}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  {timeSlots.length} available time{timeSlots.length !== 1 ? 's' : ''} found
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {timeSlots.map((slot, index) => (
                     <Button
                       key={index}
                       variant={selectedTime === slot.startTime ? "default" : "outline"}
-                      size="sm"
+                      className={`
+                        h-12 flex flex-col items-center justify-center p-2 text-sm
+                        ${selectedTime === slot.startTime 
+                          ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                          : 'hover:bg-blue-50 hover:border-blue-300'
+                        }
+                      `}
                       onClick={() => handleTimeSelect(slot)}
-                      className="justify-center"
                     >
-                      {slot.clientStartTime 
-                        ? formatTimeDisplay(slot.clientStartTime)
-                        : formatTimeDisplay(slot.startTime)}
+                      <div className="font-medium">
+                        {formatTimeDisplay(slot.startTime.split('T')[1]?.substring(0, 5) || slot.startTime)}
+                      </div>
+                      <div className="text-xs opacity-75">
+                        {serviceDuration} min
+                      </div>
                     </Button>
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">
-                  {availabilityMessage || 'No available time slots for this date.'}
-                </p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Please try selecting a different date.
-                </p>
+              <div className="text-center py-8 text-gray-500">
+                <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>Select a date to see available times</p>
               </div>
             )}
           </CardContent>
         </Card>
       )}
 
-      {/* Selected Appointment Summary */}
-      {date && selectedTime && (
-        <Card className="border-green-200 bg-green-50">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-green-800">
-              <CalendarDays className="h-4 w-4" />
-              <span className="font-medium">
-                Selected: {format(date, 'EEEE, MMMM do, yyyy')} at {formatTimeDisplay(selectedTime)}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Timezone Info */}
+      {userTimezone && (
+        <div className="text-xs text-gray-500 text-center">
+          Times shown in your timezone: {userTimezone.replace('_', ' ')}
+        </div>
       )}
     </div>
   );

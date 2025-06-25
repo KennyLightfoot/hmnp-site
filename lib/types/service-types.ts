@@ -75,32 +75,55 @@ export const SERVICE_DESCRIPTIONS: Record<FrontendServiceType, string> = {
   "support-service": "Additional support and consultation services",
 };
 
-/**
- * Convert Prisma ServiceType to frontend type
- */
-export function mapPrismaToFrontend(prismaType: PrismaServiceType): FrontendServiceType {
-  return PRISMA_TO_FRONTEND_SERVICE_MAP[prismaType];
-}
+// Service ordering priority (lower numbers = higher priority in UI)
+export const SERVICE_PRIORITY_ORDER: Record<FrontendServiceType, number> = {
+  "priority": 1,           // Most urgent, show first
+  "essential": 2,          // Basic service, show second  
+  "standard-notary": 3,    // Standard service
+  "loan-signing": 4,       // High-value service
+  "extended-hours-notary": 5,
+  "specialty": 6,
+  "business-solutions": 7,
+  "reverse-mortgage": 8,
+  "loan-signing-specialist": 9,
+  "specialty-notary-service": 10,
+  "support-service": 11,
+};
+
+// Default durations for services (in minutes)
+export const SERVICE_DEFAULT_DURATIONS: Record<FrontendServiceType, number> = {
+  "essential": 60,
+  "priority": 60,
+  "loan-signing": 90,
+  "reverse-mortgage": 90,
+  "specialty": 60,
+  "standard-notary": 60,
+  "extended-hours-notary": 60,
+  "loan-signing-specialist": 90,
+  "specialty-notary-service": 60,
+  "business-solutions": 120,
+  "support-service": 30,
+};
 
 /**
- * Convert frontend type to Prisma ServiceType
- */
-export function mapFrontendToPrisma(frontendType: FrontendServiceType): PrismaServiceType {
-  return FRONTEND_TO_PRISMA_SERVICE_MAP[frontendType];
-}
-
-/**
- * Check if a string is a valid frontend service type
+ * Type guard to check if a string is a valid FrontendServiceType
  */
 export function isValidFrontendServiceType(value: string): value is FrontendServiceType {
   return Object.keys(FRONTEND_TO_PRISMA_SERVICE_MAP).includes(value as FrontendServiceType);
 }
 
 /**
- * Check if a value is a valid Prisma service type
+ * Map a Prisma service type to frontend type
  */
-export function isValidPrismaServiceType(value: string): value is PrismaServiceType {
-  return Object.values(PrismaServiceType).includes(value as PrismaServiceType);
+export function mapPrismaToFrontend(prismaType: PrismaServiceType): FrontendServiceType {
+  return PRISMA_TO_FRONTEND_SERVICE_MAP[prismaType];
+}
+
+/**
+ * Map a frontend service type to Prisma type
+ */
+export function mapFrontendToPrisma(frontendType: FrontendServiceType): PrismaServiceType {
+  return FRONTEND_TO_PRISMA_SERVICE_MAP[frontendType];
 }
 
 /**
@@ -115,6 +138,28 @@ export function getServiceDisplayName(serviceType: FrontendServiceType): string 
  */
 export function getServiceDescription(serviceType: FrontendServiceType): string {
   return SERVICE_DESCRIPTIONS[serviceType] || 'Professional notary services';
+}
+
+/**
+ * Get default duration for a service type
+ */
+export function getServiceDefaultDuration(serviceType: FrontendServiceType): number {
+  return SERVICE_DEFAULT_DURATIONS[serviceType] || 60;
+}
+
+/**
+ * Get priority order for a service type (for sorting)
+ */
+export function getServicePriorityOrder(serviceType: FrontendServiceType): number {
+  return SERVICE_PRIORITY_ORDER[serviceType] || 999;
+}
+
+/**
+ * Get all available frontend service types sorted by priority
+ */
+export function getAllFrontendServiceTypesSorted(): FrontendServiceType[] {
+  return (Object.keys(FRONTEND_TO_PRISMA_SERVICE_MAP) as FrontendServiceType[])
+    .sort((a, b) => getServicePriorityOrder(a) - getServicePriorityOrder(b));
 }
 
 /**
