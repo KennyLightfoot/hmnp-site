@@ -42,12 +42,39 @@ const DEFAULT_BUSINESS_HOURS: BusinessHours[] = [
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    
+    // Normalize parameter names for consistency
     const queryParams = {
       date: searchParams.get('date'),
       serviceId: searchParams.get('serviceId'),
+      // Handle both 'duration' and 'serviceDuration' parameter names
       duration: searchParams.get('duration') || searchParams.get('serviceDuration'),
-      timezone: searchParams.get('timezone') || undefined,
+      timezone: searchParams.get('timezone') || 'America/Chicago',
     };
+
+    // Enhanced validation with better error messages
+    if (!queryParams.date) {
+      return NextResponse.json(
+        { error: 'Date parameter is required (format: YYYY-MM-DD)' },
+        { status: 400 }
+      );
+    }
+
+    if (!queryParams.serviceId) {
+      return NextResponse.json(
+        { error: 'Service ID parameter is required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate date format
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(queryParams.date)) {
+      return NextResponse.json(
+        { error: 'Invalid date format. Use YYYY-MM-DD' },
+        { status: 400 }
+      );
+    }
 
     // Validate input parameters
     const validatedParams = availabilityQuerySchema.parse(queryParams);
@@ -56,6 +83,15 @@ export async function GET(request: NextRequest) {
     const businessSettings = await getBusinessSettings();
     const businessTimezone = businessSettings.business_timezone || 'America/Chicago';
     const clientTimezone = validatedParams.timezone;
+    
+    // Log for debugging
+    console.log('Availability request:', {
+      date: validatedParams.date,
+      serviceId: validatedParams.serviceId,
+      duration: validatedParams.duration,
+      businessTimezone,
+      clientTimezone
+    });
     
     // Convert requested date to business timezone for proper availability calculations
     const requestedDateInClientTz = new Date(`${validatedParams.date}T00:00:00`);
@@ -66,28 +102,50 @@ export async function GET(request: NextRequest) {
 
     // Don't allow booking for past dates (compare in business timezone)
     if (requestedDateInBusinessTz < today) {
-      return NextResponse.json(
-        { error: 'Cannot book appointments for past dates' },
-        { status: 400 }
-      );
+      return NextResponse.json({
+        date: validatedParams.date,
+        availableSlots: [],
+        message: 'Cannot book appointments for past dates',
+        error: 'Past date selected'
+      }, { status: 400 });
     }
 
-    // Get service details
+    // Get service details with enhanced error handling
     const service = await prisma.service.findUnique({
       where: { id: validatedParams.serviceId },
     });
 
-    if (!service || !service.active) {
-      return NextResponse.json(
-        { error: 'Service not found or inactive' },
-        { status: 404 }
-      );
+    if (!service) {
+      return NextResponse.json({
+        date: validatedParams.date,
+        availableSlots: [],
+        message: 'Service not found',
+        error: 'Invalid service ID'
+      }, { status: 404 });
+    }
+
+    if (!service.active) {
+      return NextResponse.json({
+        date: validatedParams.date,
+        availableSlots: [],
+        message: 'Service is currently inactive',
+        error: 'Service inactive'
+      }, { status: 400 });
     }
 
     // Get service duration (use override if provided, otherwise service default)
-        const serviceDurationMinutes = validatedParams.duration
+    const serviceDurationMinutes = validatedParams.duration
       ? parseInt(validatedParams.duration)
       : service.duration;
+
+    if (!serviceDurationMinutes || serviceDurationMinutes <= 0) {
+      return NextResponse.json({
+        date: validatedParams.date,
+        availableSlots: [],
+        message: 'Invalid service duration',
+        error: 'Duration must be greater than 0'
+      }, { status: 400 });
+    }
 
     // Get business hours for the requested day (using business timezone)
     const dayOfWeek = requestedDateInBusinessTz.getDay();
@@ -98,6 +156,7 @@ export async function GET(request: NextRequest) {
         date: validatedParams.date,
         availableSlots: [],
         message: 'No business hours configured for this day',
+        businessHours: null,
       });
     }
 
@@ -107,7 +166,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         date: validatedParams.date,
         availableSlots: [],
-        message: 'This date is not available for bookings',
+        message: 'This date is not available for bookings (blackout date)',
+        businessHours: {
+          startTime: businessHours.startTime,
+          endTime: businessHours.endTime,
+        },
       });
     }
 
@@ -131,10 +194,20 @@ export async function GET(request: NextRequest) {
       clientTimezone,
     });
 
+    // Filter out unavailable slots and log for debugging
+    const availableOnlySlots = availableSlots.filter(slot => slot.available);
+    
+    console.log('Availability calculation result:', {
+      totalSlots: availableSlots.length,
+      availableSlots: availableOnlySlots.length,
+      existingBookings: existingBookings.length,
+      serviceDuration: serviceDurationMinutes
+    });
+
     // Include timezone information in the response
     return NextResponse.json({
       date: validatedParams.date,
-      availableSlots,
+      availableSlots: availableOnlySlots, // Only return available slots
       serviceInfo: {
         name: service.name,
         duration: serviceDurationMinutes,
@@ -149,6 +222,13 @@ export async function GET(request: NextRequest) {
         clientTimezone,
         timezoneSupported: true,
       },
+      debug: {
+        totalSlotsGenerated: availableSlots.length,
+        availableSlotsCount: availableOnlySlots.length,
+        existingBookingsCount: existingBookings.length,
+        leadTimeHours,
+        minimumBookingTime: minimumBookingTime.toISOString()
+      }
     });
 
   } catch (error) {
@@ -156,13 +236,20 @@ export async function GET(request: NextRequest) {
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid parameters', details: error.errors },
+        { 
+          error: 'Invalid parameters', 
+          details: error.errors,
+          message: 'Please check your request parameters'
+        },
         { status: 400 }
       );
     }
 
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        message: 'Failed to calculate availability. Please try again.'
+      },
       { status: 500 }
     );
   } finally {

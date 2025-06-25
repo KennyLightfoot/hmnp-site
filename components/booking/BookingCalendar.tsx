@@ -55,12 +55,14 @@ export default function BookingCalendar({
   const [loading, setLoading] = useState(false);
   const [businessHours, setBusinessHours] = useState<any>(null);
   const [availabilityMessage, setAvailabilityMessage] = useState<string>('');
+  const [error, setError] = useState<string>('');
 
   // Detect user timezone when component mounts
   useEffect(() => {
     try {
       const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       setUserTimezone(detectedTimezone);
+      console.log('Detected timezone:', detectedTimezone);
     } catch (error) {
       console.warn('Could not detect timezone:', error);
       setUserTimezone('America/Chicago'); // Fallback
@@ -78,39 +80,63 @@ export default function BookingCalendar({
     setLoading(true);
     setTimeSlots([]);
     setAvailabilityMessage('');
+    setError('');
 
     try {
       const dateString = format(selectedDate, 'yyyy-MM-dd');
+      
+      // Build parameters with consistent naming
       const params = new URLSearchParams({
+        date: dateString,
+        serviceDuration: serviceDuration.toString(), // Use serviceDuration consistently
+        serviceId: serviceId,
+        timezone: userTimezone
+      });
+
+      console.log('Fetching availability with params:', {
         date: dateString,
         serviceDuration: serviceDuration.toString(),
         serviceId: serviceId,
-        timezone: userTimezone // Send user's timezone to API
+        timezone: userTimezone
       });
 
       const response = await fetch(`/api/availability?${params}`);
-      const data: AvailabilityResponse = await response.json();
-
+      
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch availability');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || errorData.error || `HTTP ${response.status}: ${response.statusText}`);
       }
 
-      setTimeSlots(data.availableSlots);
-      setBusinessHours(data.businessHours);
-      setAvailabilityMessage(data.message || '');
+      const data: AvailabilityResponse = await response.json();
+      console.log('Availability response:', data);
 
-      if (data.availableSlots.length === 0 && data.message) {
-        toast({
-          title: 'No availability',
-          description: data.message,
-          variant: 'destructive'
-        });
+      if (data.availableSlots && Array.isArray(data.availableSlots)) {
+        setTimeSlots(data.availableSlots);
+        setBusinessHours(data.businessHours);
+        setAvailabilityMessage(data.message || '');
+
+        if (data.availableSlots.length === 0) {
+          setAvailabilityMessage(data.message || 'No available time slots for this date.');
+          toast({
+            title: 'No availability',
+            description: data.message || 'No available time slots for this date. Please try selecting a different date.',
+            variant: 'destructive'
+          });
+        }
+      } else {
+        console.warn('Invalid availability response format:', data);
+        setError('Invalid response format from server');
+        setTimeSlots([]);
       }
+
     } catch (error) {
       console.error('Error fetching availability:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load availability';
+      setError(errorMessage);
+      setTimeSlots([]);
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to load availability',
+        title: 'Error Loading Times',
+        description: errorMessage,
         variant: 'destructive'
       });
     } finally {
@@ -142,11 +168,16 @@ export default function BookingCalendar({
   };
 
   const formatTimeDisplay = (time: string) => {
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    return `${displayHour}:${minutes} ${ampm}`;
+    try {
+      const [hours, minutes] = time.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+      return `${displayHour}:${minutes} ${ampm}`;
+    } catch (error) {
+      console.warn('Error formatting time:', time, error);
+      return time; // Fallback to original format
+    }
   };
 
   return (
@@ -185,7 +216,7 @@ export default function BookingCalendar({
               {format(date, 'EEEE, MMMM do, yyyy')}
               {businessHours && (
                 <span className="block text-sm text-muted-foreground mt-1">
-                  Business hours: {formatTimeDisplay(businessHours.open)} - {formatTimeDisplay(businessHours.close)}
+                  Business hours: {formatTimeDisplay(businessHours.startTime)} - {formatTimeDisplay(businessHours.endTime)}
                 </span>
               )}
             </CardDescription>
@@ -196,10 +227,24 @@ export default function BookingCalendar({
                 <Loader2 className="h-6 w-6 animate-spin" />
                 <span className="ml-2">Loading available times...</span>
               </div>
+            ) : error ? (
+              <div className="text-center py-8">
+                <div className="text-red-600 font-medium mb-2">Error Loading Times</div>
+                <p className="text-sm text-muted-foreground mb-4">{error}</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => fetchAvailability(date)}
+                  className="flex items-center gap-2"
+                >
+                  <Clock className="h-4 w-4" />
+                  Retry
+                </Button>
+              </div>
             ) : timeSlots.length > 0 ? (
               <div className="space-y-4">
-                {userTimezone && timeSlots[0].clientTimezone && timeSlots[0].clientTimezone !== timeSlots[0].businessTimezone && (
-                  <div className="text-sm p-2 bg-blue-50 rounded-md text-blue-800 mb-3">
+                {userTimezone && timeSlots[0]?.clientTimezone && timeSlots[0].clientTimezone !== timeSlots[0].businessTimezone && (
+                  <div className="text-sm p-3 bg-blue-50 rounded-md text-blue-800 border border-blue-200">
                     <p className="font-medium">Times are displayed in your local timezone: {userTimezone}</p>
                     <p className="text-xs mt-1">Business is located in {timeSlots[0].businessTimezone} timezone</p>
                   </div>
@@ -207,11 +252,12 @@ export default function BookingCalendar({
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {timeSlots.map((slot, index) => (
                     <Button
-                      key={index}
+                      key={`${slot.startTime}-${index}`}
                       variant={selectedTime === slot.startTime ? "default" : "outline"}
                       size="sm"
                       onClick={() => handleTimeSelect(slot)}
-                      className="justify-center"
+                      className="justify-center hover:scale-105 transition-transform"
+                      disabled={!slot.available}
                     >
                       {slot.clientStartTime 
                         ? formatTimeDisplay(slot.clientStartTime)
@@ -222,7 +268,10 @@ export default function BookingCalendar({
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-muted-foreground">
+                <div className="text-gray-500 mb-2">
+                  <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                </div>
+                <p className="text-muted-foreground font-medium">
                   {availabilityMessage || 'No available time slots for this date.'}
                 </p>
                 <p className="text-sm text-muted-foreground mt-2">

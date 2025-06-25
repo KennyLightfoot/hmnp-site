@@ -49,20 +49,20 @@ export const metadata = {
 }
 
 export default function ServicesPage() {
-  // Move services array inside the component
+  // Reorganized services array with better ordering and clearer naming
   const services = [
     {
-      slug: "standard",
-      name: "Standard Notary",
-      price: "$75+",
-      tagline: "On-time, every time.",
+      slug: "essential", // Renamed from "standard" for clarity
+      name: "Essential Notary",
+      price: "$75",
+      tagline: "Fast, reliable, everyday notarizations.",
       description:
-        "On-site notarizations of standard documents (POAs, affidavits, contracts) between 9 am–5 pm.",
-      link: "/services/standard",
+        "Perfect for POAs, affidavits, and standard documents. Available 9am-5pm weekdays.",
+      link: "/services/essential",
       icon: FileText,
       features: [
         "POAs, affidavits, contracts",
-        "Service between 9 am - 5 pm",
+        "Service 9am-5pm weekdays",
         "Travel within 15 miles included",
       ],
       bgColor: "bg-[#002147]",
@@ -75,16 +75,16 @@ export default function ServicesPage() {
     {
       slug: "priority",
       name: "Priority Mobile Notary",
-      price: "$100",
-      tagline: "Urgent notarization, 2-hour response.",
+      price: "$125",
+      tagline: "2-hour response guarantee.",
       description:
-        "Guaranteed 2-hour response for urgent notarization needs, available 7am-9pm daily.",
+        "Same-day urgent service with 2-hour response guarantee. Available 7am-9pm daily.",
       link: "/services/priority",
       icon: Clock,
       features: [
         "2-hour response guarantee",
-        "Service 7am-9pm daily",
-        "Up to 5 documents, 2 signers",
+        "Same-day service",
+        "Available 7am-9pm daily",
       ],
       bgColor: "bg-[#A52A2A]",
       borderColor: "border-t-[#A52A2A]",
@@ -96,15 +96,15 @@ export default function ServicesPage() {
     {
       slug: "extended",
       name: "Extended Hours Notary",
-      price: "$100+",
-      tagline: "When 9–5 just won't cut it.",
+      price: "$100",
+      tagline: "Beyond business hours convenience.",
       description:
-        "Same-day or after-hours service (7 am–9 pm) for when 9–5 won't cut it.",
+        "Early morning, evening, and weekend appointments for your busy schedule.",
       link: "/services/extended",
       icon: Calendar,
       features: [
-        "Same-day or after-hours",
-        "Service between 7 am - 9 pm",
+        "Early morning & evening",
+        "Weekend availability",
         "Flexible scheduling",
       ],
       bgColor: "bg-[#002147]",
@@ -117,16 +117,16 @@ export default function ServicesPage() {
     {
       slug: "loan-signing",
       name: "Loan Signing Specialist",
-      price: "$200+",
-      tagline: "Paperwork pros you can trust.",
+      price: "$200",
+      tagline: "Certified loan signing experts.",
       description:
-        "Certified loan signings, including all trip-chain, remote online signings, and courier returns.",
+        "Complete loan document packages with certified signing agents and courier services.",
       link: "/services/loan-signing",
       icon: Briefcase,
       features: [
-        "Certified loan signings",
-        "RON and courier returns",
-        "Meticulous & professional",
+        "Certified signing agents",
+        "Complete loan packages",
+        "Courier & RON services",
       ],
       bgColor: "bg-[#002147]",
       borderColor: "border-t-[#002147]",
@@ -138,37 +138,16 @@ export default function ServicesPage() {
     {
       slug: "estate-planning",
       name: "Estate Planning Package",
-      price: "$250+",
-      tagline: "Secure your legacy, simply.",
+      price: "$225",
+      tagline: "Comprehensive estate document service.",
       description:
-        "A comprehensive package for notarizing all your estate documents—Wills, Trusts, POAs, and more.",
-      link: "/services/estate-planning", // Links to the main service page
+        "Complete estate planning document notarization including Wills, Trusts, and POAs.",
+      link: "/services/estate-planning",
       icon: Shield,
       features: [
-        "Notarize up to 10 documents",
-        "Includes up to 4 signers",
-        "Mobile service to your location",
-      ],
-      bgColor: "bg-[#002147]",
-      borderColor: "border-t-[#002147]",
-      buttonVariant: "outline" as "outline" | "default",
-      textColor: "text-[#002147]",
-      hoverBgColor: "hover:bg-[#002147]",
-      hoverTextColor: "hover:text-white",
-    },
-    {
-      slug: "specialty",
-      name: "Specialty Notary Services",
-      price: "$150+",
-      tagline: "Complex docs handled.",
-      description:
-        "Apostilles, embassy certifications, translations, and other complex notarial acts.",
-      link: "/services/specialty",
-      icon: Award,
-      features: [
-        "Apostilles, translations",
-        "Embassy certifications",
-        "Expert handling of unique needs",
+        "Wills, Trusts, POAs",
+        "Up to 10 documents",
+        "Multiple signers included",
       ],
       bgColor: "bg-[#002147]",
       borderColor: "border-t-[#002147]",
@@ -180,16 +159,37 @@ export default function ServicesPage() {
     {
       slug: "business",
       name: "Business Notary Solutions",
-      price: "$250+",
-      tagline: "Keep your business moving.",
+      price: "$175",
+      tagline: "Streamlined business document processing.",
       description:
-        "Volume signings, block-booking discounts, corporate account setups, and recurring appointments.",
+        "Volume discounts, corporate accounts, and recurring appointment scheduling for businesses.",
       link: "/services/business",
       icon: Building,
       features: [
-        "Volume & block-booking discounts",
-        "Corporate accounts",
+        "Volume discounts available",
+        "Corporate account setup",
         "Recurring appointments",
+      ],
+      bgColor: "bg-[#002147]",
+      borderColor: "border-t-[#002147]",
+      buttonVariant: "outline" as "outline" | "default",
+      textColor: "text-[#002147]",
+      hoverBgColor: "hover:bg-[#002147]",
+      hoverTextColor: "hover:text-white",
+    },
+    {
+      slug: "specialty",
+      name: "Specialty Notary Services",
+      price: "$150",
+      tagline: "Complex documents, expert handling.",
+      description:
+        "Apostilles, embassy certifications, translations, and specialized notarial acts.",
+      link: "/services/specialty",
+      icon: Award,
+      features: [
+        "Apostilles & certifications",
+        "Document translations",
+        "Complex notarial acts",
       ],
       bgColor: "bg-[#002147]",
       borderColor: "border-t-[#002147]",
@@ -605,7 +605,7 @@ export default function ServicesPage() {
                         </ul>
                       </div>
                     )}
-                     {service.slug === "standard" && (
+                     {service.slug === "essential" && (
                        <div className="bg-white p-4 rounded-lg shadow-sm">
                         <h4 className="font-semibold text-[#002147] mb-2">Common Documents Handled</h4>
                         <ul className="space-y-2 text-sm text-gray-600">
