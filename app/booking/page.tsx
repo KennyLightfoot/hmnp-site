@@ -243,9 +243,23 @@ export default function BookingPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
           Book Your Notary Service
         </h1>
+        
+        {/* Guarantee Confidence Banner */}
+        <div className="bg-gradient-to-r from-[#002147] to-[#001a38] border-2 border-[#A52A2A] rounded-lg px-6 py-4 mx-auto max-w-2xl mb-8">
+          <div className="flex items-center justify-center">
+            <svg className="w-6 h-6 text-[#A52A2A] mr-3" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            <div className="text-center">
+              <div className="text-lg font-bold text-[#A52A2A]">BOOKING WITH CONFIDENCE</div>
+              <div className="text-white font-semibold">Flawless the first time—or we pay the redraw fee</div>
+              <div className="text-xs text-[#91A3B0] mt-1">*Terms apply. Valid for notarization errors due to our oversight.</div>
+            </div>
+          </div>
+        </div>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">

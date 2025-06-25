@@ -26,8 +26,8 @@ import FaqSection from "@/components/faq-section"
 import CtaSection from "@/components/cta-section"
 
 export const metadata: Metadata = {
-  title: "Houston Mobile Notary Pros | Mobile Notary Service | Houston, TX",
-  description: "Reliable mobile notary public serving Houston, Galveston, League City, Pearland, and surrounding areas. We travel to you for convenient document notarization.",
+  title: "Houston Mobile Notary | Flawless Signings or We Pay Redraw Fee | HMNP",
+  description: "Houston's premier mobile notary service. Flawless the first time—or we pay the redraw fee. 24/7 loan signings, wills, POAs & more. Book same-day service.",
   keywords:
     "mobile notary Houston, notary public, Houston notary, Galveston notary, Pearland notary, League City notary, traveling notary, notary services, loan signing agent, document notarization, mobile notary service",
   openGraph: {
@@ -183,7 +183,7 @@ export default function HomePage() {
             </p>
             <Button asChild size="lg" className="bg-[#A52A2A] hover:bg-opacity-80 text-white">
               <Link href="/booking">
-                Book with Houston Mobile Notary Pros—where professionalism meets precision.
+                Book Your Guaranteed Service Now
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>

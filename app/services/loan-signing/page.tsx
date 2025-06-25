@@ -9,9 +9,9 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Loan Signing Specialist Houston | Certified & Precise | Houston Mobile Notary Pros",
+  title: "Houston Loan Signing Agent | Certified Specialists | HMNP",
   description:
-    "Expert Loan Signing Specialist services in Houston. Certified for all loan types including purchases, refinances, HELOCs, and reverse mortgages. Paperwork pros you can trust.",
+    "Houston's certified loan signing agents. Expert handling of purchases, refinances, HELOCs. Flawless signings or we pay the redraw fee. Book today for precision you can trust.",
   keywords:
     "loan signing specialist Houston, mobile notary loan signing, certified loan signer, mortgage signing agent, HELOC notary, reverse mortgage signing Houston, RON notary, real estate closing, courier returns, paperwork pros",
   alternates: {
@@ -93,9 +93,25 @@ export default function LoanSigningPage() {
         <h1 className="text-4xl font-bold text-[#002147] mb-3">
           Loan Signing Specialist Services
         </h1>
-        <p className="text-2xl font-semibold text-[#A52A2A] mb-4">
+        <p className="text-2xl font-semibold text-[#A52A2A] mb-6">
           Paperwork pros you can trust.
         </p>
+        
+        {/* Guarantee Banner - Prominent for Loan Signings */}
+        <div className="bg-gradient-to-r from-[#002147] to-[#001a38] border-2 border-[#A52A2A] rounded-lg px-8 py-6 mx-auto max-w-3xl mb-6">
+          <div className="flex items-center justify-center">
+            <svg className="w-10 h-10 text-[#A52A2A] mr-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-[#A52A2A]">LOAN SIGNING GUARANTEE</div>
+              <div className="text-white font-semibold text-xl">Flawless the first time—or we pay the redraw fee</div>
+              <div className="text-sm text-[#91A3B0] mt-2">We eliminate sloppy signings that kill funding. Zero tolerance for errors.</div>
+              <div className="text-xs text-[#91A3B0] mt-1">*Terms apply. Valid for notarization errors due to our oversight.</div>
+            </div>
+          </div>
+        </div>
+        
         <p className="text-lg text-gray-700 max-w-3xl mx-auto mb-6">
           Your critical loan documents demand more than just a stamp. They Demand Our Expertise. Our Promise: Fast, precise notary service—every time, no hassle.
         </p>
