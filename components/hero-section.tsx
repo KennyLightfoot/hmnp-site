@@ -34,15 +34,15 @@ export default function HeroSection() {
             </h1>
             
             {/* Guarantee Banner */}
-            <div className="bg-gradient-to-r from-[#003C2D] to-[#005544] border border-[#91A3B0] rounded-lg px-6 py-4 my-6">
+            <div className="bg-gradient-to-r from-[#002147] to-[#001a38] border-2 border-[#A52A2A] rounded-lg px-6 py-4 my-6">
               <div className="flex items-center justify-center">
-                <svg className="w-6 h-6 text-yellow-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-6 h-6 text-[#A52A2A] mr-3" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-yellow-400">OUR GUARANTEE</div>
+                  <div className="text-lg font-bold text-[#A52A2A]">OUR GUARANTEE</div>
                   <div className="text-white font-semibold">Flawless the first time—or we pay the redraw fee</div>
-                  <div className="text-xs text-gray-300 mt-1">*Terms apply. Valid for notarization errors due to our oversight.</div>
+                  <div className="text-xs text-[#91A3B0] mt-1">*Terms apply. Valid for notarization errors due to our oversight.</div>
                 </div>
               </div>
             </div>
