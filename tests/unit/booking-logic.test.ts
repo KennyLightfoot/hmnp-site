@@ -248,10 +248,10 @@ describe('BookingService', () => {
   describe('calculatePricing', () => {
     const mockService: Service = {
       id: '1',
-      name: 'Essential Notary Services',
+      name: 'Standard Notary Services',
       price: 75,
       duration: 60,
-      category: 'essential',
+      category: 'standard-notary',
       active: true,
     };
 
@@ -490,4 +490,20 @@ describe('Booking Edge Cases', () => {
     // Should round to 2 decimal places
     expect(pricing.totalPrice.toString()).not.toMatch(/\.\d{3,}/);
   });
-}); 
+});
+
+// Mock service data for testing
+const mockService = {
+  id: 'service-1',
+  name: 'Standard Notary Services',  // SOP: was likely 'Essential Service'
+  serviceType: 'standard-notary',     // SOP: was likely 'essential'
+  price: 75.00,
+  active: true,
+};
+
+// Mock promo codes for testing
+const mockPromoCodes = {
+  'WELCOME10': { discount: 0.10, maxDiscount: 50 },
+  'SENIOR15': { discount: 0.15, maxDiscount: 100 },
+  'SAVE25': { discount: 25, minAmount: 100 },
+}; 

@@ -210,8 +210,8 @@ function calculateStats(testimonials: Testimonial[]) {
 function groupTestimonialsByService(testimonials: Testimonial[]) {
   return {
     all: testimonials,
-    essential: testimonials.filter(t => t.service.includes('Essential')),
-    priority: testimonials.filter(t => t.service.includes('Priority')),
+    standard: testimonials.filter(t => t.service.includes('Standard') || t.service.includes('Essential')),
+    extended: testimonials.filter(t => t.service.includes('Extended') || t.service.includes('Priority')),
     loan: testimonials.filter(t => t.service.includes('Loan') || t.service.includes('Mortgage')),
     specialty: testimonials.filter(t => t.service.includes('Specialty') || t.service.includes('Weekend')),
   };
@@ -540,8 +540,8 @@ export default function UnifiedTestimonials({
             <Tabs defaultValue="all" className="w-full">
               <TabsList className="grid grid-cols-2 md:grid-cols-5 mb-8">
                 <TabsTrigger value="all">All Reviews</TabsTrigger>
-                <TabsTrigger value="essential">Essential Service</TabsTrigger>
-                <TabsTrigger value="priority">Priority Service</TabsTrigger>
+                <TabsTrigger value="standard">Standard Service</TabsTrigger>
+                <TabsTrigger value="extended">Extended Hours</TabsTrigger>
                 <TabsTrigger value="loan">Loan Signing</TabsTrigger>
                 <TabsTrigger value="specialty">Specialty Services</TabsTrigger>
               </TabsList>

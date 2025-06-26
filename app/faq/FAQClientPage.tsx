@@ -302,35 +302,35 @@ const faqs: FAQ[] = [
         <p>We offer a comprehensive range of mobile notary services to meet various needs:</p>
         <div className="mt-3 space-y-4">
           <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Essential Mobile Package</h3>
+            <h3 className="font-semibold text-[#002147]">Standard Notary Services</h3>
             <p className="mt-1">
               General notarization for wills, POAs, affidavits, and other standard documents. Starting at $75 for one
-              signer with 1-2 documents.
+              signer with 1-2 documents. Available Monday-Friday, 9am-5pm.
             </p>
-            <Link href="/services/essential" className="text-sm text-[#A52A2A] hover:underline">
-              Learn more about Essential Mobile Package →
+            <Link href="/services/standard-notary" className="text-sm text-[#A52A2A] hover:underline">
+              Learn more about Standard Notary Services →
             </Link>
           </div>
 
           <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Priority Service Package</h3>
+            <h3 className="font-semibold text-[#002147]">Extended Hours Notary</h3>
             <p className="mt-1">
               Urgent notarization with 2-hour response time, available 7am-9pm daily. $100 flat fee includes up to 5
               documents and 2 signers.
             </p>
-            <Link href="/services/priority" className="text-sm text-[#A52A2A] hover:underline">
-              Learn more about Priority Service Package →
+            <Link href="/services/extended-hours-notary" className="text-sm text-[#A52A2A] hover:underline">
+              Learn more about Extended Hours Notary →
             </Link>
           </div>
 
           <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Loan Signing Services</h3>
+            <h3 className="font-semibold text-[#002147]">Loan Signing Specialist</h3>
             <p className="mt-1">
               Specialized service for real estate transactions, including purchase loans, refinances, and more. $150
               flat fee includes unlimited documents and up to 4 signers.
             </p>
-            <Link href="/services/loan-signing" className="text-sm text-[#A52A2A] hover:underline">
-              Learn more about Loan Signing Services →
+            <Link href="/services/loan-signing-specialist" className="text-sm text-[#A52A2A] hover:underline">
+              Learn more about Loan Signing Specialist →
             </Link>
           </div>
 
@@ -839,9 +839,9 @@ const faqs: FAQ[] = [
         <p>Our pricing varies based on the service package you select:</p>
         <div className="mt-3 space-y-4">
           <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Essential Mobile Package</h3>
+            <h3 className="font-semibold text-[#002147]">Standard Notary Services</h3>
             <p className="mt-1">
-              <strong>Starting at $75</strong> for one signer with 1-2 documents.
+              <strong>Starting at $75</strong> for one signer with 1-2 documents. Available Monday-Friday, 9am-5pm.
             </p>
             <ul className="list-disc list-inside mt-1 space-y-1 text-sm">
               <li>Two Signers: $85 (up to 3 documents per signer)</li>
@@ -852,9 +852,9 @@ const faqs: FAQ[] = [
           </div>
 
           <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Priority Service Package</h3>
+            <h3 className="font-semibold text-[#002147]">Extended Hours Notary</h3>
             <p className="mt-1">
-              <strong>$100 flat fee</strong> for 2-hour response time, up to 5 documents and 2 signers.
+              <strong>$100 flat fee</strong> for 2-hour response time, up to 5 documents and 2 signers. Available 7am-9pm daily.
             </p>
             <ul className="list-disc list-inside mt-1 space-y-1 text-sm">
               <li>Additional signers: $10 each</li>
@@ -864,7 +864,7 @@ const faqs: FAQ[] = [
           </div>
 
           <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Loan Signing Services</h3>
+            <h3 className="font-semibold text-[#002147]">Loan Signing Specialist</h3>
             <p className="mt-1">
               <strong>$150 flat fee</strong> for standard loan closings and reverse mortgages.
             </p>

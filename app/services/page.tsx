@@ -52,13 +52,13 @@ export default function ServicesPage() {
   // Move services array inside the component
   const services = [
     {
-      slug: "standard",
-      name: "Standard Notary",
+      slug: "standard-notary",
+      name: "Standard Notary Services",
       price: "$75+",
       tagline: "On-time, every time.",
       description:
         "On-site notarizations of standard documents (POAs, affidavits, contracts) between 9 am–5 pm.",
-      link: "/services/standard",
+      link: "/services/standard-notary",
       icon: FileText,
       features: [
         "POAs, affidavits, contracts",
@@ -73,13 +73,13 @@ export default function ServicesPage() {
       hoverTextColor: "hover:text-white",
     },
     {
-      slug: "priority",
-      name: "Priority Mobile Notary",
+      slug: "extended-hours-notary",
+      name: "Extended Hours Notary",
       price: "$100",
       tagline: "Urgent notarization, 2-hour response.",
       description:
         "Guaranteed 2-hour response for urgent notarization needs, available 7am-9pm daily.",
-      link: "/services/priority",
+      link: "/services/extended-hours-notary",
       icon: Clock,
       features: [
         "2-hour response guarantee",
@@ -92,27 +92,6 @@ export default function ServicesPage() {
       textColor: "text-white",
       hoverBgColor: "hover:bg-[#8B0000]",
       isPopular: true,
-    },
-    {
-      slug: "extended",
-      name: "Extended Hours Notary",
-      price: "$100+",
-      tagline: "When 9–5 just won't cut it.",
-      description:
-        "Same-day or after-hours service (7 am–9 pm) for when 9–5 won't cut it.",
-      link: "/services/extended",
-      icon: Calendar,
-      features: [
-        "Same-day or after-hours",
-        "Service between 7 am - 9 pm",
-        "Flexible scheduling",
-      ],
-      bgColor: "bg-[#002147]",
-      borderColor: "border-t-[#002147]",
-      buttonVariant: "outline" as "outline" | "default",
-      textColor: "text-[#002147]",
-      hoverBgColor: "hover:bg-[#002147]",
-      hoverTextColor: "hover:text-white",
     },
     {
       slug: "loan-signing",
@@ -869,7 +848,7 @@ export default function ServicesPage() {
                         </ul>
                       </div>
                     )}
-                     {service.slug === "standard" && (
+                     {service.slug === "standard-notary" && (
                        <div className="bg-white p-4 rounded-lg shadow-sm">
                         <h4 className="font-semibold text-[#002147] mb-2">Common Documents Handled</h4>
                         <ul className="space-y-2 text-sm text-gray-600">
