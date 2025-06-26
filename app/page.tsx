@@ -21,7 +21,7 @@ import ServiceHoursBanner from "@/components/service-hours-banner"
 import ServicesOverview from "@/components/services-overview"
 import WhyChooseUs from "@/components/why-choose-us"
 import ServiceArea from "@/components/service-area"
-import TestimonialsSection from "@/components/testimonials-section"
+import UnifiedTestimonials from "@/components/testimonials/unified-testimonials"
 import FaqSection from "@/components/faq-section"
 import CtaSection from "@/components/cta-section"
 
@@ -196,7 +196,7 @@ export default function HomePage() {
 
       {/* Testimonials - Simplified - Removed */}
       {/* <section className="py-16 bg-gray-50"> ... </section> */}
-      <TestimonialsSection />
+              <UnifiedTestimonials variant="section" showStats={true} />
 
       {/* FAQ Section - Simplified - Removed */}
       {/* <section className="py-16 bg-white"> ... </section> */}

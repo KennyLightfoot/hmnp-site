@@ -1,117 +1,80 @@
 /**
- * Scheduler Initialization Module
+ * Unified Scheduler Initialization Module
  * 
- * This module provides centralized initialization of all schedulers.
- * It's designed to be imported once during app startup.
+ * This module provides centralized initialization of the unified scheduler system.
+ * It replaces the previous separate NotificationScheduler, QueueScheduler, and BullScheduler
+ * with a single, enterprise-grade scheduler.
  */
 
-import { NotificationScheduler } from './notificationScheduler';
-import { QueueScheduler } from './queueScheduler';
+import { initializeUnifiedScheduler, stopUnifiedScheduler, getSchedulerStatus } from './unified-scheduler';
 import { logger } from '../logger';
-import { initializeBullQueues, shutdownBullQueues } from '../bullmq/startup';
 
-const schedulersInitialized = {
-  notifications: false,
-  queue: false,
-  bullQueue: false
-};
-
-// Flag to track if schedulers are initialized
+// Flag to track if scheduler is initialized
 let isInitialized = false;
 
 /**
- * Initialize all schedulers in the system
+ * Initialize the unified scheduler system
  */
 export async function initializeSchedulers(): Promise<boolean> {
   if (isInitialized) {
-    logger.warn('Schedulers already initialized, skipping');
+    logger.warn('Scheduler already initialized, skipping');
     return true;
   }
 
   try {
-    logger.info('Initializing schedulers...');
+    logger.info('Initializing unified scheduler system...');
     
-    // Initialize notification scheduler
-    const notificationScheduler = NotificationScheduler.getInstance();
-    notificationScheduler.initialize();
-    // The initialize method returns void and handles its own logging
-    schedulersInitialized.notifications = true;
+    const success = await initializeUnifiedScheduler();
     
-    // Initialize queue scheduler
-    const queueScheduler = QueueScheduler.getInstance();
-    const queueInitialized = await queueScheduler.initialize();
-    
-    if (!queueInitialized) {
-      logger.error('Failed to initialize queue scheduler');
+    if (!success) {
+      logger.error('Failed to initialize unified scheduler');
       return false;
     }
-    
-    schedulersInitialized.queue = true;
-    
-    // Initialize Bull queue system
-    const bullQueueInitialized = await initializeBullQueues();
-    
-    if (!bullQueueInitialized) {
-      logger.error('Failed to initialize Bull queue system');
-      return false;
-    }
-    
-    schedulersInitialized.bullQueue = true;
     
     isInitialized = true;
-    logger.info('All schedulers initialized successfully');
+    logger.info('Unified scheduler system initialized successfully');
     return true;
   } catch (error) {
-    logger.error('Error initializing schedulers:', error);
+    logger.error('Error initializing unified scheduler:', error as Error);
     return false;
   }
 }
 
 /**
- * Gets the initialization status of all schedulers
+ * Gets the initialization status and metrics of the scheduler
  */
-export function getSchedulersStatus(): Record<string, boolean> {
+export function getSchedulersStatus(): Record<string, any> {
   return {
-    ...schedulersInitialized,
-    all: isInitialized
+    ...getSchedulerStatus(),
+    initialized: isInitialized
   };
 }
 
 /**
- * Shutdown all schedulers cleanly
+ * Shutdown the unified scheduler cleanly
  * Should be called during application shutdown or restart
  */
 export async function shutdownSchedulers(): Promise<boolean> {
   try {
-    logger.info('Shutting down schedulers...');
+    logger.info('Shutting down unified scheduler...');
     
-    // Shutdown notification scheduler if running
-    if (schedulersInitialized.notifications) {
-      const notificationScheduler = NotificationScheduler.getInstance();
-      notificationScheduler.stop();
-    }
-    
-    // Shutdown queue scheduler if running
-    if (schedulersInitialized.queue) {
-      const queueScheduler = QueueScheduler.getInstance();
-      await queueScheduler.stop();
-    }
-    
-    // Shutdown Bull queue system if running
-    if (schedulersInitialized.bullQueue) {
-      await shutdownBullQueues();
+    if (isInitialized) {
+      await stopUnifiedScheduler();
     }
     
     isInitialized = false;
-    Object.keys(schedulersInitialized).forEach(key => {
-      // Use type assertion to handle the string index
-      (schedulersInitialized as Record<string, boolean>)[key] = false;
-    });
-    
-    logger.info('All schedulers shut down successfully');
+    logger.info('Unified scheduler shut down successfully');
     return true;
   } catch (error) {
-    logger.error('Error shutting down schedulers:', error);
+    logger.error('Error shutting down unified scheduler:', error as Error);
     return false;
   }
 }
+
+// Re-export unified scheduler functions for convenience
+export { 
+  initializeUnifiedScheduler, 
+  stopUnifiedScheduler, 
+  getSchedulerStatus,
+  runImmediateSchedulerCheck 
+} from './unified-scheduler';

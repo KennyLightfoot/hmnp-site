@@ -1,27 +1,15 @@
-import { getServerSession, type NextAuthOptions } from "next-auth"
-import { prisma } from "../db" // keep prisma handy for potential future use
+/**
+ * Main Auth Export - Unified Authentication System
+ * 
+ * This is the primary auth export that consolidates all authentication
+ * functionality into a single, unified system.
+ */
 
-// Import the shared Next-Auth configuration
-import { authOptions } from "@/lib/auth-config"
+// Export everything from the unified auth system
+export * from './unified-auth';
 
-// Re-export for convenience so existing imports continue to work
-export { authOptions }
+// Import the unified auth configuration as default
+import { authOptions } from './unified-auth';
 
-// Helper: grab the current session on the server
-export async function getSession() {
-  return getServerSession(authOptions as NextAuthOptions)
-}
-
-// Helper: typed current user (null if unauthenticated)
-export async function getUser() {
-  const session = await getSession()
-  return session?.user ?? null
-}
-
-// Helper: boolean auth check
-export async function isAuthenticated() {
-  return Boolean(await getSession())
-}
-
-// Re-export sign-in/out helpers for the client side
-export { signIn, signOut } from "next-auth/react" 
+// Re-export for backward compatibility
+export { authOptions }; 

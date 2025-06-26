@@ -12,15 +12,22 @@ export default function BreadcrumbJSONLD() {
   
   // Convert pathname into breadcrumb segments
   const segments = pathname.split("/").filter(Boolean)
+  
+  // Safely get the base URL with fallback
+  const baseUrl = typeof window !== 'undefined' 
+    ? window.location.origin 
+    : process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'
+  
   const breadcrumbItems = segments.map((seg, idx) => {
     const url = `/${segments.slice(0, idx + 1).join('/')}`
     return {
       "@type": "ListItem",
       position: idx + 1,
       name: seg.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
-      item: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'}${url}`,
+      item: `${baseUrl}${url}`,
     }
   })
+  
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",

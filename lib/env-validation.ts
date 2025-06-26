@@ -6,6 +6,13 @@
 
 import { z } from 'zod';
 
+// Add build-time safety checks at the top
+const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || 
+                   process.env.NODE_ENV === undefined ||
+                   typeof process === 'undefined'
+
+const shouldSkipValidation = process.env.SKIP_ENV_VALIDATION === 'true' || isBuildTime;
+
 // Define required environment variables with validation
 const envSchema = z.object({
   // Database
@@ -67,18 +74,18 @@ interface ValidationResult {
  * Validate environment variables
  */
 export function validateEnvironment(): ValidationResult {
-  const errors: string[] = [];
-  const warnings: string[] = [];
-
-  // Skip validation if explicitly disabled (for build processes)
-  if (process.env.SKIP_ENV_VALIDATION === 'true') {
+  if (shouldSkipValidation) {
+    console.log('⏭️ Skipping environment validation (build time)');
     return {
       success: true,
       errors: [],
-      warnings: ['Environment validation skipped'],
-      env: process.env
+      warnings: ['Skipped during build'],
+      env: {}
     };
   }
+
+  const errors: string[] = [];
+  const warnings: string[] = [];
 
   try {
     // Validate required environment variables
@@ -98,7 +105,7 @@ export function validateEnvironment(): ValidationResult {
     }
     
     // Warn about missing optional but recommended variables
-    if (!optionalEnv.RESEND_API_KEY) {
+    if (!requiredEnv.RESEND_API_KEY) {
       warnings.push('RESEND_API_KEY not set - email functionality may be limited');
     }
     
@@ -167,7 +174,7 @@ export function getValidatedEnv() {
 export const ENV_VALIDATION = validateEnvironment();
 
 // Log validation results on import (in development)
-if (process.env.NODE_ENV === 'development' && !process.env.SKIP_ENV_VALIDATION) {
+if (process.env.NODE_ENV === 'development' && !shouldSkipValidation) {
   const result = validateEnvironment();
   
   if (!result.success) {

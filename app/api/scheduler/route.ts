@@ -12,8 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { initializeSchedulers, getSchedulersStatus } from '@/lib/schedulers';
-import { runImmediateNotificationCheck } from '@/lib/schedulers/notificationScheduler';
+import { initializeSchedulers, getSchedulersStatus, runImmediateSchedulerCheck } from '@/lib/schedulers';
 import { logger } from '@/lib/logger';
 
 // Track if the scheduler has been initialized in this instance
@@ -90,9 +89,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true, message: 'Schedulers already initialized' });
 
       case 'check':
-        // Run an immediate notification check
-        await runImmediateNotificationCheck();
-        return NextResponse.json({ success: true, message: 'Notification check triggered' });
+        // Run an immediate scheduler check
+        await runImmediateSchedulerCheck();
+        return NextResponse.json({ success: true, message: 'Scheduler check triggered' });
         
       default:
         return NextResponse.json({ error: 'Unknown operation' }, { status: 400 });
