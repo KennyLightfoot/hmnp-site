@@ -1,0 +1,52 @@
+# CodeRabbit Configuration for Houston Mobile Notary Pros
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: true
+  review_status: true
+  collapse_empty_files: true
+  auto_review:
+    enabled: true
+    drafts: false
+
+chat:
+  auto_reply: true
+
+# Focus areas for this Next.js 15+ application
+language_hints:
+  - "This is a Next.js 15+ application using App Router"
+  - "TypeScript with strict type checking is required"
+  - "Focus on SOP compliance and service type alignment"
+  - "Review for Next.js best practices and performance"
+  - "Check for duplicate code and optimization opportunities"
+
+# File patterns to focus on
+path_filters:
+  review:
+    - "app/**/*.tsx"
+    - "app/**/*.ts" 
+    - "components/**/*.tsx"
+    - "lib/**/*.ts"
+    - "prisma/schema.prisma"
+  ignore:
+    - ".next/**"
+    - "node_modules/**"
+    - "logs/**"
+    - "test-results/**"
+    - "playwright-report/**"
+
+# Custom instructions based on your project
+custom_instructions: |
+  This is a production-ready mobile notary and loan signing web application.
+  Please focus on:
+  
+  1. **SOP Compliance**: Ensure service types align with business requirements
+  2. **Next.js 15+ Best Practices**: App Router, Server Components, proper caching
+  3. **Code Quality**: TypeScript usage, component reusability, API structure
+  4. **Performance**: Bundle size, memory usage, build optimization
+  5. **Security**: Authentication, data validation, payment processing safety
+  
+  Key service types should be: 'standard-notary', 'extended-hours-notary', 'loan-signing-specialist'
+  
+  Please be thorough but constructive in reviews. 
