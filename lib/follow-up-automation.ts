@@ -7,7 +7,7 @@ import { prisma } from './prisma';
 import { BookingStatus } from '@prisma/client';
 import { logger, logBookingEvent } from './logger';
 import * as ghl from './ghl/api';
-import { updateBookingStatus } from './ghl-booking-sync';
+import { updateBookingStatus } from './booking-sync';
 
 export interface FollowUpRule {
   id: string;

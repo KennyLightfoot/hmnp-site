@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma-singleton';
+import { prisma } from '@/lib/prisma';
 import { mapPrismaToFrontend, getServiceDisplayName } from '@/lib/types/service-types';
 
 export async function GET() {

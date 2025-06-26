@@ -11,8 +11,8 @@ END $$;
 
 -- 2. Create notary_profiles table for notary portal functionality
 CREATE TABLE IF NOT EXISTS notary_profiles (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES "User"(id) ON DELETE CASCADE,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    user_id TEXT NOT NULL REFERENCES "User"(id) ON DELETE CASCADE,
     commission_number VARCHAR(50),
     commission_expiry DATE,
     base_address TEXT,
@@ -29,9 +29,9 @@ CREATE TABLE IF NOT EXISTS notary_profiles (
 
 -- 3. Create notary_journal table for Texas compliance
 CREATE TABLE IF NOT EXISTS notary_journal (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    booking_id UUID REFERENCES "Booking"(id),
-    notary_id UUID NOT NULL REFERENCES "User"(id),
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    booking_id TEXT REFERENCES "Booking"(id),
+    notary_id TEXT NOT NULL REFERENCES "User"(id),
     entry_date DATE NOT NULL,
     journal_number INTEGER, -- Sequential numbering per notary
     document_type VARCHAR(100),
@@ -50,8 +50,8 @@ CREATE TABLE IF NOT EXISTS notary_journal (
 
 -- 4. Create service_areas table for admin geofencing
 CREATE TABLE IF NOT EXISTS service_areas (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(100) NOT NULL,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    name VARCHAR(100) NOT NULL UNIQUE,
     description TEXT,
     polygon_coordinates JSONB, -- Store as GeoJSON until PostGIS is added
     service_fee_multiplier DECIMAL(3,2) DEFAULT 1.0,
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS service_areas (
 
 -- 5. Create mileage_cache table for performance optimization
 CREATE TABLE IF NOT EXISTS mileage_cache (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     origin_address VARCHAR(500),
     destination_address VARCHAR(500),
     distance_miles DECIMAL(5,2),
@@ -106,11 +106,11 @@ CREATE TABLE IF NOT EXISTS feature_flags (
     description TEXT,
     rollout_percentage INTEGER DEFAULT 0 CHECK (rollout_percentage >= 0 AND rollout_percentage <= 100),
     target_roles TEXT[], -- Role enum values as strings
-    target_users UUID[], -- Specific user IDs for testing
+    target_users TEXT[], -- Specific user IDs for testing
     environment VARCHAR(20) DEFAULT 'development', -- development, staging, production
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
-    created_by UUID REFERENCES "User"(id)
+    created_by TEXT REFERENCES "User"(id)
 );
 
 -- 8. Add missing columns to existing Booking table
@@ -124,7 +124,7 @@ ADD COLUMN IF NOT EXISTS urgency_fee DECIMAL(5,2) DEFAULT 0,
 ADD COLUMN IF NOT EXISTS estimated_completion_time TIMESTAMPTZ,
 ADD COLUMN IF NOT EXISTS notary_travel_time_minutes INTEGER,
 ADD COLUMN IF NOT EXISTS google_maps_distance_matrix JSONB,
-ADD COLUMN IF NOT EXISTS service_area_id UUID REFERENCES service_areas(id);
+ADD COLUMN IF NOT EXISTS service_area_id TEXT REFERENCES service_areas(id);
 
 -- 9. Add customer preferences and notary availability to User table
 ALTER TABLE "User"
@@ -149,7 +149,7 @@ CREATE INDEX IF NOT EXISTS idx_booking_urgency ON "Booking"(urgency_level);
 CREATE INDEX IF NOT EXISTS idx_booking_service_area ON "Booking"(service_area_id);
 
 -- 11. Create function to auto-increment journal numbers
-CREATE OR REPLACE FUNCTION get_next_journal_number(notary_user_id UUID)
+CREATE OR REPLACE FUNCTION get_next_journal_number(notary_user_id TEXT)
 RETURNS INTEGER AS $$
 DECLARE
     next_number INTEGER;
@@ -174,6 +174,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_auto_journal_number ON notary_journal;
 CREATE TRIGGER trigger_auto_journal_number
     BEFORE INSERT ON notary_journal
     FOR EACH ROW
@@ -182,19 +183,20 @@ CREATE TRIGGER trigger_auto_journal_number
 -- 13. Insert default service areas (Houston Metro)
 INSERT INTO service_areas (id, name, description, polygon_coordinates, active) VALUES
 (
-    gen_random_uuid(),
+    gen_random_uuid()::text,
     'Houston Metro Core',
     'Primary service area covering downtown Houston and immediate suburbs',
     '{"type":"Polygon","coordinates":[[[-95.7,29.5],[-95.1,29.5],[-95.1,30.1],[-95.7,30.1],[-95.7,29.5]]]}',
     true
 ),
 (
-    gen_random_uuid(),
+    gen_random_uuid()::text,
     'Extended Houston Area',
     'Secondary service area with additional travel fees',
     '{"type":"Polygon","coordinates":[[[-96.0,29.2],[-94.8,29.2],[-94.8,30.4],[-96.0,30.4],[-96.0,29.2]]]}',
     true
-);
+)
+ON CONFLICT (name) DO NOTHING;
 
 -- 14. Insert default feature flags
 INSERT INTO feature_flags (key, enabled, description, rollout_percentage, environment) VALUES
@@ -207,24 +209,45 @@ INSERT INTO feature_flags (key, enabled, description, rollout_percentage, enviro
 ('push_notifications', false, 'Enable PWA push notifications', 0, 'development'),
 ('admin_analytics_dashboard', true, 'Show advanced analytics in admin portal', 100, 'production'),
 ('customer_portal_v2', false, 'New customer portal interface', 0, 'development'),
-('notary_mobile_app', false, 'Mobile app features for notaries', 0, 'development');
+('notary_mobile_app', false, 'Mobile app features for notaries', 0, 'development')
+ON CONFLICT (key) DO NOTHING;
 
--- 15. Add constraints for data integrity
-ALTER TABLE notary_profiles 
-ADD CONSTRAINT check_service_radius CHECK (service_radius_miles > 0 AND service_radius_miles <= 100),
-ADD CONSTRAINT check_commission_expiry CHECK (commission_expiry >= CURRENT_DATE);
+-- 15. Add constraints for data integrity (with IF NOT EXISTS checks)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_service_radius') THEN
+        ALTER TABLE notary_profiles ADD CONSTRAINT check_service_radius CHECK (service_radius_miles > 0 AND service_radius_miles <= 100);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_commission_expiry') THEN
+        ALTER TABLE notary_profiles ADD CONSTRAINT check_commission_expiry CHECK (commission_expiry >= CURRENT_DATE);
+    END IF;
+END $$;
 
-ALTER TABLE notary_journal
-ADD CONSTRAINT check_fee_charged CHECK (fee_charged >= 0),
-ADD CONSTRAINT check_entry_date CHECK (entry_date >= '2020-01-01');
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_fee_charged') THEN
+        ALTER TABLE notary_journal ADD CONSTRAINT check_fee_charged CHECK (fee_charged >= 0);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_entry_date') THEN
+        ALTER TABLE notary_journal ADD CONSTRAINT check_entry_date CHECK (entry_date >= '2020-01-01');
+    END IF;
+END $$;
 
-ALTER TABLE service_areas
-ADD CONSTRAINT check_fee_multiplier CHECK (service_fee_multiplier >= 0.5 AND service_fee_multiplier <= 5.0);
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_fee_multiplier') THEN
+        ALTER TABLE service_areas ADD CONSTRAINT check_fee_multiplier CHECK (service_fee_multiplier >= 0.5 AND service_fee_multiplier <= 5.0);
+    END IF;
+END $$;
 
-ALTER TABLE daily_metrics
-ADD CONSTRAINT check_margin_percentage CHECK (margin_percentage >= -100 AND margin_percentage <= 100),
-ADD CONSTRAINT check_conversion_rate CHECK (conversion_rate >= 0 AND conversion_rate <= 100),
-ADD CONSTRAINT check_satisfaction CHECK (customer_satisfaction >= 0 AND customer_satisfaction <= 5);
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_margin_percentage') THEN
+        ALTER TABLE daily_metrics ADD CONSTRAINT check_margin_percentage CHECK (margin_percentage >= -100 AND margin_percentage <= 100);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_conversion_rate') THEN
+        ALTER TABLE daily_metrics ADD CONSTRAINT check_conversion_rate CHECK (conversion_rate >= 0 AND conversion_rate <= 100);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_satisfaction') THEN
+        ALTER TABLE daily_metrics ADD CONSTRAINT check_satisfaction CHECK (customer_satisfaction >= 0 AND customer_satisfaction <= 5);
+    END IF;
+END $$;
 
 -- 16. Add comments for documentation
 COMMENT ON TABLE notary_profiles IS 'Extended profile information for notary users including commission details and service preferences';

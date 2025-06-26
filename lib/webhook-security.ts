@@ -6,6 +6,11 @@
 import crypto from 'crypto';
 import { logger, logSecurityEvent } from './logger';
 
+/**
+ * Enhanced webhook security with advanced features
+ * Combines general webhook support (GHL + Stripe) with advanced security features
+ */
+
 export interface WebhookVerificationResult {
   isValid: boolean;
   source: 'GHL' | 'STRIPE' | 'UNKNOWN';
@@ -391,6 +396,232 @@ export interface WebhookSecurityOptions {
   rateLimitMaxRequests?: number;
   rateLimitWindowMs?: number;
   validatePayload?: boolean;
+}
+
+/**
+ * Advanced webhook rate limiter class (from GHL-specific implementation)
+ */
+export class WebhookRateLimiter {
+  private attempts: Map<string, { count: number; firstAttempt: Date }> = new Map();
+  private readonly maxAttempts: number;
+  private readonly windowMs: number;
+
+  constructor(maxAttempts = 100, windowMs = 60000) { // 100 requests per minute default
+    this.maxAttempts = maxAttempts;
+    this.windowMs = windowMs;
+  }
+
+  isAllowed(identifier: string): boolean {
+    const now = new Date();
+    const existing = this.attempts.get(identifier);
+
+    if (!existing) {
+      this.attempts.set(identifier, { count: 1, firstAttempt: now });
+      return true;
+    }
+
+    // Check if window has expired
+    if (now.getTime() - existing.firstAttempt.getTime() > this.windowMs) {
+      this.attempts.set(identifier, { count: 1, firstAttempt: now });
+      return true;
+    }
+
+    // Check if under limit
+    if (existing.count >= this.maxAttempts) {
+      return false;
+    }
+
+    existing.count++;
+    return true;
+  }
+
+  getRemainingAttempts(identifier: string): number {
+    const existing = this.attempts.get(identifier);
+    if (!existing) return this.maxAttempts;
+    
+    const now = new Date();
+    if (now.getTime() - existing.firstAttempt.getTime() > this.windowMs) {
+      return this.maxAttempts;
+    }
+    
+    return Math.max(0, this.maxAttempts - existing.count);
+  }
+
+  reset(identifier: string): void {
+    this.attempts.delete(identifier);
+  }
+
+  cleanup(): void {
+    const now = new Date();
+    for (const [key, value] of this.attempts.entries()) {
+      if (now.getTime() - value.firstAttempt.getTime() > this.windowMs) {
+        this.attempts.delete(key);
+      }
+    }
+  }
+}
+
+/**
+ * Webhook security logger for auditing
+ */
+export interface WebhookSecurityLog {
+  timestamp: Date;
+  endpoint: string;
+  sourceIP?: string;
+  signature?: string;
+  isValid: boolean;
+  eventType?: string;
+  error?: string;
+  rateLimited?: boolean;
+}
+
+export class WebhookSecurityLogger {
+  private logs: WebhookSecurityLog[] = [];
+  private readonly maxLogs: number;
+
+  constructor(maxLogs = 1000) {
+    this.maxLogs = maxLogs;
+  }
+
+  log(logEntry: Omit<WebhookSecurityLog, 'timestamp'>): void {
+    this.logs.push({
+      timestamp: new Date(),
+      ...logEntry
+    });
+
+    // Keep only the latest logs
+    if (this.logs.length > this.maxLogs) {
+      this.logs = this.logs.slice(-this.maxLogs);
+    }
+
+    // Also log security events
+    console.log('🔐 Webhook Security Log:', {
+      timestamp: new Date().toISOString(),
+      ...logEntry
+    });
+  }
+
+  getRecentLogs(limit = 50): WebhookSecurityLog[] {
+    return this.logs.slice(-limit);
+  }
+
+  getFailedAttempts(since?: Date): WebhookSecurityLog[] {
+    const filterDate = since || new Date(Date.now() - 24 * 60 * 60 * 1000); // Last 24 hours
+    return this.logs.filter(log => 
+      !log.isValid && 
+      log.timestamp >= filterDate
+    );
+  }
+
+  clear(): void {
+    this.logs = [];
+  }
+}
+
+// Create default instances
+export const defaultRateLimiter = new WebhookRateLimiter();
+export const defaultSecurityLogger = new WebhookSecurityLogger();
+
+/**
+ * Enhanced webhook verification with replay protection (from GHL implementation)
+ */
+export function verifyGHLWebhookEnhanced(
+  payload: string,
+  signature: string,
+  secret: string,
+  options: {
+    tolerance?: number; // Time tolerance in seconds for replay attack prevention
+    requestId?: string;
+  } = {}
+): WebhookVerificationResult & { timestamp?: Date } {
+  const { tolerance = 300, requestId } = options; // 5 minutes default tolerance
+
+  if (!signature || !secret || !payload) {
+    return {
+      isValid: false,
+      source: 'GHL',
+      error: 'Missing required parameters (signature, secret, or payload)',
+      requestId
+    };
+  }
+
+  try {
+    // Remove header prefix if present
+    const cleanSignature = signature.startsWith('sha256=') 
+      ? signature.substring(7)
+      : signature;
+
+    // Calculate expected signature
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(payload, 'utf8')
+      .digest('hex');
+
+    // Perform timing-safe comparison
+    const receivedBuf = Buffer.from(cleanSignature, 'hex');
+    const expectedBuf = Buffer.from(expectedSignature, 'hex');
+
+    if (receivedBuf.length !== expectedBuf.length) {
+      return {
+        isValid: false,
+        source: 'GHL',
+        error: 'Signature length mismatch',
+        requestId
+      };
+    }
+
+    const isSignatureValid = crypto.timingSafeEqual(
+      receivedBuf as unknown as NodeJS.ArrayBufferView,
+      expectedBuf as unknown as NodeJS.ArrayBufferView
+    );
+
+    if (!isSignatureValid) {
+      return {
+        isValid: false,
+        source: 'GHL',
+        error: 'Invalid webhook signature',
+        requestId
+      };
+    }
+
+    // Extract timestamp from payload for replay attack prevention
+    try {
+      const parsed = JSON.parse(payload);
+      if (parsed.timestamp && tolerance > 0) {
+        const webhookTime = new Date(parsed.timestamp);
+        const currentTime = new Date();
+        const timeDifference = Math.abs(currentTime.getTime() - webhookTime.getTime()) / 1000;
+
+        if (timeDifference > tolerance) {
+          return {
+            isValid: false,
+            source: 'GHL',
+            error: `Webhook timestamp too old. Difference: ${timeDifference}s, tolerance: ${tolerance}s`,
+            requestId,
+            timestamp: webhookTime
+          };
+        }
+      }
+    } catch (parseError) {
+      // If we can't parse timestamp, continue without time-based verification
+      console.warn('Could not parse webhook timestamp for replay protection:', parseError);
+    }
+
+    return {
+      isValid: true,
+      source: 'GHL',
+      requestId,
+      timestamp: new Date()
+    };
+
+  } catch (error) {
+    return {
+      isValid: false,
+      source: 'GHL',
+      error: `Signature verification failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      requestId
+    };
+  }
 }
 
 export function createWebhookSecurityCheck(options: WebhookSecurityOptions = {}) {

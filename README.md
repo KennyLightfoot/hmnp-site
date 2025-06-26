@@ -82,8 +82,8 @@ This API server implements the comprehensive workflow automation system outlined
 
 5. **Verify installation:**
    ```bash
-   curl http://localhost:3001/health
-   curl http://localhost:3001/api/bookings/pending-payments
+   curl http://localhost:3000/api/health
+   curl http://localhost:3000/api/bookings/pending-payments
    ```
 
 ## 🔧 **API Endpoints**
@@ -97,13 +97,13 @@ Query pending payments with intelligent urgency classification:
 
 ```bash
 # Get all pending payments
-curl "http://localhost:3001/api/bookings/pending-payments"
+curl "http://localhost:3000/api/bookings/pending-payments"
 
 # Filter by urgency level
-curl "http://localhost:3001/api/bookings/pending-payments?urgencyLevel=critical"
+curl "http://localhost:3000/api/bookings/pending-payments?urgencyLevel=critical"
 
 # Get specific contact's pending payments
-curl "http://localhost:3001/api/bookings/pending-payments?contactId=GHL_CONTACT_ID"
+curl "http://localhost:3000/api/bookings/pending-payments?contactId=GHL_CONTACT_ID"
 ```
 
 **Response:**
@@ -144,7 +144,7 @@ curl "http://localhost:3001/api/bookings/pending-payments?contactId=GHL_CONTACT_
 **Track payment follow-up actions**
 
 ```bash
-curl -X PATCH "http://localhost:3001/api/bookings/pending-payments" \
+curl -X PATCH "http://localhost:3000/api/bookings/pending-payments" \
   -H "Content-Type: application/json" \
   -d '{
     "bookingId": "HMNP-123456",
@@ -158,7 +158,7 @@ curl -X PATCH "http://localhost:3001/api/bookings/pending-payments" \
 **Direct booking creation from any GHL touchpoint**
 
 ```bash
-curl -X POST "http://localhost:3001/api/bookings/sync" \
+curl -X POST "http://localhost:3000/api/bookings/sync" \
   -H "Content-Type: application/json" \
   -H "x-ghl-signature: sha256=YOUR_SIGNATURE" \
   -d '{
@@ -178,11 +178,11 @@ curl -X POST "http://localhost:3001/api/bookings/sync" \
   }'
 ```
 
-#### **GET** `/api/bookings/business-intelligence`
-**Real-time business metrics**
+#### **GET** `/api/bookings`
+**Get bookings with filtering options**
 
 ```bash
-curl "http://localhost:3001/api/bookings/business-intelligence"
+curl "http://localhost:3000/api/bookings?status=CONFIRMED&limit=10"
 ```
 
 ### **Webhook Endpoints**
@@ -211,16 +211,7 @@ Handles payment events:
 
 ```bash
 # Basic health check
-curl "http://localhost:3001/health"
-
-# Detailed system health
-curl "http://localhost:3001/health/detailed"
-
-# Kubernetes readiness probe
-curl "http://localhost:3001/health/ready"
-
-# Kubernetes liveness probe
-curl "http://localhost:3001/health/live"
+curl "http://localhost:3000/api/health"
 ```
 
 ## 🔗 **GoHighLevel Integration**
@@ -276,15 +267,15 @@ for (const booking of data.bookings) {
 **Development:**
 ```bash
 NODE_ENV=development
-PORT=3001
-MONGODB_URI=mongodb://localhost:27017/houston-mobile-notary
+PORT=3000
+DATABASE_URL=postgresql://localhost:5432/houston-mobile-notary
 ```
 
 **Production:**
 ```bash
 NODE_ENV=production
-PORT=80
-MONGODB_URI=mongodb://your-production-cluster/houston-mobile-notary
+PORT=3000
+DATABASE_URL=your-production-database-url
 ```
 
 ### **Docker Deployment**
@@ -293,10 +284,10 @@ MONGODB_URI=mongodb://your-production-cluster/houston-mobile-notary
 FROM node:18-alpine
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --only=production
+RUN pnpm install --frozen-lockfile --prod
 COPY . .
-EXPOSE 3001
-CMD ["npm", "start"]
+EXPOSE 3000
+CMD ["pnpm", "start"]
 ```
 
 ### **Database Indexes**
@@ -441,10 +432,10 @@ houston-mobile-notary-api/
 npm test
 
 # Test specific endpoint
-curl -X GET "http://localhost:3001/api/bookings/pending-payments?urgencyLevel=critical"
+curl -X GET "http://localhost:3000/api/bookings/pending-payments?urgencyLevel=critical"
 
 # Test webhook security
-curl -X POST "http://localhost:3001/webhooks/ghl" \
+curl -X POST "http://localhost:3000/api/webhooks/ghl" \
   -H "Content-Type: application/json" \
   -H "x-ghl-signature: sha256=test_signature" \
   -d '{"type": "ContactCreate", "contactId": "test"}'
