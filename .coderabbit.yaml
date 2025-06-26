@@ -14,24 +14,29 @@ reviews:
   
   # Enable comprehensive file analysis
   path_instructions:
-    "**/*.ts":
-      - "Analyze for duplicate functions and redundant code"
-      - "Check TypeScript strict mode compliance"
-      - "Verify SOP service type alignment"
-    "**/*.tsx": 
-      - "Check for component duplication and reusability"
-      - "Verify proper React patterns and performance"
-      - "Ensure UI matches SOP branding requirements"
-    "app/api/**/*":
-      - "Verify API structure follows RESTful standards"
-      - "Check for duplicate endpoints and logic"
-      - "Ensure security and validation compliance"
-    "lib/**/*":
-      - "Identify utility function duplication"
-      - "Check for proper abstraction and modularity"
-    "components/**/*":
-      - "Flag duplicate UI components"
-      - "Check for proper component composition"
+    - path: "**/*.ts"
+      instructions: |
+        - Analyze for duplicate functions and redundant code
+        - Check TypeScript strict mode compliance
+        - Verify SOP service type alignment
+    - path: "**/*.tsx"
+      instructions: |
+        - Check for component duplication and reusability
+        - Verify proper React patterns and performance
+        - Ensure UI matches SOP branding requirements
+    - path: "app/api/**/*"
+      instructions: |
+        - Verify API structure follows RESTful standards
+        - Check for duplicate endpoints and logic
+        - Ensure security and validation compliance
+    - path: "lib/**/*"
+      instructions: |
+        - Identify utility function duplication
+        - Check for proper abstraction and modularity
+    - path: "components/**/*"
+      instructions: |
+        - Flag duplicate UI components
+        - Check for proper component composition
 
 chat:
   auto_reply: true

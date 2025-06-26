@@ -6,17 +6,12 @@
 
 import { ServiceType as PrismaServiceType } from '@prisma/client';
 
-// Frontend service type (used in forms, components, and API responses)
+// Frontend service type (SOP COMPLIANT - ONLY APPROVED TYPES)
 export type FrontendServiceType = 
-  | "essential"
-  | "priority" 
-  | "loan-signing"
-  | "reverse-mortgage"
-  | "specialty"
-  | "standard-notary"
-  | "extended-hours-notary"
-  | "loan-signing-specialist"
-  | "specialty-notary-service"
+  | "standard-notary"        // Was "essential" - SOP COMPLIANT
+  | "extended-hours-notary"  // Was "priority" - SOP COMPLIANT
+  | "loan-signing-specialist" // Was "loan-signing" - SOP COMPLIANT
+  | "specialty-notary-service" // Was "specialty" - SOP COMPLIANT
   | "business-solutions"
   | "support-service";
 
@@ -30,13 +25,8 @@ export const PRISMA_TO_FRONTEND_SERVICE_MAP: Record<PrismaServiceType, FrontendS
   SUPPORT_SERVICE: "support-service",
 };
 
-// Reverse mapping from frontend types to Prisma enums
+// SOP COMPLIANT: Frontend to Prisma mapping (FORBIDDEN TYPES REMOVED)
 export const FRONTEND_TO_PRISMA_SERVICE_MAP: Record<FrontendServiceType, PrismaServiceType> = {
-  "essential": "STANDARD_NOTARY", // Map essential to standard notary
-  "priority": "EXTENDED_HOURS_NOTARY", // Map priority to extended hours
-  "loan-signing": "LOAN_SIGNING_SPECIALIST",
-  "reverse-mortgage": "LOAN_SIGNING_SPECIALIST", // Special case
-  "specialty": "SPECIALTY_NOTARY_SERVICE",
   "standard-notary": "STANDARD_NOTARY",
   "extended-hours-notary": "EXTENDED_HOURS_NOTARY", 
   "loan-signing-specialist": "LOAN_SIGNING_SPECIALIST",
@@ -45,33 +35,23 @@ export const FRONTEND_TO_PRISMA_SERVICE_MAP: Record<FrontendServiceType, PrismaS
   "support-service": "SUPPORT_SERVICE",
 };
 
-// Display names for frontend
+// SOP COMPLIANT: Display names (FORBIDDEN TYPES REMOVED)
 export const SERVICE_DISPLAY_NAMES: Record<FrontendServiceType, string> = {
-  "essential": "Essential Notary Services",
-  "priority": "Priority/Same-Day Service",
-  "loan-signing": "Loan Signing Services", 
-  "reverse-mortgage": "Reverse Mortgage Signing",
-  "specialty": "Specialty Notary Services",
-  "standard-notary": "Standard Mobile Notary",
-  "extended-hours-notary": "Extended Hours Notary",
-  "loan-signing-specialist": "Loan Signing Specialist",
+  "standard-notary": "Standard Notary Services",           // SOP: $75, 15-mile radius, 9am-5pm Mon-Fri
+  "extended-hours-notary": "Extended Hours Notary",       // SOP: $100, 20-mile radius, 7am-9pm Daily
+  "loan-signing-specialist": "Loan Signing Specialist",   // SOP: $150 flat fee, unlimited docs, 4 signers
   "specialty-notary-service": "Specialty Notary Service",
   "business-solutions": "Business Solutions",
   "support-service": "Support Services",
 };
 
-// Service descriptions
+// SOP COMPLIANT: Service descriptions with exact specifications
 export const SERVICE_DESCRIPTIONS: Record<FrontendServiceType, string> = {
-  "essential": "Basic notarization services for everyday documents",
-  "priority": "Same-day or urgent notarization services",
-  "loan-signing": "Complete loan document signing and notarization",
-  "reverse-mortgage": "Specialized reverse mortgage document processing",
-  "specialty": "Specialized notary services for unique documents",
-  "standard-notary": "Standard mobile notary services",
-  "extended-hours-notary": "Notary services outside normal business hours",
-  "loan-signing-specialist": "Expert loan signing agent services",
-  "specialty-notary-service": "Specialized notarization for complex documents",
-  "business-solutions": "Corporate and business notary solutions",
+  "standard-notary": "Standard mobile notary services. Base: up to 2 documents, 1-2 signers, 15-mile travel included. Monday-Friday, 9am-5pm. Starting at $75.",
+  "extended-hours-notary": "Extended hours notary services. Base: up to 5 documents, 2 signers, 20-mile travel included. 7am-9pm Daily. Also for urgent/same-day needs. $100 flat fee.",
+  "loan-signing-specialist": "Expert loan signing agent services. $150 flat fee includes unlimited documents for single signing session, up to 4 signers, 90-minute session. By appointment.",
+  "specialty-notary-service": "Specialized notarization for complex documents and unique requirements",
+  "business-solutions": "Corporate and business notary solutions with flexible scheduling",
   "support-service": "Additional support and consultation services",
 };
 
