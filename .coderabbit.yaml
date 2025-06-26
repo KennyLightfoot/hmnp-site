@@ -1,5 +1,6 @@
 # CodeRabbit Configuration - Lead Developer Review Mode
 # Comprehensive $50K Project Final Review Standards
+# REFERENCES: SOP_ENHANCED.md (authoritative source)
 
 reviews:
   profile: assertive  # Changed from chill to assertive for thorough review
@@ -18,12 +19,12 @@ reviews:
       instructions: |
         - Analyze for duplicate functions and redundant code
         - Check TypeScript strict mode compliance
-        - Verify SOP service type alignment
+        - Verify SOP service type alignment per SOP_ENHANCED.md
     - path: "**/*.tsx"
       instructions: |
         - Check for component duplication and reusability
         - Verify proper React patterns and performance
-        - Ensure UI matches SOP branding requirements
+        - Ensure UI matches SOP branding requirements (Auburn #A52A2A, Oxford Blue #002147)
     - path: "app/api/**/*"
       instructions: |
         - Verify API structure follows RESTful standards
@@ -37,23 +38,31 @@ reviews:
       instructions: |
         - Flag duplicate UI components
         - Check for proper component composition
+    - path: "app/booking/**/*"
+      instructions: |
+        - Critical: Verify enhanced booking flow at /booking/enhanced exists
+        - Check real-time pricing implementation per SOP Section 1.2.1
+        - Validate service area calculations (15/20-mile radius from ZIP 77591)
 
 chat:
   auto_reply: true
 
-# Comprehensive analysis focus areas
+# SOP_ENHANCED.md COMPLIANCE - Authoritative Source
 language_hints:
   - "CRITICAL: This is a $50,000 production system requiring enterprise-grade review"
-  - "SOP COMPLIANCE: Service types MUST be 'standard-notary', 'extended-hours-notary', 'loan-signing-specialist'"
-  - "ARCHITECTURE: Next.js 15+ App Router with TypeScript strict mode"
+  - "SOP SOURCE: SOP_ENHANCED.md is the authoritative requirements document"
+  - "SERVICE TYPES (SOP Section 1.1): ONLY 'standard-notary', 'extended-hours-notary', 'loan-signing-specialist', 'specialty-notary-service'"
+  - "PRICING (SOP Section 8.4): Standard Notary $75, Extended Hours $100, Loan Signing $150"
+  - "SERVICE AREAS (SOP Section 1.2): Standard=15-mile, Extended=20-mile radius from ZIP 77591"
+  - "ENHANCED BOOKING (SOP Section 1.2.1): Must have /booking/enhanced with real-time pricing"
   - "DUPLICATE CODE: Flag ALL duplicate functions, components, and logic"
-  - "REDUNDANCY: Identify redundant files, unused imports, dead code"
-  - "PERFORMANCE: Production-grade optimization required"
-  - "SECURITY: Payment processing and data handling compliance"
+  - "ARCHITECTURE: Next.js 15+ App Router with TypeScript strict mode"
+  - "SECURITY: Payment processing and data handling compliance per SOP Section 9.2"
 
 # Enhanced file patterns for comprehensive review
 path_filters:
   review:
+    - "SOP_ENHANCED.md"
     - "app/**/*.tsx"
     - "app/**/*.ts"
     - "components/**/*.tsx" 
@@ -75,30 +84,49 @@ path_filters:
     - "playwright-report/**"
     - ".git/**"
 
-# LEAD DEVELOPER REVIEW INSTRUCTIONS
+# LEAD DEVELOPER REVIEW INSTRUCTIONS - SOP_ENHANCED.md COMPLIANCE
 custom_instructions: |
   🚨 **LEAD DEVELOPER FINAL REVIEW MODE - $50,000 PROJECT STANDARDS** 🚨
+  
+  **AUTHORITATIVE SOURCE**: SOP_ENHANCED.md contains ALL business requirements
   
   You are conducting the final architectural review for a production-ready mobile notary platform.
   This review determines if the system is ready for enterprise deployment.
   
-  ## 📋 **CRITICAL SOP COMPLIANCE CHECKLIST**
+  ## 📋 **CRITICAL SOP COMPLIANCE CHECKLIST (Per SOP_ENHANCED.md)**
   
   ### **1. SERVICE TYPE ALIGNMENT (BLOCKING ISSUE)**
-  - ❌ FAIL if code uses: 'essential', 'priority', 'basic', 'premium'
-  - ✅ PASS only if: 'standard-notary', 'extended-hours-notary', 'loan-signing-specialist'
+  **Source**: SOP_ENHANCED.md Section 1.1 - Required Information
+  - ❌ FAIL if code uses: 'essential', 'priority', 'basic', 'premium', 'loan-signing'
+  - ✅ PASS only if: 'standard-notary', 'extended-hours-notary', 'loan-signing-specialist', 'specialty-notary-service'
   - 🔍 Check: Database models, API endpoints, UI components, pricing logic
   
+  **SOP Requirements**:
+  - Standard Notary: 9am-5pm Mon-Fri, $75, 15-mile radius, up to 2 documents, 1-2 signers
+  - Extended Hours Notary: 7am-9pm Daily, $100 flat, 20-mile radius, up to 5 documents, 2 signers
+  - Loan Signing Specialist: $150 flat fee, unlimited documents, up to 4 signers, 90-minute session
+  
   ### **2. ENHANCED BOOKING FLOW (CRITICAL)**
+  **Source**: SOP_ENHANCED.md Section 1.2.1 - Digital Booking System Architecture
   - ❌ FAIL if `/booking/enhanced` directory is empty or missing
   - ✅ PASS if real-time pricing and multi-step flow implemented
   - 🔍 Check: Route implementation, pricing calculations, user experience
+  - **Required**: Real-time distance calculation with Google Maps API
   
   ### **3. SERVICE AREA COMPLIANCE**
+  **Source**: SOP_ENHANCED.md Section 1.2 - Service Area & Verification
   - Standard Notary: 15-mile radius from ZIP 77591
   - Extended Hours: 20-mile radius from ZIP 77591
   - ❌ FAIL if multiple conflicting radius values found
   - 🔍 Check: Distance calculations, pricing logic, service boundaries
+  - **Required**: $0.50/mile Extended Travel Fee beyond primary service area
+  
+  ### **4. PRICING COMPLIANCE**
+  **Source**: SOP_ENHANCED.md Section 8.4 - Transparent Pricing
+  - Standard Notary: $75 starting price
+  - Extended Hours Notary: $100 flat fee
+  - Loan Signing Specialist: $150 flat fee
+  - ❌ FAIL if pricing deviates from SOP specifications
   
   ## 🔍 **DUPLICATE CODE ANALYSIS**
   
@@ -112,13 +140,14 @@ custom_instructions: |
   - Similar utility functions
   
   ### **Architecture Red Flags:**
-  - Hardcoded values that should be configurable
+  - Hardcoded values that should be configurable (ZIP 77591, pricing)
   - Business logic scattered across multiple files
   - Missing abstraction layers
   - Inconsistent error handling patterns
   - Mixed client/server component usage
   
   ## 🏗️ **SYSTEM ARCHITECTURE REVIEW**
+  **Source**: SOP_ENHANCED.md Section 9 - Technical Infrastructure
   
   ### **Required Patterns:**
   - Next.js 15+ App Router (not Pages Router)
@@ -131,19 +160,21 @@ custom_instructions: |
   ### **Performance Requirements:**
   - Bundle size optimization
   - Database query optimization
-  - Proper caching strategies
+  - Proper caching strategies (Redis per SOP Section 9.1)
   - Image and asset optimization
   - Core Web Vitals compliance
   
   ## 🛡️ **SECURITY & COMPLIANCE**
+  **Source**: SOP_ENHANCED.md Section 9.2 - Security Implementation
   
   ### **Must Verify:**
   - Input validation on all API routes
   - Authentication middleware implementation
-  - Payment processing security (PCI compliance)
+  - Payment processing security (PCI compliance via Stripe)
   - Data encryption and secure storage
   - SQL injection prevention
   - XSS protection mechanisms
+  - ClamAV virus scanning for uploads
   
   ## 📊 **REVIEW STANDARDS**
   
@@ -154,7 +185,7 @@ custom_instructions: |
   - 📝 **LOW**: Style consistency, documentation improvements
   
   ### **Review Approach:**
-  1. **First Pass**: Scan for SOP compliance violations
+  1. **First Pass**: Scan for SOP compliance violations against SOP_ENHANCED.md
   2. **Second Pass**: Identify duplicate and redundant code
   3. **Third Pass**: Evaluate architecture and patterns
   4. **Final Pass**: Security and performance review
@@ -162,11 +193,11 @@ custom_instructions: |
   ## 🎯 **SUCCESS CRITERIA**
   
   The system passes review ONLY if:
-  - ✅ 100% SOP compliance (service types, booking flow, pricing)
+  - ✅ 100% SOP compliance (service types, booking flow, pricing per SOP_ENHANCED.md)
   - ✅ Zero critical duplicate code issues
   - ✅ Clean, maintainable architecture
   - ✅ Production-ready security implementation
   - ✅ Optimized performance profile
   
-  **Remember: This is a $50,000 system. Review with enterprise standards.**
+  **Remember: SOP_ENHANCED.md is the authoritative source. This is a $50,000 system.**
   **Be thorough, be critical, be constructive. Client success depends on quality.** 
