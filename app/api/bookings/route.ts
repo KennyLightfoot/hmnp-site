@@ -1,5 +1,11 @@
+/**
+ * CONSOLIDATED BOOKING API ENDPOINT
+ * This file has been updated to use the unified booking logic
+ * Combines functionality from /api/booking and /api/bookings/create
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database-connection';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { withAuth, AuthConfig } from '@/lib/auth/unified-middleware';

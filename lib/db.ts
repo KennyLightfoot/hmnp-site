@@ -1,16 +1,20 @@
-import { PrismaClient } from "@prisma/client"
-
 /**
- * Singleton Prisma client for use in both Edge & Node runtimes.
- * Prevents exhausting database connections in Next.js hot-reload.
+ * Database Connection Wrapper
+ * Updated to use unified database connection for improved performance and consistency
+ * 
+ * MIGRATION: This file now exports from the unified database-connection.ts
+ * All existing imports from '@/lib/db' will continue to work without changes
  */
-// @ts-ignore
-const globalForPrisma = global as unknown as { prisma: PrismaClient | undefined }
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
-  })
+// Export unified database connection components
+export { 
+  prisma, 
+  disconnectPrisma, 
+  prismaHealthCheck,
+  withRetry,
+  transaction,
+  UnifiedDatabaseConnection 
+} from './database-connection';
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
+// Type re-exports for convenience
+export type { PrismaClient } from '@prisma/client';
