@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DownloadIcon, Loader2 } from "lucide-react";
 import { getPresignedDownloadUrl } from "@/app/portal/_actions/documents";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 // Assuming you have a toast notification system like sonner or react-hot-toast
 // import { toast } from "sonner";
 

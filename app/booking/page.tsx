@@ -15,7 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { ChevronLeft, ChevronRight, Loader2, Sparkles, AlertTriangle, CheckCircle } from 'lucide-react';
 import UnifiedBookingCalendar from '@/components/unified-booking-calendar';
 import { FrontendServiceType, isValidFrontendServiceType } from '@/lib/types/service-types';
