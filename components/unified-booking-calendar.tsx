@@ -149,19 +149,35 @@ export default function UnifiedBookingCalendar({
     if (!service) return 'r9koQ0kxmuMuWryZkjdo'; // Default fallback
     
     switch (service.toLowerCase()) {
-      case 'essential':
       case 'standard-notary':
         if (signers === 1) return 'r9koQ0kxmuMuWryZkjdo';
         if (signers === 2) return 'wkTW5ZX4EMl5hOAbCk9D';
         return 'Vy3hd6Or6Xi2ogW0mvEG'; // 3+ signers
+      case 'extended-hours-notary':
+        return 'xtHXReq1dfd0wGA7dLc0';
+      case 'loan-signing-specialist':
+        return 'EJ5ED9UXPHCjBePUTJ0W';
+      case 'specialty-notary-service':
+        return 'h4X7cZ0mZ3c52XSzvpjU';
+      case 'business-solutions':
+        return 'r9koQ0kxmuMuWryZkjdo'; // Use default for now
+      case 'support-service':
+        return 'r9koQ0kxmuMuWryZkjdo'; // Use default for now
+      // Legacy support (remove after migration)
+      case 'essential':
+        console.warn('Legacy service type "essential" detected, please update to "standard-notary"');
+        if (signers === 1) return 'r9koQ0kxmuMuWryZkjdo';
+        if (signers === 2) return 'wkTW5ZX4EMl5hOAbCk9D';
+        return 'Vy3hd6Or6Xi2ogW0mvEG';
       case 'priority':
+        console.warn('Legacy service type "priority" detected, please update to "extended-hours-notary"');
         return 'xtHXReq1dfd0wGA7dLc0';
       case 'loan-signing':
-      case 'loan-signing-specialist':
       case 'reverse-mortgage':
+        console.warn('Legacy service type detected, please update to "loan-signing-specialist"');
         return 'EJ5ED9UXPHCjBePUTJ0W';
       case 'specialty':
-      case 'specialty-notary-service':
+        console.warn('Legacy service type "specialty" detected, please update to "specialty-notary-service"');
         return 'h4X7cZ0mZ3c52XSzvpjU';
       default:
         console.warn(`Unknown service type: ${service}, using fallback`);
@@ -177,16 +193,26 @@ export default function UnifiedBookingCalendar({
     if (!service) return 60;
     
     switch (service.toLowerCase()) {
+      case 'loan-signing-specialist':
+        return 90; // SOP: 90-minute session for loan signing
+      case 'extended-hours-notary':
+        return 60; // SOP: Standard duration
+      case 'standard-notary':
+      case 'specialty-notary-service':
+      case 'business-solutions':
+      case 'support-service':
+        return 60; // SOP: Standard duration
+      // Legacy support (remove after migration)
       case 'loan-signing':
       case 'reverse-mortgage':
-      case 'loan-signing-specialist':
+        console.warn('Legacy service type detected, please update to "loan-signing-specialist"');
         return 90;
       case 'priority':
+        console.warn('Legacy service type "priority" detected, please update to "extended-hours-notary"');
         return 60;
       case 'essential':
       case 'specialty':
-      case 'standard-notary':
-      case 'specialty-notary-service':
+        console.warn('Legacy service type detected, please update to SOP-compliant types');
         return 60;
       default:
         return 60;
@@ -312,8 +338,8 @@ export default function UnifiedBookingCalendar({
       }
       
       // Apply service-specific rules
-      if (serviceType === 'essential' && isToday(date)) {
-        const cutoffHour = 15; // 3 PM
+      if ((serviceType === 'standard-notary' || serviceType === 'essential') && isToday(date)) {
+        const cutoffHour = 15; // 3 PM - SOP: Standard notary cutoff for same-day
         slots = slots.filter(slot => {
           try {
             const startHour = parseISO(slot.startTime).getHours();
@@ -401,10 +427,10 @@ export default function UnifiedBookingCalendar({
     const maxDate = addDays(today, maxAdvanceDays);
     if (date > maxDate) return true;
     
-    // Service-specific rules
-    if (serviceType === 'essential') {
+    // Service-specific rules - SOP: Standard notary weekdays only
+    if (serviceType === 'standard-notary' || serviceType === 'essential') {
       const dayOfWeek = date.getDay();
-      if (dayOfWeek === 0 || dayOfWeek === 6) return true; // No weekends
+      if (dayOfWeek === 0 || dayOfWeek === 6) return true; // No weekends for standard service
     }
     
     // Check service date range

@@ -97,7 +97,7 @@ export default function BookingPage() {
   const form = useForm<BookingFormData>({
     resolver: zodResolver(unifiedBookingSchema),
     defaultValues: {
-      serviceType: 'essential',
+      serviceType: 'standard-notary',
       numberOfSigners: 1,
       promoCode: '',
       calendarId: '',
@@ -207,20 +207,23 @@ export default function BookingPage() {
       return selectedService.price;
     }
     
-    // Fallback pricing logic for backward compatibility
+    // SOP COMPLIANT: Fallback pricing logic
     switch (serviceType) {
-      case 'essential':
+      case 'standard-notary':
         if (numberOfSigners === 1) return 75;
         if (numberOfSigners === 2) return 85;
         if (numberOfSigners === 3) return 95;
         return 100;
-      case 'priority':
+      case 'extended-hours-notary':
         return 100 + (numberOfSigners > 2 ? (numberOfSigners - 2) * 10 : 0);
-      case 'loan-signing':
-      case 'reverse-mortgage':
+      case 'loan-signing-specialist':
         return 150;
-      case 'specialty':
+      case 'specialty-notary-service':
         return 75;
+      case 'business-solutions':
+        return 125;
+      case 'support-service':
+        return 50;
       default:
         return 75;
     }
@@ -231,18 +234,20 @@ export default function BookingPage() {
       return selectedService.name;
     }
     
-    // Fallback naming for backward compatibility
+    // SOP COMPLIANT: Service naming
     switch (serviceType) {
-      case 'essential':
-        return 'Essential Mobile Package';
-      case 'priority':
-        return 'Priority Service Package';
-      case 'loan-signing':
-        return 'Loan Signing Service';
-      case 'reverse-mortgage':
-        return 'Reverse Mortgage/HELOC';
-      case 'specialty':
-        return 'Specialty Service';
+      case 'standard-notary':
+        return 'Standard Notary Services';
+      case 'extended-hours-notary':
+        return 'Extended Hours Notary';
+      case 'loan-signing-specialist':
+        return 'Loan Signing Specialist';
+      case 'specialty-notary-service':
+        return 'Specialty Notary Service';
+      case 'business-solutions':
+        return 'Business Solutions';
+      case 'support-service':
+        return 'Support Services';
       default:
         return 'Notary Service';
     }
@@ -252,8 +257,8 @@ export default function BookingPage() {
     if (isValidFrontendServiceType(serviceType)) {
       return serviceType;
     }
-    console.warn(`Invalid service type: ${serviceType}, defaulting to essential`);
-    return 'essential';
+    console.warn(`Invalid service type: ${serviceType}, defaulting to standard-notary`);
+    return 'standard-notary';
   };
 
   const handleTimeSelected = (startTime: string, endTime: string, formattedTime: string, calendarId: string) => {
