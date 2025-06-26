@@ -1,52 +1,167 @@
-# CodeRabbit Configuration for Houston Mobile Notary Pros
+# CodeRabbit Configuration - Lead Developer Review Mode
+# Comprehensive $50K Project Final Review Standards
+
 reviews:
-  profile: chill
-  request_changes_workflow: false
+  profile: assertive  # Changed from chill to assertive for thorough review
+  request_changes_workflow: true  # Enable change requests for critical issues
   high_level_summary: true
-  poem: true
+  poem: false  # Professional mode
   review_status: true
-  collapse_empty_files: true
+  collapse_empty_files: false  # Show all files for comprehensive review
   auto_review:
     enabled: true
-    drafts: false
+    drafts: true  # Review draft PRs too
+  
+  # Enable comprehensive file analysis
+  path_instructions:
+    "**/*.ts":
+      - "Analyze for duplicate functions and redundant code"
+      - "Check TypeScript strict mode compliance"
+      - "Verify SOP service type alignment"
+    "**/*.tsx": 
+      - "Check for component duplication and reusability"
+      - "Verify proper React patterns and performance"
+      - "Ensure UI matches SOP branding requirements"
+    "app/api/**/*":
+      - "Verify API structure follows RESTful standards"
+      - "Check for duplicate endpoints and logic"
+      - "Ensure security and validation compliance"
+    "lib/**/*":
+      - "Identify utility function duplication"
+      - "Check for proper abstraction and modularity"
+    "components/**/*":
+      - "Flag duplicate UI components"
+      - "Check for proper component composition"
 
 chat:
   auto_reply: true
 
-# Focus areas for this Next.js 15+ application
+# Comprehensive analysis focus areas
 language_hints:
-  - "This is a Next.js 15+ application using App Router"
-  - "TypeScript with strict type checking is required"
-  - "Focus on SOP compliance and service type alignment"
-  - "Review for Next.js best practices and performance"
-  - "Check for duplicate code and optimization opportunities"
+  - "CRITICAL: This is a $50,000 production system requiring enterprise-grade review"
+  - "SOP COMPLIANCE: Service types MUST be 'standard-notary', 'extended-hours-notary', 'loan-signing-specialist'"
+  - "ARCHITECTURE: Next.js 15+ App Router with TypeScript strict mode"
+  - "DUPLICATE CODE: Flag ALL duplicate functions, components, and logic"
+  - "REDUNDANCY: Identify redundant files, unused imports, dead code"
+  - "PERFORMANCE: Production-grade optimization required"
+  - "SECURITY: Payment processing and data handling compliance"
 
-# File patterns to focus on
+# Enhanced file patterns for comprehensive review
 path_filters:
   review:
     - "app/**/*.tsx"
-    - "app/**/*.ts" 
-    - "components/**/*.tsx"
+    - "app/**/*.ts"
+    - "components/**/*.tsx" 
+    - "components/**/*.ts"
     - "lib/**/*.ts"
+    - "hooks/**/*.ts"
+    - "utils/**/*.ts"
+    - "types/**/*.ts"
     - "prisma/schema.prisma"
+    - "middleware.ts"
+    - "next.config.js"
+    - "tailwind.config.js"
+    - "package.json"
   ignore:
     - ".next/**"
     - "node_modules/**"
     - "logs/**"
     - "test-results/**"
     - "playwright-report/**"
+    - ".git/**"
 
-# Custom instructions based on your project
+# LEAD DEVELOPER REVIEW INSTRUCTIONS
 custom_instructions: |
-  This is a production-ready mobile notary and loan signing web application.
-  Please focus on:
+  🚨 **LEAD DEVELOPER FINAL REVIEW MODE - $50,000 PROJECT STANDARDS** 🚨
   
-  1. **SOP Compliance**: Ensure service types align with business requirements
-  2. **Next.js 15+ Best Practices**: App Router, Server Components, proper caching
-  3. **Code Quality**: TypeScript usage, component reusability, API structure
-  4. **Performance**: Bundle size, memory usage, build optimization
-  5. **Security**: Authentication, data validation, payment processing safety
+  You are conducting the final architectural review for a production-ready mobile notary platform.
+  This review determines if the system is ready for enterprise deployment.
   
-  Key service types should be: 'standard-notary', 'extended-hours-notary', 'loan-signing-specialist'
+  ## 📋 **CRITICAL SOP COMPLIANCE CHECKLIST**
   
-  Please be thorough but constructive in reviews. 
+  ### **1. SERVICE TYPE ALIGNMENT (BLOCKING ISSUE)**
+  - ❌ FAIL if code uses: 'essential', 'priority', 'basic', 'premium'
+  - ✅ PASS only if: 'standard-notary', 'extended-hours-notary', 'loan-signing-specialist'
+  - 🔍 Check: Database models, API endpoints, UI components, pricing logic
+  
+  ### **2. ENHANCED BOOKING FLOW (CRITICAL)**
+  - ❌ FAIL if `/booking/enhanced` directory is empty or missing
+  - ✅ PASS if real-time pricing and multi-step flow implemented
+  - 🔍 Check: Route implementation, pricing calculations, user experience
+  
+  ### **3. SERVICE AREA COMPLIANCE**
+  - Standard Notary: 15-mile radius from ZIP 77591
+  - Extended Hours: 20-mile radius from ZIP 77591
+  - ❌ FAIL if multiple conflicting radius values found
+  - 🔍 Check: Distance calculations, pricing logic, service boundaries
+  
+  ## 🔍 **DUPLICATE CODE ANALYSIS**
+  
+  ### **Flag These Immediately:**
+  - Duplicate React components (similar functionality)
+  - Repeated API route logic
+  - Redundant pricing calculation functions
+  - Multiple service type definitions
+  - Duplicate form validation schemas
+  - Repeated database queries
+  - Similar utility functions
+  
+  ### **Architecture Red Flags:**
+  - Hardcoded values that should be configurable
+  - Business logic scattered across multiple files
+  - Missing abstraction layers
+  - Inconsistent error handling patterns
+  - Mixed client/server component usage
+  
+  ## 🏗️ **SYSTEM ARCHITECTURE REVIEW**
+  
+  ### **Required Patterns:**
+  - Next.js 15+ App Router (not Pages Router)
+  - TypeScript strict mode compliance
+  - Server Components for data fetching
+  - Client Components only when necessary
+  - Proper error boundaries and loading states
+  - Consistent API response formats
+  
+  ### **Performance Requirements:**
+  - Bundle size optimization
+  - Database query optimization
+  - Proper caching strategies
+  - Image and asset optimization
+  - Core Web Vitals compliance
+  
+  ## 🛡️ **SECURITY & COMPLIANCE**
+  
+  ### **Must Verify:**
+  - Input validation on all API routes
+  - Authentication middleware implementation
+  - Payment processing security (PCI compliance)
+  - Data encryption and secure storage
+  - SQL injection prevention
+  - XSS protection mechanisms
+  
+  ## 📊 **REVIEW STANDARDS**
+  
+  ### **Severity Levels:**
+  - 🚨 **CRITICAL**: SOP misalignment, security vulnerabilities, duplicate core logic
+  - ⚠️ **HIGH**: Performance issues, architectural violations, major duplicates
+  - 💡 **MEDIUM**: Code quality, minor duplicates, optimization opportunities
+  - 📝 **LOW**: Style consistency, documentation improvements
+  
+  ### **Review Approach:**
+  1. **First Pass**: Scan for SOP compliance violations
+  2. **Second Pass**: Identify duplicate and redundant code
+  3. **Third Pass**: Evaluate architecture and patterns
+  4. **Final Pass**: Security and performance review
+  
+  ## 🎯 **SUCCESS CRITERIA**
+  
+  The system passes review ONLY if:
+  - ✅ 100% SOP compliance (service types, booking flow, pricing)
+  - ✅ Zero critical duplicate code issues
+  - ✅ Clean, maintainable architecture
+  - ✅ Production-ready security implementation
+  - ✅ Optimized performance profile
+  
+  **Remember: This is a $50,000 system. Review with enterprise standards.**
+  **Be thorough, be critical, be constructive. Client success depends on quality.** 
