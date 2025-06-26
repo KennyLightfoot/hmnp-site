@@ -9,10 +9,10 @@ import { test, expect, Page } from '@playwright/test';
 
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 
-// Test data for booking
+// Test data for booking - SOP COMPLIANT
 const TEST_BOOKING_DATA = {
   service: {
-    name: 'Essential Notary Services',
+    name: 'Standard Notary Services',  // SOP: was 'Essential Notary Services'
     price: '$75'
   },
   client: {
@@ -45,7 +45,7 @@ test.describe('Critical Booking Flow', () => {
     await page.goto(BASE_URL);
   });
 
-  test('Complete booking flow - Essential Services', async ({ page }) => {
+  test('Complete booking flow - Standard Notary Services', async ({ page }) => {
     // Step 1: Navigate to booking page
     await test.step('Navigate to booking page', async () => {
       const bookButton = page.locator('button:has-text("Book Now"), a:has-text("Book Now")').first();
@@ -233,16 +233,16 @@ test.describe('Critical Booking Flow', () => {
 
     await test.step('Verify pricing updates on service selection', async () => {
       // Select different services and verify price changes
-      const essentialService = page.locator(':has-text("Essential")').first();
-      await essentialService.click();
+      const standardService = page.locator(':has-text("Standard Notary"), :has-text("Standard")').first();
+      await standardService.click();
       
       await expect(page.locator(':has-text("$75"), [data-testid="price"]')).toBeVisible();
       
-      // Try premium service
-      const premiumService = page.locator(':has-text("Premium"), :has-text("Priority")').first();
-      if (await premiumService.isVisible()) {
-        await premiumService.click();
-        await expect(page.locator(':has-text("$150"), :has-text("$125")')).toBeVisible();
+      // Try extended hours service
+      const extendedService = page.locator(':has-text("Extended Hours"), :has-text("Extended")').first();
+      if (await extendedService.isVisible()) {
+        await extendedService.click();
+        await expect(page.locator(':has-text("$100"), :has-text("$125")')).toBeVisible();
       }
     });
   });

@@ -151,7 +151,7 @@ class TestAutomation {
         customerName: 'Test User',
         customerEmail: 'test@example.com',
         customerPhone: '555-0123',
-        serviceName: 'Essential Notary Service',
+        serviceName: 'Standard Notary Services',
         scheduledDateTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         addressStreet: '123 Test St',
         addressCity: 'Houston',
