@@ -91,9 +91,14 @@ export async function GET(request: NextRequest) {
 
     // Get business hours for the requested day (using business timezone)
     const dayOfWeek = requestedDateInBusinessTz.getDay();
+    console.log('[DEBUG] Date:', validatedParams.date, 'Day of week:', dayOfWeek);
+    console.log('[DEBUG] Business settings keys:', Object.keys(businessSettings).filter(k => k.includes('hours')));
+    
     const businessHours = await getBusinessHoursForDay(dayOfWeek, businessSettings);
+    console.log('[DEBUG] Business hours result:', businessHours);
 
     if (!businessHours) {
+      console.log('[DEBUG] No business hours found for day', dayOfWeek);
       return NextResponse.json({
         date: validatedParams.date,
         availableSlots: [],
@@ -239,7 +244,7 @@ async function getExistingBookings(date: Date) {
       },
     },
     include: {
-      service: true,
+      Service: true,
     },
   });
 }
@@ -310,7 +315,7 @@ function calculateAvailableSlots({
       
       const bookingStart = new Date(booking.scheduledDateTime);
       const bookingEnd = new Date(bookingStart);
-              bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.service.durationMinutes + bufferTimeMinutes);
+              bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.Service.durationMinutes + bufferTimeMinutes);
       
       // Check if there's any overlap
       return (currentSlot < bookingEnd && slotEnd > bookingStart);

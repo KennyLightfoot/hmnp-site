@@ -152,7 +152,7 @@ class EnhancedLogger {
       timestamp: new Date().toISOString(),
       level: LogLevel[level.toUpperCase() as keyof typeof LogLevel] || LogLevel.INFO,
       message,
-      service,
+      Service,
       requestId: this.requestId,
       metadata: {
         ...this.context,
@@ -177,7 +177,7 @@ class EnhancedLogger {
   }
 
   error(message: string, Service: string, error?: Error, metadata?: Record<string, any>): void {
-    const logEntry = this.formatLogEntry('error', message, service, metadata);
+    const logEntry = this.formatLogEntry('error', message, Service, metadata);
     
     if (error) {
       logEntry.error = {

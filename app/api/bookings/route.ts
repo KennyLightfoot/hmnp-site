@@ -389,7 +389,7 @@ export async function POST(request: NextRequest) {
     let initialStatus: BookingStatus;
     const priceToConsiderForPayment = (service.requiresDeposit && service.depositAmount && service.depositAmount.toNumber() > 0) 
                                       ? service.depositAmount.toNumber() 
-                                      : service.price.toNumber();
+                                      : service.basePrice.toNumber();
     const finalAmountDueAfterDiscount = Math.max(0, priceToConsiderForPayment - discountAmount);
 
     if (finalAmountDueAfterDiscount > 0) {
@@ -422,8 +422,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: `Invalid location type provided: ${locationType}. Valid types are CLIENT_SPECIFIED_ADDRESS, PUBLIC_PLACE.` }, { status: 400 });
     }
 
+    // Generate unique booking ID
+    const bookingId = `bk_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
     // Prepare booking data, handling both authenticated and guest bookings
     const bookingData: any = {
+      id: bookingId,
       Service: {
         connect: { id: service.id }
       },
@@ -435,16 +439,15 @@ export async function POST(request: NextRequest) {
       addressState: addressState,
       addressZip: addressZip,
       locationNotes: locationNotes,
-      // Pricing fields - both legacy and new required fields
-      priceAtBooking: priceAtBooking, // Legacy field
-      basePrice: service.price, // Required field
-      promoDiscount: discountAmount, // Required field with default 0
-      finalPrice: finalAmountDueAfterDiscount, // Required field
+      // Pricing fields - using actual schema fields
+      priceAtBooking: service.basePrice, // Required field - use service base price
+      promoCodeDiscount: discountAmount, // Use existing promoCodeDiscount field
+      depositAmount: service.requiresDeposit ? service.depositAmount : null, // Optional deposit amount
       notes: notes,
-      // Required fields for all bookings
-      signerEmail: signerUserEmail,
-      signerName: signerUserName || 'Guest Client',
-      signerPhone: phone || null,
+      // Customer information using schema fields
+      customerEmail: signerUserEmail,
+      // Required timestamp fields
+      updatedAt: new Date(),
       // Additional fields from form for guest bookings will be stored in GHL only
     };
     
