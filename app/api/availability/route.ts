@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       where: { id: validatedParams.serviceId },
     });
 
-    if (!service || !service.active) {
+    if (!service || !service.isActive) {
       return NextResponse.json(
         { error: 'Service not found or inactive' },
         { status: 404 }

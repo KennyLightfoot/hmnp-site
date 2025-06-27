@@ -52,7 +52,7 @@ interface Service {
   price: number;
   duration: number; // in minutes
   category: string;
-  active: boolean;
+  isActive: boolean;
 }
 
 interface PricingCalculation {
@@ -252,7 +252,7 @@ describe('BookingService', () => {
       price: 75,
       duration: 60,
       category: 'standard-notary',
-      active: true,
+      isActive: true,
     };
 
     it('should calculate base pricing correctly', () => {
@@ -482,7 +482,7 @@ describe('Booking Edge Cases', () => {
       price: 33.33,
       duration: 60,
       category: 'test',
-      active: true,
+      isActive: true,
     };
     
     const pricing = BookingService.calculatePricing(service, 11.7, [], 'FIRST20');
@@ -498,7 +498,7 @@ const mockService = {
   name: 'Standard Notary Services',  // SOP: was likely 'Essential Service'
   serviceType: 'standard-notary',     // SOP: was likely 'essential'
   price: 75.00,
-  active: true,
+  isActive: true,
 };
 
 // Mock promo codes for testing

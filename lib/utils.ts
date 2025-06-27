@@ -51,3 +51,34 @@ export function getTimeUntilAppointment(appointmentDate: Date): {
     isOverdue: diffMs < 0
   };
 }
+
+export async function safeFormSubmit(url: string, data: any): Promise<{ success: boolean; message?: string; data?: any }> {
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      return {
+        success: false,
+        message: `HTTP error! status: ${response.status}`
+      };
+    }
+
+    const result = await response.json();
+    return {
+      success: true,
+      data: result
+    };
+  } catch (error) {
+    console.error('Form submission error:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+}

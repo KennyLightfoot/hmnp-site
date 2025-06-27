@@ -315,30 +315,31 @@ export class UnifiedAuth {
         }
       }
 
+      // TODO: API key authentication disabled - ApiKey model not found in schema
       // Try API key authentication (for system integrations)
-      if (allowApiKey) {
+      if (false && allowApiKey) {
         const apiKey = request.headers.get('x-api-key');
         if (apiKey) {
-          const validApiKey = await prisma.apiKey.findFirst({
-            where: { 
-              key: apiKey,
-              active: true,
-              expiresAt: { gt: new Date() }
-            }
-          });
+          // const validApiKey = await prisma.apiKey.findFirst({
+          //   where: { 
+          //     key: apiKey,
+          //     isActive: true,
+          //     expiresAt: { gt: new Date() }
+          //   }
+          // });
 
-          if (validApiKey) {
-            // Create system user context for API key
-            const systemUser: AuthUser = {
-              id: 'system',
-              email: 'system@houstonmobilenotarypros.com',
-              name: 'System API',
-              role: Role.ADMIN, // API keys have admin privileges
-              isAuthenticated: true,
-            };
+          // if (validApiKey) {
+          //   // Create system user context for API key
+          //   const systemUser: AuthUser = {
+          //     id: 'system',
+          //     email: 'system@houstonmobilenotarypros.com',
+          //     name: 'System API',
+          //     role: Role.ADMIN, // API keys have admin privileges
+          //     isAuthenticated: true,
+          //   };
 
-            return { user: systemUser };
-          }
+          //   return { user: systemUser };
+          // }
         }
       }
 
@@ -374,36 +375,6 @@ export class UnifiedAuth {
   }
 
   /**
-   * Create authorization context for authenticated users
-   */
-  static createAuthContext(user: User): AuthContext {
-    if (!user.isAuthenticated) {
-      return {
-        isAuthenticated: false,
-        isGuest: true,
-        canCreateBooking: true, // Allow guest bookings
-        canViewOwnBookings: false,
-        canViewAllBookings: false,
-        canManageBookings: false,
-      };
-    }
-
-    const authUser = user as AuthUser;
-    const isAdmin = authUser.role === Role.ADMIN;
-    const isStaff = authUser.role === Role.STAFF;
-    const isNotary = authUser.role === Role.NOTARY;
-
-    return {
-      isAuthenticated: true,
-      isGuest: false,
-      canCreateBooking: true,
-      canViewOwnBookings: true,
-      canViewAllBookings: isAdmin || isStaff,
-      canManageBookings: isAdmin || isStaff || isNotary,
-    };
-  }
-
-  /**
    * Express middleware adapter for legacy API routes
    */
   static expressMiddleware(options: AuthMiddlewareOptions = {}) {
@@ -435,6 +406,36 @@ export class UnifiedAuth {
         console.error('Express auth middleware error:', error);
         res.status(500).json({ error: 'Authentication error' });
       }
+    };
+  }
+
+  /**
+   * Create authorization context for authenticated users
+   */
+  static createAuthContext(user: User): AuthContext {
+    if (!user.isAuthenticated) {
+      return {
+        isAuthenticated: false,
+        isGuest: true,
+        canCreateBooking: true,
+        canViewOwnBookings: false,
+        canViewAllBookings: false,
+        canManageBookings: false,
+      };
+    }
+
+    const authUser = user as AuthUser;
+    const isAdmin = authUser.role === Role.ADMIN;
+    const isStaff = authUser.role === Role.STAFF;
+    const isNotary = authUser.role === Role.NOTARY;
+
+    return {
+      isAuthenticated: true,
+      isGuest: false,
+      canCreateBooking: true,
+      canViewOwnBookings: true,
+      canViewAllBookings: isAdmin || isStaff,
+      canManageBookings: isAdmin || isStaff || isNotary,
     };
   }
 }

@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       where: { id: serviceId }
     });
 
-    if (!service || !service.active) {
+    if (!service || !service.isActive) {
       return NextResponse.json(
         { error: 'Service not found or inactive' },
         { status: 404 }
