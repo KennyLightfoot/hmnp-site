@@ -378,7 +378,7 @@ export async function POST(request: NextRequest) {
     }
 
     const service = await prisma.service.findUnique({
-      where: { id: serviceId, active: true },
+      where: { id: serviceId, isActive: true },
     });
 
     if (!service) {

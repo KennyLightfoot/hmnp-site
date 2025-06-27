@@ -7,7 +7,7 @@ export async function GET() {
     // Get all active services ordered by name
     const services = await prisma.service.findMany({
       where: { 
-        active: true 
+        isActive: true 
       },
       orderBy: [
         { serviceType: 'asc' },
@@ -23,7 +23,7 @@ export async function GET() {
         requiresDeposit: true,
         depositAmount: true,
         externalCalendarId: true,
-        active: true,
+        isActive: true,
         createdAt: true,
         updatedAt: true,
       },

@@ -26,7 +26,7 @@ async function testBookingGhlEndToEnd() {
     // 1. Get an active service from the database
     console.log('Fetching active service from database...');
     const service = await prisma.service.findFirst({
-      where: { active: true },
+      where: { isActive: true },
       select: { id: true, name: true, serviceType: true, price: true }
     });
     

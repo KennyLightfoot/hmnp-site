@@ -35,7 +35,7 @@ interface ApiService {
   requiresDeposit: boolean;
   duration: number;
   serviceType?: ServiceType;
-  active: boolean;
+  isActive: boolean;
 }
 
 // Updated schema for new booking system
