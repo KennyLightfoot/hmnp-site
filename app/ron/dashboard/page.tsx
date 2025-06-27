@@ -130,6 +130,13 @@ export default function RONDashboard() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Remote Online Notarization Dashboard</h1>
         <p className="text-gray-600 mt-2">Manage your remote notarization sessions</p>
+        <div className="mt-4">
+          <Button variant="outline" asChild>
+            <a href="/ron/how-it-works" className="inline-flex items-center gap-2">
+              📖 How RON Works
+            </a>
+          </Button>
+        </div>
       </div>
 
       <div className="mb-6">

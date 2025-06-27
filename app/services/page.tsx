@@ -553,9 +553,12 @@ export default function ServicesPage() {
               <strong>Add-ons:</strong> Extra signer $10 ea.
             </div>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex flex-col gap-2">
             <Button asChild className="w-full bg-[#A52A2A] hover:bg-[#8B0000]">
               <Link href="/ron/dashboard">Start RON Session</Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/ron/how-it-works">How RON Works</Link>
             </Button>
           </CardFooter>
         </Card>
