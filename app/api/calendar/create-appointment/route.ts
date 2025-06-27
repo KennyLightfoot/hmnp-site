@@ -96,10 +96,10 @@ export async function POST(request: Request) {
     let duration = 30 // Default duration
     if (calendarId === "loan-signing" || calendarId === "reverse-mortgage") {
       duration = 90 // Loan signings take longer
-    } else if (serviceType === 'priority') {
+    } else if (serviceType === 'extended-hours-notary') {
         duration = 60;
-    } else if (serviceType === 'essential' && numberOfSigners > 1) {
-        // Maybe adjust essential duration based on signers? e.g., 45 for 2, 60 for 3+
+    } else if (serviceType === 'standard-notary' && numberOfSigners > 1) {
+        // Maybe adjust standard-notary duration based on signers? e.g., 45 for 2, 60 for 3+
         duration = numberOfSigners === 2 ? 45 : 60;
     }
     // Note: The GHL /appointments endpoint might not use duration directly, but rather rely on startTime and endTime.

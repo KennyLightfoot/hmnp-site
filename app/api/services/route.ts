@@ -5,7 +5,7 @@ import { mapPrismaToFrontend, getServiceDisplayName } from '@/lib/types/service-
 export async function GET() {
   try {
     // Get all active services ordered by name
-    const services = await prisma.Service.findMany({
+    const services = await prisma.service.findMany({
       where: { 
         isActive: true 
       },
@@ -74,8 +74,8 @@ export async function GET() {
             description: service.description,
             type: service.serviceType, // Prisma enum
             typeLabel: getServiceDisplayName(frontendType),
-            duration: service.duration,
-            price: Number(service.price),
+            duration: service.durationMinutes,
+            price: Number(service.basePrice),
             requiresDeposit: service.requiresDeposit,
             depositAmount: service.requiresDeposit ? Number(service.depositAmount) : 0,
             hasCalendarIntegration: !!service.externalCalendarId,

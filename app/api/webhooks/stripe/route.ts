@@ -282,13 +282,23 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, ev
     // Update GHL contact if we have a contact ID
     if (booking.ghlContactId) {
       try {
+        // Update booking record with failed attempt count
+        const newFailedAttempts = (booking.paymentFailedAttempts || 0) + 1;
+        await prisma.booking.update({
+          where: { id: bookingId },
+          data: { 
+            paymentFailedAttempts: newFailedAttempts,
+            lastPaymentFailure: new Date()
+          }
+        });
+
         // Add failed payment tag
         await ghl.addTagsToContact(booking.ghlContactId, ['payment:failed']);
         
         // Update custom fields
         const customFields = {
           cf_payment_status: 'FAILED',
-          cf_payment_failed_attempts: ((parseInt(booking.User_Booking_signerIdToUser?.email || '0') || 0) + 1).toString(),
+          cf_payment_failed_attempts: newFailedAttempts.toString(),
         };
         
         await ghl.updateContact({

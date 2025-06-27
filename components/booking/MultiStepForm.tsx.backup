@@ -1,0 +1,555 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { 
+  ChevronRight, 
+  ChevronLeft, 
+  User, 
+  MapPin, 
+  Calendar, 
+  CreditCard,
+  FileText,
+  Phone,
+  Mail
+} from 'lucide-react';
+import { toast } from 'react-hot-toast';
+
+interface MultiStepFormProps {
+  currentStep: number;
+  bookingData: any;
+  updateBookingData: (data: any) => void;
+  onNext: () => void;
+  onBack: () => void;
+  onSubmit: () => void;
+  isLoading: boolean;
+}
+
+const SERVICE_OPTIONS = [
+  {
+    id: 'standard-notary',
+    name: 'Standard Notary Services',
+    description: 'Basic mobile notary services. Up to 2 documents, 1-2 signers, 15-mile travel included.',
+    price: 75,
+    duration: 30,
+  },
+  {
+    id: 'extended-hours-notary',
+    name: 'Extended Hours Notary',
+    description: 'Extended hours with same-day availability. Up to 5 documents, 2 signers, 20-mile travel.',
+    price: 100,
+    duration: 45,
+  },
+  {
+    id: 'loan-signing-specialist',
+    name: 'Loan Signing Specialist',
+    description: 'Expert loan signing services. Unlimited documents, up to 4 signers, 90-minute session.',
+    price: 150,
+    duration: 90,
+  },
+];
+
+export default function MultiStepForm({
+  currentStep,
+  bookingData,
+  updateBookingData,
+  onNext,
+  onBack,
+  onSubmit,
+  isLoading,
+}: MultiStepFormProps) {
+  const [availableSlots, setAvailableSlots] = useState<any[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [selectedDate, setSelectedDate] = useState('');
+
+  // Load available time slots when date changes
+  useEffect(() => {
+    if (selectedDate && bookingData.serviceType) {
+      loadAvailableSlots();
+    }
+  }, [selectedDate, bookingData.serviceType]);
+
+  const loadAvailableSlots = async () => {
+    setLoadingSlots(true);
+    try {
+      const response = await fetch(`/api/availability?date=${selectedDate}&serviceId=${bookingData.serviceType}`);
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableSlots(data.availableSlots || []);
+      }
+    } catch (error) {
+      console.error('Failed to load time slots:', error);
+      toast.error('Failed to load available times');
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
+
+  const validateStep = () => {
+    switch (currentStep) {
+      case 1: // Service Selection
+        if (!bookingData.serviceType) {
+          toast.error('Please select a service');
+          return false;
+        }
+        return true;
+      
+      case 2: // Location & Details
+        if (!bookingData.location.street || !bookingData.location.city || !bookingData.location.zip) {
+          toast.error('Please fill in all address fields');
+          return false;
+        }
+        if (!bookingData.customerInfo.name || !bookingData.customerInfo.email || !bookingData.customerInfo.phone) {
+          toast.error('Please fill in all contact information');
+          return false;
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(bookingData.customerInfo.email)) {
+          toast.error('Please enter a valid email address');
+          return false;
+        }
+        return true;
+      
+      case 3: // Date & Time
+        if (!bookingData.appointmentDateTime) {
+          toast.error('Please select a date and time');
+          return false;
+        }
+        return true;
+      
+      default:
+        return true;
+    }
+  };
+
+  const handleNext = () => {
+    if (validateStep()) {
+      onNext();
+    }
+  };
+
+  const handleSubmit = () => {
+    if (validateStep()) {
+      onSubmit();
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Step 1: Service Selection */}
+      {currentStep === 1 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Select Your Service</h2>
+            <p className="text-gray-600">Choose the notary service that best fits your needs</p>
+          </div>
+
+          <div className="grid gap-4">
+            {SERVICE_OPTIONS.map((service) => (
+              <div
+                key={service.id}
+                className={`relative border-2 rounded-lg p-6 cursor-pointer transition-all ${
+                  bookingData.serviceType === service.id
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+                onClick={() => updateBookingData({ serviceType: service.id })}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
+                    <p className="text-gray-600 mt-1">{service.description}</p>
+                    <div className="flex items-center space-x-4 mt-3 text-sm text-gray-500">
+                      <span className="flex items-center">
+                        <FileText className="h-4 w-4 mr-1" />
+                        {service.duration} min
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-gray-900">${service.price}</div>
+                    <div className="text-sm text-gray-500">Starting at</div>
+                  </div>
+                </div>
+                {bookingData.serviceType === service.id && (
+                  <div className="absolute top-4 right-4">
+                    <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Step 2: Location & Details */}
+      {currentStep === 2 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Location & Contact Details</h2>
+            <p className="text-gray-600">Where should we meet you, and how can we reach you?</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Location Information */}
+            <div className="space-y-4">
+              <div className="flex items-center mb-4">
+                <MapPin className="h-5 w-5 text-gray-400 mr-2" />
+                <h3 className="text-lg font-semibold text-gray-900">Service Location</h3>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Street Address *
+                </label>
+                <input
+                  type="text"
+                  value={bookingData.location.street}
+                  onChange={(e) => updateBookingData({
+                    location: { ...bookingData.location, street: e.target.value }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="123 Main Street"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    City *
+                  </label>
+                  <input
+                    type="text"
+                    value={bookingData.location.city}
+                    onChange={(e) => updateBookingData({
+                      location: { ...bookingData.location, city: e.target.value }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Houston"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    ZIP Code *
+                  </label>
+                  <input
+                    type="text"
+                    value={bookingData.location.zip}
+                    onChange={(e) => updateBookingData({
+                      location: { ...bookingData.location, zip: e.target.value }
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="77001"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Number of Signers
+                </label>
+                <select
+                  value={bookingData.numberOfSigners}
+                  onChange={(e) => updateBookingData({ numberOfSigners: parseInt(e.target.value) })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {[1, 2, 3, 4, 5, 6].map(num => (
+                    <option key={num} value={num}>{num} Signer{num > 1 ? 's' : ''}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Contact Information */}
+            <div className="space-y-4">
+              <div className="flex items-center mb-4">
+                <User className="h-5 w-5 text-gray-400 mr-2" />
+                <h3 className="text-lg font-semibold text-gray-900">Contact Information</h3>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  value={bookingData.customerInfo.name}
+                  onChange={(e) => updateBookingData({
+                    customerInfo: { ...bookingData.customerInfo, name: e.target.value }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="John Doe"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address *
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="email"
+                    value={bookingData.customerInfo.email}
+                    onChange={(e) => updateBookingData({
+                      customerInfo: { ...bookingData.customerInfo, email: e.target.value }
+                    })}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="john@example.com"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number *
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="tel"
+                    value={bookingData.customerInfo.phone}
+                    onChange={(e) => updateBookingData({
+                      customerInfo: { ...bookingData.customerInfo, phone: e.target.value }
+                    })}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Company (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={bookingData.customerInfo.company}
+                  onChange={(e) => updateBookingData({
+                    customerInfo: { ...bookingData.customerInfo, company: e.target.value }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Company Name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Special Instructions (Optional)
+                </label>
+                <textarea
+                  value={bookingData.specialInstructions}
+                  onChange={(e) => updateBookingData({ specialInstructions: e.target.value })}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Any special instructions or requirements..."
+                />
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Step 3: Date & Time */}
+      {currentStep === 3 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Select Date & Time</h2>
+            <p className="text-gray-600">Choose your preferred appointment time</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Preferred Date
+              </label>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Available Times
+              </label>
+              {loadingSlots ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              ) : selectedDate ? (
+                <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+                  {availableSlots.filter(slot => slot.available).map((slot, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        const datetime = new Date(`${selectedDate}T${slot.startTime}`).toISOString();
+                        updateBookingData({ appointmentDateTime: datetime });
+                      }}
+                      className={`p-3 text-sm border rounded-lg transition-colors ${
+                        bookingData.appointmentDateTime === new Date(`${selectedDate}T${slot.startTime}`).toISOString()
+                          ? 'border-blue-500 bg-blue-50 text-blue-700'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      {slot.startTime}
+                    </button>
+                  ))}
+                  {availableSlots.filter(slot => slot.available).length === 0 && (
+                    <div className="col-span-2 text-center py-4 text-gray-500">
+                      No available times for this date
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  Select a date to see available times
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Step 4: Review & Payment */}
+      {currentStep === 4 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Review & Confirm</h2>
+            <p className="text-gray-600">Please review your booking details</p>
+          </div>
+
+          <div className="bg-gray-50 rounded-lg p-6 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Service Details</h3>
+                <p className="text-gray-600">
+                  {SERVICE_OPTIONS.find(s => s.id === bookingData.serviceType)?.name}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {bookingData.numberOfSigners} signer(s)
+                </p>
+              </div>
+              
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Appointment</h3>
+                <p className="text-gray-600">
+                  {bookingData.appointmentDateTime && 
+                    new Date(bookingData.appointmentDateTime).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: '2-digit',
+                    })
+                  }
+                </p>
+              </div>
+              
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Location</h3>
+                <p className="text-gray-600">
+                  {bookingData.location.street}<br />
+                  {bookingData.location.city}, {bookingData.location.state} {bookingData.location.zip}
+                </p>
+              </div>
+              
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Contact</h3>
+                <p className="text-gray-600">
+                  {bookingData.customerInfo.name}<br />
+                  {bookingData.customerInfo.email}<br />
+                  {bookingData.customerInfo.phone}
+                </p>
+              </div>
+            </div>
+
+            <div className="border-t pt-4">
+              <div className="flex justify-between items-center text-lg font-semibold">
+                <span>Total Amount:</span>
+                <span>${bookingData.pricing.totalPrice}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start">
+              <CreditCard className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+              <div>
+                <h4 className="font-medium text-blue-900">Payment Information</h4>
+                <p className="text-sm text-blue-700 mt-1">
+                  You will be redirected to our secure payment processor to complete your booking.
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Navigation Buttons */}
+      <div className="flex justify-between pt-6 border-t">
+        <button
+          onClick={onBack}
+          disabled={currentStep === 1}
+          className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
+            currentStep === 1
+              ? 'text-gray-400 cursor-not-allowed'
+              : 'text-gray-700 hover:text-gray-900'
+          }`}
+        >
+          <ChevronLeft className="h-4 w-4 mr-1" />
+          Back
+        </button>
+
+        {currentStep < 4 ? (
+          <button
+            onClick={handleNext}
+            className="flex items-center px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            Next
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </button>
+        ) : (
+          <button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="flex items-center px-6 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Processing...
+              </>
+            ) : (
+              'Complete Booking'
+            )}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}

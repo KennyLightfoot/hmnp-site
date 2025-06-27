@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get service details
-    const service = await prisma.Service.findUnique({
+    const service = await prisma.service.findUnique({
       where: { id: validatedParams.serviceId },
     });
 
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
     // Get service duration (use override if provided, otherwise service default)
         const serviceDurationMinutes = validatedParams.duration
       ? parseInt(validatedParams.duration)
-      : service.duration;
+      : service.durationMinutes;
 
     // Get business hours for the requested day (using business timezone)
     const dayOfWeek = requestedDateInBusinessTz.getDay();
@@ -239,7 +239,7 @@ async function getExistingBookings(date: Date) {
       },
     },
     include: {
-      Service: true,
+      service: true,
     },
   });
 }
@@ -310,7 +310,7 @@ function calculateAvailableSlots({
       
       const bookingStart = new Date(booking.scheduledDateTime);
       const bookingEnd = new Date(bookingStart);
-              bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.Service.duration + bufferTimeMinutes);
+              bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.service.durationMinutes + bufferTimeMinutes);
       
       // Check if there's any overlap
       return (currentSlot < bookingEnd && slotEnd > bookingStart);

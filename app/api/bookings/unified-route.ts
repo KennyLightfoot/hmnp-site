@@ -174,12 +174,12 @@ function normalizeAddress(data: UnifiedBookingRequest): {
 
 // Helper: Calculate booking pricing with unified promo code logic
 async function calculateUnifiedPricing(
-  Service: any,
+  service: any,
   promoCode?: string,
   customerEmail?: string,
   referredBy?: string
 ): Promise<BookingPricing> {
-  let basePrice = Number(service.price);
+  let basePrice = Number(service.basePrice);
   let promoDiscount = 0;
   let promoCodeInfo = undefined;
   
@@ -333,8 +333,8 @@ async function validateTimeSlotAvailability(
       }
     },
     include: {
-      Service: {
-        select: { duration: true }
+      service: {
+        select: { durationMinutes: true }
       }
     }
   });
@@ -344,7 +344,7 @@ async function validateTimeSlotAvailability(
     if (!booking.scheduledDateTime) return false;
     
     const bookingStart = new Date(booking.scheduledDateTime);
-    const bookingEnd = addMinutes(bookingStart, booking.Service.duration + bookingSettings.bufferTimeMinutes);
+    const bookingEnd = addMinutes(bookingStart, booking.service.durationMinutes + bookingSettings.bufferTimeMinutes);
     const requestedStart = scheduledDateTime;
     const requestedEnd = addMinutes(scheduledDateTime, serviceDuration + bookingSettings.bufferTimeMinutes);
     
@@ -372,7 +372,7 @@ async function validateTimeSlotAvailability(
 async function createGHLIntegration(
   booking: any,
   customerData: any,
-  Service: any,
+  service: any,
   pricingData: BookingPricing,
   checkoutUrl?: string | null
 ): Promise<any> {
@@ -486,7 +486,7 @@ export async function GET(request: NextRequest) {
         prisma.booking.findMany({
           where: whereClause,
           include: {
-            Service: true,
+            service: true,
             promoCode: true,
             User_Booking_signerIdToUser: context.canViewAllBookings ? {
               select: { id: true, name: true, email: true }
@@ -529,7 +529,7 @@ export async function POST(request: NextRequest) {
       const address = normalizeAddress(data);
       
       // Get service details
-      const service = await prisma.Service.findUnique({
+      const service = await prisma.service.findUnique({
         where: { id: data.serviceId, isActive: true }
       });
       
@@ -542,7 +542,7 @@ export async function POST(request: NextRequest) {
       // Validate time slot if scheduled
       if (data.scheduledDateTime) {
         const scheduledDate = new Date(data.scheduledDateTime);
-        await validateTimeSlotAvailability(scheduledDate, service.id, service.duration);
+        await validateTimeSlotAvailability(scheduledDate, service.id, service.durationMinutes);
       }
       
       // Calculate pricing
@@ -568,7 +568,7 @@ export async function POST(request: NextRequest) {
       
       // Create booking
       const bookingData: any = {
-        Service: { connect: { id: service.id } },
+        service: { connect: { id: service.id } },
         scheduledDateTime: data.scheduledDateTime ? new Date(data.scheduledDateTime) : null,
         status: initialStatus,
         locationType: data.locationType || 'CLIENT_SPECIFIED_ADDRESS',
@@ -578,7 +578,7 @@ export async function POST(request: NextRequest) {
         addressZip: address.zip,
         locationNotes: data.locationNotes,
         basePrice: pricingData.basePrice,
-        priceAtBooking: service.price,
+        priceAtBooking: service.basePrice,
         finalPrice: pricingData.finalPrice,
         promoDiscount: pricingData.promoDiscount,
         depositAmount: pricingData.depositAmount,

@@ -162,7 +162,7 @@ const faqs: FAQ[] = [
           </li>
           <li>
             <strong>Priority Service:</strong> Guarantees a 2-hour response time, available 7am-9pm daily, including
-            weekends and most holidays. This is our premium service designed specifically for urgent notarization needs.
+            weekends and most holidays. This is our extended hours service designed specifically for urgent notarization needs.
           </li>
         </ul>
         <p className="mt-2">
@@ -669,7 +669,7 @@ const faqs: FAQ[] = [
                 <strong>Potential Waiting:</strong> May need to wait for service if others are ahead of you
               </li>
               <li>
-                <strong>Lower Cost:</strong> May have slightly lower fees for basic services
+                <strong>Lower Cost:</strong> May have slightly lower fees for standard services
               </li>
               <li>
                 <strong>Public Environment:</strong> Less privacy during document signing
@@ -1038,7 +1038,7 @@ const faqs: FAQ[] = [
           </li>
           <li>
             <strong>Holiday Service:</strong> Service on major holidays (e.g., New Year's Day, Thanksgiving, Christmas)
-            may be available at premium rates and subject to availability. Please inquire directly.
+            may be available at extended hour rates and subject to availability. Please inquire directly.
           </li>
           <li>
             <strong>After-Hours Service:</strong> Our Priority Service covers extended hours (7am-9pm). Services requested
@@ -1234,7 +1234,7 @@ const faqs: FAQ[] = [
             <h3 className="font-semibold text-[#002147]">Essential Service</h3>
             <p className="mt-1">
               <strong>24 hours' notice is recommended</strong>, though same-day appointments may be available depending
-              on our schedule. For same-day essential services, we have a 3pm cutoff time for 5pm appointments.
+              on our schedule. For same-day standard notary services, we have a 3pm cutoff time for 5pm appointments.
             </p>
           </div>
 

@@ -72,20 +72,19 @@ interface PricingCalculation {
 // Business logic functions to test
 class BookingService {
   static calculateTravelFee(distance: number): number {
-    const baseFee = 25; // Base travel fee
-    const perMileRate = 1.50; // Per mile rate
-    const freeRadius = 10; // Miles within which no travel fee applies
+    const perMileRate = 0.50; // SOP: $0.50 per mile beyond service radius
+    const freeRadius = 15; // SOP: 15-mile standard service radius from ZIP 77591
     
     if (distance <= freeRadius) {
       return 0;
     }
     
     const chargeableMiles = distance - freeRadius;
-    return baseFee + (chargeableMiles * perMileRate);
+    return chargeableMiles * perMileRate; // No base fee, just per-mile beyond radius
   }
 
   static calculatePricing(
-    Service: Service,
+    service: Service,
     distance: number,
     additionalServices: string[] = [],
     promoCode?: string
@@ -229,19 +228,24 @@ describe('BookingService', () => {
     it('should return 0 for distances within free radius', () => {
       expect(BookingService.calculateTravelFee(5)).toBe(0);
       expect(BookingService.calculateTravelFee(10)).toBe(0);
+      expect(BookingService.calculateTravelFee(15)).toBe(0); // SOP: 15-mile free radius
     });
 
     it('should calculate correct travel fee for distances beyond free radius', () => {
-      // 15 miles: 5 chargeable miles = $25 + (5 * $1.50) = $32.50
-      expect(BookingService.calculateTravelFee(15)).toBe(32.50);
+      // SOP: 16 miles: 1 chargeable mile = 1 * $0.50 = $0.50
+      expect(BookingService.calculateTravelFee(16)).toBe(0.50);
       
-      // 20 miles: 10 chargeable miles = $25 + (10 * $1.50) = $40.00
-      expect(BookingService.calculateTravelFee(20)).toBe(40.00);
+      // SOP: 20 miles: 5 chargeable miles = 5 * $0.50 = $2.50
+      expect(BookingService.calculateTravelFee(20)).toBe(2.50);
+      
+      // SOP: 25 miles: 10 chargeable miles = 10 * $0.50 = $5.00
+      expect(BookingService.calculateTravelFee(25)).toBe(5.00);
     });
 
     it('should handle edge cases', () => {
       expect(BookingService.calculateTravelFee(0)).toBe(0);
-      expect(BookingService.calculateTravelFee(10.1)).toBe(25.15);
+      // SOP: 15.1 miles: 0.1 chargeable miles = 0.1 * $0.50 = $0.05
+      expect(BookingService.calculateTravelFee(15.1)).toBeCloseTo(0.05);
     });
   });
 
@@ -266,11 +270,11 @@ describe('BookingService', () => {
     });
 
     it('should include travel fee for distant locations', () => {
-      const pricing = BookingService.calculatePricing(mockService, 15); // 5 miles beyond free radius
+      const pricing = BookingService.calculatePricing(mockService, 20); // 5 miles beyond 15-mile free radius
       
       expect(pricing.basePrice).toBe(75);
-      expect(pricing.travelFee).toBe(32.50);
-      expect(pricing.totalPrice).toBe(107.50);
+      expect(pricing.travelFee).toBe(2.50); // SOP: 5 miles * $0.50 = $2.50
+      expect(pricing.totalPrice).toBe(77.50); // $75 + $2.50
     });
 
     it('should calculate additional services correctly', () => {
@@ -290,10 +294,10 @@ describe('BookingService', () => {
 
     it('should combine all pricing components', () => {
       const additionalServices = ['witness', 'same_day_service'];
-      const pricing = BookingService.calculatePricing(mockService, 15, additionalServices, 'SENIOR15');
+      const pricing = BookingService.calculatePricing(mockService, 20, additionalServices, 'SENIOR15'); // 20 miles = 5 miles beyond free radius
       
-      const expectedSubtotal = 75 + 32.50 + 75; // base + travel + additional
-      const expectedDiscount = expectedSubtotal * 0.15;
+      const expectedSubtotal = 75 + 2.50 + 75; // base + travel (5 * $0.50) + additional services
+      const expectedDiscount = expectedSubtotal * 0.15; // 15% senior discount
       const expectedTotal = expectedSubtotal - expectedDiscount;
       
       expect(pricing.totalPrice).toBe(Math.round(expectedTotal * 100) / 100);
@@ -476,7 +480,7 @@ describe('Booking Edge Cases', () => {
   });
 
   it('should round pricing calculations correctly', () => {
-    const Service: Service = {
+    const service: Service = {
       id: '1',
       name: 'Test Service',
       basePrice: 33.33,
