@@ -192,7 +192,7 @@ export default function RONDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium">Service</p>
-                    <p className="text-sm text-gray-600">{booking.service?.name || 'Remote Online Notarization'}</p>
+                    <p className="text-sm text-gray-600">{booking.Service?.name || 'Remote Online Notarization'}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium">Price</p>

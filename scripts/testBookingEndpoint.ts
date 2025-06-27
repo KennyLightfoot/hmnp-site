@@ -25,7 +25,7 @@ async function testBookingEndpoint() {
     
     // Get a valid service ID from the database
     console.log('Fetching active service from database...');
-    const service = await prisma.service.findFirst({
+    const service = await prisma.Service.findFirst({
       where: { isActive: true },
       select: { id: true, name: true, serviceType: true, basePrice: true }
     });
@@ -34,7 +34,7 @@ async function testBookingEndpoint() {
       throw new Error('No active services found in the database. Please add a service first.');
     }
     
-    console.log(`Found service: ${service.name} (${service.id}) - Type: ${service.serviceType} - Price: $${service.basePrice}`);
+    console.log(`Found Service: ${service.name} (${service.id}) - Type: ${service.serviceType} - Price: $${service.basePrice}`);
     
     // Create a mock booking request body
     const mockBookingRequest = {

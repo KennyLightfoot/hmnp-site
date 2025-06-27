@@ -184,7 +184,7 @@ test.describe('Phase 1: Enhanced Booking Flows', () => {
       
       // Apply promo code
       await page.fill('[data-testid="promo-code"]', 'FIRST20');
-      await page.blur('[data-testid="promo-code"]'); // Trigger validation
+      await page.locator('[data-testid="promo-code"]').blur(); // Trigger validation
       
       // Wait for promo validation
       await page.waitForTimeout(2000);
@@ -315,7 +315,8 @@ test.describe('Phase 1: Enhanced Booking Flows', () => {
       
       // Test ARIA labels and roles
       await expect(page.locator('role=button')).toHaveCount(3); // Should have proper button roles
-      await expect(page.locator('[aria-label]')).toHaveCount({ min: 1 }); // Should have ARIA labels
+      const ariaLabelCount = await page.locator('[aria-label]').count();
+      expect(ariaLabelCount).toBeGreaterThanOrEqual(1); // Should have ARIA labels
     });
 
     test('should load quickly and be responsive', async ({ page }) => {

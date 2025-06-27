@@ -62,10 +62,10 @@ export async function POST(request: Request) {
         [checkField]: null,
       },
       include: {
-        signer: {
+        User_Booking_signerIdToUser: {
           select: { id: true, email: true, name: true },
         },
-        service: {
+        Service: {
           select: { name: true },
         },
       },
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
       try {
         results.processed++;
 
-        if (!booking.signer?.email || !booking.signer?.name) {
+        if (!booking.User_Booking_signerIdToUser?.email || !booking.User_Booking_signerIdToUser?.name) {
           results.failed++;
           results.errors.push({
             bookingId: booking.id,
@@ -186,10 +186,10 @@ async function checkForNoShows() {
         noShowCheckPerformedAt: null,
       },
       include: {
-        signer: {
+        User_Booking_signerIdToUser: {
           select: { email: true, name: true },
         },
-        service: {
+        Service: {
           select: { name: true },
         },
       },
@@ -201,9 +201,9 @@ async function checkForNoShows() {
       try {
         // Send no-show check notification
         const recipient = {
-          email: booking.signer?.email || undefined,
+          email: booking.User_Booking_signerIdToUser?.email || undefined,
           phone: undefined, // Will be fetched from GHL
-          firstName: booking.signer?.name?.split(' ')[0]
+          firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0]
         };
 
         const content = {

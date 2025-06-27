@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
     const bookings = await prisma.booking.findMany({
       where: whereClause,
       include: {
-        service: {
+        Service: {
           select: {
             id: true,
             name: true,
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
             price: true,
           },
         },
-        signer: {
+        User_Booking_signerIdToUser: {
           select: {
             id: true,
             name: true,
@@ -103,20 +103,20 @@ export async function GET(request: NextRequest) {
     // Format bookings for mobile route board
     const formattedBookings = bookings.map(booking => ({
       id: booking.id,
-      signerName: booking.signer?.name || 'Unknown',
-      signerEmail: booking.signer?.email || '',
-      signerPhone: booking.signer?.phone,
+      signerName: booking.User_Booking_signerIdToUser?.name || 'Unknown',
+      signerEmail: booking.User_Booking_signerIdToUser?.email || '',
+      signerPhone: booking.User_Booking_signerIdToUser?.phone,
       addressStreet: booking.addressStreet,
       addressCity: booking.addressCity,
       addressState: booking.addressState,
       addressZip: booking.addressZip,
       scheduledDateTime: booking.scheduledDateTime?.toISOString(),
       status: booking.status,
-      service: {
-        name: booking.service.name,
-        duration: booking.service.duration,
+      Service: {
+        name: booking.Service.name,
+        duration: booking.Service.duration,
       },
-      finalPrice: Number(booking.priceAtBooking || booking.service.price),
+      finalPrice: Number(booking.priceAtBooking || booking.Service.price),
       notes: booking.notes,
       mileageMiles: booking.mileageMiles,
       estimatedCompletionTime: booking.estimatedCompletionTime?.toISOString(),

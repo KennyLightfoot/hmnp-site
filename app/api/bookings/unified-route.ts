@@ -174,7 +174,7 @@ function normalizeAddress(data: UnifiedBookingRequest): {
 
 // Helper: Calculate booking pricing with unified promo code logic
 async function calculateUnifiedPricing(
-  service: any,
+  Service: any,
   promoCode?: string,
   customerEmail?: string,
   referredBy?: string
@@ -333,7 +333,7 @@ async function validateTimeSlotAvailability(
       }
     },
     include: {
-      service: {
+      Service: {
         select: { duration: true }
       }
     }
@@ -344,7 +344,7 @@ async function validateTimeSlotAvailability(
     if (!booking.scheduledDateTime) return false;
     
     const bookingStart = new Date(booking.scheduledDateTime);
-    const bookingEnd = addMinutes(bookingStart, booking.service.duration + bookingSettings.bufferTimeMinutes);
+    const bookingEnd = addMinutes(bookingStart, booking.Service.duration + bookingSettings.bufferTimeMinutes);
     const requestedStart = scheduledDateTime;
     const requestedEnd = addMinutes(scheduledDateTime, serviceDuration + bookingSettings.bufferTimeMinutes);
     
@@ -372,7 +372,7 @@ async function validateTimeSlotAvailability(
 async function createGHLIntegration(
   booking: any,
   customerData: any,
-  service: any,
+  Service: any,
   pricingData: BookingPricing,
   checkoutUrl?: string | null
 ): Promise<any> {
@@ -423,7 +423,7 @@ async function createGHLIntegration(
       // Apply tags
       const tags = [
         'source:website_booking',
-        `service:${service.name.replace(/\s+/g, '_').toLowerCase()}`,
+        `Service:${service.name.replace(/\s+/g, '_').toLowerCase()}`,
         `status:booking_${booking.status.toLowerCase()}`,
         'status:booking_created'
       ];
@@ -486,9 +486,9 @@ export async function GET(request: NextRequest) {
         prisma.booking.findMany({
           where: whereClause,
           include: {
-            service: true,
+            Service: true,
             promoCode: true,
-            signer: context.canViewAllBookings ? {
+            User_Booking_signerIdToUser: context.canViewAllBookings ? {
               select: { id: true, name: true, email: true }
             } : false,
             NotarizationDocument: true,
@@ -529,7 +529,7 @@ export async function POST(request: NextRequest) {
       const address = normalizeAddress(data);
       
       // Get service details
-      const service = await prisma.service.findUnique({
+      const service = await prisma.Service.findUnique({
         where: { id: data.serviceId, isActive: true }
       });
       
@@ -568,7 +568,7 @@ export async function POST(request: NextRequest) {
       
       // Create booking
       const bookingData: any = {
-        service: { connect: { id: service.id } },
+        Service: { connect: { id: service.id } },
         scheduledDateTime: data.scheduledDateTime ? new Date(data.scheduledDateTime) : null,
         status: initialStatus,
         locationType: data.locationType || 'CLIENT_SPECIFIED_ADDRESS',
@@ -590,7 +590,7 @@ export async function POST(request: NextRequest) {
       
       // Add user connection if authenticated
       if (context.isAuthenticated && customer.id) {
-        bookingData.signer = { connect: { id: customer.id } };
+        bookingData.User_Booking_signerIdToUser = { connect: { id: customer.id } };
       }
       
       // Add promo code if used
@@ -601,8 +601,8 @@ export async function POST(request: NextRequest) {
       const booking = await prisma.booking.create({
         data: bookingData,
         include: {
-          service: true,
-          signer: context.isAuthenticated ? {
+          Service: true,
+          User_Booking_signerIdToUser: context.isAuthenticated ? {
             select: { id: true, name: true, email: true }
           } : false,
           promoCode: true,

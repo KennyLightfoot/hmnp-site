@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get service details
-    const service = await prisma.service.findUnique({
+    const service = await prisma.Service.findUnique({
       where: { id: serviceId }
     });
 
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
         }
       },
       include: {
-        service: {
+        Service: {
           select: {
             durationMinutes: true
           }
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     // Check for conflicts
     const hasConflict = conflictingBookings.some(booking => {
       const bookingStart = new Date(booking.scheduledDateTime!);
-      const bookingEnd = addMinutes(bookingStart, booking.service.duration + bookingSettings.bufferTimeMinutes);
+      const bookingEnd = addMinutes(bookingStart, booking.Service.duration + bookingSettings.bufferTimeMinutes);
       const requestedStart = requestedDateTime;
       const requestedEnd = addMinutes(requestedDateTime, service.duration + bookingSettings.bufferTimeMinutes);
       
@@ -181,8 +181,8 @@ export async function POST(request: NextRequest) {
         notes
       },
       include: {
-        service: true,
-        signer: true,
+        Service: true,
+        User_Booking_signerIdToUser: true,
         promoCode: true
       }
     });
@@ -197,14 +197,14 @@ export async function POST(request: NextRequest) {
         id: booking.id,
         scheduledDateTime: booking.scheduledDateTime,
         status: booking.status,
-        service: {
-          name: booking.service.name,
-                  duration: booking.service.duration,
-        price: booking.service.price
+        Service: {
+          name: booking.Service.name,
+                  duration: booking.Service.duration,
+        price: booking.Service.price
         },
         customer: {
-                  name: booking.signer?.name,
-        email: booking.signer?.email
+                  name: booking.User_Booking_signerIdToUser?.name,
+        email: booking.User_Booking_signerIdToUser?.email
         },
         depositAmount: booking.depositAmount,
         promoCode: promoCodeData ? {

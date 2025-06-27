@@ -91,7 +91,7 @@ export default function RealTimePricing({
 
   // Calculate pricing based on inputs - Updated for SOP v2.0
   const pricing = useMemo((): PricingCalculation => {
-    if (!inputs.service) {
+    if (!inputs.Service) {
       return {
         basePrice: 0,
         extraSignersFee: 0,
@@ -113,7 +113,7 @@ export default function RealTimePricing({
       };
     }
 
-    const service = inputs.service;
+    const service = inputs.Service;
     
     // Check if this is a RON service
     const isRONService = service.name.toLowerCase().includes('ron') || 
@@ -182,13 +182,13 @@ export default function RealTimePricing({
         // Same-day service after 3 pm: +$25
         if (inputs.urgencyLevel === 'same-day') {
           const sameDayFee = 25;
-          breakdown.push(`Same-day service: $${sameDayFee}`);
+          breakdown.push(`Same-day Service: $${sameDayFee}`);
         }
         
         // After-hours service (9 pm – 7 am): +$50
         if (inputs.isAfterHours) {
           const afterHoursFee = 50;
-          breakdown.push(`After-hours service: $${afterHoursFee}`);
+          breakdown.push(`After-hours Service: $${afterHoursFee}`);
         }
       }
       else if (serviceName.includes('loan')) {
@@ -252,8 +252,8 @@ export default function RealTimePricing({
     if (afterHoursFee > 0) breakdown.push(`After hours: $${afterHoursFee}`);
     if (extraDocumentsFee > 0) breakdown.push(`Extra documents (${inputs.extraDocuments}): $${extraDocumentsFee}`);
     if (overnightHandlingFee > 0) breakdown.push(`Overnight handling: $${overnightHandlingFee}`);
-    if (bilingualFee > 0) breakdown.push(`Bilingual service: $${bilingualFee}`);
-    if (urgencyFee > 0) breakdown.push(`${inputs.urgencyLevel} service: $${urgencyFee}`);
+    if (bilingualFee > 0) breakdown.push(`Bilingual Service: $${bilingualFee}`);
+    if (urgencyFee > 0) breakdown.push(`${inputs.urgencyLevel} Service: $${urgencyFee}`);
     if (promoDiscount > 0) breakdown.push(`Promo discount: -$${promoDiscount.toFixed(2)}`);
 
     return {
@@ -279,12 +279,12 @@ export default function RealTimePricing({
 
   // Validate promo code when it changes
   useEffect(() => {
-    if (inputs.promoCode && inputs.promoCode.trim() && inputs.service) {
+    if (inputs.promoCode && inputs.promoCode.trim() && inputs.Service) {
       validatePromoCode(inputs.promoCode.trim());
     } else {
       setPromoValidation(null);
     }
-  }, [inputs.promoCode, inputs.service]);
+  }, [inputs.promoCode, inputs.Service]);
 
   // Notify parent of pricing changes
   useEffect(() => {
@@ -298,7 +298,7 @@ export default function RealTimePricing({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           code,
-          serviceId: inputs.service?.id,
+          serviceId: inputs.Service?.id,
           originalAmount: pricing.subtotal,
         })
       });
@@ -348,7 +348,7 @@ export default function RealTimePricing({
 
   const travelWarning = getTravelWarning();
 
-  if (!inputs.service) {
+  if (!inputs.Service) {
     return (
       <Card className={`border-gray-200 ${className}`}>
         <CardContent className="pt-6">
@@ -502,10 +502,10 @@ export default function RealTimePricing({
               <MapPin className="h-3 w-3" />
               <span>{inputs.distance.toFixed(1)} miles</span>
             </div>
-            {inputs.service.duration && (
+            {inputs.Service.duration && (
               <div className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
-                <span>~{inputs.service.duration} min</span>
+                <span>~{inputs.Service.duration} min</span>
               </div>
             )}
           </div>

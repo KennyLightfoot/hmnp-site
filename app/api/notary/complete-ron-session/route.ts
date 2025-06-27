@@ -32,8 +32,8 @@ export async function POST(request: NextRequest) {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        service: true,
-        signer: true,
+        Service: true,
+        User_Booking_signerIdToUser: true,
       },
     });
 
@@ -84,12 +84,12 @@ export async function POST(request: NextRequest) {
           notaryId,
           entryDate: new Date(),
           journalNumber: nextJournalNumber,
-          documentType: `${booking.service.name} - RON Session`,
-          signerName: booking.signer?.name || booking.signerName || 'Unknown',
+          documentType: `${booking.Service.name} - RON Session`,
+          signerName: booking.User_Booking_signerIdToUser?.name || booking.signerName || 'Unknown',
           signerIdType: 'VERIFIED_VIA_PROOF', // Since this is RON, ID was verified via Proof
           signerIdState: booking.addressState || 'TX',
           notarialActType: 'REMOTE_ONLINE_NOTARIZATION',
-          feeCharged: booking.finalPrice || booking.priceAtBooking || booking.service.price,
+          feeCharged: booking.finalPrice || booking.priceAtBooking || booking.Service.price,
           location: 'Remote Online Notarization (Proof.co)',
           additionalNotes: completionNotes || 'RON session completed successfully via Proof.co platform',
         },

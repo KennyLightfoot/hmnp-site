@@ -17,7 +17,7 @@ export interface LogEntry {
   timestamp: string;
   level: LogLevel;
   message: string;
-  service: string;
+  Service: string;
   requestId?: string;
   userId?: string;
   bookingId?: string;
@@ -35,7 +35,7 @@ export interface MonitoringAlert {
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   title: string;
   message: string;
-  service: string;
+  Service: string;
   timestamp: string;
   metadata?: Record<string, any>;
 }
@@ -145,7 +145,7 @@ class EnhancedLogger {
   private formatLogEntry(
     level: string,
     message: string,
-    service: string,
+    Service: string,
     metadata?: Record<string, any>
   ): LogEntry {
     return {
@@ -161,22 +161,22 @@ class EnhancedLogger {
     };
   }
 
-  debug(message: string, service: string, metadata?: Record<string, any>): void {
+  debug(message: string, Service: string, metadata?: Record<string, any>): void {
     const logEntry = this.formatLogEntry('debug', message, service, metadata);
     this.winston.debug(logEntry);
   }
 
-  info(message: string, service: string, metadata?: Record<string, any>): void {
+  info(message: string, Service: string, metadata?: Record<string, any>): void {
     const logEntry = this.formatLogEntry('info', message, service, metadata);
     this.winston.info(logEntry);
   }
 
-  warn(message: string, service: string, metadata?: Record<string, any>): void {
+  warn(message: string, Service: string, metadata?: Record<string, any>): void {
     const logEntry = this.formatLogEntry('warn', message, service, metadata);
     this.winston.warn(logEntry);
   }
 
-  error(message: string, service: string, error?: Error, metadata?: Record<string, any>): void {
+  error(message: string, Service: string, error?: Error, metadata?: Record<string, any>): void {
     const logEntry = this.formatLogEntry('error', message, service, metadata);
     
     if (error) {
@@ -191,7 +191,7 @@ class EnhancedLogger {
     this.winston.error(logEntry);
   }
 
-  critical(message: string, service: string, error?: Error, metadata?: Record<string, any>): void {
+  critical(message: string, Service: string, error?: Error, metadata?: Record<string, any>): void {
     const logEntry = this.formatLogEntry('error', message, service, metadata);
     logEntry.level = LogLevel.CRITICAL;
     

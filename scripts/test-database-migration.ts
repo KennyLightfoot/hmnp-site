@@ -131,7 +131,7 @@ try {
   
   // Test if we can access services table
   try {
-    const serviceCount = await prisma.service.count();
+    const serviceCount = await prisma.Service.count();
     console.log(`✅ Service table accessible: ${serviceCount} services found`);
   } catch (tableError) {
     console.log('⚠️  Service table access test failed (table may not exist):', tableError);

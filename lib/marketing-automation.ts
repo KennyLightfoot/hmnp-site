@@ -390,7 +390,7 @@ class MarketingAutomation {
       include: {
         Booking_Booking_signerIdToUser: {
           include: {
-            service: true
+            Service: true
           },
           orderBy: {
             createdAt: 'desc'
@@ -584,7 +584,7 @@ class MarketingAutomation {
     const serviceCounts = {};
     
     bookings.forEach(booking => {
-      const serviceName = booking.service?.name || 'Unknown';
+      const serviceName = booking.Service?.name || 'Unknown';
       serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
     });
     
@@ -638,7 +638,7 @@ class MarketingAutomation {
       ...content,
       personalizations: {
         customerName: customer.name || 'Valued Customer',
-        lastService: customer.Booking_Booking_signerIdToUser[0]?.service?.name || 'our services'
+        lastService: customer.Booking_Booking_signerIdToUser[0]?.Service?.name || 'our services'
       }
     };
   }

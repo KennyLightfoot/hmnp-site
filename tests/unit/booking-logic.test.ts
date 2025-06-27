@@ -18,7 +18,7 @@ const mockPrisma = {
     create: vi.fn(),
     update: vi.fn(),
   },
-  service: {
+  Service: {
     findUnique: vi.fn(),
   },
   availability: {
@@ -49,8 +49,8 @@ interface BookingData {
 interface Service {
   id: string;
   name: string;
-  price: number;
-  duration: number; // in minutes
+  basePrice: number;
+  durationMinutes: number; // in minutes
   category: string;
   isActive: boolean;
 }
@@ -62,7 +62,7 @@ interface PricingCalculation {
   discount: number;
   totalPrice: number;
   breakdown: {
-    service: number;
+    Service: number;
     travel: number;
     additional: number;
     discount: number;
@@ -85,12 +85,12 @@ class BookingService {
   }
 
   static calculatePricing(
-    service: Service,
+    Service: Service,
     distance: number,
     additionalServices: string[] = [],
     promoCode?: string
   ): PricingCalculation {
-    const price = service.price;
+    const price = service.basePrice;
     const travelFee = this.calculateTravelFee(distance);
     
     // Additional services pricing
@@ -126,7 +126,7 @@ class BookingService {
       discount,
       totalPrice: Math.round(totalPrice * 100) / 100, // Round to 2 decimal places
       breakdown: {
-        service: price,
+        Service: price,
         travel: travelFee,
         additional: additionalServicesFee,
         discount: discount,
@@ -214,7 +214,7 @@ class BookingService {
     
     // Service validation
     if (!data.serviceId) {
-      errors.service = ['Please select a service'];
+      errors.Service = ['Please select a service'];
     }
     
     return {
@@ -249,8 +249,8 @@ describe('BookingService', () => {
     const mockService: Service = {
       id: '1',
       name: 'Standard Notary Services',
-      price: 75,
-      duration: 60,
+      basePrice: 75,
+      durationMinutes: 60,
       category: 'standard-notary',
       isActive: true,
     };
@@ -429,7 +429,7 @@ describe('BookingService', () => {
       expect(validation.errors.firstName).toContain('First name is required');
       expect(validation.errors.lastName).toContain('Last name is required');
       expect(validation.errors.address).toContain('Address is required');
-      expect(validation.errors.service).toContain('Please select a service');
+      expect(validation.errors.Service).toContain('Please select a service');
     });
 
     it('should validate ZIP codes correctly', () => {
@@ -476,11 +476,11 @@ describe('Booking Edge Cases', () => {
   });
 
   it('should round pricing calculations correctly', () => {
-    const service: Service = {
+    const Service: Service = {
       id: '1',
       name: 'Test Service',
-      price: 33.33,
-      duration: 60,
+      basePrice: 33.33,
+      durationMinutes: 60,
       category: 'test',
       isActive: true,
     };

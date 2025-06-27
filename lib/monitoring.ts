@@ -72,7 +72,7 @@ class MonitoringService {
       // Add custom tags for filtering in Sentry
       Sentry.setTag('business_event', event.event);
       if (event.userId) Sentry.setTag('user_id', event.userId);
-      if (event.service) Sentry.setTag('service_type', event.service);
+      if (event.Service) Sentry.setTag('service_type', event.Service);
     }
 
     // Track specific critical events
@@ -132,7 +132,7 @@ class MonitoringService {
     this.trackBusinessEvent({
       event: `funnel_${stage}`,
       userId: data.userId,
-      service: data.serviceType,
+      Service: data.serviceType,
       metadata: {
         sessionId: data.sessionId,
         dropoffReason: data.dropoffReason,

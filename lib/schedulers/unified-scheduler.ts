@@ -277,8 +277,8 @@ export class UnifiedScheduler {
         }
       },
       include: {
-        signer: true,
-        service: true
+        User_Booking_signerIdToUser: true,
+        Service: true
       }
     });
     
@@ -317,8 +317,8 @@ export class UnifiedScheduler {
         reminder24hrSentAt: null
       },
       include: {
-        signer: true,
-        service: true
+        User_Booking_signerIdToUser: true,
+        Service: true
       }
     });
     
@@ -347,21 +347,21 @@ export class UnifiedScheduler {
         noShowCheckPerformedAt: null
       },
       include: {
-        signer: true,
-        service: true
+        User_Booking_signerIdToUser: true,
+        Service: true
       }
     });
     
     logger.info(`Processing ${potentialNoShows.length} potential no-shows`, 'UNIFIED_SCHEDULER');
     
     for (const booking of potentialNoShows) {
-      if (booking.signer?.email) {
+      if (booking.User_Booking_signerIdToUser?.email) {
         await NotificationService.sendNotification({
           bookingId: booking.id,
           type: NotificationType.NO_SHOW_CHECK,
           recipient: {
-            email: booking.signer.email,
-            firstName: booking.signer.name?.split(' ')[0]
+            email: booking.User_Booking_signerIdToUser.email,
+            firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
           },
           content: {
             subject: `Missed Appointment - Houston Mobile Notary Pros`,
@@ -461,21 +461,21 @@ export class UnifiedScheduler {
         followUpSentAt: null
       },
       include: {
-        signer: true,
-        service: true
+        User_Booking_signerIdToUser: true,
+        Service: true
       }
     });
     
     logger.info(`Processing ${needFollowUp.length} follow-ups`, 'UNIFIED_SCHEDULER');
     
     for (const booking of needFollowUp) {
-      if (booking.signer?.email) {
+      if (booking.User_Booking_signerIdToUser?.email) {
         await NotificationService.sendNotification({
           bookingId: booking.id,
           type: NotificationType.POST_SERVICE_FOLLOWUP,
           recipient: {
-            email: booking.signer.email,
-            firstName: booking.signer.name?.split(' ')[0]
+            email: booking.User_Booking_signerIdToUser.email,
+            firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
           },
           content: {
             subject: `Thank You for Using Houston Mobile Notary Pros`,
@@ -524,7 +524,7 @@ export class UnifiedScheduler {
         }
       },
       include: {
-        signer: true
+        User_Booking_signerIdToUser: true
       }
     });
     
@@ -534,10 +534,10 @@ export class UnifiedScheduler {
       await this.queueClient.enqueueNotification({
         notificationType: 'confirmation_reminder',
         bookingId: booking.id,
-        recipientId: booking.signer?.email ?? '',
+        recipientId: booking.User_Booking_signerIdToUser?.email ?? '',
         templateId: 'booking-confirmation-reminder',
         templateData: {
-          customerName: booking.signer?.name ?? '',
+          customerName: booking.User_Booking_signerIdToUser?.name ?? '',
           bookingId: booking.id,
           bookingDate: booking.scheduledDateTime
         }

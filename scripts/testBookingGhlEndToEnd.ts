@@ -25,16 +25,16 @@ async function testBookingGhlEndToEnd() {
     
     // 1. Get an active service from the database
     console.log('Fetching active service from database...');
-    const service = await prisma.service.findFirst({
+    const service = await prisma.Service.findFirst({
       where: { isActive: true },
-      select: { id: true, name: true, serviceType: true, price: true }
+      select: { id: true, name: true, serviceType: true, basePrice: true }
     });
     
     if (!service) {
       throw new Error('No active services found in the database. Please add a service first.');
     }
     
-    console.log(`Found service: ${service.name} (${service.id}) - Type: ${service.serviceType} - Price: $${service.price}`);
+    console.log(`Found Service: ${service.name} (${service.id}) - Type: ${service.serviceType} - Price: $${service.basePrice}`);
 
     // 2. First create a test user to associate with the booking
     console.log('\nCreating test user in database...');
@@ -42,10 +42,10 @@ async function testBookingGhlEndToEnd() {
     
     const testUser = await prisma.user.create({
       data: {
+        id: `test-user-${Date.now()}`,
         name: 'Test User',
         email: uniqueEmail,
         role: Role.SIGNER,
-        createdAt: new Date(),
         updatedAt: new Date()
       }
     });
@@ -55,6 +55,7 @@ async function testBookingGhlEndToEnd() {
     console.log('\nCreating test booking in database...');
     const testBooking = await prisma.booking.create({
       data: {
+        id: `test-booking-${Date.now()}`,
         serviceId: service.id,
         signerId: testUser.id, // Link to the user we just created
         status: BookingStatus.CONFIRMED,
@@ -66,13 +67,12 @@ async function testBookingGhlEndToEnd() {
         addressZip: '12345',
         notes: 'This is a test booking created by the GHL integration test script',
         // Required decimal field for price
-        priceAtBooking: new Prisma.Decimal(service.price.toString()),
-        createdAt: new Date(),
+        priceAtBooking: new Prisma.Decimal(service.basePrice.toString()),
         updatedAt: new Date()
       },
       include: {
-        signer: true, // Include the related user data
-        service: true
+        User_Booking_signerIdToUser: true, // Include the related user data
+        Service: true
       }
     });
     
@@ -109,7 +109,7 @@ async function testBookingGhlEndToEnd() {
       { id: 'service_date', field_value: bookingDate },
       { id: 'service_time', field_value: bookingTime },
       { id: 'service_address', field_value: `${testBooking.addressStreet}, ${testBooking.addressCity}, ${testBooking.addressState} ${testBooking.addressZip}` },
-      { id: 'service_type', field_value: testBooking.service.name },
+      { id: 'service_type', field_value: testBooking.Service.name },
       { id: 'number_of_signers', field_value: '1' },
       { id: 'booking_id', field_value: testBooking.id },
       { id: 'booking_status', field_value: testBooking.status }

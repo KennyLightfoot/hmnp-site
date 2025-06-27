@@ -47,7 +47,7 @@ export class GoogleCalendarService {
   async createBookingEvent(booking: any) {
     try {
       const event = {
-        summary: `${booking.service.name} - ${booking.signer?.name || 'Guest'}`,
+        summary: `${booking.Service.name} - ${booking.User_Booking_signerIdToUser?.name || 'Guest'}`,
         location: `${booking.addressStreet}, ${booking.addressCity}, ${booking.addressState} ${booking.addressZip}`,
         description: this.formatEventDescription(booking),
         start: {
@@ -55,7 +55,7 @@ export class GoogleCalendarService {
           timeZone: 'America/Chicago',
         },
         end: {
-          dateTime: new Date(booking.scheduledDateTime.getTime() + (booking.service.duration * 60000)).toISOString(),
+          dateTime: new Date(booking.scheduledDateTime.getTime() + (booking.Service.duration * 60000)).toISOString(),
           timeZone: 'America/Chicago',
         },
         colorId: this.getEventColor(booking.status),
@@ -86,10 +86,10 @@ export class GoogleCalendarService {
   
   private formatEventDescription(booking: any): string {
     return `
-Service: ${booking.service.name}
-Customer: ${booking.signer?.name || 'Guest'}
-Phone: ${booking.signer?.phone || booking.guestPhone || 'Not provided'}
-Email: ${booking.signer?.email || booking.guestEmail}
+Service: ${booking.Service.name}
+Customer: ${booking.User_Booking_signerIdToUser?.name || 'Guest'}
+Phone: ${booking.User_Booking_signerIdToUser?.phone || booking.guestPhone || 'Not provided'}
+Email: ${booking.User_Booking_signerIdToUser?.email || booking.guestEmail}
 Payment Status: ${booking.status}
 Amount: $${booking.priceAtBooking}
 Notes: ${booking.notes || 'None'}
@@ -131,7 +131,7 @@ Special Instructions: ${booking.specialInstructions || 'None'}
       // Update with new data
       const updatedEvent = {
         ...existingEvent.data,
-        summary: `${booking.service.name} - ${booking.signer?.name || 'Guest'}`,
+        summary: `${booking.Service.name} - ${booking.User_Booking_signerIdToUser?.name || 'Guest'}`,
         location: `${booking.addressStreet}, ${booking.addressCity}, ${booking.addressState} ${booking.addressZip}`,
         description: this.formatEventDescription(booking),
         start: {
@@ -139,7 +139,7 @@ Special Instructions: ${booking.specialInstructions || 'None'}
           timeZone: 'America/Chicago',
         },
         end: {
-          dateTime: new Date(booking.scheduledDateTime.getTime() + (booking.service.duration * 60000)).toISOString(),
+          dateTime: new Date(booking.scheduledDateTime.getTime() + (booking.Service.duration * 60000)).toISOString(),
           timeZone: 'America/Chicago',
         },
         colorId: this.getEventColor(booking.status),

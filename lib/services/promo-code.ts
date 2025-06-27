@@ -193,7 +193,7 @@ class PromoCodeService {
       const bookings = await prisma.booking.findMany({
         where: {
           promoCodeId,
-          signer: {
+          User_Booking_signerIdToUser: {
             email: customerEmail
           }
         }

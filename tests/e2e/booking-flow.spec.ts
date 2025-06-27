@@ -11,7 +11,7 @@ const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 
 // Test data for booking - SOP COMPLIANT
 const TEST_BOOKING_DATA = {
-  service: {
+  Service: {
     name: 'Standard Notary Services',  // SOP: was 'Essential Notary Services'
     price: '$75'
   },
@@ -58,15 +58,15 @@ test.describe('Critical Booking Flow', () => {
     // Step 2: Select service
     await test.step('Select service', async () => {
       // Look for service cards or selection options
-      const serviceCard = page.locator(`[data-testid="service-${TEST_BOOKING_DATA.service.name}"]`)
-        .or(page.locator(`:has-text("${TEST_BOOKING_DATA.service.name}")`).first());
+      const serviceCard = page.locator(`[data-testid="service-${TEST_BOOKING_DATA.Service.name}"]`)
+        .or(page.locator(`:has-text("${TEST_BOOKING_DATA.Service.name}")`).first());
       
       await expect(serviceCard).toBeVisible({ timeout: 10000 });
       await serviceCard.click();
 
       // Verify service selection
       const selectedService = page.locator('.selected, .bg-blue-100, [data-selected="true"]')
-        .or(page.locator(`:has-text("${TEST_BOOKING_DATA.service.name}")`));
+        .or(page.locator(`:has-text("${TEST_BOOKING_DATA.Service.name}")`));
       await expect(selectedService).toBeVisible();
     });
 
@@ -112,7 +112,7 @@ test.describe('Critical Booking Flow', () => {
       await expect(page.locator(':has-text("Booking Summary"), :has-text("Review")')).toBeVisible();
       
       // Verify service details
-      await expect(page.locator(`:has-text("${TEST_BOOKING_DATA.service.name}")`)).toBeVisible();
+      await expect(page.locator(`:has-text("${TEST_BOOKING_DATA.Service.name}")`)).toBeVisible();
       await expect(page.locator(`:has-text("${TEST_BOOKING_DATA.client.firstName}")`)).toBeVisible();
       await expect(page.locator(`:has-text("${TEST_BOOKING_DATA.client.email}")`)).toBeVisible();
     });
@@ -227,7 +227,7 @@ test.describe('Critical Booking Flow', () => {
       await page.goto(`${BASE_URL}/booking`);
       
       // Check that multiple service options are available
-      const serviceCards = page.locator('[data-testid^="service-"], .service-card, .service-option');
+      const serviceCards = page.locator('[data-testid^="service-"], .Service-card, .Service-option');
       await expect(serviceCards).toHaveCount(3, { timeout: 10000 }); // Expecting at least 3 services
     });
 

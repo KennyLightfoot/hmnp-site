@@ -21,8 +21,8 @@ export class BookingAutomationService {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
-          signer: true,
-          service: true,
+          User_Booking_signerIdToUser: true,
+          Service: true,
           Payment: true
         }
       });
@@ -244,21 +244,21 @@ export class BookingAutomationService {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
-          signer: true,
-          service: true
+          User_Booking_signerIdToUser: true,
+          Service: true
         }
       });
 
       if (!booking) return;
 
       const recipient = {
-        email: booking.signer?.email ?? booking.customerEmail ?? '',
-        firstName: booking.signer?.name?.split(' ')[0] ?? '',
+        email: booking.User_Booking_signerIdToUser?.email ?? booking.customerEmail ?? '',
+        firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0] ?? '',
       };
 
       const content = {
         subject: 'Your notary appointment is today - Houston Mobile Notary Pros',
-        message: `Hi ${recipient.firstName}, this is a reminder that your notary appointment for ${booking.service.name} is scheduled for today. Our notary will contact you shortly before the appointment time.`,
+        message: `Hi ${recipient.firstName}, this is a reminder that your notary appointment for ${booking.Service.name} is scheduled for today. Our notary will contact you shortly before the appointment time.`,
         metadata: {
           serviceId: booking.serviceId,
           appointmentTime: booking.scheduledDateTime?.toISOString()
@@ -286,16 +286,16 @@ export class BookingAutomationService {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
-          signer: true,
-          service: true
+          User_Booking_signerIdToUser: true,
+          Service: true
         }
       });
 
       if (!booking) return;
 
       const recipient = {
-        email: booking.signer?.email ?? booking.customerEmail ?? '',
-        firstName: booking.signer?.name?.split(' ')[0] ?? '',
+        email: booking.User_Booking_signerIdToUser?.email ?? booking.customerEmail ?? '',
+        firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0] ?? '',
       };
 
       const content = {
@@ -358,16 +358,16 @@ export class BookingAutomationService {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
-          signer: true,
-          service: true
+          User_Booking_signerIdToUser: true,
+          Service: true
         }
       });
 
       if (!booking) return;
 
       const recipient = {
-        email: booking.signer?.email ?? booking.customerEmail ?? '',
-        firstName: booking.signer?.name?.split(' ')[0] ?? '',
+        email: booking.User_Booking_signerIdToUser?.email ?? booking.customerEmail ?? '',
+        firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0] ?? '',
       };
 
       const isByClient = cancellationType === BookingStatus.CANCELLED_BY_CLIENT;
@@ -613,8 +613,8 @@ export class BookingAutomationService {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
-          service: true,
-          signer: true
+          Service: true,
+          User_Booking_signerIdToUser: true
         }
       });
 
@@ -629,7 +629,7 @@ export class BookingAutomationService {
 
       const now = new Date();
       const scheduledTime = new Date(booking.scheduledDateTime);
-      const serviceDurationMins = booking.service?.duration ?? 60; // default 60 mins
+      const serviceDurationMins = booking.Service?.duration ?? 60; // default 60 mins
       const estimatedEndTime = new Date(scheduledTime.getTime() + (serviceDurationMins + 30) * 60 * 1000); // Add 30min buffer
 
       // Auto-complete if current time is past estimated end time
@@ -660,7 +660,7 @@ export class BookingAutomationService {
       };
 
     } catch (error: any) {
-      console.error('Error in auto-complete service:', error);
+      console.error('Error in auto-complete Service:', error);
       return { success: false, completed: false, reason: error.message };
     }
   }
@@ -675,7 +675,7 @@ export class BookingAutomationService {
     try {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
-        include: { service: true }
+        include: { Service: true }
       });
 
       if (!booking) {
@@ -708,7 +708,7 @@ export class BookingAutomationService {
       };
 
     } catch (error: any) {
-      console.error('Error in manual complete service:', error);
+      console.error('Error in manual complete Service:', error);
       return { success: false, message: error.message };
     }
   }

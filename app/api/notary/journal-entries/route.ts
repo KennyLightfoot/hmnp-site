@@ -60,12 +60,12 @@ export async function GET(request: NextRequest) {
         booking: {
           select: {
             id: true,
-            signer: {
+            User_Booking_signerIdToUser: {
               select: {
                 name: true,
               },
             },
-            service: {
+            Service: {
               select: {
                 name: true,
               },
@@ -102,9 +102,9 @@ export async function GET(request: NextRequest) {
       createdAt: entry.createdAt.toISOString(),
       booking: entry.booking ? {
         id: entry.booking.id,
-        signerName: entry.booking.signer?.name,
-        service: {
-          name: entry.booking.service.name,
+        signerName: entry.booking.User_Booking_signerIdToUser?.name,
+        Service: {
+          name: entry.booking.Service.name,
         },
       } : null,
     }));

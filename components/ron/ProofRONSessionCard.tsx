@@ -244,7 +244,7 @@ export default function ProofRONSessionCard({ booking, onRefresh }: ProofRONSess
           <div>
             <p className="text-sm font-medium">Service</p>
             <p className="text-sm text-gray-600">
-              {booking.service?.name || 'Remote Online Notarization'}
+              {booking.Service?.name || 'Remote Online Notarization'}
             </p>
           </div>
           <div>

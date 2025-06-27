@@ -892,10 +892,10 @@ const faqs: FAQ[] = [
           <div className="p-3 border border-gray-200 rounded-md">
             <h3 className="font-semibold text-[#002147]">Additional Fees</h3>
             <ul className="list-disc list-inside mt-1 space-y-1 text-sm">
-              <li>Weekend service: +$50 flat fee</li>
+              <li>Weekend Service: +$50 flat fee</li>
               <li>Extended travel beyond 20 miles: $0.50/mile</li>
               <li>After-hours service (7-9pm): +$30</li>
-              <li>Holiday service: +$40</li>
+              <li>Holiday Service: +$40</li>
               <li>Bilingual service (Spanish): +$20</li>
             </ul>
           </div>

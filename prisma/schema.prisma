@@ -130,13 +130,13 @@ model Booking {
 }
 
 model BusinessSettings {
-  id          String   @id
+  id          String   @id @default(dbgenerated("(gen_random_uuid())::text"))
   key         String   @unique
   value       String
   dataType    String   @default("string")
   description String?
   category    String?
-  updatedAt   DateTime
+  updatedAt   DateTime @updatedAt
   updatedById String?
   User        User?    @relation(fields: [updatedById], references: [id])
 
@@ -225,6 +225,9 @@ model Payment {
   refundedAt      DateTime?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime
+  metadata        Json?
+  currency        String?         @default("USD")
+  completedAt     DateTime?
 
   @@index([bookingId])
   @@index([provider])
@@ -295,7 +298,7 @@ model StatusHistory {
 }
 
 model SystemAlert {
-  id         String        @id
+  id         String        @id @default(dbgenerated("(gen_random_uuid())::text"))
   component  String
   message    String
   severity   AlertSeverity @default(MEDIUM)
@@ -311,7 +314,7 @@ model SystemAlert {
 }
 
 model SystemLog {
-  id        String   @id
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
   component String
   message   String
   level     LogLevel @default(INFO)

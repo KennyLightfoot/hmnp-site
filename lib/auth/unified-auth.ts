@@ -315,33 +315,17 @@ export class UnifiedAuth {
         }
       }
 
-      // TODO: API key authentication disabled - ApiKey model not found in schema
-      // Try API key authentication (for system integrations)
-      if (false && allowApiKey) {
-        const apiKey = request.headers.get('x-api-key');
-        if (apiKey) {
-          // const validApiKey = await prisma.apiKey.findFirst({
-          //   where: { 
-          //     key: apiKey,
-          //     isActive: true,
-          //     expiresAt: { gt: new Date() }
-          //   }
-          // });
-
-          // if (validApiKey) {
-          //   // Create system user context for API key
-          //   const systemUser: AuthUser = {
-          //     id: 'system',
-          //     email: 'system@houstonmobilenotarypros.com',
-          //     name: 'System API',
-          //     role: Role.ADMIN, // API keys have admin privileges
-          //     isAuthenticated: true,
-          //   };
-
-          //   return { user: systemUser };
-          // }
-        }
-      }
+      /*
+       * API Key Authentication (Future Implementation)
+       * 
+       * API key authentication will be available once the ApiKey model is added to the schema.
+       * This would allow system integrations to authenticate using x-api-key headers.
+       * 
+       * Implementation would include:
+       * - Validate API key against database
+       * - Check key is active and not expired
+       * - Return system user context for valid keys
+       */
 
       // Handle unauthenticated requests
       if (required && !allowGuest) {
