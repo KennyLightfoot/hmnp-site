@@ -1,0 +1,5 @@
+{
+  "buildTime": "2025-06-28T18:13:00.000Z",
+  "migration": "database-schema-sync",
+  "purpose": "Force production deployment after database migration"
+}
