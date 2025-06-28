@@ -11,8 +11,7 @@ export const metadata = {
   title: "Priority Mobile Notary Houston | Fast, Reliable & Precise | Houston Mobile Notary Pros",
   description:
     "Urgent notary needs in Houston? Our Priority Service delivers a 2-hour response with calm, clear, and precise notarization. 7am-9pm daily for your peace of mind.",
-  keywords:
-    "extended-hours-notary" notary Houston, urgent notary, same day notary, 2 hour notary, emergency notary, mobile notary Houston, fast notary service, Houston urgent notary, fast precise notary, reliable emergency notary, 2-hour mobile notary, calm priority signing",
+  keywords: "extended-hours notary Houston, urgent notary, same day notary, 2 hour notary, emergency notary, mobile notary Houston, fast notary service, Houston urgent notary, fast precise notary, reliable emergency notary, 2-hour mobile notary, calm priority signing",
   alternates: {
     canonical: '/services/extended-hours-notary',
   },

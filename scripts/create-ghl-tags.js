@@ -126,13 +126,13 @@ const requiredTags = {
     { name: 'service:wedding_officiant' }, // Kept from original script (service_wedding)
     // NEW WORKFLOW SERVICE TAGS
     { name: 'service:emergency' },
-    { name: 'priority:same_day' },
+    { name: 'extended-hours-notary:same_day' },
     // GHL Workflow Format (with capital letters and colons)
     { name: 'Service:Standard_Mobile_Notary' }, // EXACT match from workflows
     { name: 'Service:Loan_Signing_Specialist' }, // EXACT match from workflows
     { name: 'Service:Extended_Hours_Notary' }, // EXACT match from workflows
     { name: 'Service:Emergency' }, // EXACT match from workflows
-    { name: 'Priority:Same_Day' } // EXACT match from workflows
+    { name: 'Service:Extended_Hours_Same_Day' } // EXACT match from workflows
   ],
 
   // Workflow & Process Tags

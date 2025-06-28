@@ -34,7 +34,7 @@ const KEEP_TAG_NAMES = new Set([
   'service:loan_signing_specialist',
   'service:extended_hours_notary',
   'Service:Emergency',
-  'Priority:Same_Day',
+  'Service:Extended_Hours_Same_Day',
   
   // Source tags
   'source:website_booking',

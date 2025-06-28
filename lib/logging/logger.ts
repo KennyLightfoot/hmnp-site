@@ -17,7 +17,7 @@ export interface LogEntry {
   timestamp: string;
   level: LogLevel;
   message: string;
-  Service: string;
+  service: string;
   requestId?: string;
   userId?: string;
   bookingId?: string;
@@ -35,7 +35,7 @@ export interface MonitoringAlert {
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   title: string;
   message: string;
-  Service: string;
+  service: string;
   timestamp: string;
   metadata?: Record<string, any>;
 }
@@ -134,6 +134,10 @@ class EnhancedLogger {
     this.requestId = requestId;
   }
 
+  clearRequestId(): void {
+    this.requestId = '';
+  }
+
   getRequestId(): string {
     return this.requestId;
   }
@@ -145,14 +149,14 @@ class EnhancedLogger {
   private formatLogEntry(
     level: string,
     message: string,
-    Service: string,
+    service: string,
     metadata?: Record<string, any>
   ): LogEntry {
     return {
       timestamp: new Date().toISOString(),
       level: LogLevel[level.toUpperCase() as keyof typeof LogLevel] || LogLevel.INFO,
       message,
-      Service,
+      service,
       requestId: this.requestId,
       metadata: {
         ...this.context,
@@ -161,23 +165,23 @@ class EnhancedLogger {
     };
   }
 
-  debug(message: string, Service: string, metadata?: Record<string, any>): void {
+  debug(message: string, service: string, metadata?: Record<string, any>): void {
     const logEntry = this.formatLogEntry('debug', message, service, metadata);
     this.winston.debug(logEntry);
   }
 
-  info(message: string, Service: string, metadata?: Record<string, any>): void {
+  info(message: string, service: string, metadata?: Record<string, any>): void {
     const logEntry = this.formatLogEntry('info', message, service, metadata);
     this.winston.info(logEntry);
   }
 
-  warn(message: string, Service: string, metadata?: Record<string, any>): void {
+  warn(message: string, service: string, metadata?: Record<string, any>): void {
     const logEntry = this.formatLogEntry('warn', message, service, metadata);
     this.winston.warn(logEntry);
   }
 
-  error(message: string, Service: string, error?: Error, metadata?: Record<string, any>): void {
-    const logEntry = this.formatLogEntry('error', message, Service, metadata);
+  error(message: string, service: string, error?: Error, metadata?: Record<string, any>): void {
+    const logEntry = this.formatLogEntry('error', message, service, metadata);
     
     if (error) {
       logEntry.error = {

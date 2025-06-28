@@ -1,6 +1,8 @@
 # 📚 API Endpoints Documentation
 **Houston Mobile Notary Pros - Complete API Reference**
 
+⚠️ **SECURITY WARNING:** This documentation contains sensitive API information. Ensure your API keys are never exposed in client-side code or committed to version control. Use proper environment variables and secure storage.
+
 ## 🔐 Authentication
 All API endpoints (except Stripe webhooks) require the `x-api-key` header:
 ```

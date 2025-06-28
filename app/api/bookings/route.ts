@@ -665,7 +665,7 @@ export async function POST(request: NextRequest) {
             // Check if this is an emergency service
             if (service?.name && (service.name.toLowerCase().includes('emergency') || service.name.toLowerCase().includes('urgent'))) {
               tagsToApply.push('Service:Emergency');
-              tagsToApply.push('Priority:Same_Day');
+              tagsToApply.push('extended-hours-notary:same_day');
             }
 
             if (isFirstTimeDiscountApplied) {

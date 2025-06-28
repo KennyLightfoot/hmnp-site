@@ -13,6 +13,9 @@ This is your **single source of truth** for setting up GoHighLevel workflows. Th
 ## 📋 **Prerequisites**
 
 ### **Environment Variables Required**
+
+⚠️ **SECURITY WARNING:** Never commit actual API keys or secrets to version control. Keep your `.env` file secure and use proper secret management in production.
+
 ```bash
 # Add to your .env file
 GHL_API_KEY=your_private_integration_token_here
@@ -143,7 +146,7 @@ node scripts/setup-ghl-webhooks.js
   - Track conversion metrics
 
 ### **5. Emergency Service Response** (`emergency-service.json`)
-- **Trigger:** `Service:Emergency` or `Priority:Same_Day`
+- **Trigger:** `Service:Emergency` or `extended-hours-notary:same_day`
 - **Purpose:** Handle urgent requests
 - **Actions:**
   - Immediate notification to notary

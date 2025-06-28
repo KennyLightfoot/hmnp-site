@@ -120,7 +120,7 @@ model Booking {
   Service                     Service         @relation(fields: [serviceId], references: [id])
   User_Booking_signerIdToUser User?           @relation("Booking_signerIdToUser", fields: [signerId], references: [id])
   Payment                     Payment[]
-  Notification                Notification[]
+  NotificationLog             NotificationLog[]
   NotarizationDocument        NotarizationDocument[]
   Document                    Document[]
 
@@ -217,6 +217,7 @@ model NotificationLog {
   errorMessage     String?
   metadata         Json?
   createdAt        DateTime           @default(now())
+  Booking          Booking            @relation(fields: [bookingId], references: [id])
 
   @@index([bookingId])
 }
@@ -238,6 +239,7 @@ model Payment {
   metadata        Json?
   currency        String?         @default("USD")
   completedAt     DateTime?
+  Booking         Booking         @relation(fields: [bookingId], references: [id])
 
   @@index([bookingId])
   @@index([provider])

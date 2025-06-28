@@ -11,8 +11,7 @@ export const metadata = {
   title: "Essential Mobile Notary Houston | Stress-Free & Professional | Houston Mobile Notary Pros",
   description:
     "Experience stress-free essential mobile notary services in Houston. We bring calm, clarity, and precision to your wills, POAs, affidavits, and general notarizations. Mon-Fri, 9am-5pm.",
-  keywords:
-    "standard-notary" notary Houston, mobile notary, general notarization, power of attorney notary, will notary, affidavit notary, Houston notary service, stress-free notary, clear notary process, precise notarization, peace of mind notary",
+  keywords: "standard notary Houston, mobile notary, general notarization, power of attorney notary, will notary, affidavit notary, Houston notary service, stress-free notary, clear notary process, precise notarization, peace of mind notary",
   alternates: {
     canonical: '/services/standard-notary',
   },

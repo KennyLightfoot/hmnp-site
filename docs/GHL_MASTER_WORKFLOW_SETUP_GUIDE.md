@@ -77,7 +77,7 @@ This creates:
   - Track conversion metrics
 
 ### **4. Emergency Service Response** (`emergency-service.json`)
-- **Trigger:** `Service:Emergency` or `Priority:Same_Day`
+- **Trigger:** `Service:Emergency` or `Service:Extended_Hours_Same_Day`
 - **Purpose:** Handle urgent requests
 - **Actions:**
   - Immediate notification to notary

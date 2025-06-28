@@ -11,7 +11,7 @@ This folder contains **import-ready** GoHighLevel (private integration) workflow
 | `reschedule-handler.json` | Booking Rescheduling Handler | `action:reschedule_booking` |
 | `new-booking-notification.json` | New Booking Notification | `status:booking_created` |
 | `phone-to-booking.json` | Phone-to-Booking Conversion | `lead:phone_qualified` |
-| `emergency-service.json` | Emergency Service Response | `Service:Emergency` / `Priority:Same_Day` |
+| `emergency-service.json` | Emergency Service Response | `Service:Emergency` / `extended-hours-notary:same_day` |
 | `no-show-recovery.json` | No-Show Recovery | `status:no_show` |
 | `post-service-follow-up.json` | Post-Service Follow-up & Review | `status:service_completed` |
 

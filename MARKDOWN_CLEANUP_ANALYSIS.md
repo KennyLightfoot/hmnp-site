@@ -97,6 +97,24 @@ docs/
 
 ---
 
+## 🔄 **REVIEW FIRST - Decision Needed (8 files)**
+
+### **Marketing & Strategy Files**
+1. **`marketing-materials.md`** - Marketing copy and campaigns
+2. **`marketing-strategy-guide.md`** - Business strategy documentation
+3. **`Strategic Analysis and Enhancement Plan for Houston Mobile Notary Pros (Revised with GBP Analysis) (1).md`** - Long strategy document
+
+### **Environment & Configuration**
+4. **`vercel-env-analysis.md`** - Environment variable analysis
+5. **`ENV_SYNC_SUMMARY.md`** - Environment synchronization summary
+
+### **Business Analysis**
+6. **`Mobile Notary Website Feature Analysis_.md`** - Feature requirements analysis
+7. **`WEB_APP_ENHANCEMENT_OPPORTUNITIES.md`** - Development opportunities
+8. **`CODERABBIT_ANALYSIS_PROMPT.md`** - Code review prompts
+
+---
+
 ## ✅ **Next Steps**
 
 1. **Review this analysis** - Confirm deletion categories
