@@ -56,7 +56,6 @@ export async function POST() {
         level: 'INFO',
         component: 'HEALTH_CHECK',
         message: `Manual health check triggered by admin user ${(session.user as any).email}`,
-        timestamp: new Date(),
       }
     }).catch(() => {
       // If the systemLog table doesn't exist yet, we'll just ignore the error
@@ -70,7 +69,6 @@ export async function POST() {
           message: issue.message,
           severity: issue.severity,
           status: 'ACTIVE',
-          createdAt: new Date(),
         }
       }).catch(() => {
         // If the systemAlert table doesn't exist yet, we'll just ignore the error

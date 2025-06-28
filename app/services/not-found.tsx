@@ -26,15 +26,15 @@ export default function ServicesNotFound() {
           </Link>
         </div>
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
-          <Link href="/services/essential" className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+          <Link href="/services/standard-notary" className="p-4 border rounded-lg hover:shadow-md transition-shadow">
             <h3 className="font-semibold text-[#002147]">Essential Services</h3>
             <p className="text-sm text-gray-600">Basic notary services for general documents</p>
           </Link>
-          <Link href="/services/priority" className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+          <Link href="/services/extended-hours-notary" className="p-4 border rounded-lg hover:shadow-md transition-shadow">
             <h3 className="font-semibold text-[#002147]">Priority Services</h3>
             <p className="text-sm text-gray-600">Expedited notary services with priority scheduling</p>
           </Link>
-          <Link href="/services/loan-signing" className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+          <Link href="/services/loan-signing-specialist" className="p-4 border rounded-lg hover:shadow-md transition-shadow">
             <h3 className="font-semibold text-[#002147]">Loan Signing</h3>
             <p className="text-sm text-gray-600">Specialized services for real estate transactions</p>
           </Link>

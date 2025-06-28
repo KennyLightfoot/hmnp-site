@@ -106,8 +106,8 @@ export default function NotarySettings() {
                   <Label htmlFor="ron-services">Remote Online Notarization</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Switch id="loan-signing" />
-                  <Label htmlFor="loan-signing">Loan Signing Services</Label>
+                  <Switch id="loan-signing-specialist" />
+                  <Label htmlFor="loan-signing-specialist">Loan Signing Services</Label>
                 </div>
               </div>
             </div>

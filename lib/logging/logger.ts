@@ -134,6 +134,10 @@ class EnhancedLogger {
     this.requestId = requestId;
   }
 
+  clearRequestId(): void {
+    this.requestId = '';
+  }
+
   getRequestId(): string {
     return this.requestId;
   }
@@ -191,7 +195,7 @@ class EnhancedLogger {
     this.winston.error(logEntry);
   }
 
-  critical(message: string, service: string, error?: Error, metadata?: Record<string, any>): void {
+  critical(message: string, Service: string, error?: Error, metadata?: Record<string, any>): void {
     const logEntry = this.formatLogEntry('error', message, service, metadata);
     logEntry.level = LogLevel.CRITICAL;
     

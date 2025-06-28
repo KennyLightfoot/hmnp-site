@@ -16,7 +16,7 @@ export interface Testimonial {
   id: number;
   name: string;
   location: string;
-  service: string;
+  Service: string;
   rating: number;
   date: string;
   content: string;
@@ -47,7 +47,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
     id: 1,
     name: "Sarah Johnson",
     location: "Houston, TX",
-    service: "Essential Mobile Package",
+    Service: "Standard Notary Services",
     rating: 5,
     date: "June 15, 2023",
     content: "I needed a notary for my power of attorney documents and Houston Mobile Notary Pros made it so easy. The notary arrived on time, was professional, and efficiently handled all my documents. I highly recommend their services!",
@@ -58,7 +58,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
     id: 2,
     name: "Michael Rodriguez",
     location: "Pearland, TX",
-    service: "Loan Signing Service",
+    Service: "Loan Signing Service",
     rating: 5,
     date: "July 3, 2023",
     content: "Our loan signing went smoothly thanks to the professional service provided. The notary explained everything clearly and made sure all documents were properly executed. The process was much less stressful than I anticipated!",
@@ -68,7 +68,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
     id: 3,
     name: "Jennifer Williams",
     location: "Sugar Land, TX",
-    service: "Priority Service Package",
+    Service: "Extended Hours Notary",
     rating: 4.5,
     date: "May 22, 2023",
     content: "I needed a notary urgently for some time-sensitive documents. I called in the morning and they had someone at my office by lunchtime. The service was prompt and professional. Would definitely use again!",
@@ -78,7 +78,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
     id: 4,
     name: "David Thompson",
     location: "Katy, TX",
-    service: "Reverse Mortgage Signing",
+    Service: "Reverse Mortgage Signing",
     rating: 5,
     date: "August 10, 2023",
     content: "The notary who handled our reverse mortgage signing was knowledgeable and patient. They took the time to ensure we understood each document before signing. Their expertise made a complex process much easier.",
@@ -88,7 +88,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
     id: 5,
     name: "Lisa Chen",
     location: "The Woodlands, TX",
-    service: "Weekend Service",
+    Service: "Weekend Service",
     rating: 5,
     date: "September 5, 2023",
     content: "I was impressed that they could accommodate my request for a Sunday appointment. The notary was professional and efficient, and the additional weekend fee was well worth the convenience. Great service!",
@@ -98,7 +98,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
     id: 6,
     name: "Robert Garcia",
     location: "Galveston, TX",
-    service: "Essential Mobile Package",
+    Service: "Standard Notary Services",
     rating: 4.5,
     date: "July 28, 2023",
     content: "Despite being at the edge of their service area, they arrived on time and provided excellent service. The notary was friendly and professional. I appreciated their willingness to travel to my location.",
@@ -108,7 +108,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
     id: 7,
     name: "Emily Parker",
     location: "Baytown, TX",
-    service: "Priority Service Package",
+    Service: "Extended Hours Notary",
     rating: 5,
     date: "October 12, 2023",
     content: "When I needed a notary within hours for an urgent business document, Houston Mobile Notary Pros delivered. Their priority service is worth every penny. The notary arrived within the promised timeframe and was extremely professional.",
@@ -118,7 +118,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
     id: 8,
     name: "James Wilson",
     location: "Missouri City, TX",
-    service: "Loan Signing Service",
+    Service: "Loan Signing Service",
     rating: 5,
     date: "November 3, 2023",
     content: "As a first-time homebuyer, I was nervous about the closing process. The notary from Houston Mobile Notary Pros was patient and thorough, explaining each document without rushing us. Made the experience much less stressful!",
@@ -128,7 +128,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
     id: 9,
     name: "Maria Gonzalez",
     location: "Friendswood, TX",
-    service: "Essential Mobile Package",
+    Service: "Standard Notary Services",
     rating: 4.5,
     date: "December 7, 2023",
     content: "I needed several documents notarized for my small business, and Houston Mobile Notary Pros made it simple. The notary was knowledgeable and efficient. I'll definitely use their services again for future notarization needs.",
@@ -138,7 +138,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
     id: 10,
     name: "Thomas Lee",
     location: "League City, TX",
-    service: "Specialty Services",
+    Service: "Specialty Services",
     rating: 5,
     date: "January 15, 2024",
     content: "I required apostille services for international documents, which can be complicated. Houston Mobile Notary Pros handled everything professionally and kept me informed throughout the process. Excellent service!",
@@ -148,7 +148,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
     id: 11,
     name: "Sophia Martinez",
     location: "Houston, TX",
-    service: "Priority Service Package",
+    Service: "Extended Hours Notary",
     rating: 5,
     date: "February 8, 2024",
     content: "When my closing documents needed to be signed immediately, Houston Mobile Notary Pros came through with their priority service. The notary arrived within 90 minutes of my call and was extremely professional. Worth every penny!",
@@ -158,7 +158,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
     id: 12,
     name: "William Johnson",
     location: "Pearland, TX",
-    service: "Loan Signing Service",
+    Service: "Loan Signing Service",
     rating: 5,
     date: "March 22, 2024",
     content: "Our refinance signing was handled perfectly. The notary arrived early, was well-prepared, and guided us through the mountain of paperwork efficiently. I would recommend Houston Mobile Notary Pros to anyone needing loan signing services.",
@@ -210,10 +210,10 @@ function calculateStats(testimonials: Testimonial[]) {
 function groupTestimonialsByService(testimonials: Testimonial[]) {
   return {
     all: testimonials,
-    essential: testimonials.filter(t => t.service.includes('Essential')),
-    priority: testimonials.filter(t => t.service.includes('Priority')),
-    loan: testimonials.filter(t => t.service.includes('Loan') || t.service.includes('Mortgage')),
-    specialty: testimonials.filter(t => t.service.includes('Specialty') || t.service.includes('Weekend')),
+    standard: testimonials.filter(t => t.Service.includes('Standard') || t.Service.includes('Essential')),
+    extended: testimonials.filter(t => t.Service.includes('Extended') || t.Service.includes('Priority')),
+    loan: testimonials.filter(t => t.Service.includes('Loan') || t.Service.includes('Mortgage')),
+    specialty: testimonials.filter(t => t.Service.includes('Specialty') || t.Service.includes('Weekend')),
   };
 }
 
@@ -266,7 +266,7 @@ function TestimonialCard({ testimonial, featured = false, compact = false }: Tes
         <div className="font-semibold text-[#002147]">{testimonial.name}</div>
         <div className="text-sm text-gray-600">{testimonial.location}</div>
         <div className="flex justify-between w-full mt-2 text-xs text-gray-500">
-          <span>{testimonial.service}</span>
+          <span>{testimonial.Service}</span>
           <span>{testimonial.date}</span>
         </div>
       </CardFooter>
@@ -540,8 +540,8 @@ export default function UnifiedTestimonials({
             <Tabs defaultValue="all" className="w-full">
               <TabsList className="grid grid-cols-2 md:grid-cols-5 mb-8">
                 <TabsTrigger value="all">All Reviews</TabsTrigger>
-                <TabsTrigger value="essential">Essential Service</TabsTrigger>
-                <TabsTrigger value="priority">Priority Service</TabsTrigger>
+                <TabsTrigger value="standard">Standard Service</TabsTrigger>
+                <TabsTrigger value="extended">Extended Hours</TabsTrigger>
                 <TabsTrigger value="loan">Loan Signing</TabsTrigger>
                 <TabsTrigger value="specialty">Specialty Services</TabsTrigger>
               </TabsList>

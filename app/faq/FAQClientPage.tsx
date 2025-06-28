@@ -162,7 +162,7 @@ const faqs: FAQ[] = [
           </li>
           <li>
             <strong>Priority Service:</strong> Guarantees a 2-hour response time, available 7am-9pm daily, including
-            weekends and most holidays. This is our premium service designed specifically for urgent notarization needs.
+            weekends and most holidays. This is our extended hours service designed specifically for urgent notarization needs.
           </li>
         </ul>
         <p className="mt-2">
@@ -179,7 +179,7 @@ const faqs: FAQ[] = [
       </div>
     ),
     category: "general",
-    keywords: ["response", "time", "quick", "urgent", "priority", "same-day", "fast", "immediate", "emergency"],
+    keywords: ["response", "time", "quick", "urgent", "extended-hours-notary", "same-day", "fast", "immediate", "emergency"],
     relatedQuestions: ["appointment-scheduling", "hours-operation"],
   },
   {
@@ -302,35 +302,35 @@ const faqs: FAQ[] = [
         <p>We offer a comprehensive range of mobile notary services to meet various needs:</p>
         <div className="mt-3 space-y-4">
           <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Essential Mobile Package</h3>
+            <h3 className="font-semibold text-[#002147]">Standard Notary Services</h3>
             <p className="mt-1">
               General notarization for wills, POAs, affidavits, and other standard documents. Starting at $75 for one
-              signer with 1-2 documents.
+              signer with 1-2 documents. Available Monday-Friday, 9am-5pm.
             </p>
-            <Link href="/services/essential" className="text-sm text-[#A52A2A] hover:underline">
-              Learn more about Essential Mobile Package →
+            <Link href="/services/standard-notary" className="text-sm text-[#A52A2A] hover:underline">
+              Learn more about Standard Notary Services →
             </Link>
           </div>
 
           <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Priority Service Package</h3>
+            <h3 className="font-semibold text-[#002147]">Extended Hours Notary</h3>
             <p className="mt-1">
               Urgent notarization with 2-hour response time, available 7am-9pm daily. $100 flat fee includes up to 5
               documents and 2 signers.
             </p>
-            <Link href="/services/priority" className="text-sm text-[#A52A2A] hover:underline">
-              Learn more about Priority Service Package →
+            <Link href="/services/extended-hours-notary" className="text-sm text-[#A52A2A] hover:underline">
+              Learn more about Extended Hours Notary →
             </Link>
           </div>
 
           <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Loan Signing Services</h3>
+            <h3 className="font-semibold text-[#002147]">Loan Signing Specialist</h3>
             <p className="mt-1">
               Specialized service for real estate transactions, including purchase loans, refinances, and more. $150
               flat fee includes unlimited documents and up to 4 signers.
             </p>
-            <Link href="/services/loan-signing" className="text-sm text-[#A52A2A] hover:underline">
-              Learn more about Loan Signing Services →
+            <Link href="/services/loan-signing-specialist-specialist" className="text-sm text-[#A52A2A] hover:underline">
+              Learn more about Loan Signing Specialist →
             </Link>
           </div>
 
@@ -340,7 +340,7 @@ const faqs: FAQ[] = [
               Specialized service for reverse mortgages and home equity loans. $150 flat fee includes in-depth
               explanation of forms and certified mail return.
             </p>
-            <Link href="/services/loan-signing" className="text-sm text-[#A52A2A] hover:underline">
+            <Link href="/services/loan-signing-specialist" className="text-sm text-[#A52A2A] hover:underline">
               Learn more about Reverse Mortgage Services →
             </Link>
           </div>
@@ -377,11 +377,11 @@ const faqs: FAQ[] = [
     ),
     category: "services",
     keywords: ["services", "types", "packages", "offerings", "notarization", "mobile notary", "loan signing"],
-    relatedQuestions: ["loan-signing", "pricing-structure"],
+    relatedQuestions: ["loan-signing-specialist", "pricing-structure"],
     popular: true,
   },
   {
-    id: "loan-signing",
+    id: "loan-signing-specialist",
     question: "What is a loan signing agent and how is it different from a regular notary?",
     answer: (
       <div>
@@ -669,7 +669,7 @@ const faqs: FAQ[] = [
                 <strong>Potential Waiting:</strong> May need to wait for service if others are ahead of you
               </li>
               <li>
-                <strong>Lower Cost:</strong> May have slightly lower fees for basic services
+                <strong>Lower Cost:</strong> May have slightly lower fees for standard services
               </li>
               <li>
                 <strong>Public Environment:</strong> Less privacy during document signing
@@ -839,9 +839,9 @@ const faqs: FAQ[] = [
         <p>Our pricing varies based on the service package you select:</p>
         <div className="mt-3 space-y-4">
           <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Essential Mobile Package</h3>
+            <h3 className="font-semibold text-[#002147]">Standard Notary Services</h3>
             <p className="mt-1">
-              <strong>Starting at $75</strong> for one signer with 1-2 documents.
+              <strong>Starting at $75</strong> for one signer with 1-2 documents. Available Monday-Friday, 9am-5pm.
             </p>
             <ul className="list-disc list-inside mt-1 space-y-1 text-sm">
               <li>Two Signers: $85 (up to 3 documents per signer)</li>
@@ -852,9 +852,9 @@ const faqs: FAQ[] = [
           </div>
 
           <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Priority Service Package</h3>
+            <h3 className="font-semibold text-[#002147]">Extended Hours Notary</h3>
             <p className="mt-1">
-              <strong>$100 flat fee</strong> for 2-hour response time, up to 5 documents and 2 signers.
+              <strong>$100 flat fee</strong> for 2-hour response time, up to 5 documents and 2 signers. Available 7am-9pm daily.
             </p>
             <ul className="list-disc list-inside mt-1 space-y-1 text-sm">
               <li>Additional signers: $10 each</li>
@@ -864,7 +864,7 @@ const faqs: FAQ[] = [
           </div>
 
           <div className="p-3 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-[#002147]">Loan Signing Services</h3>
+            <h3 className="font-semibold text-[#002147]">Loan Signing Specialist</h3>
             <p className="mt-1">
               <strong>$150 flat fee</strong> for standard loan closings and reverse mortgages.
             </p>
@@ -892,10 +892,10 @@ const faqs: FAQ[] = [
           <div className="p-3 border border-gray-200 rounded-md">
             <h3 className="font-semibold text-[#002147]">Additional Fees</h3>
             <ul className="list-disc list-inside mt-1 space-y-1 text-sm">
-              <li>Weekend service: +$50 flat fee</li>
+              <li>Weekend Service: +$50 flat fee</li>
               <li>Extended travel beyond 20 miles: $0.50/mile</li>
               <li>After-hours service (7-9pm): +$30</li>
-              <li>Holiday service: +$40</li>
+              <li>Holiday Service: +$40</li>
               <li>Bilingual service (Spanish): +$20</li>
             </ul>
           </div>
@@ -1038,7 +1038,7 @@ const faqs: FAQ[] = [
           </li>
           <li>
             <strong>Holiday Service:</strong> Service on major holidays (e.g., New Year's Day, Thanksgiving, Christmas)
-            may be available at premium rates and subject to availability. Please inquire directly.
+            may be available at extended hour rates and subject to availability. Please inquire directly.
           </li>
           <li>
             <strong>After-Hours Service:</strong> Our Priority Service covers extended hours (7am-9pm). Services requested
@@ -1234,7 +1234,7 @@ const faqs: FAQ[] = [
             <h3 className="font-semibold text-[#002147]">Essential Service</h3>
             <p className="mt-1">
               <strong>24 hours' notice is recommended</strong>, though same-day appointments may be available depending
-              on our schedule. For same-day essential services, we have a 3pm cutoff time for 5pm appointments.
+              on our schedule. For same-day standard notary services, we have a 3pm cutoff time for 5pm appointments.
             </p>
           </div>
 
@@ -1749,7 +1749,7 @@ const faqs: FAQ[] = [
     ),
     category: "legal",
     keywords: ["insured", "bonded", "insurance", "bond", "e&o", "errors and omissions", "protection", "$10000", "$10k"],
-    relatedQuestions: ["loan-signing"], // Add reference to LSA E&O if updated there
+    relatedQuestions: ["loan-signing-specialist"], // Add reference to LSA E&O if updated there
   },
 ] // End of faqs array
 

@@ -529,7 +529,7 @@ Please respond in JSON format with the following structure:
     // Gather comprehensive customer data
     const bookings = await prisma.booking.findMany({
       where: { signerId: customerId },
-      include: { service: true },
+      include: { Service: true },
     });
 
     return {
@@ -537,7 +537,7 @@ Please respond in JSON format with the following structure:
       totalSpent: bookings.reduce((sum: number, b: any) => sum + ((b as any).totalAmount || 0), 0),
       averageBookingValue: bookings.length > 0 ? bookings.reduce((sum: number, b: any) => sum + ((b as any).totalAmount || 0), 0) / bookings.length : 0,
       lastBookingDate: bookings.length > 0 ? bookings[bookings.length - 1].createdAt : null,
-      preferredServices: bookings.map(b => b.service?.name).filter(Boolean),
+      preferredServices: bookings.map(b => b.Service?.name).filter(Boolean),
       bookingFrequency: bookings.length > 0 ? this.calculateFrequency(bookings) : 0
     };
   }
@@ -550,7 +550,7 @@ Please respond in JSON format with the following structure:
       where: {
         createdAt: { gte: startDate }
       },
-      include: { service: true }
+      include: { Service: true }
     });
 
     return {
@@ -588,7 +588,7 @@ Please respond in JSON format with the following structure:
   private calculateServiceDistribution(bookings: any[]) {
     const distribution: Record<string, number> = {};
     bookings.forEach(booking => {
-      const service = booking.service?.name || 'Unknown';
+      const service = booking.Service?.name || 'Unknown';
       distribution[service] = (distribution[service] || 0) + 1;
     });
     

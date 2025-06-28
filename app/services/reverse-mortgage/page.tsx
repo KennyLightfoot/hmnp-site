@@ -51,7 +51,7 @@ export default function ReverseMortgagePage() {
             <ChevronRight className="h-4 w-4" />
             <Link href="/services" className="hover:text-[#A52A2A]">Services</Link>
             <ChevronRight className="h-4 w-4" />
-            <Link href="/services/loan-signing" className="hover:text-[#A52A2A]">Loan Signing</Link>
+            <Link href="/services/loan-signing-specialist" className="hover:text-[#A52A2A]">Loan Signing</Link>
             <ChevronRight className="h-4 w-4" />
             <span className="text-gray-900">Reverse Mortgage</span>
           </nav>
@@ -320,10 +320,10 @@ export default function ReverseMortgagePage() {
                 <CardTitle className="text-lg text-[#002147]">Related Services</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Link href="/services/loan-signing" className="block text-sm text-[#A52A2A] hover:underline">
+                <Link href="/services/loan-signing-specialist" className="block text-sm text-[#A52A2A] hover:underline">
                   • Full Loan Signing Specialist Services
                 </Link>
-                <Link href="/services/essential" className="block text-sm text-[#A52A2A] hover:underline">
+                <Link href="/services/standard-notary" className="block text-sm text-[#A52A2A] hover:underline">
                   • General Notary Services
                 </Link>
                 <Link href="/services/business" className="block text-sm text-[#A52A2A] hover:underline">

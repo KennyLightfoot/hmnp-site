@@ -179,7 +179,7 @@ async function calculateUnifiedPricing(
   customerEmail?: string,
   referredBy?: string
 ): Promise<BookingPricing> {
-  let basePrice = Number(service.price);
+  let basePrice = Number(service.basePrice);
   let promoDiscount = 0;
   let promoCodeInfo = undefined;
   
@@ -334,7 +334,7 @@ async function validateTimeSlotAvailability(
     },
     include: {
       service: {
-        select: { duration: true }
+        select: { durationMinutes: true }
       }
     }
   });
@@ -344,7 +344,7 @@ async function validateTimeSlotAvailability(
     if (!booking.scheduledDateTime) return false;
     
     const bookingStart = new Date(booking.scheduledDateTime);
-    const bookingEnd = addMinutes(bookingStart, booking.service.duration + bookingSettings.bufferTimeMinutes);
+    const bookingEnd = addMinutes(bookingStart, booking.service.durationMinutes + bookingSettings.bufferTimeMinutes);
     const requestedStart = scheduledDateTime;
     const requestedEnd = addMinutes(scheduledDateTime, serviceDuration + bookingSettings.bufferTimeMinutes);
     
@@ -423,7 +423,7 @@ async function createGHLIntegration(
       // Apply tags
       const tags = [
         'source:website_booking',
-        `service:${service.name.replace(/\s+/g, '_').toLowerCase()}`,
+        `Service:${service.name.replace(/\s+/g, '_').toLowerCase()}`,
         `status:booking_${booking.status.toLowerCase()}`,
         'status:booking_created'
       ];
@@ -488,7 +488,7 @@ export async function GET(request: NextRequest) {
           include: {
             service: true,
             promoCode: true,
-            signer: context.canViewAllBookings ? {
+            User_Booking_signerIdToUser: context.canViewAllBookings ? {
               select: { id: true, name: true, email: true }
             } : false,
             NotarizationDocument: true,
@@ -529,8 +529,8 @@ export async function POST(request: NextRequest) {
       const address = normalizeAddress(data);
       
       // Get service details
-      const service = await prisma.service.findUnique({
-        where: { id: data.serviceId, active: true }
+      const service = await prisma.Service.findUnique({
+        where: { id: data.serviceId, isActive: true }
       });
       
       if (!service) {
@@ -542,7 +542,7 @@ export async function POST(request: NextRequest) {
       // Validate time slot if scheduled
       if (data.scheduledDateTime) {
         const scheduledDate = new Date(data.scheduledDateTime);
-        await validateTimeSlotAvailability(scheduledDate, service.id, service.duration);
+        await validateTimeSlotAvailability(scheduledDate, service.id, service.durationMinutes);
       }
       
       // Calculate pricing
@@ -578,7 +578,7 @@ export async function POST(request: NextRequest) {
         addressZip: address.zip,
         locationNotes: data.locationNotes,
         basePrice: pricingData.basePrice,
-        priceAtBooking: service.price,
+        priceAtBooking: service.basePrice,
         finalPrice: pricingData.finalPrice,
         promoDiscount: pricingData.promoDiscount,
         depositAmount: pricingData.depositAmount,
@@ -590,7 +590,7 @@ export async function POST(request: NextRequest) {
       
       // Add user connection if authenticated
       if (context.isAuthenticated && customer.id) {
-        bookingData.signer = { connect: { id: customer.id } };
+        bookingData.User_Booking_signerIdToUser = { connect: { id: customer.id } };
       }
       
       // Add promo code if used
@@ -601,8 +601,8 @@ export async function POST(request: NextRequest) {
       const booking = await prisma.booking.create({
         data: bookingData,
         include: {
-          service: true,
-          signer: context.isAuthenticated ? {
+          Service: true,
+          User_Booking_signerIdToUser: context.isAuthenticated ? {
             select: { id: true, name: true, email: true }
           } : false,
           promoCode: true,

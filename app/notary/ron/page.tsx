@@ -26,7 +26,7 @@ interface RONBooking {
   signerEmail: string;
   scheduledDateTime?: string;
   status: BookingStatus;
-  service: {
+  Service: {
     name: string;
     duration: number;
   };
@@ -227,11 +227,11 @@ export default function RONSessionPanel() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div className="flex items-center text-sm text-gray-600">
                     <FileText className="h-4 w-4 mr-2" />
-                    {booking.service.name}
+                    {booking.Service.name}
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <Clock className="h-4 w-4 mr-2" />
-                    {booking.service.duration} minutes
+                    {booking.Service.duration} minutes
                   </div>
                   {booking.scheduledDateTime && (
                     <div className="flex items-center text-sm text-gray-600">

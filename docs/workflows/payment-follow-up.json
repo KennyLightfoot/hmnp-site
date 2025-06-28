@@ -36,7 +36,7 @@
       "type": "Create Task",
       "title": "💳 Payment follow-up: {{contact.firstName}} – ${{cf_payment_amount}}",
       "due": "now + 2h",
-      "priority": "high if urgency high/critical"
+      "extended-hours-notary": "high if urgency high/critical"
     },
     {
       "type": "If/Else",

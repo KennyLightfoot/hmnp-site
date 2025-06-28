@@ -34,7 +34,7 @@ async function testBookingEndpoint() {
       throw new Error('No active services found in the database. Please add a service first.');
     }
     
-    console.log(`Found service: ${service.name} (${service.id}) - Type: ${service.serviceType} - Price: $${service.basePrice}`);
+    console.log(`Found Service: ${service.name} (${service.id}) - Type: ${service.serviceType} - Price: $${service.basePrice}`);
     
     // Create a mock booking request body
     const mockBookingRequest = {

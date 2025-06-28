@@ -36,7 +36,6 @@ export async function POST() {
         level: 'INFO',
         component: 'ALERT_MANAGER',
         message: `Admin cleared ${updateResult.count} system alerts`,
-        timestamp: new Date(),
       }
     }).catch(() => {
       // If the systemLog table doesn't exist yet, we'll just ignore the error

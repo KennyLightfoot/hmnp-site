@@ -74,7 +74,7 @@ class AIAssistant {
       // Gather customer data
       const bookings = await prisma.booking.findMany({
         where: { signerId: customerId },
-        include: { service: true },
+        include: { Service: true },
       });
 
       // Calculate insights
@@ -246,7 +246,7 @@ class AIAssistant {
     const serviceCounts: Record<string, number> = {};
     
     bookings.forEach(booking => {
-      const serviceName = booking.service?.name || 'Unknown';
+      const serviceName = booking.Service?.name || 'Unknown';
       serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
     });
     

@@ -327,7 +327,7 @@ When you need notary services, trust the experts with 500+ 5-star reviews.`,
 
 We noticed it's been a while since we helped you with notary services. We miss having you as a client!
 
-As a returning customer, we're offering you 20% off your next service:
+As a returning customer, we're offering you 20% off your next Service:
 
 🎁 20% OFF with code: WELCOME_BACK
 📞 Priority scheduling  
@@ -449,13 +449,13 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
           }
         },
         include: {
-          signer: true
+          User_Booking_signerIdToUser: true
         }
       })
 
       for (const booking of incompleteBookings) {
         // Check if user has email before processing
-        const userEmail = booking.signer.email
+        const userEmail = booking.User_Booking_signerIdToUser.email
         if (!userEmail) {
           console.warn(`Skipping booking ${booking.id} - no email for user`)
           continue
@@ -528,14 +528,14 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
           }
         },
         include: {
-          signer: true
+          User_Booking_signerIdToUser: true
         },
         distinct: ['signerId']
       })
 
       for (const booking of inactiveClients) {
         // Check if user has email before processing
-        const userEmail = booking.signer.email
+        const userEmail = booking.User_Booking_signerIdToUser.email
         if (!userEmail) {
           console.warn(`Skipping booking ${booking.id} - no email for user`)
           continue
@@ -809,7 +809,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
       if (condition.type === 'BOOKING_COMPLETED') {
         const booking = await prisma.booking.findFirst({
           where: {
-            signer: {
+            User_Booking_signerIdToUser: {
               email: enrollment.contactEmail
             },
             status: BookingStatus.COMPLETED,

@@ -191,8 +191,8 @@ export class NotificationService {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        signer: true,
-        service: true
+        User_Booking_signerIdToUser: true,
+        Service: true
       }
     });
 
@@ -469,8 +469,8 @@ export class NotificationService {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        signer: true,
-        service: true
+        User_Booking_signerIdToUser: true,
+        Service: true
       }
     });
 
@@ -524,8 +524,8 @@ export class NotificationService {
       const booking = await prisma.booking.findUnique({
         where: { id: options.bookingId },
         include: {
-          signer: true,
-          service: true
+          User_Booking_signerIdToUser: true,
+          Service: true
         }
       });
 
@@ -534,9 +534,9 @@ export class NotificationService {
       }
 
       const recipient: NotificationRecipient = {
-        email: booking.customerEmail || booking.signer?.email,
-        firstName: booking.signer?.name?.split(' ')[0],
-        lastName: booking.signer?.name?.split(' ').slice(1).join(' ')
+        email: booking.customerEmail || booking.User_Booking_signerIdToUser?.email,
+        firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0],
+        lastName: booking.User_Booking_signerIdToUser?.name?.split(' ').slice(1).join(' ')
       };
 
       // Default to email if no method specified
@@ -628,13 +628,13 @@ export class NotificationService {
   ): Promise<any> {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
-      include: { signer: true, service: true }
+      include: { User_Booking_signerIdToUser: true, Service: true }
     });
     if (!booking) throw new Error('Booking not found');
 
     const recipient: NotificationRecipient = {
-      email: booking.signer?.email,
-      firstName: booking.signer?.name?.split(' ')[0]
+      email: booking.User_Booking_signerIdToUser?.email,
+      firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0]
     };
 
     const content: NotificationContent = {
@@ -659,13 +659,13 @@ export class NotificationService {
   ): Promise<any> {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
-      include: { signer: true, service: true }
+      include: { User_Booking_signerIdToUser: true, Service: true }
     });
     if (!booking) throw new Error('Booking not found');
 
     const recipient: NotificationRecipient = {
-      email: booking.signer?.email,
-      firstName: booking.signer?.name?.split(' ')[0]
+      email: booking.User_Booking_signerIdToUser?.email,
+      firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0]
     };
 
     const content: NotificationContent = {
@@ -686,13 +686,13 @@ export class NotificationService {
   async sendPaymentExpiredNotification(bookingId: string): Promise<any> {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
-      include: { signer: true, service: true }
+      include: { User_Booking_signerIdToUser: true, Service: true }
     });
     if (!booking) throw new Error('Booking not found');
 
     const recipient: NotificationRecipient = {
-      email: booking.signer?.email,
-      firstName: booking.signer?.name?.split(' ')[0]
+      email: booking.User_Booking_signerIdToUser?.email,
+      firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0]
     };
 
     const content: NotificationContent = {
@@ -718,13 +718,13 @@ export class NotificationService {
   ): Promise<any> {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
-      include: { signer: true, service: true }
+      include: { User_Booking_signerIdToUser: true, Service: true }
     });
     if (!booking) throw new Error('Booking not found');
 
     const recipient: NotificationRecipient = {
-      email: booking.signer?.email,
-      firstName: booking.signer?.name?.split(' ')[0]
+      email: booking.User_Booking_signerIdToUser?.email,
+      firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0]
     };
 
     const content: NotificationContent = {
@@ -749,13 +749,13 @@ export class NotificationService {
   ): Promise<any> {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
-      include: { signer: true, service: true }
+      include: { User_Booking_signerIdToUser: true, Service: true }
     });
     if (!booking) throw new Error('Booking not found');
 
     const recipient: NotificationRecipient = {
-      email: booking.signer?.email,
-      firstName: booking.signer?.name?.split(' ')[0]
+      email: booking.User_Booking_signerIdToUser?.email,
+      firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0]
     };
 
     const content: NotificationContent = {
@@ -779,13 +779,13 @@ export class NotificationService {
   ): Promise<any> {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
-      include: { signer: true, service: true }
+      include: { User_Booking_signerIdToUser: true, Service: true }
     });
     if (!booking) throw new Error('Booking not found');
 
     const recipient: NotificationRecipient = {
-      email: booking.signer?.email,
-      firstName: booking.signer?.name?.split(' ')[0]
+      email: booking.User_Booking_signerIdToUser?.email,
+      firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0]
     };
 
     const content: NotificationContent = {
@@ -806,13 +806,13 @@ export class NotificationService {
   async sendAppointmentFollowUp(bookingId: string): Promise<any> {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
-      include: { signer: true, service: true }
+      include: { User_Booking_signerIdToUser: true, Service: true }
     });
     if (!booking) throw new Error('Booking not found');
 
     const recipient: NotificationRecipient = {
-      email: booking.signer?.email,
-      firstName: booking.signer?.name?.split(' ')[0]
+      email: booking.User_Booking_signerIdToUser?.email,
+      firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0]
     };
 
     const content: NotificationContent = {
@@ -848,17 +848,17 @@ export const sendBookingConfirmation = async (bookingId: string) => {
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
     include: {
-      signer: true,
-      service: true
+      User_Booking_signerIdToUser: true,
+      Service: true
     }
   });
 
   if (!booking) throw new Error('Booking not found');
 
   const recipient = {
-    email: booking.customerEmail || booking.signer?.email,
+    email: booking.customerEmail || booking.User_Booking_signerIdToUser?.email,
     phone: undefined, // Will be fetched from GHL if needed
-    firstName: booking.signer?.name?.split(' ')[0]
+    firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0]
   };
 
   // Get phone from GHL if email exists
@@ -875,10 +875,10 @@ export const sendBookingConfirmation = async (bookingId: string) => {
 
   const content = {
     subject: 'Booking Confirmation - Houston Mobile Notary Pros',
-    message: `Hi ${recipient.firstName}, your booking for ${booking.service.name} has been confirmed. Details will be sent via email.`,
+    message: `Hi ${recipient.firstName}, your booking for ${booking.Service.name} has been confirmed. Details will be sent via email.`,
     metadata: {
       serviceId: booking.serviceId,
-      serviceName: booking.service.name
+      serviceName: booking.Service.name
     }
   };
 
@@ -898,8 +898,8 @@ export const sendAppointmentReminder = async (
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
     include: {
-      signer: true,
-      service: true
+      User_Booking_signerIdToUser: true,
+      Service: true
     }
   });
 
@@ -912,9 +912,9 @@ export const sendAppointmentReminder = async (
   };
 
   const recipient = {
-    email: booking.signer?.email,
+    email: booking.User_Booking_signerIdToUser?.email,
     phone: undefined,
-    firstName: booking.signer?.name?.split(' ')[0]
+    firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0]
   };
 
   // Get phone from GHL
@@ -933,7 +933,7 @@ export const sendAppointmentReminder = async (
   const { appointmentReminderSms } = await import('@/lib/sms/templates');
   
   const bookingDetails = {
-    serviceName: booking.service.name,
+    serviceName: booking.Service.name,
     date: booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'TBD',
     time: booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase() : 'TBD',
     addressShort: booking.addressCity || 'TBD'
@@ -961,7 +961,7 @@ export const sendAppointmentReminder = async (
       
       <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
         <h3>Appointment Details:</h3>
-        <p><strong>Service:</strong> ${booking.service.name}</p>
+        <p><strong>Service:</strong> ${booking.Service.name}</p>
         <p><strong>Date:</strong> ${booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'TBD'}</p>
         <p><strong>Time:</strong> ${booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'TBD'}</p>
         <p><strong>Location:</strong> ${booking.addressStreet && booking.addressCity && booking.addressState && booking.addressZip ? 

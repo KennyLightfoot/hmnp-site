@@ -27,7 +27,7 @@ export async function GET(
         signerId: session.user.id // Ensure user owns the booking
       },
       include: {
-        service: true,
+        Service: true,
         ProofTransaction: true
       }
     })
@@ -81,7 +81,7 @@ export async function GET(
     // Fallback: generate a basic booking receipt
     const receiptData = {
       bookingId: booking.id,
-      serviceName: booking.service?.name || 'Notary Service',
+      serviceName: booking.Service?.name || 'Notary Service',
       date: booking.scheduledDateTime,
       amount: booking.priceAtBooking?.toNumber() || 0,
       status: booking.status,

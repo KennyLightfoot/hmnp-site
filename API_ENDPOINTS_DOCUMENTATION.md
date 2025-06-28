@@ -1,10 +1,17 @@
 # 📚 API Endpoints Documentation
 **Houston Mobile Notary Pros - Complete API Reference**
 
+⚠️ **SECURITY WARNING:** This documentation contains sensitive API information. Ensure your API keys are never exposed in client-side code or committed to version control. Use proper environment variables and secure storage.
+
 ## 🔐 Authentication
 All API endpoints (except Stripe webhooks) require the `x-api-key` header:
 ```
-x-api-key: mav+PpkGCyAADIyUlTUBGIk194KCa3U4
+x-api-key: ${API_KEY}
+```
+
+**Environment Variable Required:**
+```bash
+API_KEY=your_secure_api_key_here
 ```
 
 ---
@@ -281,7 +288,7 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 ```bash
 curl -X POST http://localhost:3000/api/bookings/cancel \
   -H "Content-Type: application/json" \
-  -H "x-api-key: mav+PpkGCyAADIyUlTUBGIk194KCa3U4" \
+  -H "x-api-key: ${API_KEY}" \
   -d '{
     "bookingId": "booking_123",
     "reason": "Testing cancellation",
@@ -293,7 +300,7 @@ curl -X POST http://localhost:3000/api/bookings/cancel \
 ```bash
 curl -X POST http://localhost:3000/api/bookings/reschedule \
   -H "Content-Type: application/json" \
-  -H "x-api-key: mav+PpkGCyAADIyUlTUBGIk194KCa3U4" \
+  -H "x-api-key: ${API_KEY}" \
   -d '{
     "bookingId": "booking_123",
     "newDateTime": "2024-01-20T10:00:00",

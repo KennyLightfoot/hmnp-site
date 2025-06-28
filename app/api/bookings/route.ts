@@ -205,12 +205,12 @@ export async function GET(request: NextRequest) {
       }
 
       const [bookings, total] = await Promise.all([
-        prisma.booking.findMany({
+        prisma.Booking.findMany({
           where: whereClause,
           include: {
-            service: true,
+            Service: true,
             promoCode: true,
-                    signer: context.canViewAllBookings ? {
+                    User_Booking_signerIdToUser: context.canViewAllBookings ? {
           select: { id: true, name: true, email: true }
         } : false,
             NotarizationDocument: true, // Include RON documents
@@ -219,7 +219,7 @@ export async function GET(request: NextRequest) {
           skip: (page - 1) * limit,
           take: limit,
         }),
-        prisma.booking.count({ where: whereClause }),
+        prisma.Booking.count({ where: whereClause }),
       ]);
 
       return NextResponse.json({
@@ -278,7 +278,7 @@ export async function POST(request: NextRequest) {
       
       // Verify authenticated user exists in database
       try {
-        const userExists = await prisma.user.findUnique({
+        const userExists = await prisma.User.findUnique({
           where: { id: signerUserId },
           select: { id: true }
         });
@@ -377,8 +377,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Service ID is required' }, { status: 400 });
     }
 
-    const service = await prisma.service.findUnique({
-      where: { id: serviceId, active: true },
+    const service = await prisma.Service.findUnique({
+      where: { id: serviceId, isActive: true },
     });
 
     if (!service) {
@@ -389,7 +389,7 @@ export async function POST(request: NextRequest) {
     let initialStatus: BookingStatus;
     const priceToConsiderForPayment = (service.requiresDeposit && service.depositAmount && service.depositAmount.toNumber() > 0) 
                                       ? service.depositAmount.toNumber() 
-                                      : service.price.toNumber();
+                                      : service.basePrice.toNumber();
     const finalAmountDueAfterDiscount = Math.max(0, priceToConsiderForPayment - discountAmount);
 
     if (finalAmountDueAfterDiscount > 0) {
@@ -399,12 +399,12 @@ export async function POST(request: NextRequest) {
       initialStatus = BookingStatus.CONFIRMED; 
     }
 
-    const priceAtBooking = service.price;
+    const priceAtBooking = service.basePrice;
 
     type BookingWithRelations = Prisma.BookingGetPayload<{
       include: {
-        service: true;
-        signer: { select: { id: true; name: true; email: true } };
+        Service: true;
+        User_Booking_signerIdToUser: { select: { id: true; name: true; email: true } };
       };
     }>;
     
@@ -422,9 +422,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: `Invalid location type provided: ${locationType}. Valid types are CLIENT_SPECIFIED_ADDRESS, PUBLIC_PLACE.` }, { status: 400 });
     }
 
+    // Generate unique booking ID
+    const bookingId = `bk_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
     // Prepare booking data, handling both authenticated and guest bookings
     const bookingData: any = {
-      service: {
+      id: bookingId,
+      Service: {
         connect: { id: service.id }
       },
       scheduledDateTime: scheduledDateTime ? new Date(scheduledDateTime) : null,
@@ -435,23 +439,22 @@ export async function POST(request: NextRequest) {
       addressState: addressState,
       addressZip: addressZip,
       locationNotes: locationNotes,
-      // Pricing fields - both legacy and new required fields
-      priceAtBooking: priceAtBooking, // Legacy field
-      basePrice: service.price, // Required field
-      promoDiscount: discountAmount, // Required field with default 0
-      finalPrice: finalAmountDueAfterDiscount, // Required field
+      // Pricing fields - using actual schema fields
+      priceAtBooking: service.basePrice, // Required field - use service base price
+      promoCodeDiscount: discountAmount, // Use existing promoCodeDiscount field
+      depositAmount: service.requiresDeposit ? service.depositAmount : null, // Optional deposit amount
       notes: notes,
-      // Required fields for all bookings
-      signerEmail: signerUserEmail,
-      signerName: signerUserName || 'Guest Client',
-      signerPhone: phone || null,
+      // Customer information using schema fields
+      customerEmail: signerUserEmail,
+      // Required timestamp fields
+      updatedAt: new Date(),
       // Additional fields from form for guest bookings will be stored in GHL only
     };
     
           // Only include signerId for authenticated users with valid database records
       if (signerUserId) {
         // Connect to the User record using the relation field name from Prisma schema
-        bookingData.signer = {
+        bookingData.User_Booking_signerIdToUser = {
           connect: {
             id: signerUserId,
           },
@@ -459,13 +462,13 @@ export async function POST(request: NextRequest) {
       }
     
     // For guest bookings, we'll only store email/contact info in GHL, not linked to a user
-    let newBooking: any = await prisma.booking.create({
+    let newBooking: any = await prisma.Booking.create({
       data: bookingData,
       include: {
-        service: true,
+        Service: true,
                 // Only include user relation if we have a signerId
         ...(signerUserId ? {
-          signer: {
+          User_Booking_signerIdToUser: {
             select: { id: true, name: true, email: true } 
           }
         } : {})
@@ -517,7 +520,7 @@ export async function POST(request: NextRequest) {
         
         // Store the payment URL in the booking notes
         if (checkoutUrl) {
-          await prisma.booking.update({
+          await prisma.Booking.update({
             where: { id: newBooking.id },
             data: { 
               notes: newBooking.notes ? `${newBooking.notes}\nPayment URL: ${checkoutUrl}` : `Payment URL: ${checkoutUrl}`
@@ -534,8 +537,8 @@ export async function POST(request: NextRequest) {
     // --- GHL API Integration: Upsert Contact & Apply Tags/Fields ---
     try {
       // Use signerUserEmail which is always populated, and signerUserName for guest details
-          const emailForGhl = signerUserId ? newBooking.signer?.email : signerUserEmail;
-    let nameForGhl = signerUserId ? newBooking.signer?.name : signerUserName;
+          const emailForGhl = signerUserId ? newBooking.User_Booking_signerIdToUser?.email : signerUserEmail;
+    let nameForGhl = signerUserId ? newBooking.User_Booking_signerIdToUser?.name : signerUserName;
 
       // Fallback for name if it's still null (e.g. guest didn't provide full name but might have provided first/last)
       if (!nameForGhl && (body.firstName || body.lastName)) {
@@ -588,7 +591,7 @@ export async function POST(request: NextRequest) {
           // Service details
           service_requested: service.name,
           service_address: serviceAddressForGhl,
-          service_price: service.price.toNumber().toString(),
+          service_price: service.basePrice.toString(),
           
           // Date/Time fields (all three for compatibility)
           appointment_date: scheduledDateTime ? 
@@ -638,7 +641,7 @@ export async function POST(request: NextRequest) {
           
           if (contactId) {
             // Store GHL contact ID in booking
-            await prisma.booking.update({
+            await prisma.Booking.update({
               where: { id: newBooking.id },
               data: { 
                 ghlContactId: contactId,
@@ -648,7 +651,7 @@ export async function POST(request: NextRequest) {
             
             const tagsToApply: string[] = [];
             if (service?.name) {
-              tagsToApply.push(`service:${service.name.replace(/\s+/g, '_').toLowerCase()}`);
+              tagsToApply.push(`Service:${service.name.replace(/\s+/g, '_').toLowerCase()}`);
             }
             if (newBooking.status === BookingStatus.PAYMENT_PENDING) {
               tagsToApply.push('status:booking_pendingpayment');
@@ -662,7 +665,7 @@ export async function POST(request: NextRequest) {
             // Check if this is an emergency service
             if (service?.name && (service.name.toLowerCase().includes('emergency') || service.name.toLowerCase().includes('urgent'))) {
               tagsToApply.push('Service:Emergency');
-              tagsToApply.push('Priority:Same_Day');
+              tagsToApply.push('extended-hours-notary:same_day');
             }
 
             if (isFirstTimeDiscountApplied) {
@@ -706,7 +709,7 @@ export async function POST(request: NextRequest) {
               
               // Update booking with calendar event ID
               if (eventId) {
-                await prisma.booking.update({
+                await prisma.Booking.update({
                   where: { id: newBooking.id },
                   data: { googleCalendarEventId: eventId }
                 });
@@ -771,12 +774,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Send booking confirmation notification
-    if (newBooking && newBooking.service) {
+    if (newBooking && newBooking.Service) {
       try {
         // Enhanced SOP tracking based on service type and booking details
-        const serviceType = newBooking.service.serviceType;
-        const serviceName = newBooking.service.name;
-        const bookingValue = Number(newBooking.finalPrice);
+        const serviceType = newBooking.Service.serviceType;
+        const serviceName = newBooking.Service.name;
+        const bookingValue = Number(newBooking.priceAtBooking);
         
         // Determine if special SOP events should be tracked
         const isLoanSigning = serviceType === 'LOAN_SIGNING_SPECIALIST' || 
@@ -822,7 +825,7 @@ export async function POST(request: NextRequest) {
         if (isSameDay && !isLoanSigning) {
           trackSameDayServiceRequested({
             service_type: serviceName,
-            base_value: Number(newBooking.service.price),
+            base_value: Number(newBooking.Service.basePrice),
             surcharge_applied: 25, // SOP: $25 same-day fee
             request_time: new Date().toISOString(),
             urgency_reason: 'same_day_request'
@@ -832,7 +835,7 @@ export async function POST(request: NextRequest) {
         if (isAfterHours && !isLoanSigning) {
           trackAfterHoursServiceRequested({
             service_type: serviceName,
-            base_value: Number(newBooking.service.price),
+            base_value: Number(newBooking.Service.basePrice),
             after_hours_fee: 50, // SOP: $50 after-hours fee
             requested_time: newBooking.scheduledDateTime?.toISOString() || new Date().toISOString()
           });
@@ -896,7 +899,7 @@ async function validateTimeSlotAvailability(
   serviceEndTime.setMinutes(serviceEndTime.getMinutes() + duration);
   
   // Check for conflicting bookings
-  type BookingWithService = Prisma.BookingGetPayload<{ include: { service: true } }>;
+  type BookingWithService = Prisma.BookingGetPayload<{ include: { Service: true } }>;
 
   const conflictingBookings: BookingWithService[] = await tx.booking.findMany({
     where: {
@@ -909,7 +912,7 @@ async function validateTimeSlotAvailability(
       },
     },
     include: {
-      service: true,
+      Service: true,
     },
   });
   
@@ -918,7 +921,7 @@ async function validateTimeSlotAvailability(
     
     const bookingStart = new Date(booking.scheduledDateTime);
     const bookingEnd = new Date(bookingStart);
-          bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.service.duration);
+          bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.Service.durationMinutes);
     
     // Check for overlap
     return (scheduledDateTime < bookingEnd && serviceEndTime > bookingStart);
@@ -945,10 +948,10 @@ async function validateTimeSlotAvailability(
 // Helper function to calculate booking pricing with promo codes
 async function calculateBookingPricing(
   tx: any, 
-  service: any, 
+  Service: any, 
   promoCodeStr?: string
 ): Promise<BookingPricing> {
-  let price = Number(service.price);
+  let price = Number(Service.basePrice);
   let promoDiscount = 0;
   let promoCodeInfo = undefined;
   
@@ -972,7 +975,7 @@ async function calculateBookingPricing(
         // Check if service is applicable
         const isServiceApplicable = (
           promoCode.applicableServices.length === 0 || 
-          promoCode.applicableServices.includes(service.id)
+          promoCode.applicableServices.includes(Service.id)
         );
         
         if (isServiceApplicable) {
@@ -1005,7 +1008,7 @@ async function calculateBookingPricing(
   }
   
   const finalPrice = Math.max(0, price - promoDiscount);
-  const depositAmount = service.requiresDeposit ? Number(service.depositAmount) : 0;
+  const depositAmount = Service.requiresDeposit ? Number(Service.depositAmount) : 0;
   
   return {
     basePrice: price,

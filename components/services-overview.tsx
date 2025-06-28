@@ -58,7 +58,7 @@ export default function ServicesOverview() {
                 </ul>
               </CardContent>
               <CardFooter className="pt-4 pb-6">
-                <Link href="/services/essential" className="w-full">
+                <Link href="/services/standard-notary" className="w-full">
                   <Button
                     variant="outline"
                     className="w-full border-[#002147] text-[#002147] hover:bg-[#002147] hover:text-white"
@@ -106,7 +106,7 @@ export default function ServicesOverview() {
                 </ul>
               </CardContent>
               <CardFooter className="pt-4 pb-6">
-                <Link href="/services/priority" className="w-full">
+                <Link href="/services/extended-hours-notary" className="w-full">
                   <Button className="w-full bg-[#A52A2A] hover:bg-[#8B0000]">Learn More</Button>
                 </Link>
               </CardFooter>
@@ -146,7 +146,7 @@ export default function ServicesOverview() {
                 </ul>
               </CardContent>
               <CardFooter className="pt-4 pb-6">
-                <Link href="/services/loan-signing" className="w-full">
+                <Link href="/services/loan-signing-specialist" className="w-full">
                   <Button
                     variant="outline"
                     className="w-full border-[#002147] text-[#002147] hover:bg-[#002147] hover:text-white"

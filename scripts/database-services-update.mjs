@@ -53,7 +53,7 @@ const SOP_SERVICES = [
     depositAmount: 50.00,
     duration: 120,
     active: true,
-    key: 'loan-signing'
+    key: "loan-signing-specialist"
   },
   {
     name: 'Remote Online Notarization (RON)',

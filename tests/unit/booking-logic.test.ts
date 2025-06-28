@@ -18,7 +18,7 @@ const mockPrisma = {
     create: vi.fn(),
     update: vi.fn(),
   },
-  service: {
+  Service: {
     findUnique: vi.fn(),
   },
   availability: {
@@ -49,10 +49,10 @@ interface BookingData {
 interface Service {
   id: string;
   name: string;
-  price: number;
-  duration: number; // in minutes
+  basePrice: number;
+  durationMinutes: number; // in minutes
   category: string;
-  active: boolean;
+  isActive: boolean;
 }
 
 interface PricingCalculation {
@@ -62,7 +62,7 @@ interface PricingCalculation {
   discount: number;
   totalPrice: number;
   breakdown: {
-    service: number;
+    Service: number;
     travel: number;
     additional: number;
     discount: number;
@@ -72,16 +72,15 @@ interface PricingCalculation {
 // Business logic functions to test
 class BookingService {
   static calculateTravelFee(distance: number): number {
-    const baseFee = 25; // Base travel fee
-    const perMileRate = 1.50; // Per mile rate
-    const freeRadius = 10; // Miles within which no travel fee applies
+    const perMileRate = 0.50; // SOP: $0.50 per mile beyond service radius
+    const freeRadius = 15; // SOP: 15-mile standard service radius from ZIP 77591
     
     if (distance <= freeRadius) {
       return 0;
     }
     
     const chargeableMiles = distance - freeRadius;
-    return baseFee + (chargeableMiles * perMileRate);
+    return chargeableMiles * perMileRate; // No base fee, just per-mile beyond radius
   }
 
   static calculatePricing(
@@ -90,7 +89,7 @@ class BookingService {
     additionalServices: string[] = [],
     promoCode?: string
   ): PricingCalculation {
-    const price = service.price;
+    const price = service.basePrice;
     const travelFee = this.calculateTravelFee(distance);
     
     // Additional services pricing
@@ -126,7 +125,7 @@ class BookingService {
       discount,
       totalPrice: Math.round(totalPrice * 100) / 100, // Round to 2 decimal places
       breakdown: {
-        service: price,
+        Service: price,
         travel: travelFee,
         additional: additionalServicesFee,
         discount: discount,
@@ -214,7 +213,7 @@ class BookingService {
     
     // Service validation
     if (!data.serviceId) {
-      errors.service = ['Please select a service'];
+      errors.Service = ['Please select a service'];
     }
     
     return {
@@ -229,30 +228,35 @@ describe('BookingService', () => {
     it('should return 0 for distances within free radius', () => {
       expect(BookingService.calculateTravelFee(5)).toBe(0);
       expect(BookingService.calculateTravelFee(10)).toBe(0);
+      expect(BookingService.calculateTravelFee(15)).toBe(0); // SOP: 15-mile free radius
     });
 
     it('should calculate correct travel fee for distances beyond free radius', () => {
-      // 15 miles: 5 chargeable miles = $25 + (5 * $1.50) = $32.50
-      expect(BookingService.calculateTravelFee(15)).toBe(32.50);
+      // SOP: 16 miles: 1 chargeable mile = 1 * $0.50 = $0.50
+      expect(BookingService.calculateTravelFee(16)).toBe(0.50);
       
-      // 20 miles: 10 chargeable miles = $25 + (10 * $1.50) = $40.00
-      expect(BookingService.calculateTravelFee(20)).toBe(40.00);
+      // SOP: 20 miles: 5 chargeable miles = 5 * $0.50 = $2.50
+      expect(BookingService.calculateTravelFee(20)).toBe(2.50);
+      
+      // SOP: 25 miles: 10 chargeable miles = 10 * $0.50 = $5.00
+      expect(BookingService.calculateTravelFee(25)).toBe(5.00);
     });
 
     it('should handle edge cases', () => {
       expect(BookingService.calculateTravelFee(0)).toBe(0);
-      expect(BookingService.calculateTravelFee(10.1)).toBe(25.15);
+      // SOP: 15.1 miles: 0.1 chargeable miles = 0.1 * $0.50 = $0.05
+      expect(BookingService.calculateTravelFee(15.1)).toBeCloseTo(0.05);
     });
   });
 
   describe('calculatePricing', () => {
     const mockService: Service = {
       id: '1',
-      name: 'Essential Notary Services',
-      price: 75,
-      duration: 60,
-      category: 'essential',
-      active: true,
+      name: 'Standard Notary Services',
+      basePrice: 75,
+      durationMinutes: 60,
+      category: 'standard-notary',
+      isActive: true,
     };
 
     it('should calculate base pricing correctly', () => {
@@ -266,11 +270,11 @@ describe('BookingService', () => {
     });
 
     it('should include travel fee for distant locations', () => {
-      const pricing = BookingService.calculatePricing(mockService, 15); // 5 miles beyond free radius
+      const pricing = BookingService.calculatePricing(mockService, 20); // 5 miles beyond 15-mile free radius
       
       expect(pricing.basePrice).toBe(75);
-      expect(pricing.travelFee).toBe(32.50);
-      expect(pricing.totalPrice).toBe(107.50);
+      expect(pricing.travelFee).toBe(2.50); // SOP: 5 miles * $0.50 = $2.50
+      expect(pricing.totalPrice).toBe(77.50); // $75 + $2.50
     });
 
     it('should calculate additional services correctly', () => {
@@ -290,10 +294,10 @@ describe('BookingService', () => {
 
     it('should combine all pricing components', () => {
       const additionalServices = ['witness', 'same_day_service'];
-      const pricing = BookingService.calculatePricing(mockService, 15, additionalServices, 'SENIOR15');
+      const pricing = BookingService.calculatePricing(mockService, 20, additionalServices, 'SENIOR15'); // 20 miles = 5 miles beyond free radius
       
-      const expectedSubtotal = 75 + 32.50 + 75; // base + travel + additional
-      const expectedDiscount = expectedSubtotal * 0.15;
+      const expectedSubtotal = 75 + 2.50 + 75; // base + travel (5 * $0.50) + additional services
+      const expectedDiscount = expectedSubtotal * 0.15; // 15% senior discount
       const expectedTotal = expectedSubtotal - expectedDiscount;
       
       expect(pricing.totalPrice).toBe(Math.round(expectedTotal * 100) / 100);
@@ -429,7 +433,7 @@ describe('BookingService', () => {
       expect(validation.errors.firstName).toContain('First name is required');
       expect(validation.errors.lastName).toContain('Last name is required');
       expect(validation.errors.address).toContain('Address is required');
-      expect(validation.errors.service).toContain('Please select a service');
+      expect(validation.errors.Service).toContain('Please select a service');
     });
 
     it('should validate ZIP codes correctly', () => {
@@ -479,10 +483,10 @@ describe('Booking Edge Cases', () => {
     const service: Service = {
       id: '1',
       name: 'Test Service',
-      price: 33.33,
-      duration: 60,
+      basePrice: 33.33,
+      durationMinutes: 60,
       category: 'test',
-      active: true,
+      isActive: true,
     };
     
     const pricing = BookingService.calculatePricing(service, 11.7, [], 'FIRST20');
@@ -490,4 +494,20 @@ describe('Booking Edge Cases', () => {
     // Should round to 2 decimal places
     expect(pricing.totalPrice.toString()).not.toMatch(/\.\d{3,}/);
   });
-}); 
+});
+
+// Mock service data for testing
+const mockService = {
+  id: 'service-1',
+  name: 'Standard Notary Services',  // SOP: was likely 'Essential Service'
+  serviceType: 'standard-notary',     // SOP: was likely "standard-notary"
+  price: 75.00,
+  isActive: true,
+};
+
+// Mock promo codes for testing
+const mockPromoCodes = {
+  'WELCOME10': { discount: 0.10, maxDiscount: 50 },
+  'SENIOR15': { discount: 0.15, maxDiscount: 100 },
+  'SAVE25': { discount: 25, minAmount: 100 },
+}; 

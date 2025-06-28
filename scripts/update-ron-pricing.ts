@@ -17,7 +17,7 @@ async function updateRONPricing() {
 
   console.log(`Found ${existingRONServices.length} existing RON services:`);
   existingRONServices.forEach(service => {
-    console.log(`- ${service.name}: $${service.price} (ID: ${service.id})`);
+    console.log(`- ${service.name}: $${service.basePrice} (ID: ${service.id})`);
   });
 
   // Texas-compliant RON services
@@ -26,34 +26,34 @@ async function updateRONPricing() {
       id: 'ron_acknowledgment_tx',
       name: 'RON Acknowledgment (Texas Compliant)',
       serviceType: 'STANDARD_NOTARY',
-      price: 35.00, // $25 RON + $10 acknowledgment
+      basePrice: 35.00, // $25 RON + $10 acknowledgment
       depositAmount: 0.00,
       requiresDeposit: false,
-      active: true,
+      isActive: true,
       description: 'Texas-compliant Remote Online Notarization for acknowledgments. $25 RON service fee + $10 acknowledgment fee per TX Gov\'t Code §406.111 & §406.024. Additional signers: +$1 each.',
-      duration: 45,
+      durationMinutes: 45,
     },
     {
       id: 'ron_oath_tx',
       name: 'RON Oath/Affirmation (Texas Compliant)',
       serviceType: 'STANDARD_NOTARY',
-      price: 35.00, // $25 RON + $10 oath
+      basePrice: 35.00, // $25 RON + $10 oath
       depositAmount: 0.00,
       requiresDeposit: false,
-      active: true,
+      isActive: true,
       description: 'Texas-compliant Remote Online Notarization for oaths and affirmations. $25 RON service fee + $10 oath fee per TX Gov\'t Code §406.111 & §406.024.',
-      duration: 30,
+      durationMinutes: 30,
     },
     {
       id: 'ron_business_tx',
       name: 'RON Business Documents (Texas Compliant)',
       serviceType: 'BUSINESS_SOLUTIONS',
-      price: 35.00, // Base Texas-compliant rate
+      basePrice: 35.00, // Base Texas-compliant rate
       depositAmount: 0.00,
       requiresDeposit: false,
-      active: true,
+      isActive: true,
       description: 'Texas-compliant Remote Online Notarization for business documents. $25 RON service fee + applicable notarial act fees per TX Gov\'t Code §406.111 & §406.024.',
-      duration: 60,
+      durationMinutes: 60,
     }
   ];
 
@@ -66,12 +66,12 @@ async function updateRONPricing() {
         update: {
           name: service.name,
           serviceType: service.serviceType as any,
-          price: service.price,
+          basePrice: service.basePrice,
           depositAmount: service.depositAmount,
           requiresDeposit: service.requiresDeposit,
-          active: service.active,
+          isActive: service.isActive,
           description: service.description,
-          duration: service.duration,
+          durationMinutes: service.durationMinutes,
           updatedAt: new Date(),
         },
         create: {
@@ -82,7 +82,7 @@ async function updateRONPricing() {
         },
       });
       
-      console.log(`✅ Upserted: ${upsertedService.name} - $${upsertedService.price}`);
+      console.log(`✅ Upserted: ${upsertedService.name} - $${upsertedService.basePrice}`);
     } catch (error) {
       console.error(`❌ Error upserting ${service.name}:`, error);
     }
@@ -97,7 +97,7 @@ async function updateRONPricing() {
         await prisma.service.update({
           where: { id: oldService.id },
           data: {
-            active: false,
+            isActive: false,
             name: `${oldService.name} (Deprecated - Non-TX Compliant)`,
             updatedAt: new Date(),
           }
@@ -119,13 +119,13 @@ async function updateRONPricing() {
         { name: { contains: 'Remote Online', mode: 'insensitive' } }
       ]
     },
-    orderBy: { active: 'desc' }
+    orderBy: { isActive: 'desc' }
   });
 
   console.log('\n📋 Final RON Services:');
-  updatedRONServices.forEach(service => {
-    const status = service.active ? '✅ Active' : '❌ Inactive';
-    console.log(`${status} - ${service.name}: $${service.price}`);
+  updatedRONServices.forEach((service: any) => {
+    const status = service.isActive ? '✅ Active' : '❌ Inactive';
+    console.log(`${status} - ${service.name}: $${service.basePrice}`);
   });
 }
 

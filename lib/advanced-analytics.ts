@@ -186,7 +186,7 @@ class AdvancedAnalytics {
         include: {
           Booking_Booking_signerIdToUser: {
             include: {
-              service: true
+              Service: true
             }
           }
         }
@@ -306,7 +306,7 @@ class AdvancedAnalytics {
           }
         },
         include: {
-          service: true
+          Service: true
         }
       });
 

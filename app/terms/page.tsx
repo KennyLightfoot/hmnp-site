@@ -59,8 +59,8 @@ export default function TermsPage() {
            <ul className="list-disc pl-6 space-y-1">
             <li>Appointments can be requested via our website booking system or by contacting us directly.</li>
             <li>To secure an appointment, you must provide: full legal name(s) of signer(s), document type(s)/count, service type, physical signing location address, and preferred appointment window.</li>
-            <li><strong>Same-Day Essential Service:</strong> Requests must be made by 3:00 PM for a potential 5:00 PM appointment, subject to availability. Requires a credit card guarantee.</li>
-            <li><strong>Priority Service:</strong> Confirmation requires an available 2-hour window.</li>
+            <li><strong>Same-Day Standard Notary Service:</strong> Requests must be made by 3:00 PM for a potential 5:00 PM appointment, subject to availability. Requires a credit card guarantee.</li>
+            <li><strong>Extended Hours Notary:</strong> Confirmation requires an available 2-hour window.</li>
           </ul>
 
           <h2 id="fees-and-payment" className="text-2xl font-semibold text-[#002147] mt-6 mb-2">5. Fees and Payment</h2>

@@ -58,8 +58,8 @@ export async function updateBookingStatus(
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        service: true,
-        signer: {
+        Service: true,
+        User_Booking_signerIdToUser: {
           select: { name: true, email: true }
         }
       }
@@ -225,8 +225,8 @@ export async function fullSyncBookingWithGHL(bookingId: string): Promise<Booking
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        service: true,
-        signer: {
+        Service: true,
+        User_Booking_signerIdToUser: {
           select: { name: true, email: true }
         }
       }
@@ -248,7 +248,7 @@ export async function fullSyncBookingWithGHL(bookingId: string): Promise<Booking
     const customFields = {
       cf_booking_id: booking.id,
       cf_booking_status: booking.status,
-      cf_service_type: booking.service?.name || 'Unknown',
+      cf_service_type: booking.Service?.name || 'Unknown',
               cf_appointment_date: booking.scheduledDateTime ?
           new Date(booking.scheduledDateTime).toLocaleDateString('en-US') : '',
         cf_appointment_time: booking.scheduledDateTime ?

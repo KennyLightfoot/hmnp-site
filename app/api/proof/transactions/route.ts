@@ -35,8 +35,8 @@ export async function POST(request: NextRequest) {
         signerId: (session.user as any).id
       },
       include: {
-        service: true,
-        signer: true,
+        Service: true,
+        User_Booking_signerIdToUser: true,
       }
     });
 
@@ -79,8 +79,8 @@ export async function POST(request: NextRequest) {
     const proofRequest: CreateTransactionRequest = {
       signers: [{
         email: booking.signerEmail,
-        first_name: booking.signer?.name?.split(' ')[0] || 'Signer',
-        last_name: booking.signer?.name?.split(' ').slice(1).join(' ') || '',
+        first_name: booking.User_Booking_signerIdToUser?.name?.split(' ')[0] || 'Signer',
+        last_name: booking.User_Booking_signerIdToUser?.name?.split(' ').slice(1).join(' ') || '',
         phone: booking.signerPhone ? {
           country_code: '1',
           number: booking.signerPhone.replace(/\D/g, '')
@@ -93,9 +93,9 @@ export async function POST(request: NextRequest) {
           country: 'US'
         } : undefined
       }],
-      transaction_name: `HMNP RON - ${booking.service.name}`,
+      transaction_name: `HMNP RON - ${booking.Service.name}`,
       transaction_type: 'notarization',
-      message_to_signer: `
+      message_to_User_Booking_signerIdToUser: `
 Thank you for choosing Houston Mobile Notary Pros for your Remote Online Notarization!
 
 Your notary will guide you through the process, including:
