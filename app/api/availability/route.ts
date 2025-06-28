@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { format, toZonedTime, getTimezoneOffset } from 'date-fns-tz';
 import { addMinutes, isBefore, isAfter, isSameDay } from 'date-fns';
-import { prisma } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 
 // Input validation schema
 const availabilityQuerySchema = z.object({
@@ -158,6 +158,8 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Availability API error:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
+    console.error('Request URL:', request.url);
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -167,7 +169,11 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined,
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     );
   } finally {
