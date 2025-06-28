@@ -164,7 +164,7 @@ export default function BookingPage() {
       setServicesLoading(true);
       setServicesError(null);
       
-      const response = await fetch('/api/services');
+      const response = await fetch('/api/services-compatible');
       if (!response.ok) {
         throw new Error(`Failed to fetch services: ${response.status}`);
       }

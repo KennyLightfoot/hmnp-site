@@ -45,7 +45,7 @@ export class DistanceService {
   private static readonly BASE_LOCATION = "77591"; // Our service center ZIP code
   private static readonly BASE_LOCATION_FULL = "Texas City, TX 77591"; // Full address for Google Maps
   private static readonly MAX_SERVICE_RADIUS = 50; // miles (extended per SOP)
-  private static readonly FREE_SERVICE_RADIUS = 15; // miles (15-mile base radius per SOP)
+  private static readonly FREE_SERVICE_RADIUS = 20; // miles (20-mile base radius per SOP)
   private static readonly TRAVEL_FEE_PER_MILE = 0.50; // $0.50/mile beyond free radius per SOP
   private static readonly METERS_TO_MILES = 0.000621371;
 

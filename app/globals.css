@@ -74,3 +74,74 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Google Maps Mobile Optimization */
+  .map-container {
+    @apply w-full h-full relative;
+  }
+  
+  .map-container .gm-style {
+    @apply rounded-lg;
+  }
+  
+  /* Mobile-optimized map controls */
+  @media (max-width: 768px) {
+    .map-container .gm-style .gm-style-cc {
+      @apply text-xs;
+    }
+    
+    .map-container .gm-style .gm-fullscreen-control {
+      @apply right-2 top-2;
+    }
+    
+    .map-container .gm-style .gm-zoom-control {
+      @apply right-2 bottom-16;
+    }
+  }
+  
+  /* Service area circle styling */
+  .service-area-circle {
+    @apply opacity-80;
+  }
+  
+  /* Map marker hover effects */
+  .map-marker {
+    @apply transition-transform duration-200 hover:scale-110 cursor-pointer;
+  }
+  
+  /* Map loading state */
+  .map-loading {
+    @apply flex items-center justify-center bg-gray-100 rounded-lg animate-pulse;
+  }
+  
+  /* Address autocomplete styling */
+  .pac-container {
+    @apply rounded-lg shadow-lg border-0;
+    z-index: 9999 !important;
+  }
+  
+  .pac-item {
+    @apply px-4 py-3 border-b border-gray-100 cursor-pointer;
+  }
+  
+  .pac-item:hover {
+    @apply bg-gray-50;
+  }
+  
+  .pac-item-selected {
+    @apply bg-blue-50;
+  }
+  
+  /* Mobile touch optimization for map interactions */
+  @media (max-width: 768px) {
+    .map-container {
+      @apply touch-pan-x touch-pan-y;
+    }
+    
+    /* Larger touch targets for mobile */
+    .map-container button {
+      @apply min-w-10 min-h-10;
+    }
+  }
+}
