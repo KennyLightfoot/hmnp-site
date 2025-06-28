@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { Logger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 import { cache } from '@/lib/cache';
 
-const logger = new Logger('FileUploadSecurity');
+const uploadLogger = logger.forService('FileUploadSecurity');
 
 // File upload security configuration
 export const UPLOAD_CONFIG = {
@@ -48,7 +48,7 @@ export const fileUploadSchema = z.object({
     .max(UPLOAD_CONFIG.MAX_FILE_SIZE, `File size must be less than ${UPLOAD_CONFIG.MAX_FILE_SIZE / 1024 / 1024}MB`),
   contentType: z.string()
     .refine(
-      (type) => UPLOAD_CONFIG.ALLOWED_MIME_TYPES.includes(type),
+      (type) => UPLOAD_CONFIG.ALLOWED_MIME_TYPES.includes(type as any),
       'File type not supported'
     ),
 });
@@ -145,7 +145,7 @@ export class FileUploadSecurity {
     const lastDotIndex = filename.lastIndexOf('.');
     if (lastDotIndex > 0) {
       const extension = filename.slice(lastDotIndex).toLowerCase();
-      if (UPLOAD_CONFIG.ALLOWED_EXTENSIONS.includes(extension)) {
+      if (UPLOAD_CONFIG.ALLOWED_EXTENSIONS.includes(extension as any)) {
         // Remove any existing extension from sanitized name and add original
         const nameWithoutExt = sanitized.replace(/\.[^.]*$/, '');
         sanitized = `${nameWithoutExt}${extension}`;
@@ -244,7 +244,7 @@ export class FileUploadSecurity {
 
       return scanResult;
     } catch (error) {
-      logger.error('Failed to check virus scan status', { s3Key, error });
+      uploadLogger.error('Failed to check virus scan status', { s3Key, error });
       
       return {
         isClean: false,
@@ -259,20 +259,148 @@ export class FileUploadSecurity {
    * Query S3 object tags for scan results
    */
   private static async queryS3ScanTags(s3Key: string): Promise<VirusScanResult> {
-    // This would integrate with AWS SDK to check S3 object tags
-    // For now, returning a placeholder implementation
     const scanId = `scan_${Buffer.from(s3Key).toString('base64')}`;
     
-    // In a real implementation, you would:
-    // 1. Use AWS SDK to get object tagging
-    // 2. Check for 'clamav-scan-status' tag
-    // 3. Parse the scan result from tags
+    try {
+      // Import AWS SDK dynamically to avoid bundling in client
+      const { GetObjectTaggingCommand, S3Client } = await import('@aws-sdk/client-s3');
+      
+      const s3Client = new S3Client({
+        region: process.env.AWS_REGION || 'us-east-1',
+        credentials: {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+        },
+      });
+
+      const command = new GetObjectTaggingCommand({
+        Bucket: process.env.AWS_S3_BUCKET_NAME!,
+        Key: s3Key,
+      });
+
+      const response = await s3Client.send(command);
+      const tags = response.TagSet || [];
+      
+      // Look for ClamAV scan tags
+      const statusTag = tags.find(tag => tag.Key === 'clamav-scan-status');
+      const timestampTag = tags.find(tag => tag.Key === 'clamav-scan-timestamp');
+      const threatTag = tags.find(tag => tag.Key === 'clamav-threat-name');
+
+      if (!statusTag) {
+        return {
+          isClean: false,
+          scanStatus: 'pending',
+          scanDate: new Date(),
+          scanId,
+        };
+      }
+
+      const scanStatus = statusTag.Value as VirusScanResult['scanStatus'];
+      const isClean = scanStatus === 'clean';
+      const scanDate = timestampTag?.Value ? new Date(timestampTag.Value) : new Date();
+      const threatName = threatTag?.Value;
+
+      return {
+        isClean,
+        scanStatus,
+        scanDate,
+        scanId,
+        threatName,
+      };
+    } catch (error) {
+      uploadLogger.error('Failed to query S3 scan tags', { s3Key, error });
+      
+      return {
+        isClean: false,
+        scanStatus: 'error',
+        scanDate: new Date(),
+        scanId,
+      };
+    }
+  }
+
+  /**
+   * Trigger virus scan for uploaded file
+   */
+  static async triggerVirusScan(s3Key: string): Promise<boolean> {
+    try {
+      // This would typically trigger a Lambda function that:
+      // 1. Downloads the file from S3
+      // 2. Scans it with ClamAV
+      // 3. Tags the S3 object with scan results
+      
+      // For now, we'll simulate the scan by tagging the object
+      const { PutObjectTaggingCommand, S3Client } = await import('@aws-sdk/client-s3');
+      
+      const s3Client = new S3Client({
+        region: process.env.AWS_REGION || 'us-east-1',
+        credentials: {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+        },
+      });
+
+      const command = new PutObjectTaggingCommand({
+        Bucket: process.env.AWS_S3_BUCKET_NAME!,
+        Key: s3Key,
+        Tagging: {
+          TagSet: [
+            {
+              Key: 'clamav-scan-status',
+              Value: 'pending',
+            },
+            {
+              Key: 'clamav-scan-timestamp',
+              Value: new Date().toISOString(),
+            },
+            {
+              Key: 'scan-requested-by',
+              Value: 'file-upload-security',
+            },
+          ],
+        },
+      });
+
+      await s3Client.send(command);
+      
+      // In production, you would invoke a Lambda function here
+      // await this.invokeClamAVLambda(s3Key);
+      
+      uploadLogger.info('Virus scan triggered for file', { s3Key });
+      return true;
+    } catch (error) {
+      uploadLogger.error('Failed to trigger virus scan', { s3Key, error });
+      return false;
+    }
+  }
+
+  /**
+   * Wait for virus scan completion with timeout
+   */
+  static async waitForVirusScan(
+    s3Key: string, 
+    timeoutMs: number = UPLOAD_CONFIG.VIRUS_SCAN_TIMEOUT
+  ): Promise<VirusScanResult> {
+    const startTime = Date.now();
+    const pollInterval = 5000; // 5 seconds
     
+    while (Date.now() - startTime < timeoutMs) {
+      const scanResult = await this.checkVirusScanStatus(s3Key);
+      
+      if (scanResult.scanStatus !== 'pending') {
+        return scanResult;
+      }
+      
+      // Wait before next poll
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
+    }
+    
+    // Timeout reached
     return {
       isClean: false,
-      scanStatus: 'pending',
+      scanStatus: 'timeout',
       scanDate: new Date(),
-      scanId,
+      scanId: `scan_${Buffer.from(s3Key).toString('base64')}`,
     };
   }
 
@@ -315,7 +443,7 @@ export class FileUploadSecurity {
         remainingUploads: dailyLimit - currentCount - 1 
       };
     } catch (error) {
-      logger.error('Failed to check upload rate limit', { userId, error });
+      uploadLogger.error('Failed to check upload rate limit', { userId, error });
       // On error, allow upload but log for monitoring
       return { allowed: true, remainingUploads: dailyLimit };
     }
@@ -368,11 +496,11 @@ export class FileUploadSecurity {
     auditLog.securityChecks.rateLimitCheck = rateLimitResult.allowed;
 
     // Log security audit
-    logger.info('File upload security audit', auditLog);
+    uploadLogger.info('File upload security audit', auditLog);
 
     // Alert on security violations
     if (!validationResult.isValid || validationResult.securityScore < 70) {
-      logger.warn('File upload security violation detected', {
+      uploadLogger.warn('File upload security violation detected', {
         ...auditLog,
         securityScore: validationResult.securityScore,
         violations: validationResult.errors,

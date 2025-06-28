@@ -6,7 +6,7 @@ async function updateRONPricing() {
   console.log('🔍 Checking existing RON services...');
   
   // Find existing RON services
-  const existingRONServices = await prisma.Service.findMany({
+  const existingRONServices = await prisma.service.findMany({
     where: {
       OR: [
         { name: { contains: 'RON', mode: 'insensitive' } },
@@ -61,7 +61,7 @@ async function updateRONPricing() {
 
   for (const service of texasCompliantRONServices) {
     try {
-      const upsertedService = await prisma.Service.upsert({
+      const upsertedService = await prisma.service.upsert({
         where: { id: service.id },
         update: {
           name: service.name,
@@ -75,7 +75,7 @@ async function updateRONPricing() {
           updatedAt: new Date(),
         },
         create: {
-          ...Service,
+          ...service,
           serviceType: service.serviceType as any,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -94,7 +94,7 @@ async function updateRONPricing() {
   for (const oldService of existingRONServices) {
     if (!texasCompliantRONServices.find(newService => newService.id === oldService.id)) {
       try {
-        await prisma.Service.update({
+        await prisma.service.update({
           where: { id: oldService.id },
           data: {
             isActive: false,
@@ -112,7 +112,7 @@ async function updateRONPricing() {
   console.log('\n✅ RON pricing update completed!');
   
   // Show final RON services
-  const updatedRONServices = await prisma.Service.findMany({
+  const updatedRONServices = await prisma.service.findMany({
     where: {
       OR: [
         { name: { contains: 'RON', mode: 'insensitive' } },
@@ -123,7 +123,7 @@ async function updateRONPricing() {
   });
 
   console.log('\n📋 Final RON Services:');
-  updatedRONServices.forEach(service => {
+  updatedRONServices.forEach((service: any) => {
     const status = service.isActive ? '✅ Active' : '❌ Inactive';
     console.log(`${status} - ${service.name}: $${service.basePrice}`);
   });

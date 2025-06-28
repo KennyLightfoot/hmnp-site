@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get service details
-    const service = await prisma.Service.findUnique({
+    const service = await prisma.service.findUnique({
       where: { id: serviceId }
     });
 

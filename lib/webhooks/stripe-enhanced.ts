@@ -5,12 +5,12 @@
 
 import type Stripe from 'stripe';
 import { prisma } from '@/lib/db';
-import { Logger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 import { cache } from '@/lib/cache';
 import { BookingStatus } from '@prisma/client';
 import * as ghl from '@/lib/ghl';
 
-const logger = new Logger('StripeWebhookEnhanced');
+const webhookEnhancedLogger = logger.forService('StripeWebhookEnhanced');
 
 export interface WebhookProcessingResult {
   success: boolean;
@@ -46,7 +46,7 @@ export class EnhancedStripeWebhookProcessor {
     const startTime = Date.now();
     const eventId = event.id;
     
-    logger.info('Processing Stripe webhook', {
+    webhookEnhancedLogger.info('Processing Stripe webhook', {
       eventId,
       eventType: event.type,
       created: new Date(event.created * 1000),
@@ -56,7 +56,7 @@ export class EnhancedStripeWebhookProcessor {
       // Check for duplicate/already processed events
       const isDuplicate = await this.checkAndMarkEventProcessing(eventId);
       if (isDuplicate) {
-        logger.info('Event already processed, skipping', { eventId });
+        webhookEnhancedLogger.info('Event already processed, skipping', { eventId });
         return {
           success: true,
           eventId,
@@ -75,7 +75,7 @@ export class EnhancedStripeWebhookProcessor {
       // Record metrics
       await this.recordMetrics(event.type, true, Date.now() - startTime, result.retryCount || 0);
       
-      logger.info('Webhook processed successfully', {
+      webhookEnhancedLogger.info('Webhook processed successfully', {
         eventId,
         eventType: event.type,
         processingTimeMs: Date.now() - startTime,
@@ -103,7 +103,7 @@ export class EnhancedStripeWebhookProcessor {
       // Send alert for critical errors
       await this.sendErrorAlert(event, error);
       
-      logger.error('Webhook processing failed after all retries', {
+      webhookEnhancedLogger.error('Webhook processing failed after all retries', {
         eventId,
         eventType: event.type,
         error: errorMessage,
@@ -138,7 +138,7 @@ export class EnhancedStripeWebhookProcessor {
       } catch (error) {
         lastError = error instanceof Error ? error : new Error('Unknown error');
         
-        logger.warn('Webhook processing attempt failed', {
+        webhookEnhancedLogger.warn('Webhook processing attempt failed', {
           eventId: event.id,
           attempt: attempt + 1,
           maxRetries: this.MAX_RETRIES + 1,
@@ -160,7 +160,7 @@ export class EnhancedStripeWebhookProcessor {
         const jitter = Math.random() * 0.1 * delay;
         const totalDelay = delay + jitter;
 
-        logger.info('Retrying webhook processing', {
+        webhookEnhancedLogger.info('Retrying webhook processing', {
           eventId: event.id,
           attempt: attempt + 1,
           delayMs: totalDelay,
@@ -191,7 +191,7 @@ export class EnhancedStripeWebhookProcessor {
       await cache.set(cacheKey, 'processing', { ttl: this.IDEMPOTENCY_TTL });
       return false;
     } catch (error) {
-      logger.error('Failed to check event idempotency', { eventId, error });
+      webhookEnhancedLogger.error('Failed to check event idempotency', { eventId, error });
       // On cache failure, allow processing to continue
       return false;
     }
@@ -215,7 +215,7 @@ export class EnhancedStripeWebhookProcessor {
         error: errorMessage,
       }, { ttl: this.IDEMPOTENCY_TTL });
     } catch (error) {
-      logger.error('Failed to mark event as completed', { eventId, error });
+      webhookEnhancedLogger.error('Failed to mark event as completed', { eventId, error });
     }
   }
 
@@ -278,7 +278,7 @@ export class EnhancedStripeWebhookProcessor {
       await cache.set(dailyKey, dailyStats, { ttl: 30 * 24 * 60 * 60 }); // 30 days
 
     } catch (error) {
-      logger.error('Failed to record webhook metrics', { eventType, error });
+      webhookEnhancedLogger.error('Failed to record webhook metrics', { eventType, error });
     }
   }
 
@@ -303,7 +303,7 @@ export class EnhancedStripeWebhookProcessor {
       };
 
       // Log critical alert
-      logger.error('CRITICAL: Stripe webhook processing failed', alertData);
+      webhookEnhancedLogger.error('CRITICAL: Stripe webhook processing failed', alertData);
 
       // Store alert for monitoring dashboard
       await cache.set(
@@ -318,7 +318,7 @@ export class EnhancedStripeWebhookProcessor {
       }
 
     } catch (alertError) {
-      logger.error('Failed to send error alert', { alertError });
+      webhookEnhancedLogger.error('Failed to send error alert', { alertError });
     }
   }
 
@@ -340,7 +340,7 @@ export class EnhancedStripeWebhookProcessor {
         throw new Error(`Alert service responded with ${response.status}`);
       }
     } catch (error) {
-      logger.error('Failed to send external alert', { error });
+      webhookEnhancedLogger.error('Failed to send external alert', { error });
     }
   }
 
@@ -383,7 +383,7 @@ export class EnhancedStripeWebhookProcessor {
 
       return allMetrics;
     } catch (error) {
-      logger.error('Failed to get webhook metrics', { error });
+      webhookEnhancedLogger.error('Failed to get webhook metrics', { error });
       return eventType ? {
         totalProcessed: 0,
         successRate: 0,
@@ -491,13 +491,13 @@ export class EnhancedStripeWebhookProcessor {
   static async cleanupOldRecords(): Promise<void> {
     try {
       // This would typically be run as a scheduled job
-      logger.info('Cleaning up old webhook processing records');
+      webhookEnhancedLogger.info('Cleaning up old webhook processing records');
       
       // The cache TTL handles most cleanup automatically,
       // but we could add additional cleanup logic here if needed
       
     } catch (error) {
-      logger.error('Failed to cleanup old webhook records', { error });
+      webhookEnhancedLogger.error('Failed to cleanup old webhook records', { error });
     }
   }
 }

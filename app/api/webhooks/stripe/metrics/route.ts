@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { EnhancedStripeWebhookProcessor } from '@/lib/webhooks/stripe-enhanced';
-import { Logger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
-const logger = new Logger('StripeWebhookMetrics');
+const metricsLogger = logger.forService('StripeWebhookMetrics');
 
 export async function GET(request: NextRequest) {
   try {
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
       summary: Array.isArray(metrics) ? undefined : generateMetricsSummary(metrics),
     };
 
-    logger.info('Webhook metrics requested', { 
+    metricsLogger.info('Webhook metrics requested', { 
       userId: (session.user as any).id,
       eventType,
       timestamp: response.timestamp 
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response);
 
   } catch (error) {
-    logger.error('Failed to get webhook metrics', { error });
+    metricsLogger.error('Failed to get webhook metrics', { error });
     return NextResponse.json(
       { error: 'Failed to retrieve webhook metrics' },
       { status: 500 }
@@ -113,7 +113,7 @@ export async function DELETE(request: NextRequest) {
 
     // Reset metrics logic would go here
     // For now, just log the reset request
-    logger.warn('Webhook metrics reset requested', {
+    metricsLogger.warn('Webhook metrics reset requested', {
       userId: (session.user as any).id,
       eventType,
       timestamp: new Date().toISOString(),
@@ -126,7 +126,7 @@ export async function DELETE(request: NextRequest) {
     });
 
   } catch (error) {
-    logger.error('Failed to reset webhook metrics', { error });
+    metricsLogger.error('Failed to reset webhook metrics', { error });
     return NextResponse.json(
       { error: 'Failed to reset webhook metrics' },
       { status: 500 }

@@ -25,7 +25,7 @@ async function testBookingEndpoint() {
     
     // Get a valid service ID from the database
     console.log('Fetching active service from database...');
-    const service = await prisma.Service.findFirst({
+    const service = await prisma.service.findFirst({
       where: { isActive: true },
       select: { id: true, name: true, serviceType: true, basePrice: true }
     });

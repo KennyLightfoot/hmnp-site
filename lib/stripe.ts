@@ -14,7 +14,7 @@ export function getStripeClient(): Stripe | null {
 
   if (!stripeInstance) {
     stripeInstance = new Stripe(env.STRIPE_SECRET_KEY, {
-      apiVersion: '2023-10-16',
+      apiVersion: '2025-05-28.basil', // Updated to latest supported API version for Stripe 18.x
       typescript: true,
       telemetry: false, // Disable telemetry for better performance
     });

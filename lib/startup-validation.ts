@@ -6,10 +6,10 @@
 
 import { validateEnvironmentOrThrow, ENV_VALIDATION } from './env-validation';
 import { EnvironmentSecurity } from './security/environment-security';
-import { Logger } from './logger';
+import { logger } from './logger';
 import { prisma } from './db';
 
-const logger = new Logger('StartupValidation');
+const startupLogger = logger.forService('StartupValidation');
 
 export interface StartupValidationResult {
   success: boolean;

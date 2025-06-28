@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import crypto from 'crypto';
-import { Logger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
-const logger = new Logger('EnvironmentSecurity');
+const securityLogger = logger.forService('EnvironmentSecurity');
 
 // Security-focused environment variable validation
 export const securityEnvSchema = z.object({

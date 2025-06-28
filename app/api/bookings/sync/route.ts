@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
     console.log('✅ Phone booking data validated');
 
     // Check if service exists in our system
-    const service = await prisma.Service.findFirst({
+    const service = await prisma.service.findFirst({
       where: {
         name: {
           contains: validatedData.serviceName,

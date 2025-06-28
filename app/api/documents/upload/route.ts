@@ -2,12 +2,12 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { Logger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 import { FileUploadSecurity } from '@/lib/security/file-upload-security';
 import { z } from 'zod';
 import { headers } from 'next/headers';
 
-const logger = new Logger('DocumentUpload');
+const uploadLogger = logger.forService('DocumentUpload');
 
 const uploadRequestSchema = z.object({
   filename: z.string().min(1).max(255),
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
     // 4. Check validation results
     if (!securityAudit.validationResult.isValid) {
-      logger.warn('File upload blocked - security validation failed', {
+      uploadLogger.warn('File upload blocked - security validation failed', {
         userId,
         filename: validatedInput.filename,
         errors: securityAudit.validationResult.errors,
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
 
     // 5. Check rate limiting
     if (!securityAudit.rateLimitResult.allowed) {
-      logger.warn('File upload blocked - rate limit exceeded', {
+      uploadLogger.warn('File upload blocked - rate limit exceeded', {
         userId,
         filename: validatedInput.filename,
       });
@@ -128,7 +128,7 @@ export async function POST(request: Request) {
     const uploadUrl = await generatePresignedUploadUrl(s3Key, validatedInput.contentType);
 
     // 10. Log successful upload initiation
-    logger.info('Document upload initiated successfully', {
+    uploadLogger.info('Document upload initiated successfully', {
       documentId: documentRecord.id,
       userId,
       filename: sanitizedFilename,
@@ -159,7 +159,7 @@ export async function POST(request: Request) {
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      logger.warn('Document upload validation error', {
+      uploadLogger.warn('Document upload validation error', {
         userId,
         errors: error.errors,
       });
@@ -170,7 +170,7 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    logger.error('Document upload failed', {
+    uploadLogger.error('Document upload failed', {
       userId,
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
@@ -270,7 +270,7 @@ export async function GET(request: Request) {
     });
 
   } catch (error) {
-    logger.error('Failed to get document status', {
+    uploadLogger.error('Failed to get document status', {
       documentId,
       error: error instanceof Error ? error.message : 'Unknown error',
     });

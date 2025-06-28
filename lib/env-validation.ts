@@ -13,31 +13,41 @@ const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' ||
 
 const shouldSkipValidation = process.env.SKIP_ENV_VALIDATION === 'true' || isBuildTime;
 
-// Define required environment variables with validation
+// Define required environment variables with enhanced validation
 const envSchema = z.object({
   // Database
   DATABASE_URL: z.string().url('DATABASE_URL must be a valid URL'),
+  DIRECT_URL: z.string().url('DIRECT_URL must be a valid URL').optional(),
   
-  // NextAuth
-  NEXTAUTH_SECRET: z.string().min(1, 'NEXTAUTH_SECRET is required'),
+  // NextAuth - Enhanced security validation
+  NEXTAUTH_SECRET: z.string().min(32, 'NEXTAUTH_SECRET must be at least 32 characters for security'),
   NEXTAUTH_URL: z.string().url('NEXTAUTH_URL must be a valid URL'),
   
-  // Stripe
+  // Stripe - Enhanced validation
   STRIPE_SECRET_KEY: z.string().startsWith('sk_', 'STRIPE_SECRET_KEY must start with sk_'),
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().startsWith('pk_', 'STRIPE_PUBLISHABLE_KEY must start with pk_'),
   STRIPE_WEBHOOK_SECRET: z.string().startsWith('whsec_', 'STRIPE_WEBHOOK_SECRET must start with whsec_'),
   
   // Go High Level
-  GHL_LOCATION_ID: z.string().min(1, 'GHL_LOCATION_ID is required'),
+  GHL_LOCATION_ID: z.string().min(20, 'GHL_LOCATION_ID must be at least 20 characters'),
   GHL_API_KEY: z.string().optional(), // Legacy support
   GHL_PRIVATE_INTEGRATION_TOKEN: z.string().optional(),
   
   // Email (Resend)
   RESEND_API_KEY: z.string().startsWith('re_', 'RESEND_API_KEY must start with re_').optional(),
   
-  // Optional but commonly used
+  // SMS (Twilio) - Added for comprehensive validation
+  TWILIO_ACCOUNT_SID: z.string().startsWith('AC', 'TWILIO_ACCOUNT_SID must start with AC').optional(),
+  TWILIO_AUTH_TOKEN: z.string().min(32, 'TWILIO_AUTH_TOKEN must be at least 32 characters').optional(),
+  TWILIO_PHONE_NUMBER: z.string().regex(/^\+1\d{10}$/, 'TWILIO_PHONE_NUMBER must be valid US number (+1xxxxxxxxxx)').optional(),
+  
+  // Security
+  ENCRYPTION_KEY: z.string().min(32, 'ENCRYPTION_KEY must be at least 32 characters').optional(),
+  
+  // Application
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   VERCEL_ENV: z.enum(['development', 'preview', 'production']).optional(),
+  NEXT_PUBLIC_BASE_URL: z.string().url('NEXT_PUBLIC_BASE_URL must be a valid URL').optional(),
 });
 
 // Optional environment variables (with defaults)
@@ -68,6 +78,69 @@ interface ValidationResult {
   errors: string[];
   warnings: string[];
   env?: Record<string, any>;
+}
+
+/**
+ * Check for security issues in environment configuration
+ */
+function checkSecurityConfiguration(): string[] {
+  const warnings: string[] = [];
+  
+  // Check for weak secrets
+  if (process.env.NEXTAUTH_SECRET && process.env.NEXTAUTH_SECRET.length < 32) {
+    warnings.push('NEXTAUTH_SECRET should be at least 32 characters long for security');
+  }
+  
+  // Check for development keys in production
+  if (process.env.NODE_ENV === 'production') {
+    if (process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.startsWith('pk_test_')) {
+      warnings.push('⚠️ CRITICAL: Using test Stripe keys in production environment');
+    }
+    
+    if (process.env.NEXTAUTH_URL?.includes('localhost')) {
+      warnings.push('⚠️ CRITICAL: NEXTAUTH_URL points to localhost in production');
+    }
+    
+    if (process.env.NEXT_PUBLIC_BASE_URL?.startsWith('http://')) {
+      warnings.push('⚠️ SECURITY: Using HTTP instead of HTTPS in production');
+    }
+  }
+  
+  // Check for exposed secrets in client-side variables
+  const clientVars = Object.keys(process.env).filter(key => key.startsWith('NEXT_PUBLIC_'));
+  const sensitivePatterns = ['secret', 'key', 'token', 'password'];
+  
+  clientVars.forEach(varName => {
+    if (sensitivePatterns.some(pattern => varName.toLowerCase().includes(pattern))) {
+      warnings.push(`⚠️ SECURITY: Potentially sensitive data in client-side variable: ${varName}`);
+    }
+  });
+  
+  return warnings;
+}
+
+/**
+ * Validate production-specific requirements
+ */
+function validateProductionRequirements(): string[] {
+  const errors: string[] = [];
+  
+  if (process.env.NODE_ENV === 'production') {
+    const criticalVars = [
+      'DATABASE_URL',
+      'NEXTAUTH_SECRET',
+      'STRIPE_SECRET_KEY',
+      'STRIPE_WEBHOOK_SECRET'
+    ];
+    
+    criticalVars.forEach(varName => {
+      if (!process.env[varName]) {
+        errors.push(`❌ CRITICAL: ${varName} is required in production`);
+      }
+    });
+  }
+  
+  return errors;
 }
 
 /**
@@ -103,6 +176,14 @@ export function validateEnvironment(): ValidationResult {
     if (requiredEnv.GHL_API_KEY && !requiredEnv.GHL_PRIVATE_INTEGRATION_TOKEN) {
       warnings.push('GHL_API_KEY is deprecated. Consider migrating to GHL_PRIVATE_INTEGRATION_TOKEN');
     }
+    
+    // Add production-specific validation
+    const productionErrors = validateProductionRequirements();
+    errors.push(...productionErrors);
+    
+    // Add security configuration checks
+    const securityWarnings = checkSecurityConfiguration();
+    warnings.push(...securityWarnings);
     
     // Warn about missing optional but recommended variables
     if (!requiredEnv.RESEND_API_KEY) {

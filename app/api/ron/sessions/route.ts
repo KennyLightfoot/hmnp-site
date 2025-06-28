@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     const { serviceId, notes } = body;
 
     // 3. Find or create a RON service
-    let ronService = await prisma.Service.findFirst({
+    let ronService = await prisma.service.findFirst({
       where: { 
         serviceType: 'SPECIALTY_NOTARY_SERVICE',
         name: { contains: 'Remote Online Notarization' }
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     });
 
     if (!ronService) {
-      ronService = await prisma.Service.create({
+      ronService = await prisma.service.create({
         data: {
           name: 'Remote Online Notarization',
           serviceType: 'SPECIALTY_NOTARY_SERVICE',
