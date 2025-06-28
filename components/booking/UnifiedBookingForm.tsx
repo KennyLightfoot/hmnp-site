@@ -258,8 +258,12 @@ export default function UnifiedBookingForm({
           code,
           serviceId,
           originalAmount: amount,
-          customerEmail: form.getValues('customerEmail')
-        })
+          // Only send email if it's been validated
+          ...(form.getFieldState('customerEmail').isDirty &&
+            !form.getFieldState('customerEmail').error && {
+              customerEmail: form.getValues('customerEmail'),
+            }),
+        }),
       });
 
       if (response.ok) {
