@@ -40,6 +40,8 @@ const DEFAULT_BUSINESS_HOURS: BusinessHours[] = [
 ];
 
 export async function GET(request: NextRequest) {
+  console.log('[AVAILABILITY API] Starting request processing:', new Date().toISOString());
+  
   try {
     const { searchParams } = new URL(request.url);
     const queryParams = {
@@ -49,6 +51,8 @@ export async function GET(request: NextRequest) {
       timezone: searchParams.get('timezone') || undefined,
     };
 
+    console.log('[AVAILABILITY API] Query params:', queryParams);
+
     // Validate input parameters
     const validatedParams = availabilityQuerySchema.parse(queryParams);
 
@@ -56,6 +60,8 @@ export async function GET(request: NextRequest) {
     const businessSettings = await getBusinessSettings();
     const businessTimezone = businessSettings.business_timezone || 'America/Chicago';
     const clientTimezone = validatedParams.timezone;
+    
+    console.log('[AVAILABILITY API] Business timezone:', businessTimezone);
     
     // Convert requested date to business timezone for proper availability calculations
     const requestedDateInClientTz = new Date(`${validatedParams.date}T00:00:00`);
@@ -73,16 +79,20 @@ export async function GET(request: NextRequest) {
     }
 
     // Get service details
+    console.log('[AVAILABILITY API] Looking up service:', validatedParams.serviceId);
     const service = await prisma.Service.findUnique({
       where: { id: validatedParams.serviceId },
     });
 
     if (!service || !service.isActive) {
+      console.log('[AVAILABILITY API] Service not found or inactive:', service);
       return NextResponse.json(
         { error: 'Service not found or inactive' },
         { status: 404 }
       );
     }
+
+    console.log('[AVAILABILITY API] Service found:', service.name);
 
     // Get service duration (use override if provided, otherwise service default)
         const serviceDurationMinutes = validatedParams.duration
@@ -136,6 +146,8 @@ export async function GET(request: NextRequest) {
       clientTimezone,
     });
 
+    console.log('[AVAILABILITY API] Calculated', availableSlots.length, 'time slots');
+
     // Include timezone information in the response
     return NextResponse.json({
       date: validatedParams.date,
@@ -157,9 +169,9 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Availability API error:', error);
-    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
-    console.error('Request URL:', request.url);
+    console.error('[AVAILABILITY API] Error occurred:', error);
+    console.error('[AVAILABILITY API] Error stack:', error instanceof Error ? error.stack : 'No stack');
+    console.error('[AVAILABILITY API] Request URL:', request.url);
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -371,4 +383,4 @@ function calculateAvailableSlots({
   }
   
   return slots;
-} 
+}
