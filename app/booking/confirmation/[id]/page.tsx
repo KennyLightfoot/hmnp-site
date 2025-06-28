@@ -8,7 +8,7 @@ interface BookingDetails {
   id: string;
   reference: string;
   status: string;
-  service: {
+  Service: {
     name: string;
     duration: number;
   };
@@ -167,7 +167,7 @@ export default function BookingConfirmationPage() {
               <div className="bg-gray-50 rounded-lg p-4 space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Service:</span>
-                  <span className="font-medium">{booking.service.name}</span>
+                  <span className="font-medium">{booking.Service.name}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Date & Time:</span>
@@ -175,7 +175,7 @@ export default function BookingConfirmationPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Duration:</span>
-                  <span className="font-medium">{booking.service.duration} minutes</span>
+                  <span className="font-medium">{booking.Service.duration} minutes</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Location:</span>

@@ -1,0 +1,2357 @@
+
+> hmnp-site@0.1.0 dev /home/fleece-johnson/HMNP-Site/hmnp-site
+> next dev
+
+   ▲ Next.js 15.3.3
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.193:3000
+   - Environments: .env.local, .env
+   - Experiments (use with caution):
+     ✓ webpackMemoryOptimizations
+
+ ✓ Starting...
+ ✓ Ready in 5.3s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1994ms (252 modules)
+ ○ Compiling /api/health ...
+ ✓ Compiled /api/health in 10.7s (730 modules)
+ ⨯ TypeError: _lib_logging_logger__WEBPACK_IMPORTED_MODULE_2__.logger.clearRequestId is not a function
+    at GET (app/api/health/route.ts:160:11)
+  158 |     });
+  159 |   } finally {
+> 160 |     logger.clearRequestId();
+      |           ^
+  161 |   }
+  162 | }
+  163 |
+ ⨯ TypeError: _lib_logging_logger__WEBPACK_IMPORTED_MODULE_2__.logger.clearRequestId is not a function
+    at GET (app/api/health/route.ts:160:11)
+  158 |     });
+  159 |   } finally {
+> 160 |     logger.clearRequestId();
+      |           ^
+  161 |   }
+  162 | }
+  163 |
+ GET /api/health 500 in 12144ms
+ ✓ Compiled in 164ms
+ ○ Compiling /api/health ...
+ ✓ Compiled /api/health in 1078ms (453 modules)
+ ⨯ ReferenceError: service is not defined
+    at EnhancedLogger.error (lib/logging/logger.ts:180:59)
+    at GET (app/api/health/route.ts:139:11)
+  178 |
+  179 |   error(message: string, Service: string, error?: Error, metadata?: Record<string, any>): void {
+> 180 |     const logEntry = this.formatLogEntry('error', message, service, metadata);
+      |                                                           ^
+  181 |     
+  182 |     if (error) {
+  183 |       logEntry.error = {
+ ⨯ ReferenceError: service is not defined
+    at EnhancedLogger.error (lib/logging/logger.ts:180:59)
+    at GET (app/api/health/route.ts:139:11)
+  178 |
+  179 |   error(message: string, Service: string, error?: Error, metadata?: Record<string, any>): void {
+> 180 |     const logEntry = this.formatLogEntry('error', message, service, metadata);
+      |                                                           ^
+  181 |     
+  182 |     if (error) {
+  183 |       logEntry.error = {
+ GET /api/health 500 in 1928ms
+ ✓ Compiled in 439ms (453 modules)
+ ⨯ ReferenceError: service is not defined
+    at EnhancedLogger.formatLogEntry (lib/logging/logger.ts:155:6)
+    at EnhancedLogger.error (lib/logging/logger.ts:180:26)
+    at GET (app/api/health/route.ts:139:11)
+  153 |       level: LogLevel[level.toUpperCase() as keyof typeof LogLevel] || LogLevel.INFO,
+  154 |       message,
+> 155 |       service,
+      |      ^
+  156 |       requestId: this.requestId,
+  157 |       metadata: {
+  158 |         ...this.context,
+ ⨯ ReferenceError: service is not defined
+    at EnhancedLogger.formatLogEntry (lib/logging/logger.ts:155:6)
+    at EnhancedLogger.error (lib/logging/logger.ts:180:26)
+    at GET (app/api/health/route.ts:139:11)
+  153 |       level: LogLevel[level.toUpperCase() as keyof typeof LogLevel] || LogLevel.INFO,
+  154 |       message,
+> 155 |       service,
+      |      ^
+  156 |       requestId: this.requestId,
+  157 |       metadata: {
+  158 |         ...this.context,
+ GET /api/health 500 in 622ms
+ ✓ Compiled in 637ms (453 modules)
+[31m{"Service":"health-check","error":{"message":"service is not defined","name":"ReferenceError","stack":"ReferenceError: service is not defined\n    at EnhancedLogger.info (webpack-internal:///(rsc)/./lib/logging/logger.ts:104:63)\n    at GET (webpack-internal:///(rsc)/./app/api/health/route.ts:19:65)\n    at AsyncLocalStorage.run (node:async_hooks:327:14)\n    at AppRouteRouteModule.do (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:34191)\n    at /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:43872\n    at /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/trace/tracer.js:169:36\n    at NoopContextManager.with (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@opentelemetry+api@1.9.0/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)\n    at ContextAPI.with (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@opentelemetry+api@1.9.0/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)\n    at NoopTracer.startActiveSpan (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@opentelemetry+api@1.9.0/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)\n    at ProxyTracer.startActiveSpan (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@opentelemetry+api@1.9.0/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)\n    at /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/trace/tracer.js:151:103\n    at NoopContextManager.with (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@opentelemetry+api@1.9.0/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)\n    at ContextAPI.with (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@opentelemetry+api@1.9.0/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)\n    at NextTracerImpl.trace (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/trace/tracer.js:151:28)\n    at /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:43733\n    at AsyncLocalStorage.run (node:async_hooks:338:14)\n    at /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:41457\n    at AsyncLocalStorage.run (node:async_hooks:338:14)\n    at /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:41414\n    at AsyncLocalStorage.run (node:async_hooks:338:14)\n    at AppRouteRouteModule.handle (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:41368)\n    at async doRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1518:42)"},"level":"error","message":"Health check failed","metadata":{"responseTime":1},"requestId":"health-1751061278890-8a4im8jw2","timestamp":"2025-06-27T21:54:38.892Z"}[39m
+ GET /api/health 503 in 263ms
+ ○ Compiling /api/services ...
+ ✓ Compiled /api/services in 2.2s (735 modules)
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."externalCalendarId", "public"."Service"."isActive", "public"."Service"."createdAt", "public"."Service"."updatedAt" FROM "public"."Service" WHERE "public"."Service"."isActive" = $1 ORDER BY "public"."Service"."serviceType" ASC, "public"."Service"."name" ASC OFFSET $2
+ GET /api/services 200 in 3175ms
+ ○ Compiling /api/bookings ...
+ ✓ Compiled /api/bookings in 37.5s (2243 modules)
+[BOOKING] Creating booking - User: guest
+Guest booking with data: { signerUserEmail: 'test@example.com', signerUserName: 'John Doe' }
+[getContactByEmail] Searching for contact with email: test@example.com
+[callGhlApi] Request: POST https://services.leadconnectorhq.com/contacts/search
+[callGhlApi] Body: {
+  "locationId": "oUvYNTw2Wvul7JSJplqQ",
+  "query": "test@example.com",
+  "pageLimit": 10
+}
+[callGhlApi] Response Status: 200
+[getContactByEmail] Search method didn't find contact, trying list endpoint
+[callGhlApi] Request: GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=test%40example.com
+[callGhlApi] Response Status: 422
+GHL API Error (422) on GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=test%40example.com: {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"7cf88221-3dcc-4263-a669-ec709761a4f8"}
+Error during GHL API call to GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=test%40example.com: Error: GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"7cf88221-3dcc-4263-a669-ec709761a4f8"}
+    at callGhlApi (lib/ghl.ts:124:12)
+    at async Module.getContactByEmail (lib/ghl.ts:182:25)
+    at async eval (app/api/bookings/route.ts:355:33)
+  122 |       }
+  123 |       
+> 124 |       throw new Error(`GHL API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+      |            ^
+  125 |     }
+  126 |
+  127 |     if (response.status === 204) { // No Content
+GHL API: Error fetching contact by email (test@example.com): {
+  status: undefined,
+  message: 'GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"7cf88221-3dcc-4263-a669-ec709761a4f8"}',
+  stack: 'Error: GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"7cf88221-3dcc-4263-a669-ec709761a4f8"}\n' +
+    '    at callGhlApi (webpack-internal:///(rsc)/./lib/ghl.ts:69:19)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n' +
+    '    at async Module.getContactByEmail (webpack-internal:///(rsc)/./lib/ghl.ts:115:30)\n' +
+    '    at async eval (webpack-internal:///(rsc)/./app/api/bookings/route.ts:276:44)\n' +
+    '    at async AppRouteRouteModule.do (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:34112)\n' +
+    '    at async AppRouteRouteModule.handle (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:41338)\n' +
+    '    at async doRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1518:42)\n' +
+    '    at async DevServer.renderToResponseWithComponentsImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1920:28)\n' +
+    '    at async DevServer.renderPageComponent (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:2408:24)\n' +
+    '    at async DevServer.renderToResponseImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:2445:32)\n' +
+    '    at async DevServer.pipeImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1008:25)\n' +
+    '    at async NextNodeServer.handleCatchallRenderRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/next-server.js:305:17)\n' +
+    '    at async DevServer.handleRequestImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:900:17)\n' +
+    '    at async /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/dev/next-dev-server.js:371:20\n' +
+    '    at async Span.traceAsyncFn (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/trace/trace.js:157:20)\n' +
+    '    at async DevServer.handleRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/dev/next-dev-server.js:368:24)\n' +
+    '    at async invokeRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:237:21)\n' +
+    '    at async handleRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:428:24)\n' +
+    '    at async requestHandlerImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:452:13)\n' +
+    '    at async Server.requestListener (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/start-server.js:158:13)'
+}
+  - Treating as "contact not found" to allow booking to continue
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE ("public"."Service"."id" = $1 AND "public"."Service"."isActive" = $2) LIMIT $3 OFFSET $4
+prisma:error 
+Invalid `prisma.booking.create()` invocation:
+
+{
+  data: {
+    Service: {
+      connect: {
+        id: "cmb8ovso10000ve9xwvtf0my0"
+      }
+    },
+    scheduledDateTime: new Date("2025-06-28T15:00:00.000Z"),
+    status: "CONFIRMED",
+    locationType: "CLIENT_SPECIFIED_ADDRESS",
+    addressStreet: "123 Main Street",
+    addressCity: "Houston",
+    addressState: "TX",
+    addressZip: "77001",
+    locationNotes: undefined,
+    priceAtBooking: undefined,
+    basePrice: undefined,
+    promoDiscount: 25,
+    finalPrice: 0,
+    notes: "Test booking from system verification",
+    signerEmail: "test@example.com",
+    signerName: "John Doe",
+    signerPhone: "(713) 555-0123",
++   id: String
+  },
+  include: {
+    Service: true
+  }
+}
+
+Argument `id` is missing.
+Error creating booking: 
+Invalid `prisma.booking.create()` invocation:
+
+{
+  data: {
+    Service: {
+      connect: {
+        id: "cmb8ovso10000ve9xwvtf0my0"
+      }
+    },
+    scheduledDateTime: new Date("2025-06-28T15:00:00.000Z"),
+    status: "CONFIRMED",
+    locationType: "CLIENT_SPECIFIED_ADDRESS",
+    addressStreet: "123 Main Street",
+    addressCity: "Houston",
+    addressState: "TX",
+    addressZip: "77001",
+    locationNotes: undefined,
+    priceAtBooking: undefined,
+    basePrice: undefined,
+    promoDiscount: 25,
+    finalPrice: 0,
+    notes: "Test booking from system verification",
+    signerEmail: "test@example.com",
+    signerName: "John Doe",
+    signerPhone: "(713) 555-0123",
++   id: String
+  },
+  include: {
+    Service: true
+  }
+}
+
+Argument `id` is missing. PrismaClientValidationError: 
+Invalid `prisma.booking.create()` invocation:
+
+{
+  data: {
+    Service: {
+      connect: {
+        id: "cmb8ovso10000ve9xwvtf0my0"
+      }
+    },
+    scheduledDateTime: new Date("2025-06-28T15:00:00.000Z"),
+    status: "CONFIRMED",
+    locationType: "CLIENT_SPECIFIED_ADDRESS",
+    addressStreet: "123 Main Street",
+    addressCity: "Houston",
+    addressState: "TX",
+    addressZip: "77001",
+    locationNotes: undefined,
+    priceAtBooking: undefined,
+    basePrice: undefined,
+    promoDiscount: 25,
+    finalPrice: 0,
+    notes: "Test booking from system verification",
+    signerEmail: "test@example.com",
+    signerName: "John Doe",
+    signerPhone: "(713) 555-0123",
++   id: String
+  },
+  include: {
+    Service: true
+  }
+}
+
+Argument `id` is missing.
+    at An (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@prisma+client@6.7.0_prisma@6.8.2_typescript@5.6.2__typescript@5.6.2/node_modules/@prisma/client/runtime/library.js:29:1363)
+    at zn.handleRequestError (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@prisma+client@6.7.0_prisma@6.8.2_typescript@5.6.2__typescript@5.6.2/node_modules/@prisma/client/runtime/library.js:121:7102)
+    at zn.handleAndLogRequestError (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@prisma+client@6.7.0_prisma@6.8.2_typescript@5.6.2__typescript@5.6.2/node_modules/@prisma/client/runtime/library.js:121:6784)
+    at zn.request (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@prisma+client@6.7.0_prisma@6.8.2_typescript@5.6.2__typescript@5.6.2/node_modules/@prisma/client/runtime/library.js:121:6491)
+    at async l (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@prisma+client@6.7.0_prisma@6.8.2_typescript@5.6.2__typescript@5.6.2/node_modules/@prisma/client/runtime/library.js:130:9778)
+    at async eval (webpack-internal:///(rsc)/./app/api/bookings/route.ts:379:30)
+    at async AppRouteRouteModule.do (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:34112)
+    at async AppRouteRouteModule.handle (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:41338)
+    at async doRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1518:42)
+    at async DevServer.renderToResponseWithComponentsImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1920:28)
+    at async DevServer.renderPageComponent (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:2408:24)
+    at async DevServer.renderToResponseImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:2445:32)
+    at async DevServer.pipeImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1008:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/next-server.js:305:17)
+    at async DevServer.handleRequestImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:900:17)
+    at async /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/dev/next-dev-server.js:371:20
+    at async Span.traceAsyncFn (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/dev/next-dev-server.js:368:24)
+    at async invokeRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:237:21)
+    at async handleRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:428:24)
+    at async requestHandlerImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:452:13)
+    at async Server.requestListener (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/start-server.js:158:13)
+[API /api/bookings ERROR] Status: 500, Message: Failed to create booking: 
+Invalid `prisma.booking.create()` invocation:
+
+{
+  data: {
+    Service: {
+      connect: {
+        id: "cmb8ovso10000ve9xwvtf0my0"
+      }
+    },
+    scheduledDateTime: new Date("2025-06-28T15:00:00.000Z"),
+    status: "CONFIRMED",
+    locationType: "CLIENT_SPECIFIED_ADDRESS",
+    addressStreet: "123 Main Street",
+    addressCity: "Houston",
+    addressState: "TX",
+    addressZip: "77001",
+    locationNotes: undefined,
+    priceAtBooking: undefined,
+    basePrice: undefined,
+    promoDiscount: 25,
+    finalPrice: 0,
+    notes: "Test booking from system verification",
+    signerEmail: "test@example.com",
+    signerName: "John Doe",
+    signerPhone: "(713) 555-0123",
++   id: String
+  },
+  include: {
+    Service: true
+  }
+}
+
+Argument `id` is missing.
+ POST /api/bookings 500 in 47321ms
+ ✓ Compiled in 262ms
+ ○ Compiling /api/bookings ...
+ ✓ Compiled /api/bookings in 3s (1700 modules)
+[BOOKING] Creating booking - User: guest
+Guest booking with data: { signerUserEmail: 'test@example.com', signerUserName: 'John Doe' }
+[getContactByEmail] Searching for contact with email: test@example.com
+[callGhlApi] Request: POST https://services.leadconnectorhq.com/contacts/search
+[callGhlApi] Body: {
+  "locationId": "oUvYNTw2Wvul7JSJplqQ",
+  "query": "test@example.com",
+  "pageLimit": 10
+}
+[callGhlApi] Response Status: 200
+[getContactByEmail] Search method didn't find contact, trying list endpoint
+[callGhlApi] Request: GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=test%40example.com
+[callGhlApi] Response Status: 422
+GHL API Error (422) on GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=test%40example.com: {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"343b896c-b167-4cff-a67c-4563a67904d0"}
+Error during GHL API call to GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=test%40example.com: Error: GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"343b896c-b167-4cff-a67c-4563a67904d0"}
+    at callGhlApi (lib/ghl.ts:124:12)
+    at async Module.getContactByEmail (lib/ghl.ts:182:25)
+    at async eval (app/api/bookings/route.ts:355:33)
+  122 |       }
+  123 |       
+> 124 |       throw new Error(`GHL API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+      |            ^
+  125 |     }
+  126 |
+  127 |     if (response.status === 204) { // No Content
+GHL API: Error fetching contact by email (test@example.com): {
+  status: undefined,
+  message: 'GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"343b896c-b167-4cff-a67c-4563a67904d0"}',
+  stack: 'Error: GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"343b896c-b167-4cff-a67c-4563a67904d0"}\n' +
+    '    at callGhlApi (webpack-internal:///(rsc)/./lib/ghl.ts:69:19)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n' +
+    '    at async Module.getContactByEmail (webpack-internal:///(rsc)/./lib/ghl.ts:115:30)\n' +
+    '    at async eval (webpack-internal:///(rsc)/./app/api/bookings/route.ts:276:44)\n' +
+    '    at async AppRouteRouteModule.do (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:34112)\n' +
+    '    at async AppRouteRouteModule.handle (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:41338)\n' +
+    '    at async doRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1518:42)\n' +
+    '    at async DevServer.renderToResponseWithComponentsImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1920:28)\n' +
+    '    at async DevServer.renderPageComponent (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:2408:24)\n' +
+    '    at async DevServer.renderToResponseImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:2445:32)\n' +
+    '    at async DevServer.pipeImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1008:25)\n' +
+    '    at async NextNodeServer.handleCatchallRenderRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/next-server.js:305:17)\n' +
+    '    at async DevServer.handleRequestImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:900:17)\n' +
+    '    at async /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/dev/next-dev-server.js:371:20\n' +
+    '    at async Span.traceAsyncFn (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/trace/trace.js:157:20)\n' +
+    '    at async DevServer.handleRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/dev/next-dev-server.js:368:24)\n' +
+    '    at async invokeRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:237:21)\n' +
+    '    at async handleRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:428:24)\n' +
+    '    at async requestHandlerImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:452:13)\n' +
+    '    at async Server.requestListener (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/start-server.js:158:13)'
+}
+  - Treating as "contact not found" to allow booking to continue
+prisma:query SELECT 1
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE ("public"."Service"."id" = $1 AND "public"."Service"."isActive" = $2) LIMIT $3 OFFSET $4
+prisma:error 
+Invalid `prisma.booking.create()` invocation:
+
+{
+  data: {
+    id: "bk_1751061493087_aictezvid",
+    Service: {
+      connect: {
+        id: "cmb8ovso10000ve9xwvtf0my0"
+      }
+    },
+    scheduledDateTime: new Date("2025-06-28T15:00:00.000Z"),
+    status: "CONFIRMED",
+    locationType: "CLIENT_SPECIFIED_ADDRESS",
+    addressStreet: "123 Main Street",
+    addressCity: "Houston",
+    addressState: "TX",
+    addressZip: "77001",
+    locationNotes: undefined,
+    priceAtBooking: new Prisma.Decimal("75"),
+    basePrice: new Prisma.Decimal("75"),
+    promoDiscount: 25,
+    finalPrice: 0,
+    notes: "Test booking from system verification",
+    signerEmail: "test@example.com",
+    signerName: "John Doe",
+    signerPhone: "(713) 555-0123",
++   updatedAt: DateTime
+  },
+  include: {
+    Service: true
+  }
+}
+
+Argument `updatedAt` is missing.
+Error creating booking: 
+Invalid `prisma.booking.create()` invocation:
+
+{
+  data: {
+    id: "bk_1751061493087_aictezvid",
+    Service: {
+      connect: {
+        id: "cmb8ovso10000ve9xwvtf0my0"
+      }
+    },
+    scheduledDateTime: new Date("2025-06-28T15:00:00.000Z"),
+    status: "CONFIRMED",
+    locationType: "CLIENT_SPECIFIED_ADDRESS",
+    addressStreet: "123 Main Street",
+    addressCity: "Houston",
+    addressState: "TX",
+    addressZip: "77001",
+    locationNotes: undefined,
+    priceAtBooking: new Prisma.Decimal("75"),
+    basePrice: new Prisma.Decimal("75"),
+    promoDiscount: 25,
+    finalPrice: 0,
+    notes: "Test booking from system verification",
+    signerEmail: "test@example.com",
+    signerName: "John Doe",
+    signerPhone: "(713) 555-0123",
++   updatedAt: DateTime
+  },
+  include: {
+    Service: true
+  }
+}
+
+Argument `updatedAt` is missing. PrismaClientValidationError: 
+Invalid `prisma.booking.create()` invocation:
+
+{
+  data: {
+    id: "bk_1751061493087_aictezvid",
+    Service: {
+      connect: {
+        id: "cmb8ovso10000ve9xwvtf0my0"
+      }
+    },
+    scheduledDateTime: new Date("2025-06-28T15:00:00.000Z"),
+    status: "CONFIRMED",
+    locationType: "CLIENT_SPECIFIED_ADDRESS",
+    addressStreet: "123 Main Street",
+    addressCity: "Houston",
+    addressState: "TX",
+    addressZip: "77001",
+    locationNotes: undefined,
+    priceAtBooking: new Prisma.Decimal("75"),
+    basePrice: new Prisma.Decimal("75"),
+    promoDiscount: 25,
+    finalPrice: 0,
+    notes: "Test booking from system verification",
+    signerEmail: "test@example.com",
+    signerName: "John Doe",
+    signerPhone: "(713) 555-0123",
++   updatedAt: DateTime
+  },
+  include: {
+    Service: true
+  }
+}
+
+Argument `updatedAt` is missing.
+    at An (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@prisma+client@6.7.0_prisma@6.8.2_typescript@5.6.2__typescript@5.6.2/node_modules/@prisma/client/runtime/library.js:29:1363)
+    at zn.handleRequestError (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@prisma+client@6.7.0_prisma@6.8.2_typescript@5.6.2__typescript@5.6.2/node_modules/@prisma/client/runtime/library.js:121:7102)
+    at zn.handleAndLogRequestError (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@prisma+client@6.7.0_prisma@6.8.2_typescript@5.6.2__typescript@5.6.2/node_modules/@prisma/client/runtime/library.js:121:6784)
+    at zn.request (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@prisma+client@6.7.0_prisma@6.8.2_typescript@5.6.2__typescript@5.6.2/node_modules/@prisma/client/runtime/library.js:121:6491)
+    at async l (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@prisma+client@6.7.0_prisma@6.8.2_typescript@5.6.2__typescript@5.6.2/node_modules/@prisma/client/runtime/library.js:130:9778)
+    at async eval (webpack-internal:///(rsc)/./app/api/bookings/route.ts:382:30)
+    at async AppRouteRouteModule.do (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:34112)
+    at async AppRouteRouteModule.handle (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:41338)
+    at async doRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1518:42)
+    at async DevServer.renderToResponseWithComponentsImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1920:28)
+    at async DevServer.renderPageComponent (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:2408:24)
+    at async DevServer.renderToResponseImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:2445:32)
+    at async DevServer.pipeImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1008:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/next-server.js:305:17)
+    at async DevServer.handleRequestImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:900:17)
+    at async /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/dev/next-dev-server.js:371:20
+    at async Span.traceAsyncFn (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/dev/next-dev-server.js:368:24)
+    at async invokeRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:237:21)
+    at async handleRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:428:24)
+    at async requestHandlerImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:452:13)
+    at async Server.requestListener (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/start-server.js:158:13)
+[API /api/bookings ERROR] Status: 500, Message: Failed to create booking: 
+Invalid `prisma.booking.create()` invocation:
+
+{
+  data: {
+    id: "bk_1751061493087_aictezvid",
+    Service: {
+      connect: {
+        id: "cmb8ovso10000ve9xwvtf0my0"
+      }
+    },
+    scheduledDateTime: new Date("2025-06-28T15:00:00.000Z"),
+    status: "CONFIRMED",
+    locationType: "CLIENT_SPECIFIED_ADDRESS",
+    addressStreet: "123 Main Street",
+    addressCity: "Houston",
+    addressState: "TX",
+    addressZip: "77001",
+    locationNotes: undefined,
+    priceAtBooking: new Prisma.Decimal("75"),
+    basePrice: new Prisma.Decimal("75"),
+    promoDiscount: 25,
+    finalPrice: 0,
+    notes: "Test booking from system verification",
+    signerEmail: "test@example.com",
+    signerName: "John Doe",
+    signerPhone: "(713) 555-0123",
++   updatedAt: DateTime
+  },
+  include: {
+    Service: true
+  }
+}
+
+Argument `updatedAt` is missing.
+ POST /api/bookings 500 in 9347ms
+ ✓ Compiled in 1012ms (1700 modules)
+ ✓ Compiled in 778ms (1700 modules)
+ ✓ Compiled in 729ms (1700 modules)
+[BOOKING] Creating booking - User: guest
+Guest booking with data: { signerUserEmail: 'test2@example.com', signerUserName: 'Jane Smith' }
+[getContactByEmail] Searching for contact with email: test2@example.com
+[callGhlApi] Request: POST https://services.leadconnectorhq.com/contacts/search
+[callGhlApi] Body: {
+  "locationId": "oUvYNTw2Wvul7JSJplqQ",
+  "query": "test2@example.com",
+  "pageLimit": 10
+}
+[callGhlApi] Response Status: 200
+[getContactByEmail] Search method didn't find contact, trying list endpoint
+[callGhlApi] Request: GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=test2%40example.com
+[callGhlApi] Response Status: 422
+GHL API Error (422) on GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=test2%40example.com: {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"aab7df7c-37dc-4682-91da-f0b439c3cace"}
+Error during GHL API call to GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=test2%40example.com: Error: GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"aab7df7c-37dc-4682-91da-f0b439c3cace"}
+    at callGhlApi (lib/ghl.ts:124:12)
+    at async Module.getContactByEmail (lib/ghl.ts:182:25)
+    at async eval (app/api/bookings/route.ts:355:33)
+  122 |       }
+  123 |       
+> 124 |       throw new Error(`GHL API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+      |            ^
+  125 |     }
+  126 |
+  127 |     if (response.status === 204) { // No Content
+GHL API: Error fetching contact by email (test2@example.com): {
+  status: undefined,
+  message: 'GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"aab7df7c-37dc-4682-91da-f0b439c3cace"}',
+  stack: 'Error: GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"aab7df7c-37dc-4682-91da-f0b439c3cace"}\n' +
+    '    at callGhlApi (webpack-internal:///(rsc)/./lib/ghl.ts:69:19)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n' +
+    '    at async Module.getContactByEmail (webpack-internal:///(rsc)/./lib/ghl.ts:115:30)\n' +
+    '    at async eval (webpack-internal:///(rsc)/./app/api/bookings/route.ts:276:44)\n' +
+    '    at async AppRouteRouteModule.do (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:34112)\n' +
+    '    at async AppRouteRouteModule.handle (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:41338)\n' +
+    '    at async doRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1518:42)\n' +
+    '    at async DevServer.renderToResponseWithComponentsImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1920:28)\n' +
+    '    at async DevServer.renderPageComponent (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:2408:24)\n' +
+    '    at async DevServer.renderToResponseImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:2445:32)\n' +
+    '    at async DevServer.pipeImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1008:25)\n' +
+    '    at async NextNodeServer.handleCatchallRenderRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/next-server.js:305:17)\n' +
+    '    at async DevServer.handleRequestImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:900:17)\n' +
+    '    at async /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/dev/next-dev-server.js:371:20\n' +
+    '    at async Span.traceAsyncFn (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/trace/trace.js:157:20)\n' +
+    '    at async DevServer.handleRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/dev/next-dev-server.js:368:24)\n' +
+    '    at async invokeRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:237:21)\n' +
+    '    at async handleRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:428:24)\n' +
+    '    at async requestHandlerImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:452:13)\n' +
+    '    at async Server.requestListener (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/start-server.js:158:13)'
+}
+  - Treating as "contact not found" to allow booking to continue
+prisma:query SELECT 1
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE ("public"."Service"."id" = $1 AND "public"."Service"."isActive" = $2) LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query SELECT "public"."Service"."id" FROM "public"."Service" WHERE ("public"."Service"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query INSERT INTO "public"."Booking" ("id","serviceId","scheduledDateTime","status","locationType","addressStreet","addressCity","addressState","addressZip","priceAtBooking","notes","createdAt","updatedAt","depositAmount","depositStatus","promoCodeDiscount","customerEmail","witness_fee","mileage_fee","urgency_level","urgency_fee") VALUES ($1,$2,$3,CAST($4::text AS "public"."BookingStatus"),CAST($5::text AS "public"."LocationType"),$6,$7,$8,$9,$10,$11,$12,$13,$14,CAST($15::text AS "public"."PaymentStatus"),$16,$17,$18,$19,$20,$21) RETURNING "public"."Booking"."id"
+prisma:query SELECT "public"."Booking"."id", "public"."Booking"."signerId", "public"."Booking"."serviceId", "public"."Booking"."notaryId", "public"."Booking"."scheduledDateTime", "public"."Booking"."actualEndDateTime", "public"."Booking"."status"::text, "public"."Booking"."locationType"::text, "public"."Booking"."addressStreet", "public"."Booking"."addressCity", "public"."Booking"."addressState", "public"."Booking"."addressZip", "public"."Booking"."locationNotes", "public"."Booking"."priceAtBooking", "public"."Booking"."notes", "public"."Booking"."dailyRoomUrl", "public"."Booking"."dailyRecordingId", "public"."Booking"."kbaStatus", "public"."Booking"."idVerificationStatus", "public"."Booking"."notaryJournalEntry", "public"."Booking"."createdAt", "public"."Booking"."updatedAt", "public"."Booking"."confirmationEmailSentAt", "public"."Booking"."confirmationSmsSentAt", "public"."Booking"."followUpSentAt", "public"."Booking"."lastReminderSentAt", "public"."Booking"."noShowCheckPerformedAt", "public"."Booking"."reminder1hrSentAt", "public"."Booking"."reminder24hrSentAt", "public"."Booking"."reminder2hrSentAt", "public"."Booking"."depositAmount", "public"."Booking"."depositStatus"::text, "public"."Booking"."googleCalendarEventId", "public"."Booking"."promoCodeDiscount", "public"."Booking"."promoCodeId", "public"."Booking"."campaignName", "public"."Booking"."customerEmail", "public"."Booking"."ghlContactId", "public"."Booking"."leadSource", "public"."Booking"."stripePaymentUrl", "public"."Booking"."workflowId", "public"."Booking"."witness_type"::text, "public"."Booking"."witness_fee", "public"."Booking"."mileage_miles", "public"."Booking"."mileage_fee", "public"."Booking"."urgency_level", "public"."Booking"."urgency_fee", "public"."Booking"."estimated_completion_time", "public"."Booking"."notary_travel_time_minutes", "public"."Booking"."google_maps_distance_matrix", "public"."Booking"."service_area_id" FROM "public"."Booking" WHERE "public"."Booking"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE "public"."Service"."id" IN ($1) OFFSET $2
+prisma:query COMMIT
+!!!!!!!!!! BOOKING CREATED SUCCESSFULLY !!!!!!!!!! {
+  "id": "bk_1751061657363_8vmjk69j8",
+  "signerId": null,
+  "serviceId": "cmb8ovso10000ve9xwvtf0my0",
+  "notaryId": null,
+  "scheduledDateTime": "2025-06-28T15:00:00.000Z",
+  "actualEndDateTime": null,
+  "status": "CONFIRMED",
+  "locationType": "CLIENT_SPECIFIED_ADDRESS",
+  "addressStreet": "456 Oak Avenue",
+  "addressCity": "Houston",
+  "addressState": "TX",
+  "addressZip": "77002",
+  "locationNotes": null,
+  "priceAtBooking": "75",
+  "notes": "Second test booking",
+  "dailyRoomUrl": null,
+  "dailyRecordingId": null,
+  "kbaStatus": null,
+  "idVerificationStatus": null,
+  "notaryJournalEntry": null,
+  "createdAt": "2025-06-27T22:00:57.376Z",
+  "updatedAt": "2025-06-27T22:00:57.368Z",
+  "confirmationEmailSentAt": null,
+  "confirmationSmsSentAt": null,
+  "followUpSentAt": null,
+  "lastReminderSentAt": null,
+  "noShowCheckPerformedAt": null,
+  "reminder1hrSentAt": null,
+  "reminder24hrSentAt": null,
+  "reminder2hrSentAt": null,
+  "depositAmount": "25",
+  "depositStatus": "PENDING",
+  "googleCalendarEventId": null,
+  "promoCodeDiscount": "25",
+  "promoCodeId": null,
+  "campaignName": null,
+  "customerEmail": "test2@example.com",
+  "ghlContactId": null,
+  "leadSource": null,
+  "stripePaymentUrl": null,
+  "workflowId": null,
+  "witnessType": null,
+  "witnessFee": "0",
+  "mileageMiles": null,
+  "mileageFee": "0",
+  "urgencyLevel": "standard",
+  "urgencyFee": "0",
+  "estimatedCompletionTime": null,
+  "notaryTravelTimeMinutes": null,
+  "googleMapsDistanceMatrix": null,
+  "serviceAreaId": null,
+  "Service": {
+    "id": "cmb8ovso10000ve9xwvtf0my0",
+    "name": "Standard Mobile Notary",
+    "description": "General notary services at your location. Includes travel within a 20-mile radius, printing, and scanning for standard documents.",
+    "serviceType": "STANDARD_NOTARY",
+    "durationMinutes": 90,
+    "basePrice": "75",
+    "isActive": true,
+    "requiresDeposit": true,
+    "depositAmount": "25",
+    "createdAt": "2025-06-26T06:49:34.410Z",
+    "updatedAt": "2025-06-26T06:49:44.115Z",
+    "externalCalendarId": null
+  },
+  "guestBooking": true,
+  "guestEmail": "test2@example.com"
+}
+GHL: Populating custom fields for workflow automation
+Error in overall GHL integration block: TypeError: Cannot read properties of undefined (reading 'toNumber')
+    at eval (app/api/bookings/route.ts:594:39)
+  592 |           service_requested: service.name,
+  593 |           service_address: serviceAddressForGhl,
+> 594 |           service_price: service.price.toNumber().toString(),
+      |                                       ^
+  595 |           
+  596 |           // Date/Time fields (all three for compatibility)
+  597 |           appointment_date: scheduledDateTime ? 
+!!!!!!!!!! FINAL API RESPONSE CHECKOUT URL: null
+!!!!!!!!!! FINAL API RESPONSE BOOKING ID: bk_1751061657363_8vmjk69j8
+ POST /api/bookings 201 in 7477ms
+[BOOKING] Creating booking - User: guest
+Guest booking with data: {
+  signerUserEmail: 'jane.smith@example.com',
+  signerUserName: 'Jane Smith'
+}
+[getContactByEmail] Searching for contact with email: jane.smith@example.com
+[callGhlApi] Request: POST https://services.leadconnectorhq.com/contacts/search
+[callGhlApi] Body: {
+  "locationId": "oUvYNTw2Wvul7JSJplqQ",
+  "query": "jane.smith@example.com",
+  "pageLimit": 10
+}
+[callGhlApi] Response Status: 200
+[getContactByEmail] Search method didn't find contact, trying list endpoint
+[callGhlApi] Request: GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=jane.smith%40example.com
+[callGhlApi] Response Status: 422
+GHL API Error (422) on GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=jane.smith%40example.com: {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"d5c3f3f1-5f52-4a74-8a23-cd8ce52b2d05"}
+Error during GHL API call to GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=jane.smith%40example.com: Error: GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"d5c3f3f1-5f52-4a74-8a23-cd8ce52b2d05"}
+    at callGhlApi (lib/ghl.ts:124:12)
+    at async Module.getContactByEmail (lib/ghl.ts:182:25)
+    at async eval (app/api/bookings/route.ts:355:33)
+  122 |       }
+  123 |       
+> 124 |       throw new Error(`GHL API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+      |            ^
+  125 |     }
+  126 |
+  127 |     if (response.status === 204) { // No Content
+GHL API: Error fetching contact by email (jane.smith@example.com): {
+  status: undefined,
+  message: 'GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"d5c3f3f1-5f52-4a74-8a23-cd8ce52b2d05"}',
+  stack: 'Error: GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"d5c3f3f1-5f52-4a74-8a23-cd8ce52b2d05"}\n' +
+    '    at callGhlApi (webpack-internal:///(rsc)/./lib/ghl.ts:69:19)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n' +
+    '    at async Module.getContactByEmail (webpack-internal:///(rsc)/./lib/ghl.ts:115:30)\n' +
+    '    at async eval (webpack-internal:///(rsc)/./app/api/bookings/route.ts:276:44)\n' +
+    '    at async AppRouteRouteModule.do (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:34112)\n' +
+    '    at async AppRouteRouteModule.handle (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:41338)\n' +
+    '    at async doRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1518:42)\n' +
+    '    at async DevServer.renderToResponseWithComponentsImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1920:28)\n' +
+    '    at async DevServer.renderPageComponent (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:2408:24)\n' +
+    '    at async DevServer.renderToResponseImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:2445:32)\n' +
+    '    at async DevServer.pipeImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1008:25)\n' +
+    '    at async NextNodeServer.handleCatchallRenderRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/next-server.js:305:17)\n' +
+    '    at async DevServer.handleRequestImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:900:17)\n' +
+    '    at async /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/dev/next-dev-server.js:371:20\n' +
+    '    at async Span.traceAsyncFn (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/trace/trace.js:157:20)\n' +
+    '    at async DevServer.handleRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/dev/next-dev-server.js:368:24)\n' +
+    '    at async invokeRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:237:21)\n' +
+    '    at async handleRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:428:24)\n' +
+    '    at async requestHandlerImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:452:13)\n' +
+    '    at async Server.requestListener (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/start-server.js:158:13)'
+}
+  - Treating as "contact not found" to allow booking to continue
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE ("public"."Service"."id" = $1 AND "public"."Service"."isActive" = $2) LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query SELECT "public"."Service"."id" FROM "public"."Service" WHERE ("public"."Service"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query INSERT INTO "public"."Booking" ("id","serviceId","scheduledDateTime","status","locationType","addressStreet","addressCity","addressState","addressZip","priceAtBooking","notes","createdAt","updatedAt","depositAmount","depositStatus","promoCodeDiscount","customerEmail","witness_fee","mileage_fee","urgency_level","urgency_fee") VALUES ($1,$2,$3,CAST($4::text AS "public"."BookingStatus"),CAST($5::text AS "public"."LocationType"),$6,$7,$8,$9,$10,$11,$12,$13,$14,CAST($15::text AS "public"."PaymentStatus"),$16,$17,$18,$19,$20,$21) RETURNING "public"."Booking"."id"
+prisma:query SELECT "public"."Booking"."id", "public"."Booking"."signerId", "public"."Booking"."serviceId", "public"."Booking"."notaryId", "public"."Booking"."scheduledDateTime", "public"."Booking"."actualEndDateTime", "public"."Booking"."status"::text, "public"."Booking"."locationType"::text, "public"."Booking"."addressStreet", "public"."Booking"."addressCity", "public"."Booking"."addressState", "public"."Booking"."addressZip", "public"."Booking"."locationNotes", "public"."Booking"."priceAtBooking", "public"."Booking"."notes", "public"."Booking"."dailyRoomUrl", "public"."Booking"."dailyRecordingId", "public"."Booking"."kbaStatus", "public"."Booking"."idVerificationStatus", "public"."Booking"."notaryJournalEntry", "public"."Booking"."createdAt", "public"."Booking"."updatedAt", "public"."Booking"."confirmationEmailSentAt", "public"."Booking"."confirmationSmsSentAt", "public"."Booking"."followUpSentAt", "public"."Booking"."lastReminderSentAt", "public"."Booking"."noShowCheckPerformedAt", "public"."Booking"."reminder1hrSentAt", "public"."Booking"."reminder24hrSentAt", "public"."Booking"."reminder2hrSentAt", "public"."Booking"."depositAmount", "public"."Booking"."depositStatus"::text, "public"."Booking"."googleCalendarEventId", "public"."Booking"."promoCodeDiscount", "public"."Booking"."promoCodeId", "public"."Booking"."campaignName", "public"."Booking"."customerEmail", "public"."Booking"."ghlContactId", "public"."Booking"."leadSource", "public"."Booking"."stripePaymentUrl", "public"."Booking"."workflowId", "public"."Booking"."witness_type"::text, "public"."Booking"."witness_fee", "public"."Booking"."mileage_miles", "public"."Booking"."mileage_fee", "public"."Booking"."urgency_level", "public"."Booking"."urgency_fee", "public"."Booking"."estimated_completion_time", "public"."Booking"."notary_travel_time_minutes", "public"."Booking"."google_maps_distance_matrix", "public"."Booking"."service_area_id" FROM "public"."Booking" WHERE "public"."Booking"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE "public"."Service"."id" IN ($1) OFFSET $2
+prisma:query COMMIT
+!!!!!!!!!! BOOKING CREATED SUCCESSFULLY !!!!!!!!!! {
+  "id": "bk_1751062391698_ntbjm8372",
+  "signerId": null,
+  "serviceId": "cmb8ovso10000ve9xwvtf0my0",
+  "notaryId": null,
+  "scheduledDateTime": "2025-06-28T20:00:00.000Z",
+  "actualEndDateTime": null,
+  "status": "PAYMENT_PENDING",
+  "locationType": "CLIENT_SPECIFIED_ADDRESS",
+  "addressStreet": "789 Sunset Boulevard",
+  "addressCity": "Houston",
+  "addressState": "TX",
+  "addressZip": "77005",
+  "locationNotes": null,
+  "priceAtBooking": "75",
+  "notes": "NOTIFICATION TEST: Please verify all admin alerts trigger for this 3 PM appointment",
+  "dailyRoomUrl": null,
+  "dailyRecordingId": null,
+  "kbaStatus": null,
+  "idVerificationStatus": null,
+  "notaryJournalEntry": null,
+  "createdAt": "2025-06-27T22:13:11.701Z",
+  "updatedAt": "2025-06-27T22:13:11.698Z",
+  "confirmationEmailSentAt": null,
+  "confirmationSmsSentAt": null,
+  "followUpSentAt": null,
+  "lastReminderSentAt": null,
+  "noShowCheckPerformedAt": null,
+  "reminder1hrSentAt": null,
+  "reminder24hrSentAt": null,
+  "reminder2hrSentAt": null,
+  "depositAmount": "25",
+  "depositStatus": "PENDING",
+  "googleCalendarEventId": null,
+  "promoCodeDiscount": "0",
+  "promoCodeId": null,
+  "campaignName": null,
+  "customerEmail": "jane.smith@example.com",
+  "ghlContactId": null,
+  "leadSource": null,
+  "stripePaymentUrl": null,
+  "workflowId": null,
+  "witnessType": null,
+  "witnessFee": "0",
+  "mileageMiles": null,
+  "mileageFee": "0",
+  "urgencyLevel": "standard",
+  "urgencyFee": "0",
+  "estimatedCompletionTime": null,
+  "notaryTravelTimeMinutes": null,
+  "googleMapsDistanceMatrix": null,
+  "serviceAreaId": null,
+  "Service": {
+    "id": "cmb8ovso10000ve9xwvtf0my0",
+    "name": "Standard Mobile Notary",
+    "description": "General notary services at your location. Includes travel within a 20-mile radius, printing, and scanning for standard documents.",
+    "serviceType": "STANDARD_NOTARY",
+    "durationMinutes": 90,
+    "basePrice": "75",
+    "isActive": true,
+    "requiresDeposit": true,
+    "depositAmount": "25",
+    "createdAt": "2025-06-26T06:49:34.410Z",
+    "updatedAt": "2025-06-26T06:49:44.115Z",
+    "externalCalendarId": null
+  },
+  "guestBooking": true,
+  "guestEmail": "jane.smith@example.com"
+}
+!!!!!!!!!! STRIPE CHECKOUT SESSION CREATED !!!!!!!!!! URL: https://checkout.stripe.com/c/pay/cs_live_a1x1N5KGfmYz228TgZEDlPviV7PbqZMPMd578M324UffRpmwMXtHIQUk0m#fid1d2BpamRhQ2prcSc%2FJ1dqZ2pxaicpJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRUSH03ZER9PW5qPW1dYT1LVkRcS11nMWdIZlVvTENfQz1CdzJCT2d3f2s8XUN9bH11fUdgNTJ%2FT3ZMVWJiYnwyRmZ1VV1jSVRcN1JMdWRmX1ZIakB%2FY2Q1NW4yS1ZvM3cyJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpscWBoJyknYGtkZ2lgVWlkZmBtamlhYHd2Jz9xd3BgeCUl
+prisma:query UPDATE "public"."Booking" SET "notes" = $1 WHERE ("public"."Booking"."id" = $2 AND 1=1) RETURNING "public"."Booking"."id", "public"."Booking"."signerId", "public"."Booking"."serviceId", "public"."Booking"."notaryId", "public"."Booking"."scheduledDateTime", "public"."Booking"."actualEndDateTime", "public"."Booking"."status"::text, "public"."Booking"."locationType"::text, "public"."Booking"."addressStreet", "public"."Booking"."addressCity", "public"."Booking"."addressState", "public"."Booking"."addressZip", "public"."Booking"."locationNotes", "public"."Booking"."priceAtBooking", "public"."Booking"."notes", "public"."Booking"."dailyRoomUrl", "public"."Booking"."dailyRecordingId", "public"."Booking"."kbaStatus", "public"."Booking"."idVerificationStatus", "public"."Booking"."notaryJournalEntry", "public"."Booking"."createdAt", "public"."Booking"."updatedAt", "public"."Booking"."confirmationEmailSentAt", "public"."Booking"."confirmationSmsSentAt", "public"."Booking"."followUpSentAt", "public"."Booking"."lastReminderSentAt", "public"."Booking"."noShowCheckPerformedAt", "public"."Booking"."reminder1hrSentAt", "public"."Booking"."reminder24hrSentAt", "public"."Booking"."reminder2hrSentAt", "public"."Booking"."depositAmount", "public"."Booking"."depositStatus"::text, "public"."Booking"."googleCalendarEventId", "public"."Booking"."promoCodeDiscount", "public"."Booking"."promoCodeId", "public"."Booking"."campaignName", "public"."Booking"."customerEmail", "public"."Booking"."ghlContactId", "public"."Booking"."leadSource", "public"."Booking"."stripePaymentUrl", "public"."Booking"."workflowId", "public"."Booking"."witness_type"::text, "public"."Booking"."witness_fee", "public"."Booking"."mileage_miles", "public"."Booking"."mileage_fee", "public"."Booking"."urgency_level", "public"."Booking"."urgency_fee", "public"."Booking"."estimated_completion_time", "public"."Booking"."notary_travel_time_minutes", "public"."Booking"."google_maps_distance_matrix", "public"."Booking"."service_area_id"
+GHL: Populating custom fields for workflow automation
+Error in overall GHL integration block: TypeError: Cannot read properties of undefined (reading 'toNumber')
+    at eval (app/api/bookings/route.ts:594:39)
+  592 |           service_requested: service.name,
+  593 |           service_address: serviceAddressForGhl,
+> 594 |           service_price: service.price.toNumber().toString(),
+      |                                       ^
+  595 |           
+  596 |           // Date/Time fields (all three for compatibility)
+  597 |           appointment_date: scheduledDateTime ? 
+!!!!!!!!!! FINAL API RESPONSE CHECKOUT URL: https://checkout.stripe.com/c/pay/cs_live_a1x1N5KGfmYz228TgZEDlPviV7PbqZMPMd578M324UffRpmwMXtHIQUk0m#fid1d2BpamRhQ2prcSc%2FJ1dqZ2pxaicpJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRUSH03ZER9PW5qPW1dYT1LVkRcS11nMWdIZlVvTENfQz1CdzJCT2d3f2s8XUN9bH11fUdgNTJ%2FT3ZMVWJiYnwyRmZ1VV1jSVRcN1JMdWRmX1ZIakB%2FY2Q1NW4yS1ZvM3cyJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpscWBoJyknYGtkZ2lgVWlkZmBtamlhYHd2Jz9xd3BgeCUl
+!!!!!!!!!! FINAL API RESPONSE BOOKING ID: bk_1751062391698_ntbjm8372
+ POST /api/bookings 201 in 3203ms
+ ○ Compiling /api/auth/status ...
+ ✓ Compiled /api/auth/status in 10.1s (793 modules)
+ GET /api/auth/status 200 in 11449ms
+ ○ Compiling /api/auth/test ...
+ ✓ Compiled /api/auth/test in 875ms (795 modules)
+prisma:query SELECT COUNT(*) AS "_count._all" FROM (SELECT "public"."User"."id" FROM "public"."User" WHERE 1=1 OFFSET $1) AS "sub"
+ GET /api/auth/test 200 in 2236ms
+ ○ Compiling /api/bookings ...
+ ✓ Compiled /api/bookings in 1550ms (1705 modules)
+[BOOKING] Creating booking - User: guest
+Guest booking with data: { signerUserEmail: 'test.audit@example.com', signerUserName: null }
+[getContactByEmail] Searching for contact with email: test.audit@example.com
+[callGhlApi] Request: POST https://services.leadconnectorhq.com/contacts/search
+[callGhlApi] Body: {
+  "locationId": "oUvYNTw2Wvul7JSJplqQ",
+  "query": "test.audit@example.com",
+  "pageLimit": 10
+}
+[callGhlApi] Response Status: 200
+[getContactByEmail] Search method didn't find contact, trying list endpoint
+[callGhlApi] Request: GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=test.audit%40example.com
+[callGhlApi] Response Status: 422
+GHL API Error (422) on GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=test.audit%40example.com: {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"bc31e052-8a2d-4ac5-88c6-7e3a0bf56e35"}
+Error during GHL API call to GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=test.audit%40example.com: Error: GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"bc31e052-8a2d-4ac5-88c6-7e3a0bf56e35"}
+    at callGhlApi (lib/ghl.ts:124:12)
+    at async Module.getContactByEmail (lib/ghl.ts:182:25)
+    at async eval (app/api/bookings/route.ts:355:33)
+  122 |       }
+  123 |       
+> 124 |       throw new Error(`GHL API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+      |            ^
+  125 |     }
+  126 |
+  127 |     if (response.status === 204) { // No Content
+GHL API: Error fetching contact by email (test.audit@example.com): {
+  status: undefined,
+  message: 'GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"bc31e052-8a2d-4ac5-88c6-7e3a0bf56e35"}',
+  stack: 'Error: GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"bc31e052-8a2d-4ac5-88c6-7e3a0bf56e35"}\n' +
+    '    at callGhlApi (webpack-internal:///(rsc)/./lib/ghl.ts:69:19)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n' +
+    '    at async Module.getContactByEmail (webpack-internal:///(rsc)/./lib/ghl.ts:115:30)\n' +
+    '    at async eval (webpack-internal:///(rsc)/./app/api/bookings/route.ts:276:44)\n' +
+    '    at async AppRouteRouteModule.do (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:34112)\n' +
+    '    at async AppRouteRouteModule.handle (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:41338)\n' +
+    '    at async doRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1518:42)\n' +
+    '    at async DevServer.renderToResponseWithComponentsImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1920:28)\n' +
+    '    at async DevServer.renderPageComponent (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:2408:24)\n' +
+    '    at async DevServer.renderToResponseImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:2445:32)\n' +
+    '    at async DevServer.pipeImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1008:25)\n' +
+    '    at async NextNodeServer.handleCatchallRenderRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/next-server.js:305:17)\n' +
+    '    at async DevServer.handleRequestImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:900:17)\n' +
+    '    at async /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/dev/next-dev-server.js:371:20\n' +
+    '    at async Span.traceAsyncFn (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/trace/trace.js:157:20)\n' +
+    '    at async DevServer.handleRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/dev/next-dev-server.js:368:24)\n' +
+    '    at async invokeRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:237:21)\n' +
+    '    at async handleRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:428:24)\n' +
+    '    at async requestHandlerImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:452:13)\n' +
+    '    at async Server.requestListener (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/start-server.js:158:13)'
+}
+  - Treating as "contact not found" to allow booking to continue
+prisma:query SELECT 1
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE ("public"."Service"."id" = $1 AND "public"."Service"."isActive" = $2) LIMIT $3 OFFSET $4
+ POST /api/bookings 404 in 7123ms
+ ○ Compiling /api/services ...
+ ✓ Compiled /api/services in 1671ms (1706 modules)
+prisma:query SELECT 1
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."externalCalendarId", "public"."Service"."isActive", "public"."Service"."createdAt", "public"."Service"."updatedAt" FROM "public"."Service" WHERE "public"."Service"."isActive" = $1 ORDER BY "public"."Service"."serviceType" ASC, "public"."Service"."name" ASC OFFSET $2
+ GET /api/services 200 in 2149ms
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."externalCalendarId", "public"."Service"."isActive", "public"."Service"."createdAt", "public"."Service"."updatedAt" FROM "public"."Service" WHERE "public"."Service"."isActive" = $1 ORDER BY "public"."Service"."serviceType" ASC, "public"."Service"."name" ASC OFFSET $2
+ GET /api/services 200 in 790ms
+[BOOKING] Creating booking - User: guest
+Guest booking with data: { signerUserEmail: 'test.audit@example.com', signerUserName: null }
+[getContactByEmail] Searching for contact with email: test.audit@example.com
+[callGhlApi] Request: POST https://services.leadconnectorhq.com/contacts/search
+[callGhlApi] Body: {
+  "locationId": "oUvYNTw2Wvul7JSJplqQ",
+  "query": "test.audit@example.com",
+  "pageLimit": 10
+}
+[callGhlApi] Response Status: 200
+[getContactByEmail] Search method didn't find contact, trying list endpoint
+[callGhlApi] Request: GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=test.audit%40example.com
+[callGhlApi] Response Status: 422
+GHL API Error (422) on GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=test.audit%40example.com: {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"6d53c593-19fd-4290-9885-bc896aec5e8d"}
+Error during GHL API call to GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=test.audit%40example.com: Error: GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"6d53c593-19fd-4290-9885-bc896aec5e8d"}
+    at callGhlApi (lib/ghl.ts:124:12)
+    at async Module.getContactByEmail (lib/ghl.ts:182:25)
+    at async eval (app/api/bookings/route.ts:355:33)
+  122 |       }
+  123 |       
+> 124 |       throw new Error(`GHL API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+      |            ^
+  125 |     }
+  126 |
+  127 |     if (response.status === 204) { // No Content
+GHL API: Error fetching contact by email (test.audit@example.com): {
+  status: undefined,
+  message: 'GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"6d53c593-19fd-4290-9885-bc896aec5e8d"}',
+  stack: 'Error: GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"6d53c593-19fd-4290-9885-bc896aec5e8d"}\n' +
+    '    at callGhlApi (webpack-internal:///(rsc)/./lib/ghl.ts:69:19)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n' +
+    '    at async Module.getContactByEmail (webpack-internal:///(rsc)/./lib/ghl.ts:115:30)\n' +
+    '    at async eval (webpack-internal:///(rsc)/./app/api/bookings/route.ts:276:44)\n' +
+    '    at async AppRouteRouteModule.do (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:34112)\n' +
+    '    at async AppRouteRouteModule.handle (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:41338)\n' +
+    '    at async doRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1518:42)\n' +
+    '    at async DevServer.renderToResponseWithComponentsImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1920:28)\n' +
+    '    at async DevServer.renderPageComponent (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:2408:24)\n' +
+    '    at async DevServer.renderToResponseImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:2445:32)\n' +
+    '    at async DevServer.pipeImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1008:25)\n' +
+    '    at async NextNodeServer.handleCatchallRenderRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/next-server.js:305:17)\n' +
+    '    at async DevServer.handleRequestImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:900:17)\n' +
+    '    at async /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/dev/next-dev-server.js:371:20\n' +
+    '    at async Span.traceAsyncFn (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/trace/trace.js:157:20)\n' +
+    '    at async DevServer.handleRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/dev/next-dev-server.js:368:24)\n' +
+    '    at async invokeRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:237:21)\n' +
+    '    at async handleRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:428:24)\n' +
+    '    at async requestHandlerImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:452:13)\n' +
+    '    at async Server.requestListener (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/start-server.js:158:13)'
+}
+  - Treating as "contact not found" to allow booking to continue
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE ("public"."Service"."id" = $1 AND "public"."Service"."isActive" = $2) LIMIT $3 OFFSET $4
+Invalid locationType received: undefined
+ POST /api/bookings 400 in 5506ms
+[BOOKING] Creating booking - User: guest
+Guest booking with data: { signerUserEmail: 'test.audit@example.com', signerUserName: null }
+[getContactByEmail] Searching for contact with email: test.audit@example.com
+[callGhlApi] Request: POST https://services.leadconnectorhq.com/contacts/search
+[callGhlApi] Body: {
+  "locationId": "oUvYNTw2Wvul7JSJplqQ",
+  "query": "test.audit@example.com",
+  "pageLimit": 10
+}
+[callGhlApi] Response Status: 200
+[getContactByEmail] Search method didn't find contact, trying list endpoint
+[callGhlApi] Request: GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=test.audit%40example.com
+[callGhlApi] Response Status: 422
+GHL API Error (422) on GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=test.audit%40example.com: {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"0d7e6799-a78a-4bfc-a262-63d60def4204"}
+Error during GHL API call to GET https://services.leadconnectorhq.com/contacts?locationId=oUvYNTw2Wvul7JSJplqQ&email=test.audit%40example.com: Error: GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"0d7e6799-a78a-4bfc-a262-63d60def4204"}
+    at callGhlApi (lib/ghl.ts:124:12)
+    at async Module.getContactByEmail (lib/ghl.ts:182:25)
+    at async eval (app/api/bookings/route.ts:355:33)
+  122 |       }
+  123 |       
+> 124 |       throw new Error(`GHL API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+      |            ^
+  125 |     }
+  126 |
+  127 |     if (response.status === 204) { // No Content
+GHL API: Error fetching contact by email (test.audit@example.com): {
+  status: undefined,
+  message: 'GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"0d7e6799-a78a-4bfc-a262-63d60def4204"}',
+  stack: 'Error: GHL API request failed: 422 Unprocessable Entity - {"message":["property email should not exist"],"error":"Unprocessable Entity","statusCode":422,"traceId":"0d7e6799-a78a-4bfc-a262-63d60def4204"}\n' +
+    '    at callGhlApi (webpack-internal:///(rsc)/./lib/ghl.ts:69:19)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n' +
+    '    at async Module.getContactByEmail (webpack-internal:///(rsc)/./lib/ghl.ts:115:30)\n' +
+    '    at async eval (webpack-internal:///(rsc)/./app/api/bookings/route.ts:276:44)\n' +
+    '    at async AppRouteRouteModule.do (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:34112)\n' +
+    '    at async AppRouteRouteModule.handle (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:41338)\n' +
+    '    at async doRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1518:42)\n' +
+    '    at async DevServer.renderToResponseWithComponentsImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1920:28)\n' +
+    '    at async DevServer.renderPageComponent (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:2408:24)\n' +
+    '    at async DevServer.renderToResponseImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:2445:32)\n' +
+    '    at async DevServer.pipeImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1008:25)\n' +
+    '    at async NextNodeServer.handleCatchallRenderRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/next-server.js:305:17)\n' +
+    '    at async DevServer.handleRequestImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:900:17)\n' +
+    '    at async /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/dev/next-dev-server.js:371:20\n' +
+    '    at async Span.traceAsyncFn (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/trace/trace.js:157:20)\n' +
+    '    at async DevServer.handleRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/dev/next-dev-server.js:368:24)\n' +
+    '    at async invokeRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:237:21)\n' +
+    '    at async handleRequest (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:428:24)\n' +
+    '    at async requestHandlerImpl (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/router-server.js:452:13)\n' +
+    '    at async Server.requestListener (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/start-server.js:158:13)'
+}
+  - Treating as "contact not found" to allow booking to continue
+prisma:query SELECT 1
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE ("public"."Service"."id" = $1 AND "public"."Service"."isActive" = $2) LIMIT $3 OFFSET $4
+prisma:query BEGIN
+prisma:query SELECT "public"."Service"."id" FROM "public"."Service" WHERE ("public"."Service"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query INSERT INTO "public"."Booking" ("id","serviceId","scheduledDateTime","status","locationType","addressStreet","addressCity","addressState","addressZip","priceAtBooking","notes","createdAt","updatedAt","depositAmount","depositStatus","promoCodeDiscount","customerEmail","witness_fee","mileage_fee","urgency_level","urgency_fee") VALUES ($1,$2,$3,CAST($4::text AS "public"."BookingStatus"),CAST($5::text AS "public"."LocationType"),$6,$7,$8,$9,$10,$11,$12,$13,$14,CAST($15::text AS "public"."PaymentStatus"),$16,$17,$18,$19,$20,$21) RETURNING "public"."Booking"."id"
+prisma:query SELECT "public"."Booking"."id", "public"."Booking"."signerId", "public"."Booking"."serviceId", "public"."Booking"."notaryId", "public"."Booking"."scheduledDateTime", "public"."Booking"."actualEndDateTime", "public"."Booking"."status"::text, "public"."Booking"."locationType"::text, "public"."Booking"."addressStreet", "public"."Booking"."addressCity", "public"."Booking"."addressState", "public"."Booking"."addressZip", "public"."Booking"."locationNotes", "public"."Booking"."priceAtBooking", "public"."Booking"."notes", "public"."Booking"."dailyRoomUrl", "public"."Booking"."dailyRecordingId", "public"."Booking"."kbaStatus", "public"."Booking"."idVerificationStatus", "public"."Booking"."notaryJournalEntry", "public"."Booking"."createdAt", "public"."Booking"."updatedAt", "public"."Booking"."confirmationEmailSentAt", "public"."Booking"."confirmationSmsSentAt", "public"."Booking"."followUpSentAt", "public"."Booking"."lastReminderSentAt", "public"."Booking"."noShowCheckPerformedAt", "public"."Booking"."reminder1hrSentAt", "public"."Booking"."reminder24hrSentAt", "public"."Booking"."reminder2hrSentAt", "public"."Booking"."depositAmount", "public"."Booking"."depositStatus"::text, "public"."Booking"."googleCalendarEventId", "public"."Booking"."promoCodeDiscount", "public"."Booking"."promoCodeId", "public"."Booking"."campaignName", "public"."Booking"."customerEmail", "public"."Booking"."ghlContactId", "public"."Booking"."leadSource", "public"."Booking"."stripePaymentUrl", "public"."Booking"."workflowId", "public"."Booking"."witness_type"::text, "public"."Booking"."witness_fee", "public"."Booking"."mileage_miles", "public"."Booking"."mileage_fee", "public"."Booking"."urgency_level", "public"."Booking"."urgency_fee", "public"."Booking"."estimated_completion_time", "public"."Booking"."notary_travel_time_minutes", "public"."Booking"."google_maps_distance_matrix", "public"."Booking"."service_area_id" FROM "public"."Booking" WHERE "public"."Booking"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE "public"."Service"."id" IN ($1) OFFSET $2
+prisma:query COMMIT
+!!!!!!!!!! BOOKING CREATED SUCCESSFULLY !!!!!!!!!! {
+  "id": "bk_1751064954339_citpau1pd",
+  "signerId": null,
+  "serviceId": "cmb8ovso10000ve9xwvtf0my0",
+  "notaryId": null,
+  "scheduledDateTime": "2025-06-28T21:00:00.000Z",
+  "actualEndDateTime": null,
+  "status": "PAYMENT_PENDING",
+  "locationType": "CLIENT_SPECIFIED_ADDRESS",
+  "addressStreet": "123 Test St",
+  "addressCity": "Houston",
+  "addressState": "TX",
+  "addressZip": "77001",
+  "locationNotes": null,
+  "priceAtBooking": "75",
+  "notes": "System audit booking test",
+  "dailyRoomUrl": null,
+  "dailyRecordingId": null,
+  "kbaStatus": null,
+  "idVerificationStatus": null,
+  "notaryJournalEntry": null,
+  "createdAt": "2025-06-27T22:55:54.350Z",
+  "updatedAt": "2025-06-27T22:55:54.339Z",
+  "confirmationEmailSentAt": null,
+  "confirmationSmsSentAt": null,
+  "followUpSentAt": null,
+  "lastReminderSentAt": null,
+  "noShowCheckPerformedAt": null,
+  "reminder1hrSentAt": null,
+  "reminder24hrSentAt": null,
+  "reminder2hrSentAt": null,
+  "depositAmount": "25",
+  "depositStatus": "PENDING",
+  "googleCalendarEventId": null,
+  "promoCodeDiscount": "0",
+  "promoCodeId": null,
+  "campaignName": null,
+  "customerEmail": "test.audit@example.com",
+  "ghlContactId": null,
+  "leadSource": null,
+  "stripePaymentUrl": null,
+  "workflowId": null,
+  "witnessType": null,
+  "witnessFee": "0",
+  "mileageMiles": null,
+  "mileageFee": "0",
+  "urgencyLevel": "standard",
+  "urgencyFee": "0",
+  "estimatedCompletionTime": null,
+  "notaryTravelTimeMinutes": null,
+  "googleMapsDistanceMatrix": null,
+  "serviceAreaId": null,
+  "Service": {
+    "id": "cmb8ovso10000ve9xwvtf0my0",
+    "name": "Standard Mobile Notary",
+    "description": "General notary services at your location. Includes travel within a 20-mile radius, printing, and scanning for standard documents.",
+    "serviceType": "STANDARD_NOTARY",
+    "durationMinutes": 90,
+    "basePrice": "75",
+    "isActive": true,
+    "requiresDeposit": true,
+    "depositAmount": "25",
+    "createdAt": "2025-06-26T06:49:34.410Z",
+    "updatedAt": "2025-06-26T06:49:44.115Z",
+    "externalCalendarId": null
+  },
+  "guestBooking": true,
+  "guestEmail": "test.audit@example.com"
+}
+!!!!!!!!!! STRIPE CHECKOUT SESSION CREATED !!!!!!!!!! URL: https://checkout.stripe.com/c/pay/cs_live_a11AxOvasP2flxMzK9HcHctRnSjekJ0t1VUKO5RnCnW47JgP6kagOp1SdG#fid1d2BpamRhQ2prcSc%2FJ1dqZ2pxaicpJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRUSH03ZER9PW5qPW1dYT1LVkRcS11nMWdIZlVvTENfQz1CdzJCT2d3f2s8XUN9bH11fUdgNTJ%2FT3ZMVWJiYnwyRmZ1VV1jSVRcN1JMdWRmX1ZIakB%2FY2Q1NW4yS1ZvM3cyJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpscWBoJyknYGtkZ2lgVWlkZmBtamlhYHd2Jz9xd3BgeCUl
+prisma:query UPDATE "public"."Booking" SET "notes" = $1 WHERE ("public"."Booking"."id" = $2 AND 1=1) RETURNING "public"."Booking"."id", "public"."Booking"."signerId", "public"."Booking"."serviceId", "public"."Booking"."notaryId", "public"."Booking"."scheduledDateTime", "public"."Booking"."actualEndDateTime", "public"."Booking"."status"::text, "public"."Booking"."locationType"::text, "public"."Booking"."addressStreet", "public"."Booking"."addressCity", "public"."Booking"."addressState", "public"."Booking"."addressZip", "public"."Booking"."locationNotes", "public"."Booking"."priceAtBooking", "public"."Booking"."notes", "public"."Booking"."dailyRoomUrl", "public"."Booking"."dailyRecordingId", "public"."Booking"."kbaStatus", "public"."Booking"."idVerificationStatus", "public"."Booking"."notaryJournalEntry", "public"."Booking"."createdAt", "public"."Booking"."updatedAt", "public"."Booking"."confirmationEmailSentAt", "public"."Booking"."confirmationSmsSentAt", "public"."Booking"."followUpSentAt", "public"."Booking"."lastReminderSentAt", "public"."Booking"."noShowCheckPerformedAt", "public"."Booking"."reminder1hrSentAt", "public"."Booking"."reminder24hrSentAt", "public"."Booking"."reminder2hrSentAt", "public"."Booking"."depositAmount", "public"."Booking"."depositStatus"::text, "public"."Booking"."googleCalendarEventId", "public"."Booking"."promoCodeDiscount", "public"."Booking"."promoCodeId", "public"."Booking"."campaignName", "public"."Booking"."customerEmail", "public"."Booking"."ghlContactId", "public"."Booking"."leadSource", "public"."Booking"."stripePaymentUrl", "public"."Booking"."workflowId", "public"."Booking"."witness_type"::text, "public"."Booking"."witness_fee", "public"."Booking"."mileage_miles", "public"."Booking"."mileage_fee", "public"."Booking"."urgency_level", "public"."Booking"."urgency_fee", "public"."Booking"."estimated_completion_time", "public"."Booking"."notary_travel_time_minutes", "public"."Booking"."google_maps_distance_matrix", "public"."Booking"."service_area_id"
+GHL: Populating custom fields for workflow automation
+Error in overall GHL integration block: TypeError: Cannot read properties of undefined (reading 'toNumber')
+    at eval (app/api/bookings/route.ts:594:39)
+  592 |           service_requested: service.name,
+  593 |           service_address: serviceAddressForGhl,
+> 594 |           service_price: service.price.toNumber().toString(),
+      |                                       ^
+  595 |           
+  596 |           // Date/Time fields (all three for compatibility)
+  597 |           appointment_date: scheduledDateTime ? 
+!!!!!!!!!! FINAL API RESPONSE CHECKOUT URL: https://checkout.stripe.com/c/pay/cs_live_a11AxOvasP2flxMzK9HcHctRnSjekJ0t1VUKO5RnCnW47JgP6kagOp1SdG#fid1d2BpamRhQ2prcSc%2FJ1dqZ2pxaicpJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRUSH03ZER9PW5qPW1dYT1LVkRcS11nMWdIZlVvTENfQz1CdzJCT2d3f2s8XUN9bH11fUdgNTJ%2FT3ZMVWJiYnwyRmZ1VV1jSVRcN1JMdWRmX1ZIakB%2FY2Q1NW4yS1ZvM3cyJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpscWBoJyknYGtkZ2lgVWlkZmBtamlhYHd2Jz9xd3BgeCUl
+!!!!!!!!!! FINAL API RESPONSE BOOKING ID: bk_1751064954339_citpau1pd
+ POST /api/bookings 201 in 2159ms
+ ○ Compiling /api/availability ...
+ ✓ Compiled /api/availability in 6.5s (740 modules)
+prisma:query SELECT 1
+prisma:query SELECT "public"."BusinessSettings"."id", "public"."BusinessSettings"."key", "public"."BusinessSettings"."value", "public"."BusinessSettings"."dataType", "public"."BusinessSettings"."description", "public"."BusinessSettings"."category", "public"."BusinessSettings"."updatedAt", "public"."BusinessSettings"."updatedById" FROM "public"."BusinessSettings" WHERE "public"."BusinessSettings"."category" = $1 OFFSET $2
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE ("public"."Service"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/availability?date=2025-06-29&serviceId=cmb8ovso10000ve9xwvtf0my0 200 in 7286ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."BusinessSettings"."id", "public"."BusinessSettings"."key", "public"."BusinessSettings"."value", "public"."BusinessSettings"."dataType", "public"."BusinessSettings"."description", "public"."BusinessSettings"."category", "public"."BusinessSettings"."updatedAt", "public"."BusinessSettings"."updatedById" FROM "public"."BusinessSettings" WHERE "public"."BusinessSettings"."category" = $1 OFFSET $2
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE ("public"."Service"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/availability?date=2025-06-29&serviceId=cmb8ovso10000ve9xwvtf0my0 200 in 206ms
+ ○ Compiling /api/calendar/available-slots ...
+ ✓ Compiled /api/calendar/available-slots in 2.5s (743 modules)
+ GET /api/calendar/available-slots?date=2025-06-29&serviceId=cmb8ovso10000ve9xwvtf0my0 400 in 2781ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 18.9s (967 modules)
+ GET /api/bookings/bk_1751062391698_ntbjm8372/payment 404 in 21717ms
+ ✓ Compiled in 2.9s (395 modules)
+ ✓ Compiled in 884ms (395 modules)
+ ✓ Compiled in 796ms (395 modules)
+ ✓ Compiled in 1098ms (395 modules)
+ ✓ Compiled in 889ms (395 modules)
+ ✓ Compiled in 1231ms (395 modules)
+ ✓ Compiled in 1303ms (395 modules)
+ ✓ Compiled in 1513ms (395 modules)
+ ✓ Compiled in 650ms (395 modules)
+ ✓ Compiled in 605ms (395 modules)
+ ✓ Compiled in 530ms (395 modules)
+ ✓ Compiled in 523ms (395 modules)
+ ✓ Compiled in 539ms (395 modules)
+ ✓ Compiled in 540ms (395 modules)
+ ✓ Compiled in 604ms (395 modules)
+ ✓ Compiled in 552ms (395 modules)
+ ✓ Compiled in 560ms (395 modules)
+ ✓ Compiled in 520ms (395 modules)
+ ✓ Compiled in 543ms (395 modules)
+ ✓ Compiled in 526ms (395 modules)
+ ✓ Compiled in 889ms (395 modules)
+ ✓ Compiled in 524ms (395 modules)
+ ✓ Compiled in 683ms (395 modules)
+ ✓ Compiled in 534ms (395 modules)
+ ✓ Compiled in 1486ms (395 modules)
+ ○ Compiling /api/bookings ...
+ ✓ Compiled /api/bookings in 7.6s (2541 modules)
+(node:83422) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 SIGINT listeners added to [process]. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:83422) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 SIGTERM listeners added to [process]. Use emitter.setMaxListeners() to increase limit
+ GET /api/bookings 401 in 12639ms
+ ✓ Compiled in 5.4s (395 modules)
+ ✓ Compiled in 934ms (395 modules)
+ ✓ Compiled in 1012ms (395 modules)
+ ✓ Compiled in 677ms (395 modules)
+ ✓ Compiled in 678ms (395 modules)
+ ✓ Compiled in 803ms (395 modules)
+ ✓ Compiled in 803ms (395 modules)
+ ✓ Compiled in 1118ms (395 modules)
+ ✓ Compiled in 722ms (395 modules)
+ ✓ Compiled in 631ms (395 modules)
+ ✓ Compiled in 701ms (395 modules)
+ ✓ Compiled in 765ms (395 modules)
+ ✓ Compiled in 832ms (395 modules)
+ ✓ Compiled in 800ms (395 modules)
+ ✓ Compiled in 782ms (395 modules)
+ ✓ Compiled in 909ms (395 modules)
+ ✓ Compiled in 677ms (395 modules)
+ ✓ Compiled in 634ms (395 modules)
+ ✓ Compiled in 720ms (395 modules)
+ ✓ Compiled in 700ms (395 modules)
+ ✓ Compiled in 928ms (395 modules)
+ ✓ Compiled in 744ms (395 modules)
+ ✓ Compiled in 666ms (395 modules)
+ ✓ Compiled in 648ms (395 modules)
+ ✓ Compiled in 670ms (395 modules)
+ ✓ Compiled in 655ms (395 modules)
+ ✓ Compiled in 615ms (395 modules)
+ ✓ Compiled in 666ms (395 modules)
+ ✓ Compiled in 861ms (395 modules)
+ ✓ Compiled in 775ms (395 modules)
+ ✓ Compiled in 1264ms (395 modules)
+ ✓ Compiled in 689ms (395 modules)
+ ✓ Compiled in 627ms (395 modules)
+ ✓ Compiled in 618ms (395 modules)
+ ✓ Compiled in 641ms (395 modules)
+ ✓ Compiled in 709ms (395 modules)
+ ✓ Compiled in 708ms (395 modules)
+ ✓ Compiled in 645ms (395 modules)
+ ✓ Compiled in 645ms (395 modules)
+ ✓ Compiled in 615ms (395 modules)
+ ✓ Compiled in 637ms (395 modules)
+ ✓ Compiled in 1421ms (395 modules)
+ ✓ Compiled in 958ms (395 modules)
+ ✓ Compiled in 696ms (395 modules)
+ ✓ Compiled in 987ms (395 modules)
+ ✓ Compiled in 861ms (395 modules)
+ ✓ Compiled in 580ms (395 modules)
+ ✓ Compiled in 622ms (395 modules)
+ ✓ Compiled in 644ms (395 modules)
+ ✓ Compiled in 606ms (395 modules)
+ ✓ Compiled in 618ms (395 modules)
+ ✓ Compiled in 678ms (395 modules)
+ ✓ Compiled in 594ms (395 modules)
+ ✓ Compiled in 606ms (395 modules)
+ ✓ Compiled in 637ms (395 modules)
+ ✓ Compiled in 729ms (395 modules)
+ ✓ Compiled in 672ms (395 modules)
+ ✓ Compiled in 668ms (395 modules)
+ ✓ Compiled in 935ms (395 modules)
+ ✓ Compiled in 781ms (395 modules)
+ ✓ Compiled in 1081ms (395 modules)
+ ✓ Compiled in 1382ms (395 modules)
+ ✓ Compiled in 809ms (395 modules)
+ ✓ Compiled in 864ms (395 modules)
+ ✓ Compiled in 845ms (395 modules)
+ ✓ Compiled in 594ms (395 modules)
+ ✓ Compiled in 598ms (395 modules)
+ ✓ Compiled in 3.9s (395 modules)
+ ✓ Compiled in 2.4s (395 modules)
+ ✓ Compiled in 3.2s (395 modules)
+ ✓ Compiled in 648ms (395 modules)
+ ✓ Compiled in 616ms (395 modules)
+ ✓ Compiled in 659ms (395 modules)
+ ✓ Compiled in 533ms (395 modules)
+ ✓ Compiled in 542ms (395 modules)
+ ✓ Compiled in 583ms (395 modules)
+ ✓ Compiled in 547ms (395 modules)
+ ✓ Compiled in 531ms (395 modules)
+ ✓ Compiled in 616ms (395 modules)
+ ✓ Compiled in 700ms (395 modules)
+ ✓ Compiled in 573ms (395 modules)
+ ✓ Compiled in 743ms (395 modules)
+ ✓ Compiled in 538ms (395 modules)
+ ✓ Compiled in 557ms (395 modules)
+ ✓ Compiled in 553ms (395 modules)
+ ✓ Compiled in 549ms (395 modules)
+ ✓ Compiled in 619ms (395 modules)
+ ✓ Compiled in 618ms (395 modules)
+ ✓ Compiled in 631ms (395 modules)
+ ✓ Compiled in 691ms (395 modules)
+ ✓ Compiled in 631ms (395 modules)
+ ✓ Compiled in 987ms (395 modules)
+ ✓ Compiled in 767ms (395 modules)
+ ✓ Compiled in 599ms (395 modules)
+ ✓ Compiled in 598ms (395 modules)
+ ✓ Compiled in 576ms (395 modules)
+ ✓ Compiled in 500ms (395 modules)
+ ✓ Compiled in 517ms (395 modules)
+ ✓ Compiled in 537ms (395 modules)
+ ✓ Compiled in 603ms (395 modules)
+ ✓ Compiled in 1454ms (395 modules)
+ ✓ Compiled in 956ms (395 modules)
+ ✓ Compiled in 903ms (395 modules)
+ ✓ Compiled in 580ms (395 modules)
+ ✓ Compiled in 631ms (395 modules)
+ ✓ Compiled in 727ms (395 modules)
+ ✓ Compiled in 606ms (395 modules)
+ ✓ Compiled in 633ms (395 modules)
+ ✓ Compiled in 664ms (395 modules)
+ ✓ Compiled in 666ms (395 modules)
+ ✓ Compiled in 556ms (395 modules)
+ ✓ Compiled in 556ms (395 modules)
+ ✓ Compiled in 751ms (395 modules)
+ ✓ Compiled in 535ms (395 modules)
+ ✓ Compiled in 506ms (395 modules)
+ ✓ Compiled in 977ms (395 modules)
+ ✓ Compiled in 636ms (395 modules)
+ ✓ Compiled in 567ms (395 modules)
+ ✓ Compiled in 536ms (395 modules)
+ ✓ Compiled in 528ms (395 modules)
+ ✓ Compiled in 506ms (395 modules)
+ ✓ Compiled in 521ms (395 modules)
+ ✓ Compiled in 613ms (395 modules)
+ ✓ Compiled in 604ms (395 modules)
+ ✓ Compiled in 612ms (395 modules)
+ ✓ Compiled in 553ms (395 modules)
+ ✓ Compiled in 543ms (395 modules)
+ ✓ Compiled in 526ms (395 modules)
+ ✓ Compiled in 540ms (395 modules)
+ ✓ Compiled in 566ms (395 modules)
+ ✓ Compiled in 617ms (395 modules)
+ ✓ Compiled in 979ms (395 modules)
+ ✓ Compiled in 552ms (395 modules)
+ ✓ Compiled in 544ms (395 modules)
+ ✓ Compiled in 569ms (395 modules)
+ ✓ Compiled in 579ms (395 modules)
+ ✓ Compiled in 601ms (395 modules)
+ ✓ Compiled in 548ms (395 modules)
+ ✓ Compiled in 530ms (395 modules)
+ ✓ Compiled in 528ms (395 modules)
+ ✓ Compiled in 534ms (395 modules)
+ ✓ Compiled in 649ms (395 modules)
+ ✓ Compiled in 630ms (395 modules)
+ ✓ Compiled in 666ms (395 modules)
+ ✓ Compiled in 537ms (395 modules)
+ ✓ Compiled in 678ms (395 modules)
+ ✓ Compiled in 570ms (395 modules)
+ ✓ Compiled in 562ms (395 modules)
+ ✓ Compiled in 559ms (395 modules)
+ ✓ Compiled in 534ms (395 modules)
+ ✓ Compiled in 544ms (395 modules)
+ ✓ Compiled in 521ms (395 modules)
+ ✓ Compiled in 521ms (395 modules)
+ ✓ Compiled in 533ms (395 modules)
+ ✓ Compiled in 505ms (395 modules)
+ ✓ Compiled in 508ms (395 modules)
+ ✓ Compiled in 518ms (395 modules)
+ ✓ Compiled in 525ms (395 modules)
+ ✓ Compiled in 867ms (395 modules)
+ ✓ Compiled in 703ms (395 modules)
+ ✓ Compiled in 581ms (395 modules)
+ ✓ Compiled in 610ms (395 modules)
+ ✓ Compiled in 1159ms (395 modules)
+ ✓ Compiled in 589ms (395 modules)
+ ✓ Compiled in 598ms (395 modules)
+ ✓ Compiled in 832ms (395 modules)
+ ✓ Compiled in 764ms (395 modules)
+ ✓ Compiled in 934ms (395 modules)
+ ✓ Compiled in 863ms (395 modules)
+ ✓ Compiled in 759ms (395 modules)
+ ✓ Compiled in 591ms (395 modules)
+ ✓ Compiled in 622ms (395 modules)
+ ✓ Compiled in 538ms (395 modules)
+ ✓ Compiled in 535ms (395 modules)
+ ✓ Compiled in 578ms (395 modules)
+ ✓ Compiled in 530ms (395 modules)
+ ✓ Compiled in 545ms (395 modules)
+ ✓ Compiled in 554ms (395 modules)
+ ✓ Compiled in 584ms (395 modules)
+ ✓ Compiled in 551ms (395 modules)
+ ✓ Compiled in 583ms (395 modules)
+ ✓ Compiled in 582ms (395 modules)
+ ✓ Compiled in 579ms (395 modules)
+ ✓ Compiled in 553ms (395 modules)
+ ✓ Compiled in 577ms (395 modules)
+ ✓ Compiled in 583ms (395 modules)
+ ✓ Compiled in 525ms (395 modules)
+ ✓ Compiled in 558ms (395 modules)
+ ✓ Compiled in 708ms (395 modules)
+ ✓ Compiled in 821ms (395 modules)
+ ✓ Compiled in 554ms (395 modules)
+ ✓ Compiled in 553ms (395 modules)
+ ✓ Compiled in 605ms (395 modules)
+ ✓ Compiled in 1161ms (395 modules)
+ ✓ Compiled in 901ms (395 modules)
+ ✓ Compiled in 571ms (395 modules)
+ ✓ Compiled in 543ms (395 modules)
+ ✓ Compiled in 597ms (395 modules)
+ ✓ Compiled in 557ms (395 modules)
+ ✓ Compiled in 499ms (395 modules)
+ ✓ Compiled in 498ms (395 modules)
+ ✓ Compiled in 518ms (395 modules)
+ ✓ Compiled in 487ms (395 modules)
+ ✓ Compiled in 493ms (395 modules)
+ ✓ Compiled in 511ms (395 modules)
+ ✓ Compiled in 529ms (395 modules)
+ ✓ Compiled in 515ms (395 modules)
+ ✓ Compiled in 483ms (395 modules)
+ ✓ Compiled in 511ms (395 modules)
+ ✓ Compiled in 577ms (395 modules)
+ ✓ Compiled in 499ms (395 modules)
+ ✓ Compiled in 503ms (395 modules)
+ ✓ Compiled in 530ms (395 modules)
+ ✓ Compiled in 525ms (395 modules)
+ ✓ Compiled in 1019ms (395 modules)
+ ✓ Compiled in 625ms (395 modules)
+ ✓ Compiled in 510ms (395 modules)
+ ✓ Compiled in 511ms (395 modules)
+ ✓ Compiled in 494ms (395 modules)
+ ✓ Compiled in 508ms (395 modules)
+ ✓ Compiled in 514ms (395 modules)
+ ✓ Compiled in 517ms (395 modules)
+ ✓ Compiled in 511ms (395 modules)
+ ✓ Compiled in 565ms (395 modules)
+ ✓ Compiled in 896ms (395 modules)
+ ✓ Compiled in 526ms (395 modules)
+ ✓ Compiled in 507ms (395 modules)
+ ✓ Compiled in 495ms (395 modules)
+ ✓ Compiled in 485ms (395 modules)
+ ✓ Compiled in 479ms (395 modules)
+ ✓ Compiled in 504ms (395 modules)
+ ✓ Compiled in 599ms (395 modules)
+ ✓ Compiled in 558ms (395 modules)
+ ✓ Compiled in 568ms (395 modules)
+ ✓ Compiled in 513ms (395 modules)
+ ✓ Compiled in 520ms (395 modules)
+ ✓ Compiled in 508ms (395 modules)
+ ✓ Compiled in 503ms (395 modules)
+ ✓ Compiled in 500ms (395 modules)
+ ✓ Compiled in 507ms (395 modules)
+ ✓ Compiled in 489ms (395 modules)
+ ✓ Compiled in 495ms (395 modules)
+ ✓ Compiled in 503ms (395 modules)
+ ✓ Compiled in 511ms (395 modules)
+ ✓ Compiled in 498ms (395 modules)
+ ✓ Compiled in 512ms (395 modules)
+ ✓ Compiled in 520ms (395 modules)
+ ✓ Compiled in 510ms (395 modules)
+ ✓ Compiled in 522ms (395 modules)
+ ✓ Compiled in 508ms (395 modules)
+ ✓ Compiled in 524ms (395 modules)
+ ✓ Compiled in 528ms (395 modules)
+ ✓ Compiled in 511ms (395 modules)
+ ✓ Compiled in 528ms (395 modules)
+ ✓ Compiled in 738ms (395 modules)
+ ✓ Compiled in 1035ms (395 modules)
+ ✓ Compiled in 625ms (395 modules)
+ ✓ Compiled in 557ms (395 modules)
+ ✓ Compiled in 492ms (395 modules)
+ ✓ Compiled in 657ms (395 modules)
+ ✓ Compiled in 518ms (395 modules)
+ ✓ Compiled in 487ms (395 modules)
+ ✓ Compiled in 500ms (395 modules)
+ ✓ Compiled in 504ms (395 modules)
+ ✓ Compiled in 548ms (395 modules)
+ ✓ Compiled in 505ms (395 modules)
+ ✓ Compiled in 524ms (395 modules)
+ ✓ Compiled in 512ms (395 modules)
+ ✓ Compiled in 515ms (395 modules)
+ ✓ Compiled in 494ms (395 modules)
+ ✓ Compiled in 492ms (395 modules)
+ ✓ Compiled in 497ms (395 modules)
+ ✓ Compiled in 496ms (395 modules)
+ ✓ Compiled in 492ms (395 modules)
+ ✓ Compiled in 511ms (395 modules)
+ ✓ Compiled in 608ms (395 modules)
+ ✓ Compiled in 513ms (395 modules)
+ ✓ Compiled in 542ms (395 modules)
+ ✓ Compiled in 645ms (395 modules)
+ ✓ Compiled in 585ms (395 modules)
+ ✓ Compiled in 502ms (395 modules)
+ ✓ Compiled in 544ms (395 modules)
+ ✓ Compiled in 565ms (395 modules)
+ ✓ Compiled in 529ms (395 modules)
+ ✓ Compiled in 504ms (395 modules)
+ ✓ Compiled in 604ms (395 modules)
+ ✓ Compiled in 846ms (395 modules)
+ ✓ Compiled in 552ms (395 modules)
+ ✓ Compiled in 490ms (395 modules)
+ ✓ Compiled in 508ms (395 modules)
+ ✓ Compiled in 524ms (395 modules)
+ ✓ Compiled in 533ms (395 modules)
+ ✓ Compiled in 514ms (395 modules)
+ ✓ Compiled in 518ms (395 modules)
+ ✓ Compiled in 521ms (395 modules)
+ ✓ Compiled in 497ms (395 modules)
+ ✓ Compiled in 531ms (395 modules)
+ ✓ Compiled in 520ms (395 modules)
+ ✓ Compiled in 547ms (395 modules)
+ ✓ Compiled in 506ms (395 modules)
+ ✓ Compiled in 527ms (395 modules)
+ ✓ Compiled in 569ms (395 modules)
+ ✓ Compiled in 527ms (395 modules)
+ ✓ Compiled in 504ms (395 modules)
+ ✓ Compiled in 526ms (395 modules)
+ ✓ Compiled in 524ms (395 modules)
+ ✓ Compiled in 565ms (395 modules)
+ ✓ Compiled in 534ms (395 modules)
+ ✓ Compiled in 530ms (395 modules)
+ ✓ Compiled in 533ms (395 modules)
+ ✓ Compiled in 534ms (395 modules)
+ ✓ Compiled in 517ms (395 modules)
+ ✓ Compiled in 512ms (395 modules)
+ ✓ Compiled in 536ms (395 modules)
+ ✓ Compiled in 533ms (395 modules)
+ ✓ Compiled in 522ms (395 modules)
+ ✓ Compiled in 593ms (395 modules)
+ ✓ Compiled in 908ms (395 modules)
+ ✓ Compiled in 547ms (395 modules)
+ ✓ Compiled in 536ms (395 modules)
+ ✓ Compiled in 508ms (395 modules)
+ ✓ Compiled in 513ms (395 modules)
+ ✓ Compiled in 657ms (395 modules)
+ ✓ Compiled in 744ms (395 modules)
+ ✓ Compiled in 656ms (395 modules)
+ ✓ Compiled in 676ms (395 modules)
+ ✓ Compiled in 565ms (395 modules)
+ ✓ Compiled in 536ms (395 modules)
+ ✓ Compiled in 515ms (395 modules)
+ ✓ Compiled in 725ms (395 modules)
+ ✓ Compiled in 528ms (395 modules)
+ ✓ Compiled in 516ms (395 modules)
+ ✓ Compiled in 506ms (395 modules)
+ ✓ Compiled in 556ms (395 modules)
+ ✓ Compiled in 526ms (395 modules)
+ ✓ Compiled in 506ms (395 modules)
+ ✓ Compiled in 516ms (395 modules)
+ ✓ Compiled in 521ms (395 modules)
+ ✓ Compiled in 532ms (395 modules)
+ ✓ Compiled in 525ms (395 modules)
+ ✓ Compiled in 546ms (395 modules)
+ ✓ Compiled in 583ms (395 modules)
+ ✓ Compiled in 637ms (395 modules)
+ ✓ Compiled in 596ms (395 modules)
+ ✓ Compiled in 572ms (395 modules)
+ ✓ Compiled in 542ms (395 modules)
+ ✓ Compiled in 586ms (395 modules)
+ ✓ Compiled in 594ms (395 modules)
+ ✓ Compiled in 957ms (395 modules)
+ ✓ Compiled in 563ms (395 modules)
+ ✓ Compiled in 608ms (395 modules)
+ ✓ Compiled in 644ms (395 modules)
+ ✓ Compiled in 739ms (395 modules)
+ ✓ Compiled in 691ms (395 modules)
+ ✓ Compiled in 580ms (395 modules)
+ ✓ Compiled in 554ms (395 modules)
+ ✓ Compiled in 541ms (395 modules)
+ ✓ Compiled in 548ms (395 modules)
+ ✓ Compiled in 514ms (395 modules)
+ ✓ Compiled in 525ms (395 modules)
+ ✓ Compiled in 647ms (395 modules)
+ ✓ Compiled in 573ms (395 modules)
+ ✓ Compiled in 604ms (395 modules)
+ ✓ Compiled in 663ms (395 modules)
+ ✓ Compiled in 743ms (395 modules)
+ ✓ Compiled in 517ms (395 modules)
+ ✓ Compiled in 513ms (395 modules)
+ ✓ Compiled in 559ms (395 modules)
+ ✓ Compiled in 564ms (395 modules)
+ ✓ Compiled in 552ms (395 modules)
+ ✓ Compiled in 546ms (395 modules)
+ ✓ Compiled in 572ms (395 modules)
+ ✓ Compiled in 546ms (395 modules)
+ ✓ Compiled in 543ms (395 modules)
+ ✓ Compiled in 542ms (395 modules)
+ ✓ Compiled in 549ms (395 modules)
+ ✓ Compiled in 560ms (395 modules)
+ ✓ Compiled in 555ms (395 modules)
+ ✓ Compiled in 556ms (395 modules)
+ ✓ Compiled in 963ms (395 modules)
+ ✓ Compiled in 545ms (395 modules)
+ ✓ Compiled in 507ms (395 modules)
+ ✓ Compiled in 529ms (395 modules)
+ ✓ Compiled in 511ms (395 modules)
+ ✓ Compiled in 515ms (395 modules)
+ ✓ Compiled in 532ms (395 modules)
+ ✓ Compiled in 524ms (395 modules)
+ ✓ Compiled in 579ms (395 modules)
+ ✓ Compiled in 505ms (395 modules)
+ ✓ Compiled in 512ms (395 modules)
+ ✓ Compiled in 566ms (395 modules)
+ ✓ Compiled in 541ms (395 modules)
+ ✓ Compiled in 524ms (395 modules)
+ ✓ Compiled in 530ms (395 modules)
+ ✓ Compiled in 549ms (395 modules)
+ ✓ Compiled in 526ms (395 modules)
+ ✓ Compiled in 541ms (395 modules)
+ ✓ Compiled in 552ms (395 modules)
+ ✓ Compiled in 549ms (395 modules)
+ ✓ Compiled in 534ms (395 modules)
+ ✓ Compiled in 600ms (395 modules)
+ ✓ Compiled in 548ms (395 modules)
+ ✓ Compiled in 681ms (395 modules)
+ ✓ Compiled in 564ms (395 modules)
+ ✓ Compiled in 535ms (395 modules)
+ ✓ Compiled in 522ms (395 modules)
+ ✓ Compiled in 545ms (395 modules)
+ ✓ Compiled in 674ms (395 modules)
+ ✓ Compiled in 519ms (395 modules)
+ ✓ Compiled in 695ms (395 modules)
+ ✓ Compiled in 1433ms (395 modules)
+ ✓ Compiled in 603ms (395 modules)
+ ✓ Compiled in 634ms (395 modules)
+ ✓ Compiled in 569ms (395 modules)
+ ✓ Compiled in 570ms (395 modules)
+ ✓ Compiled in 715ms (395 modules)
+ ✓ Compiled in 753ms (395 modules)
+ ✓ Compiled in 744ms (395 modules)
+ ✓ Compiled in 798ms (395 modules)
+ ✓ Compiled in 819ms (395 modules)
+ ✓ Compiled in 769ms (395 modules)
+ ✓ Compiled in 1167ms (395 modules)
+ ✓ Compiled in 925ms (395 modules)
+ ✓ Compiled in 655ms (395 modules)
+ ✓ Compiled in 741ms (395 modules)
+ ✓ Compiled in 600ms (395 modules)
+ ✓ Compiled in 591ms (395 modules)
+ ✓ Compiled in 649ms (395 modules)
+ ✓ Compiled in 597ms (395 modules)
+ ✓ Compiled in 605ms (395 modules)
+ ✓ Compiled in 751ms (395 modules)
+ ✓ Compiled in 790ms (395 modules)
+ ✓ Compiled in 654ms (395 modules)
+ ✓ Compiled in 612ms (395 modules)
+ ✓ Compiled in 640ms (395 modules)
+ ✓ Compiled in 620ms (395 modules)
+ ✓ Compiled in 603ms (395 modules)
+ ✓ Compiled in 731ms (395 modules)
+ ✓ Compiled in 690ms (395 modules)
+ ✓ Compiled in 638ms (395 modules)
+ ✓ Compiled in 795ms (395 modules)
+ ✓ Compiled in 1130ms (395 modules)
+ ✓ Compiled in 702ms (395 modules)
+ ✓ Compiled in 644ms (395 modules)
+ ✓ Compiled in 666ms (395 modules)
+ ✓ Compiled in 654ms (395 modules)
+ ✓ Compiled in 631ms (395 modules)
+ ✓ Compiled in 588ms (395 modules)
+ ✓ Compiled in 881ms (395 modules)
+ ✓ Compiled in 661ms (395 modules)
+ ✓ Compiled in 529ms (395 modules)
+ ✓ Compiled in 519ms (395 modules)
+ ✓ Compiled in 508ms (395 modules)
+ ✓ Compiled in 541ms (395 modules)
+ ✓ Compiled in 515ms (395 modules)
+ ✓ Compiled in 513ms (395 modules)
+ ✓ Compiled in 505ms (395 modules)
+ ✓ Compiled in 542ms (395 modules)
+ ✓ Compiled in 646ms (395 modules)
+ ✓ Compiled in 503ms (395 modules)
+ ✓ Compiled in 538ms (395 modules)
+ ✓ Compiled in 511ms (395 modules)
+ ✓ Compiled in 506ms (395 modules)
+ ✓ Compiled in 502ms (395 modules)
+ ✓ Compiled in 541ms (395 modules)
+ ✓ Compiled in 517ms (395 modules)
+ ✓ Compiled in 520ms (395 modules)
+ ✓ Compiled in 524ms (395 modules)
+ ✓ Compiled in 524ms (395 modules)
+ ✓ Compiled in 515ms (395 modules)
+ ✓ Compiled in 533ms (395 modules)
+ ✓ Compiled in 609ms (395 modules)
+ ✓ Compiled in 952ms (395 modules)
+ ✓ Compiled in 645ms (395 modules)
+ ✓ Compiled in 626ms (395 modules)
+ ✓ Compiled in 515ms (395 modules)
+ ✓ Compiled in 579ms (395 modules)
+ ✓ Compiled in 706ms (395 modules)
+ ✓ Compiled in 506ms (395 modules)
+ ✓ Compiled in 523ms (395 modules)
+ ✓ Compiled in 507ms (395 modules)
+ ✓ Compiled in 481ms (395 modules)
+ ✓ Compiled in 629ms (395 modules)
+ ✓ Compiled in 572ms (395 modules)
+ ✓ Compiled in 545ms (395 modules)
+ ✓ Compiled in 503ms (395 modules)
+ ✓ Compiled in 606ms (395 modules)
+ ✓ Compiled in 611ms (395 modules)
+ ✓ Compiled in 622ms (395 modules)
+ ✓ Compiled in 568ms (395 modules)
+ ✓ Compiled in 824ms (395 modules)
+ ✓ Compiled in 913ms (395 modules)
+ ✓ Compiled in 578ms (395 modules)
+ ✓ Compiled in 559ms (395 modules)
+ ✓ Compiled in 554ms (395 modules)
+ ✓ Compiled in 528ms (395 modules)
+ ✓ Compiled in 532ms (395 modules)
+ ✓ Compiled in 544ms (395 modules)
+ ✓ Compiled in 504ms (395 modules)
+ ✓ Compiled in 654ms (395 modules)
+ ✓ Compiled in 604ms (395 modules)
+ ✓ Compiled in 611ms (395 modules)
+ ✓ Compiled in 677ms (395 modules)
+ ✓ Compiled in 1102ms (395 modules)
+ ✓ Compiled in 829ms (395 modules)
+ ✓ Compiled in 618ms (395 modules)
+ ✓ Compiled in 575ms (395 modules)
+ ✓ Compiled in 523ms (395 modules)
+ ✓ Compiled in 515ms (395 modules)
+ ✓ Compiled in 507ms (395 modules)
+ ✓ Compiled in 521ms (395 modules)
+ ✓ Compiled in 605ms (395 modules)
+ ✓ Compiled in 1037ms (395 modules)
+ ✓ Compiled in 546ms (395 modules)
+ ✓ Compiled in 590ms (395 modules)
+ ✓ Compiled in 594ms (395 modules)
+ ✓ Compiled in 889ms (395 modules)
+ ✓ Compiled in 1044ms (395 modules)
+ ✓ Compiled in 1015ms (395 modules)
+ ✓ Compiled in 775ms (395 modules)
+ ✓ Compiled in 1103ms (395 modules)
+ ✓ Compiled in 989ms (395 modules)
+ ✓ Compiled in 767ms (395 modules)
+ ✓ Compiled in 721ms (395 modules)
+ ✓ Compiled in 715ms (395 modules)
+ ✓ Compiled in 664ms (395 modules)
+ ✓ Compiled in 644ms (395 modules)
+ ✓ Compiled in 940ms (395 modules)
+ ✓ Compiled in 723ms (395 modules)
+ ✓ Compiled in 737ms (395 modules)
+ ✓ Compiled in 865ms (395 modules)
+ ✓ Compiled in 972ms (395 modules)
+ ✓ Compiled in 989ms (395 modules)
+ ○ Compiling /api/availability ...
+ ✓ Compiled /api/availability in 4.8s (858 modules)
+(node:83422) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 beforeExit listeners added to [process]. Use emitter.setMaxListeners() to increase limit
+prisma:query SELECT "public"."BusinessSettings"."id", "public"."BusinessSettings"."key", "public"."BusinessSettings"."value", "public"."BusinessSettings"."dataType", "public"."BusinessSettings"."description", "public"."BusinessSettings"."category", "public"."BusinessSettings"."updatedAt", "public"."BusinessSettings"."updatedById" FROM "public"."BusinessSettings" WHERE "public"."BusinessSettings"."category" = $1 OFFSET $2
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE ("public"."Service"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/availability?date=2025-06-29&serviceId=cmb8ovso10000ve9xwvtf0my0 200 in 6231ms
+ ✓ Compiled in 1356ms (395 modules)
+ ✓ Compiled in 1116ms (395 modules)
+ ✓ Compiled in 582ms (395 modules)
+ ✓ Compiled in 599ms (395 modules)
+ ✓ Compiled in 645ms (395 modules)
+ ✓ Compiled in 689ms (395 modules)
+ ✓ Compiled in 573ms (395 modules)
+ ✓ Compiled in 571ms (395 modules)
+ ✓ Compiled in 622ms (395 modules)
+ ✓ Compiled in 774ms (395 modules)
+ ✓ Compiled in 859ms (395 modules)
+ ✓ Compiled in 909ms (395 modules)
+ ✓ Compiled in 741ms (395 modules)
+ ✓ Compiled in 1065ms (395 modules)
+ ✓ Compiled in 925ms (395 modules)
+ ✓ Compiled in 1477ms (395 modules)
+ ✓ Compiled in 1196ms (395 modules)
+ ✓ Compiled in 1078ms (395 modules)
+ ✓ Compiled in 655ms (395 modules)
+ ✓ Compiled in 588ms (395 modules)
+ ✓ Compiled in 617ms (395 modules)
+ ✓ Compiled in 586ms (395 modules)
+ ✓ Compiled in 620ms (395 modules)
+ ✓ Compiled in 731ms (395 modules)
+ ✓ Compiled in 783ms (395 modules)
+ ✓ Compiled in 659ms (395 modules)
+ ✓ Compiled in 1054ms (395 modules)
+ ✓ Compiled in 969ms (395 modules)
+ ✓ Compiled in 1226ms (395 modules)
+ ✓ Compiled in 682ms (395 modules)
+ ✓ Compiled in 1135ms (395 modules)
+ ✓ Compiled in 604ms (395 modules)
+ ✓ Compiled in 630ms (395 modules)
+ ✓ Compiled in 839ms (395 modules)
+ ✓ Compiled in 1070ms (395 modules)
+ ✓ Compiled in 1215ms (395 modules)
+ ✓ Compiled in 1048ms (395 modules)
+ ✓ Compiled in 656ms (395 modules)
+ ✓ Compiled in 593ms (395 modules)
+ ✓ Compiled in 555ms (395 modules)
+ ✓ Compiled in 559ms (395 modules)
+ ✓ Compiled in 666ms (395 modules)
+ ✓ Compiled in 745ms (395 modules)
+ ✓ Compiled in 939ms (395 modules)
+ ✓ Compiled in 998ms (395 modules)
+ ✓ Compiled in 955ms (395 modules)
+ ✓ Compiled in 977ms (395 modules)
+ ✓ Compiled in 630ms (395 modules)
+ ✓ Compiled in 578ms (395 modules)
+ ✓ Compiled in 1164ms (395 modules)
+ ✓ Compiled in 1113ms (395 modules)
+ ✓ Compiled in 728ms (395 modules)
+ ✓ Compiled in 650ms (395 modules)
+ ✓ Compiled in 727ms (395 modules)
+ ✓ Compiled in 875ms (395 modules)
+ ✓ Compiled in 1135ms (395 modules)
+ ✓ Compiled in 938ms (395 modules)
+ ✓ Compiled in 703ms (395 modules)
+ ✓ Compiled in 603ms (395 modules)
+ ✓ Compiled in 579ms (395 modules)
+ ✓ Compiled in 617ms (395 modules)
+ ✓ Compiled in 1308ms (395 modules)
+ ✓ Compiled in 810ms (395 modules)
+ ✓ Compiled in 1186ms (395 modules)
+ ✓ Compiled in 1092ms (395 modules)
+ ✓ Compiled in 1040ms (395 modules)
+ ✓ Compiled in 899ms (395 modules)
+ ✓ Compiled in 2.2s (395 modules)
+ ✓ Compiled in 688ms (395 modules)
+ ✓ Compiled in 645ms (395 modules)
+ ✓ Compiled in 735ms (395 modules)
+ ✓ Compiled in 853ms (395 modules)
+ ✓ Compiled in 841ms (395 modules)
+ ✓ Compiled in 890ms (395 modules)
+ ✓ Compiled in 804ms (395 modules)
+ ✓ Compiled in 1310ms (395 modules)
+ ✓ Compiled in 1124ms (395 modules)
+ ✓ Compiled in 939ms (395 modules)
+ ✓ Compiled in 890ms (395 modules)
+ ✓ Compiled in 894ms (395 modules)
+ ✓ Compiled in 1117ms (395 modules)
+ ✓ Compiled in 1075ms (395 modules)
+ ✓ Compiled in 724ms (395 modules)
+ ✓ Compiled in 666ms (395 modules)
+ ✓ Compiled in 660ms (395 modules)
+ ✓ Compiled in 580ms (395 modules)
+ ✓ Compiled in 578ms (395 modules)
+ ✓ Compiled in 582ms (395 modules)
+ ✓ Compiled in 549ms (395 modules)
+ ✓ Compiled in 661ms (395 modules)
+ ✓ Compiled in 699ms (395 modules)
+ ✓ Compiled in 683ms (395 modules)
+ ✓ Compiled in 766ms (395 modules)
+ ✓ Compiled in 839ms (395 modules)
+ ✓ Compiled in 716ms (395 modules)
+ ✓ Compiled in 614ms (395 modules)
+ ✓ Compiled in 648ms (395 modules)
+ ✓ Compiled in 655ms (395 modules)
+ ✓ Compiled in 739ms (395 modules)
+ ✓ Compiled in 1278ms (395 modules)
+ ✓ Compiled in 680ms (395 modules)
+ ✓ Compiled in 633ms (395 modules)
+ ✓ Compiled in 657ms (395 modules)
+ ✓ Compiled in 636ms (395 modules)
+ ✓ Compiled in 578ms (395 modules)
+ ✓ Compiled in 1071ms (395 modules)
+ ✓ Compiled in 1078ms (395 modules)
+ ✓ Compiled in 1242ms (395 modules)
+ ✓ Compiled in 1279ms (395 modules)
+ ✓ Compiled in 1102ms (395 modules)
+ ✓ Compiled in 1033ms (395 modules)
+ ✓ Compiled in 1239ms (395 modules)
+ ✓ Compiled in 687ms (395 modules)
+ ✓ Compiled in 759ms (395 modules)
+ ✓ Compiled in 560ms (395 modules)
+ ✓ Compiled in 572ms (395 modules)
+ ✓ Compiled in 599ms (395 modules)
+ ✓ Compiled in 609ms (395 modules)
+ ✓ Compiled in 701ms (395 modules)
+ ✓ Compiled in 796ms (395 modules)
+ ✓ Compiled in 845ms (395 modules)
+ ✓ Compiled in 1194ms (395 modules)
+ ✓ Compiled in 937ms (395 modules)
+ ✓ Compiled in 1214ms (395 modules)
+prisma:query SELECT 1
+prisma:query SELECT "public"."BusinessSettings"."id", "public"."BusinessSettings"."key", "public"."BusinessSettings"."value", "public"."BusinessSettings"."dataType", "public"."BusinessSettings"."description", "public"."BusinessSettings"."category", "public"."BusinessSettings"."updatedAt", "public"."BusinessSettings"."updatedById" FROM "public"."BusinessSettings" WHERE "public"."BusinessSettings"."category" = $1 OFFSET $2
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE ("public"."Service"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/availability?date=2025-06-29&serviceId=cmb8ovso10000ve9xwvtf0my0 200 in 1183ms
+ ✓ Compiled in 992ms (395 modules)
+ ✓ Compiled in 757ms (395 modules)
+ ✓ Compiled in 612ms (395 modules)
+ ✓ Compiled in 566ms (395 modules)
+ ✓ Compiled in 554ms (395 modules)
+ ✓ Compiled in 620ms (395 modules)
+ ✓ Compiled in 1132ms (395 modules)
+ ✓ Compiled in 647ms (395 modules)
+ ✓ Compiled in 666ms (395 modules)
+ ✓ Compiled in 570ms (395 modules)
+ ✓ Compiled in 838ms (395 modules)
+ ✓ Compiled in 964ms (395 modules)
+ ✓ Compiled in 1109ms (395 modules)
+ ✓ Compiled in 890ms (395 modules)
+ ✓ Compiled in 1236ms (395 modules)
+ ✓ Compiled in 936ms (395 modules)
+ ✓ Compiled in 574ms (395 modules)
+ ✓ Compiled in 600ms (395 modules)
+ ✓ Compiled in 620ms (395 modules)
+ ✓ Compiled in 573ms (395 modules)
+ ✓ Compiled in 632ms (395 modules)
+ ✓ Compiled in 581ms (395 modules)
+ ✓ Compiled in 638ms (395 modules)
+ ✓ Compiled in 631ms (395 modules)
+ ✓ Compiled in 625ms (395 modules)
+ ✓ Compiled in 593ms (395 modules)
+ ✓ Compiled in 873ms (395 modules)
+ ✓ Compiled in 954ms (395 modules)
+ ✓ Compiled in 1188ms (395 modules)
+ ✓ Compiled in 980ms (395 modules)
+ ✓ Compiled in 657ms (395 modules)
+ ✓ Compiled in 589ms (395 modules)
+ ✓ Compiled in 637ms (395 modules)
+ ✓ Compiled in 675ms (395 modules)
+ ✓ Compiled in 683ms (395 modules)
+ ✓ Compiled in 584ms (395 modules)
+ ✓ Compiled in 600ms (395 modules)
+ ✓ Compiled in 1235ms (395 modules)
+ ✓ Compiled in 608ms (395 modules)
+ ✓ Compiled in 915ms (395 modules)
+ ✓ Compiled in 1091ms (395 modules)
+ ✓ Compiled in 940ms (395 modules)
+ ✓ Compiled in 967ms (395 modules)
+prisma:query SELECT 1
+prisma:query SELECT "public"."BusinessSettings"."id", "public"."BusinessSettings"."key", "public"."BusinessSettings"."value", "public"."BusinessSettings"."dataType", "public"."BusinessSettings"."description", "public"."BusinessSettings"."category", "public"."BusinessSettings"."updatedAt", "public"."BusinessSettings"."updatedById" FROM "public"."BusinessSettings" WHERE "public"."BusinessSettings"."category" = $1 OFFSET $2
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE ("public"."Service"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:error 
+Invalid `prisma.booking.findMany()` invocation:
+
+{
+  where: {
+    scheduledDateTime: {
+      gte: new Date("2025-06-28T05:00:00.000Z"),
+      lte: new Date("2025-06-29T04:59:59.999Z")
+    },
+    status: {
+      notIn: [
+        "CANCELLED_BY_CLIENT",
+        "CANCELLED_BY_STAFF",
+        "NO_SHOW",
+        "ARCHIVED"
+      ]
+    }
+  },
+  include: {
+    service: true,
+    ~~~~~~~
+?   User_Booking_notaryIdToUser?: true,
+?   PromoCode?: true,
+?   Service?: true,
+?   User_Booking_signerIdToUser?: true
+  }
+}
+
+Unknown field `service` for include statement on model `Booking`. Available options are listed in green.
+Availability API error: Error [PrismaClientValidationError]: 
+Invalid `prisma.booking.findMany()` invocation:
+
+{
+  where: {
+    scheduledDateTime: {
+      gte: new Date("2025-06-28T05:00:00.000Z"),
+      lte: new Date("2025-06-29T04:59:59.999Z")
+    },
+    status: {
+      notIn: [
+        "CANCELLED_BY_CLIENT",
+        "CANCELLED_BY_STAFF",
+        "NO_SHOW",
+        "ARCHIVED"
+      ]
+    }
+  },
+  include: {
+    service: true,
+    ~~~~~~~
+?   User_Booking_notaryIdToUser?: true,
+?   PromoCode?: true,
+?   Service?: true,
+?   User_Booking_signerIdToUser?: true
+  }
+}
+
+Unknown field `service` for include statement on model `Booking`. Available options are listed in green.
+    at async getExistingBookings (app/api/availability/route.ts:231:9)
+    at async GET (app/api/availability/route.ts:115:29)
+  229 |   endOfDay.setHours(23, 59, 59, 999);
+  230 |
+> 231 |   return await prisma.booking.findMany({
+      |         ^
+  232 |     where: {
+  233 |       scheduledDateTime: {
+  234 |         gte: startOfDay, {
+  clientVersion: '6.8.2'
+}
+ GET /api/availability?date=2025-06-28&serviceId=cmb8ovso10000ve9xwvtf0my0 500 in 1348ms
+ ✓ Compiled in 1329ms (395 modules)
+ ✓ Compiled in 870ms (395 modules)
+ ✓ Compiled in 571ms (395 modules)
+ ✓ Compiled in 588ms (395 modules)
+ ✓ Compiled in 552ms (395 modules)
+ ✓ Compiled in 568ms (395 modules)
+ ✓ Compiled in 537ms (395 modules)
+ ✓ Compiled in 692ms (395 modules)
+ ✓ Compiled in 798ms (395 modules)
+ ✓ Compiled in 585ms (395 modules)
+ ✓ Compiled in 808ms (395 modules)
+ ✓ Compiled in 714ms (395 modules)
+ ✓ Compiled in 609ms (395 modules)
+ ✓ Compiled in 687ms (395 modules)
+ ✓ Compiled in 731ms (395 modules)
+ ✓ Compiled in 616ms (395 modules)
+ ✓ Compiled in 603ms (395 modules)
+ ✓ Compiled in 646ms (395 modules)
+ ✓ Compiled in 664ms (395 modules)
+ ✓ Compiled in 633ms (395 modules)
+ ✓ Compiled in 613ms (395 modules)
+ ✓ Compiled in 617ms (395 modules)
+ ✓ Compiled in 898ms (395 modules)
+ ✓ Compiled in 1030ms (395 modules)
+ ✓ Compiled in 1387ms (395 modules)
+ ✓ Compiled in 1433ms (395 modules)
+ ✓ Compiled in 768ms (395 modules)
+ ✓ Compiled in 593ms (395 modules)
+ ✓ Compiled in 750ms (395 modules)
+ ✓ Compiled in 702ms (395 modules)
+ ✓ Compiled in 718ms (395 modules)
+ ✓ Compiled in 586ms (395 modules)
+ ✓ Compiled in 850ms (395 modules)
+ ✓ Compiled in 629ms (395 modules)
+ ✓ Compiled in 649ms (395 modules)
+ ✓ Compiled in 670ms (395 modules)
+ ✓ Compiled in 689ms (395 modules)
+ ✓ Compiled in 679ms (395 modules)
+ ✓ Compiled in 898ms (395 modules)
+ ✓ Compiled in 721ms (395 modules)
+ ✓ Compiled in 600ms (395 modules)
+ ✓ Compiled in 696ms (395 modules)
+ ✓ Compiled in 1071ms (395 modules)
+ ✓ Compiled in 1037ms (395 modules)
+ ✓ Compiled in 1077ms (395 modules)
+ ✓ Compiled in 871ms (395 modules)
+ ✓ Compiled in 733ms (395 modules)
+ ✓ Compiled in 606ms (395 modules)
+ ✓ Compiled in 570ms (395 modules)
+ ✓ Compiled in 741ms (395 modules)
+ ✓ Compiled in 619ms (395 modules)
+ ✓ Compiled in 587ms (395 modules)
+ ✓ Compiled in 618ms (395 modules)
+ ✓ Compiled in 681ms (395 modules)
+ ✓ Compiled in 863ms (395 modules)
+ ✓ Compiled in 739ms (395 modules)
+ ✓ Compiled in 1258ms (395 modules)
+ ✓ Compiled in 709ms (395 modules)
+ ✓ Compiled in 610ms (395 modules)
+ ✓ Compiled in 615ms (395 modules)
+ ✓ Compiled in 610ms (395 modules)
+ ✓ Compiled in 644ms (395 modules)
+ ✓ Compiled in 590ms (395 modules)
+ ✓ Compiled in 960ms (395 modules)
+ ✓ Compiled in 949ms (395 modules)
+ ✓ Compiled in 848ms (395 modules)
+ ✓ Compiled in 679ms (395 modules)
+ ✓ Compiled in 597ms (395 modules)
+ ✓ Compiled in 1282ms (395 modules)
+ ✓ Compiled in 672ms (395 modules)
+ ✓ Compiled in 639ms (395 modules)
+ ✓ Compiled in 1095ms (395 modules)
+ ✓ Compiled in 1143ms (395 modules)
+ ✓ Compiled in 914ms (395 modules)
+ ✓ Compiled in 655ms (395 modules)
+ ✓ Compiled in 570ms (395 modules)
+ ✓ Compiled in 729ms (395 modules)
+ ✓ Compiled in 584ms (395 modules)
+ ✓ Compiled in 560ms (395 modules)
+ ✓ Compiled in 562ms (395 modules)
+ ✓ Compiled in 585ms (395 modules)
+ ✓ Compiled in 576ms (395 modules)
+ ✓ Compiled in 623ms (395 modules)
+ ✓ Compiled in 1047ms (395 modules)
+ ✓ Compiled in 953ms (395 modules)
+ ✓ Compiled in 1223ms (395 modules)
+ ✓ Compiled in 1252ms (395 modules)
+ ✓ Compiled in 1159ms (395 modules)
+ ✓ Compiled in 622ms (395 modules)
+ ✓ Compiled in 602ms (395 modules)
+ ✓ Compiled in 546ms (395 modules)
+ ✓ Compiled in 552ms (395 modules)
+ ✓ Compiled in 584ms (395 modules)
+ ✓ Compiled in 607ms (395 modules)
+ ✓ Compiled in 638ms (395 modules)
+ ✓ Compiled in 599ms (395 modules)
+ ✓ Compiled in 663ms (395 modules)
+ ✓ Compiled in 756ms (395 modules)
+ ✓ Compiled in 881ms (395 modules)
+ ✓ Compiled in 884ms (395 modules)
+ ✓ Compiled in 687ms (395 modules)
+ ✓ Compiled in 769ms (395 modules)
+ ✓ Compiled in 560ms (395 modules)
+ ✓ Compiled in 710ms (395 modules)
+ ✓ Compiled in 590ms (395 modules)
+ ✓ Compiled in 544ms (395 modules)
+ ✓ Compiled in 623ms (395 modules)
+ ✓ Compiled in 716ms (395 modules)
+ ✓ Compiled in 1722ms (395 modules)
+ ✓ Compiled in 1143ms (395 modules)
+ ✓ Compiled in 1235ms (395 modules)
+ ✓ Compiled in 703ms (395 modules)
+ ✓ Compiled in 589ms (395 modules)
+ ✓ Compiled in 585ms (395 modules)
+ ✓ Compiled in 605ms (395 modules)
+ ✓ Compiled in 569ms (395 modules)
+ ✓ Compiled in 592ms (395 modules)
+ ✓ Compiled in 703ms (395 modules)
+ ✓ Compiled in 1435ms (395 modules)
+ ✓ Compiled in 1051ms (395 modules)
+ ✓ Compiled in 1012ms (395 modules)
+ ✓ Compiled in 866ms (395 modules)
+ ✓ Compiled in 817ms (395 modules)
+ ✓ Compiled in 775ms (395 modules)
+ ✓ Compiled in 861ms (395 modules)
+ ✓ Compiled in 541ms (395 modules)
+ ✓ Compiled in 613ms (395 modules)
+ ✓ Compiled in 595ms (395 modules)
+ ✓ Compiled in 696ms (395 modules)
+ ✓ Compiled in 1050ms (395 modules)
+ ✓ Compiled in 975ms (395 modules)
+ ✓ Compiled in 1134ms (395 modules)
+ ✓ Compiled in 676ms (395 modules)
+ ✓ Compiled in 600ms (395 modules)
+ ✓ Compiled in 578ms (395 modules)
+ ✓ Compiled in 540ms (395 modules)
+ ✓ Compiled in 568ms (395 modules)
+ ✓ Compiled in 623ms (395 modules)
+ ✓ Compiled in 588ms (395 modules)
+ ✓ Compiled in 630ms (395 modules)
+ ✓ Compiled in 647ms (395 modules)
+ ✓ Compiled in 1204ms (395 modules)
+ ✓ Compiled in 960ms (395 modules)
+ ✓ Compiled in 1073ms (395 modules)
+ ✓ Compiled in 900ms (395 modules)
+ ✓ Compiled in 756ms (395 modules)
+ ✓ Compiled in 580ms (395 modules)
+ ✓ Compiled in 830ms (395 modules)
+ ✓ Compiled in 623ms (395 modules)
+ ✓ Compiled in 1073ms (395 modules)
+ ✓ Compiled in 639ms (395 modules)
+ ✓ Compiled in 683ms (395 modules)
+ ✓ Compiled in 785ms (395 modules)
+ ✓ Compiled in 644ms (395 modules)
+ ✓ Compiled in 704ms (395 modules)
+ ✓ Compiled in 1097ms (395 modules)
+ ✓ Compiled in 1167ms (395 modules)
+ ✓ Compiled in 1013ms (395 modules)
+ ✓ Compiled in 542ms (395 modules)
+ ✓ Compiled in 521ms (395 modules)
+ ✓ Compiled in 579ms (395 modules)
+ ✓ Compiled in 593ms (395 modules)
+ ✓ Compiled in 568ms (395 modules)
+ ✓ Compiled in 611ms (395 modules)
+ ✓ Compiled in 634ms (395 modules)
+ ✓ Compiled in 921ms (395 modules)
+ ✓ Compiled in 994ms (395 modules)
+ ✓ Compiled in 869ms (395 modules)
+ ✓ Compiled in 875ms (395 modules)
+ ✓ Compiled in 1028ms (395 modules)
+ ✓ Compiled in 643ms (395 modules)
+ ✓ Compiled in 770ms (395 modules)
+ ✓ Compiled in 687ms (395 modules)
+ ✓ Compiled in 619ms (395 modules)
+ ✓ Compiled in 653ms (395 modules)
+ ✓ Compiled in 575ms (395 modules)
+ ✓ Compiled in 636ms (395 modules)
+ ✓ Compiled in 656ms (395 modules)
+ ✓ Compiled in 1048ms (395 modules)
+ ✓ Compiled in 1275ms (395 modules)
+ ✓ Compiled in 731ms (395 modules)
+ ✓ Compiled in 599ms (395 modules)
+ ✓ Compiled in 592ms (395 modules)
+ ✓ Compiled in 757ms (395 modules)
+ ✓ Compiled in 692ms (395 modules)
+ ✓ Compiled in 648ms (395 modules)
+ ✓ Compiled in 682ms (395 modules)
+ ✓ Compiled in 851ms (395 modules)
+ ✓ Compiled in 1035ms (395 modules)
+ ✓ Compiled in 903ms (395 modules)
+ ✓ Compiled in 969ms (395 modules)
+ ○ Compiling /api/availability ...
+ ✓ Compiled /api/availability in 10.2s (858 modules)
+prisma:query SELECT 1
+prisma:query SELECT "public"."BusinessSettings"."id", "public"."BusinessSettings"."key", "public"."BusinessSettings"."value", "public"."BusinessSettings"."dataType", "public"."BusinessSettings"."description", "public"."BusinessSettings"."category", "public"."BusinessSettings"."updatedAt", "public"."BusinessSettings"."updatedById" FROM "public"."BusinessSettings" WHERE "public"."BusinessSettings"."category" = $1 OFFSET $2
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE ("public"."Service"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ ✓ Compiled in 1376ms (395 modules)
+prisma:query SELECT "public"."Booking"."id", "public"."Booking"."signerId", "public"."Booking"."serviceId", "public"."Booking"."notaryId", "public"."Booking"."scheduledDateTime", "public"."Booking"."actualEndDateTime", "public"."Booking"."status"::text, "public"."Booking"."locationType"::text, "public"."Booking"."addressStreet", "public"."Booking"."addressCity", "public"."Booking"."addressState", "public"."Booking"."addressZip", "public"."Booking"."locationNotes", "public"."Booking"."priceAtBooking", "public"."Booking"."notes", "public"."Booking"."dailyRoomUrl", "public"."Booking"."dailyRecordingId", "public"."Booking"."kbaStatus", "public"."Booking"."idVerificationStatus", "public"."Booking"."notaryJournalEntry", "public"."Booking"."createdAt", "public"."Booking"."updatedAt", "public"."Booking"."confirmationEmailSentAt", "public"."Booking"."confirmationSmsSentAt", "public"."Booking"."followUpSentAt", "public"."Booking"."lastReminderSentAt", "public"."Booking"."noShowCheckPerformedAt", "public"."Booking"."reminder1hrSentAt", "public"."Booking"."reminder24hrSentAt", "public"."Booking"."reminder2hrSentAt", "public"."Booking"."depositAmount", "public"."Booking"."depositStatus"::text, "public"."Booking"."googleCalendarEventId", "public"."Booking"."promoCodeDiscount", "public"."Booking"."promoCodeId", "public"."Booking"."campaignName", "public"."Booking"."customerEmail", "public"."Booking"."ghlContactId", "public"."Booking"."leadSource", "public"."Booking"."stripePaymentUrl", "public"."Booking"."workflowId", "public"."Booking"."witness_type"::text, "public"."Booking"."witness_fee", "public"."Booking"."mileage_miles", "public"."Booking"."mileage_fee", "public"."Booking"."urgency_level", "public"."Booking"."urgency_fee", "public"."Booking"."estimated_completion_time", "public"."Booking"."notary_travel_time_minutes", "public"."Booking"."google_maps_distance_matrix", "public"."Booking"."service_area_id" FROM "public"."Booking" WHERE ("public"."Booking"."scheduledDateTime" >= $1 AND "public"."Booking"."scheduledDateTime" <= $2 AND "public"."Booking"."status" NOT IN (CAST($3::text AS "public"."BookingStatus"),CAST($4::text AS "public"."BookingStatus"),CAST($5::text AS "public"."BookingStatus"),CAST($6::text AS "public"."BookingStatus"))) OFFSET $7
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE "public"."Service"."id" IN ($1) OFFSET $2
+ GET /api/availability?date=2025-06-28&serviceId=cmb8ovso10000ve9xwvtf0my0 200 in 12537ms
+ ✓ Compiled in 1005ms (395 modules)
+ ✓ Compiled in 1085ms (395 modules)
+ ✓ Compiled in 582ms (395 modules)
+ ✓ Compiled in 563ms (395 modules)
+ ✓ Compiled in 575ms (395 modules)
+ ✓ Compiled in 612ms (395 modules)
+ ✓ Compiled in 552ms (395 modules)
+ ✓ Compiled in 599ms (395 modules)
+ ✓ Compiled in 633ms (395 modules)
+ ✓ Compiled in 700ms (395 modules)
+ ✓ Compiled in 608ms (395 modules)
+ ✓ Compiled in 695ms (395 modules)
+ ✓ Compiled in 950ms (395 modules)
+ ✓ Compiled in 1042ms (395 modules)
+ ✓ Compiled in 1239ms (395 modules)
+prisma:query SELECT "public"."BusinessSettings"."id", "public"."BusinessSettings"."key", "public"."BusinessSettings"."value", "public"."BusinessSettings"."dataType", "public"."BusinessSettings"."description", "public"."BusinessSettings"."category", "public"."BusinessSettings"."updatedAt", "public"."BusinessSettings"."updatedById" FROM "public"."BusinessSettings" WHERE "public"."BusinessSettings"."category" = $1 OFFSET $2
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE ("public"."Service"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/availability?date=2025-06-29&serviceId=cmb8ovso10000ve9xwvtf0my0 200 in 1237ms
+ ✓ Compiled in 1068ms (395 modules)
+ ✓ Compiled in 783ms (395 modules)
+ ✓ Compiled in 571ms (395 modules)
+ ✓ Compiled in 608ms (395 modules)
+ ✓ Compiled in 554ms (395 modules)
+ ✓ Compiled in 548ms (395 modules)
+ ✓ Compiled in 589ms (395 modules)
+ ✓ Compiled in 603ms (395 modules)
+ ✓ Compiled in 595ms (395 modules)
+ ✓ Compiled in 578ms (395 modules)
+ ✓ Compiled in 659ms (395 modules)
+ ✓ Compiled in 574ms (395 modules)
+ ✓ Compiled in 637ms (395 modules)
+ ✓ Compiled in 1317ms (395 modules)
+ ✓ Compiled in 777ms (395 modules)
+ ✓ Compiled in 1130ms (395 modules)
+ ✓ Compiled in 644ms (395 modules)
+ ✓ Compiled in 644ms (395 modules)
+ ✓ Compiled in 665ms (395 modules)
+ ✓ Compiled in 837ms (395 modules)
+ ✓ Compiled in 965ms (395 modules)
+ ✓ Compiled in 770ms (395 modules)
+ ✓ Compiled in 707ms (395 modules)
+ ✓ Compiled in 573ms (395 modules)
+ ✓ Compiled in 550ms (395 modules)
+ ✓ Compiled in 552ms (395 modules)
+ ✓ Compiled in 787ms (395 modules)
+ ✓ Compiled in 578ms (395 modules)
+ ✓ Compiled in 596ms (395 modules)
+ ✓ Compiled in 1104ms (395 modules)
+ ✓ Compiled in 1077ms (395 modules)
+ ✓ Compiled in 1101ms (395 modules)
+ ✓ Compiled in 1000ms (395 modules)
+ ✓ Compiled in 626ms (395 modules)
+ ✓ Compiled in 579ms (395 modules)
+ ✓ Compiled in 549ms (395 modules)
+ ✓ Compiled in 626ms (395 modules)
+ ✓ Compiled in 603ms (395 modules)
+ ✓ Compiled in 550ms (395 modules)
+ ✓ Compiled in 660ms (395 modules)
+ ✓ Compiled in 680ms (395 modules)
+ ✓ Compiled in 1006ms (395 modules)
+ ✓ Compiled in 1530ms (395 modules)
+ ✓ Compiled in 932ms (395 modules)
+ ✓ Compiled in 1066ms (395 modules)
+ ✓ Compiled in 1859ms (395 modules)
+ ○ Compiling /api/health ...
+ ✓ Compiled /api/health in 6.4s (1181 modules)
+[31m{"Service":"health-check","error":{"message":"service is not defined","name":"ReferenceError","stack":"ReferenceError: service is not defined\n    at EnhancedLogger.info (webpack-internal:///(rsc)/./lib/logging/logger.ts:104:63)\n    at GET (webpack-internal:///(rsc)/./app/api/health/route.ts:19:65)\n    at AsyncLocalStorage.run (node:async_hooks:327:14)\n    at AppRouteRouteModule.do (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:34191)\n    at /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:43872\n    at /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/trace/tracer.js:169:36\n    at NoopContextManager.with (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@opentelemetry+api@1.9.0/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)\n    at ContextAPI.with (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@opentelemetry+api@1.9.0/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)\n    at NoopTracer.startActiveSpan (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@opentelemetry+api@1.9.0/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)\n    at ProxyTracer.startActiveSpan (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@opentelemetry+api@1.9.0/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)\n    at /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/trace/tracer.js:151:103\n    at NoopContextManager.with (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@opentelemetry+api@1.9.0/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)\n    at ContextAPI.with (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/@opentelemetry+api@1.9.0/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)\n    at NextTracerImpl.trace (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/lib/trace/tracer.js:151:28)\n    at /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:43733\n    at AsyncLocalStorage.run (node:async_hooks:338:14)\n    at /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:41457\n    at AsyncLocalStorage.run (node:async_hooks:338:14)\n    at /home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:41414\n    at AsyncLocalStorage.run (node:async_hooks:338:14)\n    at AppRouteRouteModule.handle (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:41368)\n    at async doRender (/home/fleece-johnson/HMNP-Site/hmnp-site/node_modules/.pnpm/next@15.3.3_@babel+core@7.27.1_@opentelemetry+api@1.9.0_@playwright+test@1.53.0_react-d_32e4ae88db4f5809fe96b8569fd8c76b/node_modules/next/dist/server/base-server.js:1518:42)"},"level":"error","message":"Health check failed","metadata":{"responseTime":1},"requestId":"health-1751066256063-6bdxnm9c1","timestamp":"2025-06-27T23:17:36.064Z"}[39m
+ GET /api/health 503 in 7766ms
+ ✓ Compiled in 1284ms (395 modules)
+ ✓ Compiled in 615ms (395 modules)
+ ✓ Compiled in 802ms (395 modules)
+ ✓ Compiled in 728ms (395 modules)
+ ✓ Compiled in 585ms (395 modules)
+ ✓ Compiled in 621ms (395 modules)
+ ✓ Compiled in 620ms (395 modules)
+ ✓ Compiled in 645ms (395 modules)
+ ✓ Compiled in 705ms (395 modules)
+ ✓ Compiled in 810ms (395 modules)
+ ✓ Compiled in 973ms (395 modules)
+ ✓ Compiled in 872ms (395 modules)
+ ✓ Compiled in 779ms (395 modules)
+ ✓ Compiled in 584ms (395 modules)
+ ✓ Compiled in 614ms (395 modules)
+ ✓ Compiled in 627ms (395 modules)
+ ✓ Compiled in 563ms (395 modules)
+ ✓ Compiled in 557ms (395 modules)
+ ✓ Compiled in 602ms (395 modules)
+ ✓ Compiled in 688ms (395 modules)
+ ✓ Compiled in 863ms (395 modules)
+ ✓ Compiled in 1104ms (395 modules)
+ ✓ Compiled in 710ms (395 modules)
+ ✓ Compiled in 650ms (395 modules)
+ ✓ Compiled in 779ms (395 modules)
+ ✓ Compiled in 774ms (395 modules)
+ ✓ Compiled in 951ms (395 modules)
+ ✓ Compiled in 936ms (395 modules)
+ ✓ Compiled in 627ms (395 modules)
+ ✓ Compiled in 685ms (395 modules)
+ ✓ Compiled in 1060ms (395 modules)
+ ✓ Compiled in 673ms (395 modules)
+ ✓ Compiled in 621ms (395 modules)
+ ✓ Compiled in 909ms (395 modules)
+ ✓ Compiled in 1050ms (395 modules)
+ ✓ Compiled in 1171ms (395 modules)
+ ✓ Compiled in 903ms (395 modules)
+ ✓ Compiled in 732ms (395 modules)
+ ✓ Compiled in 924ms (395 modules)
+ ✓ Compiled in 562ms (395 modules)
+ ✓ Compiled in 551ms (395 modules)
+ ✓ Compiled in 597ms (395 modules)
+ ✓ Compiled in 580ms (395 modules)
+ ✓ Compiled in 586ms (395 modules)
+ ✓ Compiled in 615ms (395 modules)
+ ✓ Compiled in 686ms (395 modules)
+ ✓ Compiled in 622ms (395 modules)
+ ✓ Compiled in 602ms (395 modules)
+ ✓ Compiled in 727ms (395 modules)
+ ✓ Compiled in 639ms (395 modules)
+ ✓ Compiled in 680ms (395 modules)
+ ✓ Compiled in 754ms (395 modules)
+ ✓ Compiled in 620ms (395 modules)
+ ✓ Compiled in 722ms (395 modules)
+ ✓ Compiled in 823ms (395 modules)
+ ✓ Compiled in 854ms (395 modules)
+ ✓ Compiled in 681ms (395 modules)
+ ✓ Compiled in 641ms (395 modules)
+ ✓ Compiled in 649ms (395 modules)
+ ✓ Compiled in 587ms (395 modules)
+ ✓ Compiled in 625ms (395 modules)
+ ✓ Compiled in 1308ms (395 modules)
+ ✓ Compiled in 685ms (395 modules)
+ ✓ Compiled in 1232ms (395 modules)
+ ✓ Compiled in 1477ms (395 modules)
+ ✓ Compiled in 679ms (395 modules)
+ ✓ Compiled in 602ms (395 modules)
+ ✓ Compiled in 598ms (395 modules)
+ ✓ Compiled in 572ms (395 modules)
+ ✓ Compiled in 566ms (395 modules)
+ ✓ Compiled in 567ms (395 modules)
+ ✓ Compiled in 588ms (395 modules)
+ ✓ Compiled in 632ms (395 modules)
+ ✓ Compiled in 646ms (395 modules)
+ ✓ Compiled in 1259ms (395 modules)
+ ✓ Compiled in 5s (395 modules)
+ ✓ Compiled in 781ms (395 modules)
+ ✓ Compiled in 676ms (395 modules)
+ ✓ Compiled in 692ms (395 modules)
+ ✓ Compiled in 705ms (395 modules)
+ ✓ Compiled in 612ms (395 modules)
+ ✓ Compiled in 594ms (395 modules)
+ ✓ Compiled in 809ms (395 modules)
+ ✓ Compiled in 1036ms (395 modules)
+ ✓ Compiled in 648ms (395 modules)
+ ✓ Compiled in 810ms (395 modules)
+ ✓ Compiled in 993ms (395 modules)
+ ✓ Compiled in 973ms (395 modules)
+ ✓ Compiled in 1061ms (395 modules)
+ ✓ Compiled in 980ms (395 modules)
+ ✓ Compiled in 590ms (395 modules)
+ ✓ Compiled in 523ms (395 modules)
+ ✓ Compiled in 521ms (395 modules)
+ ✓ Compiled in 507ms (395 modules)
+ ✓ Compiled in 811ms (395 modules)
+ ✓ Compiled in 879ms (395 modules)
+ ✓ Compiled in 524ms (395 modules)
+ ✓ Compiled in 493ms (395 modules)
+ ✓ Compiled in 506ms (395 modules)
+ ✓ Compiled in 499ms (395 modules)
+ ✓ Compiled in 518ms (395 modules)
+ ✓ Compiled in 651ms (395 modules)
+ ✓ Compiled in 521ms (395 modules)
+ ✓ Compiled in 517ms (395 modules)
+ ✓ Compiled in 531ms (395 modules)
+ ✓ Compiled in 498ms (395 modules)
+ ✓ Compiled in 522ms (395 modules)
+ ✓ Compiled in 519ms (395 modules)
+ ✓ Compiled in 540ms (395 modules)
+ ✓ Compiled in 535ms (395 modules)
+ ✓ Compiled in 684ms (395 modules)
+ ✓ Compiled in 538ms (395 modules)
+ ✓ Compiled in 671ms (395 modules)
+ ✓ Compiled in 499ms (395 modules)
+ ✓ Compiled in 517ms (395 modules)
+ ✓ Compiled in 531ms (395 modules)
+ ✓ Compiled in 496ms (395 modules)
+ ✓ Compiled in 500ms (395 modules)
+ ✓ Compiled in 499ms (395 modules)
+ ✓ Compiled in 534ms (395 modules)
+ ✓ Compiled in 507ms (395 modules)
+ ✓ Compiled in 512ms (395 modules)
+ ✓ Compiled in 500ms (395 modules)
+ ✓ Compiled in 617ms (395 modules)
+ ✓ Compiled in 748ms (395 modules)
+ ✓ Compiled in 575ms (395 modules)
+ ✓ Compiled in 984ms (395 modules)
+ ✓ Compiled in 513ms (395 modules)
+ ✓ Compiled in 500ms (395 modules)
+ ✓ Compiled in 526ms (395 modules)
+ ✓ Compiled in 520ms (395 modules)
+ ✓ Compiled in 493ms (395 modules)
+ ✓ Compiled in 529ms (395 modules)
+ ✓ Compiled in 516ms (395 modules)
+ ✓ Compiled in 499ms (395 modules)
+ ✓ Compiled in 592ms (395 modules)
+ ✓ Compiled in 547ms (395 modules)
+ ✓ Compiled in 530ms (395 modules)
+ ✓ Compiled in 527ms (395 modules)
+ ✓ Compiled in 520ms (395 modules)
+ ✓ Compiled in 527ms (395 modules)
+ ✓ Compiled in 564ms (395 modules)
+ ✓ Compiled in 543ms (395 modules)
+ ✓ Compiled in 560ms (395 modules)
+ ✓ Compiled in 550ms (395 modules)
+ ✓ Compiled in 540ms (395 modules)
+ ✓ Compiled in 516ms (395 modules)
+ ✓ Compiled in 533ms (395 modules)
+ ✓ Compiled in 586ms (395 modules)
+ ✓ Compiled in 565ms (395 modules)
+ ✓ Compiled in 507ms (395 modules)
+ ✓ Compiled in 895ms (395 modules)
+ ✓ Compiled in 589ms (395 modules)
+ ✓ Compiled in 511ms (395 modules)
+ ✓ Compiled in 504ms (395 modules)
+ ✓ Compiled in 530ms (395 modules)
+ ✓ Compiled in 566ms (395 modules)
+ ✓ Compiled in 964ms (395 modules)
+ ✓ Compiled in 544ms (395 modules)
+ ✓ Compiled in 497ms (395 modules)
+ ✓ Compiled in 496ms (395 modules)
+ ✓ Compiled in 492ms (395 modules)
+ ✓ Compiled in 511ms (395 modules)
+ ✓ Compiled in 493ms (395 modules)
+ ✓ Compiled in 478ms (395 modules)
+ ✓ Compiled in 490ms (395 modules)
+ ✓ Compiled in 497ms (395 modules)
+ ✓ Compiled in 492ms (395 modules)
+ ✓ Compiled in 511ms (395 modules)
+ ✓ Compiled in 491ms (395 modules)
+ ✓ Compiled in 629ms (395 modules)
+ ✓ Compiled in 528ms (395 modules)
+ ✓ Compiled in 565ms (395 modules)
+ ✓ Compiled in 537ms (395 modules)
+ ✓ Compiled in 745ms (395 modules)
+ ✓ Compiled in 554ms (395 modules)
+ ✓ Compiled in 521ms (395 modules)
+ ✓ Compiled in 567ms (395 modules)
+ ✓ Compiled in 529ms (395 modules)
+ ✓ Compiled in 530ms (395 modules)
+ ELIFECYCLE  Command failed.
+[?25h

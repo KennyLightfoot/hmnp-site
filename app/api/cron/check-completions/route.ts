@@ -26,8 +26,8 @@ export async function GET(request: Request) {
         }
       },
       include: {
-        service: true,
-        signer: true
+        Service: true,
+        User_Booking_signerIdToUser: true
       },
       orderBy: {
         scheduledDateTime: 'asc'
@@ -46,14 +46,14 @@ export async function GET(request: Request) {
         
         results.push({
           bookingId: booking.id,
-          clientName: booking.signer?.name || 'Unknown',
+          clientName: booking.User_Booking_signerIdToUser?.name || 'Unknown',
           scheduledTime: booking.scheduledDateTime,
           result: result
         });
 
         if (result.completed) {
           completedCount++;
-          console.log(`✅ Auto-completed booking ${booking.id} for ${booking.signer?.name}`);
+          console.log(`✅ Auto-completed booking ${booking.id} for ${booking.User_Booking_signerIdToUser?.name}`);
         } else {
           console.log(`⏳ Booking ${booking.id} still in progress: ${result.reason}`);
         }
@@ -62,7 +62,7 @@ export async function GET(request: Request) {
         console.error(`Error checking booking ${booking.id}:`, error);
         results.push({
           bookingId: booking.id,
-          clientName: booking.signer?.name || 'Unknown',
+          clientName: booking.User_Booking_signerIdToUser?.name || 'Unknown',
           error: error.message
         });
       }

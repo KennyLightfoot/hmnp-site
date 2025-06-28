@@ -32,8 +32,8 @@ export type BookingWithRelations = Booking & {
   status: BookingStatus;
   updatedAt: Date;
   scheduledDateTime?: Date | null;
-  service?: PrismaService | null;
-  signer?: User | null;
+  Service?: PrismaService | null;
+  User_Booking_signerIdToUser?: User | null;
   Payment?: Payment[] | null;
   notifications?: Notification[] | null;
   // Allow additional dynamic fields that may be attached during queries or response shaping

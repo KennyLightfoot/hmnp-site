@@ -32,7 +32,7 @@ export class PricingUtils {
    * Calculate comprehensive pricing for a service with optional promo code
    */
   static calculateServicePricing(
-    service: Service,
+    Service: Service,
     promoCode?: PromoCode | null
   ): PricingCalculation {
     const price = Number(service.price);
@@ -309,13 +309,13 @@ export class PricingUtils {
     const baseAmount = Number(booking.priceAtBooking);
     
     // If deposit is required and available, use deposit amount
-    if (booking.service?.requiresDeposit && booking.depositAmount) {
+    if (booking.Service?.requiresDeposit && booking.depositAmount) {
       return Number(booking.depositAmount);
     }
 
     // If service requires deposit but booking doesn't have depositAmount, use service depositAmount
-    if (booking.service?.requiresDeposit && booking.service.depositAmount) {
-      return Number(booking.service.depositAmount);
+    if (booking.Service?.requiresDeposit && booking.Service.depositAmount) {
+      return Number(booking.Service.depositAmount);
     }
 
     // Otherwise use full amount

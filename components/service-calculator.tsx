@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { calculateTotalPrice, DEFAULT_SERVICE_AREA_RADIUS } from "@/lib/pricing"
 
 export default function ServiceCalculator() {
-  const [serviceType, setServiceType] = useState("essential")
+  const [serviceType, setServiceType] = useState("standard-notary")
   const [numberOfSigners, setNumberOfSigners] = useState(1)
   const [distance, setDistance] = useState(10)
   const [isWeekend, setIsWeekend] = useState(false)
@@ -29,19 +29,21 @@ export default function ServiceCalculator() {
     depositRequired: false,
   })
 
-  // Map UI service types to API service types
-  const mapServiceTypeToAPI = (uiServiceType: string): "standardNotary" | "extendedHoursNotary" | "loanSigningSpecialist" | "specialtyNotaryService" | "businessSolutions" | "supportService" => {
-    switch (uiServiceType) {
-      case "essential":
+  // SOP COMPLIANT: Map service types to API service types
+  const mapServiceTypeToAPI = (serviceType: string): "standardNotary" | "extendedHoursNotary" | "loanSigningSpecialist" | "specialtyNotaryService" | "businessSolutions" | "supportService" => {
+    switch (serviceType) {
+      case "standard-notary":
         return "standardNotary"
-      case "priority":
+      case "extended-hours-notary":
         return "extendedHoursNotary"
-      case "loanSigning":
+      case "loan-signing-specialist":
         return "loanSigningSpecialist"
-      case "reverseMortgage":
-        return "loanSigningSpecialist"
-      case "specialty":
+      case "specialty-notary-service":
         return "specialtyNotaryService"
+      case "business-solutions":
+        return "businessSolutions"
+      case "support-service":
+        return "supportService"
       default:
         return "standardNotary"
     }
@@ -76,16 +78,18 @@ export default function ServiceCalculator() {
 
   const getServiceName = () => {
     switch (serviceType) {
-      case "essential":
-        return "Essential Mobile Package"
-      case "priority":
-        return "Priority Service Package"
-      case "loanSigning":
-        return "Loan Signing Service"
-      case "reverseMortgage":
-        return "Reverse Mortgage/HELOC"
-      case "specialty":
-        return "Specialty Service"
+      case "standard-notary":
+        return "Standard Notary Services"
+      case "extended-hours-notary":
+        return "Extended Hours Notary"
+      case "loan-signing-specialist":
+        return "Loan Signing Specialist"
+      case "specialty-notary-service":
+        return "Specialty Notary Service"
+      case "business-solutions":
+        return "Business Solutions"
+      case "support-service":
+        return "Support Services"
       default:
         return "Notary Service"
     }
@@ -115,11 +119,12 @@ export default function ServiceCalculator() {
                 <SelectValue placeholder="Select service type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="essential">Essential Mobile Package</SelectItem>
-                <SelectItem value="priority">Priority Service Package</SelectItem>
-                <SelectItem value="loanSigning">Loan Signing Service</SelectItem>
-                <SelectItem value="reverseMortgage">Reverse Mortgage/HELOC</SelectItem>
-                <SelectItem value="specialty">Specialty Service</SelectItem>
+                <SelectItem value="standard-notary">Standard Notary Services</SelectItem>
+                <SelectItem value="extended-hours-notary">Extended Hours Notary</SelectItem>
+                <SelectItem value="loan-signing-specialist">Loan Signing Specialist</SelectItem>
+                <SelectItem value="specialty-notary-service">Specialty Notary Service</SelectItem>
+                <SelectItem value="business-solutions">Business Solutions</SelectItem>
+                <SelectItem value="support-service">Support Services</SelectItem>
               </SelectContent>
             </Select>
           </div>

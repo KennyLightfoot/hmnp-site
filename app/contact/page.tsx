@@ -187,7 +187,7 @@ export default function ContactPage() {
               Our Priority Service guarantees a 2-hour response time, 7 days a week from 7am-9pm.
             </p>
             <Button className="bg-[#A52A2A] hover:bg-[#8B0000]" asChild>
-              <a href="/services/priority">Learn About Priority Service</a>
+              <a href="/services/extended-hours-notary">Learn About Priority Service</a>
             </Button>
           </div>
         </div>

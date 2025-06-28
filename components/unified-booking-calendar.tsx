@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { CalendarIcon, Clock, CalendarDays, Loader2 } from 'lucide-react';
 
@@ -145,24 +145,24 @@ export default function UnifiedBookingCalendar({
   /**
    * Get calendar ID based on service type and number of signers
    */
-  const getCalendarId = (service: string, signers: number): string => {
+  const getCalendarId = (Service: string, signers: number): string => {
     if (!service) return 'r9koQ0kxmuMuWryZkjdo'; // Default fallback
     
     switch (service.toLowerCase()) {
-      case 'essential':
       case 'standard-notary':
         if (signers === 1) return 'r9koQ0kxmuMuWryZkjdo';
         if (signers === 2) return 'wkTW5ZX4EMl5hOAbCk9D';
         return 'Vy3hd6Or6Xi2ogW0mvEG'; // 3+ signers
-      case 'priority':
+      case 'extended-hours-notary':
         return 'xtHXReq1dfd0wGA7dLc0';
-      case 'loan-signing':
       case 'loan-signing-specialist':
-      case 'reverse-mortgage':
         return 'EJ5ED9UXPHCjBePUTJ0W';
-      case 'specialty':
       case 'specialty-notary-service':
         return 'h4X7cZ0mZ3c52XSzvpjU';
+      case 'business-solutions':
+        return 'r9koQ0kxmuMuWryZkjdo'; // Use default for now
+      case 'support-service':
+        return 'r9koQ0kxmuMuWryZkjdo'; // Use default for now
       default:
         console.warn(`Unknown service type: ${service}, using fallback`);
         return 'r9koQ0kxmuMuWryZkjdo';
@@ -177,17 +177,15 @@ export default function UnifiedBookingCalendar({
     if (!service) return 60;
     
     switch (service.toLowerCase()) {
-      case 'loan-signing':
-      case 'reverse-mortgage':
       case 'loan-signing-specialist':
-        return 90;
-      case 'priority':
-        return 60;
-      case 'essential':
-      case 'specialty':
+        return 90; // SOP: 90-minute session for loan signing
+      case 'extended-hours-notary':
+        return 60; // SOP: Standard duration
       case 'standard-notary':
       case 'specialty-notary-service':
-        return 60;
+      case 'business-solutions':
+      case 'support-service':
+        return 60; // SOP: Standard duration
       default:
         return 60;
     }
@@ -245,7 +243,7 @@ export default function UnifiedBookingCalendar({
         const endDate = format(endOfDay(date), "yyyy-MM-dd'T'HH:mm:ss'Z'");
         
         params = new URLSearchParams({
-          serviceType: serviceType || 'essential',
+          serviceType: serviceType || 'standard-notary',
           startDate,
           endDate,
           duration: duration.toString(),
@@ -312,8 +310,8 @@ export default function UnifiedBookingCalendar({
       }
       
       // Apply service-specific rules
-      if (serviceType === 'essential' && isToday(date)) {
-        const cutoffHour = 15; // 3 PM
+      if (serviceType === 'standard-notary' && isToday(date)) {
+        const cutoffHour = 15; // 3 PM - SOP: Standard notary cutoff for same-day
         slots = slots.filter(slot => {
           try {
             const startHour = parseISO(slot.startTime).getHours();
@@ -401,10 +399,10 @@ export default function UnifiedBookingCalendar({
     const maxDate = addDays(today, maxAdvanceDays);
     if (date > maxDate) return true;
     
-    // Service-specific rules
-    if (serviceType === 'essential') {
+    // Service-specific rules - SOP: Standard notary weekdays only
+    if (serviceType === 'standard-notary') {
       const dayOfWeek = date.getDay();
-      if (dayOfWeek === 0 || dayOfWeek === 6) return true; // No weekends
+      if (dayOfWeek === 0 || dayOfWeek === 6) return true; // No weekends for standard service
     }
     
     // Check service date range

@@ -157,7 +157,7 @@ export async function GET(request: NextRequest) {
       }
     });
   } finally {
-    logger.clearRequestId();
+    // Clean up any request-specific context if needed
   }
 }
 

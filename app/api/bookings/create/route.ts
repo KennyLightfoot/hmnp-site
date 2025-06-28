@@ -40,11 +40,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Get service details
-    const service = await prisma.service.findUnique({
+    const service = await prisma.Service.findUnique({
       where: { id: serviceId }
     });
 
-    if (!service || !service.active) {
+    if (!service || !service.isActive) {
       return NextResponse.json(
         { error: 'Service not found or inactive' },
         { status: 404 }
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     const startOfRequestedDay = startOfDay(requestedDateTime);
     const endTime = addMinutes(startOfRequestedDay, 24 * 60); // End of day
     
-    const conflictingBookings = await prisma.booking.findMany({
+    const conflictingBookings = await prisma.Booking.findMany({
       where: {
         scheduledDateTime: {
           gte: startOfRequestedDay,
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
         }
       },
       include: {
-        service: {
+        Service: {
           select: {
             durationMinutes: true
           }
@@ -97,9 +97,9 @@ export async function POST(request: NextRequest) {
     // Check for conflicts
     const hasConflict = conflictingBookings.some(booking => {
       const bookingStart = new Date(booking.scheduledDateTime!);
-      const bookingEnd = addMinutes(bookingStart, booking.service.duration + bookingSettings.bufferTimeMinutes);
+      const bookingEnd = addMinutes(bookingStart, booking.Service.durationMinutes + bookingSettings.bufferTimeMinutes);
       const requestedStart = requestedDateTime;
-      const requestedEnd = addMinutes(requestedDateTime, service.duration + bookingSettings.bufferTimeMinutes);
+      const requestedEnd = addMinutes(requestedDateTime, service.durationMinutes + bookingSettings.bufferTimeMinutes);
       
       return (
         (requestedStart >= bookingStart && requestedStart < bookingEnd) ||
@@ -141,12 +141,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Create or get user
-    let user = await prisma.user.findUnique({
+    let user = await prisma.User.findUnique({
       where: { email: customerEmail }
     });
 
     if (!user) {
-      user = await prisma.user.create({
+      user = await prisma.User.create({
         data: {
           name: customerName,
           email: customerEmail,
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create booking
-    const booking = await prisma.booking.create({
+    const booking = await prisma.Booking.create({
       data: {
         signerId: user.id,
         signerEmail: user.email,
@@ -170,9 +170,9 @@ export async function POST(request: NextRequest) {
         addressState,
         addressZip,
         locationNotes,
-        basePrice: service.price,
-        priceAtBooking: service.price,
-        finalPrice: Math.max(0, Number(service.price) - discountAmount),
+        basePrice: service.basePrice,
+        priceAtBooking: service.basePrice,
+        finalPrice: Math.max(0, Number(service.basePrice) - discountAmount),
         promoDiscount: discountAmount,
         depositAmount,
         depositStatus: 'PENDING',
@@ -181,8 +181,8 @@ export async function POST(request: NextRequest) {
         notes
       },
       include: {
-        service: true,
-        signer: true,
+        Service: true,
+        User_Booking_signerIdToUser: true,
         promoCode: true
       }
     });
@@ -197,14 +197,14 @@ export async function POST(request: NextRequest) {
         id: booking.id,
         scheduledDateTime: booking.scheduledDateTime,
         status: booking.status,
-        service: {
-          name: booking.service.name,
-                  duration: booking.service.duration,
-        price: booking.service.price
+        Service: {
+          name: booking.Service.name,
+          duration: booking.Service.durationMinutes,
+          price: booking.Service.basePrice
         },
         customer: {
-                  name: booking.signer?.name,
-        email: booking.signer?.email
+                  name: booking.User_Booking_signerIdToUser?.name,
+        email: booking.User_Booking_signerIdToUser?.email
         },
         depositAmount: booking.depositAmount,
         promoCode: promoCodeData ? {

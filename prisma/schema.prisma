@@ -119,6 +119,10 @@ model Booking {
   PromoCode                   PromoCode?      @relation(fields: [promoCodeId], references: [id])
   Service                     Service         @relation(fields: [serviceId], references: [id])
   User_Booking_signerIdToUser User?           @relation("Booking_signerIdToUser", fields: [signerId], references: [id])
+  Payment                     Payment[]
+  NotificationLog             NotificationLog[]
+  NotarizationDocument        NotarizationDocument[]
+  Document                    Document[]
 
   @@index([notaryId])
   @@index([scheduledDateTime])
@@ -130,13 +134,13 @@ model Booking {
 }
 
 model BusinessSettings {
-  id          String   @id
+  id          String   @id @default(dbgenerated("(gen_random_uuid())::text"))
   key         String   @unique
   value       String
   dataType    String   @default("string")
   description String?
   category    String?
-  updatedAt   DateTime
+  updatedAt   DateTime @updatedAt
   updatedById String?
   User        User?    @relation(fields: [updatedById], references: [id])
 
@@ -191,6 +195,12 @@ model NotarizationDocument {
   updatedAt                  DateTime
   sourceAssignmentDocumentId String?
   bookingId                  String
+
+  booking                    Booking   @relation(fields: [bookingId], references: [id])
+  uploadedBy                 User      @relation(fields: [uploadedById], references: [id])
+
+  @@index([bookingId])
+  @@index([uploadedById])
 }
 
 model NotificationLog {
@@ -207,6 +217,7 @@ model NotificationLog {
   errorMessage     String?
   metadata         Json?
   createdAt        DateTime           @default(now())
+  Booking          Booking            @relation(fields: [bookingId], references: [id])
 
   @@index([bookingId])
 }
@@ -225,6 +236,10 @@ model Payment {
   refundedAt      DateTime?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime
+  metadata        Json?
+  currency        String?         @default("USD")
+  completedAt     DateTime?
+  Booking         Booking         @relation(fields: [bookingId], references: [id])
 
   @@index([bookingId])
   @@index([provider])
@@ -295,7 +310,7 @@ model StatusHistory {
 }
 
 model SystemAlert {
-  id         String        @id
+  id         String        @id @default(dbgenerated("(gen_random_uuid())::text"))
   component  String
   message    String
   severity   AlertSeverity @default(MEDIUM)
@@ -311,7 +326,7 @@ model SystemAlert {
 }
 
 model SystemLog {
-  id        String   @id
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
   component String
   message   String
   level     LogLevel @default(INFO)
@@ -353,6 +368,12 @@ model User {
   Session                        Session[]
   StatusHistory                  StatusHistory[]
   SystemLog                      SystemLog[]
+  Document                       Document[]
+  DocumentAccessUser             DocumentAccess[] @relation("DocumentAccessUser")
+  DocumentAccessGrantedBy        DocumentAccess[] @relation("DocumentAccessGrantedBy")
+  DocumentAuditLog               DocumentAuditLog[]
+  DocumentVersion                DocumentVersion[]
+  NotarizationDocument           NotarizationDocument[]
 }
 
 model VerificationToken {
@@ -471,6 +492,113 @@ model FeatureFlag {
 
   @@index([environment], map: "idx_feature_flags_environment")
   @@map("feature_flags")
+}
+
+model Document {
+  id                String             @id
+  s3Key             String
+  originalFilename  String
+  sanitizedFilename String
+  contentType       String
+  fileSize          Int
+  category          DocumentCategory   @default(GENERAL)
+  uploadedById      String
+  securityScore     Int                @default(100)
+  scanStatus        ScanStatus         @default(PENDING)
+  scanResult        Json?
+  accessLevel       AccessLevel        @default(PRIVATE)
+  encryptionStatus  EncryptionStatus   @default(UNENCRYPTED)
+  checksumSha256    String?
+  downloadCount     Int                @default(0)
+  lastAccessedAt    DateTime?
+  expiresAt         DateTime?
+  bookingId         String?
+  sessionId         String?
+  uploadMetadata    Json?
+  tags              String[]
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  uploadedBy        User               @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
+  booking           Booking?           @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  documentAccess    DocumentAccess[]
+  auditLogs         DocumentAuditLog[]
+  versions          DocumentVersion[]
+
+  @@index([uploadedById])
+  @@index([bookingId])
+  @@index([sessionId])
+  @@index([s3Key])
+  @@index([category])
+  @@index([scanStatus])
+  @@index([createdAt(sort: Desc)])
+  @@index([expiresAt])
+}
+
+model DocumentAccess {
+  id           String    @id
+  documentId   String
+  userId       String
+  accessType   AccessType @default(READ)
+  grantedById  String
+  grantedAt    DateTime  @default(now())
+  expiresAt    DateTime?
+  isActive     Boolean   @default(true)
+  lastUsedAt   DateTime?
+  usageCount   Int       @default(0)
+  metadata     Json?
+
+  document     Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user         User      @relation("DocumentAccessUser", fields: [userId], references: [id], onDelete: Cascade)
+  grantedBy    User      @relation("DocumentAccessGrantedBy", fields: [grantedById], references: [id], onDelete: Restrict)
+
+  @@unique([documentId, userId, accessType])
+  @@index([documentId])
+  @@index([userId])
+  @@index([grantedById])
+  @@index([isActive, expiresAt])
+}
+
+model DocumentAuditLog {
+  id            String    @id
+  documentId    String
+  userId        String?
+  action        String
+  ipAddress     String?
+  userAgent     String?
+  timestamp     DateTime  @default(now())
+  metadata      Json?
+  securityFlags String[]
+  riskScore     Int?      @default(0)
+
+  document      Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([documentId])
+  @@index([userId])
+  @@index([timestamp(sort: Desc)])
+  @@index([action])
+  @@index([riskScore(sort: Desc)])
+}
+
+model DocumentVersion {
+  id             String   @id
+  documentId     String
+  versionNumber  Int
+  s3Key          String
+  fileSize       Int
+  checksumSha256 String?
+  changes        String?
+  createdById    String
+  createdAt      DateTime @default(now())
+  metadata       Json?
+
+  document       Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  createdBy      User     @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@unique([documentId, versionNumber])
+  @@index([documentId])
 }
 
 enum AlertSeverity {
@@ -620,4 +748,44 @@ enum witness_source {
   customer_provided
   staff_provided
   proof_provided
+}
+
+enum DocumentCategory {
+  GENERAL
+  RON_DOCUMENTS
+  IDENTIFICATION
+  SUPPORTING
+  ASSIGNMENT
+  SIGNED
+}
+
+enum ScanStatus {
+  PENDING
+  SCANNING
+  CLEAN
+  INFECTED
+  ERROR
+  QUARANTINED
+}
+
+enum AccessLevel {
+  PUBLIC
+  PRIVATE
+  RESTRICTED
+  CONFIDENTIAL
+}
+
+enum EncryptionStatus {
+  UNENCRYPTED
+  CLIENT_SIDE
+  SERVER_SIDE
+  END_TO_END
+}
+
+enum AccessType {
+  READ
+  WRITE
+  DELETE
+  SHARE
+  ADMIN
 }

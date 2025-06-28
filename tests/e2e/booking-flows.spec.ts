@@ -35,9 +35,9 @@ test.describe('Phase 1: Enhanced Booking Flows', () => {
       // Step 2: Service Selection
       await expect(page.locator('text=Service Selection')).toBeVisible();
       
-      // Select Essential Notary Service
-      await page.click('[data-testid="service-essential"]');
-      await expect(page.locator('[data-testid="service-essential"]')).toHaveClass(/border-\[#A52A2A\]/);
+      // Select Standard Notary Service (SOP compliant)
+      await page.click('[data-testid="service-standard-notary"]');
+      await expect(page.locator('[data-testid="service-standard-notary"]')).toHaveClass(/border-\[#A52A2A\]/);
       
       // Verify real-time pricing appears
       await expect(page.locator('[data-testid="live-quote"]')).toBeVisible();
@@ -96,7 +96,7 @@ test.describe('Phase 1: Enhanced Booking Flows', () => {
       await page.click('button:has-text("Continue to Service Selection")');
       
       // Select a service
-      await page.click('[data-testid="service-essential"]');
+      await page.click('[data-testid="service-standard-notary"]');
       await page.click('button:has-text("Next")');
       
       // Fill contact info
@@ -127,7 +127,7 @@ test.describe('Phase 1: Enhanced Booking Flows', () => {
     test('should block booking for locations outside service area', async ({ page }) => {
       // Proceed to location entry
       await page.click('button:has-text("Continue to Service Selection")');
-      await page.click('[data-testid="service-essential"]');
+      await page.click('[data-testid="service-standard-notary"]');
       await page.click('button:has-text("Next")');
       
       // Fill contact info
@@ -163,7 +163,7 @@ test.describe('Phase 1: Enhanced Booking Flows', () => {
     test('should apply promo code and update pricing', async ({ page }) => {
       // Complete booking flow up to pricing
       await page.click('button:has-text("Continue to Service Selection")');
-      await page.click('[data-testid="service-essential"]');
+      await page.click('[data-testid="service-standard-notary"]');
       await page.click('button:has-text("Next")');
       
       // Fill contact and location info quickly
@@ -184,7 +184,7 @@ test.describe('Phase 1: Enhanced Booking Flows', () => {
       
       // Apply promo code
       await page.fill('[data-testid="promo-code"]', 'FIRST20');
-      await page.blur('[data-testid="promo-code"]'); // Trigger validation
+      await page.locator('[data-testid="promo-code"]').blur(); // Trigger validation
       
       // Wait for promo validation
       await page.waitForTimeout(2000);
@@ -257,7 +257,7 @@ test.describe('Phase 1: Enhanced Booking Flows', () => {
       await page.click('button:has-text("Continue to Service Selection")');
       
       // Select service and verify initial pricing
-      await page.click('[data-testid="service-essential"]');
+      await page.click('[data-testid="service-standard-notary"]');
       await expect(page.locator('[data-testid="live-quote"]')).toBeVisible();
       
       // Get base price
@@ -293,7 +293,7 @@ test.describe('Phase 1: Enhanced Booking Flows', () => {
       await page.click('button:has-text("Continue to Service Selection")');
       
       // Select service that requires deposit
-      await page.click('[data-testid="service-loan-signing"]'); // Assumes loan signing requires deposit
+      await page.click('[data-testid="service-standard-notary"]'); // Assumes standard notary requires deposit
       
       // Verify deposit information is displayed
       await expect(page.locator('[data-testid="deposit-info"]')).toBeVisible();
@@ -315,7 +315,8 @@ test.describe('Phase 1: Enhanced Booking Flows', () => {
       
       // Test ARIA labels and roles
       await expect(page.locator('role=button')).toHaveCount(3); // Should have proper button roles
-      await expect(page.locator('[aria-label]')).toHaveCount({ min: 1 }); // Should have ARIA labels
+      const ariaLabelCount = await page.locator('[aria-label]').count();
+      expect(ariaLabelCount).toBeGreaterThanOrEqual(1); // Should have ARIA labels
     });
 
     test('should load quickly and be responsive', async ({ page }) => {

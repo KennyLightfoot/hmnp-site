@@ -44,6 +44,27 @@ export interface PricingInputs {
 }
 
 interface RealTimePricingProps {
+  serviceType: string;
+  location: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+    latitude?: number;
+    longitude?: number;
+  };
+  numberOfSigners: number;
+  onPricingUpdate: (pricing: {
+    basePrice: number;
+    travelFee: number;
+    totalPrice: number;
+    mileage: number;
+  }) => void;
+  showBreakdown?: boolean;
+  className?: string;
+}
+
+interface LegacyRealTimePricingProps {
   inputs: PricingInputs;
   onPricingCalculated?: (pricing: PricingCalculation) => void;
   showBreakdown?: boolean;
@@ -70,12 +91,13 @@ export interface PricingCalculation {
   paymentType: 'deposit' | 'full' | 'none';
 }
 
-export default function RealTimePricing({ 
+// Legacy component for backward compatibility
+function LegacyRealTimePricing({ 
   inputs, 
   onPricingCalculated,
   showBreakdown = true,
   className = ""
-}: RealTimePricingProps) {
+}: LegacyRealTimePricingProps) {
   const [promoValidation, setPromoValidation] = useState<{
     isValid: boolean;
     discount: number;
@@ -91,7 +113,7 @@ export default function RealTimePricing({
 
   // Calculate pricing based on inputs - Updated for SOP v2.0
   const pricing = useMemo((): PricingCalculation => {
-    if (!inputs.service) {
+    if (!inputs.Service) {
       return {
         basePrice: 0,
         extraSignersFee: 0,
@@ -113,7 +135,7 @@ export default function RealTimePricing({
       };
     }
 
-    const service = inputs.service;
+    const service = inputs.Service;
     
     // Check if this is a RON service
     const isRONService = service.name.toLowerCase().includes('ron') || 
@@ -182,13 +204,13 @@ export default function RealTimePricing({
         // Same-day service after 3 pm: +$25
         if (inputs.urgencyLevel === 'same-day') {
           const sameDayFee = 25;
-          breakdown.push(`Same-day service: $${sameDayFee}`);
+          breakdown.push(`Same-day Service: $${sameDayFee}`);
         }
         
         // After-hours service (9 pm – 7 am): +$50
         if (inputs.isAfterHours) {
           const afterHoursFee = 50;
-          breakdown.push(`After-hours service: $${afterHoursFee}`);
+          breakdown.push(`After-hours Service: $${afterHoursFee}`);
         }
       }
       else if (serviceName.includes('loan')) {
@@ -252,8 +274,8 @@ export default function RealTimePricing({
     if (afterHoursFee > 0) breakdown.push(`After hours: $${afterHoursFee}`);
     if (extraDocumentsFee > 0) breakdown.push(`Extra documents (${inputs.extraDocuments}): $${extraDocumentsFee}`);
     if (overnightHandlingFee > 0) breakdown.push(`Overnight handling: $${overnightHandlingFee}`);
-    if (bilingualFee > 0) breakdown.push(`Bilingual service: $${bilingualFee}`);
-    if (urgencyFee > 0) breakdown.push(`${inputs.urgencyLevel} service: $${urgencyFee}`);
+    if (bilingualFee > 0) breakdown.push(`Bilingual Service: $${bilingualFee}`);
+    if (urgencyFee > 0) breakdown.push(`${inputs.urgencyLevel} Service: $${urgencyFee}`);
     if (promoDiscount > 0) breakdown.push(`Promo discount: -$${promoDiscount.toFixed(2)}`);
 
     return {
@@ -279,12 +301,12 @@ export default function RealTimePricing({
 
   // Validate promo code when it changes
   useEffect(() => {
-    if (inputs.promoCode && inputs.promoCode.trim() && inputs.service) {
+    if (inputs.promoCode && inputs.promoCode.trim() && inputs.Service) {
       validatePromoCode(inputs.promoCode.trim());
     } else {
       setPromoValidation(null);
     }
-  }, [inputs.promoCode, inputs.service]);
+  }, [inputs.promoCode, inputs.Service]);
 
   // Notify parent of pricing changes
   useEffect(() => {
@@ -298,7 +320,7 @@ export default function RealTimePricing({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           code,
-          serviceId: inputs.service?.id,
+          serviceId: inputs.Service?.id,
           originalAmount: pricing.subtotal,
         })
       });
@@ -348,7 +370,7 @@ export default function RealTimePricing({
 
   const travelWarning = getTravelWarning();
 
-  if (!inputs.service) {
+  if (!inputs.Service) {
     return (
       <Card className={`border-gray-200 ${className}`}>
         <CardContent className="pt-6">
@@ -502,10 +524,10 @@ export default function RealTimePricing({
               <MapPin className="h-3 w-3" />
               <span>{inputs.distance.toFixed(1)} miles</span>
             </div>
-            {inputs.service.duration && (
+            {inputs.Service.duration && (
               <div className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
-                <span>~{inputs.service.duration} min</span>
+                <span>~{inputs.Service.duration} min</span>
               </div>
             )}
           </div>
@@ -513,4 +535,242 @@ export default function RealTimePricing({
       </CardContent>
     </Card>
   );
-} 
+}
+
+// New enhanced component for the enhanced booking flow
+export default function RealTimePricing({
+  serviceType,
+  location,
+  numberOfSigners,
+  onPricingUpdate,
+  showBreakdown = true,
+  className = ""
+}: RealTimePricingProps) {
+  const [mileage, setMileage] = useState(0);
+  const [isCalculating, setIsCalculating] = useState(false);
+
+  // Calculate distance from ZIP 77591 (base location)
+  useEffect(() => {
+    if (location.latitude && location.longitude) {
+      calculateDistance();
+    }
+  }, [location.latitude, location.longitude]);
+
+  const calculateDistance = () => {
+    if (!location.latitude || !location.longitude) return;
+
+    const BASE_LAT = 29.5451; // ZIP 77591 coordinates
+    const BASE_LNG = -95.0803;
+
+    const R = 3959; // Earth's radius in miles
+    const dLat = (location.latitude - BASE_LAT) * Math.PI / 180;
+    const dLng = (location.longitude - BASE_LNG) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(BASE_LAT * Math.PI / 180) * Math.cos(location.latitude * Math.PI / 180) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+
+    setMileage(distance);
+  };
+
+  // Calculate pricing based on SOP
+  const pricing = useMemo(() => {
+    let basePrice = 0;
+    let serviceRadius = 15; // Default 15-mile radius
+
+    // Set base price and radius per SOP
+    switch (serviceType) {
+      case 'standard-notary':
+        basePrice = 75;
+        serviceRadius = 15;
+        break;
+      case 'extended-hours-notary':
+        basePrice = 100;
+        serviceRadius = 20;
+        break;
+      case 'loan-signing-specialist':
+        basePrice = 150;
+        serviceRadius = 30;
+        break;
+      default:
+        basePrice = 75;
+        serviceRadius = 15;
+    }
+
+    // Calculate travel fee: $0.50/mile beyond service radius per SOP
+    const travelFee = mileage > serviceRadius ? (mileage - serviceRadius) * 0.50 : 0;
+    
+    // Add additional signer fees per SOP
+    let additionalSignerFee = 0;
+    if (serviceType === 'standard-notary' || serviceType === 'extended-hours-notary') {
+      // Standard and Extended Hours: $5 per additional signer beyond 2
+      if (numberOfSigners > 2) {
+        additionalSignerFee = (numberOfSigners - 2) * 5;
+      }
+    } else if (serviceType === 'loan-signing-specialist') {
+      // Loan Signing: $10 per additional signer beyond 4
+      if (numberOfSigners > 4) {
+        additionalSignerFee = (numberOfSigners - 4) * 10;
+      }
+    }
+
+    const totalPrice = basePrice + travelFee + additionalSignerFee;
+
+    return {
+      basePrice,
+      travelFee: Number(travelFee.toFixed(2)),
+      totalPrice: Number(totalPrice.toFixed(2)),
+      mileage: Number(mileage.toFixed(1)),
+      additionalSignerFee
+    };
+  }, [serviceType, numberOfSigners, mileage]);
+
+  // Update parent component when pricing changes
+  useEffect(() => {
+    onPricingUpdate(pricing);
+  }, [pricing, onPricingUpdate]);
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  };
+
+  const getServiceDetails = () => {
+    switch (serviceType) {
+      case 'standard-notary':
+        return {
+          name: 'Standard Notary Services',
+          description: 'Up to 2 signers, 15-mile radius',
+          radius: 15
+        };
+      case 'extended-hours-notary':
+        return {
+          name: 'Extended Hours Notary',
+          description: 'Up to 2 signers, 20-mile radius',
+          radius: 20
+        };
+      case 'loan-signing-specialist':
+        return {
+          name: 'Loan Signing Specialist',
+          description: 'Up to 4 signers, 30-mile radius',
+          radius: 30
+        };
+      default:
+        return {
+          name: 'Notary Service',
+          description: 'Professional notary services',
+          radius: 15
+        };
+    }
+  };
+
+  const serviceDetails = getServiceDetails();
+  const isOutsideServiceArea = mileage > serviceDetails.radius;
+
+  return (
+    <div className={`space-y-4 ${className}`}>
+      {/* Service Info */}
+      <div className="bg-blue-50 rounded-lg p-4">
+        <h3 className="font-semibold text-blue-900 mb-1">{serviceDetails.name}</h3>
+        <p className="text-sm text-blue-700">{serviceDetails.description}</p>
+      </div>
+
+      {/* Distance and Service Area Status */}
+      {mileage > 0 && (
+        <div className={`rounded-lg p-4 ${
+          isOutsideServiceArea 
+            ? 'bg-orange-50 border border-orange-200' 
+            : 'bg-green-50 border border-green-200'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm font-medium">
+                Distance from base: {pricing.mileage} miles
+              </span>
+              {isOutsideServiceArea && (
+                <p className="text-xs text-orange-600 mt-1">
+                  Outside standard {serviceDetails.radius}-mile service area
+                </p>
+              )}
+            </div>
+            <span className={`text-xs px-2 py-1 rounded-full ${
+              isOutsideServiceArea 
+                ? 'bg-orange-100 text-orange-800' 
+                : 'bg-green-100 text-green-800'
+            }`}>
+              {isOutsideServiceArea ? 'Extra Travel Fee' : 'No Travel Fee'}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Pricing Breakdown */}
+      <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <h4 className="font-semibold text-gray-900 mb-3">Pricing Breakdown</h4>
+        
+        <div className="space-y-2">
+          <div className="flex justify-between">
+            <span className="text-gray-600">Base Service Fee</span>
+            <span className="font-medium">{formatCurrency(pricing.basePrice)}</span>
+          </div>
+          
+          {pricing.additionalSignerFee > 0 && (
+            <div className="flex justify-between">
+              <span className="text-gray-600">
+                Additional Signers ({numberOfSigners - (serviceType === 'loan-signing-specialist' ? 4 : 2)})
+              </span>
+              <span className="font-medium">{formatCurrency(pricing.additionalSignerFee)}</span>
+            </div>
+          )}
+          
+          {pricing.travelFee > 0 && (
+            <div className="flex justify-between">
+              <span className="text-gray-600">
+                Travel Fee ({(pricing.mileage - serviceDetails.radius).toFixed(1)} miles @ $0.50/mile)
+              </span>
+              <span className="font-medium">{formatCurrency(pricing.travelFee)}</span>
+            </div>
+          )}
+          
+          <div className="border-t pt-2">
+            <div className="flex justify-between items-center">
+              <span className="text-lg font-semibold text-gray-900">Total</span>
+              <span className="text-xl font-bold text-blue-600">
+                {formatCurrency(pricing.totalPrice)}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Service Area Warning */}
+      {mileage > 50 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">
+                Extended Service Area
+              </h3>
+              <p className="text-sm text-red-700 mt-1">
+                Your location is {pricing.mileage} miles from our base. This is beyond our typical service area. 
+                Please contact us directly to confirm availability and pricing for this distance.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Export legacy component for backward compatibility
+export { LegacyRealTimePricing }; 

@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     const { serviceId, notes } = body;
 
     // 3. Find or create a RON service
-    let ronService = await prisma.service.findFirst({
+    let ronService = await prisma.Service.findFirst({
       where: { 
         serviceType: 'SPECIALTY_NOTARY_SERVICE',
         name: { contains: 'Remote Online Notarization' }
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     });
 
     if (!ronService) {
-      ronService = await prisma.service.create({
+      ronService = await prisma.Service.create({
         data: {
           name: 'Remote Online Notarization',
           serviceType: 'SPECIALTY_NOTARY_SERVICE',
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     }
 
     // 4. Create New RON Booking (instead of NotarizationSession)
-    const newRonBooking = await prisma.booking.create({
+    const newRonBooking = await prisma.Booking.create({
       data: {
         signerId: userId,
         serviceId: serviceId || ronService.id,
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
         // scheduledDateTime will be set when notary is assigned
       },
       include: {
-        service: true,
+        Service: true,
         NotarizationDocument: true
       }
     });

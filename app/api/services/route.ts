@@ -5,7 +5,7 @@ import { mapPrismaToFrontend, getServiceDisplayName } from '@/lib/types/service-
 export async function GET() {
   try {
     // Get all active services ordered by name
-    const services = await prisma.service.findMany({
+    const services = await prisma.Service.findMany({
       where: { 
         isActive: true 
       },

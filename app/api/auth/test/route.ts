@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     try {
       const body = await request.json();
-      const testType = body.testType || 'basic';
+      const testType = body.testType || "standard-notary";
 
       let testResults: any = {
         testType,

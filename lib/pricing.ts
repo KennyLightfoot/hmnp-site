@@ -178,13 +178,13 @@ export function calculateExtendedHoursNotaryPrice(
   // Same-day service after 3 pm: +$25
   if (isSameDay) {
     sameDayFee = ADDITIONAL_FEES.sameDayService;
-    notes.push(`Same-day service: $${sameDayFee}`);
+    notes.push(`Same-day Service: $${sameDayFee}`);
   }
   
   // After-hours service (9 pm – 7 am): +$50
   if (isAfterHours) {
     afterHoursFee = ADDITIONAL_FEES.afterHoursService;
-    notes.push(`After-hours service: $${afterHoursFee}`);
+    notes.push(`After-hours Service: $${afterHoursFee}`);
   }
   
   const totalPrice = basePrice + extraSignersFee + extraDocumentsFee + sameDayFee + afterHoursFee;

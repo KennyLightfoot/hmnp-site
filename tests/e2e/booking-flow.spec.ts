@@ -9,10 +9,10 @@ import { test, expect, Page } from '@playwright/test';
 
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 
-// Test data for booking
+// Test data for booking - SOP COMPLIANT
 const TEST_BOOKING_DATA = {
-  service: {
-    name: 'Essential Notary Services',
+  Service: {
+    name: 'Standard Notary Services',  // SOP: was 'Essential Notary Services'
     price: '$75'
   },
   client: {
@@ -45,7 +45,7 @@ test.describe('Critical Booking Flow', () => {
     await page.goto(BASE_URL);
   });
 
-  test('Complete booking flow - Essential Services', async ({ page }) => {
+  test('Complete booking flow - Standard Notary Services', async ({ page }) => {
     // Step 1: Navigate to booking page
     await test.step('Navigate to booking page', async () => {
       const bookButton = page.locator('button:has-text("Book Now"), a:has-text("Book Now")').first();
@@ -58,15 +58,15 @@ test.describe('Critical Booking Flow', () => {
     // Step 2: Select service
     await test.step('Select service', async () => {
       // Look for service cards or selection options
-      const serviceCard = page.locator(`[data-testid="service-${TEST_BOOKING_DATA.service.name}"]`)
-        .or(page.locator(`:has-text("${TEST_BOOKING_DATA.service.name}")`).first());
+      const serviceCard = page.locator(`[data-testid="service-${TEST_BOOKING_DATA.Service.name}"]`)
+        .or(page.locator(`:has-text("${TEST_BOOKING_DATA.Service.name}")`).first());
       
       await expect(serviceCard).toBeVisible({ timeout: 10000 });
       await serviceCard.click();
 
       // Verify service selection
       const selectedService = page.locator('.selected, .bg-blue-100, [data-selected="true"]')
-        .or(page.locator(`:has-text("${TEST_BOOKING_DATA.service.name}")`));
+        .or(page.locator(`:has-text("${TEST_BOOKING_DATA.Service.name}")`));
       await expect(selectedService).toBeVisible();
     });
 
@@ -112,7 +112,7 @@ test.describe('Critical Booking Flow', () => {
       await expect(page.locator(':has-text("Booking Summary"), :has-text("Review")')).toBeVisible();
       
       // Verify service details
-      await expect(page.locator(`:has-text("${TEST_BOOKING_DATA.service.name}")`)).toBeVisible();
+      await expect(page.locator(`:has-text("${TEST_BOOKING_DATA.Service.name}")`)).toBeVisible();
       await expect(page.locator(`:has-text("${TEST_BOOKING_DATA.client.firstName}")`)).toBeVisible();
       await expect(page.locator(`:has-text("${TEST_BOOKING_DATA.client.email}")`)).toBeVisible();
     });
@@ -227,22 +227,22 @@ test.describe('Critical Booking Flow', () => {
       await page.goto(`${BASE_URL}/booking`);
       
       // Check that multiple service options are available
-      const serviceCards = page.locator('[data-testid^="service-"], .service-card, .service-option');
+      const serviceCards = page.locator('[data-testid^="service-"], .Service-card, .Service-option');
       await expect(serviceCards).toHaveCount(3, { timeout: 10000 }); // Expecting at least 3 services
     });
 
     await test.step('Verify pricing updates on service selection', async () => {
       // Select different services and verify price changes
-      const essentialService = page.locator(':has-text("Essential")').first();
-      await essentialService.click();
+      const standardService = page.locator(':has-text("Standard Notary"), :has-text("Standard")').first();
+      await standardService.click();
       
       await expect(page.locator(':has-text("$75"), [data-testid="price"]')).toBeVisible();
       
-      // Try premium service
-      const premiumService = page.locator(':has-text("Premium"), :has-text("Priority")').first();
-      if (await premiumService.isVisible()) {
-        await premiumService.click();
-        await expect(page.locator(':has-text("$150"), :has-text("$125")')).toBeVisible();
+      // Try extended hours service
+      const extendedService = page.locator(':has-text("Extended Hours"), :has-text("Extended")').first();
+      if (await extendedService.isVisible()) {
+        await extendedService.click();
+        await expect(page.locator(':has-text("$100"), :has-text("$125")')).toBeVisible();
       }
     });
   });

@@ -34,8 +34,8 @@ export async function POST(request: NextRequest) {
         proofTransactionId: event.data.transaction_id
       },
       include: {
-        signer: true,
-        service: true
+        User_Booking_signerIdToUser: true,
+        Service: true
       }
     });
 

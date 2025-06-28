@@ -154,7 +154,7 @@ async function main() {
       },
       create: service,
     });
-    console.log(`Upserted service: ${service.name} (ID: ${service.id})`);
+    console.log(`Upserted Service: ${service.name} (ID: ${service.id})`);
   }
 
   // Seed Business Settings

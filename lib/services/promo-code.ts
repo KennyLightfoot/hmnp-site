@@ -193,7 +193,7 @@ class PromoCodeService {
       const bookings = await prisma.booking.findMany({
         where: {
           promoCodeId,
-          signer: {
+          User_Booking_signerIdToUser: {
             email: customerEmail
           }
         }
@@ -302,7 +302,7 @@ class PromoCodeService {
     try {
       return await prisma.promoCode.update({
         where: { id },
-        data: { active: false }
+        data: { isActive: false }
       });
     } catch (error) {
       console.error('Error deactivating promo code:', error);

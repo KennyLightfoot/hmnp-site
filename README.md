@@ -1,4 +1,20 @@
-# Houston Mobile Notary Pros - API Server
+# Houston Mobile Notary Pros
+
+Professional mobile notary and loan signing services in Houston, TX.
+
+## Services
+- Standard Notary Services
+- Extended Hours Notary Services  
+- Loan Signing Specialist Services
+
+## Tech Stack
+- Next.js 15+ with App Router
+- TypeScript
+- PostgreSQL with Prisma
+- Stripe Payments
+- GoHighLevel CRM Integration
+
+<!-- Test change for CodeRabbit PR review -->
 
 🚀 **Enhanced GHL Integration with Advanced Security & Intelligent Automation**
 

@@ -128,7 +128,7 @@ async function getBookingStatistics() {
 
   // Get service names for the top services
   const serviceIds = serviceGrouped.map(item => item.serviceId);
-  const services = await prisma.service.findMany({
+  const services = await prisma.Service.findMany({
     where: {
       id: { in: serviceIds }
     },
@@ -325,12 +325,12 @@ async function getRecentActivity() {
       createdAt: 'desc'
     },
     include: {
-      service: {
+      Service: {
         select: {
           name: true
         }
       },
-      signer: {
+      User_Booking_signerIdToUser: {
         select: {
           name: true,
           email: true
@@ -342,8 +342,8 @@ async function getRecentActivity() {
   return {
     recentBookings: recentBookings.map(booking => ({
       id: booking.id,
-      customerName: booking.signer?.name || 'Guest',
-      serviceName: booking.service?.name || 'Unknown',
+      customerName: booking.User_Booking_signerIdToUser?.name || 'Guest',
+      serviceName: booking.Service?.name || 'Unknown',
       status: booking.status,
       amount: booking.priceAtBooking?.toNumber() || 0,
       createdAt: booking.createdAt

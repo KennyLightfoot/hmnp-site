@@ -50,8 +50,8 @@ export async function POST(request: NextRequest) {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        service: true,
-        signer: {
+        Service: true,
+        User_Booking_signerIdToUser: {
           select: {
             name: true,
             email: true

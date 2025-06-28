@@ -47,13 +47,13 @@ export async function GET(request: NextRequest) {
         booking: {
           select: {
             id: true,
-            signer: {
+            User_Booking_signerIdToUser: {
               select: {
                 name: true,
                 email: true,
               },
             },
-            service: {
+            Service: {
               select: {
                 name: true,
               },
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
         entry.location || '',
         entry.additionalNotes || '',
         entry.bookingId || '',
-        entry.booking?.service?.name || '',
+        entry.booking?.Service?.name || '',
         entry.notary.name || '',
         entry.createdAt.toISOString(),
       ]);
@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
         location: entry.location,
         additionalNotes: entry.additionalNotes,
         bookingId: entry.bookingId,
-        serviceName: entry.booking?.service?.name,
+        serviceName: entry.booking?.Service?.name,
         notaryName: entry.notary.name,
         createdAt: entry.createdAt.toISOString(),
       })),

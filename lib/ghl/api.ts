@@ -285,21 +285,27 @@ export async function updateContact(contactData: { id: string, [key: string]: an
   }
 }
 
-// Function to get monetary value (Consider moving this elsewhere if not strictly GHL API related)
+// SOP COMPLIANT: Get monetary value for service types
 export function getServiceValue(serviceType: string, numberOfSigners: number): number {
   switch (serviceType) {
-    case "essential":
+    case "standard-notary":
+      // SOP: $75 base, 15-mile radius, 9am-5pm Mon-Fri
       if (numberOfSigners === 1) return 75;
       if (numberOfSigners === 2) return 85;
       if (numberOfSigners === 3) return 95;
       return 100; // 4+ signers
-    case "priority":
+    case "extended-hours-notary":
+      // SOP: $100 flat fee, 20-mile radius, 7am-9pm Daily
       return 100 + (numberOfSigners > 2 ? (numberOfSigners - 2) * 10 : 0);
-    case "loan-signing":
-    case "reverse-mortgage":
+    case "loan-signing-specialist":
+      // SOP: $150 flat fee, unlimited docs, up to 4 signers
       return 150;
-    case "specialty":
+    case "specialty-notary-service":
       return 75;
+    case "business-solutions":
+      return 125;
+    case "support-service":
+      return 50;
     default:
       return 75;
   }

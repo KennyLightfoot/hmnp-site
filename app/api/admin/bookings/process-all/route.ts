@@ -31,8 +31,8 @@ export async function POST() {
       },
       take: 50,
       include: {
-        signer: true,
-        service: true,
+        User_Booking_signerIdToUser: true,
+        Service: true,
       }
     });
 
@@ -51,7 +51,6 @@ export async function POST() {
         level: 'INFO',
         component: 'BOOKING_PROCESSOR',
         message: `Admin requested processing of ${pendingBookings.length} pending bookings`,
-        timestamp: new Date(),
       }
     }).catch(() => {
       // If the systemLog table doesn't exist yet, we'll just ignore the error

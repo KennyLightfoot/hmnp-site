@@ -129,8 +129,8 @@ export class BullQueueWorker {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
-          signer: true,
-          service: true,
+          User_Booking_signerIdToUser: true,
+          Service: true,
           Payment: true
         }
       });
@@ -187,7 +187,7 @@ export class BullQueueWorker {
             bookingId,
             type: NotificationType.APPOINTMENT_REMINDER_24HR,
             recipient: {
-              email: booking.signer?.email || booking.customerEmail || '',
+              email: booking.User_Booking_signerIdToUser?.email || booking.customerEmail || '',
             },
             content: {
               subject: 'Appointment Reminder',
@@ -208,7 +208,7 @@ export class BullQueueWorker {
             bookingId,
             type: NotificationType.POST_SERVICE_FOLLOWUP,
             recipient: {
-              email: booking.signer?.email || booking.customerEmail || '',
+              email: booking.User_Booking_signerIdToUser?.email || booking.customerEmail || '',
             },
             content: {
               subject: 'How did we do?',
@@ -268,11 +268,11 @@ export class BullQueueWorker {
       await NotificationService.sendNotification({
         bookingId: booking.id,
         type: NotificationType.BOOKING_CONFIRMATION,
-        recipient: { email: booking.signer?.email || booking.customerEmail || '' },
+        recipient: { email: booking.User_Booking_signerIdToUser?.email || booking.customerEmail || '' },
         methods: [NotificationMethod.EMAIL],
         content: {
           subject: 'Your booking is confirmed',
-          message: `Your booking for ${booking.service?.name || 'our service'} has been confirmed.`
+          message: `Your booking for ${booking.Service?.name || 'our service'} has been confirmed.`
         }
       });
       
@@ -309,11 +309,11 @@ export class BullQueueWorker {
       await NotificationService.sendNotification({
         bookingId: booking.id,
         type: NotificationType.BOOKING_CANCELLED,
-        recipient: { email: booking.signer?.email || booking.customerEmail || '' },
+        recipient: { email: booking.User_Booking_signerIdToUser?.email || booking.customerEmail || '' },
         methods: [NotificationMethod.EMAIL],
         content: {
           subject: 'Your booking has been cancelled',
-          message: `Your booking for ${booking.service?.name || 'our service'} has been cancelled. ${reason ? 'Reason: ' + reason : ''}`
+          message: `Your booking for ${booking.Service?.name || 'our service'} has been cancelled. ${reason ? 'Reason: ' + reason : ''}`
         }
       });
       
@@ -346,11 +346,11 @@ export class BullQueueWorker {
       await NotificationService.sendNotification({
         bookingId: booking.id,
         type: NotificationType.BOOKING_RESCHEDULED,
-        recipient: { email: booking.signer?.email || booking.customerEmail || '' },
+        recipient: { email: booking.User_Booking_signerIdToUser?.email || booking.customerEmail || '' },
         methods: [NotificationMethod.EMAIL],
         content: {
           subject: 'Your booking has been rescheduled',
-          message: `Your booking for ${booking.service?.name || 'our service'} has been rescheduled to ${new Date(newDateTime).toLocaleString()}.`
+          message: `Your booking for ${booking.Service?.name || 'our service'} has been rescheduled to ${new Date(newDateTime).toLocaleString()}.`
         }
       });
       
@@ -392,7 +392,7 @@ export class BullQueueWorker {
   private async syncBookingToGHL(booking: any, eventType: 'created' | 'confirmed' | 'cancelled' | 'rescheduled'): Promise<any> {
     try {
       // Skip GHL sync if no email is available
-      const userEmail = booking.signer?.email || booking.customerEmail;
+      const userEmail = booking.User_Booking_signerIdToUser?.email || booking.customerEmail;
       if (!userEmail) {
         logger.warn(`Cannot sync booking ${booking.id} to GHL: No email available`);
         return { success: false, reason: 'No email available' };
@@ -419,7 +419,7 @@ export class BullQueueWorker {
       await ghl.addTagsToContact(contact.id, tags);
       
       // Update custom fields with booking information
-      const serviceName = booking.service?.name || 'Unknown Service';
+      const serviceName = booking.Service?.name || 'Unknown Service';
       const scheduledDate = booking.scheduledDateTime 
         ? new Date(booking.scheduledDateTime).toISOString().split('T')[0] 
         : 'Unscheduled';
@@ -482,7 +482,7 @@ export class BullQueueWorker {
           if (captureResult.success && bookingId) {
             const booking = await prisma.booking.findUnique({
               where: { id: bookingId },
-              include: { signer: true }
+              include: { User_Booking_signerIdToUser: true }
             });
             
             if (booking) {
@@ -505,7 +505,7 @@ export class BullQueueWorker {
           if (refundResult.success && bookingId) {
             const booking = await prisma.booking.findUnique({
               where: { id: bookingId },
-              include: { signer: true }
+              include: { User_Booking_signerIdToUser: true }
             });
             
             if (booking) {
@@ -560,7 +560,7 @@ export class BullQueueWorker {
       // Get booking details first
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
-        include: { service: true }
+        include: { Service: true }
       });
       
       if (!booking) {
@@ -568,7 +568,7 @@ export class BullQueueWorker {
       }
       
       // Use service price if amount not specified
-      const paymentAmount = amount || Number(booking.service?.price || 0);
+      const paymentAmount = amount || Number(booking.Service?.price || 0);
       const paymentCurrency = currency || 'USD';
       
       if (paymentAmount <= 0) {
@@ -639,7 +639,7 @@ export class BullQueueWorker {
       if (updatedPayment.bookingId) {
         const booking = await prisma.booking.findUnique({
           where: { id: updatedPayment.bookingId },
-          include: { signer: true }
+          include: { User_Booking_signerIdToUser: true }
         });
         
         if (booking && (booking.status === BookingStatus.PAYMENT_PENDING || booking.status === BookingStatus.REQUESTED)) {
@@ -751,7 +751,7 @@ export class BullQueueWorker {
   private async updateGHLPaymentStatus(booking: any, status: 'completed' | 'refunded' | 'failed'): Promise<any> {
     try {
       // Skip GHL update if no email is available
-      const userEmail = booking.signer?.email || booking.customerEmail;
+      const userEmail = booking.User_Booking_signerIdToUser?.email || booking.customerEmail;
       if (!userEmail) {
         logger.warn(`Cannot update GHL payment status: No email available for booking ${booking.id}`);
         return { success: false, reason: 'No email available' };
