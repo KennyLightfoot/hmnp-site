@@ -529,7 +529,7 @@ export async function POST(request: NextRequest) {
       const address = normalizeAddress(data);
       
       // Get service details
-      const service = await prisma.service.findUnique({
+      const service = await prisma.Service.findUnique({
         where: { id: data.serviceId, isActive: true }
       });
       

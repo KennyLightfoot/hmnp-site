@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get service details
-    const service = await prisma.service.findUnique({
+    const service = await prisma.Service.findUnique({
       where: { id: validatedParams.serviceId },
     });
 

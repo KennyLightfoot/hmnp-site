@@ -169,17 +169,17 @@ export default function BookingPage() {
         throw new Error(`Failed to fetch services: ${response.status}`);
       }
       
-      const data: ApiService[] = await response.json();
+      const data = await response.json();
       
-      if (!Array.isArray(data)) {
+      if (!data.success || !data.services?.all || !Array.isArray(data.services.all)) {
         throw new Error('Invalid services data format');
       }
       
-      setServices(data);
+      setServices(data.services.all);
       
       // Build service ID mapping
       const newMap: Record<string, string> = {};
-      data.forEach(service => {
+      data.services.all.forEach(service => {
         if (service.key && service.id) {
           newMap[service.key] = service.id;
         }
@@ -509,7 +509,7 @@ export default function BookingPage() {
                                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
                               >
                                 {services.map((service) => (
-                                  <FormItem key={service.id} className="relative">
+                                  <FormItem key={service.id} className="relative" data-testid="service-option">
                                     <FormControl>
                                       <RadioGroupItem value={service.key} id={service.key} className="peer sr-only" />
                                     </FormControl>
