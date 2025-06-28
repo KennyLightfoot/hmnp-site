@@ -9,11 +9,13 @@ export async function GET() {
     
     // Get total service count first
     const totalServices = await prisma.Service.count();
-    // TODO: Re-enable after Prisma client regeneration: const activeServices = await prisma.Service.count({ where: { isActive: true } });
+    const activeServices = await prisma.Service.count({ where: { isActive: true } });
     
-    // Get all services ordered by name (temporary hotfix - remove isActive filter)
+    // Get all active services ordered by name
     const services = await prisma.Service.findMany({
-      // TODO: Re-enable after Prisma client regeneration: where: { isActive: true },
+      where: { 
+        isActive: true 
+      },
       orderBy: [
         { serviceType: 'asc' },
         { name: 'asc' }
@@ -28,7 +30,7 @@ export async function GET() {
         requiresDeposit: true,
         depositAmount: true,
         externalCalendarId: true,
-        // TODO: Re-enable after Prisma client regeneration: isActive: true,
+        isActive: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -42,7 +44,7 @@ export async function GET() {
         meta: { 
           totalServices: 0, 
           serviceTypes: [],
-          debug: { totalServices, message: 'No services found' }
+          debug: { totalServices, activeServices, message: 'No active services found' }
         },
       });
     }
