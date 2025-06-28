@@ -25,7 +25,7 @@ export async function POST() {
     }
 
     // Find all pending bookings that need processing
-    const pendingBookings = await prisma.booking.findMany({
+    const pendingBookings = await prisma.Booking.findMany({
       where: {
         status: { in: ['REQUESTED', 'PAYMENT_PENDING'] }
       },

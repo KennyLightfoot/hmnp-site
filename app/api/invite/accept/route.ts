@@ -43,7 +43,7 @@ export async function POST(request: Request) {
 
     // 5. Update the user's password and mark email as verified in a transaction
     await prisma.$transaction(async (tx) => {
-      await tx.user.update({
+      await tx.User.update({
         where: { id: invitationToken.userId! }, // userId is checked above
         data: {
           password: hashedPassword,

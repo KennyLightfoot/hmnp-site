@@ -260,7 +260,7 @@ async function findOrCreateCustomer(
 ) {
   if (isAuthenticated && userId) {
     // For authenticated users, verify they exist
-    const user = await prisma.user.findUnique({
+    const user = await prisma.User.findUnique({
       where: { id: userId },
       select: { id: true, name: true, email: true }
     });
@@ -276,13 +276,13 @@ async function findOrCreateCustomer(
   }
   
   // For guest users or if authenticated user not found
-  let user = await prisma.user.findUnique({
+  let user = await prisma.User.findUnique({
     where: { email },
     select: { id: true, name: true, email: true }
   });
   
   if (!user) {
-    user = await prisma.user.create({
+    user = await prisma.User.create({
       data: {
         name,
         email,

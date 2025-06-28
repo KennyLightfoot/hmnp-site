@@ -233,7 +233,7 @@ async function getExistingBookings(date: Date) {
   const endOfDay = new Date(date);
   endOfDay.setHours(23, 59, 59, 999);
 
-  return await prisma.booking.findMany({
+  return await prisma.Booking.findMany({
     where: {
       scheduledDateTime: {
         gte: startOfDay,

@@ -89,7 +89,7 @@ async function getBookingStatistics() {
   const startOfYear = new Date(now.getFullYear(), 0, 1);
 
   // Get current status distribution
-  const statusCounts = await prisma.booking.groupBy({
+  const statusCounts = await prisma.Booking.groupBy({
     by: ['status'],
     _count: {
       status: true
@@ -98,22 +98,22 @@ async function getBookingStatistics() {
 
   // Get time-based statistics
   const [todayCount, weekCount, monthCount, yearCount] = await Promise.all([
-    prisma.booking.count({
+    prisma.Booking.count({
       where: { createdAt: { gte: startOfDay } }
     }),
-    prisma.booking.count({
+    prisma.Booking.count({
       where: { createdAt: { gte: startOfWeek } }
     }),
-    prisma.booking.count({
+    prisma.Booking.count({
       where: { createdAt: { gte: startOfMonth } }
     }),
-    prisma.booking.count({
+    prisma.Booking.count({
       where: { createdAt: { gte: startOfYear } }
     })
   ]);
 
   // Get service popularity
-  const serviceGrouped = await prisma.booking.groupBy({
+  const serviceGrouped = await prisma.Booking.groupBy({
     by: ['serviceId'],
     _count: {
       serviceId: true
@@ -128,7 +128,7 @@ async function getBookingStatistics() {
 
   // Get service names for the top services
   const serviceIds = serviceGrouped.map(item => item.serviceId);
-  const services = await prisma.service.findMany({
+  const services = await prisma.Service.findMany({
     where: {
       id: { in: serviceIds }
     },
@@ -146,7 +146,7 @@ async function getBookingStatistics() {
   }));
 
   // Get upcoming bookings
-  const upcomingBookings = await prisma.booking.count({
+  const upcomingBookings = await prisma.Booking.count({
     where: {
       status: BookingStatus.CONFIRMED,
       scheduledDateTime: {
@@ -157,14 +157,14 @@ async function getBookingStatistics() {
   });
 
   // Calculate completion rate
-  const completedBookings = await prisma.booking.count({
+  const completedBookings = await prisma.Booking.count({
     where: {
       status: BookingStatus.COMPLETED,
       createdAt: { gte: startOfMonth }
     }
   });
 
-  const totalBookingsThisMonth = await prisma.booking.count({
+  const totalBookingsThisMonth = await prisma.Booking.count({
     where: { createdAt: { gte: startOfMonth } }
   });
 
@@ -203,7 +203,7 @@ async function getRevenueStatistics() {
   const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
   // Current month revenue
-  const currentMonthRevenue = await prisma.booking.aggregate({
+  const currentMonthRevenue = await prisma.Booking.aggregate({
     where: {
       status: BookingStatus.COMPLETED,
       createdAt: { gte: startOfMonth }
@@ -214,7 +214,7 @@ async function getRevenueStatistics() {
   });
 
   // Last month revenue for comparison
-  const lastMonthRevenue = await prisma.booking.aggregate({
+  const lastMonthRevenue = await prisma.Booking.aggregate({
     where: {
       status: BookingStatus.COMPLETED,
       createdAt: { 
@@ -242,7 +242,7 @@ async function getRevenueStatistics() {
   ` as Array<{ date: string; revenue: number; bookings: number }>;
 
   // Average booking value
-  const avgBookingValue = await prisma.booking.aggregate({
+  const avgBookingValue = await prisma.Booking.aggregate({
     where: {
       status: BookingStatus.COMPLETED,
       createdAt: { gte: startOfMonth }
@@ -253,7 +253,7 @@ async function getRevenueStatistics() {
   });
 
   // Pending revenue (from payment pending bookings)
-  const pendingRevenue = await prisma.booking.aggregate({
+  const pendingRevenue = await prisma.Booking.aggregate({
     where: {
       status: BookingStatus.PAYMENT_PENDING
     },
@@ -319,7 +319,7 @@ async function getSystemHealth() {
  * Get recent activity
  */
 async function getRecentActivity() {
-  const recentBookings = await prisma.booking.findMany({
+  const recentBookings = await prisma.Booking.findMany({
     take: 10,
     orderBy: {
       createdAt: 'desc'
@@ -374,7 +374,7 @@ async function calculateBookingTrend(startDate: Date, days: number) {
   const previousStart = new Date(startDate.getTime() - days * 24 * 60 * 60 * 1000);
 
   const [current, previous] = await Promise.all([
-    prisma.booking.count({
+    prisma.Booking.count({
       where: {
         createdAt: {
           gte: startDate,
@@ -382,7 +382,7 @@ async function calculateBookingTrend(startDate: Date, days: number) {
         }
       }
     }),
-    prisma.booking.count({
+    prisma.Booking.count({
       where: {
         createdAt: {
           gte: previousStart,

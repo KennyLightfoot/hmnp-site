@@ -75,7 +75,7 @@ export async function POST(request: Request) {
 
     // 6. Additional authorization checks for specific categories
     if (validatedInput.category === 'ron-documents' && validatedInput.sessionId) {
-      const ronBooking = await prisma.booking.findUnique({
+      const ronBooking = await prisma.Booking.findUnique({
         where: { 
           id: validatedInput.sessionId,
           locationType: 'REMOTE_ONLINE_NOTARIZATION'

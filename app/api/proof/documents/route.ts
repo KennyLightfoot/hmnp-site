@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the booking and verify access
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { 
         id: bookingId,
         signerId: (session.user as any).id
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get the booking and verify access
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { 
         id: bookingId,
         signerId: (session.user as any).id

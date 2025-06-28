@@ -25,7 +25,7 @@ async function testBookingGhlEndToEnd() {
     
     // 1. Get an active service from the database
     console.log('Fetching active service from database...');
-    const service = await prisma.service.findFirst({
+    const service = await prisma.Service.findFirst({
       where: { isActive: true },
       select: { id: true, name: true, serviceType: true, basePrice: true }
     });
@@ -40,7 +40,7 @@ async function testBookingGhlEndToEnd() {
     console.log('\nCreating test user in database...');
     const uniqueEmail = `test.booking.${Date.now()}@example.com`;
     
-    const testUser = await prisma.user.create({
+    const testUser = await prisma.User.create({
       data: {
         id: `test-user-${Date.now()}`,
         name: 'Test User',
@@ -53,7 +53,7 @@ async function testBookingGhlEndToEnd() {
     
     // 3. Now create a booking associated with this user
     console.log('\nCreating test booking in database...');
-    const testBooking = await prisma.booking.create({
+    const testBooking = await prisma.Booking.create({
       data: {
         id: `test-booking-${Date.now()}`,
         serviceId: service.id,
@@ -150,11 +150,11 @@ async function testBookingGhlEndToEnd() {
     
     // 8. Clean up (optional - comment out if you want to keep the test booking)
     console.log('\nCleaning up test data...');
-    await prisma.booking.delete({ where: { id: testBooking.id } });
+    await prisma.Booking.delete({ where: { id: testBooking.id } });
     console.log(`Deleted test booking with ID: ${testBooking.id}`);
     
     // Also delete the test user
-    await prisma.user.delete({ where: { id: testUser.id } });
+    await prisma.User.delete({ where: { id: testUser.id } });
     console.log(`Deleted test user with ID: ${testUser.id}`);
     
   } catch (error) {

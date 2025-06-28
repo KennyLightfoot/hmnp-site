@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   return withAuth(request, async ({ user, context }) => {
     try {
       // Test database connectivity
-      const userCount = await prisma.user.count();
+      const userCount = await prisma.User.count();
 
       // Test environment configuration
       let envStatus = 'OK';
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
 
         case 'database':
           // Test user's bookings
-          const userBookings = await prisma.booking.count({
+          const userBookings = await prisma.Booking.count({
             where: { signerId: context.userId! }
           });
           testResults.database = {

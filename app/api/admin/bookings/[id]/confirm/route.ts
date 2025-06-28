@@ -23,7 +23,7 @@ export async function POST(
 
   try {
     // Find the booking
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: {
         User_Booking_signerIdToUser: true,
@@ -39,7 +39,7 @@ export async function POST(
     }
 
     // Update the booking status to CONFIRMED
-    const updatedBooking = await prisma.booking.update({
+    const updatedBooking = await prisma.Booking.update({
       where: { id: bookingId },
       data: { 
         status: BookingStatus.CONFIRMED,

@@ -385,7 +385,7 @@ class MarketingAutomation {
    * Private helper methods
    */
   private async gatherCustomerData(customerId: string) {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.User.findUnique({
       where: { id: customerId },
       include: {
         Booking_Booking_signerIdToUser: {
@@ -622,7 +622,7 @@ class MarketingAutomation {
 
   private async getTargetCustomers(segmentIds: string[]): Promise<any[]> {
     // Mock customer retrieval - would implement actual segmentation logic
-    const customers = await prisma.user.findMany({
+    const customers = await prisma.User.findMany({
       take: 100,
       include: {
         Booking_Booking_signerIdToUser: true

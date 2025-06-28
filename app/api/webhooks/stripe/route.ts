@@ -302,7 +302,7 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, ev
 
   await EnhancedStripeWebhookProcessor.executeWithDatabaseRetry(async () => {
     // Get booking details
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: {
         Service: true,
@@ -316,7 +316,7 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, ev
     }
 
     // Update payment failed attempts
-    await prisma.booking.update({
+    await prisma.Booking.update({
       where: { id: bookingId },
       data: {
         depositStatus: 'FAILED',
@@ -328,7 +328,7 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, ev
       try {
         // Update booking record with failed attempt count
         const newFailedAttempts = (booking.paymentFailedAttempts || 0) + 1;
-        await prisma.booking.update({
+        await prisma.Booking.update({
           where: { id: bookingId },
           data: { 
             paymentFailedAttempts: newFailedAttempts,
@@ -396,7 +396,7 @@ async function handleChargeRefunded(charge: Stripe.Charge, eventId: string) {
     }
 
     // Update booking status
-    await prisma.booking.update({
+    await prisma.Booking.update({
       where: { id: booking.id },
       data: {
         status: BookingStatus.CANCELLED_BY_CLIENT,

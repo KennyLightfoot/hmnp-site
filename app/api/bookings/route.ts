@@ -901,7 +901,7 @@ async function validateTimeSlotAvailability(
   // Check for conflicting bookings
   type BookingWithService = Prisma.BookingGetPayload<{ include: { Service: true } }>;
 
-  const conflictingBookings: BookingWithService[] = await tx.booking.findMany({
+  const conflictingBookings: BookingWithService[] = await tx.Booking.findMany({
     where: {
       scheduledDateTime: {
         gte: new Date(scheduledDateTime.getTime() - (60 * 60 * 1000)), // 1 hour before
@@ -957,7 +957,7 @@ async function calculateBookingPricing(
   
   // Apply promo code if provided
   if (promoCodeStr) {
-    const promoCode = await tx.promoCode.findUnique({
+    const promoCode = await tx.PromoCode.findUnique({
       where: { code: promoCodeStr.toUpperCase() },
     });
     
@@ -1026,13 +1026,13 @@ async function findOrCreateCustomer(tx: any, customerData: {
   phone: string;
 }) {
   // Try to find existing customer by email
-  let customer = await tx.user.findUnique({
+  let customer = await tx.User.findUnique({
     where: { email: customerData.email },
   });
   
   // If not found, create new customer
   if (!customer) {
-    customer = await tx.user.create({
+    customer = await tx.User.create({
       data: {
         name: customerData.name,
         email: customerData.email,

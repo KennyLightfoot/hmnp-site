@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 describe('/api/services', () => {
   beforeAll(async () => {
     // Ensure we have test data
-    await prisma.service.upsert({
+    await prisma.Service.upsert({
       where: { id: 'test-service-1' },
       update: {},
       create: {
@@ -24,7 +24,7 @@ describe('/api/services', () => {
 
   afterAll(async () => {
     // Clean up test data
-    await prisma.service.deleteMany({
+    await prisma.Service.deleteMany({
       where: { id: 'test-service-1' }
     });
     await prisma.$disconnect();

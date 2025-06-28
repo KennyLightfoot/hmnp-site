@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
   // 3. Check if user already exists
   try {
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.User.findUnique({
       where: { email },
       select: { id: true } // Only need to check existence
     });
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     // Note: This user won't be able to log in until they set a password via an invite link (not implemented here)
     // or if using an OAuth provider associated with this email.
     // Setting emailVerified to null initially.
-    const newUser = await prisma.user.create({
+    const newUser = await prisma.User.create({
       data: {
         email: email,
         role: role,

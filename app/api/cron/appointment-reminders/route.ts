@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     const windowEnd = new Date(targetTime.getTime() + (30 * 60 * 1000)); // 30 minutes after
 
     // Find bookings that need reminders and haven't been sent yet
-    const bookingsNeedingReminders = await prisma.booking.findMany({
+    const bookingsNeedingReminders = await prisma.Booking.findMany({
       where: {
         status: {
           in: [BookingStatus.CONFIRMED, BookingStatus.SCHEDULED]
@@ -175,7 +175,7 @@ async function checkForNoShows() {
   const thirtyMinutesAgo = new Date(now.getTime() - (30 * 60 * 1000));
 
   try {
-    const potentialNoShows = await prisma.booking.findMany({
+    const potentialNoShows = await prisma.Booking.findMany({
       where: {
         status: {
           in: [BookingStatus.SCHEDULED, BookingStatus.READY_FOR_SERVICE]

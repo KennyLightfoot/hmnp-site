@@ -139,7 +139,7 @@ async function main() {
   const services = [...mobileServices, ...ronServices];
 
   for (const service of services) {
-    await prisma.service.upsert({
+    await prisma.Service.upsert({
       where: { id: service.id },
       update: {
         name: service.name,

@@ -6,7 +6,7 @@ async function updateRONPricing() {
   console.log('🔍 Checking existing RON services...');
   
   // Find existing RON services
-  const existingRONServices = await prisma.service.findMany({
+  const existingRONServices = await prisma.Service.findMany({
     where: {
       OR: [
         { name: { contains: 'RON', mode: 'insensitive' } },
@@ -61,7 +61,7 @@ async function updateRONPricing() {
 
   for (const service of texasCompliantRONServices) {
     try {
-      const upsertedService = await prisma.service.upsert({
+      const upsertedService = await prisma.Service.upsert({
         where: { id: service.id },
         update: {
           name: service.name,
@@ -94,7 +94,7 @@ async function updateRONPricing() {
   for (const oldService of existingRONServices) {
     if (!texasCompliantRONServices.find(newService => newService.id === oldService.id)) {
       try {
-        await prisma.service.update({
+        await prisma.Service.update({
           where: { id: oldService.id },
           data: {
             isActive: false,
@@ -112,7 +112,7 @@ async function updateRONPricing() {
   console.log('\n✅ RON pricing update completed!');
   
   // Show final RON services
-  const updatedRONServices = await prisma.service.findMany({
+  const updatedRONServices = await prisma.Service.findMany({
     where: {
       OR: [
         { name: { contains: 'RON', mode: 'insensitive' } },

@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get booking details
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: {
         Service: true,
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Store payment intent ID in the database
-    await prisma.booking.update({
+    await prisma.Booking.update({
       where: { id: bookingId },
       data: {
         // Store payment intent ID in a field if you have one, or create a Payment record

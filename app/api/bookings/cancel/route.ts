@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     console.log(`✅ Cancellation request validated for booking: ${bookingId}`);
 
     // Find the booking
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: {
         Service: true,
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update booking status
-    const updatedBooking = await prisma.booking.update({
+    const updatedBooking = await prisma.Booking.update({
       where: { id: bookingId },
       data: {
         status: initiatedBy === 'customer' ? BookingStatus.CANCELLED_BY_CLIENT : BookingStatus.CANCELLED_BY_STAFF,

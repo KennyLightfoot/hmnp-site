@@ -21,7 +21,7 @@ async function main() {
 
   try {
     // Find the user by email
-    const user = await prisma.user.findUnique({
+    const user = await prisma.User.findUnique({
       where: { email: ADMIN_EMAIL },
     })
 
@@ -46,7 +46,7 @@ async function main() {
 
     // Update the user's password
     console.log(`Updating password for user ID: ${user.id}`)
-    await prisma.user.update({
+    await prisma.User.update({
       where: { id: user.id },
       data: { password: hashedPassword },
     })

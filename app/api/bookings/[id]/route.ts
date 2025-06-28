@@ -17,7 +17,7 @@ export async function GET(
     }
 
     // Get booking with all related data
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: {
         Service: {
@@ -211,7 +211,7 @@ export async function PATCH(
     }
 
     // Validate the booking exists
-    const existingBooking = await prisma.booking.findUnique({
+    const existingBooking = await prisma.Booking.findUnique({
       where: { id: bookingId },
     });
 
@@ -223,7 +223,7 @@ export async function PATCH(
     }
 
     // Update the booking
-    const updatedBooking = await prisma.booking.update({
+    const updatedBooking = await prisma.Booking.update({
       where: { id: bookingId },
       data: {
         ...body,

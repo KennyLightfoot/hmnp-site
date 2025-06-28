@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the booking and verify access
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { 
         id: bookingId,
         signerId: (session.user as any).id
@@ -122,7 +122,7 @@ Houston Mobile Notary Pros Team
     const proofTransaction = await proofAPI.createTransaction(proofRequest);
 
     // Update booking with Proof transaction details
-    const updatedBooking = await prisma.booking.update({
+    const updatedBooking = await prisma.Booking.update({
       where: { id: bookingId },
       data: {
         proofTransactionId: proofTransaction.id,
@@ -188,7 +188,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get the booking and verify access
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { 
         id: bookingId,
         signerId: (session.user as any).id
@@ -213,7 +213,7 @@ export async function GET(request: NextRequest) {
     const proofTransaction = await proofAPI.getTransaction(booking.proofTransactionId);
 
     // Update our database with latest status
-    await prisma.booking.update({
+    await prisma.Booking.update({
       where: { id: bookingId },
       data: {
         proofStatus: proofTransaction.status,
