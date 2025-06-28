@@ -169,17 +169,18 @@ export default function BookingPage() {
         throw new Error(`Failed to fetch services: ${response.status}`);
       }
       
-      const data: ApiService[] = await response.json();
+      const apiResponse = await response.json();  // ✅ Get full response
       
-      if (!Array.isArray(data)) {
+      // ✅ Extract services array from correct location
+      if (!apiResponse.success || !Array.isArray(apiResponse.services?.all)) {
         throw new Error('Invalid services data format');
       }
       
-      setServices(data);
+      setServices(apiResponse.services.all);  // ✅ Use nested array
       
       // Build service ID mapping
       const newMap: Record<string, string> = {};
-      data.forEach(service => {
+      apiResponse.services.all.forEach((service: ApiService) => {
         if (service.key && service.id) {
           newMap[service.key] = service.id;
         }

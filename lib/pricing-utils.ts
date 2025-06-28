@@ -42,7 +42,7 @@ export class PricingUtils {
     let promoDiscount = 0;
 
     // Calculate promo code discount
-    if (promoCode && promoCode.active) {
+    if (promoCode && promoCode.isActive) {
       const now = new Date();
       const validFrom = new Date(promoCode.validFrom);
       const validUntil = promoCode.validUntil ? new Date(promoCode.validUntil) : null;

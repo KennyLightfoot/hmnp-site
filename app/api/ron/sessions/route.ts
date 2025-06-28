@@ -31,9 +31,9 @@ export async function POST(request: Request) {
         data: {
           name: 'Remote Online Notarization',
           serviceType: 'SPECIALTY_NOTARY_SERVICE',
-          duration: 60,
-          price: 50.00,
-          active: true,
+          durationMinutes: 60,
+          basePrice: 50.00,
+          isActive: true,
           requiresDeposit: true,
           depositAmount: 25.00
         }

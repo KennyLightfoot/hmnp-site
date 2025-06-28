@@ -72,7 +72,7 @@ class PromoCodeService {
       }
 
       // Check if promo code is active
-      if (!promoCode.active) {
+      if (!promoCode.isActive) {
         return {
           isValid: false,
           error: 'Promo code is no longer active'
@@ -245,7 +245,7 @@ class PromoCodeService {
 
       const where: any = {};
           if (filters?.active !== undefined) {
-      where.active = filters.active;
+      where.isActive = filters.active;
       }
       if (filters?.createdById) {
         where.createdById = filters.createdById;

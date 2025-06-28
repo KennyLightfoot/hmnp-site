@@ -55,7 +55,7 @@ export class GoogleCalendarService {
           timeZone: 'America/Chicago',
         },
         end: {
-          dateTime: new Date(booking.scheduledDateTime.getTime() + (booking.service.duration * 60000)).toISOString(),
+          dateTime: new Date(booking.scheduledDateTime.getTime() + (booking.service.durationMinutes * 60000)).toISOString(),
           timeZone: 'America/Chicago',
         },
         colorId: this.getEventColor(booking.status),
@@ -139,7 +139,7 @@ Special Instructions: ${booking.specialInstructions || 'None'}
           timeZone: 'America/Chicago',
         },
         end: {
-          dateTime: new Date(booking.scheduledDateTime.getTime() + (booking.service.duration * 60000)).toISOString(),
+          dateTime: new Date(booking.scheduledDateTime.getTime() + (booking.service.durationMinutes * 60000)).toISOString(),
           timeZone: 'America/Chicago',
         },
         colorId: this.getEventColor(booking.status),
