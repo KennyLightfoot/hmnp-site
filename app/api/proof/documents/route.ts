@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create local document record for tracking
-    const documentRecord = await prisma.notarizationDocument.create({
+    const documentRecord = await prisma.NotarizationDocument.create({
       data: {
         id: `proof_doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         s3Key: `proof-docs/${booking.proofTransactionId}/${documentName}`,

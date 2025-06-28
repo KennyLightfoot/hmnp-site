@@ -214,7 +214,7 @@ export class TokenManager {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
     
-    await prisma.refreshToken.create({
+    await prisma.RefreshToken.create({
       data: {
         token: refreshToken,
         userId: user.id,

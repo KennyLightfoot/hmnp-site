@@ -50,7 +50,7 @@ export async function POST(
     const s3Key = `ron-documents/${sessionId}/${timestamp}-${sanitizedFilename}`;
 
     // 5. Create NotarizationDocument record
-    const documentRecord = await prisma.notarizationDocument.create({
+    const documentRecord = await prisma.NotarizationDocument.create({
       data: {
         id: `doc_${timestamp}_${Math.random().toString(36).substr(2, 9)}`,
         s3Key: s3Key,

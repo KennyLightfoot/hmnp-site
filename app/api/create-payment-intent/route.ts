@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create Payment record
-    await prisma.payment.create({
+    await prisma.Payment.create({
       data: {
         bookingId: booking.id,
         amount: booking.depositAmount!,

@@ -81,7 +81,7 @@ export class NotificationService {
     method: NotificationMethod,
     recipientIdentifier: string
   ): Promise<boolean> {
-    const existingNotification = await prisma.notificationLog.findFirst({
+    const existingNotification = await prisma.NotificationLog.findFirst({
       where: {
         bookingId,
         notificationType: type,
@@ -188,7 +188,7 @@ export class NotificationService {
     }> = [];
 
     // Get booking to check current status
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: {
         User_Booking_signerIdToUser: true,
@@ -282,7 +282,7 @@ export class NotificationService {
         }
 
         // Log the notification attempt
-        const notificationLog = await prisma.notificationLog.create({
+        const notificationLog = await prisma.NotificationLog.create({
           data: {
             bookingId,
             notificationType: normalizedType,
@@ -352,7 +352,7 @@ export class NotificationService {
         break;
     }
 
-    await prisma.booking.update({
+    await prisma.Booking.update({
       where: { id: bookingId },
       data: updateData
     });
@@ -456,7 +456,7 @@ export class NotificationService {
    * Get notification history for a booking
    */
   static async getNotificationHistory(bookingId: string) {
-    return await prisma.notificationLog.findMany({
+    return await prisma.NotificationLog.findMany({
       where: { bookingId },
       orderBy: { sentAt: 'desc' }
     });
@@ -466,7 +466,7 @@ export class NotificationService {
    * Check if booking needs any pending notifications
    */
   static async checkPendingNotifications(bookingId: string) {
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: {
         User_Booking_signerIdToUser: true,
@@ -521,7 +521,7 @@ export class NotificationService {
   }): Promise<{ success: boolean; error?: string }> {
     try {
       // Get booking to determine recipient
-      const booking = await prisma.booking.findUnique({
+      const booking = await prisma.Booking.findUnique({
         where: { id: options.bookingId },
         include: {
           User_Booking_signerIdToUser: true,
@@ -626,7 +626,7 @@ export class NotificationService {
     amount: number,
     currency: string = 'USD'
   ): Promise<any> {
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: { User_Booking_signerIdToUser: true, Service: true }
     });
@@ -657,7 +657,7 @@ export class NotificationService {
     amount: number,
     currency: string = 'USD'
   ): Promise<any> {
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: { User_Booking_signerIdToUser: true, Service: true }
     });
@@ -684,7 +684,7 @@ export class NotificationService {
   }
 
   async sendPaymentExpiredNotification(bookingId: string): Promise<any> {
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: { User_Booking_signerIdToUser: true, Service: true }
     });
@@ -716,7 +716,7 @@ export class NotificationService {
     currency: string = 'USD',
     reason: string
   ): Promise<any> {
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: { User_Booking_signerIdToUser: true, Service: true }
     });
@@ -747,7 +747,7 @@ export class NotificationService {
     reason: string = 'No reason provided',
     cancelledBy: string = 'SYSTEM'
   ): Promise<any> {
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: { User_Booking_signerIdToUser: true, Service: true }
     });
@@ -777,7 +777,7 @@ export class NotificationService {
     bookingId: string,
     oldDateTime: Date
   ): Promise<any> {
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: { User_Booking_signerIdToUser: true, Service: true }
     });
@@ -804,7 +804,7 @@ export class NotificationService {
   }
 
   async sendAppointmentFollowUp(bookingId: string): Promise<any> {
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: { User_Booking_signerIdToUser: true, Service: true }
     });
@@ -845,7 +845,7 @@ export const NotificationManager = NotificationService;
 
 // Export convenience functions for common notification types
 export const sendBookingConfirmation = async (bookingId: string) => {
-  const booking = await prisma.booking.findUnique({
+  const booking = await prisma.Booking.findUnique({
     where: { id: bookingId },
     include: {
       User_Booking_signerIdToUser: true,
@@ -895,7 +895,7 @@ export const sendAppointmentReminder = async (
   bookingId: string,
   reminderType: '24hr' | '2hr' | '1hr'
 ) => {
-  const booking = await prisma.booking.findUnique({
+  const booking = await prisma.Booking.findUnique({
     where: { id: bookingId },
     include: {
       User_Booking_signerIdToUser: true,

@@ -16,7 +16,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ docId: 
 
   const params = await context.params;
   
-  const doc = await prisma.assignmentDocument.findUnique({
+  const doc = await prisma.AssignmentDocument.findUnique({
     where: { id: params.docId },
     include: { assignment: { select: { partnerAssignedToId: true } } },
   })
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ docId: 
 
   // Audit
   try {
-    await prisma.downloadLog.create({
+    await prisma.DownloadLog.create({
       data: {
         documentId: doc.id,
         userId,

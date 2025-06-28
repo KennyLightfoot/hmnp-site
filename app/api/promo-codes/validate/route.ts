@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const { code, serviceId, price } = validatedData;
 
     // Find the promo code
-    const promoCode = await prisma.promoCode.findUnique({
+    const promoCode = await prisma.PromoCode.findUnique({
       where: { code: code.toUpperCase() },
     });
 

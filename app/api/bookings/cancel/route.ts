@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     let stripeRefundId = null;
     
     // Get payment records for this booking to find payment intent ID
-    const payments = await prisma.payment.findMany({
+    const payments = await prisma.Payment.findMany({
       where: { 
         bookingId: booking.id,
         status: 'COMPLETED',

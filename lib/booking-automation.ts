@@ -18,7 +18,7 @@ export class BookingAutomationService {
     const errors: string[] = [];
 
     try {
-      const booking = await prisma.booking.findUnique({
+      const booking = await prisma.Booking.findUnique({
         where: { id: bookingId },
         include: {
           User_Booking_signerIdToUser: true,
@@ -131,7 +131,7 @@ export class BookingAutomationService {
 
       // Update booking status if needed
       if (shouldUpdate && newStatus !== previousStatus) {
-        await prisma.booking.update({
+        await prisma.Booking.update({
           where: { id: bookingId },
           data: { 
             status: newStatus,
@@ -241,7 +241,7 @@ export class BookingAutomationService {
    */
   private static async sendDayOfServiceNotification(bookingId: string): Promise<void> {
     try {
-      const booking = await prisma.booking.findUnique({
+      const booking = await prisma.Booking.findUnique({
         where: { id: bookingId },
         include: {
           User_Booking_signerIdToUser: true,
@@ -283,7 +283,7 @@ export class BookingAutomationService {
    */
   private static async handleNoShowWorkflow(bookingId: string): Promise<void> {
     try {
-      const booking = await prisma.booking.findUnique({
+      const booking = await prisma.Booking.findUnique({
         where: { id: bookingId },
         include: {
           User_Booking_signerIdToUser: true,
@@ -335,7 +335,7 @@ export class BookingAutomationService {
       console.log(`Post-service workflow initiated for booking ${bookingId}`);
       
       // Mark actual end time if not set
-      await prisma.booking.update({
+      await prisma.Booking.update({
         where: { id: bookingId },
         data: {
           actualEndDateTime: new Date()
@@ -355,7 +355,7 @@ export class BookingAutomationService {
     cancellationType: BookingStatus
   ): Promise<void> {
     try {
-      const booking = await prisma.booking.findUnique({
+      const booking = await prisma.Booking.findUnique({
         where: { id: bookingId },
         include: {
           User_Booking_signerIdToUser: true,
@@ -422,7 +422,7 @@ export class BookingAutomationService {
     error?: string;
   }> {
     try {
-      const booking = await prisma.booking.findUnique({
+      const booking = await prisma.Booking.findUnique({
         where: { id: bookingId }
       });
 
@@ -446,7 +446,7 @@ export class BookingAutomationService {
       }
 
       // Update booking status
-      await prisma.booking.update({
+      await prisma.Booking.update({
         where: { id: bookingId },
         data: {
           status: targetStatus,
@@ -563,7 +563,7 @@ export class BookingAutomationService {
 
     try {
       // Get all active bookings (not archived or completed)
-      const activeBookings = await prisma.booking.findMany({
+      const activeBookings = await prisma.Booking.findMany({
         where: {
           status: {
             notIn: [BookingStatus.ARCHIVED, BookingStatus.COMPLETED]
@@ -610,7 +610,7 @@ export class BookingAutomationService {
     reason: string;
   }> {
     try {
-      const booking = await prisma.booking.findUnique({
+      const booking = await prisma.Booking.findUnique({
         where: { id: bookingId },
         include: {
           Service: true,
@@ -634,7 +634,7 @@ export class BookingAutomationService {
 
       // Auto-complete if current time is past estimated end time
       if (now > estimatedEndTime) {
-        await prisma.booking.update({
+        await prisma.Booking.update({
           where: { id: bookingId },
           data: { 
             status: BookingStatus.COMPLETED,
@@ -673,7 +673,7 @@ export class BookingAutomationService {
     message: string;
   }> {
     try {
-      const booking = await prisma.booking.findUnique({
+      const booking = await prisma.Booking.findUnique({
         where: { id: bookingId },
         include: { Service: true }
       });
@@ -687,7 +687,7 @@ export class BookingAutomationService {
       }
 
       const now = new Date();
-      await prisma.booking.update({
+      await prisma.Booking.update({
         where: { id: bookingId },
         data: { 
           status: BookingStatus.COMPLETED,

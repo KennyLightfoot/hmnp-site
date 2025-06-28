@@ -190,7 +190,7 @@ async function main() {
   ];
 
   for (const setting of businessSettings) {
-    await prisma.businessSettings.upsert({
+    await prisma.BusinessSettings.upsert({
       where: { id: setting.id },
       update: {
         key: setting.key,
@@ -229,7 +229,7 @@ async function main() {
   ];
 
   for (const promo of promoCodes) {
-    await prisma.promoCode.upsert({
+    await prisma.PromoCode.upsert({
       where: { id: promo.id },
       update: {
         code: promo.code,

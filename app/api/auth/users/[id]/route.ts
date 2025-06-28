@@ -245,7 +245,7 @@ export async function DELETE(
             status: { in: ['CONFIRMED', 'PAYMENT_PENDING', 'IN_PROGRESS'] }
           }
         }),
-        prisma.assignment.count({
+        prisma.Assignment.count({
           where: {
             partnerAssignedToId: targetUserId,
             status: { in: ['SCHEDULED', 'IN_PROGRESS'] }

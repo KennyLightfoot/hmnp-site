@@ -177,7 +177,7 @@ export async function GET(request: NextRequest) {
 
 // Helper function to get business settings
 async function getBusinessSettings() {
-  const settings = await prisma.businessSettings.findMany({
+  const settings = await prisma.BusinessSettings.findMany({
     where: { category: 'booking' },
   });
 

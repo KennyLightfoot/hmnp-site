@@ -29,7 +29,7 @@ class PromoCodeService {
   
   async createPromoCode(data: CreatePromoCodeData): Promise<PromoCode> {
     try {
-      return await prisma.promoCode.create({
+      return await prisma.PromoCode.create({
         data: {
           code: data.code.toUpperCase().trim(),
           description: data.description,
@@ -58,7 +58,7 @@ class PromoCodeService {
     customerEmail?: string
   ): Promise<PromoCodeValidationResult> {
     try {
-      const promoCode = await prisma.promoCode.findUnique({
+      const promoCode = await prisma.PromoCode.findUnique({
         where: { 
           code: code.toUpperCase().trim() 
         }
@@ -171,7 +171,7 @@ class PromoCodeService {
   async applyPromoCode(promoCodeId: string, bookingId: string): Promise<void> {
     try {
       // Increment usage count
-      await prisma.promoCode.update({
+      await prisma.PromoCode.update({
         where: { id: promoCodeId },
         data: {
           usageCount: {
@@ -190,7 +190,7 @@ class PromoCodeService {
 
   async getCustomerUsageCount(promoCodeId: string, customerEmail: string): Promise<number> {
     try {
-      const bookings = await prisma.booking.findMany({
+      const bookings = await prisma.Booking.findMany({
         where: {
           promoCodeId,
           User_Booking_signerIdToUser: {
@@ -208,7 +208,7 @@ class PromoCodeService {
 
   async getPromoCodeById(id: string): Promise<PromoCode | null> {
     try {
-      return await prisma.promoCode.findUnique({
+      return await prisma.PromoCode.findUnique({
         where: { id }
       });
     } catch (error) {
@@ -219,7 +219,7 @@ class PromoCodeService {
 
   async getPromoCodeByCode(code: string): Promise<PromoCode | null> {
     try {
-      return await prisma.promoCode.findUnique({
+      return await prisma.PromoCode.findUnique({
         where: { code: code.toUpperCase().trim() }
       });
     } catch (error) {
@@ -252,13 +252,13 @@ class PromoCodeService {
       }
 
       const [promoCodes, totalCount] = await Promise.all([
-        prisma.promoCode.findMany({
+        prisma.PromoCode.findMany({
           where,
           skip,
           take: limit,
           orderBy: { createdAt: 'desc' }
         }),
-        prisma.promoCode.count({ where })
+        prisma.PromoCode.count({ where })
       ]);
 
       return {
@@ -288,7 +288,7 @@ class PromoCodeService {
       if (updates.validUntil !== undefined) updateData.validUntil = updates.validUntil;
       if (updates.applicableServices !== undefined) updateData.applicableServices = updates.applicableServices;
 
-      return await prisma.promoCode.update({
+      return await prisma.PromoCode.update({
         where: { id },
         data: updateData
       });
@@ -300,7 +300,7 @@ class PromoCodeService {
 
   async deactivatePromoCode(id: string): Promise<PromoCode> {
     try {
-      return await prisma.promoCode.update({
+      return await prisma.PromoCode.update({
         where: { id },
         data: { isActive: false }
       });

@@ -51,7 +51,7 @@ export async function POST() {
     }
 
     // Log this health check
-    await prisma.systemLog.create({
+    await prisma.SystemLog.create({
       data: {
         level: 'INFO',
         component: 'HEALTH_CHECK',
@@ -63,7 +63,7 @@ export async function POST() {
 
     // Create alerts for any detected issues
     for (const issue of healthResults.issues) {
-      await prisma.systemAlert.create({
+      await prisma.SystemAlert.create({
         data: {
           component: issue.component,
           message: issue.message,

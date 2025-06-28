@@ -126,7 +126,7 @@ export class BullQueueWorker {
       const { bookingId, action, metadata } = jobData;
       
       // Get the booking details
-      const booking = await prisma.booking.findUnique({
+      const booking = await prisma.Booking.findUnique({
         where: { id: bookingId },
         include: {
           User_Booking_signerIdToUser: true,
@@ -259,7 +259,7 @@ export class BullQueueWorker {
   private async confirmBooking(booking: any): Promise<any> {
     try {
       // Update booking to confirmed status
-      const updatedBooking = await prisma.booking.update({
+      const updatedBooking = await prisma.Booking.update({
         where: { id: booking.id },
         data: { status: BookingStatus.CONFIRMED }
       });
@@ -295,7 +295,7 @@ export class BullQueueWorker {
         BookingStatus.CANCELLED_BY_CLIENT;
       
       // Update booking status
-      const updatedBooking = await prisma.booking.update({
+      const updatedBooking = await prisma.Booking.update({
         where: { id: booking.id },
         data: { 
           status,
@@ -331,7 +331,7 @@ export class BullQueueWorker {
   private async rescheduleBooking(booking: any, newDateTime: Date): Promise<any> {
     try {
       // Update booking with new scheduled time
-      const updatedBooking = await prisma.booking.update({
+      const updatedBooking = await prisma.Booking.update({
         where: { id: booking.id },
         data: { 
           status: BookingStatus.SCHEDULED,
@@ -480,7 +480,7 @@ export class BullQueueWorker {
           
           // Update GHL with payment status
           if (captureResult.success && bookingId) {
-            const booking = await prisma.booking.findUnique({
+            const booking = await prisma.Booking.findUnique({
               where: { id: bookingId },
               include: { User_Booking_signerIdToUser: true }
             });
@@ -503,7 +503,7 @@ export class BullQueueWorker {
           
           // Update GHL with refund status
           if (refundResult.success && bookingId) {
-            const booking = await prisma.booking.findUnique({
+            const booking = await prisma.Booking.findUnique({
               where: { id: bookingId },
               include: { User_Booking_signerIdToUser: true }
             });
@@ -558,7 +558,7 @@ export class BullQueueWorker {
   private async createPayment(bookingId: string, amount?: number, currency?: string, metadata?: Record<string, any>): Promise<any> {
     try {
       // Get booking details first
-      const booking = await prisma.booking.findUnique({
+      const booking = await prisma.Booking.findUnique({
         where: { id: bookingId },
         include: { Service: true }
       });
@@ -576,7 +576,7 @@ export class BullQueueWorker {
       }
       
       // Create payment record
-      const payment = await prisma.payment.create({
+      const payment = await prisma.Payment.create({
         data: {
           bookingId,
           amount: paymentAmount,
@@ -606,7 +606,7 @@ export class BullQueueWorker {
   private async capturePayment(paymentId: string, metadata?: Record<string, any>): Promise<any> {
     try {
       // Get payment details
-      const payment = await prisma.payment.findUnique({
+      const payment = await prisma.Payment.findUnique({
         where: { id: paymentId }
       });
       
@@ -624,7 +624,7 @@ export class BullQueueWorker {
       // Mocked for now
       
       // Update payment record
-      const updatedPayment = await prisma.payment.update({
+      const updatedPayment = await prisma.Payment.update({
         where: { id: paymentId },
         data: {
           status: PaymentStatus.COMPLETED,
@@ -637,13 +637,13 @@ export class BullQueueWorker {
       
       // Update booking status if needed
       if (updatedPayment.bookingId) {
-        const booking = await prisma.booking.findUnique({
+        const booking = await prisma.Booking.findUnique({
           where: { id: updatedPayment.bookingId },
           include: { User_Booking_signerIdToUser: true }
         });
         
         if (booking && (booking.status === BookingStatus.PAYMENT_PENDING || booking.status === BookingStatus.REQUESTED)) {
-          await prisma.booking.update({
+          await prisma.Booking.update({
             where: { id: booking.id },
             data: { status: BookingStatus.CONFIRMED }
           });
@@ -661,7 +661,7 @@ export class BullQueueWorker {
   private async refundPayment(paymentId: string, amount?: number, metadata?: Record<string, any>): Promise<any> {
     try {
       // Get payment details
-      const payment = await prisma.payment.findUnique({
+      const payment = await prisma.Payment.findUnique({
         where: { id: paymentId }
       });
       
@@ -682,7 +682,7 @@ export class BullQueueWorker {
       const refundAmount = amount || Number(payment.amount);
       const reason = metadata?.reason || 'Requested refund';
       
-      const updatedPayment = await prisma.payment.update({
+      const updatedPayment = await prisma.Payment.update({
         where: { id: paymentId },
         data: {
           status: PaymentStatus.REFUNDED,
@@ -712,13 +712,13 @@ export class BullQueueWorker {
       
       // If payment ID provided, look up directly
       if (paymentId) {
-        payment = await prisma.payment.findUnique({
+        payment = await prisma.Payment.findUnique({
           where: { id: paymentId }
         });
       } 
       // Otherwise find latest payment for booking
       else if (bookingId) {
-        const payments = await prisma.payment.findMany({
+        const payments = await prisma.Payment.findMany({
           where: { bookingId },
           orderBy: { createdAt: 'desc' },
           take: 1

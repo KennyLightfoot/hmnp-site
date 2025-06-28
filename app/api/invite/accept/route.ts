@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     }
 
     // 1. Find the invitation token
-    const invitationToken = await prisma.invitationToken.findUnique({
+    const invitationToken = await prisma.InvitationToken.findUnique({
       where: { token },
     });
 
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     // 2. Check if the token has expired
     if (new Date() > new Date(invitationToken.expiresAt)) {
       // Optionally delete the expired token
-      await prisma.invitationToken.delete({ where: { id: invitationToken.id } });
+      await prisma.InvitationToken.delete({ where: { id: invitationToken.id } });
       return NextResponse.json({ error: 'Invitation token has expired' }, { status: 400 });
     }
 

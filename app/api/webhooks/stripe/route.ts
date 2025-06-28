@@ -274,7 +274,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent,
     
     // Update payment status with retry logic
     await EnhancedStripeWebhookProcessor.executeWithDatabaseRetry(async () => {
-      await prisma.payment.updateMany({
+      await prisma.Payment.updateMany({
         where: {
           bookingId: bookingId,
           paymentIntentId: paymentIntent.id,
@@ -372,7 +372,7 @@ async function handleChargeRefunded(charge: Stripe.Charge, eventId: string) {
 
   await EnhancedStripeWebhookProcessor.executeWithDatabaseRetry(async () => {
     // Find booking by payment intent ID stored in notes or through Payment records
-    const payments = await prisma.payment.findMany({
+    const payments = await prisma.Payment.findMany({
       where: {
         paymentIntentId: charge.payment_intent as string,
       },

@@ -127,8 +127,8 @@ export async function fetchAssignmentsAction(params: FetchAssignmentsParams): Pr
       ];
     }
 
-    const countQuery = prisma.assignment.count({ where: whereClause });
-    const dataQuery = prisma.assignment.findMany({
+    const countQuery = prisma.Assignment.count({ where: whereClause });
+    const dataQuery = prisma.Assignment.findMany({
       where: whereClause,
       select: {
         id: true,

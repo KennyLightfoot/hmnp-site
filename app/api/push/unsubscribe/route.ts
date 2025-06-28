@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Remove the subscription from the database
-    await prisma.pushSubscription.deleteMany({
+    await prisma.PushSubscription.deleteMany({
       where: {
         userId: session.user.id,
         endpoint: endpoint

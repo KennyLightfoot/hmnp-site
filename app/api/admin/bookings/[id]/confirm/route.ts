@@ -64,7 +64,7 @@ export async function POST(
     }
 
     // Create a system log entry
-    await prisma.systemLog.create({
+    await prisma.SystemLog.create({
       data: {
         level: 'INFO',
         component: 'BOOKING_MANAGER',

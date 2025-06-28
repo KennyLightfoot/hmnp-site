@@ -47,7 +47,7 @@ export async function getPresignedDownloadUrl(documentId: string): Promise<{ err
 
   try {
     // 1. Fetch the document and its associated assignment
-    const document = await prisma.assignmentDocument.findUnique({
+    const document = await prisma.AssignmentDocument.findUnique({
       where: { id: documentId },
       include: {
         assignment: {
@@ -82,7 +82,7 @@ export async function getPresignedDownloadUrl(documentId: string): Promise<{ err
     });
 
     // TODO: Log the download attempt (optional)
-    // await prisma.downloadLog.create(...);
+    // await prisma.DownloadLog.create(...);
 
     return { url };
 
@@ -129,7 +129,7 @@ export async function getPresignedUploadUrl(
   // and guarantees that the returned presigned post is always linked to a
   // valid record that the current user can access later.
 
-  const assignmentExists = await prisma.assignment.findUnique({
+  const assignmentExists = await prisma.Assignment.findUnique({
     where: { id: assignmentId },
     select: { id: true },
   });
@@ -198,7 +198,7 @@ export async function registerUploadedDocument(
   }
 
   try {
-    const newDocument = await prisma.assignmentDocument.create({
+    const newDocument = await prisma.AssignmentDocument.create({
       data: {
         assignmentId: assignmentId,
         filename: filename,

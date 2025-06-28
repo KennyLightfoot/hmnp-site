@@ -50,7 +50,7 @@ class SettingsService {
     }
 
     try {
-      const setting = await prisma.businessSettings.findUnique({
+      const setting = await prisma.BusinessSettings.findUnique({
         where: { key }
       });
 
@@ -77,7 +77,7 @@ class SettingsService {
     try {
       const stringValue = dataType === 'json' ? JSON.stringify(value) : String(value);
       
-      await prisma.businessSettings.upsert({
+      await prisma.BusinessSettings.upsert({
         where: { key },
         create: {
           key,
@@ -204,12 +204,12 @@ class SettingsService {
     ];
 
     for (const setting of defaultSettings) {
-      const existing = await prisma.businessSettings.findUnique({
+      const existing = await prisma.BusinessSettings.findUnique({
         where: { key: setting.key }
       });
 
       if (!existing) {
-        await prisma.businessSettings.create({
+        await prisma.BusinessSettings.create({
           data: setting
         });
       }
