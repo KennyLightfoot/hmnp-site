@@ -33,14 +33,3 @@ updates:
     allow:
       - dependency-type: "production"
       - dependency-type: "development"
-
-# Auto-merge security and patch updates
-# allow:
-#   - dependency-type: "production"
-#     update-type: "security"
-#   - dependency-type: "development" 
-#     update-type: "security"
-#   - dependency-type: "production"
-#     update-type: "patch"
-#   - dependency-type: "development"
-#     update-type: "patch" 

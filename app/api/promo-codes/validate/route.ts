@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if promo code is active
-    if (!promoCode.active) {
+    if (!promoCode.isActive) {
       return NextResponse.json({
         success: false,
         valid: false,

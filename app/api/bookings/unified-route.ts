@@ -322,7 +322,7 @@ async function validateTimeSlotAvailability(
   const startOfDay = startOfDay(scheduledDateTime);
   const endOfDay = addMinutes(startOfDay, 24 * 60);
   
-  const conflictingBookings = await prisma.booking.findMany({
+  const conflictingBookings = await prisma.Booking.findMany({
     where: {
       scheduledDateTime: {
         gte: startOfDay,
@@ -333,7 +333,7 @@ async function validateTimeSlotAvailability(
       }
     },
     include: {
-      service: {
+      Service: {
         select: { durationMinutes: true }
       }
     }
@@ -344,7 +344,7 @@ async function validateTimeSlotAvailability(
     if (!booking.scheduledDateTime) return false;
     
     const bookingStart = new Date(booking.scheduledDateTime);
-    const bookingEnd = addMinutes(bookingStart, booking.service.durationMinutes + bookingSettings.bufferTimeMinutes);
+    const bookingEnd = addMinutes(bookingStart, booking.Service.durationMinutes + bookingSettings.bufferTimeMinutes);
     const requestedStart = scheduledDateTime;
     const requestedEnd = addMinutes(scheduledDateTime, serviceDuration + bookingSettings.bufferTimeMinutes);
     
@@ -404,7 +404,7 @@ async function createGHLIntegration(
         payment_url: checkoutUrl || '',
         payment_amount: pricingData.finalPrice.toString(),
         service_requested: service.name,
-        service_price: service.price.toString(),
+        service_price: service.basePrice.toString(),
         appointment_date: booking.scheduledDateTime ? 
           new Date(booking.scheduledDateTime).toLocaleDateString('en-US') : '',
         appointment_time: booking.scheduledDateTime ? 
@@ -439,7 +439,7 @@ async function createGHLIntegration(
       await ghl.addTagsToContact(contactId, tags);
       
       // Update booking with GHL contact ID
-      await prisma.booking.update({
+      await prisma.Booking.update({
         where: { id: booking.id },
         data: { ghlContactId: contactId }
       });
@@ -483,10 +483,10 @@ export async function GET(request: NextRequest) {
       }
       
       const [bookings, total] = await Promise.all([
-        prisma.booking.findMany({
+        prisma.Booking.findMany({
           where: whereClause,
           include: {
-            service: true,
+            Service: true,
             promoCode: true,
             User_Booking_signerIdToUser: context.canViewAllBookings ? {
               select: { id: true, name: true, email: true }
@@ -497,7 +497,7 @@ export async function GET(request: NextRequest) {
           skip: (page - 1) * limit,
           take: limit,
         }),
-        prisma.booking.count({ where: whereClause }),
+        prisma.Booking.count({ where: whereClause }),
       ]);
       
       return NextResponse.json({
@@ -598,7 +598,7 @@ export async function POST(request: NextRequest) {
         bookingData.promoCode = { connect: { id: pricingData.promoCodeInfo.id } };
       }
       
-      const booking = await prisma.booking.create({
+      const booking = await prisma.Booking.create({
         data: bookingData,
         include: {
           Service: true,
@@ -658,7 +658,7 @@ export async function POST(request: NextRequest) {
           calendarEvent = await calendarService.createBookingEvent(booking);
           
           if (calendarEvent?.id) {
-            await prisma.booking.update({
+            await prisma.Booking.update({
               where: { id: booking.id },
               data: { googleCalendarEventId: calendarEvent.id }
             });
