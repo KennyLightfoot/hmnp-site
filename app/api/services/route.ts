@@ -98,7 +98,9 @@ export async function GET() {
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to fetch services'
+        error: 'Failed to fetch services',
+        details: error instanceof Error ? error.message : String(error),
+        stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
       },
       { status: 500 }
     );
