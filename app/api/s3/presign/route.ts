@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   if (fileSize && fileSize > MAX_BYTES) {
     return NextResponse.json({ error: "File too large" }, { status: 400 })
   }
-  const exists = await prisma.assignment.count({ where: { id: assignmentId, partnerAssignedToId: session.user.id } })
+  const exists = await prisma.Assignment.count({ where: { id: assignmentId, partnerAssignedToId: session.user.id } })
   if (!exists) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
   const key = `assignments/${assignmentId}/${Date.now()}_${filename}`

@@ -17,7 +17,7 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
     const notificationService = NotificationService.getInstance();
     
     // First verify the booking exists and get current status
-    const booking = await withRetry(() => prisma.booking.findUnique({
+    const booking = await withRetry(() => prisma.Booking.findUnique({
       where: { id: job.bookingId },
       include: {
         User_Booking_signerIdToUser: true,
@@ -37,7 +37,7 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
         
         const updatedBooking = await withRetry(async () => {
           // Update booking status to confirmed
-          const result = await prisma.booking.update({
+          const result = await prisma.Booking.update({
             where: { id: job.bookingId },
             data: { status: 'CONFIRMED' }
           });
@@ -76,7 +76,7 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
         
         const updatedBooking = await withRetry(async () => {
           // Update booking status to cancelled with reason
-          const result = await prisma.booking.update({
+          const result = await prisma.Booking.update({
             where: { id: job.bookingId },
             data: { 
               status: cancellationStatus,
@@ -118,7 +118,7 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
         
         const updatedBooking = await withRetry(async () => {
           // Update booking with new date/time
-          const result = await prisma.booking.update({
+          const result = await prisma.Booking.update({
             where: { id: job.bookingId },
             data: { 
               scheduledDateTime: newDateTime,
@@ -182,7 +182,7 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
         logger.info(`Checking payment status for booking ${job.bookingId}`);
         
         // Check if payment is completed or expired
-        const payment = await prisma.payment.findFirst({
+        const payment = await prisma.Payment.findFirst({
           where: { bookingId: job.bookingId },
           orderBy: { createdAt: 'desc' }
         });
@@ -209,14 +209,14 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
           
           await withRetry(async () => {
             // Update payment status
-            await prisma.payment.update({
+            await prisma.Payment.update({
               where: { id: payment.id },
               data: { status: PaymentStatus.FAILED }
             });
             
             // Update booking status if necessary
             if (booking.status === 'PAYMENT_PENDING') {
-              await prisma.booking.update({
+              await prisma.Booking.update({
                 where: { id: job.bookingId },
                 data: { status: BookingStatus.CANCELLED_BY_CLIENT }
               });

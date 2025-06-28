@@ -27,7 +27,7 @@ export async function POST(
       return NextResponse.json({ error: 'Assignment ID is required' }, { status: 400 });
     }
 
-    const assignment = await prisma.assignment.findUnique({
+    const assignment = await prisma.Assignment.findUnique({
       where: { id: assignmentId },
       select: { allowPartnerComments: true }, // Only select needed field
     });
@@ -58,7 +58,7 @@ export async function POST(
 
 
     // 4. Create Comment
-    const newComment = await prisma.comment.create({
+    const newComment = await prisma.Comment.create({
       data: {
         text: text.trim(),
         assignmentId: assignmentId,

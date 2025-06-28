@@ -47,7 +47,7 @@ export async function authMiddleware(
     
     if (session?.user?.id) {
       // Verify user exists in database and get current role
-      const dbUser = await prisma.user.findUnique({
+      const dbUser = await prisma.User.findUnique({
         where: { id: session.user.id },
         select: {
           id: true,
@@ -98,7 +98,7 @@ export async function authMiddleware(
         const decoded = jwt.verify(token, process.env.JWT_SECRET) as any;
         
         // Verify user exists in database
-        const dbUser = await prisma.user.findUnique({
+        const dbUser = await prisma.User.findUnique({
           where: { id: decoded.id },
           select: {
             id: true,

@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     };
 
     // Fetch journal entries for export
-    const entries = await prisma.notaryJournal.findMany({
+    const entries = await prisma.NotaryJournal.findMany({
       where: whereClause,
       include: {
         booking: {

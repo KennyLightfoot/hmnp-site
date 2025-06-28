@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Store the subscription in the database
-    await prisma.pushSubscription.upsert({
+    await prisma.PushSubscription.upsert({
       where: {
         userId_endpoint: {
           userId: session.user.id,

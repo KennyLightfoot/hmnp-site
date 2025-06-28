@@ -13,12 +13,12 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
   const params = await context.params;
   
   // ownership check
-  const assignment = await prisma.assignment.findFirst({
+  const assignment = await prisma.Assignment.findFirst({
     where: { id: params.id, partnerAssignedToId: session.user.id },
   })
   if (!assignment) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
-  await prisma.assignmentDocument.create({
+  await prisma.AssignmentDocument.create({
     data: {
       assignmentId: params.id,
       key,

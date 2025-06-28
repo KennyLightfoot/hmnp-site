@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     const { email } = resetRequestSchema.parse(body);
 
     // Find user by email
-    const user = await prisma.user.findUnique({
+    const user = await prisma.User.findUnique({
       where: { email: email.toLowerCase() },
       select: { id: true, email: true, name: true }
     });
@@ -162,7 +162,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.User.findUnique({
       where: { id: decoded.userId },
       select: { id: true, email: true }
     });
@@ -178,7 +178,7 @@ export async function PATCH(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(newPassword, 12);
 
     // Update user password
-    await prisma.user.update({
+    await prisma.User.update({
       where: { id: user.id },
       data: { 
         password: hashedPassword,

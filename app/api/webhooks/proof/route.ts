@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Find booking by Proof transaction ID
-    const booking = await prisma.booking.findFirst({
+    const booking = await prisma.Booking.findFirst({
       where: {
         proofTransactionId: event.data.transaction_id
       },
@@ -140,7 +140,7 @@ async function handleTransactionStatusUpdate(
   }
 
   // Update booking
-  const updatedBooking = await prisma.booking.update({
+  const updatedBooking = await prisma.Booking.update({
     where: { id: booking.id },
     data: updateData
   });
@@ -171,7 +171,7 @@ async function handleUserFailedTransaction(
 ) {
   const reason = event.data.details || 'Transaction failed';
   
-  await prisma.booking.update({
+  await prisma.Booking.update({
     where: { id: booking.id },
     data: {
       status: BookingStatus.REQUIRES_ATTENTION,
@@ -211,7 +211,7 @@ async function handleMeetingStarted(
   event: ProofWebhookEvent, 
   booking: any
 ) {
-  await prisma.booking.update({
+  await prisma.Booking.update({
     where: { id: booking.id },
     data: {
       status: BookingStatus.IN_PROGRESS,
@@ -250,7 +250,7 @@ async function handleMeetingEnded(
   booking: any
 ) {
   // Meeting ended - we'll wait for the transaction_status_update to determine final status
-  await prisma.booking.update({
+  await prisma.Booking.update({
     where: { id: booking.id },
     data: {
       proofStatus: 'meeting_ended',

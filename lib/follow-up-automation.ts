@@ -248,7 +248,7 @@ export async function checkTimeBasedFollowUps(): Promise<void> {
   const now = new Date();
   
   // Get bookings that might need follow-ups
-  const bookings = await prisma.booking.findMany({
+  const bookings = await prisma.Booking.findMany({
     where: {
       status: {
         in: [BookingStatus.PAYMENT_PENDING, BookingStatus.CONFIRMED]
@@ -388,7 +388,7 @@ export async function processScheduledFollowUps(): Promise<void> {
  * Execute a follow-up action
  */
 async function executeFollowUpAction(followUp: ScheduledFollowUp): Promise<void> {
-  const booking = await prisma.booking.findUnique({
+  const booking = await prisma.Booking.findUnique({
     where: { id: followUp.bookingId },
     include: {
       Service: true,

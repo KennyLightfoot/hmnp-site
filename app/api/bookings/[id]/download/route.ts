@@ -21,7 +21,7 @@ export async function GET(
     const bookingId = params.id
 
     // Get the booking with related data
-    const booking = await prisma.booking.findFirst({
+    const booking = await prisma.Booking.findFirst({
       where: {
         id: bookingId,
         signerId: session.user.id // Ensure user owns the booking

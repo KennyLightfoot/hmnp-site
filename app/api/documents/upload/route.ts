@@ -75,7 +75,7 @@ export async function POST(request: Request) {
 
     // 6. Additional authorization checks for specific categories
     if (validatedInput.category === 'ron-documents' && validatedInput.sessionId) {
-      const ronBooking = await prisma.booking.findUnique({
+      const ronBooking = await prisma.Booking.findUnique({
         where: { 
           id: validatedInput.sessionId,
           locationType: 'REMOTE_ONLINE_NOTARIZATION'
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
     );
 
     // 8. Create document record in database
-    const documentRecord = await prisma.document.create({
+    const documentRecord = await prisma.Document.create({
       data: {
         id: `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         s3Key: s3Key,
@@ -216,7 +216,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const document = await prisma.document.findUnique({
+    const document = await prisma.Document.findUnique({
       where: { id: documentId },
       include: {
         uploadedBy: {
@@ -241,7 +241,7 @@ export async function GET(request: Request) {
 
     // Update scan status in database if changed
     if (virusScanResult.scanStatus !== document.scanStatus) {
-      await prisma.document.update({
+      await prisma.Document.update({
         where: { id: documentId },
         data: { 
           scanStatus: virusScanResult.scanStatus,

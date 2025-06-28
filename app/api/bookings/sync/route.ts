@@ -147,13 +147,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user exists, create if needed
-    let user = await prisma.user.findFirst({
+    let user = await prisma.User.findFirst({
       where: { email: validatedData.customerEmail }
     });
 
     if (!user) {
       console.log('Creating new user for phone booking');
-      user = await prisma.user.create({
+      user = await prisma.User.create({
         data: {
           email: validatedData.customerEmail,
           name: validatedData.customerName,
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
     ].filter(Boolean).join(', ') || 'Address to be confirmed';
 
     // Create booking
-    const newBooking = await prisma.booking.create({
+    const newBooking = await prisma.Booking.create({
       data: {
         signerId: user.id,
         serviceId: service.id,
@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
       paymentUrl = `${process.env.NEXTAUTH_URL}/checkout/${newBooking.id}`;
       
       // Note: Payment URL can be stored in notes or handled separately
-      await prisma.booking.update({
+      await prisma.Booking.update({
         where: { id: newBooking.id },
         data: { 
           notes: newBooking.notes ? `${newBooking.notes}\nPayment URL: ${paymentUrl}` : `Payment URL: ${paymentUrl}`

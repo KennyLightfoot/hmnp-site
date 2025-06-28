@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch mobile bookings
-    const bookings = await prisma.booking.findMany({
+    const bookings = await prisma.Booking.findMany({
       where: whereClause,
       include: {
         Service: {

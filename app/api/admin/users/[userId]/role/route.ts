@@ -43,7 +43,7 @@ export async function PUT(
 
   // 3. Update User Role in Database
   try {
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await prisma.User.update({
       where: {
         id: userId,
       },

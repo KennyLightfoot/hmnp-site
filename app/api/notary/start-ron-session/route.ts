@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find the booking
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: {
         Service: true,
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update booking to in progress
-    const updatedBooking = await prisma.booking.update({
+    const updatedBooking = await prisma.Booking.update({
       where: { id: bookingId },
       data: {
         status: BookingStatus.IN_PROGRESS,

@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       // allowPartnerComments defaults based on schema if not provided
     };
 
-    const newAssignment = await prisma.assignment.create({
+    const newAssignment = await prisma.Assignment.create({
       data: createData,
        select: { // Return basic info of the created assignment
         id: true,

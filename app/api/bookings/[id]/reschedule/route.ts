@@ -38,7 +38,7 @@ export async function POST(
     }
 
     // Get booking details for fee calculation
-    const existingBooking = await prisma.booking.findUnique({
+    const existingBooking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: {
         Service: true,
@@ -80,7 +80,7 @@ export async function POST(
     }
 
     // Get updated booking for response
-    const updatedBooking = await prisma.booking.findUnique({
+    const updatedBooking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: {
         Service: true,
@@ -217,7 +217,7 @@ export async function GET(
     const proposedDateTime = searchParams.get('dateTime')
     
     // Find the booking
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: { Service: true, User_Booking_signerIdToUser: true }
     })
@@ -256,7 +256,7 @@ export async function GET(
       }
 
       // Check for conflicts with other bookings
-      const conflictingBooking = await prisma.booking.findFirst({
+      const conflictingBooking = await prisma.Booking.findFirst({
         where: {
           scheduledDateTime: proposedTime,
           status: {

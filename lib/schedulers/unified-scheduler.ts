@@ -266,7 +266,7 @@ export class UnifiedScheduler {
     const twoHoursLater = addHours(now, 2);
     const oneHourLater = addHours(now, 1);
     
-    const bookings = await prisma.booking.findMany({
+    const bookings = await prisma.Booking.findMany({
       where: {
         scheduledDateTime: {
           gte: oneHourLater,
@@ -305,7 +305,7 @@ export class UnifiedScheduler {
     const tomorrowMin = addHours(now, 23);
     const tomorrowMax = addHours(now, 25);
     
-    const bookings = await prisma.booking.findMany({
+    const bookings = await prisma.Booking.findMany({
       where: {
         scheduledDateTime: {
           gte: tomorrowMin,
@@ -337,7 +337,7 @@ export class UnifiedScheduler {
     const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000);
     const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
     
-    const potentialNoShows = await prisma.booking.findMany({
+    const potentialNoShows = await prisma.Booking.findMany({
       where: {
         scheduledDateTime: {
           gte: twoHoursAgo,
@@ -371,7 +371,7 @@ export class UnifiedScheduler {
         });
       }
       
-      await prisma.booking.update({
+      await prisma.Booking.update({
         where: { id: booking.id },
         data: { noShowCheckPerformedAt: now }
       });
@@ -384,7 +384,7 @@ export class UnifiedScheduler {
   private async handlePaymentExpirations(): Promise<void> {
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
     
-    const expiredPayments = await prisma.payment.findMany({
+    const expiredPayments = await prisma.Payment.findMany({
       where: {
         status: 'PENDING',
         createdAt: {
@@ -415,7 +415,7 @@ export class UnifiedScheduler {
    * Handle payment status updates
    */
   private async handlePaymentStatusUpdates(): Promise<void> {
-    const payments = await prisma.payment.findMany({
+    const payments = await prisma.Payment.findMany({
       where: {
         status: {
           in: ['PENDING', 'FAILED']
@@ -451,7 +451,7 @@ export class UnifiedScheduler {
     const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
     
-    const needFollowUp = await prisma.booking.findMany({
+    const needFollowUp = await prisma.Booking.findMany({
       where: {
         status: BookingStatus.COMPLETED,
         scheduledDateTime: {
@@ -485,7 +485,7 @@ export class UnifiedScheduler {
         });
       }
       
-      await prisma.booking.update({
+      await prisma.Booking.update({
         where: { id: booking.id },
         data: { followUpSentAt: now }
       });
@@ -507,7 +507,7 @@ export class UnifiedScheduler {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
     
-    const bookingsNeedingReminders = await prisma.booking.findMany({
+    const bookingsNeedingReminders = await prisma.Booking.findMany({
       where: {
         status: 'AWAITING_CLIENT_ACTION',
         createdAt: {

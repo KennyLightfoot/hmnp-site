@@ -54,7 +54,7 @@ export async function PUT(
         // allowPartnerComments defaults based on schema if not provided
       };
 
-      const updatedAssignment = await prisma.assignment.update({
+      const updatedAssignment = await prisma.Assignment.update({
         where: {
           id: assignmentId,
         },

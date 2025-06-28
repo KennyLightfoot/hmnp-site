@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     }
 
     // 1. Find the invitation token
-    const invitationToken = await prisma.invitationToken.findUnique({
+    const invitationToken = await prisma.InvitationToken.findUnique({
       where: { token },
     });
 
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     // 2. Check if the token has expired
     if (new Date() > new Date(invitationToken.expiresAt)) {
       // Optionally delete the expired token
-      await prisma.invitationToken.delete({ where: { id: invitationToken.id } });
+      await prisma.InvitationToken.delete({ where: { id: invitationToken.id } });
       return NextResponse.json({ error: 'Invitation token has expired' }, { status: 400 });
     }
 
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
 
     // 5. Update the user's password and mark email as verified in a transaction
     await prisma.$transaction(async (tx) => {
-      await tx.user.update({
+      await tx.User.update({
         where: { id: invitationToken.userId! }, // userId is checked above
         data: {
           password: hashedPassword,

@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch pending payment bookings
-    const bookings = await prisma.booking.findMany({
+    const bookings = await prisma.Booking.findMany({
       where,
       take: limit,
       orderBy: {
@@ -221,7 +221,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Update booking with reminder tracking
-    const booking = await prisma.booking.update({
+    const booking = await prisma.Booking.update({
       where: { id: bookingId },
       data: {
         notes: notes || `${reminderType} reminder sent via ${action}`,

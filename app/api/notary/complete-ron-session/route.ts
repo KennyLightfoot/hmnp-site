@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the booking with related data
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: {
         Service: true,
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     // Start transaction to ensure consistency
     const result = await prisma.$transaction(async (tx) => {
       // Update booking to completed
-      const updatedBooking = await tx.booking.update({
+      const updatedBooking = await tx.Booking.update({
         where: { id: bookingId },
         data: {
           status: BookingStatus.COMPLETED,
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       });
 
       // Get the next journal number for this notary
-      const lastEntry = await tx.notaryJournal.findFirst({
+      const lastEntry = await tx.NotaryJournal.findFirst({
         where: { notaryId },
         orderBy: { journalNumber: 'desc' },
       });
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       const nextJournalNumber = (lastEntry?.journalNumber || 0) + 1;
 
       // Create journal entry
-      const journalEntry = await tx.notaryJournal.create({
+      const journalEntry = await tx.NotaryJournal.create({
         data: {
           bookingId: booking.id,
           notaryId,

@@ -55,7 +55,7 @@ export async function updateBookingStatus(
 
   try {
     // Get current booking
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: {
         Service: true,
@@ -83,7 +83,7 @@ export async function updateBookingStatus(
     }
 
     // Update booking in database
-    const updatedBooking = await prisma.booking.update({
+    const updatedBooking = await prisma.Booking.update({
       where: { id: bookingId },
       data: {
         status: newStatus,
@@ -222,7 +222,7 @@ export async function fullSyncBookingWithGHL(bookingId: string): Promise<Booking
   };
 
   try {
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: {
         Service: true,
@@ -357,7 +357,7 @@ export async function processSyncQueue(): Promise<void> {
           await fullSyncBookingWithGHL(job.bookingId);
           break;
         case 'CUSTOM_FIELDS':
-          const booking = await prisma.booking.findUnique({
+          const booking = await prisma.Booking.findUnique({
             where: { id: job.bookingId }
           });
           if (booking?.ghlContactId) {
@@ -365,7 +365,7 @@ export async function processSyncQueue(): Promise<void> {
           }
           break;
         case 'TAGS':
-          const bookingForTags = await prisma.booking.findUnique({
+          const bookingForTags = await prisma.Booking.findUnique({
             where: { id: job.bookingId }
           });
           if (bookingForTags?.ghlContactId) {
@@ -420,7 +420,7 @@ export async function syncAllBookingsFromGHL(): Promise<{ synced: number; errors
 
   try {
     // Get all active bookings with GHL contact IDs
-    const bookings = await prisma.booking.findMany({
+    const bookings = await prisma.Booking.findMany({
       where: {
         ghlContactId: { not: null },
         status: {

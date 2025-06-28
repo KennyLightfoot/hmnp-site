@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch RON bookings
-    const bookings = await prisma.booking.findMany({
+    const bookings = await prisma.Booking.findMany({
       where: whereClause,
       include: {
         Service: {

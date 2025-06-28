@@ -20,7 +20,7 @@ export async function POST(
 
   try {
     // 2. Validate RON Booking and User
-    const ronBooking = await prisma.booking.findUnique({
+    const ronBooking = await prisma.Booking.findUnique({
       where: { 
         id: sessionId,
         locationType: LocationType.REMOTE_ONLINE_NOTARIZATION
@@ -36,7 +36,7 @@ export async function POST(
     }
 
     // 3. Validate Document
-    const documentRecord = await prisma.notarizationDocument.findUnique({
+    const documentRecord = await prisma.NotarizationDocument.findUnique({
       where: { id: documentId },
     });
 
@@ -53,7 +53,7 @@ export async function POST(
     // 4. Update Document Record (e.g., mark as confirmed)
     // For now, we'll just update the 'updatedAt' timestamp as a proxy for confirmation.
     // In a real scenario, you might add a specific status field or check S3.
-    const updatedDocument = await prisma.notarizationDocument.update({
+    const updatedDocument = await prisma.NotarizationDocument.update({
       where: { id: documentId },
       data: {
         updatedAt: new Date(), // Simulate confirmation by updating timestamp
@@ -75,7 +75,7 @@ export async function POST(
       );
 
       if(allBookingDocsConfirmed && ronBooking.NotarizationDocument.length > 0) {
-        await prisma.booking.update({
+        await prisma.Booking.update({
             where: { id: sessionId },
             data: { status: BookingStatus.READY_FOR_SERVICE }, // Maps from DOCUMENTS_UPLOADED
         });

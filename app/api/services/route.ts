@@ -4,6 +4,13 @@ import { mapPrismaToFrontend, getServiceDisplayName } from '@/lib/types/service-
 
 export async function GET() {
   try {
+    // Test basic database connectivity first
+    await prisma.$queryRaw`SELECT 1`;
+    
+    // Get total service count first
+    const totalServices = await prisma.Service.count();
+    const activeServices = await prisma.Service.count({ where: { isActive: true } });
+    
     // Get all active services ordered by name
     const services = await prisma.Service.findMany({
       where: { 
@@ -28,6 +35,19 @@ export async function GET() {
         updatedAt: true,
       },
     });
+
+    // Early return if no services found
+    if (services.length === 0) {
+      return NextResponse.json({
+        success: true,
+        services: { all: [], byType: {}, typeLabels: {} },
+        meta: { 
+          totalServices: 0, 
+          serviceTypes: [],
+          debug: { totalServices, activeServices, message: 'No active services found' }
+        },
+      });
+    }
 
     // Group services by type for better organization
     const servicesByType = services.reduce((acc, service) => {
@@ -98,7 +118,9 @@ export async function GET() {
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to fetch services'
+        error: 'Failed to fetch services',
+        details: error instanceof Error ? error.message : String(error),
+        stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
       },
       { status: 500 }
     );

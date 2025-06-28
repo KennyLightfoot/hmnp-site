@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     const windowEnd = new Date(targetTime.getTime() + (2 * 60 * 60 * 1000)); // 2 hours after target
 
     // Find completed bookings from ~24 hours ago
-    const completedBookings = await prisma.booking.findMany({
+    const completedBookings = await prisma.Booking.findMany({
       where: {
         status: BookingStatus.COMPLETED,
         // Use actualEndDateTime if available, otherwise fall back to scheduledDateTime

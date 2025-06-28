@@ -19,7 +19,7 @@ export async function POST() {
     // to start all workers. Here we'll simulate that action.
     
     // Log this action
-    await prisma.systemLog.create({
+    await prisma.SystemLog.create({
       data: {
         level: 'INFO',
         component: 'WORKER_MANAGER',

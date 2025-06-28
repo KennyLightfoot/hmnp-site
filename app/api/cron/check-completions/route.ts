@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     console.log('Running auto-completion check...');
 
     // Find all bookings that are IN_PROGRESS
-    const inProgressBookings = await prisma.booking.findMany({
+    const inProgressBookings = await prisma.Booking.findMany({
       where: {
         status: BookingStatus.IN_PROGRESS,
         scheduledDateTime: {

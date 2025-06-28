@@ -440,7 +440,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
       // This would typically come from analytics or session tracking
       
       // For now, we'll check for bookings that were started but not completed
-      const incompleteBookings = await prisma.booking.findMany({
+      const incompleteBookings = await prisma.Booking.findMany({
         where: {
           status: BookingStatus.REQUESTED,
           createdAt: {
@@ -520,7 +520,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
   private async processInactiveClients(): Promise<void> {
     try {
       // Find clients with completed bookings but no recent activity
-      const inactiveClients = await prisma.booking.findMany({
+      const inactiveClients = await prisma.Booking.findMany({
         where: {
           status: BookingStatus.COMPLETED,
           updatedAt: {
@@ -542,7 +542,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
         }
 
         // Check for more recent bookings
-        const recentBooking = await prisma.booking.findFirst({
+        const recentBooking = await prisma.Booking.findFirst({
           where: {
             signerId: booking.signerId,
             createdAt: {
@@ -584,7 +584,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
       // Create enrollment record (you'd need to add this table to your schema)
       // For now, we'll track in NotificationLog with special type
       
-      await prisma.notificationLog.create({
+      await prisma.NotificationLog.create({
         data: {
           bookingId: metadata.bookingId || 'nurture-sequence',
           notificationType: NotificationType.LEAD_NURTURING,
@@ -769,7 +769,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
   private async findEnrollment(email: string, sequenceId: string): Promise<any> {
     // This would query your enrollment table
     // For now, check NotificationLog
-    return await prisma.notificationLog.findFirst({
+    return await prisma.NotificationLog.findFirst({
       where: {
         recipientEmail: email,
         notificationType: NotificationType.LEAD_NURTURING,
@@ -784,7 +784,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
   private async getActiveEnrollments(): Promise<any[]> {
     // This would query your enrollment table
     // For now, simulate with NotificationLog entries
-    const enrollments = await prisma.notificationLog.findMany({
+    const enrollments = await prisma.NotificationLog.findMany({
       where: {
         notificationType: NotificationType.LEAD_NURTURING,
         message: { startsWith: 'Enrolled in sequence:' }
@@ -807,7 +807,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
     // Check each exit condition
     for (const condition of sequence.exitConditions) {
       if (condition.type === 'BOOKING_COMPLETED') {
-        const booking = await prisma.booking.findFirst({
+        const booking = await prisma.Booking.findFirst({
           where: {
             User_Booking_signerIdToUser: {
               email: enrollment.contactEmail
@@ -832,7 +832,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
 
   private async exitEnrollment(enrollment: any, reason: string): Promise<void> {
     // Update enrollment status
-    await prisma.notificationLog.update({
+    await prisma.NotificationLog.update({
       where: { id: enrollment.id },
       data: {
         metadata: {
@@ -854,7 +854,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
 
   private async completeEnrollment(enrollment: any): Promise<void> {
     // Mark as completed
-    await prisma.notificationLog.update({
+    await prisma.NotificationLog.update({
       where: { id: enrollment.id },
       data: {
         metadata: {
@@ -874,7 +874,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
   }
 
   private async updateEnrollmentStep(enrollment: any, stepNumber: number): Promise<void> {
-    await prisma.notificationLog.update({
+    await prisma.NotificationLog.update({
       where: { id: enrollment.id },
       data: {
         metadata: {

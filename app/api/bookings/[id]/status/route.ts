@@ -58,7 +58,7 @@ export async function GET(
     const { id: bookingId } = params;
 
     // Get current booking status and details
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.Booking.findUnique({
       where: { id: bookingId },
       include: {
         User_Booking_signerIdToUser: {
