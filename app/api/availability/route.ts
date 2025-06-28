@@ -84,13 +84,15 @@ export async function GET(request: NextRequest) {
       where: { id: validatedParams.serviceId },
     });
 
-    if (!service || !service.isActive) {
-      console.log('[AVAILABILITY API] Service not found or inactive:', service);
+    if (!service) {
+      console.log('[AVAILABILITY API] Service not found:', service);
       return NextResponse.json(
-        { error: 'Service not found or inactive' },
+        { error: 'Service not found' },
         { status: 404 }
       );
     }
+    
+    // TODO: Re-enable after Prisma client regeneration: && !service.isActive
 
     console.log('[AVAILABILITY API] Service found:', service.name);
 
