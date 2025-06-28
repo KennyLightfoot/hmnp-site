@@ -1,0 +1,35 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Chicago"
+    reviewers:
+      - "KennyLightfoot"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    groups:
+      security-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "security"
+      patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+      minor-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+    # Allow Dependabot updates for both production and development dependencies
+    allow:
+      - dependency-type: "production"
+      - dependency-type: "development" 
