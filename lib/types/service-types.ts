@@ -8,9 +8,9 @@ import { ServiceType as PrismaServiceType } from '@prisma/client';
 
 // Frontend service type (SOP COMPLIANT - ONLY APPROVED TYPES)
 export type FrontendServiceType = 
-  | "standard-notary"        // Was "essential" - SOP COMPLIANT
-  | "extended-hours-notary"  // Was "priority" - SOP COMPLIANT
-  | "loan-signing-specialist" // Was "loan-signing" - SOP COMPLIANT
+  | "standard-notary"        // Was "standard-notary" - SOP COMPLIANT
+  | "extended-hours-notary"  // Was "extended-hours-notary" - SOP COMPLIANT
+  | "loan-signing-specialist" // Was "loan-signing-specialist" - SOP COMPLIANT
   | "specialty-notary-service" // Was "specialty" - SOP COMPLIANT
   | "business-solutions"
   | "support-service";

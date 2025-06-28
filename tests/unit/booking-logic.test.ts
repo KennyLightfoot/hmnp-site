@@ -500,7 +500,7 @@ describe('Booking Edge Cases', () => {
 const mockService = {
   id: 'service-1',
   name: 'Standard Notary Services',  // SOP: was likely 'Essential Service'
-  serviceType: 'standard-notary',     // SOP: was likely 'essential'
+  serviceType: 'standard-notary',     // SOP: was likely "standard-notary"
   price: 75.00,
   isActive: true,
 };

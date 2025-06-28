@@ -312,7 +312,7 @@ if (!isInServiceArea) {
 return {
   routing: {
     workflow: routeToWorkflow,
-    priority: priority,
+    priority: "extended-hours-notary",
     assignTo: primaryService === 'LOAN_SIGNING' ? 'loan_team' : 'general_team'
   },
   analysis: {

@@ -52,6 +52,34 @@ const nextConfig = {
     return config;
   },
   
+  // SOP Compliance redirects for forbidden service types
+  redirects: async () => {
+    // Define redirects inline to avoid import issues
+    return [
+      // Essential → Standard Notary
+      { source: '/services/essential', destination: '/services/standard-notary', permanent: true },
+      { source: '/services/essential/:path*', destination: '/services/standard-notary/:path*', permanent: true },
+      
+      // Priority → Extended Hours Notary  
+      { source: '/services/priority', destination: '/services/extended-hours-notary', permanent: true },
+      { source: '/services/priority/:path*', destination: '/services/extended-hours-notary/:path*', permanent: true },
+      
+      // Basic → Standard Notary
+      { source: '/services/basic', destination: '/services/standard-notary', permanent: true },
+      { source: '/services/basic/:path*', destination: '/services/standard-notary/:path*', permanent: true },
+      
+      // Premium → Specialty Notary Service
+      { source: '/services/premium', destination: '/services/specialty-notary-service', permanent: true },
+      { source: '/services/premium/:path*', destination: '/services/specialty-notary-service/:path*', permanent: true },
+      
+      // Legacy API redirects
+      { source: '/api/calendar/essential/:path*', destination: '/api/calendar/standard-notary/:path*', permanent: true },
+      { source: '/api/calendar/priority/:path*', destination: '/api/calendar/extended-hours-notary/:path*', permanent: true },
+      { source: '/api/calendar/basic/:path*', destination: '/api/calendar/standard-notary/:path*', permanent: true },
+      { source: '/api/calendar/premium/:path*', destination: '/api/calendar/specialty-notary-service/:path*', permanent: true },
+    ]
+  },
+  
   headers: async () => {
     return [
       {

@@ -94,7 +94,7 @@ export async function POST(request: Request) {
 
     // Calculate appointment duration based on service type and number of signers
     let duration = 30 // Default duration
-    if (calendarId === "loan-signing" || calendarId === "reverse-mortgage") {
+    if (calendarId === "loan-signing-specialist" || calendarId === "reverse-mortgage") {
       duration = 90 // Loan signings take longer
     } else if (serviceType === 'extended-hours-notary') {
         duration = 60;

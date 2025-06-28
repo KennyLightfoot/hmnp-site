@@ -94,7 +94,7 @@ export default function GoogleLoanSigningLandingPage() {
                   Get Started Now
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </a>
-                <Link href="/services/loan-signing" className="border-2 border-white text-white hover:bg-white hover:text-[#002147] px-8 py-4 rounded-lg font-semibold text-center transition-colors">
+                <Link href="/services/loan-signing-specialist" className="border-2 border-white text-white hover:bg-white hover:text-[#002147] px-8 py-4 rounded-lg font-semibold text-center transition-colors">
                   Learn More About Our Service
                 </Link>
               </div>
@@ -275,7 +275,7 @@ export default function GoogleLoanSigningLandingPage() {
             <Link href="/contact" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white px-8 py-3 rounded-lg font-semibold transition-colors">
               Contact Us
             </Link>
-            <Link href="/services/loan-signing" className="border-2 border-white text-white hover:bg-white hover:text-[#002147] px-8 py-3 rounded-lg font-semibold transition-colors">
+            <Link href="/services/loan-signing-specialist" className="border-2 border-white text-white hover:bg-white hover:text-[#002147] px-8 py-3 rounded-lg font-semibold transition-colors">
               View All Services
             </Link>
           </div>

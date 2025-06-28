@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/db';
 import { BookingStatus } from '@prisma/client';
 import * as ghl from '@/lib/ghl';
 import { getStripeClient, verifyStripeWebhook } from '@/lib/stripe';
-import { WebhookProcessor } from '@/lib/webhook-processor';
+import { EnhancedStripeWebhookProcessor } from '@/lib/webhooks/stripe-enhanced';
+import { Logger } from '@/lib/logger';
 import type Stripe from 'stripe';
+
+const logger = new Logger('StripeWebhookAPI');
 
 // Get Stripe client instance
 const stripe = getStripeClient();
@@ -19,11 +22,11 @@ if (!endpointSecret) {
 }
 
 export async function POST(request: NextRequest) {
-  console.log('🎯 Stripe webhook received');
+  logger.info('Stripe webhook received');
   
   // Check if Stripe is configured
   if (!stripe) {
-    console.error('❌ Stripe not configured');
+    logger.error('Stripe not configured');
     return NextResponse.json(
       { error: 'Stripe not configured' },
       { status: 500 }
@@ -32,7 +35,7 @@ export async function POST(request: NextRequest) {
 
   // Check if webhook secret is configured
   if (!endpointSecret) {
-    console.error('❌ Stripe webhook secret not configured');
+    logger.error('Stripe webhook secret not configured');
     return NextResponse.json(
       { error: 'Webhook configuration error' },
       { status: 500 }
@@ -48,7 +51,7 @@ export async function POST(request: NextRequest) {
     const sig = headersList.get('stripe-signature');
     
     if (!sig) {
-      console.error('❌ No stripe-signature header found');
+      logger.error('No stripe-signature header found');
       return NextResponse.json(
         { error: 'No signature header' },
         { status: 400 }
@@ -60,67 +63,90 @@ export async function POST(request: NextRequest) {
     try {
       event = verifyStripeWebhook(body, sig, endpointSecret);
     } catch (err: any) {
-      console.error('❌ Webhook signature verification failed:', err.message);
+      logger.error('Webhook signature verification failed', { error: err.message });
       return NextResponse.json(
         { error: `Webhook Error: ${err.message}` },
         { status: 400 }
       );
     }
 
-    console.log(`✅ Webhook verified. Event type: ${event.type}`);
+    // Validate event data
+    const validation = EnhancedStripeWebhookProcessor.validateEventData(event);
+    if (!validation.valid) {
+      logger.error('Invalid webhook event data', { errors: validation.errors });
+      return NextResponse.json(
+        { error: 'Invalid event data', details: validation.errors },
+        { status: 400 }
+      );
+    }
 
-    // Process event with idempotency and race condition protection
-    let result: { success: boolean; skipped: boolean; error?: string };
+    logger.info('Webhook verified', { eventType: event.type, eventId: event.id });
+
+    // Process event with enhanced error handling and retry logic
+    let result;
 
     switch (event.type) {
       case 'checkout.session.completed':
-        result = await WebhookProcessor.processEvent<Stripe.Checkout.Session>(
+        result = await EnhancedStripeWebhookProcessor.processWebhook(
           event,
           handleCheckoutSessionCompleted
         );
         break;
       
       case 'payment_intent.succeeded':
-        result = await WebhookProcessor.processEvent<Stripe.PaymentIntent>(
+        result = await EnhancedStripeWebhookProcessor.processWebhook(
           event,
           handlePaymentIntentSucceeded
         );
         break;
       
       case 'payment_intent.payment_failed':
-        result = await WebhookProcessor.processEvent<Stripe.PaymentIntent>(
+        result = await EnhancedStripeWebhookProcessor.processWebhook(
           event,
           handlePaymentIntentFailed
         );
         break;
       
       case 'charge.refunded':
-        result = await WebhookProcessor.processEvent<Stripe.Charge>(
+        result = await EnhancedStripeWebhookProcessor.processWebhook(
           event,
           handleChargeRefunded
         );
         break;
       
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        logger.info('Unhandled event type', { eventType: event.type });
         return NextResponse.json({ received: true });
     }
 
     if (!result.success) {
-      console.error(`❌ Failed to process webhook: ${result.error}`);
+      logger.error('Failed to process webhook', { 
+        error: result.error,
+        eventId: result.eventId,
+        retryCount: result.retryCount 
+      });
       return NextResponse.json(
-        { error: result.error || 'Webhook processing failed' },
+        { 
+          error: result.error || 'Webhook processing failed',
+          eventId: result.eventId,
+          retryCount: result.retryCount 
+        },
         { status: 500 }
       );
     }
 
     if (result.skipped) {
-      console.log(`⏭️ Webhook processing skipped (already processed or concurrent processing)`);
+      logger.info('Webhook processing skipped (already processed)', { eventId: result.eventId });
     }
 
-    return NextResponse.json({ received: true });
+    return NextResponse.json({ 
+      received: true, 
+      eventId: result.eventId,
+      processed: result.processed,
+      processingTimeMs: result.processingTimeMs
+    });
   } catch (error) {
-    console.error('❌ Webhook processing error:', error);
+    logger.error('Webhook processing error', { error });
     return NextResponse.json(
       { error: 'Webhook processing failed' },
       { status: 500 }
@@ -129,22 +155,23 @@ export async function POST(request: NextRequest) {
 }
 
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, eventId: string) {
-  console.log(`💳 Processing checkout.session.completed for event ${eventId}`);
+  logger.info('Processing checkout.session.completed', { eventId, sessionId: session.id });
   
   // Get booking ID from metadata
   const bookingId = session.metadata?.bookingId;
   
   if (!bookingId) {
-    console.error(`❌ No bookingId in session metadata for event ${eventId}`);
+    logger.error('No bookingId in session metadata', { eventId, sessionId: session.id });
     throw new Error('No bookingId in session metadata');
   }
 
-  // Use transaction to ensure data consistency
-  await prisma.$transaction(async (tx) => {
-    // Get booking with current status check
-    const existingBooking = await tx.booking.findUnique({
-      where: { id: bookingId },
-      include: {
+  // Use enhanced database transaction with retry logic
+  await EnhancedStripeWebhookProcessor.executeWithDatabaseRetry(async () => {
+    await prisma.$transaction(async (tx) => {
+      // Get booking with current status check
+      const existingBooking = await tx.booking.findUnique({
+        where: { id: bookingId },
+        include: {
         Service: true,
         User_Booking_signerIdToUser: true,
         Payment: {
@@ -228,13 +255,14 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
         // Log but don't fail the transaction - booking confirmation is more critical
       }
     }
+    });
   });
 
-  console.log(`🔔 Payment confirmed for booking ${bookingId} via event ${eventId}`);
+  logger.info('Payment confirmed for booking', { bookingId, eventId });
 }
 
 async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent, eventId: string) {
-  console.log('💳 Processing payment_intent.succeeded');
+  logger.info('Processing payment_intent.succeeded', { eventId, paymentIntentId: paymentIntent.id });
   
   // This might be triggered for various payment scenarios
   // Check if we have a booking ID in metadata
@@ -242,21 +270,37 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent,
   
   if (bookingId) {
     // Similar logic to checkout session completed
-    console.log(`✅ Payment intent succeeded for booking ${bookingId}`);
+    logger.info('Payment intent succeeded for booking', { bookingId, eventId });
+    
+    // Update payment status with retry logic
+    await EnhancedStripeWebhookProcessor.executeWithDatabaseRetry(async () => {
+      await prisma.payment.updateMany({
+        where: {
+          bookingId: bookingId,
+          paymentIntentId: paymentIntent.id,
+          status: 'PENDING',
+        },
+        data: {
+          status: 'COMPLETED',
+          paidAt: new Date(),
+          notes: `Payment intent succeeded: ${paymentIntent.id}`,
+        },
+      });
+    });
   }
 }
 
 async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, eventId: string) {
-  console.log('❌ Processing payment_intent.payment_failed');
+  logger.warn('Processing payment_intent.payment_failed', { eventId, paymentIntentId: paymentIntent.id });
   
   const bookingId = paymentIntent.metadata?.bookingId;
   
   if (!bookingId) {
-    console.error('❌ No bookingId in payment intent metadata');
+    logger.error('No bookingId in payment intent metadata', { eventId, paymentIntentId: paymentIntent.id });
     return;
   }
 
-  try {
+  await EnhancedStripeWebhookProcessor.executeWithDatabaseRetry(async () => {
     // Get booking details
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
@@ -267,8 +311,8 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, ev
     });
 
     if (!booking) {
-      console.error(`❌ Booking ${bookingId} not found`);
-      return;
+      logger.error('Booking not found', { bookingId, eventId });
+      throw new Error(`Booking ${bookingId} not found`);
     }
 
     // Update payment failed attempts
@@ -307,30 +351,26 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, ev
           locationId: process.env.GHL_LOCATION_ID || "",
         });
         
-        console.log(`✅ GHL contact ${booking.ghlContactId} updated with payment failure`);
+        logger.info('GHL contact updated with payment failure', { contactId: booking.ghlContactId, bookingId });
       } catch (ghlError) {
-        console.error('❌ Failed to update GHL contact:', ghlError);
+        logger.error('Failed to update GHL contact', { error: ghlError, bookingId });
       }
     }
 
-    console.log(`⚠️ Payment failed for booking ${bookingId}`);
-    
-  } catch (error) {
-    console.error('❌ Error handling payment failure:', error);
-    throw error;
-  }
+    logger.warn('Payment failed for booking', { bookingId, eventId });
+  });
 }
 
 async function handleChargeRefunded(charge: Stripe.Charge, eventId: string) {
-  console.log('💸 Processing charge.refunded');
+  logger.info('Processing charge.refunded', { eventId, chargeId: charge.id });
   
   // Find the booking by payment intent ID
   if (!charge.payment_intent) {
-    console.error('❌ No payment intent in charge object');
+    logger.error('No payment intent in charge object', { eventId, chargeId: charge.id });
     return;
   }
 
-  try {
+  await EnhancedStripeWebhookProcessor.executeWithDatabaseRetry(async () => {
     // Find booking by payment intent ID stored in notes or through Payment records
     const payments = await prisma.payment.findMany({
       where: {
@@ -348,8 +388,11 @@ async function handleChargeRefunded(charge: Stripe.Charge, eventId: string) {
     const booking = payments.length > 0 ? payments[0].Booking : null;
 
     if (!booking) {
-      console.error(`❌ No booking found for payment intent ${charge.payment_intent}`);
-      return;
+      logger.error('No booking found for payment intent', { 
+        paymentIntentId: charge.payment_intent,
+        eventId 
+      });
+      throw new Error(`No booking found for payment intent ${charge.payment_intent}`);
     }
 
     // Update booking status
@@ -381,18 +424,14 @@ async function handleChargeRefunded(charge: Stripe.Charge, eventId: string) {
           locationId: process.env.GHL_LOCATION_ID || "",
         });
         
-        console.log(`✅ GHL contact ${booking.ghlContactId} updated with refund`);
+        logger.info('GHL contact updated with refund', { contactId: booking.ghlContactId, bookingId: booking.id });
       } catch (ghlError) {
-        console.error('❌ Failed to update GHL contact:', ghlError);
+        logger.error('Failed to update GHL contact', { error: ghlError, bookingId: booking.id });
       }
     }
 
-    console.log(`💸 Refund processed for booking ${booking.id}`);
-    
-  } catch (error) {
-    console.error('❌ Error handling refund:', error);
-    throw error;
-  }
+    logger.info('Refund processed for booking', { bookingId: booking.id, eventId });
+  });
 }
 
 // Note: In App Router, raw body access is handled via request.text() or request.arrayBuffer()

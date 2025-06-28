@@ -94,13 +94,13 @@ export default function ServicesPage() {
       isPopular: true,
     },
     {
-      slug: "loan-signing",
+      slug: "loan-signing-specialist",
       name: "Loan Signing Specialist",
       price: "$200+",
       tagline: "Paperwork pros you can trust.",
       description:
         "Certified loan signings, including all trip-chain, remote online signings, and courier returns.",
-      link: "/services/loan-signing",
+      link: "/services/loan-signing-specialist",
       icon: Briefcase,
       features: [
         "Certified loan signings",
@@ -866,7 +866,7 @@ export default function ServicesPage() {
                         </ul>
                        </div>
                     )}
-                    {service.slug === "loan-signing" && (
+                    {service.slug === "loan-signing-specialist" && (
                        <div className="bg-white p-4 rounded-lg shadow-sm">
                         <h4 className="font-semibold text-[#002147] mb-2">Loan Signing Expertise</h4>
                         <ul className="space-y-2 text-sm text-gray-600">

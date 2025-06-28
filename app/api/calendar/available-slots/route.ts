@@ -8,9 +8,9 @@ const GHL_API_VERSION = process.env.GHL_API_VERSION || "V2"
 
 // Calendar IDs for different service types
 const CALENDAR_IDS: Record<string, string | undefined> = {
-  essential: process.env.GHL_ESSENTIAL_CALENDAR_ID,
-  priority: process.env.GHL_PRIORITY_CALENDAR_ID,
-  "loan-signing": process.env.GHL_LOAN_CALENDAR_ID,
+  essential: process.env.GHL_STANDARD_NOTARY_CALENDAR_ID,
+  priority: process.env.GHL_EXTENDED_HOURS_CALENDAR_ID,
+  "loan-signing-specialist": process.env.GHL_LOAN_SIGNING_SPECIALIST_CALENDAR_ID,
   "reverse-mortgage": process.env.GHL_REVERSE_MORTGAGE_CALENDAR_ID,
   specialty: process.env.GHL_SPECIALTY_CALENDAR_ID,
   calls: process.env.GHL_CALLS_CALENDAR_ID,

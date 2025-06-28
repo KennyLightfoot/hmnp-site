@@ -179,7 +179,7 @@ const faqs: FAQ[] = [
       </div>
     ),
     category: "general",
-    keywords: ["response", "time", "quick", "urgent", "priority", "same-day", "fast", "immediate", "emergency"],
+    keywords: ["response", "time", "quick", "urgent", "extended-hours-notary", "same-day", "fast", "immediate", "emergency"],
     relatedQuestions: ["appointment-scheduling", "hours-operation"],
   },
   {
@@ -329,7 +329,7 @@ const faqs: FAQ[] = [
               Specialized service for real estate transactions, including purchase loans, refinances, and more. $150
               flat fee includes unlimited documents and up to 4 signers.
             </p>
-            <Link href="/services/loan-signing-specialist" className="text-sm text-[#A52A2A] hover:underline">
+            <Link href="/services/loan-signing-specialist-specialist" className="text-sm text-[#A52A2A] hover:underline">
               Learn more about Loan Signing Specialist →
             </Link>
           </div>
@@ -340,7 +340,7 @@ const faqs: FAQ[] = [
               Specialized service for reverse mortgages and home equity loans. $150 flat fee includes in-depth
               explanation of forms and certified mail return.
             </p>
-            <Link href="/services/loan-signing" className="text-sm text-[#A52A2A] hover:underline">
+            <Link href="/services/loan-signing-specialist" className="text-sm text-[#A52A2A] hover:underline">
               Learn more about Reverse Mortgage Services →
             </Link>
           </div>
@@ -377,11 +377,11 @@ const faqs: FAQ[] = [
     ),
     category: "services",
     keywords: ["services", "types", "packages", "offerings", "notarization", "mobile notary", "loan signing"],
-    relatedQuestions: ["loan-signing", "pricing-structure"],
+    relatedQuestions: ["loan-signing-specialist", "pricing-structure"],
     popular: true,
   },
   {
-    id: "loan-signing",
+    id: "loan-signing-specialist",
     question: "What is a loan signing agent and how is it different from a regular notary?",
     answer: (
       <div>
@@ -1749,7 +1749,7 @@ const faqs: FAQ[] = [
     ),
     category: "legal",
     keywords: ["insured", "bonded", "insurance", "bond", "e&o", "errors and omissions", "protection", "$10000", "$10k"],
-    relatedQuestions: ["loan-signing"], // Add reference to LSA E&O if updated there
+    relatedQuestions: ["loan-signing-specialist"], // Add reference to LSA E&O if updated there
   },
 ] // End of faqs array
 
