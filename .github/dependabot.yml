@@ -29,13 +29,18 @@ updates:
           - "*"
         update-types:
           - "minor"
-    # Auto-merge security and patch updates
+    # Allow Dependabot updates for both production and development dependencies
     allow:
       - dependency-type: "production"
-        update-type: "security"
-      - dependency-type: "development" 
-        update-type: "security"
-      - dependency-type: "production"
-        update-type: "patch"
       - dependency-type: "development"
-        update-type: "patch" 
+
+# Auto-merge security and patch updates
+# allow:
+#   - dependency-type: "production"
+#     update-type: "security"
+#   - dependency-type: "development" 
+#     update-type: "security"
+#   - dependency-type: "production"
+#     update-type: "patch"
+#   - dependency-type: "development"
+#     update-type: "patch" 
