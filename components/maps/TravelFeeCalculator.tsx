@@ -97,10 +97,12 @@ export default function TravelFeeCalculator({
             onKeyPress={handleKeyPress}
             placeholder="Enter address (e.g., 123 Main St, Houston, TX 77001)"
             className="flex-1"
+            aria-label="Enter address for travel fee calculation"
           />
           <Button 
             onClick={calculateFee}
             disabled={isCalculating || !address.trim()}
+            aria-label={isCalculating ? "Calculating travel fee" : "Calculate travel fee"}
           >
             {isCalculating ? (
               <Loader2 className="h-4 w-4 animate-spin" />

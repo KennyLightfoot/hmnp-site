@@ -30,16 +30,6 @@ const serviceAreaOptions = {
   fillOpacity: 0.1,
 }
 
-const markerIcon = {
-  url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
-    <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="16" cy="16" r="12" fill="#A52A2A" stroke="#fff" stroke-width="2"/>
-      <circle cx="16" cy="16" r="6" fill="#fff"/>
-    </svg>
-  `),
-  scaledSize: new google.maps.Size(32, 32),
-  anchor: new google.maps.Point(16, 16),
-}
 
 export default function ServiceAreaMap({
   showServiceAreaCircle = true,
@@ -91,6 +81,18 @@ export default function ServiceAreaMap({
       </div>
     )
   }
+
+  // Define marker icon only after Google Maps API has loaded
+  const markerIcon = isLoaded ? {
+    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+      <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="16" r="12" fill="#A52A2A" stroke="#fff" stroke-width="2"/>
+        <circle cx="16" cy="16" r="6" fill="#fff"/>
+      </svg>
+    `)}`,
+    scaledSize: new google.maps.Size(32, 32),
+    anchor: new google.maps.Point(16, 16),
+  } : undefined
 
   return (
     <div className={`map-container rounded-lg overflow-hidden shadow-md border border-gray-200 ${className}`}>

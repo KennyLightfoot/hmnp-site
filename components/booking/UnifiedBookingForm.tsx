@@ -294,25 +294,55 @@ export default function UnifiedBookingForm({
     travelFee: number;
     isWithinServiceArea: boolean;
   }) => {
-    // Parse the address and update form fields
-    const addressParts = location.address.split(', ');
-    const streetAddress = addressParts[0] || '';
-    const city = addressParts[1] || '';
-    const stateZip = addressParts[2] || '';
-    const state = stateZip.split(' ')[0] || 'TX';
-    const zip = stateZip.split(' ')[1] || '';
+    try {
+      // Parse the address and update form fields with validation
+      const addressParts = location.address.split(', ');
+      
+      // Validate address format
+      if (addressParts.length < 2) {
+        console.warn('Address format may be incomplete:', location.address);
+      }
+      
+      const streetAddress = addressParts[0]?.trim() || '';
+      const city = addressParts[1]?.trim() || '';
+      const stateZip = addressParts[2]?.trim() || '';
+      
+      // Parse state and zip with validation
+      const stateZipParts = stateZip.split(' ');
+      const state = stateZipParts[0]?.trim() || 'TX';
+      const zip = stateZipParts[1]?.trim() || '';
 
-    form.setValue('addressStreet', streetAddress);
-    form.setValue('addressCity', city);
-    form.setValue('addressState', state);
-    form.setValue('addressZip', zip);
+      // Only update fields if we have required data
+      if (streetAddress) {
+        form.setValue('addressStreet', streetAddress);
+      }
+      if (city) {
+        form.setValue('addressCity', city);
+      }
+      if (state) {
+        form.setValue('addressState', state);
+      }
+      if (zip) {
+        form.setValue('addressZip', zip);
+      }
 
-    // Update location info for travel fee display
-    setLocationInfo({
-      distance: location.distance,
-      travelFee: location.travelFee,
-      isWithinServiceArea: location.isWithinServiceArea
-    });
+      // Update location info for travel fee display
+      setLocationInfo({
+        distance: location.distance,
+        travelFee: location.travelFee,
+        isWithinServiceArea: location.isWithinServiceArea
+      });
+    } catch (error) {
+      console.error('Error parsing address from map selection:', error);
+      console.warn('Address that failed to parse:', location.address);
+      
+      // Still update location info even if address parsing fails
+      setLocationInfo({
+        distance: location.distance,
+        travelFee: location.travelFee,
+        isWithinServiceArea: location.isWithinServiceArea
+      });
+    }
   };
 
   const getLocationTypeLabel = (type: string) => {

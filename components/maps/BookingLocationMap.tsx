@@ -38,27 +38,6 @@ const serviceAreaOptions = {
   fillOpacity: 0.08,
 }
 
-const businessMarkerIcon = {
-  url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
-    <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="16" cy="16" r="12" fill="#002147" stroke="#fff" stroke-width="2"/>
-      <circle cx="16" cy="16" r="6" fill="#fff"/>
-    </svg>
-  `),
-  scaledSize: new google.maps.Size(32, 32),
-  anchor: new google.maps.Point(16, 16),
-}
-
-const customerMarkerIcon = {
-  url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
-    <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="16" cy="16" r="12" fill="#A52A2A" stroke="#fff" stroke-width="2"/>
-      <circle cx="16" cy="16" r="6" fill="#fff"/>
-    </svg>
-  `),
-  scaledSize: new google.maps.Size(32, 32),
-  anchor: new google.maps.Point(16, 16),
-}
 
 export default function BookingLocationMap({
   onLocationSelect,
@@ -100,7 +79,7 @@ export default function BookingLocationMap({
     if (autocompleteRef.current) {
       const place = autocompleteRef.current.getPlace()
       
-      if (place.geometry && place.geometry.location) {
+      if (place.geometry?.location) {
         const location = place.geometry.location
         const newAddress = place.formatted_address || place.name || ''
         
@@ -177,11 +156,34 @@ export default function BookingLocationMap({
     )
   }
 
+  // Define marker icons only after Google Maps API has loaded
+  const businessMarkerIcon = isLoaded ? {
+    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+      <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="16" r="12" fill="#002147" stroke="#fff" stroke-width="2"/>
+        <circle cx="16" cy="16" r="6" fill="#fff"/>
+      </svg>
+    `)}`,
+    scaledSize: new google.maps.Size(32, 32),
+    anchor: new google.maps.Point(16, 16),
+  } : undefined
+
+  const customerMarkerIcon = isLoaded ? {
+    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+      <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="16" r="12" fill="#A52A2A" stroke="#fff" stroke-width="2"/>
+        <circle cx="16" cy="16" r="6" fill="#fff"/>
+      </svg>
+    `)}`,
+    scaledSize: new google.maps.Size(32, 32),
+    anchor: new google.maps.Point(16, 16),
+  } : undefined
+
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Address Input */}
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">
+        <label htmlFor="booking-address-input" className="text-sm font-medium text-gray-700">
           Service Address
         </label>
         <Autocomplete
@@ -191,12 +193,17 @@ export default function BookingLocationMap({
           fields={['formatted_address', 'geometry', 'name']}
         >
           <Input
+            id="booking-address-input"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             placeholder="Enter your address..."
             className="w-full"
+            aria-describedby="address-help"
           />
         </Autocomplete>
+        <p id="address-help" className="text-xs text-gray-500">
+          Enter your address to calculate distance and travel fees
+        </p>
       </div>
 
       {/* Location Information */}

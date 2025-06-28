@@ -154,7 +154,7 @@ export class DistanceService {
   }
 
   /**
-   * Calculate travel fee based on distance (SOP: 15-mile base radius from 77591, $0.50/mile beyond)
+   * Calculate travel fee based on distance (SOP: 20-mile base radius from 77591, $0.50/mile beyond)
    */
   static calculateTravelFee(distanceMiles: number): number {
     if (distanceMiles <= this.FREE_SERVICE_RADIUS) {
