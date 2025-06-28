@@ -128,7 +128,7 @@ async function getBookingStatistics() {
 
   // Get service names for the top services
   const serviceIds = serviceGrouped.map(item => item.serviceId);
-  const services = await prisma.Service.findMany({
+  const services = await prisma.service.findMany({
     where: {
       id: { in: serviceIds }
     },
