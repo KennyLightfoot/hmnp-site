@@ -26,7 +26,8 @@ export async function GET(request: NextRequest) {
     console.log('[SCHEMA DEBUG] BusinessSettings columns:', businessSettingsColumns);
     
     // Check if Service table has any data
-    const serviceCount = await prisma.$queryRaw`SELECT COUNT(*) as count FROM "Service"`;
+    const serviceCountResult = await prisma.$queryRaw`SELECT COUNT(*) as count FROM "Service"`;
+    const serviceCount = Number((serviceCountResult as any)[0]?.count || 0);
     console.log('[SCHEMA DEBUG] Service count:', serviceCount);
     
     // Try to get first service using only basic columns
