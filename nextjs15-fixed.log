@@ -115,3 +115,25 @@
  ⚠     Expected object, received boolean at "experimental.turbo"
  ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
  ✓ Ready in 9.1s
+   Reload env: .env.local
+   Reload env: .env
+ ○ Compiling /api/availability ...
+ ✓ Compiled /api/availability in 13.1s (707 modules)
+[AVAILABILITY API] Starting request processing: 2025-06-29T16:52:20.863Z
+[AVAILABILITY API] Query params: {
+  date: '2025-07-04',
+  serviceId: 'cmb8ovso10000ve9xwvtf0my0',
+  duration: null,
+  timezone: undefined
+}
+prisma:query SELECT "public"."BusinessSettings"."id", "public"."BusinessSettings"."key", "public"."BusinessSettings"."value", "public"."BusinessSettings"."dataType", "public"."BusinessSettings"."description", "public"."BusinessSettings"."category", "public"."BusinessSettings"."updatedAt", "public"."BusinessSettings"."updatedById" FROM "public"."BusinessSettings" WHERE "public"."BusinessSettings"."category" = $1 OFFSET $2
+[AVAILABILITY API] Business timezone: America/Chicago
+[AVAILABILITY API] Looking up service: cmb8ovso10000ve9xwvtf0my0
+prisma:query SELECT "public"."Service"."id", "public"."Service"."name", "public"."Service"."description", "public"."Service"."serviceType"::text, "public"."Service"."durationMinutes", "public"."Service"."basePrice", "public"."Service"."isActive", "public"."Service"."requiresDeposit", "public"."Service"."depositAmount", "public"."Service"."createdAt", "public"."Service"."updatedAt", "public"."Service"."externalCalendarId" FROM "public"."Service" WHERE ("public"."Service"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+[AVAILABILITY API] Service found: Standard Mobile Notary
+[DEBUG] Date: 2025-07-04 Day of week: 5
+[DEBUG] Business settings keys: []
+[DEBUG] Business hours result: { startTime: '09:00', endTime: '17:00', dayOfWeek: 5 }
+prisma:query SELECT "public"."Booking"."id", "public"."Booking"."signerId", "public"."Booking"."serviceId", "public"."Booking"."notaryId", "public"."Booking"."scheduledDateTime", "public"."Booking"."actualEndDateTime", "public"."Booking"."status"::text, "public"."Booking"."locationType"::text, "public"."Booking"."addressStreet", "public"."Booking"."addressCity", "public"."Booking"."addressState", "public"."Booking"."addressZip", "public"."Booking"."locationNotes", "public"."Booking"."priceAtBooking", "public"."Booking"."notes", "public"."Booking"."dailyRoomUrl", "public"."Booking"."dailyRecordingId", "public"."Booking"."kbaStatus", "public"."Booking"."idVerificationStatus", "public"."Booking"."notaryJournalEntry", "public"."Booking"."createdAt", "public"."Booking"."updatedAt", "public"."Booking"."confirmationEmailSentAt", "public"."Booking"."confirmationSmsSentAt", "public"."Booking"."followUpSentAt", "public"."Booking"."lastReminderSentAt", "public"."Booking"."noShowCheckPerformedAt", "public"."Booking"."reminder1hrSentAt", "public"."Booking"."reminder24hrSentAt", "public"."Booking"."reminder2hrSentAt", "public"."Booking"."depositAmount", "public"."Booking"."depositStatus"::text, "public"."Booking"."googleCalendarEventId", "public"."Booking"."promoCodeDiscount", "public"."Booking"."promoCodeId", "public"."Booking"."campaignName", "public"."Booking"."customerEmail", "public"."Booking"."ghlContactId", "public"."Booking"."leadSource", "public"."Booking"."stripePaymentUrl", "public"."Booking"."workflowId", "public"."Booking"."witness_type"::text, "public"."Booking"."witness_fee", "public"."Booking"."mileage_miles", "public"."Booking"."mileage_fee", "public"."Booking"."urgency_level", "public"."Booking"."urgency_fee", "public"."Booking"."estimated_completion_time", "public"."Booking"."notary_travel_time_minutes", "public"."Booking"."google_maps_distance_matrix", "public"."Booking"."service_area_id" FROM "public"."Booking" WHERE ("public"."Booking"."scheduledDateTime" >= $1 AND "public"."Booking"."scheduledDateTime" <= $2 AND "public"."Booking"."status" NOT IN (CAST($3::text AS "public"."BookingStatus"),CAST($4::text AS "public"."BookingStatus"),CAST($5::text AS "public"."BookingStatus"),CAST($6::text AS "public"."BookingStatus"))) OFFSET $7
+[AVAILABILITY API] Calculated 14 time slots
+ GET /api/availability?date=2025-07-04&serviceId=cmb8ovso10000ve9xwvtf0my0 200 in 16515ms
