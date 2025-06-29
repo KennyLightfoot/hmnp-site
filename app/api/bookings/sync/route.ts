@@ -4,7 +4,7 @@ import { BookingStatus, LocationType, Role } from '@prisma/client';
 import { z } from 'zod';
 import * as ghl from '@/lib/ghl';
 import crypto from 'crypto';
-import { GoogleCalendarService } from '../../../../lib/google-calendar';
+import { GoogleCalendarService } from '../../../../lib/google-calendar-disabled';
 
 // Webhook signature verification
 function verifyGHLWebhook(payload: string, signature: string, secret: string): boolean {

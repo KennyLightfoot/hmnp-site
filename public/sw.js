@@ -1,98 +1,275 @@
-const CACHE_NAME = 'hmnp-v1.0.0'
-const urlsToCache = [
+/**
+ * Advanced Service Worker for Houston Mobile Notary Pros
+ * Phase 3: Enhanced offline capabilities and performance optimization
+ */
+
+const CACHE_VERSION = 'v3.0.0';
+const STATIC_CACHE_NAME = `hmnp-static-${CACHE_VERSION}`;
+const DYNAMIC_CACHE_NAME = `hmnp-dynamic-${CACHE_VERSION}`;
+const API_CACHE_NAME = `hmnp-api-${CACHE_VERSION}`;
+
+// Static assets to cache immediately
+const STATIC_ASSETS = [
   '/',
-  '/dashboard',
-  '/booking',
-  '/login',
   '/offline',
   '/manifest.json',
-  // Add critical CSS and JS files
-  '/_next/static/chunks/webpack.js',
-  '/_next/static/chunks/main.js',
-  // Add fonts
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
-]
+  '/favicon.ico',
+  '/logo.png',
+  // Core pages
+  '/booking',
+  '/services',
+  '/faq',
+  '/contact',
+];
 
-// Install event - cache resources
-self.addEventListener('install', event => {
+// API endpoints to cache with different strategies
+const API_CACHE_PATTERNS = [
+  /^\/api\/services$/,
+  /^\/api\/booking-settings$/,
+  /^\/api\/business-settings$/,
+];
+
+// Network-first patterns (always try network first)
+const NETWORK_FIRST_PATTERNS = [
+  /^\/api\/bookings/,
+  /^\/api\/availability/,
+  /^\/api\/webhooks/,
+  /^\/admin/,
+];
+
+/**
+ * Install event - cache static assets
+ */
+self.addEventListener('install', (event) => {
+  console.log('[SW] Installing Phase 3 service worker...');
+  
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Opened cache')
-        return cache.addAll(urlsToCache)
+    caches.open(STATIC_CACHE_NAME)
+      .then((cache) => {
+        console.log('[SW] Caching static assets');
+        return cache.addAll(STATIC_ASSETS);
       })
-      .catch(error => {
-        console.error('Cache installation failed:', error)
+      .then(() => {
+        console.log('[SW] Service worker installed successfully');
+        return self.skipWaiting();
       })
-  )
-})
+      .catch((error) => {
+        console.error('[SW] Installation failed:', error);
+      })
+  );
+});
 
-// Fetch event - serve from cache, fallback to network
-self.addEventListener('fetch', event => {
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') {
-    return
+/**
+ * Fetch event - implement advanced caching strategies
+ */
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+  
+  // Skip non-HTTP requests
+  if (!request.url.startsWith('http')) {
+    return;
   }
 
-  // Skip external requests
-  if (!event.request.url.startsWith(self.location.origin)) {
-    return
+  // Skip Chrome extension requests
+  if (url.protocol === 'chrome-extension:') {
+    return;
   }
 
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Return cached version or fetch from network
-        if (response) {
-          return response
-        }
+  // API requests
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(handleAPIRequest(request));
+    return;
+  }
 
-        // Important: Clone the request because it's a stream
-        const fetchRequest = event.request.clone()
+  // Static assets (JS, CSS, images)
+  if (isStaticAsset(request)) {
+    event.respondWith(handleStaticAsset(request));
+    return;
+  }
 
-        return fetch(fetchRequest).then(response => {
-          // Check if we received a valid response
-          if (!response || response.status !== 200 || response.type !== "standard-notary") {
-            return response
-          }
+  // Navigation requests (HTML pages)
+  if (request.mode === 'navigate') {
+    event.respondWith(handleNavigation(request));
+    return;
+  }
 
-          // Important: Clone the response because it's a stream
-          const responseToCache = response.clone()
+  // Default: network first with cache fallback
+  event.respondWith(handleDefault(request));
+});
 
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              // Only cache GET requests
-              if (event.request.method === 'GET') {
-                cache.put(event.request, responseToCache)
-              }
-            })
+/**
+ * Handle API requests with different strategies
+ */
+async function handleAPIRequest(request) {
+  const url = new URL(request.url);
+  
+  // Network-first for critical API endpoints
+  if (NETWORK_FIRST_PATTERNS.some(pattern => pattern.test(url.pathname))) {
+    return handleNetworkFirst(request, API_CACHE_NAME);
+  }
+  
+  // Cache-first for cacheable API endpoints
+  if (API_CACHE_PATTERNS.some(pattern => pattern.test(url.pathname))) {
+    return handleCacheFirst(request, API_CACHE_NAME, { ttl: 5 * 60 * 1000 }); // 5 minutes
+  }
+  
+  // Default: network only for sensitive endpoints
+  return handleNetworkOnly(request);
+}
 
-          return response
-        }).catch(() => {
-          // If both cache and network fail, show offline page for navigation requests
-          if (event.request.mode === 'navigate') {
-            return caches.match('/offline')
-          }
-        })
-      })
-  )
-})
+/**
+ * Handle static assets (cache-first strategy)
+ */
+async function handleStaticAsset(request) {
+  return handleCacheFirst(request, STATIC_CACHE_NAME, { ttl: 24 * 60 * 60 * 1000 }); // 24 hours
+}
 
-// Activate event - clean up old caches
-self.addEventListener('activate', event => {
+/**
+ * Handle navigation requests
+ */
+async function handleNavigation(request) {
+  const url = new URL(request.url);
+  
+  // Network-first for admin and booking pages
+  if (NETWORK_FIRST_PATTERNS.some(pattern => pattern.test(url.pathname))) {
+    return handleNetworkFirst(request, DYNAMIC_CACHE_NAME);
+  }
+  
+  // Cache-first for static pages
+  return handleStaleWhileRevalidate(request, DYNAMIC_CACHE_NAME);
+}
+
+/**
+ * Default handler
+ */
+async function handleDefault(request) {
+  return handleNetworkFirst(request, DYNAMIC_CACHE_NAME);
+}
+
+/**
+ * Network-first strategy
+ */
+async function handleNetworkFirst(request, cacheName) {
+  try {
+    const networkResponse = await fetch(request.clone());
+    
+    if (networkResponse.ok) {
+      const cache = await caches.open(cacheName);
+      cache.put(request, networkResponse.clone());
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    console.log('[SW] Network failed, trying cache:', request.url);
+    
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    
+    // Return offline page for navigation requests
+    if (request.mode === 'navigate') {
+      return caches.match('/offline');
+    }
+    
+    throw error;
+  }
+}
+
+/**
+ * Cache-first strategy with TTL
+ */
+async function handleCacheFirst(request, cacheName, options = {}) {
+  const cache = await caches.open(cacheName);
+  const cachedResponse = await cache.match(request);
+  
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  
+  // Not in cache, fetch from network
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse.ok) {
+      cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch (error) {
+    console.error('[SW] Cache-first failed:', error);
+    throw error;
+  }
+}
+
+/**
+ * Stale-while-revalidate strategy
+ */
+async function handleStaleWhileRevalidate(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  const cachedResponse = await cache.match(request);
+  
+  // Fetch from network in background
+  const networkFetch = fetch(request).then((networkResponse) => {
+    if (networkResponse.ok) {
+      cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  });
+  
+  // Return cached version immediately if available
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  
+  // If no cache, wait for network
+  return networkFetch;
+}
+
+/**
+ * Network-only strategy
+ */
+async function handleNetworkOnly(request) {
+  return fetch(request);
+}
+
+/**
+ * Check if request is for a static asset
+ */
+function isStaticAsset(request) {
+  const url = new URL(request.url);
+  const staticExtensions = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.woff', '.woff2'];
+  
+  return staticExtensions.some(ext => url.pathname.endsWith(ext)) ||
+         url.pathname.startsWith('/_next/static/');
+}
+
+/**
+ * Activate event - clean up old caches
+ */
+self.addEventListener('activate', (event) => {
+  console.log('[SW] Activating Phase 3 service worker...');
+  
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName)
-            return caches.delete(cacheName)
-          }
-        })
-      )
+    Promise.all([
+      // Clean up old caches
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (cacheName.startsWith('hmnp-') && 
+                !cacheName.includes(CACHE_VERSION)) {
+              console.log('[SW] Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      }),
+      // Take control of all clients
+      self.clients.claim()
+    ]).then(() => {
+      console.log('[SW] Service worker activated successfully');
     })
-  )
-})
+  );
+});
 
 // Push event - handle push notifications
 self.addEventListener('push', event => {

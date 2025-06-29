@@ -13,7 +13,7 @@ import { Booking, Service, BookingStatus, LocationType, PaymentProvider, Payment
 import { z } from 'zod';
 import { trackBookingConfirmation, trackLoanSigningBooked, trackRONCompleted, trackSameDayServiceRequested, trackAfterHoursServiceRequested } from '@/lib/tracking';
 import { sendGHLMessage } from '../../../lib/ghl-messaging';
-import { GoogleCalendarService } from '../../../lib/google-calendar';
+import { GoogleCalendarService } from '../../../lib/google-calendar-disabled';
 // Custom fields temporarily disabled - using standard GHL fields and tags
 
 // Using tags-only approach for optimal business operations

@@ -14,7 +14,7 @@ import { withAuth, AuthConfig } from '@/lib/auth/unified-middleware';
 import { z } from 'zod';
 import Stripe from 'stripe';
 import * as ghl from '@/lib/ghl';
-import { GoogleCalendarService } from '@/lib/google-calendar';
+import { GoogleCalendarService } from '@/lib/google-calendar-disabled';
 import { promoCodeService } from '@/lib/services/promo-code';
 import { settingsService } from '@/lib/services/settings';
 import { trackBookingConfirmation, trackLoanSigningBooked, trackRONCompleted } from '@/lib/tracking';

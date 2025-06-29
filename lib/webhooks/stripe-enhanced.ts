@@ -46,6 +46,21 @@ export class EnhancedStripeWebhookProcessor {
     const startTime = Date.now();
     const eventId = event.id;
     
+    // Memory leak prevention: Create sanitized event copy with only essential data
+    const sanitizedEventData = {
+      id: event.id,
+      type: event.type,
+      created: event.created,
+      // Only include essential data to prevent large object retention
+      data: {
+        object: {
+          id: event.data.object?.id,
+          object: event.data.object?.object,
+          // Add other essential fields as needed, but avoid deep copying large objects
+        }
+      }
+    };
+    
     webhookEnhancedLogger.info('Processing Stripe webhook', {
       eventId,
       eventType: event.type,
@@ -66,7 +81,7 @@ export class EnhancedStripeWebhookProcessor {
         };
       }
 
-      // Process with retry logic
+      // Process with retry logic - use original event for processing
       const result = await this.processWithRetry(event, processor);
       
       // Mark as successfully processed
@@ -81,6 +96,9 @@ export class EnhancedStripeWebhookProcessor {
         processingTimeMs: Date.now() - startTime,
         retryCount: result.retryCount,
       });
+
+      // Clear event data references to prevent memory leaks
+      this.clearEventReferences(event);
 
       return {
         success: true,
@@ -100,8 +118,8 @@ export class EnhancedStripeWebhookProcessor {
       // Record failure metrics
       await this.recordMetrics(event.type, false, Date.now() - startTime, this.MAX_RETRIES);
       
-      // Send alert for critical errors
-      await this.sendErrorAlert(event, error);
+      // Send alert for critical errors - use sanitized data to prevent memory leaks
+      await this.sendErrorAlert(sanitizedEventData as any, error);
       
       webhookEnhancedLogger.error('Webhook processing failed after all retries', {
         eventId,
@@ -109,6 +127,9 @@ export class EnhancedStripeWebhookProcessor {
         error: errorMessage,
         processingTimeMs: Date.now() - startTime,
       });
+
+      // Clear event data references to prevent memory leaks
+      this.clearEventReferences(event);
 
       return {
         success: false,
@@ -283,20 +304,24 @@ export class EnhancedStripeWebhookProcessor {
   }
 
   /**
-   * Send error alerts for critical failures
+   * Send error alerts for critical failures (memory-safe version)
    */
   private static async sendErrorAlert(event: Stripe.Event, error: unknown): Promise<void> {
     try {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Memory leak prevention: Only store essential alert data
       const alertData = {
         title: 'Critical Stripe Webhook Failure',
         message: `Failed to process Stripe webhook after ${this.MAX_RETRIES} retries`,
         details: {
           eventId: event.id,
           eventType: event.type,
-          error: errorMessage,
+          error: errorMessage.substring(0, 500), // Limit error message length
           timestamp: new Date().toISOString(),
-          eventData: event.data.object,
+          // Store only essential event data to prevent large object retention
+          eventDataId: event.data?.object?.id || 'unknown',
+          eventObjectType: event.data?.object?.object || 'unknown',
         },
         severity: 'critical' as const,
         source: 'stripe-webhook',
@@ -305,11 +330,11 @@ export class EnhancedStripeWebhookProcessor {
       // Log critical alert
       webhookEnhancedLogger.error('CRITICAL: Stripe webhook processing failed', alertData);
 
-      // Store alert for monitoring dashboard
+      // Store alert for monitoring dashboard with shorter TTL to prevent memory buildup
       await cache.set(
         `alert:stripe_webhook:${event.id}`,
         alertData,
-        { ttl: 7 * 24 * 60 * 60 } // 7 days
+        { ttl: 24 * 60 * 60 } // 24 hours instead of 7 days
       );
 
       // If configured, send to external monitoring service
@@ -476,6 +501,49 @@ export class EnhancedStripeWebhookProcessor {
       valid: errors.length === 0,
       errors,
     };
+  }
+
+  /**
+   * Clear event data references to prevent memory leaks
+   */
+  private static clearEventReferences(event: Stripe.Event): void {
+    try {
+      // Clear large data objects that might cause memory leaks
+      if (event.data?.object) {
+        // Clear complex nested objects but preserve essential fields
+        const eventObject = event.data.object as any;
+        
+        // Clear potential large data fields
+        delete eventObject.metadata;
+        delete eventObject.receipt_email;
+        delete eventObject.receipt_url;
+        delete eventObject.charges;
+        delete eventObject.invoice;
+        delete eventObject.latest_charge;
+        delete eventObject.payment_method;
+        delete eventObject.setup_intent;
+        delete eventObject.source;
+        delete eventObject.transfer_data;
+        
+        // Clear any custom or large nested objects
+        for (const key in eventObject) {
+          if (typeof eventObject[key] === 'object' && eventObject[key] !== null) {
+            if (Array.isArray(eventObject[key]) && eventObject[key].length > 10) {
+              // Clear large arrays
+              eventObject[key] = [];
+            } else if (typeof eventObject[key] === 'object' && Object.keys(eventObject[key]).length > 20) {
+              // Clear objects with many properties
+              eventObject[key] = { id: eventObject[key].id || null };
+            }
+          }
+        }
+      }
+    } catch (error) {
+      webhookEnhancedLogger.warn('Failed to clear event references', { 
+        eventId: event.id, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
   }
 
   /**
