@@ -40,7 +40,15 @@ const DEFAULT_BUSINESS_HOURS: BusinessHours[] = [
 ];
 
 export async function GET(request: NextRequest) {
-  console.log('[AVAILABILITY API] Starting request processing:', new Date().toISOString());
+  const startTime = new Date();
+  const requestId = Math.random().toString(36).substring(7);
+  
+  console.log(`[AVAILABILITY API ${requestId}] Starting request processing:`, {
+    timestamp: startTime.toISOString(),
+    url: request.url,
+    userAgent: request.headers.get('user-agent'),
+    ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+  });
   
   try {
     const { searchParams } = new URL(request.url);
@@ -51,17 +59,44 @@ export async function GET(request: NextRequest) {
       timezone: searchParams.get('timezone') || undefined,
     };
 
-    console.log('[AVAILABILITY API] Query params:', queryParams);
+    console.log(`[AVAILABILITY API ${requestId}] Raw query params:`, queryParams);
 
-    // Validate input parameters
-    const validatedParams = availabilityQuerySchema.parse(queryParams);
+    // Input validation with detailed error reporting
+    let validatedParams;
+    try {
+      validatedParams = availabilityQuerySchema.parse(queryParams);
+      console.log(`[AVAILABILITY API ${requestId}] Validation successful:`, validatedParams);
+    } catch (validationError) {
+      console.error(`[AVAILABILITY API ${requestId}] Validation failed:`, {
+        error: validationError,
+        queryParams,
+        validationErrors: validationError instanceof z.ZodError ? validationError.errors : 'Unknown validation error'
+      });
+      throw validationError;
+    }
 
     // Get business timezone from settings (default to America/Chicago)
-    const businessSettings = await getBusinessSettings();
+    let businessSettings;
+    try {
+      businessSettings = await getBusinessSettings();
+      console.log(`[AVAILABILITY API ${requestId}] Business settings loaded:`, {
+        settingsCount: Object.keys(businessSettings).length,
+        hasTimezone: !!businessSettings.business_timezone,
+        businessTimezone: businessSettings.business_timezone
+      });
+    } catch (settingsError) {
+      console.error(`[AVAILABILITY API ${requestId}] Failed to load business settings:`, settingsError);
+      throw new Error('Failed to load business configuration');
+    }
+    
     const businessTimezone = businessSettings.business_timezone || 'America/Chicago';
     const clientTimezone = validatedParams.timezone;
     
-    console.log('[AVAILABILITY API] Business timezone:', businessTimezone);
+    console.log(`[AVAILABILITY API ${requestId}] Timezone configuration:`, {
+      businessTimezone,
+      clientTimezone,
+      requestedDate: validatedParams.date
+    });
     
     // Convert requested date to business timezone for proper availability calculations
     const requestedDateInClientTz = new Date(`${validatedParams.date}T00:00:00`);
@@ -78,21 +113,79 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get service details
-    console.log('[AVAILABILITY API] Looking up service:', validatedParams.serviceId);
-    const service = await prisma.service.findUnique({
-      where: { id: validatedParams.serviceId },
-    });
+    // Get service details with comprehensive error handling
+    console.log(`[AVAILABILITY API ${requestId}] Looking up service:`, validatedParams.serviceId);
+    let service;
+    try {
+      service = await prisma.service.findUnique({
+        where: { id: validatedParams.serviceId },
+        select: {
+          id: true,
+          name: true,
+          durationMinutes: true,
+          basePrice: true,
+          isActive: true,
+          serviceType: true,
+          requiresDeposit: true,
+          depositAmount: true
+        }
+      });
+      
+      console.log(`[AVAILABILITY API ${requestId}] Service query result:`, {
+        serviceExists: !!service,
+        serviceId: validatedParams.serviceId,
+        serviceName: service?.name,
+        isActive: service?.isActive
+      });
+    } catch (serviceError) {
+      console.error(`[AVAILABILITY API ${requestId}] Database error during service lookup:`, {
+        error: serviceError,
+        serviceId: validatedParams.serviceId,
+        stack: serviceError instanceof Error ? serviceError.stack : 'No stack'
+      });
+      throw new Error('Database error while looking up service');
+    }
 
-    if (!service || !service.isActive) {
-      console.log('[AVAILABILITY API] Service not found or inactive:', service);
+    if (!service) {
+      console.warn(`[AVAILABILITY API ${requestId}] Service not found:`, {
+        requestedServiceId: validatedParams.serviceId,
+        timestamp: new Date().toISOString()
+      });
       return NextResponse.json(
-        { error: 'Service not found or inactive' },
+        { 
+          error: 'Service not found',
+          details: 'The requested service ID does not exist in the system',
+          serviceId: validatedParams.serviceId,
+          timestamp: new Date().toISOString()
+        },
+        { status: 404 }
+      );
+    }
+    
+    if (!service.isActive) {
+      console.warn(`[AVAILABILITY API ${requestId}] Service inactive:`, {
+        serviceId: validatedParams.serviceId,
+        serviceName: service.name,
+        timestamp: new Date().toISOString()
+      });
+      return NextResponse.json(
+        { 
+          error: 'Service not available',
+          details: 'The requested service is currently inactive',
+          serviceId: validatedParams.serviceId,
+          serviceName: service.name,
+          timestamp: new Date().toISOString()
+        },
         { status: 404 }
       );
     }
 
-    console.log('[AVAILABILITY API] Service found:', service.name);
+    console.log(`[AVAILABILITY API ${requestId}] Service validated:`, {
+      id: service.id,
+      name: service.name,
+      duration: service.durationMinutes,
+      price: service.basePrice
+    });
 
     // Get service duration (use override if provided, otherwise service default)
         const serviceDurationMinutes = validatedParams.duration
@@ -117,17 +210,44 @@ export async function GET(request: NextRequest) {
     }
 
     // Check for blackout dates (holidays, etc.) - check using business timezone
-    const isBlackoutDate = await checkBlackoutDate(requestedDateInBusinessTz, businessSettings);
+    let isBlackoutDate;
+    try {
+      isBlackoutDate = await checkBlackoutDate(requestedDateInBusinessTz, businessSettings);
+      console.log(`[AVAILABILITY API ${requestId}] Blackout date check:`, {
+        date: validatedParams.date,
+        isBlackout: isBlackoutDate,
+        dayOfWeek: requestedDateInBusinessTz.getDay()
+      });
+    } catch (blackoutError) {
+      console.error(`[AVAILABILITY API ${requestId}] Error checking blackout dates:`, blackoutError);
+      // Continue processing, assume not blackout if check fails
+      isBlackoutDate = false;
+    }
+    
     if (isBlackoutDate) {
+      console.log(`[AVAILABILITY API ${requestId}] Date blocked - blackout date:`, validatedParams.date);
       return NextResponse.json({
         date: validatedParams.date,
         availableSlots: [],
-        message: 'This date is not available for bookings',
+        message: 'This date is not available for bookings (holiday or blackout date)',
+        reason: 'blackout_date',
+        timestamp: new Date().toISOString()
       });
     }
 
     // Get existing bookings for the date (using business timezone)
-    const existingBookings = await getExistingBookings(requestedDateInBusinessTz);
+    let existingBookings;
+    try {
+      existingBookings = await getExistingBookings(requestedDateInBusinessTz);
+      console.log(`[AVAILABILITY API ${requestId}] Existing bookings loaded:`, {
+        date: validatedParams.date,
+        bookingCount: existingBookings.length,
+        bookingIds: existingBookings.map(b => b.id)
+      });
+    } catch (bookingsError) {
+      console.error(`[AVAILABILITY API ${requestId}] Error loading existing bookings:`, bookingsError);
+      throw new Error('Failed to load existing bookings');
+    }
 
     // Calculate lead time (minimum hours before booking)
     const leadTimeHours = getLeadTime(businessSettings);
@@ -146,7 +266,13 @@ export async function GET(request: NextRequest) {
       clientTimezone,
     });
 
-    console.log('[AVAILABILITY API] Calculated', availableSlots.length, 'time slots');
+    const processingTime = new Date().getTime() - startTime.getTime();
+    console.log(`[AVAILABILITY API ${requestId}] Processing completed:`, {
+      availableSlots: availableSlots.length,
+      totalSlots: availableSlots.length,
+      availableCount: availableSlots.filter(s => s.available).length,
+      processingTimeMs: processingTime
+    });
 
     // Include timezone information in the response
     return NextResponse.json({
@@ -169,21 +295,77 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('[AVAILABILITY API] Error occurred:', error);
-    console.error('[AVAILABILITY API] Error stack:', error instanceof Error ? error.stack : 'No stack');
-    console.error('[AVAILABILITY API] Request URL:', request.url);
+    const processingTime = new Date().getTime() - startTime.getTime();
+    
+    console.error(`[AVAILABILITY API ${requestId}] ERROR:`, {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : 'No stack available',
+      requestUrl: request.url,
+      processingTimeMs: processingTime,
+      timestamp: new Date().toISOString(),
+      errorType: error?.constructor?.name || 'Unknown'
+    });
+
+    // Log to database for production monitoring
+    try {
+      await prisma.backgroundError.create({
+        data: {
+          id: `avail_${requestId}_${Date.now()}`,
+          source: 'availability-api',
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : null,
+        }
+      });
+    } catch (logError) {
+      console.error(`[AVAILABILITY API ${requestId}] Failed to log error to database:`, logError);
+    }
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid parameters', details: error.errors },
+        { 
+          error: 'Invalid request parameters', 
+          details: error.errors.map(e => ({
+            field: e.path.join('.'),
+            message: e.message,
+            code: e.code
+          })),
+          requestId,
+          timestamp: new Date().toISOString()
+        },
         { status: 400 }
+      );
+    }
+
+    // Return different error messages based on error type
+    if (error instanceof Error && error.message.includes('Service not found')) {
+      return NextResponse.json(
+        { 
+          error: 'Service configuration error',
+          details: 'The requested service is not properly configured',
+          requestId,
+          timestamp: new Date().toISOString()
+        },
+        { status: 404 }
+      );
+    }
+    
+    if (error instanceof Error && error.message.includes('Database')) {
+      return NextResponse.json(
+        { 
+          error: 'Service temporarily unavailable',
+          details: 'Please try again in a few moments',
+          requestId,
+          timestamp: new Date().toISOString()
+        },
+        { status: 503 }
       );
     }
 
     return NextResponse.json(
       { 
         error: 'Internal server error',
-        details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined,
+        details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : 'An unexpected error occurred',
+        requestId,
         timestamp: new Date().toISOString()
       },
       { status: 500 }
@@ -193,16 +375,49 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Helper function to get business settings
+// Helper function to get business settings with error handling
 async function getBusinessSettings() {
-  const settings = await prisma.businessSettings.findMany({
-    where: { category: 'booking' },
-  });
+  try {
+    const settings = await prisma.businessSettings.findMany({
+      where: { category: 'booking' },
+      select: {
+        key: true,
+        value: true,
+        dataType: true
+      }
+    });
 
-  return settings.reduce((acc, setting) => {
-    acc[setting.key] = setting.value;
-    return acc;
-  }, {} as Record<string, string>);
+    console.log('[BUSINESS SETTINGS] Loaded settings:', {
+      count: settings.length,
+      keys: settings.map(s => s.key)
+    });
+
+    const settingsMap = settings.reduce((acc, setting) => {
+      acc[setting.key] = setting.value;
+      return acc;
+    }, {} as Record<string, string>);
+    
+    // Add default holiday checking for July 4th
+    if (!settingsMap.blackout_dates) {
+      const currentYear = new Date().getFullYear();
+      const nextYear = currentYear + 1;
+      const defaultHolidays = [
+        `${currentYear}-07-04`, // July 4th current year
+        `${nextYear}-07-04`,    // July 4th next year
+        `${currentYear}-12-25`, // Christmas current year
+        `${nextYear}-12-25`,    // Christmas next year
+        `${currentYear}-01-01`, // New Year current year
+        `${nextYear}-01-01`     // New Year next year
+      ];
+      settingsMap.blackout_dates = JSON.stringify(defaultHolidays);
+      console.log('[BUSINESS SETTINGS] Applied default holiday blackout dates:', defaultHolidays);
+    }
+    
+    return settingsMap;
+  } catch (error) {
+    console.error('[BUSINESS SETTINGS] Error loading settings:', error);
+    throw new Error('Failed to load business settings');
+  }
 }
 
 // Helper function to get business hours for a specific day
@@ -216,11 +431,46 @@ async function getBusinessHoursForDay(dayOfWeek: number, businessSettings: Recor
   const startTime = businessSettings[startTimeKey];
   const endTime = businessSettings[endTimeKey];
   
+  console.log('[BUSINESS HOURS] Checking hours for day:', {
+    dayOfWeek,
+    dayName,
+    startTimeKey,
+    endTimeKey,
+    startTime,
+    endTime,
+    hasStartTime: !!startTime,
+    hasEndTime: !!endTime
+  });
+  
   // If no custom hours set, use defaults
   if (!startTime || !endTime) {
     const defaultHours = DEFAULT_BUSINESS_HOURS.find(h => h.dayOfWeek === dayOfWeek);
+    console.log('[BUSINESS HOURS] Using default hours:', {
+      dayOfWeek,
+      defaultHours,
+      allDefaults: DEFAULT_BUSINESS_HOURS
+    });
     return defaultHours || null;
   }
+  
+  // Validate time format
+  const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+  if (!timeRegex.test(startTime) || !timeRegex.test(endTime)) {
+    console.error('[BUSINESS HOURS] Invalid time format:', {
+      startTime,
+      endTime,
+      dayOfWeek
+    });
+    // Fall back to defaults
+    const defaultHours = DEFAULT_BUSINESS_HOURS.find(h => h.dayOfWeek === dayOfWeek);
+    return defaultHours || null;
+  }
+  
+  console.log('[BUSINESS HOURS] Using configured hours:', {
+    dayOfWeek,
+    startTime,
+    endTime
+  });
   
   return {
     startTime,
@@ -232,13 +482,36 @@ async function getBusinessHoursForDay(dayOfWeek: number, businessSettings: Recor
 // Helper function to check if date is a blackout date
 async function checkBlackoutDate(date: Date, businessSettings: Record<string, string>): Promise<boolean> {
   const blackoutDatesStr = businessSettings.blackout_dates || '';
-  if (!blackoutDatesStr) return false;
+  if (!blackoutDatesStr) {
+    console.log('[BLACKOUT CHECK] No blackout dates configured');
+    return false;
+  }
   
   try {
     const blackoutDates = JSON.parse(blackoutDatesStr);
     const dateStr = date.toISOString().split('T')[0];
-    return blackoutDates.includes(dateStr);
-  } catch {
+    
+    console.log('[BLACKOUT CHECK] Checking date:', {
+      requestedDate: dateStr,
+      blackoutDates: blackoutDates,
+      isBlocked: blackoutDates.includes(dateStr)
+    });
+    
+    // Special handling for July 4th (Independence Day)
+    const month = date.getMonth() + 1; // getMonth() returns 0-11
+    const day = date.getDate();
+    const isJuly4th = month === 7 && day === 4;
+    
+    if (isJuly4th) {
+      console.log('[BLACKOUT CHECK] July 4th detected - Independence Day holiday');
+    }
+    
+    return blackoutDates.includes(dateStr) || isJuly4th;
+  } catch (parseError) {
+    console.error('[BLACKOUT CHECK] Error parsing blackout dates:', {
+      error: parseError,
+      blackoutDatesStr
+    });
     return false;
   }
 }
@@ -251,20 +524,47 @@ async function getExistingBookings(date: Date) {
   const endOfDay = new Date(date);
   endOfDay.setHours(23, 59, 59, 999);
 
-  return await prisma.booking.findMany({
-    where: {
-      scheduledDateTime: {
-        gte: startOfDay,
-        lte: endOfDay,
+  try {
+    const bookings = await prisma.booking.findMany({
+      where: {
+        scheduledDateTime: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+        status: {
+          notIn: ['CANCELLED_BY_CLIENT', 'CANCELLED_BY_STAFF', 'NO_SHOW', 'ARCHIVED'],
+        },
       },
-      status: {
-        notIn: ['CANCELLED_BY_CLIENT', 'CANCELLED_BY_STAFF', 'NO_SHOW', 'ARCHIVED'],
+      select: {
+        id: true,
+        scheduledDateTime: true,
+        status: true,
+        Service: {
+          select: {
+            id: true,
+            name: true,
+            durationMinutes: true
+          }
+        }
       },
-    },
-    include: {
-      Service: true,
-    },
-  });
+    });
+    
+    console.log('[EXISTING BOOKINGS] Query result:', {
+      dateRange: `${startOfDay.toISOString()} to ${endOfDay.toISOString()}`,
+      foundBookings: bookings.length,
+      bookingDetails: bookings.map(b => ({
+        id: b.id,
+        time: b.scheduledDateTime?.toISOString(),
+        status: b.status,
+        service: b.Service?.name
+      }))
+    });
+    
+    return bookings;
+  } catch (error) {
+    console.error('[EXISTING BOOKINGS] Database query failed:', error);
+    throw new Error('Failed to retrieve existing bookings');
+  }
 }
 
 // Helper function to get lead time
