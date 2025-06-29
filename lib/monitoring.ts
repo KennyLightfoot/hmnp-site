@@ -72,7 +72,7 @@ class MonitoringService {
       // Add custom tags for filtering in Sentry
       Sentry.setTag('business_event', event.event);
       if (event.userId) Sentry.setTag('user_id', event.userId);
-      if (event.Service) Sentry.setTag('service_type', event.Service);
+      if (event.service) Sentry.setTag('service_type', event.service);
     }
 
     // Track specific critical events

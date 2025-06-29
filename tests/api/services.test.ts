@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database-connection';
 
 describe('/api/services', () => {
   beforeAll(async () => {

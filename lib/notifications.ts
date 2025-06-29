@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database-connection';
 import { sendEmail } from '@/lib/email';
 import { sendSms, checkSmsConsent } from '@/lib/sms';
 import * as ghl from '@/lib/ghl';

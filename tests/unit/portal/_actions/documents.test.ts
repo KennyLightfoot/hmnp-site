@@ -11,7 +11,7 @@ import {
     registerUploadedDocument
 } from '@/app/portal/_actions/documents';
 import { getServerSession } from 'next-auth';
-import { prisma } from '@/lib/db';
+import { prisma } from '@/lib/database-connection';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
 import { Role, type AssignmentDocument, AssignmentStatus } from '@prisma/client';
@@ -29,7 +29,7 @@ vi.mock('next-auth', async (importOriginal) => {
 const mockedGetServerSession = vi.mocked(getServerSession);
 
 // Mock prisma
-vi.mock('@/lib/db', () => ({
+vi.mock('@/lib/database-connection', () => ({
   prisma: {
     assignmentDocument: {
       findUnique: vi.fn(),

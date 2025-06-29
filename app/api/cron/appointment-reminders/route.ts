@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database-connection';
 import { NotificationService, sendAppointmentReminder } from '@/lib/notifications';
 import { BookingStatus, NotificationType, NotificationMethod } from '@prisma/client';
 

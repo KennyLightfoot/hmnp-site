@@ -213,7 +213,7 @@ class BookingService {
     
     // Service validation
     if (!data.serviceId) {
-      errors.Service = ['Please select a service'];
+      errors.service = ['Please select a service'];
     }
     
     return {
@@ -433,7 +433,7 @@ describe('BookingService', () => {
       expect(validation.errors.firstName).toContain('First name is required');
       expect(validation.errors.lastName).toContain('Last name is required');
       expect(validation.errors.address).toContain('Address is required');
-      expect(validation.errors.Service).toContain('Please select a service');
+      expect(validation.errors.service).toContain('Please select a service');
     });
 
     it('should validate ZIP codes correctly', () => {
@@ -502,6 +502,9 @@ const mockService = {
   name: 'Standard Notary Services',  // SOP: was likely 'Essential Service'
   serviceType: 'standard-notary',     // SOP: was likely "standard-notary"
   price: 75.00,
+  basePrice: 75.00,
+  durationMinutes: 90,
+  category: 'standard',
   isActive: true,
 };
 

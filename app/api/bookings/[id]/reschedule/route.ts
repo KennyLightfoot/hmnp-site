@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cancellationReschedulingService } from '@/lib/cancellation-rescheduling'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/database-connection'
 import { BookingStatus } from '@prisma/client'
 import { z } from 'zod'
 import * as ghl from '@/lib/ghl'

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { format, toZonedTime } from 'date-fns-tz';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database-connection';
 
 // Input validation schema
 const availabilityQuerySchema = z.object({

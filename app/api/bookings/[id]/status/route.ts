@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { BookingAutomationService } from '@/lib/booking-automation';
 import { BookingStatus } from '@prisma/client';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database-connection';
 
 export async function PATCH(
   request: Request,

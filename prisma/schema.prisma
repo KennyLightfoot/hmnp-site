@@ -44,15 +44,16 @@ model Assignment {
 }
 
 model AssignmentDocument {
-  id           String        @id
-  assignmentId String
-  key          String
-  filename     String
-  uploadedAt   DateTime      @default(now())
-  uploadedById String?
-  Assignment   Assignment    @relation(fields: [assignmentId], references: [id])
-  User         User?         @relation(fields: [uploadedById], references: [id])
-  DownloadLog  DownloadLog[]
+  id                   String                 @id
+  assignmentId         String
+  key                  String
+  filename             String
+  uploadedAt           DateTime               @default(now())
+  uploadedById         String?
+  Assignment           Assignment             @relation(fields: [assignmentId], references: [id])
+  User                 User?                  @relation(fields: [uploadedById], references: [id])
+  DownloadLog          DownloadLog[]
+  NotarizationDocument NotarizationDocument[]
 }
 
 model BackgroundError {
@@ -64,27 +65,27 @@ model BackgroundError {
 }
 
 model Booking {
-  id                          String          @id
+  id                          String                 @id
   signerId                    String?
   serviceId                   String
   notaryId                    String?
   scheduledDateTime           DateTime?
   actualEndDateTime           DateTime?
-  status                      BookingStatus   @default(REQUESTED)
+  status                      BookingStatus          @default(REQUESTED)
   locationType                LocationType?
   addressStreet               String?
   addressCity                 String?
   addressState                String?
   addressZip                  String?
   locationNotes               String?
-  priceAtBooking              Decimal         @db.Decimal(10, 2)
+  priceAtBooking              Decimal                @db.Decimal(10, 2)
   notes                       String?
   dailyRoomUrl                String?
   dailyRecordingId            String?
   kbaStatus                   String?
   idVerificationStatus        String?
   notaryJournalEntry          String?
-  createdAt                   DateTime        @default(now())
+  createdAt                   DateTime               @default(now())
   updatedAt                   DateTime
   confirmationEmailSentAt     DateTime?
   confirmationSmsSentAt       DateTime?
@@ -94,10 +95,10 @@ model Booking {
   reminder1hrSentAt           DateTime?
   reminder24hrSentAt          DateTime?
   reminder2hrSentAt           DateTime?
-  depositAmount               Decimal?        @db.Decimal(10, 2)
-  depositStatus               PaymentStatus?  @default(PENDING)
-  googleCalendarEventId       String?
-  promoCodeDiscount           Decimal?        @db.Decimal(10, 2)
+  depositAmount               Decimal?               @db.Decimal(10, 2)
+  depositStatus               PaymentStatus?         @default(PENDING)
+  googleCalendarEventId       String?                @unique
+  promoCodeDiscount           Decimal?               @db.Decimal(10, 2)
   promoCodeId                 String?
   campaignName                String?
   customerEmail               String?
@@ -105,24 +106,25 @@ model Booking {
   leadSource                  String?
   stripePaymentUrl            String?
   workflowId                  String?
-  witnessType                 witness_source? @map("witness_type")
-  witnessFee                  Decimal?        @default(0) @map("witness_fee") @db.Decimal(5, 2)
-  mileageMiles                Decimal?        @map("mileage_miles") @db.Decimal(5, 2)
-  mileageFee                  Decimal?        @default(0) @map("mileage_fee") @db.Decimal(5, 2)
-  urgencyLevel                String?         @default("standard") @map("urgency_level") @db.VarChar(20)
-  urgencyFee                  Decimal?        @default(0) @map("urgency_fee") @db.Decimal(5, 2)
-  estimatedCompletionTime     DateTime?       @map("estimated_completion_time") @db.Timestamptz(6)
-  notaryTravelTimeMinutes     Int?            @map("notary_travel_time_minutes")
-  googleMapsDistanceMatrix    Json?           @map("google_maps_distance_matrix")
-  serviceAreaId               String?         @map("service_area_id")
-  User_Booking_notaryIdToUser User?           @relation("Booking_notaryIdToUser", fields: [notaryId], references: [id])
-  PromoCode                   PromoCode?      @relation(fields: [promoCodeId], references: [id])
-  Service                     Service         @relation(fields: [serviceId], references: [id])
-  User_Booking_signerIdToUser User?           @relation("Booking_signerIdToUser", fields: [signerId], references: [id])
-  Payment                     Payment[]
-  NotificationLog             NotificationLog[]
+  witnessType                 witness_source?        @map("witness_type")
+  witnessFee                  Decimal?               @default(0) @map("witness_fee") @db.Decimal(5, 2)
+  mileageMiles                Decimal?               @map("mileage_miles") @db.Decimal(5, 2)
+  mileageFee                  Decimal?               @default(0) @map("mileage_fee") @db.Decimal(5, 2)
+  urgencyLevel                String?                @default("standard") @map("urgency_level") @db.VarChar(20)
+  urgencyFee                  Decimal?               @default(0) @map("urgency_fee") @db.Decimal(5, 2)
+  estimatedCompletionTime     DateTime?              @map("estimated_completion_time") @db.Timestamptz(6)
+  notaryTravelTimeMinutes     Int?                   @map("notary_travel_time_minutes")
+  googleMapsDistanceMatrix    Json?                  @map("google_maps_distance_matrix")
+  serviceAreaId               String?                @map("service_area_id")
+  User_Booking_notaryIdToUser User?                  @relation("Booking_notaryIdToUser", fields: [notaryId], references: [id])
+  PromoCode                   PromoCode?             @relation(fields: [promoCodeId], references: [id])
+  Service                     Service                @relation(fields: [serviceId], references: [id])
+  service_areas               ServiceArea?           @relation(fields: [serviceAreaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User_Booking_signerIdToUser User?                  @relation("Booking_signerIdToUser", fields: [signerId], references: [id])
   NotarizationDocument        NotarizationDocument[]
-  Document                    Document[]
+  NotificationLog             NotificationLog[]
+  Payment                     Payment[]
+  notary_journal              NotaryJournal[]
 
   @@index([notaryId])
   @@index([scheduledDateTime])
@@ -131,10 +133,17 @@ model Booking {
   @@index([status])
   @@index([serviceAreaId], map: "idx_booking_service_area")
   @@index([urgencyLevel], map: "idx_booking_urgency")
+  @@index([depositStatus])
+  @@index([lastReminderSentAt])
+  @@index([locationType])
+  @@index([noShowCheckPerformedAt])
+  @@index([priceAtBooking])
+  @@index([promoCodeId])
+  @@index([witnessType], map: "idx_booking_witness_type")
 }
 
 model BusinessSettings {
-  id          String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  id          String   @id
   key         String   @unique
   value       String
   dataType    String   @default("string")
@@ -178,29 +187,32 @@ model InvitationToken {
   expiresAt DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime
+  User      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([email])
+  @@index([userId])
 }
 
 model NotarizationDocument {
-  id                         String    @id
+  id                         String              @id
   s3Key                      String
   originalFilename           String
-  uploadedAt                 DateTime  @default(now())
+  uploadedAt                 DateTime            @default(now())
   uploadedById               String
-  isSigned                   Boolean   @default(false)
+  isSigned                   Boolean             @default(false)
   signedS3Key                String?
   signedAt                   DateTime?
-  createdAt                  DateTime  @default(now())
+  createdAt                  DateTime            @default(now())
   updatedAt                  DateTime
   sourceAssignmentDocumentId String?
   bookingId                  String
-
-  booking                    Booking   @relation(fields: [bookingId], references: [id])
-  uploadedBy                 User      @relation(fields: [uploadedById], references: [id])
+  booking                    Booking             @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  AssignmentDocument         AssignmentDocument? @relation(fields: [sourceAssignmentDocumentId], references: [id])
+  uploadedBy                 User                @relation(fields: [uploadedById], references: [id])
 
   @@index([bookingId])
   @@index([uploadedById])
+  @@index([sourceAssignmentDocumentId])
 }
 
 model NotificationLog {
@@ -217,10 +229,13 @@ model NotificationLog {
   errorMessage     String?
   metadata         Json?
   createdAt        DateTime           @default(now())
-  Booking          Booking            @relation(fields: [bookingId], references: [id])
+  Booking          Booking            @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
-  @@index([bookingId, sentAt])
+  @@index([method])
+  @@index([notificationType])
+  @@index([recipientEmail])
+  @@index([sentAt])
 }
 
 model Payment {
@@ -229,22 +244,20 @@ model Payment {
   amount          Decimal         @db.Decimal(10, 2)
   status          PaymentStatus   @default(PENDING)
   provider        PaymentProvider
-  transactionId   String?
-  paymentIntentId String?
+  transactionId   String?         @unique
+  paymentIntentId String?         @unique
   notes           String?
   paidAt          DateTime?
   refundedAmount  Decimal?        @db.Decimal(10, 2)
   refundedAt      DateTime?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime
-  metadata        Json?
-  currency        String?         @default("USD")
-  completedAt     DateTime?
-  Booking         Booking         @relation(fields: [bookingId], references: [id])
+  Booking         Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
   @@index([provider])
   @@index([status])
+  @@index([paymentIntentId])
 }
 
 model PromoCode {
@@ -271,6 +284,7 @@ model PromoCode {
   @@index([code])
   @@index([createdById])
   @@index([validFrom, validUntil])
+  @@index([isActive])
 }
 
 model Service {
@@ -289,6 +303,7 @@ model Service {
   Booking            Booking[]
 
   @@index([serviceType])
+  @@index([isActive])
 }
 
 model Session {
@@ -311,7 +326,7 @@ model StatusHistory {
 }
 
 model SystemAlert {
-  id         String        @id @default(dbgenerated("(gen_random_uuid())::text"))
+  id         String        @id
   component  String
   message    String
   severity   AlertSeverity @default(MEDIUM)
@@ -327,7 +342,7 @@ model SystemAlert {
 }
 
 model SystemLog {
-  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  id        String   @id
   component String
   message   String
   level     LogLevel @default(INFO)
@@ -342,39 +357,38 @@ model SystemLog {
 }
 
 model User {
-  id                             String               @id
+  id                             String                 @id
   name                           String?
-  email                          String?              @unique
+  email                          String?                @unique
   emailVerified                  DateTime?
   image                          String?
-  role                           Role                 @default(PARTNER)
-  createdAt                      DateTime             @default(now())
+  role                           Role                   @default(PARTNER)
+  createdAt                      DateTime               @default(now())
   updatedAt                      DateTime
   onboardedAt                    DateTime?
   password                       String?
-  customerPreferences            Json?                @map("customer_preferences")
-  notaryAvailability             Json?                @map("notary_availability")
-  marketingConsent               Boolean?             @default(false) @map("marketing_consent")
-  smsConsent                     Boolean?             @default(false) @map("sms_consent")
-  pushNotificationToken          String?              @map("push_notification_token") @db.VarChar(500)
+  customerPreferences            Json?                  @map("customer_preferences")
+  notaryAvailability             Json?                  @map("notary_availability")
+  marketingConsent               Boolean?               @default(false) @map("marketing_consent")
+  smsConsent                     Boolean?               @default(false) @map("sms_consent")
+  pushNotificationToken          String?                @map("push_notification_token") @db.VarChar(500)
   Account                        Account[]
   Assignment                     Assignment[]
   AssignmentDocument             AssignmentDocument[]
-  Booking_Booking_notaryIdToUser Booking[]            @relation("Booking_notaryIdToUser")
-  Booking_Booking_signerIdToUser Booking[]            @relation("Booking_signerIdToUser")
+  Booking_Booking_notaryIdToUser Booking[]              @relation("Booking_notaryIdToUser")
+  Booking_Booking_signerIdToUser Booking[]              @relation("Booking_signerIdToUser")
   BusinessSettings               BusinessSettings[]
   Comment                        Comment[]
   DownloadLog                    DownloadLog[]
+  InvitationToken                InvitationToken[]
+  NotarizationDocument           NotarizationDocument[]
   PromoCode                      PromoCode[]
   Session                        Session[]
   StatusHistory                  StatusHistory[]
   SystemLog                      SystemLog[]
-  Document                       Document[]
-  DocumentAccessUser             DocumentAccess[] @relation("DocumentAccessUser")
-  DocumentAccessGrantedBy        DocumentAccess[] @relation("DocumentAccessGrantedBy")
-  DocumentAuditLog               DocumentAuditLog[]
-  DocumentVersion                DocumentVersion[]
-  NotarizationDocument           NotarizationDocument[]
+  feature_flags                  FeatureFlag[]
+  notary_journal                 NotaryJournal[]
+  notary_profiles                NotaryProfile?
 }
 
 model VerificationToken {
@@ -398,7 +412,10 @@ model NotaryProfile {
   dailyCapacity         Int?      @default(8) @map("daily_capacity")
   createdAt             DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt             DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  User                  User      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
+  @@index([isActive], map: "idx_notary_profiles_active")
+  @@index([user_id], map: "idx_notary_profiles_user_id")
   @@map("notary_profiles")
 }
 
@@ -417,6 +434,8 @@ model NotaryJournal {
   location        String?
   additionalNotes String?   @map("additional_notes")
   createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  Booking         Booking?  @relation(fields: [bookingId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User            User      @relation(fields: [notaryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([notaryId, journalNumber])
   @@index([bookingId], map: "idx_notary_journal_booking_id")
@@ -433,6 +452,7 @@ model ServiceArea {
   active               Boolean?  @default(true)
   createdAt            DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt            DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  Booking              Booking[]
 
   @@index([active], map: "idx_service_areas_active")
   @@map("service_areas")
@@ -450,6 +470,7 @@ model MileageCache {
 
   @@unique([originAddress, destinationAddress])
   @@index([lastCalculated], map: "idx_mileage_cache_calculated")
+  @@index([originAddress, destinationAddress], map: "idx_mileage_cache_addresses")
   @@map("mileage_cache")
 }
 
@@ -476,6 +497,7 @@ model DailyMetric {
   createdAt            DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt            DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
+  @@index([date], map: "idx_daily_metrics_date")
   @@map("daily_metrics")
 }
 
@@ -490,116 +512,10 @@ model FeatureFlag {
   createdAt         DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   createdBy         String?   @map("created_by")
+  User              User?     @relation(fields: [createdBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([environment], map: "idx_feature_flags_environment")
   @@map("feature_flags")
-}
-
-model Document {
-  id                String             @id
-  s3Key             String
-  originalFilename  String
-  sanitizedFilename String
-  contentType       String
-  fileSize          Int
-  category          DocumentCategory   @default(GENERAL)
-  uploadedById      String
-  securityScore     Int                @default(100)
-  scanStatus        ScanStatus         @default(PENDING)
-  scanResult        Json?
-  accessLevel       AccessLevel        @default(PRIVATE)
-  encryptionStatus  EncryptionStatus   @default(UNENCRYPTED)
-  checksumSha256    String?
-  downloadCount     Int                @default(0)
-  lastAccessedAt    DateTime?
-  expiresAt         DateTime?
-  bookingId         String?
-  sessionId         String?
-  uploadMetadata    Json?
-  tags              String[]
-  isActive          Boolean            @default(true)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-
-  uploadedBy        User               @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
-  booking           Booking?           @relation(fields: [bookingId], references: [id], onDelete: SetNull)
-  documentAccess    DocumentAccess[]
-  auditLogs         DocumentAuditLog[]
-  versions          DocumentVersion[]
-
-  @@index([uploadedById])
-  @@index([bookingId])
-  @@index([sessionId])
-  @@index([s3Key])
-  @@index([category])
-  @@index([scanStatus])
-  @@index([createdAt(sort: Desc)])
-  @@index([expiresAt])
-}
-
-model DocumentAccess {
-  id           String    @id
-  documentId   String
-  userId       String
-  accessType   AccessType @default(READ)
-  grantedById  String
-  grantedAt    DateTime  @default(now())
-  expiresAt    DateTime?
-  isActive     Boolean   @default(true)
-  lastUsedAt   DateTime?
-  usageCount   Int       @default(0)
-  metadata     Json?
-
-  document     Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  user         User      @relation("DocumentAccessUser", fields: [userId], references: [id], onDelete: Cascade)
-  grantedBy    User      @relation("DocumentAccessGrantedBy", fields: [grantedById], references: [id], onDelete: Restrict)
-
-  @@unique([documentId, userId, accessType])
-  @@index([documentId])
-  @@index([userId])
-  @@index([grantedById])
-  @@index([isActive, expiresAt])
-}
-
-model DocumentAuditLog {
-  id            String    @id
-  documentId    String
-  userId        String?
-  action        String
-  ipAddress     String?
-  userAgent     String?
-  timestamp     DateTime  @default(now())
-  metadata      Json?
-  securityFlags String[]
-  riskScore     Int?      @default(0)
-
-  document      Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([documentId])
-  @@index([userId])
-  @@index([timestamp(sort: Desc)])
-  @@index([action])
-  @@index([riskScore(sort: Desc)])
-}
-
-model DocumentVersion {
-  id             String   @id
-  documentId     String
-  versionNumber  Int
-  s3Key          String
-  fileSize       Int
-  checksumSha256 String?
-  changes        String?
-  createdById    String
-  createdAt      DateTime @default(now())
-  metadata       Json?
-
-  document       Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  createdBy      User     @relation(fields: [createdById], references: [id], onDelete: Restrict)
-
-  @@unique([documentId, versionNumber])
-  @@index([documentId])
 }
 
 enum AlertSeverity {
@@ -721,7 +637,6 @@ enum Role {
   PARTNER
   SIGNER
   NOTARY
-  CLIENT
 }
 
 enum ServiceType {
@@ -733,60 +648,8 @@ enum ServiceType {
   SUPPORT_SERVICE
 }
 
-enum WitnessSource {
-  CUSTOMER_PROVIDED
-  STAFF_PROVIDED
-  PROOF_PROVIDED
-}
-
-enum UrgencyLevel {
-  STANDARD
-  SAME_DAY
-  EMERGENCY
-}
-
 enum witness_source {
   customer_provided
   staff_provided
   proof_provided
-}
-
-enum DocumentCategory {
-  GENERAL
-  RON_DOCUMENTS
-  IDENTIFICATION
-  SUPPORTING
-  ASSIGNMENT
-  SIGNED
-}
-
-enum ScanStatus {
-  PENDING
-  SCANNING
-  CLEAN
-  INFECTED
-  ERROR
-  QUARANTINED
-}
-
-enum AccessLevel {
-  PUBLIC
-  PRIVATE
-  RESTRICTED
-  CONFIDENTIAL
-}
-
-enum EncryptionStatus {
-  UNENCRYPTED
-  CLIENT_SIDE
-  SERVER_SIDE
-  END_TO_END
-}
-
-enum AccessType {
-  READ
-  WRITE
-  DELETE
-  SHARE
-  ADMIN
 }

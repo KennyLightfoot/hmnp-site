@@ -58,15 +58,15 @@ test.describe('Critical Booking Flow', () => {
     // Step 2: Select service
     await test.step('Select service', async () => {
       // Look for service cards or selection options
-      const serviceCard = page.locator(`[data-testid="service-${TEST_BOOKING_DATA.Service.name}"]`)
-        .or(page.locator(`:has-text("${TEST_BOOKING_DATA.Service.name}")`).first());
+      const serviceCard = page.locator(`[data-testid="service-${TEST_BOOKING_DATA.service.name}"]`)
+        .or(page.locator(`:has-text("${TEST_BOOKING_DATA.service.name}")`).first());
       
       await expect(serviceCard).toBeVisible({ timeout: 10000 });
       await serviceCard.click();
 
       // Verify service selection
       const selectedService = page.locator('.selected, .bg-blue-100, [data-selected="true"]')
-        .or(page.locator(`:has-text("${TEST_BOOKING_DATA.Service.name}")`));
+        .or(page.locator(`:has-text("${TEST_BOOKING_DATA.service.name}")`));
       await expect(selectedService).toBeVisible();
     });
 
@@ -112,7 +112,7 @@ test.describe('Critical Booking Flow', () => {
       await expect(page.locator(':has-text("Booking Summary"), :has-text("Review")')).toBeVisible();
       
       // Verify service details
-      await expect(page.locator(`:has-text("${TEST_BOOKING_DATA.Service.name}")`)).toBeVisible();
+      await expect(page.locator(`:has-text("${TEST_BOOKING_DATA.service.name}")`)).toBeVisible();
       await expect(page.locator(`:has-text("${TEST_BOOKING_DATA.client.firstName}")`)).toBeVisible();
       await expect(page.locator(`:has-text("${TEST_BOOKING_DATA.client.email}")`)).toBeVisible();
     });

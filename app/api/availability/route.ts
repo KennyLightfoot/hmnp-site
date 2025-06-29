@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { format, toZonedTime, getTimezoneOffset } from 'date-fns-tz';
 import { addMinutes, isBefore, isAfter, isSameDay } from 'date-fns';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database-connection';
 
 // Input validation schema
 const availabilityQuerySchema = z.object({

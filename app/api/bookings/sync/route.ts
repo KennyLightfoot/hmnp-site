@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database-connection';
 import { BookingStatus, LocationType, Role } from '@prisma/client';
 import { z } from 'zod';
 import * as ghl from '@/lib/ghl';

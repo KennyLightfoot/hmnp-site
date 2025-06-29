@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database-connection';
 import { BookingStatus } from '@prisma/client';
 import { cache, cacheTTL } from '@/lib/cache';
 import { logger } from '@/lib/logger';
