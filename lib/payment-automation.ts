@@ -38,7 +38,7 @@ interface BookingWithUserAndService {
 }
 
 export class PaymentAutomationService {
-  private notificationservice: NotificationService = NotificationService.getInstance()
+  private notificationService: NotificationService = NotificationService.getInstance()
   
   // Default payment reminder configuration
   private defaultReminderConfig: PaymentReminderConfig = {

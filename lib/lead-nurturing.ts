@@ -55,7 +55,7 @@ export interface LeadNurtureEnrollment {
 }
 
 export class LeadNurturingService {
-  private notificationservice: NotificationService
+  private notificationService: NotificationService
   
   // Predefined nurture sequences
   private sequences: NurtureSequence[] = [
@@ -314,7 +314,7 @@ When you need notary services, trust the experts with 500+ 5-star reviews.`,
       description: 'Re-engage past clients who haven\'t used services recently',
       trigger: {
         type: 'INACTIVE_CLIENT',
-        criteria: { daysSinceLastservice: 180 }
+        criteria: { daysSinceLastService: 180 }
       },
       steps: [
         {

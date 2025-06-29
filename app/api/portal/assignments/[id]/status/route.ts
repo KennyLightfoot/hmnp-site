@@ -38,7 +38,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     }
 
     // Add history record if status or note provided
-    await prisma.StatusHistory.create({
+    await prisma.statusHistory.create({
       data: {
         assignmentId: id,
         status: status || assignment.status,

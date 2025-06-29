@@ -47,7 +47,7 @@ export async function getPresignedDownloadUrl(documentId: string): Promise<{ err
 
   try {
     // 1. Fetch the document and its associated assignment
-    const document = await prisma.AssignmentDocument.findUnique({
+    const document = await prisma.assignmentDocument.findUnique({
       where: { id: documentId },
       include: {
         assignment: {
@@ -82,7 +82,7 @@ export async function getPresignedDownloadUrl(documentId: string): Promise<{ err
     });
 
     // TODO: Log the download attempt (optional)
-    // await prisma.DownloadLog.create(...);
+    // await prisma.downloadLog.create(...);
 
     return { url };
 
@@ -198,7 +198,7 @@ export async function registerUploadedDocument(
   }
 
   try {
-    const newDocument = await prisma.AssignmentDocument.create({
+    const newDocument = await prisma.assignmentDocument.create({
       data: {
         assignmentId: assignmentId,
         filename: filename,

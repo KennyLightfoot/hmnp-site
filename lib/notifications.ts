@@ -961,7 +961,7 @@ export const sendAppointmentReminder = async (
       
       <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
         <h3>Appointment Details:</h3>
-        <p><strong>service:</strong> ${booking.service.name}</p>
+        <p><strong>Service:</strong> ${booking.service.name}</p>
         <p><strong>Date:</strong> ${booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'TBD'}</p>
         <p><strong>Time:</strong> ${booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'TBD'}</p>
         <p><strong>Location:</strong> ${booking.addressStreet && booking.addressCity && booking.addressState && booking.addressZip ? 

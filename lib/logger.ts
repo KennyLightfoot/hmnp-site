@@ -54,7 +54,7 @@ function detectServiceFromCallStack(): string {
 class Logger {
   private currentLogLevel: LogLevel;
   private requestId: string | null = null;
-  private defaultservice: string | null = null;
+  private defaultService: string | null = null;
 
   constructor() {
     this.currentLogLevel = this.getLogLevelFromEnv();

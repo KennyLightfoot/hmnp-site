@@ -18,7 +18,7 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
   })
   if (!assignment) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
-  await prisma.AssignmentDocument.create({
+  await prisma.assignmentDocument.create({
     data: {
       assignmentId: params.id,
       key,

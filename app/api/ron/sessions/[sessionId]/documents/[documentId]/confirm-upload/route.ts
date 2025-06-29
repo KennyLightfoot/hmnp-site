@@ -36,7 +36,7 @@ export async function POST(
     }
 
     // 3. Validate Document
-    const documentRecord = await prisma.NotarizationDocument.findUnique({
+    const documentRecord = await prisma.notarizationDocument.findUnique({
       where: { id: documentId },
     });
 
@@ -53,7 +53,7 @@ export async function POST(
     // 4. Update Document Record (e.g., mark as confirmed)
     // For now, we'll just update the 'updatedAt' timestamp as a proxy for confirmation.
     // In a real scenario, you might add a specific status field or check S3.
-    const updatedDocument = await prisma.NotarizationDocument.update({
+    const updatedDocument = await prisma.notarizationDocument.update({
       where: { id: documentId },
       data: {
         updatedAt: new Date(), // Simulate confirmation by updating timestamp

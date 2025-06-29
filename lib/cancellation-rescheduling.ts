@@ -27,7 +27,7 @@ export interface RefundCalculation {
 }
 
 export class CancellationReschedulingService {
-  private notificationservice: NotificationService
+  private notificationService: NotificationService
 
   constructor() {
     this.notificationService = new NotificationService()
@@ -500,7 +500,7 @@ export class CancellationReschedulingService {
       console.log(`Notifying waitlist about available slot: ${dateTime.toISOString()} for service ${serviceId}`)
       
       // Example implementation:
-      // const waitlistEntries = await prisma.Waitlist.findMany({
+      // const waitlistEntries = await prisma.waitlist.findMany({
       //   where: {
       //     serviceId,
       //     preferredDate: { lte: dateTime },
