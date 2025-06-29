@@ -24,7 +24,7 @@ async function verifyAdminAccess(request: NextRequest) {
   }
 
   // Check if user has admin role
-  if (!session.user.roles?.includes('ADMIN')) {
+  if ((session.user as any).role !== 'ADMIN') {
     return NextResponse.json(
       { error: 'Admin access required' },
       { status: 403 }

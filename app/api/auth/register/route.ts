@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import bcrypt from 'bcrypt';
 import { Role } from '@prisma/client';
+import { randomUUID } from 'crypto';
 
 const SALT_ROUNDS = 10;
 
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
     }
 
     // 2. Check if user already exists
-    const existingUser = await prisma.User.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
     });
 
@@ -40,13 +41,15 @@ export async function POST(request: Request) {
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
     // 4. Create user
-    const user = await prisma.User.create({
+    const user = await prisma.user.create({
       data: {
+        id: randomUUID(),
         email: email.toLowerCase(),
         password: hashedPassword,
         role: role,
         name: name || null, // Optional name field
         emailVerified: new Date(), // Mark email as verified immediately
+        updatedAt: new Date(),
       },
       select: { // Only return essential, non-sensitive fields
         id: true,

@@ -38,10 +38,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch RON bookings
-    const bookings = await prisma.Booking.findMany({
+    const bookings = await prisma.booking.findMany({
       where: whereClause,
       include: {
-        Service: {
+        service: {
           select: {
             id: true,
             name: true,
@@ -79,11 +79,11 @@ export async function GET(request: NextRequest) {
       signerPhone: booking.User_Booking_signerIdToUser?.phone,
       scheduledDateTime: booking.scheduledDateTime?.toISOString(),
       status: booking.status,
-      Service: {
-        name: booking.Service.name,
-        duration: booking.Service.duration,
+      service: {
+        name: booking.service.name,
+        duration: booking.service.duration,
       },
-      finalPrice: Number(booking.priceAtBooking || booking.Service.price),
+      finalPrice: Number(booking.priceAtBooking || booking.service.price),
       proofTransactionId: booking.proofTransactionId,
       proofAccessLink: booking.proofAccessLink,
       proofStatus: booking.proofStatus,

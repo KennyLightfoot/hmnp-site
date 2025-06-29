@@ -14,7 +14,7 @@ export interface LogEntry {
   timestamp: string;
   level: LogLevel;
   message: string;
-  Service: string;
+  service: string;
   requestId?: string;
   metadata?: Record<string, any>;
   error?: {
@@ -54,7 +54,7 @@ function detectServiceFromCallStack(): string {
 class Logger {
   private currentLogLevel: LogLevel;
   private requestId: string | null = null;
-  private defaultService: string | null = null;
+  private defaultservice: string | null = null;
 
   constructor() {
     this.currentLogLevel = this.getLogLevelFromEnv();

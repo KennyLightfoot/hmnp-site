@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-      const userProfile = await prisma.User.findUnique({
+      const userProfile = await prisma.user.findUnique({
         where: { id: context.userId! },
         select: {
           id: true,
@@ -81,7 +81,7 @@ export async function PATCH(request: NextRequest) {
       const validatedData = updateProfileSchema.parse(body);
 
       // Get current user data
-      const currentUser = await prisma.User.findUnique({
+      const currentUser = await prisma.user.findUnique({
         where: { id: context.userId! },
         select: { id: true, email: true, password: true }
       });
@@ -107,7 +107,7 @@ export async function PATCH(request: NextRequest) {
 
       // Handle email update (check for uniqueness)
       if (validatedData.email && validatedData.email !== currentUser.email) {
-        const existingUser = await prisma.User.findUnique({
+        const existingUser = await prisma.user.findUnique({
           where: { email: validatedData.email }
         });
 
@@ -156,7 +156,7 @@ export async function PATCH(request: NextRequest) {
       }
 
       // Update user
-      const updatedUser = await prisma.User.update({
+      const updatedUser = await prisma.user.update({
         where: { id: context.userId! },
         data: updateData,
         select: {

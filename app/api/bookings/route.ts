@@ -205,10 +205,10 @@ export async function GET(request: NextRequest) {
       }
 
       const [bookings, total] = await Promise.all([
-        prisma.Booking.findMany({
+        prisma.booking.findMany({
           where: whereClause,
           include: {
-            Service: true,
+            service: true,
             promoCode: true,
                     User_Booking_signerIdToUser: context.canViewAllBookings ? {
           select: { id: true, name: true, email: true }
@@ -219,7 +219,7 @@ export async function GET(request: NextRequest) {
           skip: (page - 1) * limit,
           take: limit,
         }),
-        prisma.Booking.count({ where: whereClause }),
+        prisma.booking.count({ where: whereClause }),
       ]);
 
       return NextResponse.json({
@@ -278,7 +278,7 @@ export async function POST(request: NextRequest) {
       
       // Verify authenticated user exists in database
       try {
-        const userExists = await prisma.User.findUnique({
+        const userExists = await prisma.user.findUnique({
           where: { id: signerUserId },
           select: { id: true }
         });
@@ -377,7 +377,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Service ID is required' }, { status: 400 });
     }
 
-    const service = await prisma.Service.findUnique({
+    const service = await prisma.service.findUnique({
       where: { id: serviceId, isActive: true },
     });
 
@@ -403,7 +403,7 @@ export async function POST(request: NextRequest) {
 
     type BookingWithRelations = Prisma.BookingGetPayload<{
       include: {
-        Service: true;
+        service: true;
         User_Booking_signerIdToUser: { select: { id: true; name: true; email: true } };
       };
     }>;
@@ -428,7 +428,7 @@ export async function POST(request: NextRequest) {
     // Prepare booking data, handling both authenticated and guest bookings
     const bookingData: any = {
       id: bookingId,
-      Service: {
+      service: {
         connect: { id: service.id }
       },
       scheduledDateTime: scheduledDateTime ? new Date(scheduledDateTime) : null,
@@ -462,10 +462,10 @@ export async function POST(request: NextRequest) {
       }
     
     // For guest bookings, we'll only store email/contact info in GHL, not linked to a user
-    let newBooking: any = await prisma.Booking.create({
+    let newBooking: any = await prisma.booking.create({
       data: bookingData,
       include: {
-        Service: true,
+        service: true,
                 // Only include user relation if we have a signerId
         ...(signerUserId ? {
           User_Booking_signerIdToUser: {
@@ -499,7 +499,7 @@ export async function POST(request: NextRequest) {
               currency: 'usd',
               product_data: {
                 name: `Booking for ${service.name}`,
-                description: `Service: ${service.name} on ${newBooking.scheduledDateTime ? new Date(newBooking.scheduledDateTime).toLocaleDateString() : 'Date TBD'}`,
+                description: `service: ${service.name} on ${newBooking.scheduledDateTime ? new Date(newBooking.scheduledDateTime).toLocaleDateString() : 'Date TBD'}`,
                 // images: [service.imageUrl || 'your_default_service_image_url'], // Optional: Add a service image URL
               },
               unit_amount: amountToChargeInCents,
@@ -520,7 +520,7 @@ export async function POST(request: NextRequest) {
         
         // Store the payment URL in the booking notes
         if (checkoutUrl) {
-          await prisma.Booking.update({
+          await prisma.booking.update({
             where: { id: newBooking.id },
             data: { 
               notes: newBooking.notes ? `${newBooking.notes}\nPayment URL: ${checkoutUrl}` : `Payment URL: ${checkoutUrl}`
@@ -641,7 +641,7 @@ export async function POST(request: NextRequest) {
           
           if (contactId) {
             // Store GHL contact ID in booking
-            await prisma.Booking.update({
+            await prisma.booking.update({
               where: { id: newBooking.id },
               data: { 
                 ghlContactId: contactId,
@@ -651,7 +651,7 @@ export async function POST(request: NextRequest) {
             
             const tagsToApply: string[] = [];
             if (service?.name) {
-              tagsToApply.push(`Service:${service.name.replace(/\s+/g, '_').toLowerCase()}`);
+              tagsToApply.push(`service:${service.name.replace(/\s+/g, '_').toLowerCase()}`);
             }
             if (newBooking.status === BookingStatus.PAYMENT_PENDING) {
               tagsToApply.push('status:booking_pendingpayment');
@@ -664,7 +664,7 @@ export async function POST(request: NextRequest) {
             
             // Check if this is an emergency service
             if (service?.name && (service.name.toLowerCase().includes('emergency') || service.name.toLowerCase().includes('urgent'))) {
-              tagsToApply.push('Service:Emergency');
+              tagsToApply.push('service:Emergency');
               tagsToApply.push('extended-hours-notary:same_day');
             }
 
@@ -709,7 +709,7 @@ export async function POST(request: NextRequest) {
               
               // Update booking with calendar event ID
               if (eventId) {
-                await prisma.Booking.update({
+                await prisma.booking.update({
                   where: { id: newBooking.id },
                   data: { googleCalendarEventId: eventId }
                 });
@@ -774,11 +774,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Send booking confirmation notification
-    if (newBooking && newBooking.Service) {
+    if (newBooking && newBooking.service) {
       try {
         // Enhanced SOP tracking based on service type and booking details
-        const serviceType = newBooking.Service.serviceType;
-        const serviceName = newBooking.Service.name;
+        const serviceType = newBooking.service.serviceType;
+        const serviceName = newBooking.service.name;
         const bookingValue = Number(newBooking.priceAtBooking);
         
         // Determine if special SOP events should be tracked
@@ -825,7 +825,7 @@ export async function POST(request: NextRequest) {
         if (isSameDay && !isLoanSigning) {
           trackSameDayServiceRequested({
             service_type: serviceName,
-            base_value: Number(newBooking.Service.basePrice),
+            base_value: Number(newBooking.service.basePrice),
             surcharge_applied: 25, // SOP: $25 same-day fee
             request_time: new Date().toISOString(),
             urgency_reason: 'same_day_request'
@@ -835,7 +835,7 @@ export async function POST(request: NextRequest) {
         if (isAfterHours && !isLoanSigning) {
           trackAfterHoursServiceRequested({
             service_type: serviceName,
-            base_value: Number(newBooking.Service.basePrice),
+            base_value: Number(newBooking.service.basePrice),
             after_hours_fee: 50, // SOP: $50 after-hours fee
             requested_time: newBooking.scheduledDateTime?.toISOString() || new Date().toISOString()
           });
@@ -899,9 +899,9 @@ async function validateTimeSlotAvailability(
   serviceEndTime.setMinutes(serviceEndTime.getMinutes() + duration);
   
   // Check for conflicting bookings
-  type BookingWithService = Prisma.BookingGetPayload<{ include: { Service: true } }>;
+  type BookingWithService = Prisma.BookingGetPayload<{ include: { service: true } }>;
 
-  const conflictingBookings: BookingWithService[] = await tx.Booking.findMany({
+  const conflictingBookings: BookingWithService[] = await tx.booking.findMany({
     where: {
       scheduledDateTime: {
         gte: new Date(scheduledDateTime.getTime() - (60 * 60 * 1000)), // 1 hour before
@@ -912,7 +912,7 @@ async function validateTimeSlotAvailability(
       },
     },
     include: {
-      Service: true,
+      service: true,
     },
   });
   
@@ -921,7 +921,7 @@ async function validateTimeSlotAvailability(
     
     const bookingStart = new Date(booking.scheduledDateTime);
     const bookingEnd = new Date(bookingStart);
-          bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.Service.durationMinutes);
+          bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.service.durationMinutes);
     
     // Check for overlap
     return (scheduledDateTime < bookingEnd && serviceEndTime > bookingStart);
@@ -948,16 +948,16 @@ async function validateTimeSlotAvailability(
 // Helper function to calculate booking pricing with promo codes
 async function calculateBookingPricing(
   tx: any, 
-  Service: any, 
+  service: any, 
   promoCodeStr?: string
 ): Promise<BookingPricing> {
-  let price = Number(Service.basePrice);
+  let price = Number(service.basePrice);
   let promoDiscount = 0;
   let promoCodeInfo = undefined;
   
   // Apply promo code if provided
   if (promoCodeStr) {
-    const promoCode = await tx.PromoCode.findUnique({
+    const promoCode = await tx.promoCode.findUnique({
       where: { code: promoCodeStr.toUpperCase() },
     });
     
@@ -975,7 +975,7 @@ async function calculateBookingPricing(
         // Check if service is applicable
         const isServiceApplicable = (
           promoCode.applicableServices.length === 0 || 
-          promoCode.applicableServices.includes(Service.id)
+          promoCode.applicableServices.includes(service.id)
         );
         
         if (isServiceApplicable) {
@@ -1008,7 +1008,7 @@ async function calculateBookingPricing(
   }
   
   const finalPrice = Math.max(0, price - promoDiscount);
-  const depositAmount = Service.requiresDeposit ? Number(Service.depositAmount) : 0;
+  const depositAmount = service.requiresDeposit ? Number(service.depositAmount) : 0;
   
   return {
     basePrice: price,
@@ -1026,13 +1026,13 @@ async function findOrCreateCustomer(tx: any, customerData: {
   phone: string;
 }) {
   // Try to find existing customer by email
-  let customer = await tx.User.findUnique({
+  let customer = await tx.user.findUnique({
     where: { email: customerData.email },
   });
   
   // If not found, create new customer
   if (!customer) {
-    customer = await tx.User.create({
+    customer = await tx.user.create({
       data: {
         name: customerData.name,
         email: customerData.email,

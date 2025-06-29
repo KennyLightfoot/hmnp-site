@@ -47,10 +47,10 @@ export async function POST(request: NextRequest) {
     console.log(`✅ Cancellation request validated for booking: ${bookingId}`);
 
     // Find the booking
-    const booking = await prisma.Booking.findUnique({
+    const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        Service: true,
+        service: true,
         User_Booking_signerIdToUser: {
           select: {
             name: true,
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     let stripeRefundId = null;
     
     // Get payment records for this booking to find payment intent ID
-    const payments = await prisma.Payment.findMany({
+    const payments = await prisma.payment.findMany({
       where: { 
         bookingId: booking.id,
         status: 'COMPLETED',
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update booking status
-    const updatedBooking = await prisma.Booking.update({
+    const updatedBooking = await prisma.booking.update({
       where: { id: bookingId },
       data: {
         status: initiatedBy === 'customer' ? BookingStatus.CANCELLED_BY_CLIENT : BookingStatus.CANCELLED_BY_STAFF,

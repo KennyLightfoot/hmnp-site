@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
     debugInfo.steps.push('Looking up service');
     let service;
     try {
-      service = await prisma.Service.findUnique({
+      service = await prisma.service.findUnique({
         where: { id: validatedParams.serviceId },
       });
       debugInfo.data.service = service;
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
     debugInfo.steps.push('Fetching business settings');
     let businessSettings;
     try {
-      const settings = await prisma.BusinessSettings.findMany({
+      const settings = await prisma.businessSettings.findMany({
         where: { category: 'booking' },
       });
       businessSettings = settings.reduce((acc, setting) => {
@@ -178,7 +178,7 @@ export async function GET(request: NextRequest) {
       const endOfDay = new Date(requestedDate);
       endOfDay.setHours(23, 59, 59, 999);
 
-      const existingBookings = await prisma.Booking.findMany({
+      const existingBookings = await prisma.booking.findMany({
         where: {
           scheduledDateTime: {
             gte: startOfDay,
@@ -189,7 +189,7 @@ export async function GET(request: NextRequest) {
           },
         },
         include: {
-          Service: true,
+          service: true,
         },
       });
 
@@ -199,7 +199,7 @@ export async function GET(request: NextRequest) {
           id: b.id,
           scheduledDateTime: b.scheduledDateTime,
           status: b.status,
-          serviceName: b.Service?.name
+          serviceName: b.service?.name
         }))
       };
       debugInfo.steps.push('Bookings query successful');

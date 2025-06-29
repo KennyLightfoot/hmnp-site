@@ -72,9 +72,9 @@ class AIAssistant {
       }
 
       // Gather customer data
-      const bookings = await prisma.Booking.findMany({
+      const bookings = await prisma.booking.findMany({
         where: { signerId: customerId },
-        include: { Service: true },
+        include: { service: true },
       });
 
       // Calculate insights

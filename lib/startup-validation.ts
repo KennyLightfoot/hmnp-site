@@ -164,7 +164,7 @@ export class StartupValidator {
       // Check migration status (simplified check)
       try {
         // Try to query a recent table to verify migrations are up to date
-        await prisma.Document.findFirst();
+        await prisma.document.findFirst();
         await prisma.DocumentAccess.findFirst();
         await prisma.DocumentAuditLog.findFirst();
         

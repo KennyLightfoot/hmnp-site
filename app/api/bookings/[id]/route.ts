@@ -17,10 +17,10 @@ export async function GET(
     }
 
     // Get booking with all related data
-    const booking = await prisma.Booking.findUnique({
+    const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        Service: {
+        service: {
           select: {
             id: true,
             name: true,
@@ -87,13 +87,13 @@ export async function GET(
       actualEndDateTime: booking.actualEndDateTime,
       
       // Service Information
-      Service: {
-        id: booking.Service.id,
-        name: booking.Service.name,
-        description: booking.Service.description,
-        duration: booking.Service.durationMinutes,
-        price: booking.Service.basePrice,
-        type: booking.Service.serviceType,
+      service: {
+        id: booking.service.id,
+        name: booking.service.name,
+        description: booking.service.description,
+        duration: booking.service.durationMinutes,
+        price: booking.service.basePrice,
+        type: booking.service.serviceType,
       },
       
       // Customer Information
@@ -124,7 +124,7 @@ export async function GET(
       
       // Pricing Information
       pricing: {
-        price: Number(booking.Service.basePrice),
+        price: Number(booking.service.basePrice),
         priceAtBooking: Number(booking.priceAtBooking),
         promoDiscount: booking.promoCodeDiscount ? Number(booking.promoCodeDiscount) : 0,
         depositAmount: booking.depositAmount ? Number(booking.depositAmount) : 0,
@@ -211,7 +211,7 @@ export async function PATCH(
     }
 
     // Validate the booking exists
-    const existingBooking = await prisma.Booking.findUnique({
+    const existingBooking = await prisma.booking.findUnique({
       where: { id: bookingId },
     });
 
@@ -223,14 +223,14 @@ export async function PATCH(
     }
 
     // Update the booking
-    const updatedBooking = await prisma.Booking.update({
+    const updatedBooking = await prisma.booking.update({
       where: { id: bookingId },
       data: {
         ...body,
         updatedAt: new Date(),
       },
       include: {
-        Service: true,
+        service: true,
         User_Booking_signerIdToUser: true,
         promoCode: true,
       },

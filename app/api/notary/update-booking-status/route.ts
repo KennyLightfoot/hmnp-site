@@ -44,10 +44,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Find the booking
-    const booking = await prisma.Booking.findUnique({
+    const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        Service: true,
+        service: true,
         User_Booking_signerIdToUser: true,
       },
     });
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update the booking
-    const updatedBooking = await prisma.Booking.update({
+    const updatedBooking = await prisma.booking.update({
       where: { id: bookingId },
       data: updateData,
     });

@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
 
     // Get service details
     console.log('[AVAILABILITY API] Looking up service:', validatedParams.serviceId);
-    const service = await prisma.Service.findUnique({
+    const service = await prisma.service.findUnique({
       where: { id: validatedParams.serviceId },
     });
 
@@ -155,7 +155,7 @@ export async function GET(request: NextRequest) {
       serviceInfo: {
         name: service.name,
         duration: serviceDurationMinutes,
-        price: service.price,
+        price: service.basePrice,
       },
       businessHours: {
         startTime: businessHours.startTime,
@@ -195,7 +195,7 @@ export async function GET(request: NextRequest) {
 
 // Helper function to get business settings
 async function getBusinessSettings() {
-  const settings = await prisma.BusinessSettings.findMany({
+  const settings = await prisma.businessSettings.findMany({
     where: { category: 'booking' },
   });
 
@@ -251,7 +251,7 @@ async function getExistingBookings(date: Date) {
   const endOfDay = new Date(date);
   endOfDay.setHours(23, 59, 59, 999);
 
-  return await prisma.Booking.findMany({
+  return await prisma.booking.findMany({
     where: {
       scheduledDateTime: {
         gte: startOfDay,
@@ -262,7 +262,7 @@ async function getExistingBookings(date: Date) {
       },
     },
     include: {
-      Service: true,
+      service: true,
     },
   });
 }
@@ -333,7 +333,7 @@ function calculateAvailableSlots({
       
       const bookingStart = new Date(booking.scheduledDateTime);
       const bookingEnd = new Date(bookingStart);
-              bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.Service.durationMinutes + bufferTimeMinutes);
+              bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.service.durationMinutes + bufferTimeMinutes);
       
       // Check if there's any overlap
       return (currentSlot < bookingEnd && slotEnd > bookingStart);

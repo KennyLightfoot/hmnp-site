@@ -19,7 +19,7 @@ export async function POST() {
     // to stop all workers. Here we'll simulate that action.
     
     // Log this action
-    await prisma.SystemLog.create({
+    await prisma.systemLog.create({
       data: {
         level: 'INFO',
         component: 'WORKER_MANAGER',

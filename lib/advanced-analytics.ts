@@ -172,7 +172,7 @@ class AdvancedAnalytics {
       const startDate = this.getStartDate(endDate, timeframe);
 
       // Get customer data with booking history
-      const customers = await prisma.User.findMany({
+      const customers = await prisma.user.findMany({
         where: {
           Booking_Booking_signerIdToUser: {
             some: {
@@ -186,7 +186,7 @@ class AdvancedAnalytics {
         include: {
           Booking_Booking_signerIdToUser: {
             include: {
-              Service: true
+              service: true
             }
           }
         }
@@ -298,7 +298,7 @@ class AdvancedAnalytics {
       const startDate = this.getStartDate(endDate, timeframe);
 
       // Get booking data
-      const bookings = await prisma.Booking.findMany({
+      const bookings = await prisma.booking.findMany({
         where: {
           createdAt: {
             gte: startDate,
@@ -306,7 +306,7 @@ class AdvancedAnalytics {
           }
         },
         include: {
-          Service: true
+          service: true
         }
       });
 
@@ -487,7 +487,7 @@ class AdvancedAnalytics {
 
   private async predictCustomerChurn(): Promise<any[]> {
     // Simplified churn prediction
-    const customers = await prisma.User.findMany({
+    const customers = await prisma.user.findMany({
       include: {
         Booking_Booking_signerIdToUser: true
       }

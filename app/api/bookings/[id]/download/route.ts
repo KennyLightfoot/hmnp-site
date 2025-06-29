@@ -21,13 +21,13 @@ export async function GET(
     const bookingId = params.id
 
     // Get the booking with related data
-    const booking = await prisma.Booking.findFirst({
+    const booking = await prisma.booking.findFirst({
       where: {
         id: bookingId,
         signerId: session.user.id // Ensure user owns the booking
       },
       include: {
-        Service: true,
+        service: true,
         ProofTransaction: true
       }
     })
@@ -81,7 +81,7 @@ export async function GET(
     // Fallback: generate a basic booking receipt
     const receiptData = {
       bookingId: booking.id,
-      serviceName: booking.Service?.name || 'Notary Service',
+      serviceName: booking.service?.name || 'Notary Service',
       date: booking.scheduledDateTime,
       amount: booking.priceAtBooking?.toNumber() || 0,
       status: booking.status,

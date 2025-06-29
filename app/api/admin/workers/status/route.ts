@@ -83,7 +83,7 @@ export async function POST() {
     ];
 
     // Log this activity
-    await prisma.SystemLog.create({
+    await prisma.systemLog.create({
       data: {
         level: 'INFO',
         component: 'WORKER_MONITOR',

@@ -44,7 +44,7 @@ export class WebhookProcessor {
 
     try {
       // Step 1: Check if event was already processed (idempotency)
-      const existingEvent = await prisma.SystemLog.findUnique({
+      const existingEvent = await prisma.systemLog.findUnique({
         where: { 
           id: `webhook_${eventId}` 
         }
@@ -62,7 +62,7 @@ export class WebhookProcessor {
       }
 
       // Step 2: Create/update event log with PROCESSING status (acts as a lock)
-      const eventLog = await prisma.SystemLog.upsert({
+      const eventLog = await prisma.systemLog.upsert({
         where: { id: `webhook_${eventId}` },
         update: {
           level: 'WARN', // PROCESSING status
@@ -94,7 +94,7 @@ export class WebhookProcessor {
       if (attempts > this.MAX_ATTEMPTS) {
         console.error(`❌ Event ${eventId} exceeded max attempts (${this.MAX_ATTEMPTS})`);
         
-        await prisma.SystemLog.update({
+        await prisma.systemLog.update({
           where: { id: `webhook_${eventId}` },
           data: {
             level: 'ERROR',
@@ -187,7 +187,7 @@ export class WebhookProcessor {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
 
-    const result = await prisma.SystemLog.deleteMany({
+    const result = await prisma.systemLog.deleteMany({
       where: {
         source: 'stripe_webhook',
         createdAt: {
@@ -214,13 +214,13 @@ export class WebhookProcessor {
     cutoffDate.setDate(cutoffDate.getDate() - days);
 
     const [total, completed, failed, processing] = await Promise.all([
-      prisma.SystemLog.count({
+      prisma.systemLog.count({
         where: {
           source: 'stripe_webhook',
           createdAt: { gte: cutoffDate }
         }
       }),
-      prisma.SystemLog.count({
+      prisma.systemLog.count({
         where: {
           source: 'stripe_webhook',
           level: 'INFO',
@@ -228,14 +228,14 @@ export class WebhookProcessor {
           createdAt: { gte: cutoffDate }
         }
       }),
-      prisma.SystemLog.count({
+      prisma.systemLog.count({
         where: {
           source: 'stripe_webhook',
           level: 'ERROR',
           createdAt: { gte: cutoffDate }
         }
       }),
-      prisma.SystemLog.count({
+      prisma.systemLog.count({
         where: {
           source: 'stripe_webhook',
           level: 'WARN',

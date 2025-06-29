@@ -132,7 +132,7 @@ class MonitoringService {
     this.trackBusinessEvent({
       event: `funnel_${stage}`,
       userId: data.userId,
-      Service: data.serviceType,
+      service: data.serviceType,
       metadata: {
         sessionId: data.sessionId,
         dropoffReason: data.dropoffReason,

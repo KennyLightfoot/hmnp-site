@@ -39,7 +39,7 @@ export const postServiceFollowUpSms = (
   client: ClientDetailsForSms,
   feedbackLinkShort: string // e.g., a bit.ly link to feedback form
 ): string => {
-  return `Hi ${client.firstName || 'there'}, thanks for choosing ${companyShortName}! We'd love your feedback on your recent notary Service: ${feedbackLinkShort} Reply STOP to end.`;
+  return `Hi ${client.firstName || 'there'}, thanks for choosing ${companyShortName}! We'd love your feedback on your recent notary service: ${feedbackLinkShort} Reply STOP to end.`;
 };
 
 // Example for a cancellation SMS

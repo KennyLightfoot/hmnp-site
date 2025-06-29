@@ -30,7 +30,7 @@ export async function GET(
       const userId = params.id;
 
       // Get target user
-      const targetUser = await prisma.User.findUnique({
+      const targetUser = await prisma.user.findUnique({
         where: { id: userId },
         select: {
           id: true,
@@ -94,7 +94,7 @@ export async function PATCH(
       const validatedData = updateUserSchema.parse(body);
 
       // Get target user
-      const targetUser = await prisma.User.findUnique({
+      const targetUser = await prisma.user.findUnique({
         where: { id: targetUserId },
         select: { id: true, email: true, role: true }
       });
@@ -132,7 +132,7 @@ export async function PATCH(
 
       // Check email uniqueness if changing email
       if (validatedData.email && validatedData.email !== targetUser.email) {
-        const existingUser = await prisma.User.findUnique({
+        const existingUser = await prisma.user.findUnique({
           where: { email: validatedData.email }
         });
 
@@ -157,7 +157,7 @@ export async function PATCH(
       if (validatedData.role) updateData.role = validatedData.role as Role;
 
       // Update user
-      const updatedUser = await prisma.User.update({
+      const updatedUser = await prisma.user.update({
         where: { id: targetUserId },
         data: updateData,
         select: {
@@ -215,7 +215,7 @@ export async function DELETE(
       const targetUserId = params.id;
 
       // Get target user
-      const targetUser = await prisma.User.findUnique({
+      const targetUser = await prisma.user.findUnique({
         where: { id: targetUserId },
         select: { id: true, email: true, role: true }
       });
@@ -239,13 +239,13 @@ export async function DELETE(
 
       // Check if user has active bookings or assignments
       const [activeBookings, activeAssignments] = await Promise.all([
-        prisma.Booking.count({
+        prisma.booking.count({
           where: {
             signerId: targetUserId,
             status: { in: ['CONFIRMED', 'PAYMENT_PENDING', 'IN_PROGRESS'] }
           }
         }),
-        prisma.Assignment.count({
+        prisma.assignment.count({
           where: {
             partnerAssignedToId: targetUserId,
             status: { in: ['SCHEDULED', 'IN_PROGRESS'] }
@@ -267,7 +267,7 @@ export async function DELETE(
       }
 
       // Soft delete - modify email to prevent conflicts
-      const deletedUser = await prisma.User.update({
+      const deletedUser = await prisma.user.update({
         where: { id: targetUserId },
         data: {
           email: `deleted_${Date.now()}_${targetUser.email}`, // Prevent email conflicts

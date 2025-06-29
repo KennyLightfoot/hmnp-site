@@ -29,13 +29,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the booking and verify access
-    const booking = await prisma.Booking.findUnique({
+    const booking = await prisma.booking.findUnique({
       where: { 
         id: bookingId,
         signerId: (session.user as any).id
       },
       include: {
-        Service: true,
+        service: true,
         User_Booking_signerIdToUser: true,
       }
     });
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
           country: 'US'
         } : undefined
       }],
-      transaction_name: `HMNP RON - ${booking.Service.name}`,
+      transaction_name: `HMNP RON - ${booking.service.name}`,
       transaction_type: 'notarization',
       message_to_User_Booking_signerIdToUser: `
 Thank you for choosing Houston Mobile Notary Pros for your Remote Online Notarization!
@@ -122,7 +122,7 @@ Houston Mobile Notary Pros Team
     const proofTransaction = await proofAPI.createTransaction(proofRequest);
 
     // Update booking with Proof transaction details
-    const updatedBooking = await prisma.Booking.update({
+    const updatedBooking = await prisma.booking.update({
       where: { id: bookingId },
       data: {
         proofTransactionId: proofTransaction.id,
@@ -188,7 +188,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get the booking and verify access
-    const booking = await prisma.Booking.findUnique({
+    const booking = await prisma.booking.findUnique({
       where: { 
         id: bookingId,
         signerId: (session.user as any).id
@@ -213,7 +213,7 @@ export async function GET(request: NextRequest) {
     const proofTransaction = await proofAPI.getTransaction(booking.proofTransactionId);
 
     // Update our database with latest status
-    await prisma.Booking.update({
+    await prisma.booking.update({
       where: { id: bookingId },
       data: {
         proofStatus: proofTransaction.status,

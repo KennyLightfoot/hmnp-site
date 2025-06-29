@@ -25,7 +25,7 @@ async function testBookingGhlEndToEnd() {
     
     // 1. Get an active service from the database
     console.log('Fetching active service from database...');
-    const service = await prisma.Service.findFirst({
+    const service = await prisma.service.findFirst({
       where: { isActive: true },
       select: { id: true, name: true, serviceType: true, basePrice: true }
     });
@@ -34,13 +34,13 @@ async function testBookingGhlEndToEnd() {
       throw new Error('No active services found in the database. Please add a service first.');
     }
     
-    console.log(`Found Service: ${service.name} (${service.id}) - Type: ${service.serviceType} - Price: $${service.basePrice}`);
+    console.log(`Found service: ${service.name} (${service.id}) - Type: ${service.serviceType} - Price: $${service.basePrice}`);
 
     // 2. First create a test user to associate with the booking
     console.log('\nCreating test user in database...');
     const uniqueEmail = `test.booking.${Date.now()}@example.com`;
     
-    const testUser = await prisma.User.create({
+    const testUser = await prisma.user.create({
       data: {
         id: `test-user-${Date.now()}`,
         name: 'Test User',
@@ -53,7 +53,7 @@ async function testBookingGhlEndToEnd() {
     
     // 3. Now create a booking associated with this user
     console.log('\nCreating test booking in database...');
-    const testBooking = await prisma.Booking.create({
+    const testBooking = await prisma.booking.create({
       data: {
         id: `test-booking-${Date.now()}`,
         serviceId: service.id,
@@ -72,7 +72,7 @@ async function testBookingGhlEndToEnd() {
       },
       include: {
         User_Booking_signerIdToUser: true, // Include the related user data
-        Service: true
+        service: true
       }
     });
     
@@ -140,7 +140,7 @@ async function testBookingGhlEndToEnd() {
     const tags = [
       'Test:EndToEndScript',
       `Status:${testBooking.status}`,
-      `Service:${service.serviceType}`
+      `service:${service.serviceType}`
     ];
     
     await ghl.addTagsToContact(ghlContact.id, tags);
@@ -150,11 +150,11 @@ async function testBookingGhlEndToEnd() {
     
     // 8. Clean up (optional - comment out if you want to keep the test booking)
     console.log('\nCleaning up test data...');
-    await prisma.Booking.delete({ where: { id: testBooking.id } });
+    await prisma.booking.delete({ where: { id: testBooking.id } });
     console.log(`Deleted test booking with ID: ${testBooking.id}`);
     
     // Also delete the test user
-    await prisma.User.delete({ where: { id: testUser.id } });
+    await prisma.user.delete({ where: { id: testUser.id } });
     console.log(`Deleted test user with ID: ${testUser.id}`);
     
   } catch (error) {

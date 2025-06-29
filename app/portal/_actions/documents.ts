@@ -129,7 +129,7 @@ export async function getPresignedUploadUrl(
   // and guarantees that the returned presigned post is always linked to a
   // valid record that the current user can access later.
 
-  const assignmentExists = await prisma.Assignment.findUnique({
+  const assignmentExists = await prisma.assignment.findUnique({
     where: { id: assignmentId },
     select: { id: true },
   });

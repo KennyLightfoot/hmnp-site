@@ -18,11 +18,11 @@ export class BookingAutomationService {
     const errors: string[] = [];
 
     try {
-      const booking = await prisma.Booking.findUnique({
+      const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
           User_Booking_signerIdToUser: true,
-          Service: true,
+          service: true,
           Payment: true
         }
       });
@@ -131,7 +131,7 @@ export class BookingAutomationService {
 
       // Update booking status if needed
       if (shouldUpdate && newStatus !== previousStatus) {
-        await prisma.Booking.update({
+        await prisma.booking.update({
           where: { id: bookingId },
           data: { 
             status: newStatus,
@@ -241,11 +241,11 @@ export class BookingAutomationService {
    */
   private static async sendDayOfServiceNotification(bookingId: string): Promise<void> {
     try {
-      const booking = await prisma.Booking.findUnique({
+      const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
           User_Booking_signerIdToUser: true,
-          Service: true
+          service: true
         }
       });
 
@@ -283,11 +283,11 @@ export class BookingAutomationService {
    */
   private static async handleNoShowWorkflow(bookingId: string): Promise<void> {
     try {
-      const booking = await prisma.Booking.findUnique({
+      const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
           User_Booking_signerIdToUser: true,
-          Service: true
+          service: true
         }
       });
 
@@ -335,7 +335,7 @@ export class BookingAutomationService {
       console.log(`Post-service workflow initiated for booking ${bookingId}`);
       
       // Mark actual end time if not set
-      await prisma.Booking.update({
+      await prisma.booking.update({
         where: { id: bookingId },
         data: {
           actualEndDateTime: new Date()
@@ -355,11 +355,11 @@ export class BookingAutomationService {
     cancellationType: BookingStatus
   ): Promise<void> {
     try {
-      const booking = await prisma.Booking.findUnique({
+      const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
           User_Booking_signerIdToUser: true,
-          Service: true
+          service: true
         }
       });
 
@@ -422,7 +422,7 @@ export class BookingAutomationService {
     error?: string;
   }> {
     try {
-      const booking = await prisma.Booking.findUnique({
+      const booking = await prisma.booking.findUnique({
         where: { id: bookingId }
       });
 
@@ -446,7 +446,7 @@ export class BookingAutomationService {
       }
 
       // Update booking status
-      await prisma.Booking.update({
+      await prisma.booking.update({
         where: { id: bookingId },
         data: {
           status: targetStatus,
@@ -563,7 +563,7 @@ export class BookingAutomationService {
 
     try {
       // Get all active bookings (not archived or completed)
-      const activeBookings = await prisma.Booking.findMany({
+      const activeBookings = await prisma.booking.findMany({
         where: {
           status: {
             notIn: [BookingStatus.ARCHIVED, BookingStatus.COMPLETED]
@@ -610,10 +610,10 @@ export class BookingAutomationService {
     reason: string;
   }> {
     try {
-      const booking = await prisma.Booking.findUnique({
+      const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
-          Service: true,
+          service: true,
           User_Booking_signerIdToUser: true
         }
       });
@@ -634,7 +634,7 @@ export class BookingAutomationService {
 
       // Auto-complete if current time is past estimated end time
       if (now > estimatedEndTime) {
-        await prisma.Booking.update({
+        await prisma.booking.update({
           where: { id: bookingId },
           data: { 
             status: BookingStatus.COMPLETED,
@@ -660,7 +660,7 @@ export class BookingAutomationService {
       };
 
     } catch (error: any) {
-      console.error('Error in auto-complete Service:', error);
+      console.error('Error in auto-complete service:', error);
       return { success: false, completed: false, reason: error.message };
     }
   }
@@ -673,9 +673,9 @@ export class BookingAutomationService {
     message: string;
   }> {
     try {
-      const booking = await prisma.Booking.findUnique({
+      const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
-        include: { Service: true }
+        include: { service: true }
       });
 
       if (!booking) {
@@ -687,7 +687,7 @@ export class BookingAutomationService {
       }
 
       const now = new Date();
-      await prisma.Booking.update({
+      await prisma.booking.update({
         where: { id: bookingId },
         data: { 
           status: BookingStatus.COMPLETED,
@@ -708,7 +708,7 @@ export class BookingAutomationService {
       };
 
     } catch (error: any) {
-      console.error('Error in manual complete Service:', error);
+      console.error('Error in manual complete service:', error);
       return { success: false, message: error.message };
     }
   }

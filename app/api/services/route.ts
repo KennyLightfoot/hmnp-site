@@ -8,11 +8,11 @@ export async function GET() {
     await prisma.$queryRaw`SELECT 1`;
     
     // Get total service count first
-    const totalServices = await prisma.Service.count();
-    const activeServices = await prisma.Service.count({ where: { isActive: true } });
+    const totalServices = await prisma.service.count();
+    const activeServices = await prisma.service.count({ where: { isActive: true } });
     
     // Get all active services ordered by name
-    const services = await prisma.Service.findMany({
+    const services = await prisma.service.findMany({
       where: { 
         isActive: true 
       },

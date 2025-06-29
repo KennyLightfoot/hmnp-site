@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
           delete: hasPermission(user, Actions.DELETE, Resources.USER),
           manage: hasPermission(user, Actions.MANAGE, Resources.USER),
         },
-        Service: {
+        service: {
           create: hasPermission(user, Actions.CREATE, Resources.SERVICE),
           read: hasPermission(user, Actions.READ, Resources.SERVICE),
           update: hasPermission(user, Actions.UPDATE, Resources.SERVICE),

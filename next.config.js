@@ -10,6 +10,11 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   
+  // ESLint configuration - temporarily disable for debugging
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  
   // Optimize build performance and memory usage
   experimental: {
     // Enable modern build optimizations

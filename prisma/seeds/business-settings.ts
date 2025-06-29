@@ -237,7 +237,7 @@ export async function seedBusinessSettings() {
 
   try {
     for (const setting of businessSettings) {
-      await prisma.BusinessSettings.upsert({
+      await prisma.businessSettings.upsert({
         where: { key: setting.key },
         update: {
           value: setting.value,

@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     try {
       // Update user's last activity
-      await prisma.User.update({
+      await prisma.user.update({
         where: { id: context.userId! },
         data: { 
           updatedAt: new Date(),

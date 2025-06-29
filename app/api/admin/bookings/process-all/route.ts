@@ -25,14 +25,14 @@ export async function POST() {
     }
 
     // Find all pending bookings that need processing
-    const pendingBookings = await prisma.Booking.findMany({
+    const pendingBookings = await prisma.booking.findMany({
       where: {
         status: { in: ['REQUESTED', 'PAYMENT_PENDING'] }
       },
       take: 50,
       include: {
         User_Booking_signerIdToUser: true,
-        Service: true,
+        service: true,
       }
     });
 
@@ -46,7 +46,7 @@ export async function POST() {
     }
 
     // Create a system log entry
-    await prisma.SystemLog.create({
+    await prisma.systemLog.create({
       data: {
         level: 'INFO',
         component: 'BOOKING_PROCESSOR',

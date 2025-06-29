@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { Role } from '@prisma/client';
+import { randomUUID } from 'crypto';
 
 // POST /api/assignments/[assignmentId]/comments
 export async function POST(
@@ -27,7 +28,7 @@ export async function POST(
       return NextResponse.json({ error: 'Assignment ID is required' }, { status: 400 });
     }
 
-    const assignment = await prisma.Assignment.findUnique({
+    const assignment = await prisma.assignment.findUnique({
       where: { id: assignmentId },
       select: { allowPartnerComments: true }, // Only select needed field
     });
@@ -58,8 +59,9 @@ export async function POST(
 
 
     // 4. Create Comment
-    const newComment = await prisma.Comment.create({
+    const newComment = await prisma.comment.create({
       data: {
+        id: randomUUID(),
         text: text.trim(),
         assignmentId: assignmentId,
         authorId: userId,
@@ -69,7 +71,7 @@ export async function POST(
         id: true,
         text: true,
         createdAt: true,
-        author: { // Include author info in the response
+        User: { // Include author info in the response
           select: {
             id: true,
             name: true,

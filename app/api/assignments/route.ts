@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db';
 import { Role } from '@prisma/client';
 import { assignmentSchema } from '@/lib/validations'; // Import the Zod schema
 import { z } from 'zod';
+import { randomUUID } from 'crypto';
 
 // POST /api/assignments
 export async function POST(request: Request) {
@@ -32,15 +33,17 @@ export async function POST(request: Request) {
   try {
     // Ensure optional fields that shouldn't be empty strings are handled
     const createData = {
+      id: randomUUID(),
       ...data,
       borrowerName: data.borrowerName || null,
       propertyAddress: data.propertyAddress || null,
       reference: data.reference || null,
-      // partnerAssignedToId and closingDate are already optional/nullable in schema
-      // allowPartnerComments defaults based on schema if not provided
+      partnerAssignedToId: data.partnerAssignedToId || undefined,
+      updatedAt: new Date(),
+      // closingDate and allowPartnerComments are already handled properly
     };
 
-    const newAssignment = await prisma.Assignment.create({
+    const newAssignment = await prisma.assignment.create({
       data: createData,
        select: { // Return basic info of the created assignment
         id: true,

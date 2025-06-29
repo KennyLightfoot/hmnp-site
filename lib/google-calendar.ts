@@ -86,7 +86,7 @@ export class GoogleCalendarService {
   
   private formatEventDescription(booking: any): string {
     return `
-Service: ${booking.Service.name}
+service: ${booking.Service.name}
 Customer: ${booking.User_Booking_signerIdToUser?.name || 'Guest'}
 Phone: ${booking.User_Booking_signerIdToUser?.phone || booking.guestPhone || 'Not provided'}
 Email: ${booking.User_Booking_signerIdToUser?.email || booking.guestEmail}

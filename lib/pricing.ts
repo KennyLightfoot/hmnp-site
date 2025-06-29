@@ -6,7 +6,7 @@ export const BASE_PRICES = {
   standardNotary: 75,            // ≤ 4 docs, ≤ 2 signers, ≤ 15 mi travel  
   extendedHoursNotary: 100,      // ≤ 4 docs, ≤ 2 signers, ≤ 15 mi travel, 7 am – 9 pm daily
   loanSigningSpecialist: 150,    // Single package, ≤ 4 signers, print 2 sets, ≤ 2 hrs table time, FedEx drop
-  specialtyNotaryService: 55,    // Starting at for the simplest specialty service
+  specialtyNotaryservice: 55,    // Starting at for the simplest specialty service
   businessSolutions: 125,        // Monthly flat fee (Essentials tier)
   businessGrowth: 349,           // Monthly flat fee (Growth tier)
   ronSession: 25,                // Per session base
@@ -22,8 +22,8 @@ export const ADDITIONAL_FEES = {
   extraStampQuickStamp: 5,     // NEW: Extra stamp for Quick-Stamp ($5 ea)
   extraSignerQuickStamp: 10,   // NEW: Extra signer for Quick-Stamp ($10 ea)
   extraDocument: 10,           // Updated: Extra doc ($10 ea per SOP)
-  sameDayService: 25,          // Same-day surcharge after 3 pm
-  afterHoursService: 50,       // Night service (9 pm – 7 am)
+  sameDayservice: 25,          // Same-day surcharge after 3 pm
+  afterHoursservice: 50,       // Night service (9 pm – 7 am)
   weekend: 40,                 // Weekend fee (kept for compatibility)
   holiday: 40,                 // Holiday fee (kept for compatibility)
   extendedTravel: 0.50,        // $0.50/mile beyond service radius per SOP
@@ -42,10 +42,10 @@ export const SERVICE_INCLUDED_RADIUS = {
   standardNotary: 20,            // 20-mile base radius per SOP
   extendedHoursNotary: 20,       // Updated: 20-mile base radius per SOP
   loanSigningSpecialist: 30,     // SOP mentions 30 mi for loan signing
-  specialtyNotaryService: 20,    // 20-mile base radius per SOP
+  specialtyNotaryservice: 20,    // 20-mile base radius per SOP
   businessSolutions: 20,         // 20-mile base radius per SOP
   businessGrowth: 20,            // 20-mile base radius per SOP  
-  supportService: 0,             // Typically no travel, or custom
+  supportservice: 0,             // Typically no travel, or custom
 };
 
 // Federal holidays - Updated per SOP to include Juneteenth
@@ -178,13 +178,13 @@ export function calculateExtendedHoursNotaryPrice(
   // Same-day service after 3 pm: +$25
   if (isSameDay) {
     sameDayFee = ADDITIONAL_FEES.sameDayService;
-    notes.push(`Same-day Service: $${sameDayFee}`);
+    notes.push(`Same-day service: $${sameDayFee}`);
   }
   
   // After-hours service (9 pm – 7 am): +$50
   if (isAfterHours) {
     afterHoursFee = ADDITIONAL_FEES.afterHoursService;
-    notes.push(`After-hours Service: $${afterHoursFee}`);
+    notes.push(`After-hours service: $${afterHoursFee}`);
   }
   
   const totalPrice = basePrice + extraSignersFee + extraDocumentsFee + sameDayFee + afterHoursFee;
@@ -260,7 +260,7 @@ export function calculateTotalPrice({
   isSameDay?: boolean;
   extraDocuments?: number;
   needsOvernightHandling: boolean;
-  needsBilingualService: boolean;
+  needsBilingualservice: boolean;
 }): {
   basePrice: number;
   extraSignersFee: number;

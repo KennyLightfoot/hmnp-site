@@ -20,7 +20,7 @@ export async function POST(
 
   try {
     // 2. Validate RON Booking (formerly NotarizationSession)
-    const ronBooking = await prisma.Booking.findUnique({
+    const ronBooking = await prisma.booking.findUnique({
       where: { 
         id: sessionId,
         locationType: LocationType.REMOTE_ONLINE_NOTARIZATION
@@ -63,7 +63,7 @@ export async function POST(
 
     // 6. Update booking status if it's the first document
     if (ronBooking.status === BookingStatus.REQUESTED) {
-      await prisma.Booking.update({
+      await prisma.booking.update({
         where: { id: sessionId },
         data: { status: BookingStatus.AWAITING_CLIENT_ACTION }, // Maps from AWAITING_DOCUMENTS
       });

@@ -32,7 +32,7 @@ export class PricingUtils {
    * Calculate comprehensive pricing for a service with optional promo code
    */
   static calculateServicePricing(
-    Service: Service,
+    service: Service,
     promoCode?: PromoCode | null
   ): PricingCalculation {
     const price = Number(service.price);

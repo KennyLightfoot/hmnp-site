@@ -12,7 +12,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const assignment = await prisma.Assignment.findFirst({
+    const assignment = await prisma.assignment.findFirst({
       where: { id: id, partnerAssignedToId: session.user.id },
       include: {
         documents: {

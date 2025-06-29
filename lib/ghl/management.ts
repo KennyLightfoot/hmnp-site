@@ -458,7 +458,7 @@ export async function confirmBookingWorkflow(bookingData: {
     // 3. Update tags
     await addContactTags(bookingData.contactId, [
       'Status:BookingConfirmed',
-      `Service:${bookingData.serviceType.replace(/\s+/g, '')}`,
+      `service:${bookingData.serviceType.replace(/\s+/g, '')}`,
       ...(bookingData.paymentAmount ? ['Payment:DepositPaid'] : ['Payment:Pending'])
     ]);
 
@@ -471,7 +471,7 @@ export async function confirmBookingWorkflow(bookingData: {
     // 5. Add note
     await addContactNote(
       bookingData.contactId,
-              `Booking confirmed for ${bookingData.scheduledDateTime}. Service: ${bookingData.serviceType}, Location: ${bookingData.serviceAddress}`
+              `Booking confirmed for ${bookingData.scheduledDateTime}. service: ${bookingData.serviceType}, Location: ${bookingData.serviceAddress}`
     );
 
     return {

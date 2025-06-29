@@ -24,14 +24,14 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     }
 
     // Ensure the assignment belongs to the partner
-    const assignment = await prisma.Assignment.findFirst({
+    const assignment = await prisma.assignment.findFirst({
       where: { id: id, partnerAssignedToId: session.user.id },
     })
     if (!assignment) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
     // Update main status if provided
     if (status && status !== assignment.status) {
-      await prisma.Assignment.update({
+      await prisma.assignment.update({
         where: { id: id },
         data: { status },
       })

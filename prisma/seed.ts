@@ -139,7 +139,7 @@ async function main() {
   const services = [...mobileServices, ...ronServices];
 
   for (const service of services) {
-    await prisma.Service.upsert({
+    await prisma.service.upsert({
       where: { id: service.id },
       update: {
         name: service.name,
@@ -154,7 +154,7 @@ async function main() {
       },
       create: service,
     });
-    console.log(`Upserted Service: ${service.name} (ID: ${service.id})`);
+    console.log(`Upserted service: ${service.name} (ID: ${service.id})`);
   }
 
   // Seed Business Settings
@@ -190,7 +190,7 @@ async function main() {
   ];
 
   for (const setting of businessSettings) {
-    await prisma.BusinessSettings.upsert({
+    await prisma.businessSettings.upsert({
       where: { id: setting.id },
       update: {
         key: setting.key,
@@ -229,7 +229,7 @@ async function main() {
   ];
 
   for (const promo of promoCodes) {
-    await prisma.PromoCode.upsert({
+    await prisma.promoCode.upsert({
       where: { id: promo.id },
       update: {
         code: promo.code,

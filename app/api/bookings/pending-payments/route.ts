@@ -80,14 +80,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch pending payment bookings
-    const bookings = await prisma.Booking.findMany({
+    const bookings = await prisma.booking.findMany({
       where,
       take: limit,
       orderBy: {
         createdAt: 'asc' // Oldest first for urgency calculation
       },
       include: {
-        Service: true,
+        service: true,
         User_Booking_signerIdToUser: {
           select: {
             name: true,
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
       return {
         bookingId: booking.id,
         paymentUrl: booking.stripePaymentUrl || `${process.env.NEXTAUTH_URL}/checkout/${booking.id}`,
-        serviceName: booking.Service?.name || 'Mobile Notary Service',
+        serviceName: booking.service?.name || 'Mobile Notary Service',
         servicePrice: Number(booking.priceAtBooking || 75),
         scheduledDate: booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleDateString('en-US') : null,
         scheduledTime: booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleTimeString('en-US', {
@@ -221,7 +221,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Update booking with reminder tracking
-    const booking = await prisma.Booking.update({
+    const booking = await prisma.booking.update({
       where: { id: bookingId },
       data: {
         notes: notes || `${reminderType} reminder sent via ${action}`,

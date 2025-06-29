@@ -68,9 +68,75 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icons/icon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icons/icon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
     shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
+    apple: [
+      { url: "/icons/icon-180x180.png" },
+      { url: "/icons/icon-152x152.png", sizes: "152x152" },
+      { url: "/icons/icon-144x144.png", sizes: "144x144" },
+      { url: "/icons/icon-120x120.png", sizes: "120x120" },
+      { url: "/icons/icon-114x114.png", sizes: "114x114" },
+      { url: "/icons/icon-76x76.png", sizes: "76x76" },
+      { url: "/icons/icon-72x72.png", sizes: "72x72" },
+      { url: "/icons/icon-60x60.png", sizes: "60x60" },
+      { url: "/icons/icon-57x57.png", sizes: "57x57" },
+    ],
+    other: [
+      {
+        rel: "apple-touch-startup-image",
+        url: "/splash/iphone5_splash.png",
+        media: "(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)"
+      },
+      {
+        rel: "apple-touch-startup-image", 
+        url: "/splash/iphone6_splash.png",
+        media: "(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)"
+      },
+      {
+        rel: "apple-touch-startup-image",
+        url: "/splash/iphoneplus_splash.png", 
+        media: "(device-width: 621px) and (device-height: 1104px) and (-webkit-device-pixel-ratio: 3)"
+      },
+      {
+        rel: "apple-touch-startup-image",
+        url: "/splash/iphonex_splash.png",
+        media: "(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)"
+      },
+      {
+        rel: "apple-touch-startup-image",
+        url: "/splash/iphonexr_splash.png",
+        media: "(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)"
+      },
+      {
+        rel: "apple-touch-startup-image",
+        url: "/splash/iphonexsmax_splash.png",
+        media: "(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)"
+      },
+      {
+        rel: "apple-touch-startup-image",
+        url: "/splash/ipad_splash.png",
+        media: "(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)"
+      },
+      {
+        rel: "apple-touch-startup-image",
+        url: "/splash/ipadpro1_splash.png",
+        media: "(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2)"
+      },
+      {
+        rel: "apple-touch-startup-image",
+        url: "/splash/ipadpro3_splash.png",
+        media: "(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)"
+      },
+      {
+        rel: "apple-touch-startup-image",
+        url: "/splash/ipadpro2_splash.png",
+        media: "(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)"
+      },
+    ],
   },
   verification: {
     google: "verification_token",
@@ -117,51 +183,25 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className="light" suppressHydrationWarning>
-      <head>
-        {/* PWA Icons */}
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
-        <link rel="apple-touch-icon" href="/icons/icon-180x180.png" />
-        <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
-        <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png" />
-        <link rel="apple-touch-icon" sizes="120x120" href="/icons/icon-120x120.png" />
-        <link rel="apple-touch-icon" sizes="114x114" href="/icons/icon-114x114.png" />
-        <link rel="apple-touch-icon" sizes="76x76" href="/icons/icon-76x76.png" />
-        <link rel="apple-touch-icon" sizes="72x72" href="/icons/icon-72x72.png" />
-        <link rel="apple-touch-icon" sizes="60x60" href="/icons/icon-60x60.png" />
-        <link rel="apple-touch-icon" sizes="57x57" href="/icons/icon-57x57.png" />
-        
-        {/* Apple Splash Screens */}
-        <link rel="apple-touch-startup-image" href="/splash/iphone5_splash.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)" />
-        <link rel="apple-touch-startup-image" href="/splash/iphone6_splash.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" />
-        <link rel="apple-touch-startup-image" href="/splash/iphoneplus_splash.png" media="(device-width: 621px) and (device-height: 1104px) and (-webkit-device-pixel-ratio: 3)" />
-        <link rel="apple-touch-startup-image" href="/splash/iphonex_splash.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" />
-        <link rel="apple-touch-startup-image" href="/splash/iphonexr_splash.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)" />
-        <link rel="apple-touch-startup-image" href="/splash/iphonexsmax_splash.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)" />
-        <link rel="apple-touch-startup-image" href="/splash/ipad_splash.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)" />
-        <link rel="apple-touch-startup-image" href="/splash/ipadpro1_splash.png" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2)" />
-        <link rel="apple-touch-startup-image" href="/splash/ipadpro3_splash.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)" />
-        <link rel="apple-touch-startup-image" href="/splash/ipadpro2_splash.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" />
-        
-        {/* Service Worker Registration */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js').then(function(registration) {
-                    console.log('SW registered: ', registration);
-                  }, function(registrationError) {
-                    console.log('SW registration failed: ', registrationError);
-                  });
-                });
-              }
-            `,
-          }}
-        />
-      </head>
+      {/* Note: In App Router, head content is managed through metadata export and other Next.js mechanisms.
+          The PWA icons and splash screens are handled through the metadata.icons configuration above.
+          Service Worker registration is moved to the body section. */}
       <body className={`${inter.className} bg-white`}>
+        {/* Service Worker Registration */}
+        <Script id="service-worker" strategy="afterInteractive">
+          {`
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                  console.log('SW registered: ', registration);
+                }, function(registrationError) {
+                  console.log('SW registration failed: ', registrationError);
+                });
+              });
+            }
+          `}
+        </Script>
+        
         {/* Meta Pixel Code */}
         <Script id="meta-pixel" strategy="afterInteractive">
           {`
@@ -258,6 +298,3 @@ export default async function RootLayout({
     </html>
   )
 }
-
-
-import './globals.css'

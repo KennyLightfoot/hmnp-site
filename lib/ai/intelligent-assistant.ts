@@ -527,9 +527,9 @@ Please respond in JSON format with the following structure:
 
   private async gatherCustomerData(customerId: string) {
     // Gather comprehensive customer data
-    const bookings = await prisma.Booking.findMany({
+    const bookings = await prisma.booking.findMany({
       where: { signerId: customerId },
-      include: { Service: true },
+      include: { service: true },
     });
 
     return {
@@ -546,11 +546,11 @@ Please respond in JSON format with the following structure:
     const daysBack = timeframe === 'week' ? 7 : timeframe === 'month' ? 30 : 90;
     const startDate = new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000);
     
-    const bookings = await prisma.Booking.findMany({
+    const bookings = await prisma.booking.findMany({
       where: {
         createdAt: { gte: startDate }
       },
-      include: { Service: true }
+      include: { service: true }
     });
 
     return {

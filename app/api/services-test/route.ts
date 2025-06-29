@@ -7,11 +7,11 @@ export async function GET() {
     await prisma.$queryRaw`SELECT 1`;
     
     // Test the Service model specifically
-    const totalServices = await prisma.Service.count();
-    const activeServices = await prisma.Service.count({ where: { isActive: true } });
+    const totalServices = await prisma.service.count();
+    const activeServices = await prisma.service.count({ where: { isActive: true } });
     
     // Get a few services to test the model works
-    const services = await prisma.Service.findMany({
+    const services = await prisma.service.findMany({
       take: 3,
       select: {
         id: true,
@@ -29,7 +29,7 @@ export async function GET() {
         totalServices,
         activeServices,
         sampleServices: services,
-        prismaModelTest: 'prisma.Service.findMany() works correctly',
+        prismaModelTest: 'prisma.service.findMany() works correctly',
       },
     });
 

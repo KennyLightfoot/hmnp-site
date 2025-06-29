@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
     let service;
     if (hasIsActive && hasDurationMinutes) {
       // New schema
-      service = await prisma.Service.findUnique({
+      service = await prisma.service.findUnique({
         where: { id: validatedParams.serviceId },
       });
       if (!service || !service.isActive) {

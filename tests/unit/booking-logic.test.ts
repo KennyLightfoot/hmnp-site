@@ -18,7 +18,7 @@ const mockPrisma = {
     create: vi.fn(),
     update: vi.fn(),
   },
-  Service: {
+  service: {
     findUnique: vi.fn(),
   },
   availability: {
@@ -62,7 +62,7 @@ interface PricingCalculation {
   discount: number;
   totalPrice: number;
   breakdown: {
-    Service: number;
+    service: number;
     travel: number;
     additional: number;
     discount: number;
@@ -125,7 +125,7 @@ class BookingService {
       discount,
       totalPrice: Math.round(totalPrice * 100) / 100, // Round to 2 decimal places
       breakdown: {
-        Service: price,
+        service: price,
         travel: travelFee,
         additional: additionalServicesFee,
         discount: discount,
@@ -250,7 +250,7 @@ describe('BookingService', () => {
   });
 
   describe('calculatePricing', () => {
-    const mockService: Service = {
+    const mockservice: Service = {
       id: '1',
       name: 'Standard Notary Services',
       basePrice: 75,
