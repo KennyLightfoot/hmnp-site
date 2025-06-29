@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { format, toZonedTime } from 'date-fns-tz';
 import { prisma } from '@/lib/database-connection';
+import { handleAPIError, BookingErrors, ErrorCategory, ErrorSeverity, retryWithBackoff } from '@/lib/monitoring/error-handler';
 
 // Input validation schema
 const availabilityQuerySchema = z.object({
@@ -34,7 +35,8 @@ const DEFAULT_BUSINESS_HOURS: BusinessHours[] = [
 ];
 
 export async function GET(request: NextRequest) {
-  console.log('[AVAILABILITY COMPATIBLE] Starting request processing:', new Date().toISOString());
+  const requestId = request.headers.get('x-request-id') || `avail-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  console.log(`[AVAILABILITY COMPATIBLE] Starting request processing: ${requestId}`, new Date().toISOString());
   
   try {
     const { searchParams } = new URL(request.url);
@@ -47,15 +49,33 @@ export async function GET(request: NextRequest) {
 
     console.log('[AVAILABILITY COMPATIBLE] Query params:', queryParams);
 
-    // Validate input parameters
-    const validatedParams = availabilityQuerySchema.parse(queryParams);
+    // Validate input parameters with enhanced error messages
+    let validatedParams;
+    try {
+      validatedParams = availabilityQuerySchema.parse(queryParams);
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
+        const error = validationError.errors[0];
+        if (error.path.includes('serviceId')) {
+          throw BookingErrors.SERVICE_NOT_FOUND(queryParams.serviceId || 'missing');
+        } else if (error.path.includes('date')) {
+          throw BookingErrors.INVALID_DATE(queryParams.date || 'missing');
+        }
+      }
+      throw validationError;
+    }
 
-    // Check database schema compatibility
-    const serviceColumns = await prisma.$queryRaw`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name = 'Service'
-    ` as Array<{ column_name: string }>;
+    // Check database schema compatibility with retry
+    const serviceColumns = await retryWithBackoff(
+      () => prisma.$queryRaw`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'Service'
+      ` as Promise<Array<{ column_name: string }>>,
+      3,
+      1000,
+      { requestId, url: request.url }
+    );
     
     const columnNames = serviceColumns.map(col => col.column_name);
     const hasIsActive = columnNames.includes('isActive');
@@ -71,7 +91,7 @@ export async function GET(request: NextRequest) {
         where: { id: validatedParams.serviceId },
       });
       if (!service || !service.isActive) {
-        return NextResponse.json({ error: 'Service not found or inactive' }, { status: 404 });
+        throw BookingErrors.SERVICE_NOT_FOUND(validatedParams.serviceId);
       }
     } else {
       // Legacy schema - use raw SQL
@@ -84,7 +104,7 @@ export async function GET(request: NextRequest) {
       
       service = services[0];
       if (!service) {
-        return NextResponse.json({ error: 'Service not found' }, { status: 404 });
+        throw BookingErrors.SERVICE_NOT_FOUND(validatedParams.serviceId);
       }
     }
 
@@ -107,7 +127,7 @@ export async function GET(request: NextRequest) {
 
     // Don't allow booking for past dates
     if (requestedDateInBusinessTz < today) {
-      return NextResponse.json({ error: 'Cannot book appointments for past dates' }, { status: 400 });
+      throw BookingErrors.INVALID_DATE(validatedParams.date);
     }
 
     // Get business hours for the requested day
@@ -115,11 +135,7 @@ export async function GET(request: NextRequest) {
     const businessHours = DEFAULT_BUSINESS_HOURS.find(h => h.dayOfWeek === dayOfWeek);
 
     if (!businessHours) {
-      return NextResponse.json({
-        date: validatedParams.date,
-        availableSlots: [],
-        message: 'No business hours configured for this day',
-      });
+      throw BookingErrors.NO_AVAILABILITY(validatedParams.date);
     }
 
     // Calculate available slots (simplified for compatibility)
@@ -153,18 +169,20 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('[AVAILABILITY COMPATIBLE] Error occurred:', error);
-    console.error('[AVAILABILITY COMPATIBLE] Request URL:', request.url);
+    console.error(`[AVAILABILITY COMPATIBLE] Error in request ${requestId}:`, error);
+    
+    const errorResponse = await handleAPIError(error as Error, {
+      requestId,
+      url: request.url,
+      method: request.method,
+      userAgent: request.headers.get('user-agent') || undefined,
+      additionalData: {
+        queryParams: Object.fromEntries(new URL(request.url).searchParams),
+        endpoint: 'availability-compatible'
+      }
+    });
 
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Invalid parameters', details: error.errors }, { status: 400 });
-    }
-
-    return NextResponse.json({
-      error: 'Internal server error',
-      details: error instanceof Error ? error.message : String(error),
-      timestamp: new Date().toISOString()
-    }, { status: 500 });
+    return NextResponse.json(errorResponse, { status: errorResponse.statusCode });
   }
 }
 

@@ -91,18 +91,36 @@ export function useOptimizedBookingSettings() {
 }
 
 /**
- * Hook for optimized availability checking
+ * Hook for optimized availability checking with service validation
  */
 export function useOptimizedAvailability(serviceId: string, date: string) {
   return useAsyncState(
     async () => {
-      if (!serviceId || !date) {
-        throw new Error('Service ID and date are required');
+      // Enhanced validation
+      if (!serviceId || serviceId.trim() === '') {
+        throw new Error('Service ID is required. Please select a service to view availability.');
+      }
+      
+      if (!date || date.trim() === '') {
+        throw new Error('Date is required. Please select a date to view availability.');
       }
 
-      const url = new URL('/api/availability', window.location.origin);
-      url.searchParams.set('serviceId', serviceId);
-      url.searchParams.set('date', date);
+      // Validate date format
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(date)) {
+        throw new Error('Invalid date format. Please use YYYY-MM-DD format.');
+      }
+
+      // Validate service ID format (basic check)
+      if (serviceId.length < 10) {
+        throw new Error('Invalid service ID format. Please select a valid service.');
+      }
+
+      const url = new URL('/api/availability-compatible', window.location.origin);
+      url.searchParams.set('serviceId', serviceId.trim());
+      url.searchParams.set('date', date.trim());
+
+      console.log('[useOptimizedAvailability] Fetching availability:', { serviceId: serviceId.trim(), date: date.trim() });
 
       const response = await fetch(url.toString(), {
         method: 'GET',
@@ -112,16 +130,27 @@ export function useOptimizedAvailability(serviceId: string, date: string) {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch availability: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        
+        if (response.status === 404) {
+          throw new Error('Service not found. Please select a different service.');
+        } else if (response.status === 400) {
+          throw new Error(errorData.error || 'Invalid request parameters. Please check your service and date selection.');
+        } else {
+          throw new Error(errorData.error || `Failed to load availability: ${response.statusText}`);
+        }
       }
 
-      return response.json();
+      const data = await response.json();
+      console.log('[useOptimizedAvailability] Availability loaded:', data.availableSlots?.length || 0, 'slots');
+      
+      return data;
     },
     {
-      immediate: Boolean(serviceId && date),
+      immediate: Boolean(serviceId && serviceId.trim() && date && date.trim()),
       deps: [serviceId, date],
       keepPreviousData: false, // Availability should always be fresh
-      retry: { attempts: 2, delay: 500 },
+      retry: { attempts: 2, delay: 1000 },
     }
   );
 }

@@ -454,7 +454,7 @@ export const BookingCache = {
       const key = this.getKey(serviceId, date);
       return apiCache.get(
         key,
-        () => fetch(`/api/availability?serviceId=${serviceId}&date=${date}`).then(r => r.json()),
+        () => fetch(`/api/availability-compatible?serviceId=${serviceId}&date=${date}`).then(r => r.json()),
         { ttl: this.ttl }
       );
     },
