@@ -461,78 +461,137 @@ export async function POST(request: NextRequest) {
         };
       }
     
-    // For guest bookings, we'll only store email/contact info in GHL, not linked to a user
-    let newBooking: any = await prisma.booking.create({
-      data: bookingData,
-      include: {
-        service: true,
-                // Only include user relation if we have a signerId
-        ...(signerUserId ? {
-          User_Booking_signerIdToUser: {
-            select: { id: true, name: true, email: true } 
-          }
-        } : {})
-      }
-    });
+    // ATOMIC TRANSACTION: Create booking and handle payment in single transaction
+    // NOTE: This API uses Stripe Checkout Sessions for payment processing.
+    // Payment Intents are handled by /api/create-payment-intent for separate payment forms.
+    // This ensures consistent payment flow and prevents checkout/intent confusion.
+    console.log('[BOOKING TRANSACTION] Starting atomic booking creation transaction');
     
-    // For guest bookings, add client info to the response
-    if (!signerUserId) {
-      newBooking.guestBooking = true;
-      newBooking.guestEmail = signerUserEmail;
-      console.log("!!!!!!!!!! BOOKING CREATED SUCCESSFULLY !!!!!!!!!!", JSON.stringify(newBooking, null, 2));
-    }
-
-    let checkoutUrl: string | null = null;
-
-    if (initialStatus === BookingStatus.PAYMENT_PENDING && stripe && finalAmountDueAfterDiscount > 0) {
-      try {
-        const amountToChargeInCents = Math.round(finalAmountDueAfterDiscount * 100);
-        // Ensure NEXTAUTH_URL is set in your .env for correct redirect URLs
-        const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com';
-        const success_url = `${baseUrl}/booking-confirmed?session_id={CHECKOUT_SESSION_ID}`;
-        const cancel_url = `${baseUrl}/booking-payment-canceled`;
-
-        const stripeSession = await stripe.checkout.sessions.create({
-          payment_method_types: ['card'],
-          line_items: [{
-            price_data: {
-              currency: 'usd',
-              product_data: {
-                name: `Booking for ${service.name}`,
-                description: `service: ${service.name} on ${newBooking.scheduledDateTime ? new Date(newBooking.scheduledDateTime).toLocaleDateString() : 'Date TBD'}`,
-                // images: [service.imageUrl || 'your_default_service_image_url'], // Optional: Add a service image URL
-              },
-              unit_amount: amountToChargeInCents,
-            },
-            quantity: 1,
-          }],
-          mode: 'payment',
-          success_url: success_url,
-          cancel_url: cancel_url,
-          metadata: {
-            bookingId: newBooking.id,
-          },
-          // Conditionally add customer_email if signerUserEmail is available
-          ...(signerUserEmail && { customer_email: signerUserEmail }),
-        });
-        checkoutUrl = stripeSession.url;
-        console.log("!!!!!!!!!! STRIPE CHECKOUT SESSION CREATED !!!!!!!!!! URL:", checkoutUrl);
+    const transactionResult = await prisma.$transaction(async (tx) => {
+      console.log('[BOOKING TRANSACTION] Creating booking in transaction');
+      
+      // Create the booking first
+      const newBooking = await tx.booking.create({
+        data: bookingData,
+        include: {
+          Service: true,
+          // Only include user relation if we have a signerId
+          ...(signerUserId ? {
+            User_Booking_signerIdToUser: {
+              select: { id: true, name: true, email: true } 
+            }
+          } : {})
+        }
+      });
+      
+      console.log('[BOOKING TRANSACTION] Booking created:', newBooking.id);
+      
+      // For guest bookings, add client info to the response
+      if (!signerUserId) {
+        (newBooking as any).guestBooking = true;
+        (newBooking as any).guestEmail = signerUserEmail;
+      }
+      
+      let checkoutUrl: string | null = null;
+      let paymentRecord: any = null;
+      
+      // Handle payment setup if required
+      if (initialStatus === BookingStatus.PAYMENT_PENDING && stripe && finalAmountDueAfterDiscount > 0) {
+        console.log('[BOOKING TRANSACTION] Setting up payment for booking:', newBooking.id);
         
-        // Store the payment URL in the booking notes
-        if (checkoutUrl) {
-          await prisma.booking.update({
+        try {
+          // Create payment record first in transaction
+          paymentRecord = await tx.payment.create({
+            data: {
+              id: `pay_${newBooking.id}_${Date.now()}`,
+              bookingId: newBooking.id,
+              amount: finalAmountDueAfterDiscount,
+              status: PaymentStatus.PENDING,
+              provider: PaymentProvider.STRIPE,
+            }
+          });
+          
+          console.log('[BOOKING TRANSACTION] Payment record created:', paymentRecord.id);
+          
+          const amountToChargeInCents = Math.round(finalAmountDueAfterDiscount * 100);
+          const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com';
+          const success_url = `${baseUrl}/booking-confirmed?session_id={CHECKOUT_SESSION_ID}`;
+          const cancel_url = `${baseUrl}/booking-payment-canceled`;
+          
+          // Create Stripe session (this happens outside DB transaction but we validate first)
+          const stripeSession = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [{
+              price_data: {
+                currency: 'usd',
+                product_data: {
+                  name: `Booking for ${newBooking.Service.name}`,
+                  description: `Service: ${newBooking.Service.name} on ${newBooking.scheduledDateTime ? new Date(newBooking.scheduledDateTime).toLocaleDateString() : 'Date TBD'}`,
+                },
+                unit_amount: amountToChargeInCents,
+              },
+              quantity: 1,
+            }],
+            mode: 'payment',
+            success_url: success_url,
+            cancel_url: cancel_url,
+            metadata: {
+              bookingId: newBooking.id,
+              paymentId: paymentRecord.id,
+            },
+            // Conditionally add customer_email if signerUserEmail is available
+            ...(signerUserEmail && { customer_email: signerUserEmail }),
+          });
+          
+          checkoutUrl = stripeSession.url;
+          
+          console.log('[BOOKING TRANSACTION] Stripe session created:', stripeSession.id);
+          
+          // Update booking with payment information in same transaction
+          await tx.booking.update({
             where: { id: newBooking.id },
-            data: { 
+            data: {
+              stripePaymentUrl: checkoutUrl,
               notes: newBooking.notes ? `${newBooking.notes}\nPayment URL: ${checkoutUrl}` : `Payment URL: ${checkoutUrl}`
             }
           });
+          
+          // Update payment record with Stripe session info
+          await tx.payment.update({
+            where: { id: paymentRecord.id },
+            data: {
+              paymentIntentId: stripeSession.id,
+            }
+          });
+          
+          console.log('[BOOKING TRANSACTION] Payment setup completed successfully');
+          
+        } catch (stripeError: any) {
+          console.error('[BOOKING TRANSACTION] Stripe error - rolling back transaction:', stripeError);
+          // Throw error to rollback entire transaction
+          throw new Error(`Payment setup failed: ${stripeError.message}`);
         }
-      } catch (stripeError: any) {
-        console.error("!!!!!!!!!! Error creating Stripe session:", stripeError);
-        // Log the error but proceed; the booking remains PAYMENT_PENDING.
-        // The client will not receive a checkoutUrl and thus cannot pay immediately via this flow.
-      } // End catch (stripeError: any)
-    } // End if (initialStatus === BookingStatus.PAYMENT_PENDING ...)
+      }
+      
+      return {
+        booking: newBooking,
+        checkoutUrl,
+        paymentRecord
+      };
+    }, {
+      timeout: 30000, // 30 second timeout
+      isolationLevel: Prisma.TransactionIsolationLevel.Serializable
+    });
+    
+    console.log('[BOOKING TRANSACTION] Transaction completed successfully');
+    
+    const { booking: newBooking, checkoutUrl } = transactionResult;
+    
+    console.log("[BOOKING SUCCESS] Booking created successfully:", {
+      id: newBooking.id,
+      status: newBooking.status,
+      hasPaymentUrl: !!checkoutUrl
+    });
 
     // --- GHL API Integration: Upsert Contact & Apply Tags/Fields ---
     try {
@@ -859,30 +918,80 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ booking: newBookingWithRelations, checkoutUrl }, { status: 201 });
   }
   catch (errorUnknown) {
+    const requestId = Math.random().toString(36).substring(7);
+    console.error(`[API /api/bookings ERROR ${requestId}]`, {
+      error: errorUnknown instanceof Error ? errorUnknown.message : String(errorUnknown),
+      stack: errorUnknown instanceof Error ? errorUnknown.stack : 'No stack',
+      type: errorUnknown?.constructor?.name || 'Unknown',
+      timestamp: new Date().toISOString()
+    });
+    
+    // Log to database for production monitoring
+    try {
+      await prisma.backgroundError.create({
+        data: {
+          id: `booking_error_${requestId}_${Date.now()}`,
+          source: 'booking-api',
+          message: errorUnknown instanceof Error ? errorUnknown.message : String(errorUnknown),
+          stack: errorUnknown instanceof Error ? errorUnknown.stack : null,
+        }
+      });
+    } catch (logError) {
+      console.error(`[API /api/bookings ERROR ${requestId}] Failed to log error:`, logError);
+    }
+    
     let errorMessage = 'An unexpected error occurred while creating the booking.';
     let statusCode = 500;
 
     if (errorUnknown instanceof Prisma.PrismaClientKnownRequestError) {
-      errorMessage = `Database error: ${errorUnknown.message}`;
-      statusCode = 409; 
-      console.error('Prisma Error creating booking:', errorUnknown.code, errorUnknown.message);
+      switch (errorUnknown.code) {
+        case 'P2002':
+          errorMessage = 'A booking with these details already exists';
+          statusCode = 409;
+          break;
+        case 'P2025':
+          errorMessage = 'The selected service is not available';
+          statusCode = 404;
+          break;
+        case 'P2003':
+          errorMessage = 'Invalid service or user reference';
+          statusCode = 400;
+          break;
+        default:
+          errorMessage = 'Database error occurred';
+          statusCode = 503;
+      }
     } else if (errorUnknown instanceof SyntaxError) {
       errorMessage = 'Invalid request body: Malformed JSON.';
       statusCode = 400;
-      console.error('SyntaxError creating booking:', errorUnknown.message);
     } else if (errorUnknown instanceof Error) {
-      errorMessage = `Failed to create booking: ${errorUnknown.message}`;
-      console.error('Error creating booking:', errorUnknown.message, errorUnknown.stack);
+      if (errorUnknown.message.includes('Payment setup failed')) {
+        errorMessage = 'Payment processing error. Please try again.';
+        statusCode = 402;
+      } else if (errorUnknown.message.includes('timeout')) {
+        errorMessage = 'Request timed out. Please try again.';
+        statusCode = 408;
+      } else if (errorUnknown.message.toLowerCase().includes('stripe')) {
+        errorMessage = 'Payment system temporarily unavailable';
+        statusCode = 503;
+      } else if (errorUnknown.message.includes('validation')) {
+        errorMessage = 'Invalid booking information provided';
+        statusCode = 400;
+      } else {
+        errorMessage = `Failed to create booking: ${errorUnknown.message}`;
+      }
     } else if (typeof errorUnknown === 'string') {
       errorMessage = `Failed to create booking: ${errorUnknown}`;
-      console.error('Error creating booking (string):', errorUnknown);
-    } else {
-      console.error('Unknown error creating booking:', errorUnknown);
     }
 
-    console.log(`[API /api/bookings ERROR] Status: ${statusCode}, Message: ${errorMessage}`);
+    console.log(`[API /api/bookings ERROR ${requestId}] Status: ${statusCode}, Message: ${errorMessage}`);
     return NextResponse.json(
-      { error: errorMessage },
+      { 
+        error: errorMessage,
+        requestId,
+        details: process.env.NODE_ENV === 'development' ? String(errorUnknown) : undefined,
+        timestamp: new Date().toISOString()
+      },
       { status: statusCode }
     );
   }

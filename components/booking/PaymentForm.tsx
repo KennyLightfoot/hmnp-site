@@ -53,9 +53,42 @@ function PaymentFormContent({
   const [clientSecret, setClientSecret] = useState<string>('');
   const [paymentIntentId, setPaymentIntentId] = useState<string>('');
 
-  // Create payment intent when component mounts
+  // Create payment intent when component mounts with proper cleanup
   useEffect(() => {
-    createPaymentIntent();
+    let isCancelled = false;
+    let paymentIntentIdToCancel: string | null = null;
+    
+    const initializePayment = async () => {
+      if (isCancelled) return;
+      
+      try {
+        const result = await createPaymentIntent();
+        if (!isCancelled && result) {
+          paymentIntentIdToCancel = result.paymentIntentId;
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          console.error('Failed to initialize payment:', error);
+          onPaymentError?.(error instanceof Error ? error.message : 'Payment initialization failed');
+        }
+      }
+    };
+    
+    initializePayment();
+    
+    return () => {
+      isCancelled = true;
+      // Cancel any pending payment intent to prevent memory leaks
+      if (paymentIntentIdToCancel) {
+        fetch('/api/cancel-payment-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paymentIntentId: paymentIntentIdToCancel })
+        }).catch(error => {
+          console.warn('Failed to cancel payment intent:', error);
+        });
+      }
+    };
   }, [bookingId]);
 
   const createPaymentIntent = async () => {
@@ -78,9 +111,16 @@ function PaymentFormContent({
 
       setClientSecret(data.clientSecret);
       setPaymentIntentId(data.paymentIntentId);
+      
+      // Return the payment intent info for cleanup purposes
+      return {
+        paymentIntentId: data.paymentIntentId,
+        clientSecret: data.clientSecret
+      };
     } catch (error) {
       console.error('Error creating payment intent:', error);
       onPaymentError(error instanceof Error ? error.message : 'Failed to initialize payment');
+      throw error; // Re-throw for proper error handling in useEffect
     }
   };
 

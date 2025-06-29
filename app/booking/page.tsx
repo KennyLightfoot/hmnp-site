@@ -129,24 +129,53 @@ export default function BookingPage() {
   const appointmentStartTime = watch('appointmentStartTime');
   const appointmentFormattedTime = watch('appointmentFormattedTime');
 
-  // Load services on mount
+  // State to track if services are ready for selection
+  const [isServicesReady, setIsServicesReady] = useState(false);
+
+  // Load services on mount with proper dependency management
   useEffect(() => {
-    fetchServices();
+    const loadServices = async () => {
+      setServicesLoading(true);
+      setServicesError(null);
+      setIsServicesReady(false);
+      
+      try {
+        await fetchServices();
+        setIsServicesReady(true);
+        
+        // Pre-select service if provided in URL params (after services are loaded)
+        const serviceParam = searchParams?.get('service');
+        if (serviceParam) {
+          setValue('serviceType', serviceParam);
+        }
+      } catch (error) {
+        console.error('Failed to load services:', error);
+        setServicesError('Failed to load services');
+      } finally {
+        setServicesLoading(false);
+      }
+    };
     
-    // Pre-select service if provided in URL params
-    const serviceParam = searchParams?.get('service');
-    if (serviceParam) {
-      setValue('serviceType', serviceParam);
-    }
+    loadServices();
   }, [searchParams, setValue]);
 
-  // Update selected service when serviceType changes
+  // Update selected service only when services are ready and serviceType changes
   useEffect(() => {
-    if (serviceType && services.length > 0) {
+    if (isServicesReady && serviceType && services.length > 0) {
       const service = services.find(s => s.key === serviceType);
       setSelectedService(service || null);
+      
+      console.log('[SERVICE SELECTION]', {
+        serviceType,
+        foundService: !!service,
+        serviceName: service?.name,
+        totalServices: services.length
+      });
+    } else if (isServicesReady && !serviceType) {
+      // Clear selection if no service type is selected
+      setSelectedService(null);
     }
-  }, [serviceType, services]);
+  }, [serviceType, services, isServicesReady]);
 
   // Focus management for accessibility
   useEffect(() => {
@@ -161,8 +190,6 @@ export default function BookingPage() {
 
   const fetchServices = async () => {
     try {
-      setServicesLoading(true);
-      setServicesError(null);
       
       const response = await fetch('/api/services-compatible');
       if (!response.ok) {
