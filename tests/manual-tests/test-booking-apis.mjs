@@ -13,7 +13,7 @@ async function testBookingAPIs() {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const dateStr = tomorrow.toISOString().split('T')[0];
     
-    const availabilityUrl = `${baseUrl}/api/availability?date=${dateStr}&serviceDuration=90`;
+    const availabilityUrl = `${baseUrl}/api/availability-compatible?date=${dateStr}&serviceId=cmb8ovso10000ve9xwvtf0my0&serviceDuration=90`;
     console.log(`   URL: ${availabilityUrl}`);
     
     try {

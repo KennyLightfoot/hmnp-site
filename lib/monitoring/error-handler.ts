@@ -45,7 +45,7 @@ export interface ErrorContext {
 }
 
 // Enhanced error class
-export class AppError extends Error {
+class AppError extends Error {
   public readonly code: string;
   public readonly severity: ErrorSeverity;
   public readonly category: ErrorCategory;
@@ -77,7 +77,7 @@ export class AppError extends Error {
 }
 
 // Error monitoring class
-export class ErrorMonitor {
+class ErrorMonitor {
   private static instance: ErrorMonitor;
   private errorCounts: Map<string, number> = new Map();
   private lastErrorReset: Date = new Date();
