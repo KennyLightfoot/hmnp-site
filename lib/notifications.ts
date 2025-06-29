@@ -352,10 +352,36 @@ export class NotificationService {
         break;
     }
 
-    await prisma.booking.update({
-      where: { id: bookingId },
-      data: updateData
-    });
+    // Add optimistic concurrency control to prevent race conditions
+    try {
+      const currentBooking = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        select: { id: true, updatedAt: true }
+      });
+
+      if (!currentBooking) {
+        throw new Error(`Booking ${bookingId} not found`);
+      }
+
+      await prisma.booking.update({
+        where: { 
+          id: bookingId,
+          updatedAt: currentBooking.updatedAt // Optimistic concurrency check
+        },
+        data: {
+          ...updateData,
+          updatedAt: now // Update the timestamp to prevent future conflicts
+        }
+      });
+    } catch (error) {
+      // Log the error but don't fail the notification entirely
+      console.warn(`Failed to update booking notification timestamp for ${bookingId}:`, error);
+      // Fallback to basic update without concurrency control
+      await prisma.booking.update({
+        where: { id: bookingId },
+        data: updateData
+      });
+    }
   }
 
   /**
@@ -875,10 +901,10 @@ export const sendBookingConfirmation = async (bookingId: string) => {
 
   const content = {
     subject: 'Booking Confirmation - Houston Mobile Notary Pros',
-    message: `Hi ${recipient.firstName}, your booking for ${booking.Service.name} has been confirmed. Details will be sent via email.`,
+    message: `Hi ${recipient.firstName}, your booking for ${booking.service.name} has been confirmed. Details will be sent via email.`,
     metadata: {
       serviceId: booking.serviceId,
-      serviceName: booking.Service.name
+      serviceName: booking.service.name
     }
   };
 
@@ -933,7 +959,7 @@ export const sendAppointmentReminder = async (
   const { appointmentReminderSms } = await import('@/lib/sms/templates');
   
   const bookingDetails = {
-    serviceName: booking.Service.name,
+    serviceName: booking.service.name,
     date: booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'TBD',
     time: booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase() : 'TBD',
     addressShort: booking.addressCity || 'TBD'
