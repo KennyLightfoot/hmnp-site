@@ -38,10 +38,10 @@ export async function POST(
     }
 
     // Get booking details for fee calculation
-    const existingBooking = await prisma.Booking.findUnique({
+    const existingBooking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        Service: true,
+        service: true,
         User_Booking_signerIdToUser: true
       }
     })
@@ -80,10 +80,10 @@ export async function POST(
     }
 
     // Get updated booking for response
-    const updatedBooking = await prisma.Booking.findUnique({
+    const updatedBooking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        Service: true,
+        service: true,
         User_Booking_signerIdToUser: true
       }
     })
@@ -153,7 +153,7 @@ export async function POST(
         minute: '2-digit',
         hour12: true
       }),
-      serviceName: updatedBooking.Service?.name || 'Mobile Notary Service',
+      serviceName: updatedBooking.service?.name || 'Mobile Notary Service',
       serviceAddress: [
         updatedBooking.addressStreet, 
         updatedBooking.addressCity, 
@@ -217,9 +217,9 @@ export async function GET(
     const proposedDateTime = searchParams.get('dateTime')
     
     // Find the booking
-    const booking = await prisma.Booking.findUnique({
+    const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
-      include: { Service: true, User_Booking_signerIdToUser: true }
+      include: { service: true, User_Booking_signerIdToUser: true }
     })
 
     if (!booking) {
@@ -256,7 +256,7 @@ export async function GET(
       }
 
       // Check for conflicts with other bookings
-      const conflictingBooking = await prisma.Booking.findFirst({
+      const conflictingBooking = await prisma.booking.findFirst({
         where: {
           scheduledDateTime: proposedTime,
           status: {
@@ -317,7 +317,7 @@ export async function GET(
       booking: {
         id: booking.id,
         currentDateTime: booking.scheduledDateTime,
-        serviceName: booking.Service?.name,
+        serviceName: booking.service?.name,
         customerName: booking.User_Booking_signerIdToUser?.name
       },
       availability

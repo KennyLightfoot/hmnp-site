@@ -23,11 +23,11 @@ export async function POST(
 
   try {
     // Find the booking
-    const booking = await prisma.Booking.findUnique({
+    const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
         User_Booking_signerIdToUser: true,
-        Service: true,
+        service: true,
       }
     });
 
@@ -39,7 +39,7 @@ export async function POST(
     }
 
     // Update the booking status to CONFIRMED
-    const updatedBooking = await prisma.Booking.update({
+    const updatedBooking = await prisma.booking.update({
       where: { id: bookingId },
       data: { 
         status: BookingStatus.CONFIRMED,
@@ -64,7 +64,7 @@ export async function POST(
     }
 
     // Create a system log entry
-    await prisma.SystemLog.create({
+    await prisma.systemLog.create({
       data: {
         level: 'INFO',
         component: 'BOOKING_MANAGER',

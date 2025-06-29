@@ -11,7 +11,7 @@ const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 
 // Test data for booking - SOP COMPLIANT
 const TEST_BOOKING_DATA = {
-  Service: {
+  service: {
     name: 'Standard Notary Services',  // SOP: was 'Essential Notary Services'
     price: '$75'
   },

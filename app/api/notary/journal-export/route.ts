@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     };
 
     // Fetch journal entries for export
-    const entries = await prisma.NotaryJournal.findMany({
+    const entries = await prisma.notaryJournal.findMany({
       where: whereClause,
       include: {
         booking: {
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
                 email: true,
               },
             },
-            Service: {
+            service: {
               select: {
                 name: true,
               },
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
         entry.location || '',
         entry.additionalNotes || '',
         entry.bookingId || '',
-        entry.booking?.Service?.name || '',
+        entry.booking?.service?.name || '',
         entry.notary.name || '',
         entry.createdAt.toISOString(),
       ]);
@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
         location: entry.location,
         additionalNotes: entry.additionalNotes,
         bookingId: entry.bookingId,
-        serviceName: entry.booking?.Service?.name,
+        serviceName: entry.booking?.service?.name,
         notaryName: entry.notary.name,
         createdAt: entry.createdAt.toISOString(),
       })),

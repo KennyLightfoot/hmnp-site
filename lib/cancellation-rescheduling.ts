@@ -37,10 +37,10 @@ export class CancellationReschedulingService {
    * Calculate refund amount based on cancellation timing and business rules
    */
   async calculateRefund(bookingId: string): Promise<RefundCalculation> {
-    const booking = await prisma.Booking.findUnique({
+    const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        Service: true,
+        service: true,
         Payment: true
       }
     })
@@ -98,10 +98,10 @@ export class CancellationReschedulingService {
     message: string
   }> {
     try {
-      const booking = await prisma.Booking.findUnique({
+      const booking = await prisma.booking.findUnique({
         where: { id: request.bookingId },
         include: {
-          Service: true,
+          service: true,
           Payment: true,
           User_Booking_signerIdToUser: true,
           User_Booking_notaryIdToUser: true
@@ -131,7 +131,7 @@ export class CancellationReschedulingService {
         ? BookingStatus.CANCELLED_BY_CLIENT 
         : BookingStatus.CANCELLED_BY_STAFF
 
-      await prisma.Booking.update({
+      await prisma.booking.update({
         where: { id: request.bookingId },
         data: {
           status: cancelStatus,
@@ -181,7 +181,7 @@ export class CancellationReschedulingService {
    * Process refund through payment provider
    */
   private async processRefund(bookingId: string, refundCalculation: RefundCalculation): Promise<void> {
-    const payments = await prisma.Payment.findMany({
+    const payments = await prisma.payment.findMany({
       where: { 
         bookingId,
         status: PaymentStatus.COMPLETED
@@ -199,7 +199,7 @@ export class CancellationReschedulingService {
       try {
         // TODO: Integrate with actual payment processor (Stripe/Square)
         // For now, we'll mark the refund in our system
-        await prisma.Payment.update({
+        await prisma.payment.update({
           where: { id: payment.id },
           data: {
             refundedAmount: refundAmount,
@@ -233,10 +233,10 @@ export class CancellationReschedulingService {
     newBookingDetails?: any
   }> {
     try {
-      const booking = await prisma.Booking.findUnique({
+      const booking = await prisma.booking.findUnique({
         where: { id: request.bookingId },
         include: {
-          Service: true,
+          service: true,
           User_Booking_signerIdToUser: true
         }
       })
@@ -251,7 +251,7 @@ export class CancellationReschedulingService {
       }
 
       // Check if new time is available
-      const conflictingBooking = await prisma.Booking.findFirst({
+      const conflictingBooking = await prisma.booking.findFirst({
         where: {
           scheduledDateTime: request.newDateTime,
           status: {
@@ -276,7 +276,7 @@ export class CancellationReschedulingService {
       }
 
       // Update booking
-      const updatedBooking = await prisma.Booking.update({
+      const updatedBooking = await prisma.booking.update({
         where: { id: request.bookingId },
         data: {
           scheduledDateTime: request.newDateTime,
@@ -289,7 +289,7 @@ export class CancellationReschedulingService {
 
       // Process reschedule fee if applicable
       if (rescheduleFee > 0) {
-        await prisma.Payment.create({
+        await prisma.payment.create({
           data: {
             bookingId: request.bookingId,
             amount: rescheduleFee,
@@ -307,7 +307,7 @@ export class CancellationReschedulingService {
       await this.updateGHLForReschedule(booking, request.newDateTime)
 
       // Clear reminder timestamps so new reminders will be sent
-      await prisma.Booking.update({
+      await prisma.booking.update({
         where: { id: request.bookingId },
         data: {
           reminder24hrSentAt: null,
@@ -500,7 +500,7 @@ export class CancellationReschedulingService {
       console.log(`Notifying waitlist about available slot: ${dateTime.toISOString()} for service ${serviceId}`)
       
       // Example implementation:
-      // const waitlistEntries = await prisma.Waitlist.findMany({
+      // const waitlistEntries = await prisma.waitlist.findMany({
       //   where: {
       //     serviceId,
       //     preferredDate: { lte: dateTime },

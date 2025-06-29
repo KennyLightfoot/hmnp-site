@@ -1,7 +1,7 @@
 import Link from "next/link"
-// import Image from "next/image"
 import { MapPin, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import ServiceAreaMap from "@/components/maps/ServiceAreaMap"
 
 const structuredData = {
   "@context": "https://schema.org",
@@ -127,17 +127,12 @@ export default function ServiceArea() {
             </div>
 
             <div className="relative">
-              <div className="h-[450px] rounded-lg overflow-hidden shadow-md border border-gray-200">
-                <iframe
-                  title="Interactive Map of Houston Mobile Notary Pros Service Area centered on Texas City 77591"
-                  width="100%"
-                  height="100%"
-                  style={{ border:0 }}
-                  loading="lazy"
-                  allowFullScreen
-                  src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBvMhEDQAejT3zt1VHZ8oF-KbufDf0AJkw&q=Texas+City+TX+77591&zoom=9"
-                ></iframe>
-              </div>
+              <ServiceAreaMap 
+                showServiceAreaCircle={true}
+                showBusinessMarker={true}
+                zoom={9}
+                height="450px"
+              />
             </div>
           </div>
         </div>

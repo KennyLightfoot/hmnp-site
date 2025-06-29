@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     const windowEnd = new Date(targetTime.getTime() + (2 * 60 * 60 * 1000)); // 2 hours after target
 
     // Find completed bookings from ~24 hours ago
-    const completedBookings = await prisma.Booking.findMany({
+    const completedBookings = await prisma.booking.findMany({
       where: {
         status: BookingStatus.COMPLETED,
         // Use actualEndDateTime if available, otherwise fall back to scheduledDateTime
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
         User_Booking_signerIdToUser: {
           select: { email: true, name: true },
         },
-        Service: {
+        service: {
           select: { name: true },
         },
       },
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
         // Prepare booking details for templates
         const bookingDetails = {
           bookingId: booking.id,
-          serviceName: booking.Service.name,
+          serviceName: booking.service.name,
           completedDate: booking.actualEndDateTime || booking.scheduledDateTime,
         };
 
@@ -182,7 +182,7 @@ function postServiceFollowUpEmail(
       
       <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
         <h3>Service Details:</h3>
-        <p><strong>Service:</strong> ${booking.serviceName}</p>
+        <p><strong>service:</strong> ${booking.serviceName}</p>
         <p><strong>Date Completed:</strong> ${booking.completedDate ? new Date(booking.completedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Recently'}</p>
         <p><strong>Booking ID:</strong> ${booking.bookingId}</p>
       </div>

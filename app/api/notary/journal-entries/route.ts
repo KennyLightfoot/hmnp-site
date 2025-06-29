@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch journal entries
-    const entries = await prisma.NotaryJournal.findMany({
+    const entries = await prisma.notaryJournal.findMany({
       where: whereClause,
       include: {
         booking: {
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
                 name: true,
               },
             },
-            Service: {
+            service: {
               select: {
                 name: true,
               },
@@ -103,8 +103,8 @@ export async function GET(request: NextRequest) {
       booking: entry.booking ? {
         id: entry.booking.id,
         signerName: entry.booking.User_Booking_signerIdToUser?.name,
-        Service: {
-          name: entry.booking.Service.name,
+        service: {
+          name: entry.booking.service.name,
         },
       } : null,
     }));
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
     const notaryId = (session.user as any).id;
 
     // Get the next journal number for this notary
-    const lastEntry = await prisma.NotaryJournal.findFirst({
+    const lastEntry = await prisma.notaryJournal.findFirst({
       where: { notaryId },
       orderBy: { journalNumber: 'desc' },
     });
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
     const nextJournalNumber = (lastEntry?.journalNumber || 0) + 1;
 
     // Create the journal entry
-    const journalEntry = await prisma.NotaryJournal.create({
+    const journalEntry = await prisma.notaryJournal.create({
       data: {
         bookingId: bookingId || undefined,
         notaryId,

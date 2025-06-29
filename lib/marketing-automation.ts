@@ -385,12 +385,12 @@ class MarketingAutomation {
    * Private helper methods
    */
   private async gatherCustomerData(customerId: string) {
-    const user = await prisma.User.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: customerId },
       include: {
         Booking_Booking_signerIdToUser: {
           include: {
-            Service: true
+            service: true
           },
           orderBy: {
             createdAt: 'desc'
@@ -518,7 +518,7 @@ class MarketingAutomation {
         content: emailContent.content,
         personalizations: {
           customerName: customerData.user.name || 'Valued Customer',
-          preferredService: customerData.preferredServices[0] || 'Notary Service'
+          preferredservice: customerData.preferredServices[0] || 'Notary Service'
         },
         ctaButtons: [{
           text: 'Book Now',
@@ -622,7 +622,7 @@ class MarketingAutomation {
 
   private async getTargetCustomers(segmentIds: string[]): Promise<any[]> {
     // Mock customer retrieval - would implement actual segmentation logic
-    const customers = await prisma.User.findMany({
+    const customers = await prisma.user.findMany({
       take: 100,
       include: {
         Booking_Booking_signerIdToUser: true
@@ -638,7 +638,7 @@ class MarketingAutomation {
       ...content,
       personalizations: {
         customerName: customer.name || 'Valued Customer',
-        lastService: customer.Booking_Booking_signerIdToUser[0]?.Service?.name || 'our services'
+        lastservice: customer.Booking_Booking_signerIdToUser[0]?.Service?.name || 'our services'
       }
     };
   }

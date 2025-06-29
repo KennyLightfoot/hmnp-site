@@ -75,7 +75,7 @@ export class PaymentAutomationService {
 
     try {
       // Get all bookings with pending payments
-      const pendingPaymentBookings = await prisma.Booking.findMany({
+      const pendingPaymentBookings = await prisma.booking.findMany({
         where: {
           status: {
             in: [BookingStatus.PAYMENT_PENDING, BookingStatus.REQUESTED]
@@ -94,7 +94,7 @@ export class PaymentAutomationService {
             where: { status: PaymentStatus.PENDING }
           },
           User_Booking_signerIdToUser: true,
-          Service: true
+          service: true
         }
       })
 
@@ -138,7 +138,7 @@ export class PaymentAutomationService {
       if (remindersDue.length === 0) continue
 
       // Count existing payment reminders
-      const existingReminders = await prisma.NotificationLog.count({
+      const existingReminders = await prisma.notificationLog.count({
         where: {
           bookingId: booking.id,
           notificationType: 'PAYMENT_REMINDER'
@@ -248,7 +248,7 @@ export class PaymentAutomationService {
     const results = { cancelled: 0, errors: [] as string[] }
 
     try {
-      const bookingsToCancel = await prisma.Booking.findMany({
+      const bookingsToCancel = await prisma.booking.findMany({
         where: {
           status: {
             in: [BookingStatus.PAYMENT_PENDING, BookingStatus.REQUESTED]
@@ -264,7 +264,7 @@ export class PaymentAutomationService {
         },
         include: {
           User_Booking_signerIdToUser: true,
-          Service: true,
+          service: true,
           Payment: true
         }
       })
@@ -297,7 +297,7 @@ export class PaymentAutomationService {
       }
 
       // Update booking status
-      await prisma.Booking.update({
+      await prisma.booking.update({
         where: { id: booking.id },
         data: {
           status: BookingStatus.CANCELLED_BY_STAFF,
@@ -308,7 +308,7 @@ export class PaymentAutomationService {
       })
 
       // Cancel pending payments
-      await prisma.Payment.updateMany({
+      await prisma.payment.updateMany({
         where: { 
           bookingId: booking.id,
           status: PaymentStatus.PENDING
@@ -387,12 +387,12 @@ export class PaymentAutomationService {
     }
 
     try {
-      const payment = await prisma.Payment.findUnique({
+      const payment = await prisma.payment.findUnique({
         where: { id: paymentId },
         include: {
           Booking: {
             include: {
-              Service: true,
+              service: true,
               User_Booking_signerIdToUser: true
             }
           }
@@ -414,12 +414,12 @@ export class PaymentAutomationService {
 
     if (remainingBalance <= 0) {
       // Full payment received
-      await prisma.Payment.update({
+      await prisma.payment.update({
         where: { id: paymentId },
         data: { status: PaymentStatus.COMPLETED }
       });
 
-      await prisma.Booking.update({
+      await prisma.booking.update({
         where: { id: payment.bookingId },
         data: { status: BookingStatus.CONFIRMED }
       });
@@ -448,7 +448,7 @@ export class PaymentAutomationService {
     }
 
     // Partial payment - create new payment record for remaining balance
-    await prisma.Payment.update({
+    await prisma.payment.update({
       where: { id: paymentId },
       data: {
         amount: amountPaid,
@@ -456,7 +456,7 @@ export class PaymentAutomationService {
       }
     })
 
-    const newPayment = await prisma.Payment.create({
+    const newPayment = await prisma.payment.create({
       data: {
         bookingId: payment.bookingId,
         amount: remainingBalance,
@@ -539,12 +539,12 @@ export class PaymentAutomationService {
     }
 
     try {
-    const payment = await prisma.Payment.findUnique({
+    const payment = await prisma.payment.findUnique({
       where: { id: paymentId },
       include: {
         Booking: {
           include: {
-            Service: true,
+            service: true,
             User_Booking_signerIdToUser: true
           }
         }
@@ -560,7 +560,7 @@ export class PaymentAutomationService {
     }
 
     // Update payment status
-    await prisma.Payment.update({
+    await prisma.payment.update({
       where: { id: paymentId },
       data: {
         status: PaymentStatus.FAILED,
@@ -608,7 +608,7 @@ export class PaymentAutomationService {
     }
 
     // Create new pending payment for retry
-    await prisma.Payment.create({
+    await prisma.payment.create({
       data: {
         bookingId: payment.bookingId,
         amount: payment.amount,
@@ -695,26 +695,26 @@ export class PaymentAutomationService {
       autoCancellations,
       completedPayments
     ] = await Promise.all([
-      prisma.Payment.findMany({
+      prisma.payment.findMany({
         where: {
           status: PaymentStatus.PENDING,
           createdAt: { gte: startDate }
         }
       }),
-      prisma.NotificationLog.count({
+      prisma.notificationLog.count({
         where: {
           notificationType: 'PAYMENT_REMINDER',
           createdAt: { gte: startDate }
         }
       }),
-      prisma.Booking.count({
+      prisma.booking.count({
         where: {
           status: BookingStatus.CANCELLED_BY_STAFF,
           updatedAt: { gte: startDate },
           notes: { contains: 'Auto-cancelled' }
         }
       }),
-      prisma.Payment.count({
+      prisma.payment.count({
         where: {
           status: PaymentStatus.COMPLETED,
           updatedAt: { gte: startDate }

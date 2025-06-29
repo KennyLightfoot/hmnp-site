@@ -91,7 +91,7 @@ export const bookingConfirmationEmail = (
     
     <h2>Appointment Details:</h2>
     <table class="details-table">
-      <tr><th>Service:</th><td>${booking.serviceName}</td></tr>
+      <tr><th>service:</th><td>${booking.serviceName}</td></tr>
       <tr><th>Date:</th><td>${booking.date}</td></tr>
       <tr><th>Time:</th><td>${booking.time}</td></tr>
       <tr><th>Location:</th><td>${booking.address}</td></tr>
@@ -138,7 +138,7 @@ export const appointmentReminderEmail = (
     
     <h2>Appointment Details:</h2>
     <table class="details-table">
-      <tr><th>Service:</th><td>${booking.serviceName}</td></tr>
+      <tr><th>service:</th><td>${booking.serviceName}</td></tr>
       <tr><th>Date:</th><td>${booking.date} ${isTomorrow ? '(Tomorrow)' : ''}</td></tr>
       <tr><th>Time:</th><td>${booking.time}</td></tr>
       <tr><th>Location:</th><td>${booking.address}</td></tr>

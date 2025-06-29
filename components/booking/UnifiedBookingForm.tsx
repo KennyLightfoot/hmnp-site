@@ -17,6 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChevronLeft, ChevronRight, Loader2, Sparkles, AlertTriangle, CheckCircle, User, MapPin, Phone, Mail, Building, MessageSquare } from 'lucide-react';
 import UnifiedBookingCalendar from '@/components/unified-booking-calendar';
+import BookingLocationMap from '@/components/maps/BookingLocationMap';
 
 // Unified booking form schema combining best practices from all existing forms
 const unifiedBookingSchema = z.object({
@@ -159,6 +160,13 @@ export default function UnifiedBookingForm({
     error?: string;
   } | null>(null);
 
+  // State for location and travel fee information
+  const [locationInfo, setLocationInfo] = useState<{
+    distance: number;
+    travelFee: number;
+    isWithinServiceArea: boolean;
+  } | null>(null);
+
   const totalSteps = variant === 'simple' ? 3 : variant === 'full' ? 4 : 6;
 
   // Refs for accessibility and focus management
@@ -208,7 +216,7 @@ export default function UnifiedBookingForm({
   useEffect(() => {
     async function fetchServices() {
       try {
-        const response = await fetch('/api/services');
+        const response = await fetch('/api/services-compatible');
         if (!response.ok) {
           throw new Error('Failed to fetch services');
         }
@@ -275,6 +283,65 @@ export default function UnifiedBookingForm({
       }
     } catch (error) {
       setPromoValidation({ isValid: false, error: 'Failed to validate promo code' });
+    }
+  };
+
+  // Handle location selection from map
+  const handleLocationSelect = (location: {
+    address: string;
+    coordinates: { lat: number; lng: number };
+    distance: number;
+    travelFee: number;
+    isWithinServiceArea: boolean;
+  }) => {
+    try {
+      // Parse the address and update form fields with validation
+      const addressParts = location.address.split(', ');
+      
+      // Validate address format
+      if (addressParts.length < 2) {
+        console.warn('Address format may be incomplete:', location.address);
+      }
+      
+      const streetAddress = addressParts[0]?.trim() || '';
+      const city = addressParts[1]?.trim() || '';
+      const stateZip = addressParts[2]?.trim() || '';
+      
+      // Parse state and zip with validation
+      const stateZipParts = stateZip.split(' ');
+      const state = stateZipParts[0]?.trim() || 'TX';
+      const zip = stateZipParts[1]?.trim() || '';
+
+      // Only update fields if we have required data
+      if (streetAddress) {
+        form.setValue('addressStreet', streetAddress);
+      }
+      if (city) {
+        form.setValue('addressCity', city);
+      }
+      if (state) {
+        form.setValue('addressState', state);
+      }
+      if (zip) {
+        form.setValue('addressZip', zip);
+      }
+
+      // Update location info for travel fee display
+      setLocationInfo({
+        distance: location.distance,
+        travelFee: location.travelFee,
+        isWithinServiceArea: location.isWithinServiceArea
+      });
+    } catch (error) {
+      console.error('Error parsing address from map selection:', error);
+      console.warn('Address that failed to parse:', location.address);
+      
+      // Still update location info even if address parsing fails
+      setLocationInfo({
+        distance: location.distance,
+        travelFee: location.travelFee,
+        isWithinServiceArea: location.isWithinServiceArea
+      });
     }
   };
 
@@ -700,6 +767,38 @@ export default function UnifiedBookingForm({
             </FormItem>
           )}
         />
+
+        {/* Interactive Map for Address Selection */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Select Location on Map</h3>
+          <BookingLocationMap
+            onLocationSelect={handleLocationSelect}
+            defaultAddress={`${form.getValues('addressStreet')}, ${form.getValues('addressCity')}, ${form.getValues('addressState')} ${form.getValues('addressZip')}`.trim()}
+            height="300px"
+          />
+        </div>
+
+        {/* Travel Fee Information */}
+        {locationInfo && (
+          <Alert className={locationInfo.isWithinServiceArea ? "border-green-200 bg-green-50" : "border-yellow-200 bg-yellow-50"}>
+            <MapPin className="h-4 w-4" />
+            <AlertTitle>
+              {locationInfo.isWithinServiceArea ? "Within Service Area" : "Travel Fee Applies"}
+            </AlertTitle>
+            <AlertDescription>
+              Distance: {locationInfo.distance.toFixed(1)} miles
+              {locationInfo.travelFee > 0 ? (
+                <span className="block mt-1">
+                  Travel fee: <strong>${locationInfo.travelFee.toFixed(2)}</strong> (beyond 20-mile radius)
+                </span>
+              ) : (
+                <span className="block mt-1 text-green-700">
+                  No travel fee - within our standard service area
+                </span>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Address Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

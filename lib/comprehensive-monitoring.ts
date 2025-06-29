@@ -318,7 +318,7 @@ class ComprehensiveMonitoring {
    */
   private async getBookingStats(): Promise<Record<string, number>> {
     try {
-      const stats = await prisma.Booking.groupBy({
+      const stats = await prisma.booking.groupBy({
         by: ['status'],
         _count: true,
         where: {

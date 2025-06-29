@@ -25,10 +25,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Get booking details
-    const booking = await prisma.Booking.findUnique({
+    const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        Service: true,
+        service: true,
         User_Booking_signerIdToUser: true,
         promoCode: true
       }
@@ -51,11 +51,11 @@ export async function POST(request: NextRequest) {
     // Calculate amount using centralized pricing utility
     const { PricingUtils } = await import('@/lib/pricing-utils');
     const paymentAmount = PricingUtils.getBookingAmount({
-      priceAtBooking: booking.Service.price,
+      priceAtBooking: booking.service.price,
       depositAmount: booking.depositAmount,
-      Service: {
-        requiresDeposit: booking.Service.requiresDeposit,
-        depositAmount: booking.Service.depositAmount
+      service: {
+        requiresDeposit: booking.service.requiresDeposit,
+        depositAmount: booking.service.depositAmount
       }
     });
     const amountInCents = PricingUtils.toCents(paymentAmount);
@@ -79,17 +79,17 @@ export async function POST(request: NextRequest) {
         serviceId: booking.serviceId,
         customerId: booking.signerId || '',
         customerEmail: booking.User_Booking_signerIdToUser?.email || '',
-        serviceName: booking.Service.name,
+        serviceName: booking.service.name,
         promoCode: booking.promoCode?.code || '',
-        originalAmount: booking.Service.depositAmount.toString(),
+        originalAmount: booking.service.depositAmount.toString(),
         discountAmount: booking.promoCodeDiscount?.toString() || '0'
       },
-      description: `Deposit for ${booking.Service.name} - ${booking.User_Booking_signerIdToUser?.name}`,
+      description: `Deposit for ${booking.service.name} - ${booking.User_Booking_signerIdToUser?.name}`,
       receipt_email: booking.User_Booking_signerIdToUser?.email || undefined,
     });
 
     // Store payment intent ID in the database
-    await prisma.Booking.update({
+    await prisma.booking.update({
       where: { id: bookingId },
       data: {
         // Store payment intent ID in a field if you have one, or create a Payment record
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create Payment record
-    await prisma.Payment.create({
+    await prisma.payment.create({
       data: {
         bookingId: booking.id,
         amount: booking.depositAmount!,
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
       amount: amountInCents,
       booking: {
         id: booking.id,
-        Service: booking.Service.name,
+        service: booking.service.name,
         scheduledDateTime: booking.scheduledDateTime,
         customer: booking.User_Booking_signerIdToUser?.name,
         promoCode: booking.promoCode ? {

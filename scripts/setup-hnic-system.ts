@@ -94,7 +94,7 @@ async function setupHNICAccount() {
   
   try {
     // Check if user already exists
-    const existingUser = await prisma.User.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { email: HNIC_CONFIG.email }
     });
 
@@ -105,7 +105,7 @@ async function setupHNICAccount() {
       const hashedPassword = await bcrypt.hash(HNIC_CONFIG.password, 12);
       
       // Update existing user
-      await prisma.User.update({
+      await prisma.user.update({
         where: { id: existingUser.id },
         data: {
           password: hashedPassword,
@@ -125,7 +125,7 @@ async function setupHNICAccount() {
       const hashedPassword = await bcrypt.hash(HNIC_CONFIG.password, 12);
       
       // Create new HNIC user
-      const user = await prisma.User.create({
+      const user = await prisma.user.create({
         data: {
           email: HNIC_CONFIG.email,
           password: hashedPassword,
@@ -343,7 +343,7 @@ async function verifySystemSetup() {
   console.log('🔍 Verifying system configuration...');
   
   // Verify HNIC account
-  const hnicUser = await prisma.User.findUnique({
+  const hnicUser = await prisma.user.findUnique({
     where: { email: HNIC_CONFIG.email }
   });
   

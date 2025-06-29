@@ -172,7 +172,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
       const existingBooking = await tx.booking.findUnique({
         where: { id: bookingId },
         include: {
-        Service: true,
+        service: true,
         User_Booking_signerIdToUser: true,
         Payment: {
           where: {
@@ -200,7 +200,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
         depositStatus: 'COMPLETED',
       },
       include: {
-        Service: true,
+        service: true,
         User_Booking_signerIdToUser: true,
       }
     });
@@ -274,7 +274,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent,
     
     // Update payment status with retry logic
     await EnhancedStripeWebhookProcessor.executeWithDatabaseRetry(async () => {
-      await prisma.Payment.updateMany({
+      await prisma.payment.updateMany({
         where: {
           bookingId: bookingId,
           paymentIntentId: paymentIntent.id,
@@ -302,10 +302,10 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, ev
 
   await EnhancedStripeWebhookProcessor.executeWithDatabaseRetry(async () => {
     // Get booking details
-    const booking = await prisma.Booking.findUnique({
+    const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        Service: true,
+        service: true,
         User_Booking_signerIdToUser: true,
       }
     });
@@ -316,7 +316,7 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, ev
     }
 
     // Update payment failed attempts
-    await prisma.Booking.update({
+    await prisma.booking.update({
       where: { id: bookingId },
       data: {
         depositStatus: 'FAILED',
@@ -328,7 +328,7 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, ev
       try {
         // Update booking record with failed attempt count
         const newFailedAttempts = (booking.paymentFailedAttempts || 0) + 1;
-        await prisma.Booking.update({
+        await prisma.booking.update({
           where: { id: bookingId },
           data: { 
             paymentFailedAttempts: newFailedAttempts,
@@ -372,20 +372,20 @@ async function handleChargeRefunded(charge: Stripe.Charge, eventId: string) {
 
   await EnhancedStripeWebhookProcessor.executeWithDatabaseRetry(async () => {
     // Find booking by payment intent ID stored in notes or through Payment records
-    const payments = await prisma.Payment.findMany({
+    const payments = await prisma.payment.findMany({
       where: {
         paymentIntentId: charge.payment_intent as string,
       },
       include: {
         Booking: {
           include: {
-            Service: true,
+            service: true,
           }
         }
       }
     });
 
-    const booking = payments.length > 0 ? payments[0].Booking : null;
+    const booking = payments.length > 0 ? payments[0].booking : null;
 
     if (!booking) {
       webhookLogger.error('No booking found for payment intent', { 
@@ -396,7 +396,7 @@ async function handleChargeRefunded(charge: Stripe.Charge, eventId: string) {
     }
 
     // Update booking status
-    await prisma.Booking.update({
+    await prisma.booking.update({
       where: { id: booking.id },
       data: {
         status: BookingStatus.CANCELLED_BY_CLIENT,

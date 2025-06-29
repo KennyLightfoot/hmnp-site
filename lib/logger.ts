@@ -14,7 +14,7 @@ export interface LogEntry {
   timestamp: string;
   level: LogLevel;
   message: string;
-  Service: string;
+  service: string;
   requestId?: string;
   metadata?: Record<string, any>;
   error?: {

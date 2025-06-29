@@ -166,7 +166,7 @@ async function seedV12Tables() {
     // 4. Check existing users and create sample notary profiles if needed
     console.log('👤 Checking for notary users to create profiles...');
     
-    const notaryUsers = await prisma.User.findMany({
+    const notaryUsers = await prisma.user.findMany({
       where: { role: 'NOTARY' }
     });
     

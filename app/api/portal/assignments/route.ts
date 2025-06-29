@@ -9,7 +9,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const assignments = await prisma.Assignment.findMany({
+  const assignments = await prisma.assignment.findMany({
     where: { partnerAssignedToId: session.user.id },
     orderBy: { createdAt: "desc" },
     select: {

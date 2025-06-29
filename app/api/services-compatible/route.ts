@@ -25,7 +25,7 @@ export async function GET() {
     let services;
     if (hasIsActive && hasDurationMinutes && hasBasePrice) {
       // New schema - use proper Prisma queries
-      services = await prisma.Service.findMany({
+      services = await prisma.service.findMany({
         where: { isActive: true },
         orderBy: [{ serviceType: 'asc' }, { name: 'asc' }],
         select: {

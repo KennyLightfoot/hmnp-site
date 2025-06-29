@@ -33,18 +33,18 @@ export const ADDITIONAL_FEES = {
   bilingual: 20,               // Kept for compatibility
 };
 
-// Service area radius per SOP - 15-mile base radius from ZIP 77591
-export const DEFAULT_SERVICE_AREA_RADIUS = 15; // 15-mile base radius per SOP
+// Service area radius per SOP - 20-mile base radius from ZIP 77591
+export const DEFAULT_SERVICE_AREA_RADIUS = 20; // 20-mile base radius per SOP
 
 // Included travel radius for each service type - Updated per SOP
 export const SERVICE_INCLUDED_RADIUS = {
   quickStampLocal: 10,           // NEW: 10-mile radius for Quick-Stamp
-  standardNotary: 15,            // 15-mile base radius per SOP
-  extendedHoursNotary: 15,       // Updated: 15-mile (was 20, now matches SOP)
+  standardNotary: 20,            // 20-mile base radius per SOP
+  extendedHoursNotary: 20,       // Updated: 20-mile base radius per SOP
   loanSigningSpecialist: 30,     // SOP mentions 30 mi for loan signing
-  specialtyNotaryService: 15,    // 15-mile base radius per SOP
-  businessSolutions: 15,         // 15-mile base radius per SOP
-  businessGrowth: 15,            // 15-mile base radius per SOP  
+  specialtyNotaryService: 20,    // 20-mile base radius per SOP
+  businessSolutions: 20,         // 20-mile base radius per SOP
+  businessGrowth: 20,            // 20-mile base radius per SOP  
   supportService: 0,             // Typically no travel, or custom
 };
 
@@ -178,13 +178,13 @@ export function calculateExtendedHoursNotaryPrice(
   // Same-day service after 3 pm: +$25
   if (isSameDay) {
     sameDayFee = ADDITIONAL_FEES.sameDayService;
-    notes.push(`Same-day Service: $${sameDayFee}`);
+    notes.push(`Same-day service: $${sameDayFee}`);
   }
   
   // After-hours service (9 pm – 7 am): +$50
   if (isAfterHours) {
     afterHoursFee = ADDITIONAL_FEES.afterHoursService;
-    notes.push(`After-hours Service: $${afterHoursFee}`);
+    notes.push(`After-hours service: $${afterHoursFee}`);
   }
   
   const totalPrice = basePrice + extraSignersFee + extraDocumentsFee + sameDayFee + afterHoursFee;

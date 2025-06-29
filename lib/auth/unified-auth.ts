@@ -119,7 +119,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Email and password required');
         }
 
-        const user = await prisma.User.findUnique({
+        const user = await prisma.user.findUnique({
           where: { email: credentials.email }
         });
 
@@ -214,7 +214,7 @@ export class TokenManager {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
     
-    await prisma.RefreshToken.create({
+    await prisma.refreshToken.create({
       data: {
         token: refreshToken,
         userId: user.id,
@@ -246,7 +246,7 @@ export class UnifiedAuth {
       const session = await getServerSession(authOptions);
       
       if (session?.user?.id) {
-        const dbUser = await prisma.User.findUnique({
+        const dbUser = await prisma.user.findUnique({
           where: { id: session.user.id },
           select: { id: true, email: true, name: true, role: true }
         });
@@ -283,7 +283,7 @@ export class UnifiedAuth {
         try {
           const decoded = TokenManager.verifyAccessToken(token);
           
-          const dbUser = await prisma.User.findUnique({
+          const dbUser = await prisma.user.findUnique({
             where: { id: decoded.id },
             select: { id: true, email: true, name: true, role: true }
           });
@@ -506,7 +506,7 @@ export async function getUser(): Promise<AuthUser | null> {
   const session = await getSession();
   if (!session?.user?.id) return null;
   
-  const dbUser = await prisma.User.findUnique({
+  const dbUser = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { id: true, email: true, name: true, role: true }
   });

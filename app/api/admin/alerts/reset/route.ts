@@ -15,7 +15,7 @@ export async function POST() {
 
   try {
     // Update all active alerts to resolved
-    const updateResult = await prisma.SystemAlert.updateMany({
+    const updateResult = await prisma.systemAlert.updateMany({
       where: {
         status: AlertStatus.ACTIVE,
       },
@@ -31,7 +31,7 @@ export async function POST() {
     });
 
     // Create a system log entry
-    await prisma.SystemLog.create({
+    await prisma.systemLog.create({
       data: {
         level: 'INFO',
         component: 'ALERT_MANAGER',

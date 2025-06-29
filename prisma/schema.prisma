@@ -220,6 +220,7 @@ model NotificationLog {
   Booking          Booking            @relation(fields: [bookingId], references: [id])
 
   @@index([bookingId])
+  @@index([bookingId, sentAt])
 }
 
 model Payment {

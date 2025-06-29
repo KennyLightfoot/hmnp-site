@@ -10,6 +10,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   
+  
   // Optimize build performance and memory usage
   experimental: {
     // Enable modern build optimizations

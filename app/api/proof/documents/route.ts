@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the booking and verify access
-    const booking = await prisma.Booking.findUnique({
+    const booking = await prisma.booking.findUnique({
       where: { 
         id: bookingId,
         signerId: (session.user as any).id
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create local document record for tracking
-    const documentRecord = await prisma.NotarizationDocument.create({
+    const documentRecord = await prisma.notarizationDocument.create({
       data: {
         id: `proof_doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         s3Key: `proof-docs/${booking.proofTransactionId}/${documentName}`,
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get the booking and verify access
-    const booking = await prisma.Booking.findUnique({
+    const booking = await prisma.booking.findUnique({
       where: { 
         id: bookingId,
         signerId: (session.user as any).id

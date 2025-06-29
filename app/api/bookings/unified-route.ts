@@ -260,7 +260,7 @@ async function findOrCreateCustomer(
 ) {
   if (isAuthenticated && userId) {
     // For authenticated users, verify they exist
-    const user = await prisma.User.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, name: true, email: true }
     });
@@ -276,13 +276,13 @@ async function findOrCreateCustomer(
   }
   
   // For guest users or if authenticated user not found
-  let user = await prisma.User.findUnique({
+  let user = await prisma.user.findUnique({
     where: { email },
     select: { id: true, name: true, email: true }
   });
   
   if (!user) {
-    user = await prisma.User.create({
+    user = await prisma.user.create({
       data: {
         name,
         email,
@@ -322,7 +322,7 @@ async function validateTimeSlotAvailability(
   const startOfDay = startOfDay(scheduledDateTime);
   const endOfDay = addMinutes(startOfDay, 24 * 60);
   
-  const conflictingBookings = await prisma.Booking.findMany({
+  const conflictingBookings = await prisma.booking.findMany({
     where: {
       scheduledDateTime: {
         gte: startOfDay,
@@ -333,7 +333,7 @@ async function validateTimeSlotAvailability(
       }
     },
     include: {
-      Service: {
+      service: {
         select: { durationMinutes: true }
       }
     }
@@ -344,7 +344,7 @@ async function validateTimeSlotAvailability(
     if (!booking.scheduledDateTime) return false;
     
     const bookingStart = new Date(booking.scheduledDateTime);
-    const bookingEnd = addMinutes(bookingStart, booking.Service.durationMinutes + bookingSettings.bufferTimeMinutes);
+    const bookingEnd = addMinutes(bookingStart, booking.service.durationMinutes + bookingSettings.bufferTimeMinutes);
     const requestedStart = scheduledDateTime;
     const requestedEnd = addMinutes(scheduledDateTime, serviceDuration + bookingSettings.bufferTimeMinutes);
     
@@ -423,7 +423,7 @@ async function createGHLIntegration(
       // Apply tags
       const tags = [
         'source:website_booking',
-        `Service:${service.name.replace(/\s+/g, '_').toLowerCase()}`,
+        `service:${service.name.replace(/\s+/g, '_').toLowerCase()}`,
         `status:booking_${booking.status.toLowerCase()}`,
         'status:booking_created'
       ];
@@ -439,7 +439,7 @@ async function createGHLIntegration(
       await ghl.addTagsToContact(contactId, tags);
       
       // Update booking with GHL contact ID
-      await prisma.Booking.update({
+      await prisma.booking.update({
         where: { id: booking.id },
         data: { ghlContactId: contactId }
       });
@@ -483,10 +483,10 @@ export async function GET(request: NextRequest) {
       }
       
       const [bookings, total] = await Promise.all([
-        prisma.Booking.findMany({
+        prisma.booking.findMany({
           where: whereClause,
           include: {
-            Service: true,
+            service: true,
             promoCode: true,
             User_Booking_signerIdToUser: context.canViewAllBookings ? {
               select: { id: true, name: true, email: true }
@@ -497,7 +497,7 @@ export async function GET(request: NextRequest) {
           skip: (page - 1) * limit,
           take: limit,
         }),
-        prisma.Booking.count({ where: whereClause }),
+        prisma.booking.count({ where: whereClause }),
       ]);
       
       return NextResponse.json({
@@ -529,7 +529,7 @@ export async function POST(request: NextRequest) {
       const address = normalizeAddress(data);
       
       // Get service details
-      const service = await prisma.Service.findUnique({
+      const service = await prisma.service.findUnique({
         where: { id: data.serviceId, isActive: true }
       });
       
@@ -598,10 +598,10 @@ export async function POST(request: NextRequest) {
         bookingData.promoCode = { connect: { id: pricingData.promoCodeInfo.id } };
       }
       
-      const booking = await prisma.Booking.create({
+      const booking = await prisma.booking.create({
         data: bookingData,
         include: {
-          Service: true,
+          service: true,
           User_Booking_signerIdToUser: context.isAuthenticated ? {
             select: { id: true, name: true, email: true }
           } : false,
@@ -621,8 +621,8 @@ export async function POST(request: NextRequest) {
                 product_data: {
                   name: `Booking for ${service.name}`,
                   description: booking.scheduledDateTime ? 
-                    `Service: ${service.name} on ${new Date(booking.scheduledDateTime).toLocaleDateString()}` :
-                    `Service: ${service.name}`,
+                    `service: ${service.name} on ${new Date(booking.scheduledDateTime).toLocaleDateString()}` :
+                    `service: ${service.name}`,
                 },
                 unit_amount: Math.round(finalAmountDue * 100),
               },
@@ -658,7 +658,7 @@ export async function POST(request: NextRequest) {
           calendarEvent = await calendarService.createBookingEvent(booking);
           
           if (calendarEvent?.id) {
-            await prisma.Booking.update({
+            await prisma.booking.update({
               where: { id: booking.id },
               data: { googleCalendarEventId: calendarEvent.id }
             });

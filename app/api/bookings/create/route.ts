@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get service details
-    const service = await prisma.Service.findUnique({
+    const service = await prisma.service.findUnique({
       where: { id: serviceId }
     });
 
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     const startOfRequestedDay = startOfDay(requestedDateTime);
     const endTime = addMinutes(startOfRequestedDay, 24 * 60); // End of day
     
-    const conflictingBookings = await prisma.Booking.findMany({
+    const conflictingBookings = await prisma.booking.findMany({
       where: {
         scheduledDateTime: {
           gte: startOfRequestedDay,
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
         }
       },
       include: {
-        Service: {
+        service: {
           select: {
             durationMinutes: true
           }
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     // Check for conflicts
     const hasConflict = conflictingBookings.some(booking => {
       const bookingStart = new Date(booking.scheduledDateTime!);
-      const bookingEnd = addMinutes(bookingStart, booking.Service.durationMinutes + bookingSettings.bufferTimeMinutes);
+      const bookingEnd = addMinutes(bookingStart, booking.service.durationMinutes + bookingSettings.bufferTimeMinutes);
       const requestedStart = requestedDateTime;
       const requestedEnd = addMinutes(requestedDateTime, service.durationMinutes + bookingSettings.bufferTimeMinutes);
       
@@ -141,12 +141,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Create or get user
-    let user = await prisma.User.findUnique({
+    let user = await prisma.user.findUnique({
       where: { email: customerEmail }
     });
 
     if (!user) {
-      user = await prisma.User.create({
+      user = await prisma.user.create({
         data: {
           name: customerName,
           email: customerEmail,
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create booking
-    const booking = await prisma.Booking.create({
+    const booking = await prisma.booking.create({
       data: {
         signerId: user.id,
         signerEmail: user.email,
@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
         notes
       },
       include: {
-        Service: true,
+        service: true,
         User_Booking_signerIdToUser: true,
         promoCode: true
       }
@@ -197,10 +197,10 @@ export async function POST(request: NextRequest) {
         id: booking.id,
         scheduledDateTime: booking.scheduledDateTime,
         status: booking.status,
-        Service: {
-          name: booking.Service.name,
-          duration: booking.Service.durationMinutes,
-          price: booking.Service.basePrice
+        service: {
+          name: booking.service.name,
+          duration: booking.service.durationMinutes,
+          price: booking.service.basePrice
         },
         customer: {
                   name: booking.User_Booking_signerIdToUser?.name,
