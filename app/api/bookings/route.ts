@@ -488,7 +488,7 @@ export async function POST(request: NextRequest) {
       try {
         const amountToChargeInCents = Math.round(finalAmountDueAfterDiscount * 100);
         // Ensure NEXTAUTH_URL is set in your .env for correct redirect URLs
-        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+        const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com';
         const success_url = `${baseUrl}/booking-confirmed?session_id={CHECKOUT_SESSION_ID}`;
         const cancel_url = `${baseUrl}/booking-payment-canceled`;
 

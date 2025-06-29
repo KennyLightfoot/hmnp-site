@@ -16,7 +16,7 @@ import { Analytics } from '@vercel/analytics/react'
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL || 'https://houstonmobilenotarypros.com'),
   title: {
     template: "%s | Houston Mobile Notary Pros",
     default: "Houston Mobile Notary Pros | Professional Mobile Notary Services",
