@@ -14,8 +14,8 @@ const nextConfig = {
     // Phase 3.2: React Compiler optimizations (when stable)
     reactCompiler: false, // Enable after testing
     
-    // Phase 3.3: Development performance (Turbopack for dev only)
-    turbo: {}, // Next.js 15 requires object format
+    // Phase 3.3: Development performance (moved to config.turbopack in 15.3+)
+    // turbo: {}, // Deprecated - moved to turbopack config
     
     // Phase 3.4: Memory and bundle optimizations
     webpackMemoryOptimizations: true,
@@ -24,7 +24,10 @@ const nextConfig = {
     // Next.js 15 stable optimizations
     optimizeServerReact: false, // Temporarily disabled for build stability
     serverMinification: false // Temporarily disabled for build stability
-  }
+  },
+  
+  // Turbopack configuration (new location in Next.js 15.3+)
+  turbopack: {}
 }
 
 export default nextConfig
