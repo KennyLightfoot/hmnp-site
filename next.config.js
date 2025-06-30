@@ -25,8 +25,8 @@ const nextConfig = {
   },
   
   experimental: {
-    // Phase 3: Advanced bundle optimizations
-    webpackMemoryOptimizations: true,
+    // Simplified experimental features to prevent conflicts
+    webpackMemoryOptimizations: false, // Disable to prevent optimization conflicts
     optimizePackageImports: [
       'lucide-react', 
       '@radix-ui/react-*',
@@ -36,12 +36,10 @@ const nextConfig = {
       'zustand'
     ],
     
-    // Enable when stable in production
+    // Keep only stable features
     reactCompiler: false,
-    optimizeServerReact: true,
-    serverMinification: true,
     
-    // Enhanced caching
+    // Simplified caching
     staleTimes: {
       dynamic: 30,
       static: 180,
@@ -65,12 +63,10 @@ const nextConfig = {
       );
     }
 
-    // Enhanced code splitting (fixed optimization conflicts)
+    // Simplified code splitting to prevent optimization conflicts
     if (!dev && !isServer) {
-      config.optimization = {
-        ...config.optimization,
-        usedExports: false, // Fix: Disable usedExports to prevent cacheUnaffected conflict
-        splitChunks: {
+      // Remove problematic optimization configurations
+      config.optimization.splitChunks = {
           chunks: 'all',
           cacheGroups: {
             // Vendor libraries
@@ -117,13 +113,12 @@ const nextConfig = {
               reuseExistingChunk: true,
             },
           },
-        },
-      };
+        };
     }
 
-    // Tree shaking optimizations
-    config.optimization.usedExports = true;
-    config.optimization.sideEffects = false;
+    // REMOVED: Tree shaking optimizations causing conflicts
+    // config.optimization.usedExports = true;
+    // config.optimization.sideEffects = false;
 
     // Compression optimizations
     if (!dev) {
