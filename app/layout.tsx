@@ -188,22 +188,21 @@ export default async function RootLayout({
           The PWA icons and splash screens are handled through the metadata.icons configuration above.
           Service Worker registration is moved to the body section. */}
       <body className={`${inter.className} bg-white`}>
-        {/* Service Worker Registration */}
+        {/* Service Worker Registration - TEMPORARILY DISABLED */}
         <Script id="service-worker" strategy="afterInteractive">
           {`
+            // Service Worker temporarily disabled to fix offline redirect loop
+            console.log('ℹ️ Service Worker disabled - investigating offline redirect issue');
+            
+            // Unregister existing service worker if present
             if ('serviceWorker' in navigator) {
-              window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js')
-                  .then(function(registration) {
-                    console.log('✅ SW registered: ', registration.scope);
-                  })
-                  .catch(function(registrationError) {
-                    console.warn('⚠️ SW registration failed: ', registrationError);
-                    // Continue without service worker
+              navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                  registration.unregister().then(function(boolean) {
+                    console.log('🗑️ Service Worker unregistered:', boolean);
                   });
+                }
               });
-            } else {
-              console.log('ℹ️ Service Worker not supported in this browser');
             }
           `}
         </Script>
