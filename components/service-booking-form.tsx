@@ -104,18 +104,23 @@ export function ServiceBookingForm() {
   useEffect(() => {
     async function fetchServices() {
       try {
-        // Try main services endpoint first
-        let response = await fetch('/api/services');
+        // Try production endpoint first (uses raw SQL)
+        let response = await fetch('/api/services-production');
         if (!response.ok) {
-          console.log('Main services API failed, trying fallback...');
-          // If main endpoint fails, try the compatible fallback
-          response = await fetch('/api/services-compatible');
+          console.log('Production services API failed, trying main endpoint...');
+          // If production endpoint fails, try main endpoint
+          response = await fetch('/api/services');
           if (!response.ok) {
-            throw new Error('Both services endpoints failed');
+            console.log('Main services API failed, trying fallback...');
+            // If main endpoint fails, try the compatible fallback
+            response = await fetch('/api/services-compatible');
+            if (!response.ok) {
+              throw new Error('All services endpoints failed');
+            }
           }
         }
         const data = await response.json();
-        setServices(data.services || []);
+        setServices(data.services?.all || data.services || []);
       } catch (error) {
         console.error("Error fetching services:", error);
         setSubmitStatus({ success: false, message: 'Could not load service options.' });
