@@ -346,11 +346,12 @@ export default function UnifiedBookingCalendar({
   };
   
   // Fetch availability when date changes
+  // FIXED: Removed bookedDateMap from dependencies to prevent infinite loops
   useEffect(() => {
     if (selectedDate && userTimezone) {
       fetchAvailability(selectedDate);
     }
-  }, [selectedDate, serviceType, serviceId, numberOfSigners, userTimezone, bookedDateMap]);
+  }, [selectedDate, serviceType, serviceId, numberOfSigners, userTimezone]);
   
   /**
    * Handle date selection

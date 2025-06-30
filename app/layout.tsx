@@ -13,6 +13,7 @@ import { headers } from 'next/headers'
 import Script from 'next/script'
 import { Analytics } from '@vercel/analytics/react'
 import ThirdPartyScriptMonitor from '@/components/analytics/ThirdPartyScriptMonitor'
+import RequestStormMonitor from '@/components/monitoring/RequestStormMonitor'
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -396,6 +397,7 @@ export default async function RootLayout({
           <Toaster />
           <Analytics />
           <ThirdPartyScriptMonitor />
+          <RequestStormMonitor />
         </Providers>
       </body>
     </html>
