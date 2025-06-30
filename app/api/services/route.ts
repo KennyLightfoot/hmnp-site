@@ -129,27 +129,52 @@ export async function GET() {
     }
     
     // Continue with normal service fetching...
-    const services = await prisma.service.findMany({
-      where: { isActive: true },
-      orderBy: [
-        { serviceType: 'asc' },
-        { name: 'asc' }
-      ],
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        serviceType: true,
-        durationMinutes: true,
-        basePrice: true,
-        requiresDeposit: true,
-        depositAmount: true,
-        externalCalendarId: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    let services;
+    try {
+      // Try with durationMinutes first (new schema)
+      services = await prisma.service.findMany({
+        where: { isActive: true },
+        orderBy: [
+          { serviceType: 'asc' },
+          { name: 'asc' }
+        ],
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          serviceType: true,
+          durationMinutes: true,
+          basePrice: true,
+          requiresDeposit: true,
+          depositAmount: true,
+          externalCalendarId: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    } catch (durationError) {
+      console.log('⚠️ durationMinutes failed, trying raw SQL approach...');
+      // Fallback to raw SQL if Prisma schema is still out of sync
+      services = await prisma.$queryRaw`
+        SELECT 
+          id,
+          name,
+          description,
+          "serviceType",
+          "durationMinutes",
+          "basePrice",
+          "requiresDeposit",
+          "depositAmount",
+          "externalCalendarId",
+          "isActive",
+          "createdAt",
+          "updatedAt"
+        FROM "Service"
+        WHERE "isActive" = true
+        ORDER BY "serviceType" ASC, name ASC
+      ` as any[];
+    }
     
     console.log(`✅ Services API: Retrieved ${services.length} active services`);
 
@@ -212,10 +237,14 @@ export async function GET() {
             type: service.serviceType, // Prisma enum
             typeLabel: getServiceDisplayName(frontendType),
             duration: service.durationMinutes,
+            durationMinutes: service.durationMinutes, // Ensure both formats are available
             price: Number(service.basePrice),
+            basePrice: Number(service.basePrice), // Ensure both formats are available
             requiresDeposit: service.requiresDeposit,
             depositAmount: service.requiresDeposit ? Number(service.depositAmount) : 0,
+            serviceType: service.serviceType, // Add this for compatibility
             hasCalendarIntegration: !!service.externalCalendarId,
+            isActive: service.isActive,
             createdAt: service.createdAt,
             updatedAt: service.updatedAt,
           };
