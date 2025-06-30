@@ -97,7 +97,7 @@ export default function BookingPage() {
   const form = useForm<BookingFormData>({
     resolver: zodResolver(unifiedBookingSchema),
     defaultValues: {
-      serviceType: 'standard-notary',
+      serviceType: '', // Will be set to first available service after loading
       numberOfSigners: 1,
       promoCode: '',
       calendarId: '',
@@ -162,7 +162,7 @@ export default function BookingPage() {
   // Update selected service only when services are ready and serviceType changes
   useEffect(() => {
     if (isServicesReady && serviceType && Array.isArray(services) && services.length > 0) {
-      const service = services.find(s => s?.key === serviceType);
+      const service = services.find(s => s?.id === serviceType);
       if (service) {
         setSelectedService(service);
         console.log('[SERVICE SELECTION SUCCESS]', { 
@@ -173,7 +173,7 @@ export default function BookingPage() {
       } else {
         console.warn('[SERVICE SELECTION FAILED]', { 
           serviceType, 
-          availableServices: services.map(s => s?.key).filter(Boolean) 
+          availableServices: services.map(s => s?.id).filter(Boolean) 
         });
         setSelectedService(null);
       }
@@ -197,31 +197,52 @@ export default function BookingPage() {
 
   const fetchServices = async () => {
     try {
+      console.log('[SERVICES DEBUG] Starting fetch...');
       
       const response = await fetch('/api/services');
+      console.log('[SERVICES DEBUG] Response received:', { status: response.status, ok: response.ok });
+      
       if (!response.ok) {
         throw new Error(`Failed to fetch services: ${response.status}`);
       }
       
       const data = await response.json();
+      console.log('[SERVICES DEBUG] Data received:', { 
+        success: data.success, 
+        hasServices: !!data.services, 
+        hasAll: !!data.services?.all,
+        allLength: data.services?.all?.length,
+        allIsArray: Array.isArray(data.services?.all)
+      });
       
       if (!data.success || !data.services?.all || !Array.isArray(data.services.all)) {
+        console.error('[SERVICES DEBUG] Invalid data format:', data);
         throw new Error('Invalid services data format');
       }
       
+      console.log('[SERVICES DEBUG] Setting services:', data.services.all.length, 'items');
       setServices(data.services.all);
       
-      // Build service ID mapping
+      // Build service ID mapping - use service ID as key instead of type
       const newMap: Record<string, string> = {};
       data.services.all.forEach(service => {
-        if (service.key && service.id) {
-          newMap[service.key] = service.id;
+        if (service.id) {
+          // Use service ID as the key for forms instead of service type
+          newMap[service.id] = service.id;
         }
       });
+      console.log('[SERVICES DEBUG] Service ID map:', newMap);
       setServiceIdMap(newMap);
       
+      // Set first service as default if no service is selected
+      if (data.services.all.length > 0 && !serviceType) {
+        const firstService = data.services.all[0];
+        console.log('[SERVICES DEBUG] Setting default service:', firstService.id);
+        setValue('serviceType', firstService.id);
+      }
+      
     } catch (error) {
-      console.error('Error fetching services:', error);
+      console.error('[SERVICES DEBUG] Error fetching services:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to load services';
       setServicesError(errorMessage);
       
@@ -287,11 +308,17 @@ export default function BookingPage() {
     }
   };
 
-  const mapServiceTypeForCalendar = (serviceType: string): FrontendServiceType => {
-    if (isValidFrontendServiceType(serviceType)) {
-      return serviceType;
+  const mapServiceTypeForCalendar = (serviceId: string): FrontendServiceType => {
+    // Find the service by ID and get its service type
+    const service = services.find(s => s.id === serviceId);
+    if (service) {
+      // Map the Prisma serviceType to frontend type
+      const frontendType = mapPrismaToFrontend(service.serviceType);
+      if (isValidFrontendServiceType(frontendType)) {
+        return frontendType;
+      }
     }
-    console.warn(`Invalid service type: ${serviceType}, defaulting to standard-notary`);
+    console.warn(`Invalid service ID: ${serviceId}, defaulting to standard-notary`);
     return 'standard-notary';
   };
 
@@ -561,10 +588,10 @@ export default function BookingPage() {
                                   services.map((service) => (
                                     <FormItem key={service?.id || `fallback-${Math.random()}`} className="relative" data-testid="service-option">
                                       <FormControl>
-                                        <RadioGroupItem value={service.key} id={service.key} className="peer sr-only" />
+                                        <RadioGroupItem value={service.id} id={service.id} className="peer sr-only" />
                                       </FormControl>
                                       <Label
-                                        htmlFor={service.key}
+                                        htmlFor={service.id}
                                         className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5 h-full transition-all hover:border-gray-300"
                                       >
                                         <span className="font-semibold text-lg">{service.name}</span>
