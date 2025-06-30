@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/database-connection';
 import { proofAPI, CreateTransactionRequest } from '@/lib/proof/api';
-import { logger } from '@/lib/logging/logger';
+import { logger } from '@/lib/logger';
 import { LocationType, BookingStatus } from '@prisma/client';
 
 /**

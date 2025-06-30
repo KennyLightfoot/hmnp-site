@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/database-connection';
 import { verifyProofWebhook, ProofWebhookEvent, PROOF_STATUS_MAP } from '@/lib/proof/api';
-import { logger } from '@/lib/logging/logger';
+import { logger } from '@/lib/logger';
 import { BookingStatus } from '@prisma/client';
 import * as ghl from '@/lib/ghl';
 

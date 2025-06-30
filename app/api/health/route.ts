@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { logger } from '@/lib/logging/logger';
+import { logger, generateRequestId } from '@/lib/logger';
 
 const prisma = new PrismaClient();
 
@@ -161,9 +161,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function generateRequestId(): string {
-  return `health-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-}
 
 async function checkDatabase(): Promise<HealthStatus> {
   const startTime = Date.now();

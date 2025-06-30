@@ -5,7 +5,7 @@
  * Run with: pnpm tsx scripts/test-monitoring-setup.ts
  */
 
-import { logger } from '../lib/logging/logger';
+import { logger } from '../lib/logger';
 import axios from 'axios';
 
 async function testHealthEndpoint() {

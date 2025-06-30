@@ -5,7 +5,7 @@
  * Handles all Proof.co API interactions for Remote Online Notarization
  */
 
-import { logger } from '@/lib/logging/logger';
+import { logger } from '@/lib/logger';
 
 // Environment configuration
 const PROOF_CONFIG = {
