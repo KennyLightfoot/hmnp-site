@@ -459,6 +459,7 @@ model User {
   feature_flags                  FeatureFlag[]
   notary_journal                 NotaryJournal[]
   notary_profiles                NotaryProfile?
+  SecurityAuditLog               SecurityAuditLog[]
 }
 
 model VerificationToken {
