@@ -91,6 +91,27 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    const eventType = body.type || body.event_type;
+    
+    console.log('📥 GHL Webhook received:', {
+      type: eventType,
+      timestamp: new Date().toISOString(),
+      hasData: !!body
+    });
+
+    // 🔧 DIAGNOSTIC: GHL Setup Mode - acknowledge but don't process during integration setup
+    if (process.env.GHL_SETUP_MODE === 'true') {
+      console.log('🔧 GHL Setup Mode: Acknowledging webhook but not processing');
+      return NextResponse.json({ 
+        status: 'acknowledged',
+        message: 'Setup mode - webhook received but not processed',
+        received: true,
+        setupMode: true,
+        eventType: eventType,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
     // Log the webhook event for debugging
     const headersList = await headers();
     console.log('GHL Webhook received:', {
@@ -127,63 +148,48 @@ export async function POST(request: NextRequest) {
     // Extract event type and data
     const { type, contactId, contact, opportunity, appointment, customField, form, task } = body;
 
-    // Process different webhook events
+    // Process different webhook events with mock handlers during setup
     switch (type as WebhookEventType) {
       case 'ContactCreate':
-        console.log('New contact created:', contactId);
-        await handleContactCreate({ contactId, contact, timestamp: body.timestamp });
-        break;
+      case 'contact.created':
+        console.log('📞 Contact created webhook:', contactId);
+        return await handleContactWebhook(body);
 
       case 'ContactUpdate':
-        console.log('Contact updated:', contactId);
-        await handleContactUpdate({ contactId, contact, timestamp: body.timestamp });
-        break;
+      case 'contact.updated':
+        console.log('📞 Contact updated webhook:', contactId);
+        return await handleContactWebhook(body);
 
       case 'ContactTagUpdate':
-        console.log('Contact tags updated:', contactId);
-        await handleContactTagUpdate({ 
-          contactId, 
-          contact, 
-          addedTags: body.addedTags || [], 
-          removedTags: body.removedTags || [],
-          timestamp: body.timestamp 
-        });
-        break;
+      case 'contact.tag_update':
+        console.log('📞 Contact tags updated:', contactId);
+        return await handleContactWebhook(body);
 
       case 'OpportunityCreate':
-        console.log('New opportunity created:', opportunity?.id);
-        await handleOpportunityCreate({ opportunity, timestamp: body.timestamp });
-        break;
+      case 'opportunity.created':
+        console.log('💼 Opportunity created:', opportunity?.id);
+        return await handleOpportunityWebhook(body);
 
       case 'OpportunityStatusUpdate':
-        console.log('Opportunity status updated:', opportunity?.id);
-        await handleOpportunityStatusUpdate({ 
-          opportunity, 
-          previousStatus: body.previousStatus,
-          newStatus: body.newStatus,
-          timestamp: body.timestamp 
-        });
-        break;
+      case 'opportunity.status_update':
+        console.log('💼 Opportunity status updated:', opportunity?.id);
+        return await handleOpportunityWebhook(body);
 
       case 'AppointmentCreate':
-        console.log('New appointment created:', appointment?.id);
-        await handleAppointmentCreate({ appointment, contactId, timestamp: body.timestamp });
-        break;
+      case 'appointment.created':
+      case 'appointment.scheduled':
+        console.log('📅 Appointment created:', appointment?.id);
+        return await handleAppointmentWebhook(body);
 
       case 'AppointmentUpdate':
-        console.log('Appointment updated:', appointment?.id);
-        await handleAppointmentUpdate({ appointment, contactId, timestamp: body.timestamp });
-        break;
+      case 'appointment.updated':
+      case 'appointment.cancelled':
+        console.log('📅 Appointment updated:', appointment?.id);
+        return await handleAppointmentWebhook(body);
 
       case 'ContactCustomFieldUpdate':
-        console.log('Custom field updated:', contactId);
-        await handleCustomFieldUpdate({ 
-          contactId, 
-          customField, 
-          updatedFields: body.updatedFields || {},
-          timestamp: body.timestamp 
-        });
-        break;
+        console.log('📝 Custom field updated:', contactId);
+        return await handleContactWebhook(body);
 
       case 'FormSubmit':
         console.log('Form submitted:', form?.id);
@@ -198,8 +204,13 @@ export async function POST(request: NextRequest) {
         break;
 
       default:
-        console.log('Unknown webhook type:', type);
-        // Still return success to prevent retries for unknown events
+        console.log('ℹ️ Unhandled webhook type:', type);
+        return NextResponse.json({ 
+          status: 'acknowledged', 
+          type: type,
+          message: 'Webhook type not yet implemented',
+          timestamp: new Date().toISOString()
+        });
     }
 
     // Store webhook data for analytics/debugging (optional)
@@ -243,55 +254,79 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Handler functions (implement these based on your business logic)
+// 🔧 DIAGNOSTIC: Mock webhook handlers for GHL integration testing
+async function handleContactWebhook(body: any) {
+  console.log('📞 Contact webhook (mock implementation):', body.contact?.email || body.contactId);
+  return NextResponse.json({ 
+    status: 'acknowledged', 
+    type: 'contact',
+    mockProcessed: true,
+    contactId: body.contactId,
+    timestamp: new Date().toISOString()
+  });
+}
+
+async function handleAppointmentWebhook(body: any) {
+  console.log('📅 Appointment webhook (mock implementation):', body.appointment?.id);
+  return NextResponse.json({ 
+    status: 'acknowledged', 
+    type: 'appointment',
+    mockProcessed: true,
+    appointmentId: body.appointment?.id,
+    timestamp: new Date().toISOString()
+  });
+}
+
+async function handleOpportunityWebhook(body: any) {
+  console.log('💼 Opportunity webhook (mock implementation):', body.opportunity?.id);
+  return NextResponse.json({ 
+    status: 'acknowledged', 
+    type: 'opportunity',
+    mockProcessed: true,
+    opportunityId: body.opportunity?.id,
+    timestamp: new Date().toISOString()
+  });
+}
+
+// Legacy handler functions for backward compatibility (unused in mock mode)
 async function handleContactCreate(data: any) {
-  // Implement your contact creation logic
-  console.log('Processing contact creation:', data);
+  console.log('📞 Contact created (legacy handler):', data.contactId);
 }
 
 async function handleContactUpdate(data: any) {
-  // Implement your contact update logic
-  console.log('Processing contact update:', data);
+  console.log('📞 Contact updated (legacy handler):', data.contactId);
 }
 
 async function handleContactTagUpdate(data: any) {
-  // Implement your tag update logic
-  console.log('Processing tag update:', data);
+  console.log('📞 Contact tags updated (legacy handler):', data.contactId);
 }
 
 async function handleOpportunityCreate(data: any) {
-  // Implement your opportunity creation logic
-  console.log('Processing opportunity creation:', data);
+  console.log('💼 Opportunity created (legacy handler):', data.opportunity?.id);
 }
 
 async function handleOpportunityStatusUpdate(data: any) {
-  // Implement your opportunity status update logic
-  console.log('Processing opportunity status update:', data);
+  console.log('💼 Opportunity status updated (legacy handler):', data.opportunity?.id);
 }
 
 async function handleAppointmentCreate(data: any) {
-  // Implement your appointment creation logic
-  console.log('Processing appointment creation:', data);
+  console.log('📅 Appointment created (legacy handler):', data.appointment?.id);
 }
 
 async function handleAppointmentUpdate(data: any) {
-  // Implement your appointment update logic
-  console.log('Processing appointment update:', data);
+  console.log('📅 Appointment updated (legacy handler):', data.appointment?.id);
 }
 
 async function handleCustomFieldUpdate(data: any) {
-  // Implement your custom field update logic
-  console.log('Processing custom field update:', data);
+  console.log('📝 Custom field updated (legacy handler):', data.contactId);
 }
 
 async function handleFormSubmit(data: any) {
-  // Implement your form submission logic
-  console.log('Processing form submission:', data);
+  console.log('📋 Form submitted (legacy handler):', data.form?.id);
 }
 
 async function handleTaskEvent(data: any) {
-  // Implement your task event logic
-  console.log('Processing task event:', data);
+  console.log('✅ Task event (legacy handler):', data.task?.id);
 }
 
 async function storeWebhookEvent(data: any) {

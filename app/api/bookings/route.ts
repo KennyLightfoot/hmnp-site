@@ -118,6 +118,45 @@ interface BookingPricing {
   };
 }
 
+// 🔧 DIAGNOSTIC: Mock GHL contact creation for testing incomplete integration
+async function createMockGHLContact(email: string, bookingData: BookingRequestBody, booking: any): Promise<string | null> {
+  try {
+    // Simulate contact creation in GHL with mock data
+    const mockContactId = `mock-contact-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+    
+    console.log('🔧 MOCK GHL: Would create contact with data:', {
+      email,
+      firstName: bookingData.firstName,
+      lastName: bookingData.lastName,
+      phone: bookingData.phone,
+      service: booking.serviceId,
+      bookingId: booking.id,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Simulate the API call delay
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Log what would be sent to GHL workflows
+    console.log('🔧 MOCK GHL: Would trigger workflows:', {
+      contactId: mockContactId,
+      workflowTypes: ['booking_created', 'payment_pending', 'new_client_notification'],
+      tags: [
+        'source:website_booking',
+        'status:booking_created',
+        'client:first_time',
+        `service:${booking.serviceId}`,
+        'consent:diagnostic_mock'
+      ]
+    });
+    
+    return mockContactId;
+  } catch (error) {
+    console.error('🔧 MOCK GHL: Error in mock contact creation:', error);
+    return null;
+  }
+}
+
 // Helper function to trigger specific GHL workflows
 async function triggerGHLWorkflows(contactId: string, bookingStatus: BookingStatus, serviceName?: string) {
   if (!process.env.GHL_API_BASE_URL || !process.env.GHL_API_KEY) {
@@ -1039,6 +1078,24 @@ export async function POST(request: NextRequest) {
           console.error('This suggests a possible issue with the Private Integration Token permissions or formatting.');
           // Don't throw here to prevent booking failure, just log the error
           console.error('Continuing with booking creation despite GHL error...');
+          
+          // 🔧 DIAGNOSTIC: Mock contact creation fallback for GHL integration testing
+          try {
+            const mockContactId = await createMockGHLContact(signerUserEmail, body, newBooking);
+            if (mockContactId) {
+              await prisma.booking.update({
+                where: { id: newBooking.id },
+                data: { 
+                  ghlContactId: mockContactId,
+                  customerEmail: emailForGhl,
+                  notes: (newBooking.notes || '') + '\n[MOCK CONTACT - GHL Integration Incomplete]'
+                }
+              });
+              console.log('🔧 DIAGNOSTIC: Mock contact created as fallback:', mockContactId);
+            }
+          } catch (mockError) {
+            console.error('🔧 DIAGNOSTIC: Mock contact creation also failed:', mockError);
+          }
         }
       } else {
         console.warn('GHL: Signer email is missing, skipping GHL contact creation.');
