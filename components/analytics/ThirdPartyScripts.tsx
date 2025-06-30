@@ -16,6 +16,26 @@ export default function ThirdPartyScripts() {
             const RATE_LIMIT = 100; // per minute
             const WINDOW = 60000; // 1 minute
 
+            // Helper function to get pathname from URL (handles relative and absolute URLs)
+            function getUrlPath(url) {
+              try {
+                // If it's already a relative path starting with /, just return it
+                if (typeof url === 'string' && url.startsWith('/')) {
+                  return url.split('?')[0]; // Remove query params, keep path only
+                }
+                // If it's an absolute URL, parse it
+                if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) {
+                  return new URL(url).pathname;
+                }
+                // For any other case, try to create URL with current origin
+                return new URL(url, window.location.origin).pathname;
+              } catch (e) {
+                // Fallback: if all else fails, just use the string as-is
+                console.warn('⚠️ Could not parse URL path for:', url, 'using as-is');
+                return String(url);
+              }
+            }
+
             // Override fetch to add protection
             const originalFetch = window.fetch;
             window.fetch = function(url, options = {}) {
@@ -24,7 +44,8 @@ export default function ThirdPartyScripts() {
               
               // Rate limiting
               const minute = Math.floor(now / WINDOW);
-              const countKey = minute + ':' + new URL(url).pathname;
+              const urlPath = getUrlPath(url);
+              const countKey = minute + ':' + urlPath;
               const count = requestCounts.get(countKey) || 0;
               
               if (count > RATE_LIMIT) {
@@ -41,7 +62,7 @@ export default function ThirdPartyScripts() {
               
               // Concurrent limit
               const concurrent = Array.from(pendingRequests.keys())
-                .filter(k => k.includes(new URL(url).pathname)).length;
+                .filter(k => k.includes(urlPath)).length;
               if (concurrent >= MAX_CONCURRENT) {
                 console.warn('🚨 Too many concurrent requests to:', url);
                 return Promise.reject(new Error('Too many concurrent requests'));
