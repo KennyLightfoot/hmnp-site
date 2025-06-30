@@ -161,19 +161,26 @@ export default function BookingPage() {
 
   // Update selected service only when services are ready and serviceType changes
   useEffect(() => {
-    if (isServicesReady && serviceType && services.length > 0) {
-      const service = services.find(s => s.key === serviceType);
-      setSelectedService(service || null);
-      
-      console.log('[SERVICE SELECTION]', {
-        serviceType,
-        foundService: !!service,
-        serviceName: service?.name,
-        totalServices: services.length
-      });
+    if (isServicesReady && serviceType && Array.isArray(services) && services.length > 0) {
+      const service = services.find(s => s?.key === serviceType);
+      if (service) {
+        setSelectedService(service);
+        console.log('[SERVICE SELECTION SUCCESS]', { 
+          serviceType, 
+          serviceName: service.name,
+          serviceId: service.id 
+        });
+      } else {
+        console.warn('[SERVICE SELECTION FAILED]', { 
+          serviceType, 
+          availableServices: services.map(s => s?.key).filter(Boolean) 
+        });
+        setSelectedService(null);
+      }
     } else if (isServicesReady && !serviceType) {
-      // Clear selection if no service type is selected
       setSelectedService(null);
+    } else if (isServicesReady && (!services || services.length === 0)) {
+      console.error('[NO SERVICES AVAILABLE]', { isServicesReady, servicesCount: services?.length || 0 });
     }
   }, [serviceType, services, isServicesReady]);
 
@@ -314,7 +321,22 @@ export default function BookingPage() {
       // Get service ID from mapping
       const serviceId = serviceIdMap[data.serviceType];
       if (!serviceId) {
-        throw new Error('Invalid service type selected');
+        console.error('[BOOKING SUBMISSION ERROR]', {
+          serviceType: data.serviceType,
+          availableServiceIds: Object.keys(serviceIdMap),
+          serviceIdMap,
+          allServices: Array.isArray(services) ? services.map(s => ({ id: s?.id, key: s?.key, name: s?.name })) : []
+        });
+        
+        toast({
+          title: 'Service Selection Error',
+          description: `Selected service "${data.serviceType}" is not available. Please select a different service and try again.`,
+          variant: 'destructive',
+        });
+        
+        setCurrentStep(1); // Return to service selection
+        setIsSubmitting(false);
+        return; // Don't throw, just return gracefully
       }
 
       // Map signing location to LocationType enum
@@ -535,32 +557,53 @@ export default function BookingPage() {
                                 value={field.value}
                                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
                               >
-                                {services.map((service) => (
-                                  <FormItem key={service.id} className="relative" data-testid="service-option">
-                                    <FormControl>
-                                      <RadioGroupItem value={service.key} id={service.key} className="peer sr-only" />
-                                    </FormControl>
-                                    <Label
-                                      htmlFor={service.key}
-                                      className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5 h-full transition-all hover:border-gray-300"
-                                    >
-                                      <span className="font-semibold text-lg">{service.name}</span>
-                                      {service.description && (
-                                        <span className="text-sm text-gray-600 mt-1">{service.description}</span>
-                                      )}
-                                      <div className="mt-auto pt-3">
-                                        <span className="text-2xl font-bold text-[#002147]">
-                                          ${service.price}
-                                        </span>
-                                        {service.requiresDeposit && service.depositAmount && (
-                                          <span className="text-xs font-normal text-gray-500 block">
-                                            (${service.depositAmount} deposit)
-                                          </span>
+                                {Array.isArray(services) && services.length > 0 ? (
+                                  services.map((service) => (
+                                    <FormItem key={service?.id || `fallback-${Math.random()}`} className="relative" data-testid="service-option">
+                                      <FormControl>
+                                        <RadioGroupItem value={service.key} id={service.key} className="peer sr-only" />
+                                      </FormControl>
+                                      <Label
+                                        htmlFor={service.key}
+                                        className="flex flex-col p-4 border rounded-md cursor-pointer peer-data-[state=checked]:border-[#002147] peer-data-[state=checked]:bg-[#002147]/5 h-full transition-all hover:border-gray-300"
+                                      >
+                                        <span className="font-semibold text-lg">{service.name}</span>
+                                        {service.description && (
+                                          <span className="text-sm text-gray-600 mt-1">{service.description}</span>
                                         )}
+                                        <div className="mt-auto pt-3">
+                                          <span className="text-2xl font-bold text-[#002147]">
+                                            ${service.price}
+                                          </span>
+                                          {service.requiresDeposit && service.depositAmount && (
+                                            <span className="text-xs font-normal text-gray-500 block">
+                                              (${service.depositAmount} deposit)
+                                            </span>
+                                          )}
                                       </div>
                                     </Label>
                                   </FormItem>
-                                ))}
+                                ))
+                                ) : servicesLoading ? (
+                                  <div className="text-center py-8">
+                                    <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+                                    <p className="text-muted-foreground">Loading service options...</p>
+                                  </div>
+                                ) : servicesError ? (
+                                  <Alert variant="destructive">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    <AlertDescription>
+                                      {servicesError}. <Button variant="link" onClick={() => window.location.reload()}>Refresh page</Button>
+                                    </AlertDescription>
+                                  </Alert>
+                                ) : (
+                                  <Alert variant="destructive">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    <AlertDescription>
+                                      No services available. Please refresh the page or contact support.
+                                    </AlertDescription>
+                                  </Alert>
+                                )}
                               </RadioGroup>
                             </FormControl>
                             <FormMessage />
@@ -621,13 +664,31 @@ export default function BookingPage() {
                     <CardDescription>Select an available date and time slot</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    <UnifiedBookingCalendar
-                      serviceType={mapServiceTypeForCalendar(serviceType)}
-                      serviceId={serviceIdMap[serviceType] || undefined}
-                      numberOfSigners={numberOfSigners}
-                      onTimeSelected={handleTimeSelected}
-                      variant="full"
-                    />
+                    {serviceIdMap[serviceType] ? (
+                      <UnifiedBookingCalendar
+                        serviceType={mapServiceTypeForCalendar(serviceType)}
+                        serviceId={serviceIdMap[serviceType]}
+                        numberOfSigners={numberOfSigners}
+                        onTimeSelected={handleTimeSelected}
+                        variant="full"
+                        key={`calendar-${serviceType}-${serviceIdMap[serviceType]}`}
+                      />
+                    ) : (
+                      <Alert variant="destructive">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertDescription>
+                          Calendar unavailable for selected service. Please try selecting a different service.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    {/* Debug info in development */}
+                    {process.env.NODE_ENV === 'development' && (
+                      <div className="text-xs text-muted-foreground mt-2 p-2 bg-gray-100 rounded">
+                        Debug: serviceType={serviceType}, serviceId={serviceIdMap[serviceType] || 'MISSING'}, 
+                        servicesReady={isServicesReady}, servicesCount={services?.length || 0}
+                      </div>
+                    )}
 
                     {appointmentStartTime && (
                       <div className="bg-green-50 p-4 rounded-md">
