@@ -116,7 +116,7 @@ export function useOptimizedAvailability(serviceId: string, date: string) {
         throw new Error('Invalid service ID format. Please select a valid service.');
       }
 
-      const url = new URL('/api/availability-compatible', window.location.origin);
+      const url = new URL('/api/availability', window.location.origin);
       url.searchParams.set('serviceId', serviceId.trim());
       url.searchParams.set('date', date.trim());
 

@@ -78,7 +78,7 @@ export default function EnhancedBookingPage() {
   const fetchServices = async () => {
     try {
       setServicesLoading(true);
-      const response = await fetch('/api/services-compatible');
+      const response = await fetch('/api/services');
       
       if (!response.ok) {
         throw new Error(`Failed to fetch services: ${response.status}`);

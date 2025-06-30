@@ -236,7 +236,7 @@ export default function UnifiedBookingCalendar({
           timezone: userTimezone
         });
         
-        apiUrl = `/api/availability-compatible?${params}`;
+        apiUrl = `/api/availability?${params}`;
       } else {
         // Fallback to simple calendar API (CalendarSelector style)
         const startDate = format(startOfDay(date), "yyyy-MM-dd'T'HH:mm:ss'Z'");

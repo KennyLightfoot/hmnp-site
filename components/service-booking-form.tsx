@@ -104,7 +104,7 @@ export function ServiceBookingForm() {
   useEffect(() => {
     async function fetchServices() {
       try {
-        const response = await fetch('/api/services-compatible');
+        const response = await fetch('/api/services');
         if (!response.ok) {
           throw new Error('Failed to fetch services');
         }
