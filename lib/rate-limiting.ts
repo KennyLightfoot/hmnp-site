@@ -112,14 +112,14 @@ class RateLimiter {
 
     } catch (error) {
       logger.error('Rate limit check failed', error as Error, { identifier });
-      // Fail open - allow request if rate limiting fails
-      return {
-        allowed: true,
-        remaining: finalConfig.maxRequests,
-        resetTime: new Date(Date.now() + finalConfig.windowMs),
-        totalRequests: 0,
-        windowStart: new Date(),
-      };
+      
+      // SECURITY FIX: Use secure fallback instead of failing open
+      logger.warn('Falling back to memory-based rate limiting due to Redis error', 'RATE_LIMIT', {
+        identifier,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      
+      return this.fallbackRateLimit(identifier, finalConfig);
     }
   }
 
@@ -315,23 +315,78 @@ class RateLimiter {
     }
   }
 
+  // In-memory fallback storage for when Redis is unavailable
+  private memoryStore = new Map<string, { count: number; windowStart: number }>();
+
   /**
-   * Fallback rate limiting when Redis is unavailable
+   * SECURITY FIX: Secure fallback rate limiting when Redis is unavailable
+   * Never bypass rate limiting - implement basic in-memory protection
    */
   private fallbackRateLimit(identifier: string, config: RateLimitConfig): RateLimitResult {
-    logger.warn('Using fallback rate limiting (Redis unavailable)', 'RATE_LIMIT');
+    logger.warn('Using fallback rate limiting (Redis unavailable)', 'RATE_LIMIT', {
+      identifier,
+      maxRequests: config.maxRequests,
+      windowMs: config.windowMs
+    });
     
-    // Simple in-memory fallback (not persistent across restarts)
     const now = Date.now();
     const windowStart = Math.floor(now / config.windowMs) * config.windowMs;
+    const key = `${identifier}:${windowStart}`;
+    
+    // Clean up old windows periodically
+    this.cleanupMemoryStore(now, config.windowMs);
+    
+    // Get or create entry for this window
+    let entry = this.memoryStore.get(key);
+    if (!entry) {
+      entry = { count: 0, windowStart };
+      this.memoryStore.set(key, entry);
+    }
+    
+    // Increment counter
+    entry.count++;
+    
+    // SECURITY: Apply strict limits in fallback mode (reduce by 50% for safety)
+    const fallbackLimit = Math.floor(config.maxRequests * 0.5);
+    const allowed = entry.count <= fallbackLimit;
+    const remaining = Math.max(0, fallbackLimit - entry.count);
+    
+    if (!allowed) {
+      logger.error('CRITICAL: Rate limit exceeded in fallback mode', 'RATE_LIMIT', {
+        identifier,
+        currentRequests: entry.count,
+        fallbackLimit,
+        windowStart: new Date(windowStart)
+      });
+      
+      // Alert on rate limit violations during Redis outage
+      monitoring.trackPerformance({
+        metric: 'fallback_rate_limit_exceeded',
+        value: 1,
+        tags: { identifier, severity: 'critical' }
+      });
+    }
     
     return {
-      allowed: true, // Fail open
-      remaining: config.maxRequests,
+      allowed,
+      remaining,
       resetTime: new Date(windowStart + config.windowMs),
-      totalRequests: 1,
+      totalRequests: entry.count,
       windowStart: new Date(windowStart),
     };
+  }
+
+  /**
+   * Clean up expired entries from memory store
+   */
+  private cleanupMemoryStore(now: number, windowMs: number): void {
+    const cutoff = now - windowMs * 2; // Keep last 2 windows for safety
+    
+    for (const [key, entry] of this.memoryStore.entries()) {
+      if (entry.windowStart < cutoff) {
+        this.memoryStore.delete(key);
+      }
+    }
   }
 
   // System metric helpers (implement based on your monitoring setup)
