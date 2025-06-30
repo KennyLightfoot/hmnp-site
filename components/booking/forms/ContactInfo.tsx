@@ -4,7 +4,7 @@ import { useFormContext, useWatch } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { FormField, FormItem, FormLabel, FormMessage, FormControl, FormDescription } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { User, Mail, Phone, Info } from 'lucide-react';
+import { User, Mail, Phone, Info, CheckCircle, AlertCircle } from 'lucide-react';
 import type { UnifiedBookingFormData } from './types';
 
 interface ContactInfoProps {
@@ -13,13 +13,26 @@ interface ContactInfoProps {
   userName?: string;
 }
 
+// Validation status indicator component
+const ValidationIcon = ({ isValid, hasValue }: { isValid: boolean; hasValue: boolean }) => {
+  if (!hasValue) return null;
+  return isValid ? (
+    <CheckCircle className="h-5 w-5 text-green-500" />
+  ) : (
+    <AlertCircle className="h-5 w-5 text-red-500" />
+  );
+};
+
 export function ContactInfo({ isAuthenticated = false, userEmail, userName }: ContactInfoProps) {
-  const { control, setValue } = useFormContext<UnifiedBookingFormData>();
+  const { control, setValue, formState } = useFormContext<UnifiedBookingFormData>();
   
-  // Watch values for validation feedback
+  // Watch values for real-time validation feedback
   const customerName = useWatch({ control, name: 'customerName' });
   const customerEmail = useWatch({ control, name: 'customerEmail' });
   const customerPhone = useWatch({ control, name: 'customerPhone' });
+  
+  // Get field errors for real-time feedback
+  const { errors } = formState;
 
   // Pre-fill authenticated user data
   if (isAuthenticated && userEmail && !customerEmail) {
@@ -69,21 +82,33 @@ export function ContactInfo({ isAuthenticated = false, userEmail, userName }: Co
           name="customerName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Full Name
+              <FormLabel className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Full Name
+                </span>
+                <ValidationIcon 
+                  isValid={!errors.customerName && !!customerName} 
+                  hasValue={!!customerName} 
+                />
               </FormLabel>
               <FormControl>
                 <Input
                   {...field}
-                  placeholder="Enter your full name"
-                  className="transition-all focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your full name (First Last)"
+                  className={`transition-all focus:ring-2 ${
+                    errors.customerName 
+                      ? 'border-red-500 focus:ring-red-500' 
+                      : customerName && !errors.customerName
+                      ? 'border-green-500 focus:ring-green-500'
+                      : 'focus:ring-blue-500'
+                  }`}
                 />
               </FormControl>
               <FormDescription>
-                This name will appear on all notarized documents.
+                This name will appear on all notarized documents. Please enter your full legal name.
               </FormDescription>
-              <FormMessage />
+              <FormMessage className="text-red-600 font-medium" />
             </FormItem>
           )}
         />
@@ -94,23 +119,35 @@ export function ContactInfo({ isAuthenticated = false, userEmail, userName }: Co
           name="customerEmail"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                Email Address
+              <FormLabel className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  Email Address
+                </span>
+                <ValidationIcon 
+                  isValid={!errors.customerEmail && !!customerEmail} 
+                  hasValue={!!customerEmail} 
+                />
               </FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   type="email"
                   placeholder="your.email@example.com"
-                  className="transition-all focus:ring-2 focus:ring-blue-500"
+                  className={`transition-all focus:ring-2 ${
+                    errors.customerEmail 
+                      ? 'border-red-500 focus:ring-red-500' 
+                      : customerEmail && !errors.customerEmail
+                      ? 'border-green-500 focus:ring-green-500'
+                      : 'focus:ring-blue-500'
+                  }`}
                   disabled={isAuthenticated && !!userEmail}
                 />
               </FormControl>
               <FormDescription>
                 We'll send appointment confirmations and reminders here.
               </FormDescription>
-              <FormMessage />
+              <FormMessage className="text-red-600 font-medium" />
             </FormItem>
           )}
         />
@@ -121,23 +158,35 @@ export function ContactInfo({ isAuthenticated = false, userEmail, userName }: Co
           name="customerPhone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                Phone Number
+              <FormLabel className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Phone className="h-4 w-4" />
+                  Phone Number
+                </span>
+                <ValidationIcon 
+                  isValid={!errors.customerPhone && !!customerPhone} 
+                  hasValue={!!customerPhone} 
+                />
               </FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   type="tel"
                   placeholder="(555) 123-4567"
-                  className="transition-all focus:ring-2 focus:ring-blue-500"
+                  className={`transition-all focus:ring-2 ${
+                    errors.customerPhone 
+                      ? 'border-red-500 focus:ring-red-500' 
+                      : customerPhone && !errors.customerPhone
+                      ? 'border-green-500 focus:ring-green-500'
+                      : 'focus:ring-blue-500'
+                  }`}
                   onChange={(e) => handlePhoneChange(e.target.value)}
                 />
               </FormControl>
               <FormDescription>
                 We'll call or text with appointment updates and arrival notifications.
               </FormDescription>
-              <FormMessage />
+              <FormMessage className="text-red-600 font-medium" />
             </FormItem>
           )}
         />

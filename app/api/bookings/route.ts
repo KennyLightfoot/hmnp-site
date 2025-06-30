@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { trackBookingConfirmation, trackLoanSigningBooked, trackRONCompleted, trackSameDayServiceRequested, trackAfterHoursServiceRequested } from '@/lib/tracking';
 import { sendGHLMessage } from '../../../lib/ghl-messaging';
 import { GoogleCalendarService } from '../../../lib/google-calendar-disabled';
+import { rateLimiters, rateLimitConfigs } from '@/lib/rate-limiting';
 // Custom fields temporarily disabled - using standard GHL fields and tags
 
 // Using tags-only approach for optimal business operations
@@ -170,6 +171,31 @@ async function triggerGHLWorkflows(contactId: string, bookingStatus: BookingStat
 
 export async function GET(request: NextRequest) {
   return withAuth(request, async ({ user, context }) => {
+    // Rate limiting for booking list access
+    const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    const rateLimitResult = await rateLimiters.api.checkRateLimit(
+      `bookings-get:${clientIP}`,
+      rateLimitConfigs.api
+    );
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { 
+          error: 'Rate limit exceeded. Please try again later.',
+          resetTime: rateLimitResult.resetTime,
+          remaining: rateLimitResult.remaining
+        },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimitConfigs.api.maxRequests.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.resetTime.toISOString(),
+          }
+        }
+      );
+    }
+
     try {
       const { searchParams } = new URL(request.url);
       const locationType = searchParams.get('locationType') as LocationType | null;
@@ -241,6 +267,33 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   return withAuth(request, async ({ user, context }) => {
+    // Strict rate limiting for booking creation (5 requests per minute)
+    const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    const userIdentifier = user?.email || clientIP;
+    const rateLimitResult = await rateLimiters.booking.checkRateLimit(
+      `booking-create:${userIdentifier}`,
+      rateLimitConfigs.booking
+    );
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { 
+          error: 'Too many booking attempts. Please wait before trying again.',
+          resetTime: rateLimitResult.resetTime,
+          remaining: rateLimitResult.remaining,
+          message: 'Rate limit: 5 booking attempts per minute allowed'
+        },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimitConfigs.booking.maxRequests.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.resetTime.toISOString(),
+          }
+        }
+      );
+    }
+
     const ghlLocationId = process.env.GHL_LOCATION_ID;
     if (!ghlLocationId) {
       console.error('GHL_LOCATION_ID environment variable is not set.');

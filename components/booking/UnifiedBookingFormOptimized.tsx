@@ -35,6 +35,61 @@ const UnifiedBookingCalendar = dynamic(() => import('@/components/unified-bookin
   ssr: false
 });
 
+// Booking Summary Component
+function BookingSummary({ 
+  data, 
+  service 
+}: { 
+  data: Partial<UnifiedBookingFormData>; 
+  service?: Service;
+}) {
+  if (!service) return null;
+
+  return (
+    <Card className="bg-gray-50">
+      <CardHeader>
+        <CardTitle className="text-lg">Booking Summary</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <span className="font-medium">Service:</span>
+            <div className="text-gray-600">{service.name}</div>
+          </div>
+          <div>
+            <span className="font-medium">Date & Time:</span>
+            <div className="text-gray-600">{data.appointmentFormattedTime || 'Not selected'}</div>
+          </div>
+          <div>
+            <span className="font-medium">Customer:</span>
+            <div className="text-gray-600">{data.customerName}</div>
+          </div>
+          <div>
+            <span className="font-medium">Signers:</span>
+            <div className="text-gray-600">{data.numberOfSigners || 1}</div>
+          </div>
+          <div className="col-span-2">
+            <span className="font-medium">Location:</span>
+            <div className="text-gray-600">
+              {data.addressStreet && data.addressCity 
+                ? `${data.addressStreet}, ${data.addressCity}, ${data.addressState} ${data.addressZip}`
+                : 'Not specified'
+              }
+            </div>
+          </div>
+        </div>
+        
+        <hr />
+        
+        <div className="flex justify-between font-semibold">
+          <span>Total:</span>
+          <span>${(service.basePrice * (data.numberOfSigners || 1))}</span>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 interface UnifiedBookingFormOptimizedProps {
   services: Service[];
   isAuthenticated?: boolean;
@@ -69,7 +124,7 @@ export default function UnifiedBookingFormOptimized({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Form setup with optimized validation
+  // Form setup with real-time validation
   const form = useForm<UnifiedBookingFormData>({
     resolver: zodResolver(unifiedBookingSchema),
     defaultValues: {
@@ -79,7 +134,9 @@ export default function UnifiedBookingFormOptimized({
       smsNotifications: false,
       consent_terms_conditions: false,
     },
-    mode: 'onTouched', // Validate on touch for better UX
+    mode: 'onChange', // Real-time validation for better UX
+    reValidateMode: 'onChange', // Re-validate on every change
+    shouldFocusError: true, // Focus on first error field
   });
 
   const { handleSubmit, trigger, getValues, watch } = form;
@@ -140,20 +197,18 @@ export default function UnifiedBookingFormOptimized({
     switch (currentStep) {
       case 1:
         return (
-          <ErrorBoundary>
-            <ServiceSelection 
-              services={services} 
-              loading={loading}
-              onServiceSelect={(service) => {
-                // Auto-advance to next step after service selection
-                setTimeout(() => {
-                  if (form.formState.isValid) {
-                    goToNextStep();
-                  }
-                }, 500);
-              }}
-            />
-          </ErrorBoundary>
+          <ServiceSelection 
+            services={services} 
+            loading={loading}
+            onServiceSelect={(service) => {
+              // Auto-advance to next step after service selection
+              setTimeout(() => {
+                if (form.formState.isValid) {
+                  goToNextStep();
+                }
+              }, 500);
+            }}
+          />
         );
 
       case 2:
@@ -169,120 +224,112 @@ export default function UnifiedBookingFormOptimized({
         }
         
         return (
-          <ErrorBoundary>
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Select Date & Time
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Choose your preferred appointment time for {selectedService.name}.
-                </p>
-              </div>
-              
-              <UnifiedBookingCalendar
-                serviceId={selectedService.id}
-                onSelectionChange={handleCalendarSelection}
-                durationMinutes={selectedService.durationMinutes}
-              />
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Select Date & Time
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Choose your preferred appointment time for {selectedService.name}.
+              </p>
             </div>
-          </ErrorBoundary>
+            
+            <UnifiedBookingCalendar
+              serviceId={selectedService.id}
+              onSelectionChange={handleCalendarSelection}
+              durationMinutes={selectedService.durationMinutes}
+            />
+          </div>
         );
 
       case 3:
         return (
-          <ErrorBoundary>
-            <ContactInfo
-              isAuthenticated={isAuthenticated}
-              userEmail={userEmail}
-              userName={userName}
-            />
-          </ErrorBoundary>
+          <ContactInfo
+            isAuthenticated={isAuthenticated}
+            userEmail={userEmail}
+            userName={userName}
+          />
         );
 
       case 4:
         return (
-          <ErrorBoundary>
-            <LocationDetails />
-          </ErrorBoundary>
+          <LocationDetails />
         );
 
       case 5:
         return (
-          <ErrorBoundary>
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Review & Confirm
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Please review your booking details and confirm your appointment.
-                </p>
-              </div>
-
-              {/* Booking Summary */}
-              <BookingSummary data={getValues()} service={selectedService} />
-
-              {/* Additional Notes */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Additional Notes (Optional)
-                </label>
-                <Textarea
-                  placeholder="Any special requests or information for your notary..."
-                  rows={3}
-                  {...form.register('notes')}
-                />
-              </div>
-
-              {/* Terms and Conditions */}
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <Checkbox
-                    {...form.register('consent_terms_conditions')}
-                    id="terms"
-                  />
-                  <label htmlFor="terms" className="text-sm text-gray-700 leading-relaxed">
-                    I agree to the{' '}
-                    <a href="/terms" className="text-blue-600 hover:underline" target="_blank">
-                      Terms and Conditions
-                    </a>{' '}
-                    and{' '}
-                    <a href="/privacy" className="text-blue-600 hover:underline" target="_blank">
-                      Privacy Policy
-                    </a>
-                  </label>
-                </div>
-
-                <div className="flex items-start space-x-3">
-                  <Checkbox
-                    {...form.register('emailUpdates')}
-                    id="email-updates"
-                  />
-                  <label htmlFor="email-updates" className="text-sm text-gray-700">
-                    Send me email updates about my appointment
-                  </label>
-                </div>
-
-                <div className="flex items-start space-x-3">
-                  <Checkbox
-                    {...form.register('smsNotifications')}
-                    id="sms-notifications"
-                  />
-                  <label htmlFor="sms-notifications" className="text-sm text-gray-700">
-                    Send me SMS notifications (arrival alerts, reminders)
-                  </label>
-                </div>
-              </div>
-
-              {submitError && (
-                <Alert variant="destructive">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>{submitError}</AlertDescription>
-                </Alert>
-              )}
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Review & Confirm
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Please review your booking details and confirm your appointment.
+              </p>
             </div>
-          </ErrorBoundary>
+
+            {/* Booking Summary */}
+            <BookingSummary data={getValues()} service={selectedService} />
+
+            {/* Additional Notes */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Additional Notes (Optional)
+              </label>
+              <Textarea
+                placeholder="Any special requests or information for your notary..."
+                rows={3}
+                {...form.register('notes')}
+              />
+            </div>
+
+            {/* Terms and Conditions */}
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  {...form.register('consent_terms_conditions')}
+                  id="terms"
+                />
+                <label htmlFor="terms" className="text-sm text-gray-700 leading-relaxed">
+                  I agree to the{' '}
+                  <a href="/terms" className="text-blue-600 hover:underline" target="_blank">
+                    Terms and Conditions
+                  </a>{' '}
+                  and{' '}
+                  <a href="/privacy" className="text-blue-600 hover:underline" target="_blank">
+                    Privacy Policy
+                  </a>
+                </label>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  {...form.register('emailUpdates')}
+                  id="email-updates"
+                />
+                <label htmlFor="email-updates" className="text-sm text-gray-700">
+                  Send me email updates about my appointment
+                </label>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  {...form.register('smsNotifications')}
+                  id="sms-notifications"
+                />
+                <label htmlFor="sms-notifications" className="text-sm text-gray-700">
+                  Send me SMS notifications (arrival alerts, reminders)
+                </label>
+              </div>
+            </div>
+
+            {submitError && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>{submitError}</AlertDescription>
+              </Alert>
+            )}
+          </div>
         );
 
       default:
@@ -389,60 +436,5 @@ export default function UnifiedBookingFormOptimized({
         </Form>
       </div>
     </ErrorBoundary>
-  );
-}
-
-// Booking Summary Component
-function BookingSummary({ 
-  data, 
-  service 
-}: { 
-  data: Partial<UnifiedBookingFormData>; 
-  service?: Service;
-}) {
-  if (!service) return null;
-
-  return (
-    <Card className="bg-gray-50">
-      <CardHeader>
-        <CardTitle className="text-lg">Booking Summary</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="font-medium">Service:</span>
-            <div className="text-gray-600">{service.name}</div>
-          </div>
-          <div>
-            <span className="font-medium">Date & Time:</span>
-            <div className="text-gray-600">{data.appointmentFormattedTime || 'Not selected'}</div>
-          </div>
-          <div>
-            <span className="font-medium">Customer:</span>
-            <div className="text-gray-600">{data.customerName}</div>
-          </div>
-          <div>
-            <span className="font-medium">Signers:</span>
-            <div className="text-gray-600">{data.numberOfSigners || 1}</div>
-          </div>
-          <div className="col-span-2">
-            <span className="font-medium">Location:</span>
-            <div className="text-gray-600">
-              {data.addressStreet && data.addressCity 
-                ? `${data.addressStreet}, ${data.addressCity}, ${data.addressState} ${data.addressZip}`
-                : 'Not specified'
-              }
-            </div>
-          </div>
-        </div>
-        
-        <hr />
-        
-        <div className="flex justify-between font-semibold">
-          <span>Total:</span>
-          <span>${(service.basePrice * (data.numberOfSigners || 1))}</span>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
