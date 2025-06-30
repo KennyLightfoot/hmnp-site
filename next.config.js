@@ -48,15 +48,8 @@ const nextConfig = {
     },
   },
   
-  // Turbopack configuration for development
-  turbopack: {
-    loaders: {
-      '.svg': ['@svgr/webpack'],
-    },
-    resolveAlias: {
-      '@': './src',
-    },
-  },
+  // REMOVED: Turbopack configuration causing build errors
+  // The loaders configuration is not supported in current Next.js version
   
   // Webpack optimization for production builds
   webpack: (config, { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }) => {
@@ -72,10 +65,11 @@ const nextConfig = {
       );
     }
 
-    // Enhanced code splitting
+    // Enhanced code splitting (fixed optimization conflicts)
     if (!dev && !isServer) {
       config.optimization = {
         ...config.optimization,
+        usedExports: false, // Fix: Disable usedExports to prevent cacheUnaffected conflict
         splitChunks: {
           chunks: 'all',
           cacheGroups: {
