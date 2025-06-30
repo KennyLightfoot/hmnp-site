@@ -188,6 +188,73 @@ export default async function RootLayout({
           The PWA icons and splash screens are handled through the metadata.icons configuration above.
           Service Worker registration is moved to the body section. */}
       <body className={`${inter.className} bg-white`}>
+        {/* EMERGENCY: Request Storm Protection */}
+        <Script id="request-storm-protection" strategy="beforeInteractive">
+          {`
+            // Emergency request deduplication and storm protection
+            (function() {
+              const pendingRequests = new Map();
+              const requestCounts = new Map();
+              const MAX_CONCURRENT = 3;
+              const RATE_LIMIT = 100; // per minute
+              const WINDOW = 60000; // 1 minute
+
+              // Override fetch to add protection
+              const originalFetch = window.fetch;
+              window.fetch = function(url, options = {}) {
+                const key = options.method || 'GET' + ':' + url;
+                const now = Date.now();
+                
+                // Rate limiting
+                const minute = Math.floor(now / WINDOW);
+                const countKey = minute + ':' + new URL(url).pathname;
+                const count = requestCounts.get(countKey) || 0;
+                
+                if (count > RATE_LIMIT) {
+                  console.warn('🚨 Rate limit exceeded for:', url);
+                  return Promise.reject(new Error('Rate limit exceeded'));
+                }
+                requestCounts.set(countKey, count + 1);
+                
+                // Deduplication
+                if (pendingRequests.has(key)) {
+                  console.log('♻️ Deduplicating request:', url);
+                  return pendingRequests.get(key).then(r => r.clone());
+                }
+                
+                // Concurrent limit
+                const concurrent = Array.from(pendingRequests.keys())
+                  .filter(k => k.includes(new URL(url).pathname)).length;
+                if (concurrent >= MAX_CONCURRENT) {
+                  console.warn('🚨 Too many concurrent requests to:', url);
+                  return Promise.reject(new Error('Too many concurrent requests'));
+                }
+                
+                const promise = originalFetch.call(this, url, options);
+                pendingRequests.set(key, promise);
+                
+                promise.finally(() => {
+                  setTimeout(() => pendingRequests.delete(key), 100);
+                });
+                
+                return promise;
+              };
+              
+              // Clean up old rate limit entries
+              setInterval(() => {
+                const cutoff = Math.floor(Date.now() / WINDOW) - 2;
+                for (const key of requestCounts.keys()) {
+                  if (parseInt(key.split(':')[0]) < cutoff) {
+                    requestCounts.delete(key);
+                  }
+                }
+              }, WINDOW);
+              
+              console.log('✅ Request storm protection enabled');
+            })();
+          `}
+        </Script>
+
         {/* Service Worker Registration - TEMPORARILY DISABLED */}
         <Script id="service-worker" strategy="afterInteractive">
           {`

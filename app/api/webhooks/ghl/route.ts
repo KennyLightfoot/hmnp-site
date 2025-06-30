@@ -42,8 +42,41 @@ type WebhookEventType =
   | 'TaskUpdate'
   | 'TaskComplete';
 
+// EMERGENCY: Rate limiting to prevent webhook spam
+const webhookRateLimit = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+const RATE_LIMIT_MAX = 10; // Max 10 webhooks per minute per IP
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const key = ip;
+  
+  const current = webhookRateLimit.get(key);
+  if (!current || now > current.resetTime) {
+    webhookRateLimit.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+  
+  if (current.count >= RATE_LIMIT_MAX) {
+    console.warn(`🚨 Webhook rate limit exceeded for IP: ${ip}`);
+    return false;
+  }
+  
+  current.count++;
+  return true;
+}
+
 export async function POST(request: NextRequest) {
   try {
+    // EMERGENCY: Apply rate limiting
+    const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Rate limit exceeded - too many webhook requests'
+      }, { status: 429 });
+    }
+
     // Get the raw body for signature verification (if needed)
     const rawBody = await request.text();
     let body: any;
