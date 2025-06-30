@@ -116,12 +116,12 @@ model Booking {
   notaryTravelTimeMinutes     Int?                   @map("notary_travel_time_minutes")
   googleMapsDistanceMatrix    Json?                  @map("google_maps_distance_matrix")
   serviceAreaId               String?                @map("service_area_id")
-  priceSnapshotCents          Int?                   @map("price_snapshot_cents")
-  paymentIntentId             String?                @map("payment_intent_id")
-  pricingCalculatedAt         DateTime?              @map("pricing_calculated_at") @db.Timestamptz(6)
-  securityFlags               Json?                  @default("{}") @map("security_flags")
   isFirstTimeDiscountApplied  Boolean?               @default(false) @map("is_first_time_discount_applied")
   isReferralDiscountApplied   Boolean?               @default(false) @map("is_referral_discount_applied")
+  paymentIntentId             String?                @map("payment_intent_id")
+  priceSnapshotCents          Int?                   @map("price_snapshot_cents")
+  pricingCalculatedAt         DateTime?              @map("pricing_calculated_at") @db.Timestamptz(6)
+  securityFlags               Json?                  @default("{}") @map("security_flags")
   User_Booking_notaryIdToUser User?                  @relation("Booking_notaryIdToUser", fields: [notaryId], references: [id])
   PromoCode                   PromoCode?             @relation(fields: [promoCodeId], references: [id])
   Service                     Service                @relation(fields: [serviceId], references: [id])
@@ -134,6 +134,7 @@ model Booking {
   PromoCodeUsage              PromoCodeUsage[]
   StripeWebhookLog            StripeWebhookLog[]
 
+  @@unique([notaryId, scheduledDateTime], name: "unique_notary_time_slot")
   @@index([notaryId])
   @@index([scheduledDateTime])
   @@index([serviceId])
@@ -149,7 +150,6 @@ model Booking {
   @@index([promoCodeId])
   @@index([witnessType], map: "idx_booking_witness_type")
   @@index([paymentIntentId], map: "idx_booking_payment_intent")
-  @@unique([notaryId, scheduledDateTime], name: "unique_notary_time_slot")
 }
 
 model BusinessSettings {
@@ -271,45 +271,44 @@ model Payment {
 }
 
 model PromoCode {
-  id                 String       @id
-  code               String       @unique
+  id                 String           @id
+  code               String           @unique
   description        String?
-  discountType       DiscountType @default(PERCENTAGE)
-  discountValue      Decimal      @db.Decimal(10, 2)
-  minimumAmount      Decimal?     @db.Decimal(10, 2)
-  maxDiscountAmount  Decimal?     @db.Decimal(10, 2)
+  discountType       DiscountType     @default(PERCENTAGE)
+  discountValue      Decimal          @db.Decimal(10, 2)
+  minimumAmount      Decimal?         @db.Decimal(10, 2)
+  maxDiscountAmount  Decimal?         @db.Decimal(10, 2)
   usageLimit         Int?
-  usageCount         Int          @default(0)
-  perCustomerLimit   Int?         @default(1)
-  validFrom          DateTime     @default(now())
+  usageCount         Int              @default(0)
+  perCustomerLimit   Int?             @default(1)
+  validFrom          DateTime         @default(now())
   validUntil         DateTime?
-  isActive           Boolean      @default(true)
+  isActive           Boolean          @default(true)
   applicableServices String[]
-  createdAt          DateTime     @default(now())
+  createdAt          DateTime         @default(now())
   updatedAt          DateTime
   createdById        String?
   Booking            Booking[]
-  User               User?        @relation(fields: [createdById], references: [id])
+  User               User?            @relation(fields: [createdById], references: [id])
+  PromoCodeUsage     PromoCodeUsage[]
 
   @@index([code])
   @@index([createdById])
   @@index([validFrom, validUntil])
   @@index([isActive])
-  PromoCodeUsage PromoCodeUsage[]
 }
 
 model PromoCodeUsage {
-  id           String    @id @default(dbgenerated("(gen_random_uuid())::text"))
-  promoCodeId  String    @map("promo_code_id")
-  userEmail    String    @map("user_email")
-  bookingId    String?   @map("booking_id")
-  usedAt       DateTime  @default(now()) @map("used_at") @db.Timestamptz(6)
-  ipAddress    String?   @map("ip_address")
-  userAgent    String?   @map("user_agent")
-  metadata     Json?
-
-  PromoCode PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
-  Booking   Booking?  @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  id          String    @id @default(dbgenerated("(gen_random_uuid())::text"))
+  promoCodeId String    @map("promo_code_id")
+  userEmail   String    @map("user_email")
+  bookingId   String?   @map("booking_id")
+  usedAt      DateTime  @default(now()) @map("used_at") @db.Timestamptz(6)
+  ipAddress   String?   @map("ip_address")
+  userAgent   String?   @map("user_agent")
+  metadata    Json?
+  Booking     Booking?  @relation(fields: [bookingId], references: [id])
+  PromoCode   PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
 
   @@index([promoCodeId])
   @@index([userEmail])
@@ -318,19 +317,18 @@ model PromoCodeUsage {
 }
 
 model SecurityAuditLog {
-  id          String   @id @default(dbgenerated("(gen_random_uuid())::text"))
-  timestamp   DateTime @default(now()) @db.Timestamptz(6)
-  userEmail   String   @map("user_email")
-  userId      String?  @map("user_id")
-  action      String
-  details     Json     @default("{}")
-  severity    String   // INFO, WARN, ERROR, CRITICAL
-  ipAddress   String?  @map("ip_address")
-  userAgent   String?  @map("user_agent")
-  sessionId   String?  @map("session_id")
-  requestId   String?  @map("request_id")
-
-  User User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  timestamp DateTime @default(now()) @db.Timestamptz(6)
+  userEmail String   @map("user_email")
+  userId    String?  @map("user_id")
+  action    String
+  details   Json     @default("{}")
+  severity  String
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  sessionId String?  @map("session_id")
+  requestId String?  @map("request_id")
+  User      User?    @relation(fields: [userId], references: [id])
 
   @@index([timestamp])
   @@index([userEmail])
@@ -344,12 +342,11 @@ model StripeWebhookLog {
   stripeEventId String   @unique @map("stripe_event_id")
   eventType     String   @map("event_type")
   processedAt   DateTime @default(now()) @map("processed_at") @db.Timestamptz(6)
-  status        String   // PROCESSED, FAILED, SKIPPED
+  status        String
   bookingId     String?  @map("booking_id")
   errorMessage  String?  @map("error_message")
   metadata      Json?
-
-  Booking Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  Booking       Booking? @relation(fields: [bookingId], references: [id])
 
   @@index([stripeEventId])
   @@index([processedAt])

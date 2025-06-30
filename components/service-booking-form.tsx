@@ -104,9 +104,15 @@ export function ServiceBookingForm() {
   useEffect(() => {
     async function fetchServices() {
       try {
-        const response = await fetch('/api/services');
+        // Try main services endpoint first
+        let response = await fetch('/api/services');
         if (!response.ok) {
-          throw new Error('Failed to fetch services');
+          console.log('Main services API failed, trying fallback...');
+          // If main endpoint fails, try the compatible fallback
+          response = await fetch('/api/services-compatible');
+          if (!response.ok) {
+            throw new Error('Both services endpoints failed');
+          }
         }
         const data = await response.json();
         setServices(data.services || []);
