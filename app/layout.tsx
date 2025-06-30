@@ -12,6 +12,7 @@ import { log } from "console"
 import { headers } from 'next/headers'
 import Script from 'next/script'
 import { Analytics } from '@vercel/analytics/react'
+import ThirdPartyScriptMonitor from '@/components/analytics/ThirdPartyScriptMonitor'
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -192,29 +193,44 @@ export default async function RootLayout({
           {`
             if ('serviceWorker' in navigator) {
               window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js').then(function(registration) {
-                  console.log('SW registered: ', registration);
-                }, function(registrationError) {
-                  console.log('SW registration failed: ', registrationError);
-                });
+                navigator.serviceWorker.register('/sw.js')
+                  .then(function(registration) {
+                    console.log('✅ SW registered: ', registration.scope);
+                  })
+                  .catch(function(registrationError) {
+                    console.warn('⚠️ SW registration failed: ', registrationError);
+                    // Continue without service worker
+                  });
               });
+            } else {
+              console.log('ℹ️ Service Worker not supported in this browser');
             }
           `}
         </Script>
         
         {/* Meta Pixel Code */}
-        <Script id="meta-pixel" strategy="afterInteractive">
+        <Script 
+          id="meta-pixel" 
+          strategy="afterInteractive"
+          onError={() => console.warn('⚠️ Meta Pixel failed to load')}
+          onLoad={() => console.log('✅ Meta Pixel loaded')}
+        >
           {`
-            !function(f,b,e,v,n,t,s)
-            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-            n.queue=[];t=b.createElement(e);t.async=!0;
-            t.src=v;s=b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t,s)}(window, document,'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '1459938351663284');
-            fbq('track', 'PageView');
+            try {
+              !function(f,b,e,v,n,t,s)
+              {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+              n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+              if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+              n.queue=[];t=b.createElement(e);t.async=!0;
+              t.src=v;s=b.getElementsByTagName(e)[0];
+              s.parentNode.insertBefore(t,s)}(window, document,'script',
+              'https://connect.facebook.net/en_US/fbevents.js');
+              fbq('init', '1459938351663284');
+              fbq('track', 'PageView');
+              console.log('✅ Meta Pixel initialized');
+            } catch (error) {
+              console.warn('⚠️ Meta Pixel initialization failed:', error);
+            }
           `}
         </Script>
         <noscript>
@@ -224,30 +240,50 @@ export default async function RootLayout({
         {/* End Meta Pixel Code */}
 
         {/* Google Tag Manager */}
-        <Script id="gtm" strategy="afterInteractive">
+        <Script 
+          id="gtm" 
+          strategy="afterInteractive"
+          onError={() => console.warn('⚠️ Google Tag Manager failed to load')}
+          onLoad={() => console.log('✅ Google Tag Manager loaded')}
+        >
           {`
-            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','GTM-PMHB36X5');
+            try {
+              (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+              })(window,document,'script','dataLayer','GTM-PMHB36X5');
+              console.log('✅ Google Tag Manager initialized');
+            } catch (error) {
+              console.warn('⚠️ Google Tag Manager initialization failed:', error);
+            }
           `}
         </Script>
         {/* End Google Tag Manager */}
 
         {/* LinkedIn Insight Tag */}
-        <Script id="linkedin-insight-tag" strategy="afterInteractive">
+        <Script 
+          id="linkedin-insight-tag" 
+          strategy="afterInteractive"
+          onError={() => console.warn('⚠️ LinkedIn Insight Tag failed to load')}
+          onLoad={() => console.log('✅ LinkedIn Insight Tag loaded')}
+        >
           {`
-            _linkedin_partner_id = "514942430";
-            window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
-            window._linkedin_data_partner_ids.push(_linkedin_partner_id);
-            (function(l) {
-            if (!l){window.lintrk = function(a,b){window.lintrk.q.push([a,b])}; window.lintrk.q=[]}
-            var s = document.getElementsByTagName("script")[0];
-            var b = document.createElement("script");
-            b.type = "text/javascript";b.async = true;
-            b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
-            s.parentNode.insertBefore(b, s);})(window.lintrk);
+            try {
+              _linkedin_partner_id = "514942430";
+              window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
+              window._linkedin_data_partner_ids.push(_linkedin_partner_id);
+              (function(l) {
+              if (!l){window.lintrk = function(a,b){window.lintrk.q.push([a,b])}; window.lintrk.q=[]}
+              var s = document.getElementsByTagName("script")[0];
+              var b = document.createElement("script");
+              b.type = "text/javascript";b.async = true;
+              b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
+              s.parentNode.insertBefore(b, s);})(window.lintrk);
+              console.log('✅ LinkedIn Insight Tag initialized');
+            } catch (error) {
+              console.warn('⚠️ LinkedIn Insight Tag initialization failed:', error);
+            }
           `}
         </Script>
         <noscript>
@@ -293,6 +329,7 @@ export default async function RootLayout({
           {/* <SpeedInsights /> */}
           <Toaster />
           <Analytics />
+          <ThirdPartyScriptMonitor />
         </Providers>
       </body>
     </html>

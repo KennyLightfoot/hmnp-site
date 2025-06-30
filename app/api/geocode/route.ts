@@ -29,6 +29,14 @@ export async function GET(request: Request) {
     const response = await fetch(`${GOOGLE_MAPS_API_URL}?${params.toString()}`)
     const data = await response.json()
 
+    if (data.status === "REQUEST_DENIED") {
+      console.warn(`Geocoding API key has referer restrictions for address "${fullAddress}"`)
+      return NextResponse.json({ 
+        error: "Geocoding service temporarily unavailable - please contact us for assistance",
+        fallback: true 
+      }, { status: 503 })
+    }
+
     if (!response.ok || data.status !== "OK") {
       console.error(`Geocoding API error for address "${fullAddress}":`, data)
       return NextResponse.json({ error: `Geocoding failed: ${data.status} - ${data.error_message || "Unknown error"}` }, { status: response.status === 200 ? 500 : response.status })

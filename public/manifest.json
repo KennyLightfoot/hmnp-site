@@ -12,74 +12,74 @@
   "categories": ["business", "productivity"],
   "screenshots": [
     {
-      "src": "/screenshots/dashboard-mobile.png",
+      "src": "/screenshots/dashboard-mobile.svg",
       "sizes": "430x932",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "form_factor": "narrow",
       "label": "Customer Dashboard - Mobile"
     },
     {
-      "src": "/screenshots/booking-mobile.png", 
+      "src": "/screenshots/booking-mobile.svg", 
       "sizes": "430x932",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "form_factor": "narrow",
       "label": "Book Service - Mobile"
     },
     {
-      "src": "/screenshots/dashboard-desktop.png",
+      "src": "/screenshots/dashboard-desktop.svg",
       "sizes": "1280x720",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "form_factor": "wide",
       "label": "Customer Dashboard - Desktop"
     }
   ],
   "icons": [
     {
-      "src": "/icons/icon-72x72.png",
+      "src": "/icons/icon-72x72.svg",
       "sizes": "72x72",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-96x96.png",
+      "src": "/icons/icon-96x96.svg",
       "sizes": "96x96", 
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-128x128.png",
+      "src": "/icons/icon-128x128.svg",
       "sizes": "128x128",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-144x144.png",
+      "src": "/icons/icon-144x144.svg",
       "sizes": "144x144",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-152x152.png",
+      "src": "/icons/icon-152x152.svg",
       "sizes": "152x152",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "/icons/icon-192x192.svg",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-384x384.png",
+      "src": "/icons/icon-384x384.svg",
       "sizes": "384x384",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/icons/icon-512x512.svg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     }
   ],
@@ -89,14 +89,14 @@
       "short_name": "Book",
       "description": "Book a notary service",
       "url": "/booking",
-      "icons": [{ "src": "/icons/shortcut-book.png", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/shortcut-book.svg", "sizes": "96x96" }]
     },
     {
       "name": "My Bookings",
       "short_name": "Bookings", 
       "description": "View your booking history",
       "url": "/dashboard",
-      "icons": [{ "src": "/icons/shortcut-bookings.png", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/shortcut-bookings.svg", "sizes": "96x96" }]
     }
   ],
   "share_target": {

@@ -77,6 +77,11 @@ export class DistanceService {
 
       const data: DistanceMatrixResponse = await response.json();
 
+      if (data.status === 'REQUEST_DENIED') {
+        console.warn('Google Maps API key has referer restrictions - using fallback calculation');
+        return this.getFallbackResult(destination);
+      }
+
       if (data.status !== 'OK' || !data.rows[0]?.elements[0]) {
         throw new Error('No distance data available');
       }
@@ -208,28 +213,36 @@ export class DistanceService {
     const lowerDest = destination.toLowerCase();
     let estimatedMiles = 15; // Default assumption
 
-    // Houston area distance estimates
-    if (lowerDest.includes('katy')) estimatedMiles = 20;
+    // Houston area distance estimates based on common locations
+    if (lowerDest.includes('houston')) estimatedMiles = 12;
+    else if (lowerDest.includes('katy')) estimatedMiles = 20;
     else if (lowerDest.includes('sugar land')) estimatedMiles = 18;
     else if (lowerDest.includes('cypress')) estimatedMiles = 22;
     else if (lowerDest.includes('tomball')) estimatedMiles = 25;
     else if (lowerDest.includes('conroe')) estimatedMiles = 30;
     else if (lowerDest.includes('galveston')) estimatedMiles = 45;
+    else if (lowerDest.includes('baytown')) estimatedMiles = 15;
+    else if (lowerDest.includes('pasadena')) estimatedMiles = 12;
+    else if (lowerDest.includes('pearland')) estimatedMiles = 20;
+    else if (lowerDest.includes('friendswood')) estimatedMiles = 8;
+    else if (lowerDest.includes('league city')) estimatedMiles = 5;
+    else if (lowerDest.includes('clear lake')) estimatedMiles = 10;
+    else if (lowerDest.includes('webster')) estimatedMiles = 8;
 
     const estimatedMinutes = Math.round(estimatedMiles * 1.5); // Rough estimate: 1.5 min per mile
 
     return {
       distance: {
         miles: estimatedMiles,
-        text: `${estimatedMiles} mi`
+        text: `~${estimatedMiles} mi (estimated)`
       },
       duration: {
         minutes: estimatedMinutes,
-        text: `${estimatedMinutes} mins`
+        text: `~${estimatedMinutes} mins (estimated)`
       },
       isWithinServiceArea: estimatedMiles <= this.MAX_SERVICE_RADIUS,
       warnings: [
-        'Distance estimated (Google Maps unavailable)',
+        'Distance calculated using local estimates - exact distance will be confirmed during booking',
         ...this.generateWarnings(estimatedMiles, estimatedMinutes)
       ]
     };
