@@ -102,25 +102,10 @@ export const API_REDIRECTS: RedirectMapping[] = [
     permanent: true,
   },
   
-  // Booking API redirects
+  // Booking API redirects (redirect legacy /api/booking to /api/bookings)
   {
-    source: '/api/booking/essential/:path*',
-    destination: '/api/booking/standard-notary/:path*',
-    permanent: true,
-  },
-  {
-    source: '/api/booking/priority/:path*',
-    destination: '/api/booking/extended-hours-notary/:path*',
-    permanent: true,
-  },
-  {
-    source: '/api/booking/basic/:path*',
-    destination: '/api/booking/standard-notary/:path*',
-    permanent: true,
-  },
-  {
-    source: '/api/booking/premium/:path*',
-    destination: '/api/booking/specialty-notary-service/:path*',
+    source: '/api/booking/:path*',
+    destination: '/api/bookings/:path*',
     permanent: true,
   },
 ];

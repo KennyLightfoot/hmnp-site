@@ -8,7 +8,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { FormField, FormItem, FormLabel, FormMessage, FormControl, FormDescription } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { MapPin, Home, Coffee, Building, Info, Navigation } from 'lucide-react';
+import { MapPin, Home, Coffee, Building, Info, Navigation, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { LOCATION_TYPES, type UnifiedBookingFormData } from './types';
 
 interface LocationDetailsProps {
@@ -16,14 +16,23 @@ interface LocationDetailsProps {
 }
 
 export function LocationDetails({ onLocationChange }: LocationDetailsProps) {
-  const { control, setValue, getValues } = useFormContext<UnifiedBookingFormData>();
+  const { control, setValue, getValues, formState } = useFormContext<UnifiedBookingFormData>();
   const [isValidatingAddress, setIsValidatingAddress] = useState(false);
+  const [addressValidationStatus, setAddressValidationStatus] = useState<{
+    isValid: boolean;
+    message: string;
+    suggestions?: string[];
+  } | null>(null);
   
   // Watch location type for conditional rendering
   const locationType = useWatch({ control, name: 'locationType' });
   const addressStreet = useWatch({ control, name: 'addressStreet' });
   const addressCity = useWatch({ control, name: 'addressCity' });
   const addressState = useWatch({ control, name: 'addressState' });
+  const addressZip = useWatch({ control, name: 'addressZip' });
+  
+  // Get field errors for validation feedback
+  const { errors } = formState;
 
   // Auto-format ZIP code
   const handleZipChange = (value: string) => {
@@ -35,25 +44,85 @@ export function LocationDetails({ onLocationChange }: LocationDetailsProps) {
     }
   };
 
-  // Validate address (simulate API call)
+  // Enhanced address validation with geocoding
   const validateAddress = async () => {
-    if (!addressStreet || !addressCity || !addressState) return;
+    if (!addressStreet || !addressCity || !addressState) {
+      setAddressValidationStatus(null);
+      return;
+    }
     
     setIsValidatingAddress(true);
+    setAddressValidationStatus(null);
+    
     try {
-      // Simulate address validation
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const fullAddress = `${addressStreet}, ${addressCity}, ${addressState} ${addressZip || ''}`.trim();
       
-      // Mock coordinates
-      const mockLocation = {
-        lat: 29.7604 + (Math.random() - 0.5) * 0.1,
-        lng: -95.3698 + (Math.random() - 0.5) * 0.1,
-        address: `${addressStreet}, ${addressCity}, ${addressState}`
-      };
+      // Use OpenStreetMap Nominatim API for geocoding (free alternative to Google Maps)
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}&limit=1&countrycodes=us`
+      );
       
-      onLocationChange?.(mockLocation);
+      if (!response.ok) {
+        throw new Error('Geocoding service unavailable');
+      }
+      
+      const results = await response.json();
+      
+      if (results && results.length > 0) {
+        const result = results[0];
+        const lat = parseFloat(result.lat);
+        const lng = parseFloat(result.lon);
+        
+        // Check if address is in Houston area (rough bounds)
+        const houstonBounds = {
+          north: 30.2,
+          south: 29.4,
+          east: -94.8,
+          west: -96.1
+        };
+        
+        const isInServiceArea = 
+          lat >= houstonBounds.south && 
+          lat <= houstonBounds.north && 
+          lng >= houstonBounds.west && 
+          lng <= houstonBounds.east;
+        
+        if (isInServiceArea) {
+          setAddressValidationStatus({
+            isValid: true,
+            message: '✓ Address verified and within service area'
+          });
+          
+          onLocationChange?.({
+            lat,
+            lng,
+            address: result.display_name
+          });
+        } else {
+          setAddressValidationStatus({
+            isValid: false,
+            message: '⚠ Address is outside our Houston service area. Additional travel fees may apply.',
+            suggestions: ['Consider a location closer to Houston', 'Contact us for custom pricing']
+          });
+        }
+      } else {
+        setAddressValidationStatus({
+          isValid: false,
+          message: '❌ Address could not be verified. Please check your input.',
+          suggestions: [
+            'Double-check street number and name',
+            'Verify city and ZIP code',
+            'Try a more specific address'
+          ]
+        });
+      }
     } catch (error) {
       console.error('Address validation failed:', error);
+      setAddressValidationStatus({
+        isValid: false,
+        message: '⚠ Unable to validate address. Please ensure it is correct.',
+        suggestions: ['Check your internet connection', 'Verify address format']
+      });
     } finally {
       setIsValidatingAddress(false);
     }
@@ -214,7 +283,11 @@ export function LocationDetails({ onLocationChange }: LocationDetailsProps) {
                       {...field}
                       placeholder="77001"
                       className="transition-all focus:ring-2 focus:ring-blue-500"
-                      onChange={(e) => handleZipChange(e.target.value)}
+                      onChange={(e) => {
+                        handleZipChange(e.target.value);
+                        // Trigger validation after ZIP is updated
+                        setTimeout(validateAddress, 300);
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -222,6 +295,40 @@ export function LocationDetails({ onLocationChange }: LocationDetailsProps) {
               )}
             />
           </div>
+
+          {/* Address Validation Status */}
+          {(isValidatingAddress || addressValidationStatus) && (
+            <div className="mt-4">
+              {isValidatingAddress ? (
+                <Alert>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <AlertDescription>
+                    Validating address...
+                  </AlertDescription>
+                </Alert>
+              ) : addressValidationStatus && (
+                <Alert className={addressValidationStatus.isValid ? 'border-green-500 bg-green-50' : 'border-amber-500 bg-amber-50'}>
+                  {addressValidationStatus.isValid ? (
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                  )}
+                  <AlertDescription>
+                    <div className={addressValidationStatus.isValid ? 'text-green-800' : 'text-amber-800'}>
+                      {addressValidationStatus.message}
+                      {addressValidationStatus.suggestions && (
+                        <ul className="mt-2 list-disc list-inside text-sm">
+                          {addressValidationStatus.suggestions.map((suggestion, index) => (
+                            <li key={index}>{suggestion}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          )}
 
           {/* Location Notes */}
           <FormField
