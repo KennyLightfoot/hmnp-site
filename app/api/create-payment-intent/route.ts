@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import Stripe from 'stripe';
+import { logger } from '@/lib/logger';
 
 // Validate Stripe configuration
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
@@ -48,21 +49,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate amount using centralized pricing utility
-    const { PricingUtils } = await import('@/lib/pricing-utils');
-    const paymentAmount = PricingUtils.getBookingAmount({
-      priceAtBooking: booking.service.price,
-      depositAmount: booking.depositAmount,
-      service: {
-        requiresDeposit: booking.service.requiresDeposit,
-        depositAmount: booking.service.depositAmount
-      }
-    });
-    const amountInCents = PricingUtils.toCents(paymentAmount);
+    // SECURITY FIX: Validate payment amount against stored pricing snapshot
+    // This prevents client-side tampering with payment amounts
+    if (!booking.priceSnapshotCents) {
+      return NextResponse.json(
+        { error: 'Booking pricing data corrupted - please create a new booking' },
+        { status: 400 }
+      );
+    }
+
+    // Use the validated pricing snapshot stored during booking creation
+    const amountInCents = booking.priceSnapshotCents;
+
+    // Additional validation: ensure the amount matches expected calculation
+    const depositRequired = booking.service.requiresDeposit && booking.service.depositAmount;
+    const expectedAmountCents = depositRequired 
+      ? Math.round(booking.service.depositAmount.toNumber() * 100)
+      : booking.priceSnapshotCents;
+
+    // Allow for promo code discounts already applied in the snapshot
+    if (amountInCents < 0 || amountInCents > expectedAmountCents) {
+      console.error('Payment amount validation failed', {
+        bookingId: booking.id,
+        snapshotCents: booking.priceSnapshotCents,
+        expectedCents: expectedAmountCents,
+        discountApplied: booking.promoCodeDiscount?.toNumber() || 0
+      });
+      
+      return NextResponse.json(
+        { error: 'Payment amount validation failed' },
+        { status: 400 }
+      );
+    }
 
     if (amountInCents <= 0) {
       return NextResponse.json(
-        { error: 'Invalid deposit amount' },
+        { error: 'No payment required for this booking' },
         { status: 400 }
       );
     }
@@ -88,24 +110,56 @@ export async function POST(request: NextRequest) {
       receipt_email: booking.User_Booking_signerIdToUser?.email || undefined,
     });
 
-    // Store payment intent ID in the database
+    // Store payment intent ID in the booking record for security tracking
     await prisma.booking.update({
       where: { id: bookingId },
       data: {
-        // Store payment intent ID in a field if you have one, or create a Payment record
+        paymentIntentId: paymentIntent.id,
+        securityFlags: {
+          ...booking.securityFlags as any,
+          paymentIntentCreated: true,
+          paymentIntentValidated: true,
+          validatedAmount: amountInCents,
+          createdAt: new Date().toISOString()
+        }
       }
     });
 
-    // Create Payment record
+    // Create Payment record with security validation
     await prisma.payment.create({
       data: {
+        id: `pay_${booking.id}_${Date.now()}`,
         bookingId: booking.id,
-        amount: booking.depositAmount!,
+        amount: amountInCents / 100, // Convert back to decimal for database
         status: 'PENDING',
         provider: 'STRIPE',
-        providerPaymentId: paymentIntent.id,
-        notes: 'Deposit payment'
+        paymentIntentId: paymentIntent.id,
+        notes: `Deposit payment - Amount validated: $${(amountInCents / 100).toFixed(2)}`
       }
+    });
+
+    // Security audit logging
+    await prisma.securityAuditLog.create({
+      data: {
+        userEmail: booking.User_Booking_signerIdToUser?.email || booking.customerEmail || 'unknown',
+        userId: booking.signerId,
+        action: 'PAYMENT_INTENT_CREATED',
+        details: {
+          bookingId: booking.id,
+          paymentIntentId: paymentIntent.id,
+          validatedAmount: amountInCents,
+          originalAmount: booking.service.depositAmount?.toNumber() || booking.service.basePrice.toNumber(),
+          discountApplied: booking.promoCodeDiscount?.toNumber() || 0,
+          serviceId: booking.serviceId
+        },
+        severity: 'INFO'
+      }
+    });
+
+    logger.info('Payment intent created with amount validation', {
+      bookingId: booking.id,
+      paymentIntentId: paymentIntent.id,
+      validatedAmount: amountInCents
     });
 
     return NextResponse.json({

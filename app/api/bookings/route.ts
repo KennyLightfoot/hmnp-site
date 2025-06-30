@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/database-connection';
+import { prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { withAuth, AuthConfig } from '@/lib/auth/unified-middleware';
@@ -15,6 +15,7 @@ import { trackBookingConfirmation, trackLoanSigningBooked, trackRONCompleted, tr
 import { sendGHLMessage } from '../../../lib/ghl-messaging';
 import { GoogleCalendarService } from '../../../lib/google-calendar-disabled';
 import { rateLimiters, rateLimitConfigs } from '@/lib/rate-limiting';
+import { pricingValidator } from '@/lib/security/pricing-validator';
 // Custom fields temporarily disabled - using standard GHL fields and tags
 
 // Using tags-only approach for optimal business operations
@@ -319,9 +320,41 @@ export async function POST(request: NextRequest) {
     // If authenticated, use user data and verify user exists
     if (context.isAuthenticated && user.isAuthenticated) {
       signerUserId = user.id;
-      // If logged in, prefer user email over form email for security
-      signerUserEmail = user.email || body.email;
+      
+      // SECURITY FIX: For authenticated users, ONLY use the authenticated email
+      // Never allow authenticated users to override their email address
+      if (!user.email) {
+        return NextResponse.json(
+          { error: 'Authenticated user account missing email - please contact support' }, 
+          { status: 400 }
+        );
+      }
+      
+      signerUserEmail = user.email;
       signerUserName = user.name ?? null;
+      
+      // Security audit: Log if form email differs from authenticated email
+      if (body.email && body.email.toLowerCase() !== user.email.toLowerCase()) {
+        await prisma.securityAuditLog.create({
+          data: {
+            userEmail: user.email,
+            userId: user.id,
+            action: 'EMAIL_MISMATCH_ATTEMPT',
+            details: {
+              authenticatedEmail: user.email,
+              formEmail: body.email,
+              requestIP: request.headers.get('x-forwarded-for') || 'unknown'
+            },
+            severity: 'WARN'
+          }
+        });
+        
+        console.warn('SECURITY: Authenticated user attempted to use different email', {
+          userId: user.id,
+          authenticatedEmail: user.email,
+          formEmail: body.email
+        });
+      }
       
       console.log("Authenticated booking with USER IDs:", {
         signerUserId,
@@ -347,14 +380,62 @@ export async function POST(request: NextRequest) {
         signerUserId = null; // Will create booking without user reference
       }
     } else {
-      // For guest bookings, use form data
+      // SECURITY: Enhanced validation for guest bookings
+      // Check if email belongs to an existing authenticated user
+      const existingUser = await prisma.user.findUnique({
+        where: { email: signerUserEmail.toLowerCase() },
+        select: { id: true, email: true }
+      });
+      
+      if (existingUser) {
+        // SECURITY FIX: If email belongs to existing user, require authentication
+        await prisma.securityAuditLog.create({
+          data: {
+            userEmail: signerUserEmail,
+            userId: existingUser.id,
+            action: 'GUEST_BOOKING_ATTEMPT_EXISTING_USER',
+            details: {
+              email: signerUserEmail,
+              requestIP: request.headers.get('x-forwarded-for') || 'unknown',
+              userAgent: request.headers.get('user-agent') || 'unknown'
+            },
+            severity: 'WARN'
+          }
+        });
+        
+        return NextResponse.json(
+          { 
+            error: 'An account already exists with this email address. Please sign in to create bookings.',
+            requireAuthentication: true
+          }, 
+          { status: 403 }
+        );
+      }
+      
+      // For guest bookings, validate email format and use form data
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(signerUserEmail)) {
+        return NextResponse.json(
+          { error: 'Please provide a valid email address' }, 
+          { status: 400 }
+        );
+      }
+      
       // Handle both field name formats for compatibility
       const firstName = body.firstName || (body as any).customerName?.split(' ')[0];
       const lastName = body.lastName || (body as any).customerName?.split(' ').slice(1).join(' ');
       const customerName = (body as any).customerName;
       
       signerUserName = customerName || `${firstName || ''} ${lastName || ''}`.trim() || null;
-      console.log("Guest booking with data:", {
+      
+      if (!signerUserName || signerUserName.length < 2) {
+        return NextResponse.json(
+          { error: 'Please provide your full name for the booking' }, 
+          { status: 400 }
+        );
+      }
+      
+      console.log("Guest booking with validated data:", {
         signerUserEmail,
         signerUserName
       });
@@ -396,36 +477,13 @@ export async function POST(request: NextRequest) {
     // Handle phone field compatibility
     const phone = body.phone || (body as any).customerPhone;
 
+    // SECURITY FIX: Use secure server-side pricing validation
+    let pricingResult = null;
     let discountAmount = 0;
-    const appliedPromoCodeNormalized = promoCode?.trim().toUpperCase();
-    const referralProvidedNormalized = referredBy?.trim();
-    let isFirstTimeClient = false; // To track if the client is genuinely new
     let isFirstTimeDiscountApplied = false;
     let isReferralDiscountApplied = false;
-
-    // Check if client is new for FIRST25 discount eligibility
-    try {
-      const existingGhlContact = await ghl.getContactByEmail(signerUserEmail);
-      // getContactByEmail returns the contact object directly, or null if not found or if the API call was successful but no matching contact.
-      if (!existingGhlContact) { // If null, it means no contact was found with that email for the location
-        isFirstTimeClient = true;
-      }
-    } catch (ghlError) {
-      console.warn(`GHL: Could not verify if ${signerUserEmail} is a new client:`, ghlError);
-      // Proceed cautiously, maybe don't apply first-time discount if check fails.
-// Current behavior: isFirstTimeClient remains false, so discount won't apply if this check fails.
-    }
-
-    if (isFirstTimeClient) {
-      if (appliedPromoCodeNormalized === "FIRST25") {
-        discountAmount = 25;
-        isFirstTimeDiscountApplied = true;
-      } else if (referralProvidedNormalized && referralProvidedNormalized.length > 0) {
-        discountAmount = 25;
-        isReferralDiscountApplied = true;
-      }
-    }
-
+    
+    // Get service details first for pricing calculation
     if (!serviceId) {
       return NextResponse.json({ error: 'Service ID is required' }, { status: 400 });
     }
@@ -436,6 +494,48 @@ export async function POST(request: NextRequest) {
 
     if (!service) {
       return NextResponse.json({ error: 'Selected service is not available or not found' }, { status: 404 });
+    }
+
+    const basePrice = service.basePrice.toNumber();
+
+    // Validate promo code if provided
+    if (promoCode?.trim()) {
+      try {
+        pricingResult = await pricingValidator.validatePromoCode({
+          code: promoCode.trim().toUpperCase(),
+          userEmail: signerUserEmail,
+          serviceId: serviceId,
+          bookingAmount: basePrice,
+        });
+        
+        if (pricingResult) {
+          discountAmount = pricingResult.discountAmount;
+          if (pricingResult.appliedPromoCode === "FIRST25") {
+            isFirstTimeDiscountApplied = true;
+          }
+        }
+      } catch (error) {
+        // Invalid promo code format or other validation error
+        console.warn(`Invalid promo code format: ${promoCode}`, error);
+      }
+    }
+    
+    // Validate referral discount if no promo code applied
+    if (!pricingResult && referredBy?.trim()) {
+      try {
+        pricingResult = await pricingValidator.validateReferralDiscount({
+          referrerEmail: referredBy.trim(),
+          newUserEmail: signerUserEmail,
+          serviceId: serviceId,
+        });
+        
+        if (pricingResult?.isReferralDiscount) {
+          discountAmount = pricingResult.discountAmount;
+          isReferralDiscountApplied = true;
+        }
+      } catch (error) {
+        console.warn(`Referral validation failed for ${referredBy}`, error);
+      }
     }
 
         // Determine initial status based on whether payment is required
@@ -501,6 +601,16 @@ export async function POST(request: NextRequest) {
       customerEmail: signerUserEmail,
       // Required timestamp fields
       updatedAt: new Date(),
+      // SECURITY: Store pricing snapshot for payment integrity validation
+      priceSnapshotCents: pricingResult?.priceSnapshotCents || Math.round((service.basePrice.toNumber() - discountAmount) * 100),
+      pricingCalculatedAt: new Date(),
+      isFirstTimeDiscountApplied: isFirstTimeDiscountApplied,
+      isReferralDiscountApplied: isReferralDiscountApplied,
+      securityFlags: {
+        pricingValidated: true,
+        discountSource: pricingResult?.appliedPromoCode ? 'promo_code' : (pricingResult?.isReferralDiscount ? 'referral' : 'none'),
+        validatedAt: new Date().toISOString(),
+      },
       // Additional fields from form for guest bookings will be stored in GHL only
     };
     
@@ -521,9 +631,49 @@ export async function POST(request: NextRequest) {
     console.log('[BOOKING TRANSACTION] Starting atomic booking creation transaction');
     
     const transactionResult = await prisma.$transaction(async (tx) => {
-      console.log('[BOOKING TRANSACTION] Creating booking in transaction');
+      console.log('[BOOKING TRANSACTION] Starting booking creation with race condition protection');
       
-      // Create the booking first
+      // SECURITY FIX: Check for race condition double booking
+      // Note: This checks notary conflicts if notaryId is provided, but most bookings 
+      // are created without a specific notary assigned initially
+      if (scheduledDateTime && bookingData.notaryId) {
+        const existingBooking = await tx.booking.findFirst({
+          where: {
+            notaryId: bookingData.notaryId,
+            scheduledDateTime: new Date(scheduledDateTime),
+            status: {
+              in: ['PAYMENT_PENDING', 'CONFIRMED', 'SCHEDULED']
+            }
+          }
+        });
+        
+        if (existingBooking) {
+          throw new Error(`DOUBLE_BOOKING_PREVENTED: Notary already has a booking at ${scheduledDateTime}`);
+        }
+      }
+      
+      // Additional check: Prevent too many bookings at the same time slot
+      if (scheduledDateTime) {
+        const scheduledTime = new Date(scheduledDateTime);
+        const concurrentBookings = await tx.booking.count({
+          where: {
+            scheduledDateTime: scheduledTime,
+            status: {
+              in: ['PAYMENT_PENDING', 'CONFIRMED', 'SCHEDULED']
+            }
+          }
+        });
+        
+        // Limit concurrent bookings at the same time (adjust based on business capacity)
+        const MAX_CONCURRENT_BOOKINGS = 5;
+        if (concurrentBookings >= MAX_CONCURRENT_BOOKINGS) {
+          throw new Error(`TIME_SLOT_FULL: Maximum capacity reached for ${scheduledDateTime}`);
+        }
+      }
+      
+      console.log('[BOOKING TRANSACTION] Race condition check passed, creating booking');
+      
+      // Create the booking with race condition protection
       const newBooking = await tx.booking.create({
         data: bookingData,
         include: {
@@ -538,6 +688,20 @@ export async function POST(request: NextRequest) {
       });
       
       console.log('[BOOKING TRANSACTION] Booking created:', newBooking.id);
+      
+      // SECURITY: Record promo code usage to prevent reuse
+      if (pricingResult?.appliedPromoCode) {
+        try {
+          await pricingValidator.recordPromoCodeUsage(
+            pricingResult.appliedPromoCode,
+            signerUserEmail
+          );
+          console.log('[SECURITY] Promo code usage recorded:', pricingResult.appliedPromoCode);
+        } catch (error) {
+          console.error('[SECURITY] Failed to record promo code usage:', error);
+          // Don't fail the booking, but log the error
+        }
+      }
       
       // For guest bookings, add client info to the response
       if (!signerUserId) {
@@ -996,10 +1160,27 @@ export async function POST(request: NextRequest) {
     let errorMessage = 'An unexpected error occurred while creating the booking.';
     let statusCode = 500;
 
+    // SECURITY: Handle race condition errors
+    if (errorUnknown instanceof Error) {
+      if (errorUnknown.message.includes('DOUBLE_BOOKING_PREVENTED')) {
+        errorMessage = 'The selected time slot is no longer available. Please choose a different time.';
+        statusCode = 409;
+      } else if (errorUnknown.message.includes('TIME_SLOT_FULL')) {
+        errorMessage = 'The selected time slot has reached maximum capacity. Please choose a different time.';
+        statusCode = 409;
+      }
+    }
+
     if (errorUnknown instanceof Prisma.PrismaClientKnownRequestError) {
       switch (errorUnknown.code) {
         case 'P2002':
-          errorMessage = 'A booking with these details already exists';
+          // Unique constraint violation - likely our double booking prevention
+          const constraint = errorUnknown.meta?.target;
+          if (constraint?.includes('unique_notary_time_slot')) {
+            errorMessage = 'The selected notary is already booked at this time. Please choose a different time or notary.';
+          } else {
+            errorMessage = 'A booking with these details already exists';
+          }
           statusCode = 409;
           break;
         case 'P2025':
