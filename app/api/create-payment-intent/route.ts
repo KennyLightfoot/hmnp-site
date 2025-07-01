@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        service: true,
+        Service: true,
         User_Booking_signerIdToUser: true,
         promoCode: true
       }
@@ -62,9 +62,9 @@ export async function POST(request: NextRequest) {
     const amountInCents = booking.priceSnapshotCents;
 
     // Additional validation: ensure the amount matches expected calculation
-    const depositRequired = booking.service.requiresDeposit && booking.service.depositAmount;
+    const depositRequired = booking.Service.requiresDeposit && booking.Service.depositAmount;
     const expectedAmountCents = depositRequired 
-      ? Math.round(booking.service.depositAmount.toNumber() * 100)
+      ? Math.round((booking.Service.depositAmount?.toNumber() || 0) * 100)
       : booking.priceSnapshotCents;
 
     // Allow for promo code discounts already applied in the snapshot

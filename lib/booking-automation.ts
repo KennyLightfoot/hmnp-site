@@ -22,7 +22,7 @@ export class BookingAutomationService {
         where: { id: bookingId },
         include: {
           User_Booking_signerIdToUser: true,
-          service: true,
+          Service: true,
           Payment: true
         }
       });
@@ -245,7 +245,7 @@ export class BookingAutomationService {
         where: { id: bookingId },
         include: {
           User_Booking_signerIdToUser: true,
-          service: true
+          Service: true
         }
       });
 
@@ -287,7 +287,7 @@ export class BookingAutomationService {
         where: { id: bookingId },
         include: {
           User_Booking_signerIdToUser: true,
-          service: true
+          Service: true
         }
       });
 
@@ -359,7 +359,7 @@ export class BookingAutomationService {
         where: { id: bookingId },
         include: {
           User_Booking_signerIdToUser: true,
-          service: true
+          Service: true
         }
       });
 
@@ -613,7 +613,7 @@ export class BookingAutomationService {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
-          service: true,
+          Service: true,
           User_Booking_signerIdToUser: true
         }
       });
@@ -675,7 +675,7 @@ export class BookingAutomationService {
     try {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
-        include: { service: true }
+        include: { Service: true }
       });
 
       if (!booking) {

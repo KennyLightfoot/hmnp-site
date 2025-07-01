@@ -901,10 +901,10 @@ export const sendBookingConfirmation = async (bookingId: string) => {
 
   const content = {
     subject: 'Booking Confirmation - Houston Mobile Notary Pros',
-    message: `Hi ${recipient.firstName}, your booking for ${booking.service.name} has been confirmed. Details will be sent via email.`,
+    message: `Hi ${recipient.firstName}, your booking for ${booking.Service.name} has been confirmed. Details will be sent via email.`,
     metadata: {
       serviceId: booking.serviceId,
-      serviceName: booking.service.name
+      serviceName: booking.Service.name
     }
   };
 
@@ -959,7 +959,7 @@ export const sendAppointmentReminder = async (
   const { appointmentReminderSms } = await import('@/lib/sms/templates');
   
   const bookingDetails = {
-    serviceName: booking.service.name,
+    serviceName: booking.Service.name,
     date: booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'TBD',
     time: booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase() : 'TBD',
     addressShort: booking.addressCity || 'TBD'
@@ -987,7 +987,7 @@ export const sendAppointmentReminder = async (
       
       <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
         <h3>Appointment Details:</h3>
-        <p><strong>Service:</strong> ${booking.service.name}</p>
+        <p><strong>Service:</strong> ${booking.Service.name}</p>
         <p><strong>Date:</strong> ${booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'TBD'}</p>
         <p><strong>Time:</strong> ${booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'TBD'}</p>
         <p><strong>Location:</strong> ${booking.addressStreet && booking.addressCity && booking.addressState && booking.addressZip ? 

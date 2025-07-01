@@ -232,7 +232,7 @@ export default async function CustomerDashboard() {
                     {/* Price */}
                     {booking.priceAtBooking && (
                       <div className="text-sm">
-                        <span className="font-medium">${booking.priceAtBooking.toNumber()}</span>
+                        <span className="font-medium">${booking.priceAtBooking?.toNumber() || 0}</span>
                       </div>
                     )}
 
@@ -321,7 +321,7 @@ export default async function CustomerDashboard() {
                     {/* Price */}
                     {booking.priceAtBooking && (
                       <div className="text-sm">
-                        <span className="font-medium">${booking.priceAtBooking.toNumber()}</span>
+                        <span className="font-medium">${booking.priceAtBooking?.toNumber() || 0}</span>
                       </div>
                     )}
 

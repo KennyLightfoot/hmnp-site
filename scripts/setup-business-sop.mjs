@@ -20,7 +20,10 @@ const prisma = new PrismaClient();
 const HNIC_CONFIG = {
   email: 'contact@houstonmobilenotarypros.com',
   displayName: 'Houston Mobile Notary Pros', // or "HNIC" to flex
-  password: 'Hmnp128174!',
+  password: process.env.ADMIN_PASSWORD || (() => {
+    console.error("ADMIN_PASSWORD environment variable is required");
+    process.exit(1);
+  })(),
   role: 'ADMIN',
   firstName: 'Houston Mobile Notary',
   lastName: 'Pros'

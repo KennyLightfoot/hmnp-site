@@ -7,7 +7,10 @@ const SALT_ROUNDS = 10
 
 // --- HNIC Configuration per SOP ---
 const ADMIN_EMAIL = "contact@houstonmobilenotarypros.com"
-const ADMIN_PASSWORD = "Hmnp128174!"
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || (() => {
+  console.error("ADMIN_PASSWORD environment variable is required");
+  process.exit(1);
+})()
 const ADMIN_DISPLAY_NAME = "Houston Mobile Notary Pros" // or "HNIC" to flex
 // --- End Configuration ---
 

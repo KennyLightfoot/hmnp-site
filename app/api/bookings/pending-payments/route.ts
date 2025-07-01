@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
         createdAt: 'asc' // Oldest first for urgency calculation
       },
       include: {
-        service: true,
+        Service: true,
         User_Booking_signerIdToUser: {
           select: {
             name: true,

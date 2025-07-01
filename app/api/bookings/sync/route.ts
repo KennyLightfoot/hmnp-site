@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
         addressState: validatedData.addressState
       },
       include: {
-        service: true,
+        Service: true,
         User_Booking_signerIdToUser: true
       }
     });

@@ -21,7 +21,7 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
       where: { id: job.bookingId },
       include: {
         User_Booking_signerIdToUser: true,
-        service: true,
+        Service: true,
         Payment: true,
       }
     }), { maxRetries: 3 });

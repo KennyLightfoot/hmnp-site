@@ -40,7 +40,7 @@ export class CancellationReschedulingService {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        service: true,
+        Service: true,
         Payment: true
       }
     })
@@ -101,7 +101,7 @@ export class CancellationReschedulingService {
       const booking = await prisma.booking.findUnique({
         where: { id: request.bookingId },
         include: {
-          service: true,
+          Service: true,
           Payment: true,
           User_Booking_signerIdToUser: true,
           User_Booking_notaryIdToUser: true
@@ -236,7 +236,7 @@ export class CancellationReschedulingService {
       const booking = await prisma.booking.findUnique({
         where: { id: request.bookingId },
         include: {
-          service: true,
+          Service: true,
           User_Booking_signerIdToUser: true
         }
       })

@@ -60,13 +60,13 @@ export async function GET() {
 
     // Check for proper SOP pricing
     const standardNotary = requiredServices.find(s => 
-      s.serviceType === 'STANDARD_NOTARY' && s.basePrice.toNumber() === 75
+      s.serviceType === 'STANDARD_NOTARY' && s.basePrice?.toNumber() || 0 === 75
     );
     const extendedHours = requiredServices.find(s => 
-      s.serviceType === 'EXTENDED_HOURS_NOTARY' && s.basePrice.toNumber() === 100
+      s.serviceType === 'EXTENDED_HOURS_NOTARY' && s.basePrice?.toNumber() || 0 === 100
     );
     const loanSigning = requiredServices.find(s => 
-      s.serviceType === 'LOAN_SIGNING_SPECIALIST' && s.basePrice.toNumber() === 150
+      s.serviceType === 'LOAN_SIGNING_SPECIALIST' && s.basePrice?.toNumber() || 0 === 150
     );
 
     const compliance = {
@@ -76,7 +76,7 @@ export async function GET() {
       loanSigningCorrect: !!loanSigning,
       allServicesHaveDeposit: requiredServices.every(s => s.requiresDeposit),
       standardDepositAmount: requiredServices.every(s => 
-        s.depositAmount && s.depositAmount.toNumber() === 25
+        s.depositAmount && s.depositAmount?.toNumber() || 0 === 25
       )
     };
 

@@ -275,7 +275,7 @@ export async function GET(request: NextRequest) {
         prisma.booking.findMany({
           where: whereClause,
           include: {
-            service: true,
+            Service: true,
             promoCode: true,
                     User_Booking_signerIdToUser: context.canViewAllBookings ? {
           select: { id: true, name: true, email: true }
@@ -536,7 +536,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Selected service is not available or not found' }, { status: 404 });
     }
 
-    const basePrice = service.basePrice.toNumber();
+    const basePrice = service.basePrice?.toNumber() || 0;
 
     // Validate promo code if provided
     if (promoCode?.trim()) {
@@ -596,7 +596,7 @@ export async function POST(request: NextRequest) {
 
     type BookingWithRelations = Prisma.BookingGetPayload<{
       include: {
-        service: true;
+        Service: true;
         User_Booking_signerIdToUser: { select: { id: true; name: true; email: true } };
       };
     }>;
@@ -1335,7 +1335,7 @@ async function validateTimeSlotAvailability(
   serviceEndTime.setMinutes(serviceEndTime.getMinutes() + duration);
   
   // Check for conflicting bookings
-  type BookingWithService = Prisma.BookingGetPayload<{ include: { service: true } }>;
+  type BookingWithService = Prisma.BookingGetPayload<{ include: { Service: true } }>;
 
   const conflictingBookings: BookingWithService[] = await tx.booking.findMany({
     where: {
@@ -1348,7 +1348,7 @@ async function validateTimeSlotAvailability(
       },
     },
     include: {
-      service: true,
+      Service: true,
     },
   });
   

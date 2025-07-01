@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
         signerId: (session.user as any).id
       },
       include: {
-        service: true,
+        Service: true,
         User_Booking_signerIdToUser: true,
       }
     });
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
           country: 'US'
         } : undefined
       }],
-      transaction_name: `HMNP RON - ${booking.service.name}`,
+      transaction_name: `HMNP RON - ${booking.Service.name}`,
       transaction_type: 'notarization',
       message_to_User_Booking_signerIdToUser: `
 Thank you for choosing Houston Mobile Notary Pros for your Remote Online Notarization!

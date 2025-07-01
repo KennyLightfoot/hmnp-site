@@ -33,7 +33,7 @@ export async function processPaymentJob(job: PaymentProcessingJob): Promise<JobR
         // Get booking to verify it exists
         const booking = await prisma.booking.findUnique({
           where: { id: job.bookingId },
-          include: { User_Booking_signerIdToUser: true, service: true }
+          include: { User_Booking_signerIdToUser: true, Service: true }
         });
         
         if (!booking) {

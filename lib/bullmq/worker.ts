@@ -130,7 +130,7 @@ export class BullQueueWorker {
         where: { id: bookingId },
         include: {
           User_Booking_signerIdToUser: true,
-          service: true,
+          Service: true,
           Payment: true
         }
       });
@@ -560,7 +560,7 @@ export class BullQueueWorker {
       // Get booking details first
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
-        include: { service: true }
+        include: { Service: true }
       });
       
       if (!booking) {

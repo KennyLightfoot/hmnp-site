@@ -172,7 +172,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
       const existingBooking = await tx.booking.findUnique({
         where: { id: bookingId },
         include: {
-        service: true,
+        Service: true,
         User_Booking_signerIdToUser: true,
         Payment: {
           where: {
@@ -200,7 +200,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
         depositStatus: 'COMPLETED',
       },
       include: {
-        service: true,
+        Service: true,
         User_Booking_signerIdToUser: true,
       }
     });
@@ -305,7 +305,7 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, ev
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        service: true,
+        Service: true,
         User_Booking_signerIdToUser: true,
       }
     });
@@ -379,7 +379,7 @@ async function handleChargeRefunded(charge: Stripe.Charge, eventId: string) {
       include: {
         Booking: {
           include: {
-            service: true,
+            Service: true,
           }
         }
       }

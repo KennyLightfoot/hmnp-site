@@ -256,7 +256,7 @@ export async function checkTimeBasedFollowUps(): Promise<void> {
       ghlContactId: { not: null }
     },
     include: {
-      service: true,
+      Service: true,
       User_Booking_signerIdToUser: true
     }
   });
@@ -391,7 +391,7 @@ async function executeFollowUpAction(followUp: ScheduledFollowUp): Promise<void>
   const booking = await prisma.booking.findUnique({
     where: { id: followUp.bookingId },
     include: {
-      service: true,
+      Service: true,
       User_Booking_signerIdToUser: true
     }
   });

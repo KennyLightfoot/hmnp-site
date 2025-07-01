@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     // Check for conflicts
     const hasConflict = conflictingBookings.some(booking => {
       const bookingStart = new Date(booking.scheduledDateTime!);
-      const bookingEnd = addMinutes(bookingStart, booking.service.durationMinutes + bookingSettings.bufferTimeMinutes);
+      const bookingEnd = addMinutes(bookingStart, booking.Service.durationMinutes + bookingSettings.bufferTimeMinutes);
       const requestedStart = requestedDateTime;
       const requestedEnd = addMinutes(requestedDateTime, service.durationMinutes + bookingSettings.bufferTimeMinutes);
       
@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
         notes
       },
       include: {
-        service: true,
+        Service: true,
         User_Booking_signerIdToUser: true,
         promoCode: true
       }
@@ -198,9 +198,9 @@ export async function POST(request: NextRequest) {
         scheduledDateTime: booking.scheduledDateTime,
         status: booking.status,
         service: {
-          name: booking.service.name,
-          duration: booking.service.durationMinutes,
-          price: booking.service.basePrice
+          name: booking.Service.name,
+          duration: booking.Service.durationMinutes,
+          price: booking.Service.basePrice
         },
         customer: {
                   name: booking.User_Booking_signerIdToUser?.name,

@@ -27,7 +27,7 @@ export async function GET(
         signerId: session.user.id // Ensure user owns the booking
       },
       include: {
-        service: true,
+        Service: true,
         ProofTransaction: true
       }
     })

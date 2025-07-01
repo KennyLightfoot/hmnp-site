@@ -88,12 +88,12 @@ export async function GET(
       
       // Service Information
       service: {
-        id: booking.service.id,
-        name: booking.service.name,
-        description: booking.service.description,
-        duration: booking.service.durationMinutes,
-        price: booking.service.basePrice,
-        type: booking.service.serviceType,
+        id: booking.Service.id,
+        name: booking.Service.name,
+        description: booking.Service.description,
+        duration: booking.Service.durationMinutes,
+        price: booking.Service.basePrice,
+        type: booking.Service.serviceType,
       },
       
       // Customer Information
@@ -124,7 +124,7 @@ export async function GET(
       
       // Pricing Information
       pricing: {
-        price: Number(booking.service.basePrice),
+        price: Number(booking.Service.basePrice),
         priceAtBooking: Number(booking.priceAtBooking),
         promoDiscount: booking.promoCodeDiscount ? Number(booking.promoCodeDiscount) : 0,
         depositAmount: booking.depositAmount ? Number(booking.depositAmount) : 0,
@@ -230,7 +230,7 @@ export async function PATCH(
         updatedAt: new Date(),
       },
       include: {
-        service: true,
+        Service: true,
         User_Booking_signerIdToUser: true,
         promoCode: true,
       },

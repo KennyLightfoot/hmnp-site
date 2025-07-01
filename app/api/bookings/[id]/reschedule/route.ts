@@ -41,7 +41,7 @@ export async function POST(
     const existingBooking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        service: true,
+        Service: true,
         User_Booking_signerIdToUser: true
       }
     })
@@ -83,7 +83,7 @@ export async function POST(
     const updatedBooking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        service: true,
+        Service: true,
         User_Booking_signerIdToUser: true
       }
     })
@@ -219,7 +219,7 @@ export async function GET(
     // Find the booking
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
-      include: { service: true, User_Booking_signerIdToUser: true }
+      include: { Service: true, User_Booking_signerIdToUser: true }
     })
 
     if (!booking) {

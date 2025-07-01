@@ -390,7 +390,7 @@ class MarketingAutomation {
       include: {
         Booking_Booking_signerIdToUser: {
           include: {
-            service: true
+            Service: true
           },
           orderBy: {
             createdAt: 'desc'

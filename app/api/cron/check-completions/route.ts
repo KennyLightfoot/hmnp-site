@@ -26,7 +26,7 @@ export async function GET(request: Request) {
         }
       },
       include: {
-        service: true,
+        Service: true,
         User_Booking_signerIdToUser: true
       },
       orderBy: {

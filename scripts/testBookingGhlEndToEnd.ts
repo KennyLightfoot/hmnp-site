@@ -72,7 +72,7 @@ async function testBookingGhlEndToEnd() {
       },
       include: {
         User_Booking_signerIdToUser: true, // Include the related user data
-        service: true
+        Service: true
       }
     });
     

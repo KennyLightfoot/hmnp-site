@@ -58,7 +58,7 @@ export async function updateBookingStatus(
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        service: true,
+        Service: true,
         User_Booking_signerIdToUser: {
           select: { name: true, email: true }
         }
@@ -225,7 +225,7 @@ export async function fullSyncBookingWithGHL(bookingId: string): Promise<Booking
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        service: true,
+        Service: true,
         User_Booking_signerIdToUser: {
           select: { name: true, email: true }
         }

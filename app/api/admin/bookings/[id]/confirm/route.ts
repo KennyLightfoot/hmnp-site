@@ -27,7 +27,7 @@ export async function POST(
       where: { id: bookingId },
       include: {
         User_Booking_signerIdToUser: true,
-        service: true,
+        Service: true,
       }
     });
 
