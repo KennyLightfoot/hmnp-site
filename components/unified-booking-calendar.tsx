@@ -145,7 +145,7 @@ export default function UnifiedBookingCalendar({
   /**
    * Get calendar ID based on service type and number of signers
    */
-  const getCalendarId = (Service: string, signers: number): string => {
+  const getCalendarId = (service: string, signers: number): string => {
     if (!service) return 'r9koQ0kxmuMuWryZkjdo'; // Default fallback
     
     switch (service.toLowerCase()) {
