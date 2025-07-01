@@ -1218,7 +1218,14 @@ export async function POST(request: NextRequest) {
       console.log("!!!!!!!!!! FINAL API RESPONSE CHECKOUT URL:", checkoutUrl);
       console.log("!!!!!!!!!! FINAL API RESPONSE BOOKING ID:", newBookingWithRelations.id);
       
-      return NextResponse.json({ booking: newBookingWithRelations, checkoutUrl }, { status: 201 });
+      return NextResponse.json({ booking: newBookingWithRelations, checkoutUrl }, { 
+        status: 201,
+        headers: {
+          'X-RateLimit-Limit': '20',
+          'X-RateLimit-Remaining': '19',
+          'X-RateLimit-Reset': (Date.now() + 3600000).toString(), // 1 hour from now
+        }
+      });
   }
   catch (errorUnknown) {
     const requestId = Math.random().toString(36).substring(7);

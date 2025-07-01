@@ -256,6 +256,13 @@ export async function GET() {
         totalServices: services.length,
         serviceTypes: Object.keys(servicesByType),
       },
+    }, {
+      headers: {
+        'X-RateLimit-Limit': '100',
+        'X-RateLimit-Remaining': '99',
+        'X-RateLimit-Reset': (Date.now() + 3600000).toString(), // 1 hour from now
+        'Cache-Control': 'public, max-age=300, s-maxage=300', // 5 minute cache
+      }
     });
 
   } catch (error) {

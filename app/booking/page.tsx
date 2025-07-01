@@ -18,7 +18,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { toast } from '@/hooks/use-toast';
 import { ChevronLeft, ChevronRight, Loader2, Sparkles, AlertTriangle, CheckCircle } from 'lucide-react';
 import UnifiedBookingCalendar from '@/components/unified-booking-calendar';
-import { FrontendServiceType, isValidFrontendServiceType } from '@/lib/types/service-types';
+import { FrontendServiceType, isValidFrontendServiceType, mapPrismaToFrontend } from '@/lib/types/service-types';
 import { LocationType } from '@prisma/client';
 import Link from 'next/link';
 
