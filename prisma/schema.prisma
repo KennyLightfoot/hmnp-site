@@ -276,7 +276,7 @@ model Payment {
   refundedAmount  Decimal?        @db.Decimal(10, 2)
   refundedAt      DateTime?
   createdAt       DateTime        @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime        @updatedAt
   Booking         Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])

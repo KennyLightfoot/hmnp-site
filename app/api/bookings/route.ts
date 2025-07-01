@@ -580,6 +580,15 @@ export async function POST(request: NextRequest) {
 
         // Determine initial status based on whether payment is required
     let initialStatus: BookingStatus;
+    
+    // VALIDATION: Ensure deposit requirements are configured correctly
+    if (service.requiresDeposit && (!service.depositAmount || service.depositAmount.toNumber() <= 0)) {
+      console.error(`[BOOKING] Service ${service.id} requires deposit but has invalid depositAmount:`, service.depositAmount);
+      return NextResponse.json({ 
+        error: 'Service configuration error: Invalid deposit amount. Please contact support.' 
+      }, { status: 500 });
+    }
+    
     const priceToConsiderForPayment = (service.requiresDeposit && service.depositAmount && service.depositAmount.toNumber() > 0) 
                                       ? service.depositAmount.toNumber() 
                                       : service.basePrice.toNumber();
@@ -768,7 +777,7 @@ export async function POST(request: NextRequest) {
           bookingId: newBooking.id,
           serviceType: service.key || 'STANDARD_NOTARY',
           bookingDate: new Date(),
-          totalValue: finalAmount,
+          totalValue: finalAmountDueAfterDiscount,
           basePrice: basePrice,
           travelFee: travelFee || 0,
           signerFees: additionalCharges || 0,
@@ -836,30 +845,41 @@ export async function POST(request: NextRequest) {
           const success_url = `${baseUrl}/booking-confirmed?session_id={CHECKOUT_SESSION_ID}`;
           const cancel_url = `${baseUrl}/booking-payment-canceled`;
           
-          // Create Stripe session (this happens outside DB transaction but we validate first)
-          const stripeSession = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
-            line_items: [{
-              price_data: {
-                currency: 'usd',
-                product_data: {
-                  name: `Booking for ${newBooking.Service.name}`,
-                  description: `Service: ${newBooking.Service.name} on ${newBooking.scheduledDateTime ? new Date(newBooking.scheduledDateTime).toLocaleDateString() : 'Date TBD'}`,
+          // VALIDATION: Ensure amount is not zero before creating Stripe session
+          if (amountToChargeInCents <= 0) {
+            throw new Error(`INVALID_PAYMENT_AMOUNT: Cannot charge $0. Amount: ${finalAmountDueAfterDiscount}`);
+          }
+          
+          // Create Stripe session with enhanced error handling
+          let stripeSession;
+          try {
+            stripeSession = await stripe.checkout.sessions.create({
+              payment_method_types: ['card'],
+              line_items: [{
+                price_data: {
+                  currency: 'usd',
+                  product_data: {
+                    name: `Booking for ${newBooking.Service.name}`,
+                    description: `Service: ${newBooking.Service.name} on ${newBooking.scheduledDateTime ? new Date(newBooking.scheduledDateTime).toLocaleDateString() : 'Date TBD'}`,
+                  },
+                  unit_amount: amountToChargeInCents,
                 },
-                unit_amount: amountToChargeInCents,
+                quantity: 1,
+              }],
+              mode: 'payment',
+              success_url: success_url,
+              cancel_url: cancel_url,
+              metadata: {
+                bookingId: newBooking.id,
+                paymentId: paymentRecord.id,
               },
-              quantity: 1,
-            }],
-            mode: 'payment',
-            success_url: success_url,
-            cancel_url: cancel_url,
-            metadata: {
-              bookingId: newBooking.id,
-              paymentId: paymentRecord.id,
-            },
-            // Conditionally add customer_email if signerUserEmail is available
-            ...(signerUserEmail && { customer_email: signerUserEmail }),
-          });
+              // Conditionally add customer_email if signerUserEmail is available
+              ...(signerUserEmail && { customer_email: signerUserEmail }),
+            });
+          } catch (stripeError) {
+            console.error('[STRIPE] Session creation failed:', stripeError);
+            throw new Error(`STRIPE_SESSION_FAILED: ${stripeError.message}`);
+          }
           
           checkoutUrl = stripeSession.url;
           
