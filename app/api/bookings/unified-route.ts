@@ -568,7 +568,7 @@ export async function POST(request: NextRequest) {
       
       // Create booking
       const bookingData: any = {
-        service: { connect: { id: service.id } },
+        Service: { connect: { id: service.id } },
         scheduledDateTime: data.scheduledDateTime ? new Date(data.scheduledDateTime) : null,
         status: initialStatus,
         locationType: data.locationType || 'CLIENT_SPECIFIED_ADDRESS',
@@ -601,7 +601,7 @@ export async function POST(request: NextRequest) {
       const booking = await prisma.booking.create({
         data: bookingData,
         include: {
-          service: true,
+          Service: true,
           User_Booking_signerIdToUser: context.isAuthenticated ? {
             select: { id: true, name: true, email: true }
           } : false,
