@@ -9,7 +9,7 @@
  * Environment: Production-safe with proper error handling
  */
 
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -257,11 +257,9 @@ async function main() {
 }
 
 // Run the migration
-if (require.main === module) {
-  main().catch(console.error);
-}
+main().catch(console.error);
 
-module.exports = {
+export {
   checkDatabaseConnection,
   checkIfMigrationNeeded,
   applyEnhancedPricingMigration,

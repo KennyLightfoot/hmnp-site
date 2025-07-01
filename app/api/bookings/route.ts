@@ -659,7 +659,7 @@ export async function POST(request: NextRequest) {
         discountSource: pricingResult?.appliedPromoCode ? 'promo_code' : (pricingResult?.isReferralDiscount ? 'referral' : 'none'),
         validatedAt: new Date().toISOString(),
       },
-      // Enhanced Pricing Fields (SOP_ENHANCED.md) - safe defaults until migration applied
+      // Enhanced Pricing Fields (SOP_ENHANCED.md) - applied via migration
       calculatedDistance: null, // Will be calculated when service area validation is implemented
       travelFee: 0.00, // Default to 0 for now, will be calculated based on distance
       serviceAreaValidated: false, // Will be validated against service area limits
@@ -728,19 +728,37 @@ export async function POST(request: NextRequest) {
       
       console.log('[BOOKING TRANSACTION] Race condition check passed, creating booking');
       
-      // Create the booking with race condition protection
-      const newBooking = await tx.booking.create({
-        data: bookingData,
-        include: {
-          Service: true,
-          // Only include user relation if we have a signerId
-          ...(signerUserId ? {
-            User_Booking_signerIdToUser: {
-              select: { id: true, name: true, email: true } 
-            }
-          } : {})
+      // Create the booking with race condition protection and enhanced error handling
+      let newBooking;
+      try {
+        newBooking = await tx.booking.create({
+          data: bookingData,
+          include: {
+            Service: true,
+            // Only include user relation if we have a signerId
+            ...(signerUserId ? {
+              User_Booking_signerIdToUser: {
+                select: { id: true, name: true, email: true } 
+              }
+            } : {})
+          }
+        });
+      } catch (dbError) {
+        console.error('[BOOKING TRANSACTION] Database error during booking creation:', dbError);
+        
+        // Check if it's a schema mismatch error
+        if (dbError.message?.includes('column') && dbError.message?.includes('does not exist')) {
+          throw new Error(`DATABASE_SCHEMA_MISMATCH: Missing required database columns. Please contact support. Error: ${dbError.message}`);
         }
-      });
+        
+        // Check if it's a constraint violation
+        if (dbError.code === 'P2002') {
+          throw new Error(`BOOKING_CONFLICT: A booking with these details already exists.`);
+        }
+        
+        // Re-throw other database errors with context
+        throw new Error(`BOOKING_CREATION_FAILED: ${dbError.message}`);
+      }
       
       console.log('[BOOKING TRANSACTION] Booking created:', newBooking.id);
       
