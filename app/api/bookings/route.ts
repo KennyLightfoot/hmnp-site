@@ -642,10 +642,10 @@ export async function POST(request: NextRequest) {
       // Required timestamp fields
       updatedAt: new Date(),
       // SECURITY: Store pricing snapshot for payment integrity validation
-      priceSnapshotCents: pricingResult?.priceSnapshotCents || Math.round((service.basePrice.toNumber() - discountAmount) * 100),
-      pricingCalculatedAt: new Date(),
-      isFirstTimeDiscountApplied: isFirstTimeDiscountApplied,
-      isReferralDiscountApplied: isReferralDiscountApplied,
+      price_snapshot_cents: pricingResult?.priceSnapshotCents || Math.round((service.basePrice.toNumber() - discountAmount) * 100),
+      pricing_calculated_at: new Date(),
+      is_first_time_discount_applied: isFirstTimeDiscountApplied,
+      is_referral_discount_applied: isReferralDiscountApplied,
       securityFlags: {
         pricingValidated: true,
         discountSource: pricingResult?.appliedPromoCode ? 'promo_code' : (pricingResult?.isReferralDiscount ? 'referral' : 'none'),
