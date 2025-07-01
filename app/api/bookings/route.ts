@@ -585,11 +585,19 @@ export async function POST(request: NextRequest) {
                                       : service.basePrice.toNumber();
     const finalAmountDueAfterDiscount = Math.max(0, priceToConsiderForPayment - discountAmount);
 
-    if (finalAmountDueAfterDiscount > 0) {
+    // CRITICAL: ALL appointments must require deposit payment to be confirmed
+    // NEVER auto-confirm bookings without explicit payment verification
+    // Status flow: PAYMENT_PENDING → (payment completed) → CONFIRMED
+    if (service.requiresDeposit && finalAmountDueAfterDiscount > 0) {
       initialStatus = BookingStatus.PAYMENT_PENDING;
+    } else if (service.requiresDeposit && finalAmountDueAfterDiscount <= 0) {
+      // Even if fully discounted, still require payment verification for security
+      // This prevents abuse and ensures proper workflow tracking
+      initialStatus = BookingStatus.PAYMENT_PENDING; 
     } else {
-      // If no payment is due (e.g., free service or fully discounted)
-      initialStatus = BookingStatus.CONFIRMED; 
+      // Services that don't require deposits (rare edge case)
+      // Still require manual confirmation, not auto-confirm
+      initialStatus = BookingStatus.PAYMENT_PENDING;
     }
 
     const priceAtBooking = service.basePrice;
@@ -651,6 +659,13 @@ export async function POST(request: NextRequest) {
         discountSource: pricingResult?.appliedPromoCode ? 'promo_code' : (pricingResult?.isReferralDiscount ? 'referral' : 'none'),
         validatedAt: new Date().toISOString(),
       },
+      // Enhanced Pricing Fields (SOP_ENHANCED.md) - safe defaults until migration applied
+      calculatedDistance: null, // Will be calculated when service area validation is implemented
+      travelFee: 0.00, // Default to 0 for now, will be calculated based on distance
+      serviceAreaValidated: false, // Will be validated against service area limits
+      pricingBreakdown: null, // Will contain complete pricing breakdown JSON
+      distanceCalculationMeta: null, // Will contain distance calculation metadata
+      pricingVersion: "2.0.0", // Current pricing engine version
       // Additional fields from form for guest bookings will be stored in GHL only
     };
     
