@@ -621,7 +621,7 @@ export async function POST(request: NextRequest) {
     // Prepare booking data, handling both authenticated and guest bookings
     const bookingData: any = {
       id: bookingId,
-      service: {
+      Service: {
         connect: { id: service.id }
       },
       scheduledDateTime: scheduledDateTime ? new Date(scheduledDateTime) : null,
