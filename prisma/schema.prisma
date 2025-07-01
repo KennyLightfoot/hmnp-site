@@ -123,6 +123,15 @@ model Booking {
   price_snapshot_cents           Int?
   pricing_calculated_at          DateTime?              @db.Timestamptz(6)
   security_flags                 Json?                  @default("{}")
+  
+  // Enhanced Pricing Fields (SOP_ENHANCED.md)
+  calculatedDistance             Float?                 // Distance in miles from service center (ZIP 77591)
+  travelFee                      Decimal?               @default(0.00) @db.Decimal(10, 2) // Travel fee based on distance
+  serviceAreaValidated           Boolean?               @default(false) // Whether location validated against service area
+  pricingBreakdown               Json?                  // Complete pricing breakdown JSON
+  distanceCalculationMeta        Json?                  // Distance calculation metadata
+  pricingVersion                 String?                @default("2.0.0") @db.VarChar(10) // Pricing engine version
+  
   User_Booking_notaryIdToUser    User?                  @relation("Booking_notaryIdToUser", fields: [notaryId], references: [id])
   PromoCode                      PromoCode?             @relation(fields: [promoCodeId], references: [id])
   Service                        Service                @relation(fields: [serviceId], references: [id])
@@ -134,6 +143,7 @@ model Booking {
   notary_journal                 notary_journal[]
   promo_code_usage               promo_code_usage[]
   stripe_webhook_log             stripe_webhook_log[]
+  PricingAuditLog                PricingAuditLog[]              // Enhanced pricing audit logs
 
   @@unique([notaryId, scheduledDateTime])
   @@index([depositStatus])
@@ -151,6 +161,10 @@ model Booking {
   @@index([service_area_id], map: "idx_booking_service_area")
   @@index([urgency_level], map: "idx_booking_urgency")
   @@index([witness_type], map: "idx_booking_witness_type")
+  @@index([calculatedDistance], map: "idx_booking_calculated_distance")
+  @@index([travelFee], map: "idx_booking_travel_fee")
+  @@index([serviceAreaValidated], map: "idx_booking_service_area_validated")
+  @@index([pricingVersion], map: "idx_booking_pricing_version")
 }
 
 model BusinessSettings {
@@ -403,6 +417,7 @@ model User {
   notary_journal                 notary_journal[]
   notary_profiles                notary_profiles?
   security_audit_log             security_audit_log[]
+  PricingAuditLog                PricingAuditLog[]              // Enhanced pricing audit logs
 }
 
 model VerificationToken {
@@ -724,4 +739,51 @@ enum witness_source {
   customer_provided
   staff_provided
   proof_provided
+}
+
+// Enhanced Pricing Models (SOP_ENHANCED.md)
+
+model PricingAuditLog {
+  id                String   @id @default(cuid())
+  bookingId         String?
+  serviceType       String
+  calculationInputs Json
+  pricingResult     Json
+  distanceData      Json?
+  version           String   @default("2.0.0") @db.VarChar(10)
+  calculatedAt      DateTime @default(now())
+  requestId         String?
+  userId            String?
+
+  // Relations
+  booking           Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([bookingId])
+  @@index([serviceType])
+  @@index([calculatedAt])
+  @@index([requestId])
+}
+
+model ServiceAreaCache {
+  id                    String   @id @default(cuid())
+  addressHash           String   @unique @db.VarChar(64) // SHA-256 hash of normalized address
+  originalAddress       String
+  normalizedAddress     String
+  distanceMiles         Float
+  durationMinutes       Int
+  isWithinStandardArea  Boolean
+  isWithinExtendedArea  Boolean
+  travelFeeStandard     Decimal  @db.Decimal(10, 2)
+  travelFeeExtended     Decimal  @db.Decimal(10, 2)
+  apiSource             String   @default("google_maps") @db.VarChar(20)
+  calculatedAt          DateTime @default(now())
+  expiresAt             DateTime // Cache expiration
+  hitCount              Int      @default(1)
+  lastAccessedAt        DateTime @default(now())
+
+  @@index([addressHash])
+  @@index([distanceMiles])
+  @@index([expiresAt])
+  @@index([lastAccessedAt])
 }

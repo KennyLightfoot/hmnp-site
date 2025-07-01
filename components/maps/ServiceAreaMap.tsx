@@ -2,14 +2,21 @@
 
 import { useCallback, useState } from 'react'
 import { GoogleMap, useJsApiLoader, Circle, Marker } from '@react-google-maps/api'
-import { MapPin, Loader2 } from 'lucide-react'
+import { MapPin, Loader2, Info } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { EnhancedDistanceCalculator } from '@/lib/maps/distance-calculator'
 
 interface ServiceAreaMapProps {
   showServiceAreaCircle?: boolean
   showBusinessMarker?: boolean
+  showMultipleServiceAreas?: boolean
+  selectedServiceType?: 'STANDARD_NOTARY' | 'EXTENDED_HOURS_NOTARY' | 'LOAN_SIGNING_SPECIALIST'
+  onLocationSelect?: (location: { address: string; distance: number; isWithinServiceArea: boolean; travelFee: number }) => void
   zoom?: number
   height?: string
   className?: string
+  showLegend?: boolean
 }
 
 const mapContainerStyle = {
@@ -17,16 +24,37 @@ const mapContainerStyle = {
   height: '450px'
 }
 
+// Service center coordinates (ZIP 77591 - Texas City, TX)
 const center = {
-  lat: 29.4052,
-  lng: -94.9355
+  lat: 29.3838,
+  lng: -94.9027
 }
 
-const serviceAreaOptions = {
-  strokeColor: '#002147',
+// SOP_ENHANCED.md service area configurations
+const SERVICE_AREAS = {
+  STANDARD: {
+    radius: 24140.2, // 15 miles in meters
+    strokeColor: '#22c55e',
+    fillColor: '#22c55e',
+    name: 'Standard Service Area (15 miles)'
+  },
+  EXTENDED: {
+    radius: 32186.9, // 20 miles in meters
+    strokeColor: '#3b82f6',
+    fillColor: '#3b82f6',
+    name: 'Extended Hours Service Area (20 miles)'
+  },
+  MAXIMUM: {
+    radius: 80467.2, // 50 miles in meters
+    strokeColor: '#f59e0b',
+    fillColor: '#f59e0b',
+    name: 'Maximum Service Area (50 miles)'
+  }
+}
+
+const baseCircleOptions = {
   strokeOpacity: 0.8,
   strokeWeight: 2,
-  fillColor: '#002147',
   fillOpacity: 0.1,
 }
 
@@ -34,11 +62,17 @@ const serviceAreaOptions = {
 export default function ServiceAreaMap({
   showServiceAreaCircle = true,
   showBusinessMarker = true,
+  showMultipleServiceAreas = false,
+  selectedServiceType = 'STANDARD_NOTARY',
+  onLocationSelect,
   zoom = 9,
   height = '450px',
-  className = ''
+  className = '',
+  showLegend = false
 }: ServiceAreaMapProps) {
   const [map, setMap] = useState<google.maps.Map | null>(null)
+  const [selectedLocation, setSelectedLocation] = useState<any>(null)
+  const [geocoder, setGeocoder] = useState<google.maps.Geocoder | null>(null)
 
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
@@ -48,7 +82,52 @@ export default function ServiceAreaMap({
 
   const onLoad = useCallback((map: google.maps.Map) => {
     setMap(map)
-  }, [])
+    setGeocoder(new google.maps.Geocoder())
+    
+    // Add click handler for location selection
+    if (onLocationSelect) {
+      map.addListener('click', async (e: google.maps.MapMouseEvent) => {
+        if (e.latLng && geocoder) {
+          try {
+            const response = await geocoder.geocode({ location: e.latLng })
+            if (response.results[0]) {
+              const address = response.results[0].formatted_address
+              const result = await EnhancedDistanceCalculator.calculateDistanceAndValidate(address, selectedServiceType)
+              
+              const locationData = {
+                address,
+                distance: result.distance.miles,
+                isWithinServiceArea: result.serviceArea.isWithinStandardArea || result.serviceArea.isWithinExtendedArea,
+                travelFee: result.pricing.travelFee
+              }
+              
+              setSelectedLocation(locationData)
+              onLocationSelect(locationData)
+              
+              // Add marker for selected location
+              new google.maps.Marker({
+                position: e.latLng,
+                map,
+                title: `${address} - ${result.distance.miles.toFixed(1)} miles`,
+                icon: {
+                  url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+                    <svg width="32" height="40" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M16 0C7.164 0 0 7.164 0 16c0 8.836 16 24 16 24s16-15.164 16-24c0-8.836-7.164-16-16-16z" fill="${locationData.isWithinServiceArea ? '#22c55e' : '#ef4444'}"/>
+                      <circle cx="16" cy="16" r="8" fill="white"/>
+                    </svg>
+                  `)}`,
+                  scaledSize: new google.maps.Size(32, 40),
+                  anchor: new google.maps.Point(16, 40)
+                }
+              })
+            }
+          } catch (error) {
+            console.error('Location selection failed:', error)
+          }
+        }
+      })
+    }
+  }, [onLocationSelect, selectedServiceType, geocoder])
 
   const onUnmount = useCallback(() => {
     setMap(null)
@@ -121,23 +200,102 @@ export default function ServiceAreaMap({
         {showBusinessMarker && (
           <Marker
             position={center}
-            title="Houston Mobile Notary Pros - Texas City, TX 77591"
+            title="Houston Mobile Notary Pros - Service Center (ZIP 77591)"
             icon={markerIcon}
             className="map-marker"
           />
         )}
         
-        {showServiceAreaCircle && (
+        {/* Service Area Circles */}
+        {showServiceAreaCircle && !showMultipleServiceAreas && (
           <Circle
             center={center}
-            radius={32186.9} // 20 miles in meters
+            radius={SERVICE_AREAS[selectedServiceType === 'STANDARD_NOTARY' ? 'STANDARD' : 'EXTENDED'].radius}
             options={{
-              ...serviceAreaOptions,
+              ...baseCircleOptions,
+              strokeColor: SERVICE_AREAS[selectedServiceType === 'STANDARD_NOTARY' ? 'STANDARD' : 'EXTENDED'].strokeColor,
+              fillColor: SERVICE_AREAS[selectedServiceType === 'STANDARD_NOTARY' ? 'STANDARD' : 'EXTENDED'].fillColor,
               className: 'service-area-circle'
             }}
           />
         )}
+        
+        {/* Multiple Service Areas */}
+        {showMultipleServiceAreas && (
+          <>
+            <Circle
+              center={center}
+              radius={SERVICE_AREAS.STANDARD.radius}
+              options={{
+                ...baseCircleOptions,
+                strokeColor: SERVICE_AREAS.STANDARD.strokeColor,
+                fillColor: SERVICE_AREAS.STANDARD.fillColor
+              }}
+            />
+            <Circle
+              center={center}
+              radius={SERVICE_AREAS.EXTENDED.radius}
+              options={{
+                ...baseCircleOptions,
+                strokeColor: SERVICE_AREAS.EXTENDED.strokeColor,
+                fillColor: SERVICE_AREAS.EXTENDED.fillColor
+              }}
+            />
+            <Circle
+              center={center}
+              radius={SERVICE_AREAS.MAXIMUM.radius}
+              options={{
+                ...baseCircleOptions,
+                strokeColor: SERVICE_AREAS.MAXIMUM.strokeColor,
+                fillColor: SERVICE_AREAS.MAXIMUM.fillColor
+              }}
+            />
+          </>
+        )}
       </GoogleMap>
+      
+      {/* Service Area Legend */}
+      {showLegend && (
+        <div className="mt-4 space-y-2">
+          <h4 className="font-semibold text-sm flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            Service Areas
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-green-500"></div>
+              <span className="text-xs">Standard (15 mi) - No travel fee</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+              <span className="text-xs">Extended (20 mi) - Travel fee may apply</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-amber-500"></div>
+              <span className="text-xs">Maximum (50 mi) - Travel fee applies</span>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Selected Location Info */}
+      {selectedLocation && (
+        <Alert className="mt-4">
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            <div className="space-y-1">
+              <div><strong>Selected:</strong> {selectedLocation.address}</div>
+              <div><strong>Distance:</strong> {selectedLocation.distance.toFixed(1)} miles</div>
+              {selectedLocation.travelFee > 0 && (
+                <div><strong>Travel Fee:</strong> ${selectedLocation.travelFee.toFixed(2)}</div>
+              )}
+              <Badge variant={selectedLocation.isWithinServiceArea ? "default" : "destructive"}>
+                {selectedLocation.isWithinServiceArea ? "Within Service Area" : "Outside Service Area"}
+              </Badge>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   )
 }
