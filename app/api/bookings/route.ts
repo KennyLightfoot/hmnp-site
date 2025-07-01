@@ -646,7 +646,7 @@ export async function POST(request: NextRequest) {
       pricing_calculated_at: new Date(),
       is_first_time_discount_applied: isFirstTimeDiscountApplied,
       is_referral_discount_applied: isReferralDiscountApplied,
-      securityFlags: {
+      security_flags: {
         pricingValidated: true,
         discountSource: pricingResult?.appliedPromoCode ? 'promo_code' : (pricingResult?.isReferralDiscount ? 'referral' : 'none'),
         validatedAt: new Date().toISOString(),
