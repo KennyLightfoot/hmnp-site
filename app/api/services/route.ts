@@ -315,8 +315,8 @@ export async function GET() {
         // Provide mock services as fallback
         services: {
           all: [
-            { id: 'fallback-1', name: 'Standard Notary', price: 75, basePrice: 75, type: 'STANDARD_NOTARY', serviceType: 'STANDARD_NOTARY', duration: 60, requiresDeposit: false, depositAmount: 0, isActive: true },
-            { id: 'fallback-2', name: 'Extended Hours Notary', price: 100, basePrice: 100, type: 'EXTENDED_HOURS_NOTARY', serviceType: 'EXTENDED_HOURS_NOTARY', duration: 90, requiresDeposit: false, depositAmount: 0, isActive: true },
+            { id: 'fallback-1', name: 'Standard Notary', price: 75, basePrice: 75, type: 'STANDARD_NOTARY', serviceType: 'STANDARD_NOTARY', duration: 60, requiresDeposit: true, depositAmount: 25, isActive: true },
+            { id: 'fallback-2', name: 'Extended Hours Notary', price: 100, basePrice: 100, type: 'EXTENDED_HOURS_NOTARY', serviceType: 'EXTENDED_HOURS_NOTARY', duration: 90, requiresDeposit: true, depositAmount: 35, isActive: true },
             { id: 'fallback-3', name: 'Loan Signing Specialist', price: 150, basePrice: 150, type: 'LOAN_SIGNING_SPECIALIST', serviceType: 'LOAN_SIGNING_SPECIALIST', duration: 120, requiresDeposit: true, depositAmount: 50, isActive: true }
           ]
         }
