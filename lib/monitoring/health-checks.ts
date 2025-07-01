@@ -337,14 +337,32 @@ async function checkPaymentSystemHealth(): Promise<HealthCheckResult> {
       },
     });
     
+    // Test Stripe connectivity using centralized client (safe from header corruption)
+    let stripeStatus = 'unknown';
+    try {
+      if (process.env.STRIPE_SECRET_KEY) {
+        const { getStripeClient } = await import('@/lib/stripe-client');
+        const stripe = getStripeClient();
+        // Simple API call to test connectivity without manual headers
+        await stripe.balance.retrieve();
+        stripeStatus = 'healthy';
+      } else {
+        stripeStatus = 'not_configured';
+      }
+    } catch (stripeError) {
+      console.warn('[HEALTH_CHECK] Stripe connectivity test failed:', stripeError);
+      stripeStatus = 'degraded';
+    }
+    
     return {
       name: 'payment_system',
-      status: 'healthy',
+      status: stripeStatus === 'healthy' ? 'healthy' : 'degraded',
       responseTime: Date.now() - start,
-      message: 'Payment system operational',
+      message: `Payment system operational, Stripe: ${stripeStatus}`,
       details: {
         recentPayments24h: recentPayments,
         pendingPayments24h: pendingPayments,
+        stripeConnectivity: stripeStatus,
       },
       timestamp: new Date().toISOString(),
     };

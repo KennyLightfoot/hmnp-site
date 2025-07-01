@@ -70,8 +70,8 @@ import * as ghl from '@/lib/ghl'; // Import GHL helper utility
 import { convertCustomFieldsArrayToObject } from '@/lib/ghl'; // Import the new utility function
 import type { GhlContact, GhlCustomField } from '@/lib/ghl'; // Import GHL types
 
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-const stripe = stripeSecretKey ? new Stripe(stripeSecretKey, { apiVersion: '2023-10-16' }) : null;
+// Use centralized Stripe client for consistent configuration
+import { getStripeClient, createCheckoutSession } from '@/lib/stripe-client';
 
 // Input validation schema for booking creation
 const createBookingSchema = z.object({
@@ -823,7 +823,7 @@ export async function POST(request: NextRequest) {
       let paymentRecord: any = null;
       
       // Handle payment setup if required
-      if (initialStatus === BookingStatus.PAYMENT_PENDING && stripe && finalAmountDueAfterDiscount > 0) {
+      if (initialStatus === BookingStatus.PAYMENT_PENDING && process.env.STRIPE_SECRET_KEY && finalAmountDueAfterDiscount > 0) {
         console.log('[BOOKING TRANSACTION] Setting up payment for booking:', newBooking.id);
         
         try {
@@ -850,31 +850,16 @@ export async function POST(request: NextRequest) {
             throw new Error(`INVALID_PAYMENT_AMOUNT: Cannot charge $0. Amount: ${finalAmountDueAfterDiscount}`);
           }
           
-          // Create Stripe session with enhanced error handling
+          // Create Stripe session using centralized client
           let stripeSession;
           try {
-            stripeSession = await stripe.checkout.sessions.create({
-              payment_method_types: ['card'],
-              line_items: [{
-                price_data: {
-                  currency: 'usd',
-                  product_data: {
-                    name: `Booking for ${newBooking.Service.name}`,
-                    description: `Service: ${newBooking.Service.name} on ${newBooking.scheduledDateTime ? new Date(newBooking.scheduledDateTime).toLocaleDateString() : 'Date TBD'}`,
-                  },
-                  unit_amount: amountToChargeInCents,
-                },
-                quantity: 1,
-              }],
-              mode: 'payment',
-              success_url: success_url,
-              cancel_url: cancel_url,
-              metadata: {
-                bookingId: newBooking.id,
-                paymentId: paymentRecord.id,
-              },
-              // Conditionally add customer_email if signerUserEmail is available
-              ...(signerUserEmail && { customer_email: signerUserEmail }),
+            stripeSession = await createCheckoutSession({
+              amount: finalAmountDueAfterDiscount,
+              bookingId: newBooking.id,
+              paymentId: paymentRecord.id,
+              serviceName: newBooking.Service.name,
+              scheduledDate: newBooking.scheduledDateTime ? new Date(newBooking.scheduledDateTime) : undefined,
+              customerEmail: signerUserEmail || undefined,
             });
           } catch (stripeError) {
             console.error('[STRIPE] Session creation failed:', stripeError);
