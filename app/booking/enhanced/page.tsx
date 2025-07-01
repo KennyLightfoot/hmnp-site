@@ -36,6 +36,7 @@ import { toast } from '@/hooks/use-toast';
 import UnifiedBookingCalendar from '@/components/unified-booking-calendar';
 import { EnhancedPricingComponent } from '@/components/booking/EnhancedPricingEngine';
 import ServiceAreaMap from '@/components/maps/ServiceAreaMap';
+import { pwaManager } from '@/lib/pwa/service-worker';
 
 // Form validation schema
 const enhancedBookingSchema = z.object({
@@ -117,6 +118,8 @@ export default function EnhancedBookingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pricingResult, setPricingResult] = useState<any>(null);
   const [locationValidated, setLocationValidated] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
 
   const form = useForm<FormData>({
     resolver: zodResolver(enhancedBookingSchema),
@@ -132,6 +135,31 @@ export default function EnhancedBookingPage() {
 
   useEffect(() => {
     fetchServices();
+    
+    // PWA Setup
+    const setupPWA = async () => {
+      setIsOffline(pwaManager.isOffline());
+      
+      // Listen for offline status changes
+      const handleOnline = () => setIsOffline(false);
+      const handleOffline = () => setIsOffline(true);
+      
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+      
+      // Get install prompt
+      const prompt = await pwaManager.getInstallPrompt();
+      if (prompt) {
+        setInstallPrompt(prompt);
+      }
+      
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    };
+    
+    setupPWA();
   }, []);
 
   // Auto-advance logic based on form completion
@@ -277,6 +305,24 @@ export default function EnhancedBookingPage() {
         pricingVersion: '2.0.0'
       };
 
+      // Check if offline and handle accordingly
+      if (isOffline || pwaManager.isOffline()) {
+        const offlineStored = await pwaManager.storeOfflineBooking(bookingData);
+        
+        if (offlineStored) {
+          toast({
+            title: 'Booking Saved Offline',
+            description: 'Your booking has been saved and will be submitted when you\'re back online.',
+          });
+          
+          // Show offline bookings list or redirect to a confirmation page
+          router.push('/booking/offline-confirmation');
+        } else {
+          throw new Error('Failed to save booking offline');
+        }
+        return;
+      }
+
       const response = await fetch('/api/bookings/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -298,6 +344,29 @@ export default function EnhancedBookingPage() {
       
     } catch (error) {
       console.error('Booking submission error:', error);
+      
+      // If online request fails, try to store offline as fallback
+      if (!isOffline && navigator.onLine) {
+        const fallbackStored = await pwaManager.storeOfflineBooking({
+          ...data,
+          pricingBreakdown: pricingResult.pricing,
+          calculatedDistance: pricingResult.pricing.locationFees.distance,
+          travelFee: pricingResult.pricing.locationFees.travelFee,
+          serviceAreaValidated: locationValidated,
+          pricingVersion: '2.0.0'
+        });
+        
+        if (fallbackStored) {
+          toast({
+            title: 'Booking Saved for Later',
+            description: 'Network error occurred. Your booking has been saved and will be submitted when connection is restored.',
+            variant: 'default',
+          });
+          router.push('/booking/offline-confirmation');
+          return;
+        }
+      }
+      
       toast({
         title: 'Booking Failed',
         description: 'There was an error creating your booking. Please try again.',
@@ -320,6 +389,40 @@ export default function EnhancedBookingPage() {
             <h1 className="text-3xl font-bold text-gray-900">Enhanced Booking Experience</h1>
           </div>
           <p className="text-lg text-gray-600">Professional notary services with real-time pricing and instant booking</p>
+          
+          {/* Offline Status & PWA Install */}
+          <div className="flex items-center justify-center gap-4 mt-4">
+            {isOffline && (
+              <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                Offline Mode - Bookings will sync when reconnected
+              </Badge>
+            )}
+            
+            {installPrompt && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={async () => {
+                  try {
+                    await installPrompt.prompt();
+                    const result = await installPrompt.userChoice;
+                    if (result.outcome === 'accepted') {
+                      setInstallPrompt(null);
+                      toast({
+                        title: 'App Installed!',
+                        description: 'You can now use HMNP Booking offline.',
+                      });
+                    }
+                  } catch (error) {
+                    console.error('Install prompt error:', error);
+                  }
+                }}
+              >
+                📱 Install App
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Progress Bar */}

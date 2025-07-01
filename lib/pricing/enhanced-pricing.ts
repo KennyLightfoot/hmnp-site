@@ -19,7 +19,7 @@ import { logger } from '@/lib/logger';
 const PRICING_CONFIG = {
   // Base Service Prices
   STANDARD_NOTARY: 75,
-  EXTENDED_HOURS: 100,
+  EXTENDED_HOURS_PRICE: 100,
   LOAN_SIGNING: 150,
   
   // Signer Fees
@@ -241,7 +241,7 @@ export class EnhancedPricingEngine {
           id: 'extended-hours',
           type: 'EXTENDED_HOURS_NOTARY',
           name: 'Extended Hours Notary',
-          basePrice: PRICING_CONFIG.EXTENDED_HOURS,
+          basePrice: PRICING_CONFIG.EXTENDED_HOURS_PRICE,
           duration: 90,
           maxDocuments: PRICING_CONFIG.EXTENDED_MAX_DOCS,
           maxSigners: PRICING_CONFIG.EXTENDED_MAX_SIGNERS
@@ -259,7 +259,7 @@ export class EnhancedPricingEngine {
           id: 'business-solutions',
           type: 'BUSINESS_SOLUTIONS',
           name: 'Business Document Solutions',
-          basePrice: PRICING_CONFIG.EXTENDED_HOURS,
+          basePrice: PRICING_CONFIG.EXTENDED_HOURS_PRICE,
           duration: 120
         };
       default:

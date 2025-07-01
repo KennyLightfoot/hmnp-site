@@ -16,6 +16,7 @@ import { sendGHLMessage } from '../../../lib/ghl-messaging';
 import { GoogleCalendarService } from '../../../lib/google-calendar-disabled';
 import { rateLimiters, rateLimitConfigs } from '@/lib/rate-limiting';
 import { pricingValidator } from '@/lib/security/pricing-validator';
+import { kpiTracker } from '@/lib/analytics/kpi-tracker';
 // Custom fields temporarily disabled - using standard GHL fields and tags
 
 // Using tags-only approach for optimal business operations
@@ -727,6 +728,34 @@ export async function POST(request: NextRequest) {
       });
       
       console.log('[BOOKING TRANSACTION] Booking created:', newBooking.id);
+      
+      // Track booking for analytics and KPIs
+      try {
+        await kpiTracker.trackBooking({
+          bookingId: newBooking.id,
+          serviceType: service.key || 'STANDARD_NOTARY',
+          bookingDate: new Date(),
+          totalValue: finalAmount,
+          basePrice: basePrice,
+          travelFee: travelFee || 0,
+          signerFees: additionalCharges || 0,
+          discounts: discountAmount,
+          distance: travelMileage || 0,
+          location: {
+            city: addressCity || 'Unknown',
+            state: addressState || 'TX',
+            zip: addressZip || '00000'
+          },
+          customerSegment: signerUserId ? 'returning' : 'new',
+          bookingSource: 'website',
+          timeToBook: 0, // Would track from session start in production
+          status: 'pending'
+        });
+        console.log('[ANALYTICS] Booking tracked for KPI analysis:', newBooking.id);
+      } catch (kpiError) {
+        console.error('[ANALYTICS] Failed to track booking for KPIs:', kpiError);
+        // Don't fail the booking for analytics issues
+      }
       
       // SECURITY: Record promo code usage to prevent reuse
       if (pricingResult?.appliedPromoCode) {

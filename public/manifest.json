@@ -1,15 +1,15 @@
 {
   "name": "Houston Mobile Notary Pros",
-  "short_name": "HMNP",
-  "description": "Professional mobile and remote online notary services in Houston, Texas",
-  "start_url": "/dashboard",
+  "short_name": "HMNP Booking",
+  "description": "Professional mobile notary services in Houston with real-time booking, pricing, and PWA offline capability",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#0066cc",
+  "theme_color": "#002147",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en-US",
-  "categories": ["business", "productivity"],
+  "categories": ["business", "productivity", "utilities"],
   "screenshots": [
     {
       "src": "/screenshots/dashboard-mobile.svg",
@@ -85,34 +85,64 @@
   ],
   "shortcuts": [
     {
-      "name": "Book Service",
-      "short_name": "Book",
-      "description": "Book a notary service",
-      "url": "/booking",
+      "name": "Enhanced Booking",
+      "short_name": "Book Enhanced",
+      "description": "Advanced booking with real-time pricing",
+      "url": "/booking/enhanced",
       "icons": [{ "src": "/icons/shortcut-book.svg", "sizes": "96x96" }]
     },
     {
+      "name": "Standard Notary",
+      "short_name": "Standard",
+      "description": "Quick book standard notary service",
+      "url": "/booking/enhanced?service=standard-notary",
+      "icons": [{ "src": "/icons/shortcut-book.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Loan Signing",
+      "short_name": "Loan Docs",
+      "description": "Quick book loan signing specialist",
+      "url": "/booking/enhanced?service=loan-signing",
+      "icons": [{ "src": "/icons/shortcut-bookings.svg", "sizes": "96x96" }]
+    },
+    {
       "name": "My Bookings",
-      "short_name": "Bookings", 
-      "description": "View your booking history",
+      "short_name": "Dashboard", 
+      "description": "View booking history and status",
       "url": "/dashboard",
       "icons": [{ "src": "/icons/shortcut-bookings.svg", "sizes": "96x96" }]
     }
   ],
   "share_target": {
-    "action": "/share-target",
-    "method": "POST",
-    "enctype": "multipart/form-data",
+    "action": "/booking/enhanced",
+    "method": "GET",
     "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url",
-      "files": [
-        {
-          "name": "documents",
-          "accept": ["image/*", "application/pdf"]
-        }
-      ]
+      "title": "service",
+      "text": "notes",
+      "url": "ref"
     }
-  }
+  },
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "mailto",
+      "url": "/contact?email=%s"
+    },
+    {
+      "protocol": "tel",
+      "url": "/contact?phone=%s"
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://houstonmobilenotarypros.com/manifest.json"
+    }
+  ]
 } 
