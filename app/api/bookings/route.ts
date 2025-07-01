@@ -241,8 +241,11 @@ export async function GET(request: NextRequest) {
       const { searchParams } = new URL(request.url);
       const locationType = searchParams.get('locationType') as LocationType | null;
       const status = searchParams.get('status') as BookingStatus | null;
-      const page = parseInt(searchParams.get('page') || '1');
-      const limit = parseInt(searchParams.get('limit') || '10');
+      
+      // Safe pagination with proper limits
+      const { parsePaginationParams, createPaginationResult, getPrismaQueryParams, getPaginationLimits } = await import('@/lib/utils/pagination');
+      const paginationLimits = getPaginationLimits(context.canViewAllBookings ? 'admin' : 'bookings');
+      const paginationParams = parsePaginationParams(searchParams, paginationLimits);
 
       // Build where clause based on user role and filters
       let whereClause: any = {};
@@ -277,26 +280,23 @@ export async function GET(request: NextRequest) {
           include: {
             Service: true,
             promoCode: true,
-                    User_Booking_signerIdToUser: context.canViewAllBookings ? {
-          select: { id: true, name: true, email: true }
-        } : false,
+            User_Booking_signerIdToUser: context.canViewAllBookings ? {
+              select: { id: true, name: true, email: true }
+            } : false,
             NotarizationDocument: true, // Include RON documents
           },
           orderBy: { createdAt: 'desc' },
-          skip: (page - 1) * limit,
-          take: limit,
+          ...getPrismaQueryParams(paginationParams),
         }),
         prisma.booking.count({ where: whereClause }),
       ]);
 
+      // Create standardized pagination response
+      const result = createPaginationResult(bookings, total, paginationParams);
+
       return NextResponse.json({
-        bookings,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit),
-        },
+        bookings: result.data,
+        pagination: result.pagination,
       });
 
     } catch (error) {

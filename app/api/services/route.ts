@@ -1,10 +1,28 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/database-connection';
 import { mapPrismaToFrontend, getServiceDisplayName } from '@/lib/types/service-types';
+import { cache } from '@/lib/cache';
 
 export async function GET() {
   try {
     console.log('🔍 Services API: Starting request...');
+    
+    // Check cache first
+    const cacheKey = 'services:active';
+    const cachedServices = await cache.get(cacheKey);
+    
+    if (cachedServices) {
+      console.log('✅ Services API: Returning cached data');
+      return NextResponse.json(cachedServices, {
+        headers: {
+          'X-Cache': 'HIT',
+          'X-RateLimit-Limit': '100',
+          'X-RateLimit-Remaining': '99',
+          'X-RateLimit-Reset': (Date.now() + 3600000).toString(),
+          'Cache-Control': 'public, max-age=300, s-maxage=300',
+        }
+      });
+    }
     
     // Test database connectivity with timeout
     const connectivityTest = await Promise.race([
@@ -224,7 +242,7 @@ export async function GET() {
       'SUPPORT_SERVICE': 'Support Services',
     };
 
-    return NextResponse.json({
+    const responseData = {
       success: true,
       services: {
         all: services.map(service => {
@@ -255,13 +273,25 @@ export async function GET() {
       meta: {
         totalServices: services.length,
         serviceTypes: Object.keys(servicesByType),
+        cached: false,
       },
-    }, {
+    };
+    
+    // Cache the response for 5 minutes
+    await cache.set(cacheKey, responseData, {
+      ttl: 300, // 5 minutes
+      tags: ['services', 'public-data']
+    });
+    
+    console.log('✅ Services API: Data cached successfully');
+    
+    return NextResponse.json(responseData, {
       headers: {
+        'X-Cache': 'MISS',
         'X-RateLimit-Limit': '100',
         'X-RateLimit-Remaining': '99',
-        'X-RateLimit-Reset': (Date.now() + 3600000).toString(), // 1 hour from now
-        'Cache-Control': 'public, max-age=300, s-maxage=300', // 5 minute cache
+        'X-RateLimit-Reset': (Date.now() + 3600000).toString(),
+        'Cache-Control': 'public, max-age=300, s-maxage=300',
       }
     });
 

@@ -60,6 +60,27 @@ export async function GET(request: NextRequest) {
     };
 
     console.log(`[AVAILABILITY API ${requestId}] Raw query params:`, queryParams);
+    
+    // Check cache first for availability data
+    const cacheKey = `availability:${queryParams.serviceId}:${queryParams.date}:${queryParams.timezone || 'default'}`;
+    const cachedAvailability = await cache.get(cacheKey);
+    
+    if (cachedAvailability) {
+      console.log(`[AVAILABILITY API ${requestId}] Returning cached availability data`);
+      return NextResponse.json({
+        ...cachedAvailability,
+        meta: {
+          ...cachedAvailability.meta,
+          cached: true,
+          cacheKey
+        }
+      }, {
+        headers: {
+          'X-Cache': 'HIT',
+          'Cache-Control': 'public, max-age=300, s-maxage=300',
+        }
+      });
+    }
 
     // Input validation with detailed error reporting
     let validatedParams;
@@ -274,8 +295,8 @@ export async function GET(request: NextRequest) {
       processingTimeMs: processingTime
     });
 
-    // Include timezone information in the response
-    return NextResponse.json({
+    // Prepare response data
+    const responseData = {
       date: validatedParams.date,
       availableSlots,
       serviceInfo: {
@@ -292,6 +313,27 @@ export async function GET(request: NextRequest) {
         clientTimezone,
         timezoneSupported: true,
       },
+      meta: {
+        cached: false,
+        processingTimeMs: processingTime,
+        requestId
+      }
+    };
+    
+    // Cache the availability data for 5 minutes
+    await cache.set(cacheKey, responseData, {
+      ttl: 300, // 5 minutes
+      tags: ['availability', `service:${validatedParams.serviceId}`, 'time-sensitive']
+    });
+    
+    console.log(`[AVAILABILITY API ${requestId}] Response cached with key: ${cacheKey}`);
+    
+    // Include timezone information in the response
+    return NextResponse.json(responseData, {
+      headers: {
+        'X-Cache': 'MISS',
+        'Cache-Control': 'public, max-age=300, s-maxage=300',
+      }
     });
 
   } catch (error) {

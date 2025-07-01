@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { cache } from '@/lib/cache';
 
 const prisma = new PrismaClient();
 
@@ -44,9 +45,21 @@ class SettingsService {
   }
 
   async getSetting<T = any>(key: string, defaultValue?: T): Promise<T> {
-    // Check cache first
+    // Check memory cache first
     if (this.isCacheValid(key)) {
       return this.cache.get(key)!.value;
+    }
+
+    // Check Redis cache
+    const redisCacheKey = `settings:${key}`;
+    const redisCached = await cache.get(redisCacheKey);
+    if (redisCached !== null) {
+      // Store in memory cache for faster access
+      this.cache.set(key, {
+        value: redisCached,
+        expiry: Date.now() + this.CACHE_TTL
+      });
+      return redisCached;
     }
 
     try {
@@ -60,10 +73,16 @@ class SettingsService {
 
       const parsedValue = this.parseValue(setting.value, setting.dataType);
       
-      // Cache the result
+      // Cache in memory
       this.cache.set(key, {
         value: parsedValue,
         expiry: Date.now() + this.CACHE_TTL
+      });
+
+      // Cache in Redis for longer persistence
+      await cache.set(redisCacheKey, parsedValue, {
+        ttl: 1800, // 30 minutes
+        tags: ['settings', 'business-config']
       });
 
       return parsedValue;
@@ -96,8 +115,12 @@ class SettingsService {
         }
       });
 
-      // Clear cache for this key
+      // Clear both memory and Redis cache for this key
       this.cache.delete(key);
+      await cache.delete(`settings:${key}`);
+      
+      // Also invalidate related cache tags
+      await cache.invalidateByTags(['settings', 'business-config']);
     } catch (error) {
       console.error(`Error setting ${key}:`, error);
       throw error;
