@@ -416,20 +416,30 @@ export default function BookingPage() {
       }
 
       if (result.booking?.id) {
-        if (result.payment?.clientSecret) {
-          // Redirect to payment
+        if (result.checkoutUrl) {
+          // Redirect to Stripe checkout for payment
+          console.log('Payment required, redirecting to Stripe checkout:', result.checkoutUrl);
           toast({
             title: 'Payment Required',
             description: 'Redirecting to secure payment...',
           });
-          router.push(`/checkout?bookingId=${result.booking.id}&paymentIntentId=${result.payment.paymentIntentId}&clientSecret=${result.payment.clientSecret}&amount=${result.payment.amount}`);
-        } else {
-          // Booking confirmed
+          window.location.href = result.checkoutUrl;
+        } else if (result.paymentRequired === false) {
+          // Booking confirmed without payment
+          console.log('Booking confirmed without payment required');
           toast({
             title: 'Booking Confirmed!',
             description: `Thank you, ${data.firstName}! Your booking has been processed.`,
           });
           router.push(`/booking/confirmation/${result.booking.id}`);
+        } else {
+          // Booking created but may need manual payment handling
+          console.log('Booking created, checking if payment needed via payment page');
+          toast({
+            title: 'Booking Created',
+            description: `Thank you, ${data.firstName}! Please complete your payment.`,
+          });
+          router.push(`/payment/${result.booking.id}`);
         }
       } else {
         throw new Error('Booking processed but ID missing');

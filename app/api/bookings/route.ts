@@ -1218,7 +1218,13 @@ export async function POST(request: NextRequest) {
       console.log("!!!!!!!!!! FINAL API RESPONSE CHECKOUT URL:", checkoutUrl);
       console.log("!!!!!!!!!! FINAL API RESPONSE BOOKING ID:", newBookingWithRelations.id);
       
-      return NextResponse.json({ booking: newBookingWithRelations, checkoutUrl }, { 
+      return NextResponse.json({ 
+        booking: newBookingWithRelations, 
+        checkoutUrl,
+        paymentRequired: initialStatus === BookingStatus.PAYMENT_PENDING,
+        depositAmount: finalAmountDueAfterDiscount > 0 ? finalAmountDueAfterDiscount : 0,
+        success: true
+      }, { 
         status: 201,
         headers: {
           'X-RateLimit-Limit': '20',
