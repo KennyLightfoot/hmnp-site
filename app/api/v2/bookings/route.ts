@@ -32,7 +32,19 @@ const CreateBookingSchema = z.object({
   customerPhone: z.string().regex(/^[\+]?[\d\s\(\)\-\.]{10,}$/, 'Valid phone number is required').optional(),
   
   // Scheduling
-  scheduledDateTime: z.string().datetime('Invalid date format'),
+  scheduledDateTime: z.string()
+    .refine((date) => {
+      try {
+        // Handle datetime-local format (YYYY-MM-DDTHH:mm)
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(date)) {
+          return !isNaN(new Date(date + ':00').getTime());
+        }
+        // Handle full ISO format
+        return !isNaN(new Date(date).getTime());
+      } catch {
+        return false;
+      }
+    }, 'Invalid date format'),
   
   // Location (required for mobile services)
   locationType: z.enum(['CLIENT_SPECIFIED_ADDRESS', 'NOTARY_OFFICE', 'NEUTRAL_LOCATION', 'REMOTE_ONLINE']).optional(),
@@ -108,7 +120,11 @@ export async function POST(request: NextRequest) {
     }
     
     // Parse and validate scheduled date
-    const scheduledDateTime = new Date(validatedRequest.scheduledDateTime);
+    const scheduledDateTime = new Date(
+      validatedRequest.scheduledDateTime.includes('T') && !validatedRequest.scheduledDateTime.includes('Z')
+        ? validatedRequest.scheduledDateTime + ':00'
+        : validatedRequest.scheduledDateTime
+    );
     
     if (scheduledDateTime <= new Date()) {
       return NextResponse.json({

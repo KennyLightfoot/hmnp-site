@@ -224,8 +224,16 @@ export default function BookingFormV2() {
     try {
       setIsSubmitting(true);
 
-      const bookingData = {
+      // Transform datetime format from datetime-local to ISO format
+      const transformedData = {
         ...data,
+        scheduledDateTime: data.scheduledDateTime 
+          ? new Date(data.scheduledDateTime + ':00').toISOString() 
+          : data.scheduledDateTime
+      };
+
+      const bookingData = {
+        ...transformedData,
         locationType: selectedService?.type === 'RON' ? 'REMOTE_ONLINE' : 'CLIENT_SPECIFIED_ADDRESS',
         address: selectedService?.type === 'MOBILE' ? {
           street: data.addressStreet,
