@@ -132,7 +132,7 @@ const SERVICE_CONFIG = {
 // ============================================================================
 
 export async function calculatePricing(request: PricingRequest): Promise<PricingCalculation> {
-  const service = getServiceById(request.serviceId);
+  const service = await getServiceById(request.serviceId);
   
   if (!service) {
     throw new Error(`Invalid service ID: ${request.serviceId}`);
@@ -142,7 +142,7 @@ export async function calculatePricing(request: PricingRequest): Promise<Pricing
   let runningTotal = 0;
 
   // 1. BASE PRICE
-  const basePrice = service.basePrice;
+  const basePrice = Number(service.basePrice) || 0;
   breakdown.push({
     item: 'base_service',
     description: service.name,
@@ -155,7 +155,7 @@ export async function calculatePricing(request: PricingRequest): Promise<Pricing
   let travelFee = 0;
   let distanceInfo: DistanceInfo | undefined;
   
-  if (service.type === 'MOBILE' && request.address) {
+  if (service.serviceType === 'MOBILE' && request.address) {
     const distance = await calculateDistance(request.address);
     distanceInfo = distance;
     

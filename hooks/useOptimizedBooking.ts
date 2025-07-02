@@ -9,6 +9,52 @@ import { useMemo } from 'react';
 import { useAsyncState, useAsyncStateGroup } from './useAsyncState';
 import type { Service } from '@/components/booking/forms/types';
 
+/**
+ * Transform legacy booking data format to V2 API format
+ */
+function transformToV2Format(legacyData: any) {
+  return {
+    // Service selection
+    serviceId: legacyData.serviceId,
+    
+    // Customer information (V2 format)
+    customerEmail: legacyData.email || legacyData.customerEmail,
+    customerName: legacyData.customerName || 
+                  (legacyData.firstName && legacyData.lastName 
+                    ? `${legacyData.firstName} ${legacyData.lastName}`.trim()
+                    : legacyData.name || ''),
+    customerPhone: legacyData.phone || legacyData.customerPhone,
+    
+    // Scheduling
+    scheduledDateTime: legacyData.scheduledDateTime || legacyData.appointmentDateTime,
+    
+    // Location (V2 nested address format)
+    locationType: legacyData.locationType || 'CLIENT_SPECIFIED_ADDRESS',
+    address: legacyData.addressStreet ? {
+      street: legacyData.addressStreet,
+      city: legacyData.addressCity || '',
+      state: legacyData.addressState || 'TX',
+      zip: legacyData.addressZip || ''
+    } : legacyData.address,
+    locationNotes: legacyData.locationNotes || legacyData.notes,
+    
+    // Optional enhancements
+    promoCode: legacyData.promoCode,
+    specialInstructions: legacyData.specialInstructions || legacyData.notes,
+    
+    // Consent (required for V2)
+    termsAccepted: legacyData.termsAccepted !== false,
+    smsNotifications: legacyData.smsNotifications || false,
+    emailUpdates: legacyData.emailUpdates !== false,
+    
+    // Legacy compatibility metadata
+    _legacyData: {
+      ...legacyData,
+      migrationSource: 'useOptimizedBooking-hook'
+    }
+  };
+}
+
 interface BookingService {
   id: string;
   name: string;
@@ -42,7 +88,8 @@ interface BookingSettings {
 export function useOptimizedServices() {
   return useAsyncState<BookingService[]>(
     async () => {
-      const response = await fetch('/api/services', {
+      console.log('🔄 useOptimizedServices: Fetching from V2 API...');
+      const response = await fetch('/api/v2/services', {
         method: 'GET',
         headers: {
           'Cache-Control': 'max-age=300', // 5-minute cache
@@ -53,7 +100,11 @@ export function useOptimizedServices() {
         throw new Error(`Failed to fetch services: ${response.statusText}`);
       }
       
-      return response.json();
+      const data = await response.json();
+      console.log('✅ useOptimizedServices: V2 services received');
+      
+      // Transform V2 response to expected format
+      return data.data?.services || [];
     },
     {
       immediate: true,
@@ -161,13 +212,18 @@ export function useOptimizedAvailability(serviceId: string, date: string) {
 export function useOptimizedBookingSubmission() {
   return useAsyncState(
     async (bookingData: any) => {
-      const response = await fetch('/api/bookings', {
+      console.log('🔄 useOptimizedBookingSubmission: Creating booking via V2 API...');
+      
+      // Transform legacy booking data to V2 format if needed
+      const v2BookingData = transformToV2Format(bookingData);
+      
+      const response = await fetch('/api/v2/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Cache-Control': 'no-cache',
         },
-        body: JSON.stringify(bookingData),
+        body: JSON.stringify(v2BookingData),
       });
 
       if (!response.ok) {
@@ -221,7 +277,7 @@ export function useBookingFormData() {
 export function useOptimizedUserBookings(userId?: string, page = 1, limit = 10) {
   return useAsyncState(
     async () => {
-      const url = new URL('/api/bookings', window.location.origin);
+      const url = new URL('/api/v2/bookings', window.location.origin);
       url.searchParams.set('page', page.toString());
       url.searchParams.set('limit', limit.toString());
       
@@ -259,7 +315,7 @@ export function useBookingStatusUpdates(bookingId: string) {
     async () => {
       if (!bookingId) return null;
 
-      const response = await fetch(`/api/bookings/${bookingId}`, {
+      const response = await fetch(`/api/v2/bookings/${bookingId}`, {
         method: 'GET',
         headers: {
           'Cache-Control': 'no-cache', // Always fresh for status updates

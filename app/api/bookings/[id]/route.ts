@@ -1,261 +1,214 @@
+/**
+ * 🚀 LEGACY BOOKING DETAIL API - V2 MIGRATION HANDLER
+ * 
+ * This endpoint is deprecated. All booking operations now route through V2.
+ * Maintained for backward compatibility during transition period.
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+
+const MIGRATION_HEADERS = {
+  'X-API-Version': '2.0',
+  'X-Migration-Status': 'ACTIVE', 
+  'X-Legacy-API': 'DEPRECATED',
+  'X-Redirect-To': '/api/v2/bookings/[id]',
+  'Cache-Control': 'no-cache, no-store, must-revalidate'
+};
 
 export async function GET(
-  request: Request,
-  context: { params: Promise<{ id: string }> }
-) {
-  try {
-    const params = await context.params;
-    const bookingId = params.id;
-
-    if (!bookingId) {
-      return NextResponse.json(
-        { error: 'Booking ID is required' },
-        { status: 400 }
-      );
-    }
-
-    // Get booking with all related data
-    const booking = await prisma.booking.findUnique({
-      where: { id: bookingId },
-      include: {
-        service: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            durationMinutes: true,
-            basePrice: true,
-            serviceType: true,
-          },
-        },
-        User_Booking_signerIdToUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        User_Booking_notaryIdToUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        PromoCode: {
-          select: {
-            id: true,
-            code: true,
-            description: true,
-            discountType: true,
-            discountValue: true,
-          },
-        },
-        NotificationLog: {
-          select: {
-            id: true,
-            notificationType: true,
-            method: true,
-            sentAt: true,
-            status: true,
-          },
-          orderBy: {
-            sentAt: 'desc',
-          },
-          take: 10, // Last 10 notifications
-        },
-      },
-    });
-
-    if (!booking) {
-      return NextResponse.json(
-        { error: 'Booking not found' },
-        { status: 404 }
-      );
-    }
-
-    // Format the response
-    const formattedBooking = {
-      id: booking.id,
-      reference: `HMNP-${booking.id.slice(-8).toUpperCase()}`,
-      status: booking.status,
-      
-      // Schedule Information
-      scheduledDateTime: booking.scheduledDateTime,
-      actualEndDateTime: booking.actualEndDateTime,
-      
-      // Service Information
-      service: {
-        id: booking.Service.id,
-        name: booking.Service.name,
-        description: booking.Service.description,
-        duration: booking.Service.durationMinutes,
-        price: booking.Service.basePrice,
-        type: booking.Service.serviceType,
-      },
-      
-      // Customer Information
-      customer: booking.User_Booking_signerIdToUser ? {
-        id: booking.User_Booking_signerIdToUser.id,
-        name: booking.User_Booking_signerIdToUser.name,
-        email: booking.User_Booking_signerIdToUser.email,
-      } : null,
-      
-      // Notary Information (if assigned)
-      notary: booking.User_Booking_notaryIdToUser ? {
-        id: booking.User_Booking_notaryIdToUser.id,
-        name: booking.User_Booking_notaryIdToUser.name,
-        email: booking.User_Booking_notaryIdToUser.email,
-      } : null,
-      
-      // Location Information
-      location: {
-        type: booking.locationType,
-        address: booking.addressStreet ? {
-          street: booking.addressStreet,
-          city: booking.addressCity,
-          state: booking.addressState,
-          zip: booking.addressZip,
-        } : null,
-        notes: booking.locationNotes,
-      },
-      
-      // Pricing Information
-      pricing: {
-        price: Number(booking.Service.basePrice),
-        priceAtBooking: Number(booking.priceAtBooking),
-        promoDiscount: booking.promoCodeDiscount ? Number(booking.promoCodeDiscount) : 0,
-        depositAmount: booking.depositAmount ? Number(booking.depositAmount) : 0,
-        depositStatus: booking.depositStatus,
-        promoCode: booking.PromoCode ? {
-          code: booking.PromoCode.code,
-          description: booking.PromoCode.description,
-          discountType: booking.PromoCode.discountType,
-          discountValue: Number(booking.PromoCode.discountValue),
-        } : null,
-      },
-      
-      // Additional Details
-      notes: booking.notes,
-      
-      // Online Notarization Details (if applicable)
-      dailyRoomUrl: booking.dailyRoomUrl,
-      dailyRecordingId: booking.dailyRecordingId,
-      kbaStatus: booking.kbaStatus,
-      idVerificationStatus: booking.idVerificationStatus,
-      notaryJournalEntry: booking.notaryJournalEntry,
-      
-      // Timestamps
-      createdAt: booking.createdAt,
-      updatedAt: booking.updatedAt,
-      
-      // Communication History
-      notifications: booking.NotificationLog.map(notification => ({
-        id: notification.id,
-        type: notification.notificationType,
-        method: notification.method,
-        sentAt: notification.sentAt,
-        status: notification.status,
-      })),
-      
-      // Status Tracking
-      timestamps: {
-        confirmationEmailSent: booking.confirmationEmailSentAt,
-        confirmationSmsSent: booking.confirmationSmsSentAt,
-        followUpSent: booking.followUpSentAt,
-        lastReminderSent: booking.lastReminderSentAt,
-        reminder24hrSent: booking.reminder24hrSentAt,
-        reminder2hrSent: booking.reminder2hrSentAt,
-        reminder1hrSent: booking.reminder1hrSentAt,
-        noShowCheckPerformed: booking.noShowCheckPerformedAt,
-      },
-    };
-
-    return NextResponse.json({
-      success: true,
-      booking: formattedBooking,
-    });
-
-  } catch (error) {
-    console.error('Get booking error:', error);
-    
-    return NextResponse.json(
-      { 
-        success: false,
-        error: 'Internal server error' 
-      },
-      { status: 500 }
-    );
-  } finally {
-    // singleton: do not disconnect
-  }
-}
-
-// PATCH endpoint to update booking status
-export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  console.log('🔄 Legacy Booking Detail: Migrating to V2...');
+  
   try {
     const params = await context.params;
     const bookingId = params.id;
-    const body = await request.json();
-    
+
     if (!bookingId) {
-      return NextResponse.json(
-        { error: 'Booking ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({
+        success: false,
+        error: 'Booking ID is required'
+      }, { status: 400, headers: MIGRATION_HEADERS });
     }
 
-    // Validate the booking exists
-    const existingBooking = await prisma.booking.findUnique({
-      where: { id: bookingId },
+    // Forward to V2 API
+    const v2Response = await fetch(new URL(`/api/v2/bookings/${bookingId}`, request.url).toString(), {
+      method: 'GET',
+      headers: {
+        'Authorization': request.headers.get('Authorization') || '',
+        'User-Agent': 'Legacy-Detail-Migration/1.0',
+        'X-Forwarded-From': `/api/bookings/${bookingId}`
+      }
     });
 
-    if (!existingBooking) {
-      return NextResponse.json(
-        { error: 'Booking not found' },
-        { status: 404 }
-      );
+    const v2Data = await v2Response.json();
+
+    if (v2Response.ok) {
+      console.log(`✅ Legacy booking detail (${bookingId}) migrated to V2 successfully`);
+      return NextResponse.json(v2Data, {
+        status: v2Response.status,
+        headers: MIGRATION_HEADERS
+      });
+    } else {
+      console.error(`❌ V2 booking detail failed for ${bookingId}:`, v2Data);
+      return NextResponse.json({
+        success: false,
+        error: 'Migration to V2 API failed',
+        details: v2Data,
+        bookingId
+      }, { 
+        status: v2Response.status,
+        headers: MIGRATION_HEADERS
+      });
     }
-
-    // Update the booking
-    const updatedBooking = await prisma.booking.update({
-      where: { id: bookingId },
-      data: {
-        ...body,
-        updatedAt: new Date(),
-      },
-      include: {
-        Service: true,
-        User_Booking_signerIdToUser: true,
-        promoCode: true,
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      booking: {
-        id: updatedBooking.id,
-        status: updatedBooking.status,
-        updatedAt: updatedBooking.updatedAt,
-      },
-    });
 
   } catch (error) {
-    console.error('Update booking error:', error);
+    console.error('❌ Booking detail migration error:', error);
     
-    return NextResponse.json(
-      { 
-        success: false,
-        error: 'Internal server error' 
+    return NextResponse.json({
+      success: false,
+      error: {
+        code: 'MIGRATION_ERROR',
+        message: 'Failed to migrate booking detail to V2 API',
+        details: error instanceof Error ? error.message : 'Unknown error'
       },
-      { status: 500 }
-    );
-  } finally {
-    // singleton: do not disconnect
+      migration: {
+        status: 'FAILED',
+        recommendedAction: 'Use GET /api/v2/bookings/[id] directly'
+      }
+    }, { 
+      status: 500,
+      headers: MIGRATION_HEADERS
+    });
   }
-} 
+}
+
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  console.log('🔄 Legacy Booking Update: Migrating to V2...');
+  
+  try {
+    const params = await context.params;
+    const bookingId = params.id;
+    const body = await request.text();
+
+    if (!bookingId) {
+      return NextResponse.json({
+        success: false,
+        error: 'Booking ID is required'
+      }, { status: 400, headers: MIGRATION_HEADERS });
+    }
+
+    // Forward to V2 API
+    const v2Response = await fetch(new URL(`/api/v2/bookings/${bookingId}`, request.url).toString(), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': request.headers.get('Authorization') || '',
+        'User-Agent': 'Legacy-Update-Migration/1.0',
+        'X-Forwarded-From': `/api/bookings/${bookingId}`
+      },
+      body
+    });
+
+    const v2Data = await v2Response.json();
+
+    if (v2Response.ok) {
+      console.log(`✅ Legacy booking update (${bookingId}) migrated to V2 successfully`);
+      return NextResponse.json(v2Data, {
+        status: v2Response.status,
+        headers: MIGRATION_HEADERS
+      });
+    } else {
+      return NextResponse.json({
+        success: false,
+        error: 'Migration to V2 API failed',
+        details: v2Data,
+        bookingId
+      }, { 
+        status: v2Response.status,
+        headers: MIGRATION_HEADERS
+      });
+    }
+
+  } catch (error) {
+    return NextResponse.json({
+      success: false,
+      error: {
+        code: 'MIGRATION_ERROR',
+        message: 'Failed to migrate booking update to V2 API',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }
+    }, { 
+      status: 500,
+      headers: MIGRATION_HEADERS
+    });
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  console.log('🔄 Legacy Booking Delete: Migrating to V2...');
+  
+  try {
+    const params = await context.params;
+    const bookingId = params.id;
+
+    if (!bookingId) {
+      return NextResponse.json({
+        success: false,
+        error: 'Booking ID is required'
+      }, { status: 400, headers: MIGRATION_HEADERS });
+    }
+
+    // Forward to V2 API
+    const v2Response = await fetch(new URL(`/api/v2/bookings/${bookingId}`, request.url).toString(), {
+      method: 'DELETE',
+      headers: {
+        'Authorization': request.headers.get('Authorization') || '',
+        'User-Agent': 'Legacy-Delete-Migration/1.0',
+        'X-Forwarded-From': `/api/bookings/${bookingId}`
+      }
+    });
+
+    const v2Data = await v2Response.json();
+
+    if (v2Response.ok) {
+      console.log(`✅ Legacy booking delete (${bookingId}) migrated to V2 successfully`);
+      return NextResponse.json(v2Data, {
+        status: v2Response.status,
+        headers: MIGRATION_HEADERS
+      });
+    } else {
+      return NextResponse.json({
+        success: false,
+        error: 'Migration to V2 API failed',
+        details: v2Data,
+        bookingId
+      }, { 
+        status: v2Response.status,
+        headers: MIGRATION_HEADERS
+      });
+    }
+
+  } catch (error) {
+    return NextResponse.json({
+      success: false,
+      error: {
+        code: 'MIGRATION_ERROR',
+        message: 'Failed to migrate booking delete to V2 API',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }
+    }, { 
+      status: 500,
+      headers: MIGRATION_HEADERS
+    });
+  }
+}
+
+console.log('🔄 Legacy Booking Detail API - Migration Handler Loaded');

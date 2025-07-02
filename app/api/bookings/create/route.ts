@@ -1,234 +1,141 @@
+/**
+ * 🚀 LEGACY BOOKING CREATE API - V2 MIGRATION HANDLER
+ * 
+ * This endpoint is deprecated. All booking creation now routes through V2.
+ * Maintained for backward compatibility during transition period.
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { promoCodeService } from '@/lib/services/promo-code';
-import { settingsService } from '@/lib/services/settings';
-import { addMinutes, startOfDay, format, parse } from 'date-fns';
+
+const MIGRATION_HEADERS = {
+  'X-API-Version': '2.0',
+  'X-Migration-Status': 'ACTIVE',
+  'X-Legacy-API': 'DEPRECATED',
+  'X-Redirect-To': '/api/v2/bookings',
+  'Cache-Control': 'no-cache, no-store, must-revalidate'
+};
 
 export async function POST(request: NextRequest) {
+  console.log('🔄 Legacy Booking Create: Migrating to V2...');
+  
   try {
-    const {
-      serviceId,
-      scheduledDateTime,
-      customerName,
-      customerEmail,
-      customerPhone,
-      locationType,
-      addressStreet,
-      addressCity,
-      addressState,
-      addressZip,
-      locationNotes,
-      notes,
-      promoCode
-    } = await request.json();
-
-    // Validate required fields
-    if (!serviceId || !scheduledDateTime || !customerName || !customerEmail) {
-      return NextResponse.json(
-        { error: 'ServiceId, scheduledDateTime, customerName, and customerEmail are required' },
-        { status: 400 }
-      );
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(customerEmail)) {
-      return NextResponse.json(
-        { error: 'Invalid email format' },
-        { status: 400 }
-      );
-    }
-
-    // Get service details
-    const service = await prisma.service.findUnique({
-      where: { id: serviceId }
-    });
-
-    if (!service || !service.isActive) {
-      return NextResponse.json(
-        { error: 'Service not found or inactive' },
-        { status: 404 }
-      );
-    }
-
-    const requestedDateTime = new Date(scheduledDateTime);
-    if (isNaN(requestedDateTime.getTime())) {
-      return NextResponse.json(
-        { error: 'Invalid scheduledDateTime format' },
-        { status: 400 }
-      );
-    }
-
-    // Re-validate availability (double-check to prevent race conditions)
-    const bookingSettings = await settingsService.getBookingSettings();
-    const dayName = requestedDateTime.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-    const daySettings = bookingSettings.businessHours[dayName as keyof typeof bookingSettings.businessHours];
+    const body = await request.text();
+    let parsedBody;
     
-    if (!daySettings?.enabled) {
-      return NextResponse.json(
-        { error: 'Selected date is not available for bookings' },
-        { status: 400 }
-      );
+    try {
+      parsedBody = JSON.parse(body);
+    } catch (parseError) {
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid JSON in request body'
+      }, { status: 400, headers: MIGRATION_HEADERS });
     }
-
-    // Check if time slot is still available
-    const startOfRequestedDay = startOfDay(requestedDateTime);
-    const endTime = addMinutes(startOfRequestedDay, 24 * 60); // End of day
     
-    const conflictingBookings = await prisma.booking.findMany({
-      where: {
-        scheduledDateTime: {
-          gte: startOfRequestedDay,
-          lt: endTime
-        },
-        status: {
-          in: ['CONFIRMED', 'SCHEDULED', 'PAYMENT_PENDING', 'READY_FOR_SERVICE', 'IN_PROGRESS']
-        }
-      },
-      include: {
-        service: {
-          select: {
-            durationMinutes: true
-          }
-        }
-      }
-    });
-
-    // Check for conflicts
-    const hasConflict = conflictingBookings.some(booking => {
-      const bookingStart = new Date(booking.scheduledDateTime!);
-      const bookingEnd = addMinutes(bookingStart, booking.Service.durationMinutes + bookingSettings.bufferTimeMinutes);
-      const requestedStart = requestedDateTime;
-      const requestedEnd = addMinutes(requestedDateTime, service.durationMinutes + bookingSettings.bufferTimeMinutes);
+    // Transform legacy create format to V2 format
+    const v2Body = {
+      serviceId: parsedBody.serviceId,
+      customerEmail: parsedBody.customerEmail,
+      customerName: parsedBody.customerName,
+      customerPhone: parsedBody.customerPhone,
+      scheduledDateTime: parsedBody.scheduledDateTime,
       
-      return (
-        (requestedStart >= bookingStart && requestedStart < bookingEnd) ||
-        (requestedEnd > bookingStart && requestedEnd <= bookingEnd) ||
-        (requestedStart <= bookingStart && requestedEnd >= bookingEnd)
-      );
-    });
-
-    if (hasConflict) {
-      return NextResponse.json(
-        { error: 'Selected time slot is no longer available' },
-        { status: 409 }
-      );
-    }
-
-    // Handle promo code validation if provided
-    let promoCodeData: any = null;
-    let discountAmount = 0;
-    let depositAmount = Number(service.depositAmount);
-
-    if (promoCode) {
-      const validationResult = await promoCodeService.validatePromoCode(
-        promoCode,
-        serviceId,
-        depositAmount,
-        customerEmail
-      );
-
-      if (!validationResult.isValid) {
-        return NextResponse.json(
-          { error: validationResult.error },
-          { status: 400 }
-        );
+      // Location handling
+      locationType: parsedBody.locationType,
+      address: parsedBody.addressStreet ? {
+        street: parsedBody.addressStreet,
+        city: parsedBody.addressCity || '',
+        state: parsedBody.addressState || 'TX',
+        zip: parsedBody.addressZip || ''
+      } : undefined,
+      locationNotes: parsedBody.locationNotes,
+      
+      // Optional fields
+      specialInstructions: parsedBody.notes || parsedBody.specialInstructions,
+      promoCode: parsedBody.promoCode,
+      
+      // Required V2 fields
+      termsAccepted: true,
+      smsNotifications: false,
+      emailUpdates: true,
+      
+      // Migration metadata
+      _legacyData: {
+        ...parsedBody,
+        migrationSource: 'legacy-booking-create',
+        migrationTimestamp: new Date().toISOString()
       }
-
-      promoCodeData = validationResult.promoCode;
-      discountAmount = validationResult.discountAmount || 0;
-      depositAmount = validationResult.finalAmount || depositAmount;
-    }
-
-    // Create or get user
-    let user = await prisma.user.findUnique({
-      where: { email: customerEmail }
+    };
+    
+    // Forward to V2 API
+    const v2Response = await fetch(new URL('/api/v2/bookings', request.url).toString(), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': request.headers.get('Authorization') || '',
+        'User-Agent': 'Legacy-Create-Migration/1.0',
+        'X-Forwarded-From': '/api/bookings/create'
+      },
+      body: JSON.stringify(v2Body)
     });
-
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          name: customerName,
-          email: customerEmail,
-          role: 'SIGNER'
-        }
+    
+    const v2Data = await v2Response.json();
+    
+    if (v2Response.ok) {
+      console.log('✅ Legacy booking create migrated to V2 successfully');
+      return NextResponse.json(v2Data, {
+        status: v2Response.status,
+        headers: MIGRATION_HEADERS
+      });
+    } else {
+      console.error('❌ V2 booking create failed:', v2Data);
+      return NextResponse.json({
+        success: false,
+        error: 'Migration to V2 API failed',
+        details: v2Data,
+        legacyBody: parsedBody,
+        transformedBody: v2Body
+      }, { 
+        status: v2Response.status,
+        headers: MIGRATION_HEADERS
       });
     }
-
-    // Create booking
-    const booking = await prisma.booking.create({
-      data: {
-        signerId: user.id,
-        signerEmail: user.email,
-        signerName: user.name,
-        serviceId,
-        scheduledDateTime: requestedDateTime,
-        status: 'PAYMENT_PENDING',
-        locationType: locationType || 'CLIENT_SPECIFIED_ADDRESS',
-        addressStreet,
-        addressCity,
-        addressState,
-        addressZip,
-        locationNotes,
-        basePrice: service.basePrice,
-        priceAtBooking: service.basePrice,
-        finalPrice: Math.max(0, Number(service.basePrice) - discountAmount),
-        promoDiscount: discountAmount,
-        depositAmount,
-        depositStatus: 'PENDING',
-        promoCodeId: promoCodeData?.id,
-        promoCodeDiscount: discountAmount,
-        notes
-      },
-      include: {
-        Service: true,
-        User_Booking_signerIdToUser: true,
-        promoCode: true
-      }
-    });
-
-    // If promo code was used, apply it (increment usage count)
-    if (promoCodeData) {
-      await promoCodeService.applyPromoCode(promoCodeData.id, booking.id);
-    }
-
-    return NextResponse.json({
-      booking: {
-        id: booking.id,
-        scheduledDateTime: booking.scheduledDateTime,
-        status: booking.status,
-        service: {
-          name: booking.Service.name,
-          duration: booking.Service.durationMinutes,
-          price: booking.Service.basePrice
-        },
-        customer: {
-                  name: booking.User_Booking_signerIdToUser?.name,
-        email: booking.User_Booking_signerIdToUser?.email
-        },
-        depositAmount: booking.depositAmount,
-        promoCode: promoCodeData ? {
-          code: promoCodeData.code,
-          discountAmount
-        } : null,
-        location: {
-          type: booking.locationType,
-          address: {
-            street: booking.addressStreet,
-            city: booking.addressCity,
-            state: booking.addressState,
-            zip: booking.addressZip
-          },
-          notes: booking.locationNotes
-        }
-      }
-    });
-
+    
   } catch (error) {
-    console.error('Error creating booking:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('❌ Booking create migration error:', error);
+    
+    return NextResponse.json({
+      success: false,
+      error: {
+        code: 'MIGRATION_ERROR',
+        message: 'Failed to migrate booking creation to V2 API',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      migration: {
+        status: 'FAILED',
+        recommendedAction: 'Use POST /api/v2/bookings directly'
+      }
+    }, { 
+      status: 500,
+      headers: MIGRATION_HEADERS
+    });
   }
-} 
+}
+
+// ============================================================================
+// 🚫 DEPRECATED METHODS
+// ============================================================================
+
+export async function GET() {
+  return NextResponse.json({
+    success: false,
+    error: {
+      code: 'DEPRECATED_ENDPOINT',
+      message: 'GET /api/bookings/create is deprecated',
+      migration: {
+        recommendedAction: 'Use GET /api/v2/bookings for listing bookings'
+      }
+    }
+  }, { status: 410, headers: MIGRATION_HEADERS });
+}
+
+console.log('🔄 Legacy Booking Create API - Migration Handler Loaded');

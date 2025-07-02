@@ -199,7 +199,7 @@ export default function BookingPage() {
     try {
       console.log('[SERVICES DEBUG] Starting fetch...');
       
-      const response = await fetch('/api/services');
+      const response = await fetch('/api/v2/services');
       console.log('[SERVICES DEBUG] Response received:', { status: response.status, ok: response.ok });
       
       if (!response.ok) {
@@ -209,23 +209,26 @@ export default function BookingPage() {
       const data = await response.json();
       console.log('[SERVICES DEBUG] Data received:', { 
         success: data.success, 
-        hasServices: !!data.services, 
-        hasAll: !!data.services?.all,
-        allLength: data.services?.all?.length,
-        allIsArray: Array.isArray(data.services?.all)
+        hasData: !!data.data,
+        hasServices: !!data.data?.services,
+        servicesLength: data.data?.services?.length,
+        servicesIsArray: Array.isArray(data.data?.services)
       });
       
-      if (!data.success || !data.services?.all || !Array.isArray(data.services.all)) {
+      // Handle V2 API response format: data.data.services (not data.services.all)
+      const servicesArray = data.data?.services || data.services?.all || [];
+      
+      if (!data.success || !Array.isArray(servicesArray)) {
         console.error('[SERVICES DEBUG] Invalid data format:', data);
         throw new Error('Invalid services data format');
       }
       
-      console.log('[SERVICES DEBUG] Setting services:', data.services.all.length, 'items');
-      setServices(data.services.all);
+      console.log('[SERVICES DEBUG] Setting services:', servicesArray.length, 'items');
+      setServices(servicesArray);
       
       // Build service ID mapping - use service ID as key instead of type
       const newMap: Record<string, string> = {};
-      data.services.all.forEach(service => {
+      servicesArray.forEach(service => {
         if (service.id) {
           // Use service ID as the key for forms instead of service type
           newMap[service.id] = service.id;
@@ -235,8 +238,8 @@ export default function BookingPage() {
       setServiceIdMap(newMap);
       
       // Set first service as default if no service is selected
-      if (data.services.all.length > 0 && !serviceType) {
-        const firstService = data.services.all[0];
+      if (servicesArray.length > 0 && !serviceType) {
+        const firstService = servicesArray[0];
         console.log('[SERVICES DEBUG] Setting default service:', firstService.id);
         setValue('serviceType', firstService.id);
       }
@@ -382,28 +385,47 @@ export default function BookingPage() {
           throw new Error('Invalid signing location selected');
       }
 
+      // Transform data to V2 API format
       const apiPayload = {
+        // Service selection
         serviceId,
+        
+        // Customer information (V2 format)
+        customerEmail: data.email,
+        customerName: `${data.firstName} ${data.lastName}`.trim(),
+        customerPhone: data.phone,
+        
+        // Scheduling
         scheduledDateTime: data.appointmentStartTime,
+        
+        // Location (V2 nested address format)
         locationType: locationTypeApi,
-        addressStreet: data.address,
-        addressCity: data.city,
-        addressState: data.state,
-        addressZip: data.postalCode,
-        notes: data.specialInstructions,
+        address: data.address ? {
+          street: data.address,
+          city: data.city || '',
+          state: data.state || 'TX',
+          zip: data.postalCode || ''
+        } : undefined,
+        locationNotes: data.specialInstructions,
+        
+        // Optional enhancements
         promoCode: data.promoCode,
-        booking_number_of_signers: data.numberOfSigners,
-        consent_terms_conditions: data.termsAccepted,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        phone: data.phone,
-        company: data.company,
-        consentSms: data.smsNotifications,
-        consentEmail: data.emailUpdates,
+        specialInstructions: data.specialInstructions,
+        
+        // Consent and agreements (V2 format)
+        termsAccepted: data.termsAccepted || true,
+        smsNotifications: data.smsNotifications || false,
+        emailUpdates: data.emailUpdates !== false, // Default to true
+        
+        // Additional metadata for legacy compatibility
+        _legacyData: {
+          numberOfSigners: data.numberOfSigners,
+          company: data.company,
+          migrationSource: 'main-booking-page'
+        }
       };
 
-      const response = await fetch('/api/bookings', {
+      const response = await fetch('/api/v2/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(apiPayload),

@@ -44,7 +44,7 @@ export default function RONDashboard() {
   const fetchRonBookings = async () => {
     try {
       // Fetch RON bookings (bookings with locationType = REMOTE_ONLINE_NOTARIZATION)
-      const response = await fetch('/api/bookings?locationType=REMOTE_ONLINE_NOTARIZATION');
+      const response = await fetch('/api/v2/bookings?locationType=REMOTE_ONLINE_NOTARIZATION');
       if (response.ok) {
         const bookings = await response.json();
         setRonBookings(bookings);

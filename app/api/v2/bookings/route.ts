@@ -70,8 +70,15 @@ const BookingQuerySchema = z.object({
   serviceId: z.string().optional(),
   dateFrom: z.string().datetime().optional(),
   dateTo: z.string().datetime().optional(),
-  limit: z.string().regex(/^\d+$/).transform(Number).optional().default(50),
-  offset: z.string().regex(/^\d+$/).transform(Number).optional().default(0)
+  locationType: z.string().optional(), // Added for RON filtering
+  limit: z.union([
+    z.string().regex(/^\d+$/).transform(Number),
+    z.number()
+  ]).optional().default(50),
+  offset: z.union([
+    z.string().regex(/^\d+$/).transform(Number), 
+    z.number()
+  ]).optional().default(0)
 });
 
 // ============================================================================
@@ -115,9 +122,20 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
     
-    // Validate address for mobile services
-    const service = require('@/app/api/v2/services/route').getServiceById(validatedRequest.serviceId);
-    if (service.type === 'MOBILE' && !validatedRequest.address) {
+    // Get service details for validation
+    const service = await prisma.service.findUnique({
+      where: { id: validatedRequest.serviceId }
+    });
+    
+    if (!service) {
+      return NextResponse.json({
+        success: false,
+        error: 'SERVICE_NOT_FOUND',
+        message: 'The requested service was not found',
+        meta: { requestId }
+      }, { status: 404 });
+    }
+    if (service.serviceType === 'MOBILE' && !validatedRequest.address) {
       return NextResponse.json({
         success: false,
         error: {
@@ -167,7 +185,7 @@ export async function POST(request: NextRequest) {
         customerEmail: validatedRequest.customerEmail,
         scheduledDateTime: scheduledDateTime,
         status: {
-          in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS']
+          in: ['REQUESTED', 'PAYMENT_PENDING', 'CONFIRMED', 'SCHEDULED']
         }
       }
     });
@@ -183,79 +201,61 @@ export async function POST(request: NextRequest) {
       }, { status: 409 });
     }
     
-    // 🔒 ATOMIC TRANSACTION: Create booking + audit log
+    // 🔒 ATOMIC TRANSACTION: Create booking record
     const booking = await prisma.$transaction(async (tx) => {
-      // Create the booking record
+      // Create the booking record with schema-compatible fields
       const newBooking = await tx.booking.create({
         data: {
+          id: `booking_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           serviceId: validatedRequest.serviceId,
+          signerId: null, // TODO: Link to customer User record if exists
           customerEmail: validatedRequest.customerEmail,
-          customerName: validatedRequest.customerName,
-          customerPhone: validatedRequest.customerPhone,
           scheduledDateTime,
-          estimatedDuration: service.duration,
-          timeZone: 'America/Chicago',
+          updatedAt: new Date(),
           
-          // Location data
-          locationType: validatedRequest.locationType as LocationType || 
-                       (service.type === 'RON' ? 'REMOTE_ONLINE' : 'CLIENT_SPECIFIED_ADDRESS'),
+          // Location data - map to schema-compatible LocationType
+          locationType: (() => {
+            if (validatedRequest.locationType === 'NOTARY_OFFICE') return 'OUR_OFFICE';
+            if (validatedRequest.locationType === 'REMOTE_ONLINE') return 'REMOTE_ONLINE_NOTARIZATION';
+            if (validatedRequest.locationType === 'NEUTRAL_LOCATION') return 'PUBLIC_PLACE';
+            return validatedRequest.locationType as LocationType || 
+                   (service.serviceType === 'RON' ? 'REMOTE_ONLINE_NOTARIZATION' : 'CLIENT_SPECIFIED_ADDRESS');
+          })(),
           addressStreet: validatedRequest.address?.street,
           addressCity: validatedRequest.address?.city,
           addressState: validatedRequest.address?.state,
           addressZip: validatedRequest.address?.zip,
           locationNotes: validatedRequest.locationNotes,
           
-          // RON specific
-          ronDocumentUrl: validatedRequest.ronDocumentUrl,
-          
-          // Pricing (locked at booking time)
-          basePrice: pricingCalculation.basePrice,
+          // Pricing (use schema-compatible fields)
+          priceAtBooking: pricingCalculation.finalPrice,
           travelFee: pricingCalculation.travelFee,
-          timeSurcharge: pricingCalculation.timeSurcharge,
-          emergencyFee: pricingCalculation.emergencyFee,
-          promoDiscount: pricingCalculation.promoDiscount,
-          taxAmount: pricingCalculation.taxAmount,
-          finalPrice: pricingCalculation.finalPrice,
-          
-          // Deposit
-          depositRequired: pricingCalculation.depositRequired,
           depositAmount: pricingCalculation.depositAmount,
           
-          // Status
-          status: 'PENDING',
-          paymentStatus: 'PENDING',
-          
-          // Promo code
-          promoCodeId: null, // TODO: Look up promo code ID
+          // Status (use schema-compatible fields)
+          status: 'REQUESTED',
+          depositStatus: 'PENDING',
           
           // Instructions
-          specialInstructions: validatedRequest.specialInstructions,
+          notes: validatedRequest.specialInstructions,
           
           // Metadata
           calculatedDistance: pricingCalculation.distanceInfo?.distanceMiles,
           serviceAreaValidated: pricingCalculation.distanceInfo?.withinStandardArea || false,
           pricingVersion: pricingCalculation.pricingVersion,
-          pricingSnapshot: JSON.stringify(pricingCalculation)
+          pricingBreakdown: pricingCalculation // Store full pricing as JSON
         }
       });
       
-      // Create audit log entry
-      await tx.bookingAuditLog.create({
-        data: {
-          bookingId: newBooking.id,
-          action: 'CREATED',
-          actorType: 'CUSTOMER',
-          actorId: validatedRequest.customerEmail,
-          changes: JSON.stringify({
-            booking: newBooking,
-            pricing: pricingCalculation
-          }),
-          metadata: JSON.stringify({
-            requestId,
-            userAgent: request.headers.get('user-agent'),
-            ipAddress: getClientIP(request)
-          })
-        }
+      // Log booking creation for monitoring
+      console.log(`✅ Booking created: ${newBooking.id} for ${validatedRequest.customerEmail}`, {
+        bookingId: newBooking.id,
+        customerEmail: validatedRequest.customerEmail,
+        customerName: validatedRequest.customerName,
+        serviceId: validatedRequest.serviceId,
+        scheduledDateTime: scheduledDateTime.toISOString(),
+        pricing: pricingCalculation,
+        requestId
       });
       
       return newBooking;
@@ -291,18 +291,18 @@ export async function POST(request: NextRequest) {
           serviceId: booking.serviceId,
           serviceName: service.name,
           customerEmail: booking.customerEmail,
-          customerName: booking.customerName,
+          customerName: validatedRequest.customerName, // From request since not in DB
           scheduledDateTime: booking.scheduledDateTime.toISOString(),
           status: booking.status,
-          paymentStatus: booking.paymentStatus,
-          finalPrice: booking.finalPrice,
-          depositRequired: booking.depositRequired,
+          paymentStatus: booking.depositStatus, // Use schema field
+          finalPrice: booking.priceAtBooking, // Use schema field
+          depositRequired: Boolean(booking.depositAmount && booking.depositAmount > 0),
           depositAmount: booking.depositAmount,
           createdAt: booking.createdAt.toISOString()
         },
         pricing: pricingCalculation,
         nextSteps: {
-          paymentRequired: booking.depositRequired || booking.finalPrice > 0,
+          paymentRequired: Boolean(booking.depositAmount && booking.depositAmount > 0) || Boolean(booking.priceAtBooking && booking.priceAtBooking > 0),
           confirmationEmail: validatedRequest.emailUpdates,
           estimatedDuration: service.duration
         }
@@ -386,6 +386,7 @@ export async function GET(request: NextRequest) {
     if (query.status) where.status = query.status;
     if (query.customerEmail) where.customerEmail = query.customerEmail;
     if (query.serviceId) where.serviceId = query.serviceId;
+    if (query.locationType) where.locationType = query.locationType;
     
     if (query.dateFrom || query.dateTo) {
       where.scheduledDateTime = {};
@@ -401,11 +402,14 @@ export async function GET(request: NextRequest) {
         take: query.limit,
         skip: query.offset,
         include: {
-          service: {
-            select: { name: true, type: true }
+          Service: {
+            select: { name: true, serviceType: true }
           },
-          payments: {
+          Payment: {
             select: { id: true, amount: true, status: true, paidAt: true }
+          },
+          User_Booking_signerIdToUser: {
+            select: { firstName: true, lastName: true, email: true }
           }
         }
       }),
@@ -418,17 +422,26 @@ export async function GET(request: NextRequest) {
         bookings: bookings.map(booking => ({
           id: booking.id,
           serviceId: booking.serviceId,
-          serviceName: booking.service.name,
-          serviceType: booking.service.type,
-          customerEmail: booking.customerEmail,
-          customerName: booking.customerName,
-          scheduledDateTime: booking.scheduledDateTime.toISOString(),
+          serviceName: booking.Service?.name,
+          serviceType: booking.Service?.serviceType,
+          customerEmail: booking.customerEmail || booking.User_Booking_signerIdToUser?.email,
+          customerName: booking.User_Booking_signerIdToUser 
+            ? `${booking.User_Booking_signerIdToUser.firstName || ''} ${booking.User_Booking_signerIdToUser.lastName || ''}`.trim()
+            : booking.customerEmail || 'Unknown',
+          scheduledDateTime: booking.scheduledDateTime?.toISOString(),
           status: booking.status,
-          paymentStatus: booking.paymentStatus,
-          finalPrice: booking.finalPrice,
-          depositRequired: booking.depositRequired,
+          depositStatus: booking.depositStatus,
+          priceAtBooking: booking.priceAtBooking,
+          locationType: booking.locationType,
+          addressStreet: booking.addressStreet,
+          addressCity: booking.addressCity,
+          addressState: booking.addressState,
+          addressZip: booking.addressZip,
+          locationNotes: booking.locationNotes,
+          notes: booking.notes,
           createdAt: booking.createdAt.toISOString(),
-          payments: booking.payments
+          updatedAt: booking.updatedAt.toISOString(),
+          payments: booking.Payment
         })),
         pagination: {
           total,

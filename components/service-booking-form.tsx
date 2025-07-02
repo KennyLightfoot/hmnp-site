@@ -104,23 +104,32 @@ export function ServiceBookingForm() {
   useEffect(() => {
     async function fetchServices() {
       try {
-        // Try production endpoint first (uses raw SQL)
-        let response = await fetch('/api/services-production');
+        console.log('🔄 Service Booking Form: Fetching from V2 API...');
+        
+        // Use V2 services endpoint
+        const response = await fetch('/api/v2/services');
+        
         if (!response.ok) {
-          console.log('Production services API failed, trying main endpoint...');
-          // If production endpoint fails, try main endpoint
-          response = await fetch('/api/services');
-          if (!response.ok) {
-            console.log('Main services API failed, trying fallback...');
-            // If main endpoint fails, try the compatible fallback
-            response = await fetch('/api/services-compatible');
-            if (!response.ok) {
-              throw new Error('All services endpoints failed');
-            }
+          console.error('V2 services API failed, falling back to legacy...');
+          // Fallback to legacy endpoint if V2 fails
+          const legacyResponse = await fetch('/api/services');
+          if (!legacyResponse.ok) {
+            throw new Error('Both V2 and legacy services endpoints failed');
           }
+          const legacyData = await legacyResponse.json();
+          setServices(legacyData.services?.all || legacyData.services || []);
+          return;
         }
+        
         const data = await response.json();
-        setServices(data.services?.all || data.services || []);
+        console.log('✅ V2 Services data received:', { 
+          success: data.success, 
+          servicesCount: data.data?.services?.length 
+        });
+        
+        // Handle V2 API response format: data.data.services
+        const servicesArray = data.data?.services || [];
+        setServices(servicesArray);
       } catch (error) {
         console.error("Error fetching services:", error);
         setSubmitStatus({ success: false, message: 'Could not load service options.' });
@@ -199,25 +208,44 @@ export function ServiceBookingForm() {
     console.log("!!!!!!!!!! FORM DATA:", data);
     console.log("!!!!!!!!!! SELECTED SLOT:", selectedSlot);
 
-    // Updated payload for new booking system - matching API expectations
+    // V2 API payload format
     const payload = {
       serviceId: data.serviceId,
       scheduledDateTime: selectedSlot.startTime,
-      customerName: data.fullName,          // ✅ Fixed: API expects customerName
-      customerEmail: data.email,            // ✅ Fixed: API expects customerEmail  
-      customerPhone: data.phone,            // ✅ Fixed: API expects customerPhone
+      
+      // Customer information (V2 format)
+      customerName: data.fullName,
+      customerEmail: data.email,
+      customerPhone: data.phone,
+      
+      // Location (V2 nested address format)
       locationType: 'CLIENT_SPECIFIED_ADDRESS',
-      addressStreet: data.serviceAddressStreet,
-      addressCity: data.serviceAddressCity,
-      addressState: data.serviceAddressState,
-      addressZip: data.serviceAddressZip,
-      locationNotes: '',                    // ✅ Fixed: API expects locationNotes
-      notes: data.additionalNotes || '',    // ✅ Fixed: API expects notes
-      promoCode: data.promoCode || '',      // ✅ Fixed: API expects promoCode
+      address: {
+        street: data.serviceAddressStreet,
+        city: data.serviceAddressCity,
+        state: data.serviceAddressState || 'TX',
+        zip: data.serviceAddressZip
+      },
+      locationNotes: '',
+      
+      // Optional enhancements
+      specialInstructions: data.additionalNotes || '',
+      promoCode: data.promoCode || '',
+      
+      // Consent (required for V2)
+      termsAccepted: true,
+      smsNotifications: false,
+      emailUpdates: true,
+      
+      // Legacy compatibility metadata
+      _legacyData: {
+        migrationSource: 'service-booking-form'
+      }
     };
 
     try {
-      const response = await fetch('/api/bookings', {
+      console.log('🔄 Service Booking Form: Creating booking via V2 API...');
+      const response = await fetch('/api/v2/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

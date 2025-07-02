@@ -50,7 +50,7 @@ export default function PaymentPage() {
     try {
       console.log('Fetching booking data for ID:', bookingId);
       
-      const response = await fetch(`/api/bookings/${bookingId}`);
+      const response = await fetch(`/api/v2/bookings/${bookingId}`);
       
       if (!response.ok) {
         if (response.status === 404) {

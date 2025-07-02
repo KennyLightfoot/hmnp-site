@@ -93,7 +93,7 @@ function PaymentFormContent({
 
   const createPaymentIntent = async () => {
     try {
-      const response = await fetch('/api/create-payment-intent', {
+      const response = await fetch('/api/v2/payments/intent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

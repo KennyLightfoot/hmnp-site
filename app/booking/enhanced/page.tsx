@@ -176,19 +176,32 @@ export default function EnhancedBookingPage() {
   const fetchServices = async () => {
     try {
       setServicesLoading(true);
-      const response = await fetch('/api/services');
+      console.log('🔄 Enhanced Booking: Fetching from V2 API...');
+      
+      const response = await fetch('/api/v2/services');
       
       if (!response.ok) {
         throw new Error(`Failed to fetch services: ${response.status}`);
       }
       
-      const data: ServiceResponse = await response.json();
+      const data = await response.json();
+      console.log('✅ Enhanced Booking: V2 services received:', {
+        success: data.success,
+        servicesCount: data.data?.services?.length
+      });
       
-      if (!data.success || !data.services?.all) {
+      if (!data.success) {
         throw new Error('Invalid services response');
       }
       
-      setServices(data.services.all);
+      // Handle V2 API response format
+      const servicesArray = data.data?.services || [];
+      
+      if (!Array.isArray(servicesArray)) {
+        throw new Error('Services data is not in expected format');
+      }
+      
+      setServices(servicesArray);
       
       // Pre-select service if provided in URL
       const serviceParam = searchParams?.get('service');
@@ -296,13 +309,48 @@ export default function EnhancedBookingPage() {
 
     setIsSubmitting(true);
     try {
+      // Transform form data to V2 API format
       const bookingData = {
-        ...data,
-        pricingBreakdown: pricingResult.pricing,
-        calculatedDistance: pricingResult.pricing.locationFees.distance,
-        travelFee: pricingResult.pricing.locationFees.travelFee,
-        serviceAreaValidated: locationValidated,
-        pricingVersion: '2.0.0'
+        // Service selection
+        serviceId: data.serviceId,
+        
+        // Customer information (V2 format)
+        customerEmail: data.email,
+        customerName: data.customerName || `${data.firstName || ''} ${data.lastName || ''}`.trim(),
+        customerPhone: data.phone,
+        
+        // Scheduling
+        scheduledDateTime: data.appointmentDateTime || data.scheduledDateTime,
+        
+        // Location (V2 nested address format)
+        locationType: data.locationType || 'CLIENT_SPECIFIED_ADDRESS',
+        address: data.address ? {
+          street: data.address.street || data.addressStreet,
+          city: data.address.city || data.addressCity,
+          state: data.address.state || data.addressState || 'TX',
+          zip: data.address.zip || data.addressZip
+        } : undefined,
+        locationNotes: data.locationNotes,
+        
+        // Optional enhancements
+        promoCode: data.promoCode,
+        specialInstructions: data.specialInstructions || data.notes,
+        
+        // Consent (required for V2)
+        termsAccepted: data.termsAccepted !== false,
+        smsNotifications: data.smsNotifications || false,
+        emailUpdates: data.emailUpdates !== false,
+        
+        // Enhanced booking metadata
+        _legacyData: {
+          pricingBreakdown: pricingResult.pricing,
+          calculatedDistance: pricingResult.pricing.locationFees.distance,
+          travelFee: pricingResult.pricing.locationFees.travelFee,
+          serviceAreaValidated: locationValidated,
+          pricingVersion: '2.0.0',
+          migrationSource: 'enhanced-booking-page',
+          originalFormData: data
+        }
       };
 
       // Check if offline and handle accordingly
@@ -323,7 +371,8 @@ export default function EnhancedBookingPage() {
         return;
       }
 
-      const response = await fetch('/api/bookings/create', {
+      console.log('🔄 Enhanced Booking: Creating booking via V2 API...');
+      const response = await fetch('/api/v2/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bookingData),

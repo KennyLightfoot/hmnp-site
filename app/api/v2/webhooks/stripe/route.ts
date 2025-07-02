@@ -18,7 +18,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   typescript: true,
 });
 
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+if (!endpointSecret) {
+  console.error('❌ CRITICAL: STRIPE_WEBHOOK_SECRET environment variable is not set');
+}
 
 // ============================================================================
 // 🎯 WEBHOOK HANDLER (POST)
@@ -30,11 +34,19 @@ export async function POST(request: NextRequest) {
   const signature = headers().get('stripe-signature');
 
   if (!signature) {
-    console.error('Missing Stripe signature');
+    console.error('❌ Missing webhook signature');
     return NextResponse.json({
       success: false,
-      error: 'Missing Stripe signature'
+      error: 'Missing webhook signature'
     }, { status: 400 });
+  }
+
+  if (!endpointSecret) {
+    console.error('❌ STRIPE_WEBHOOK_SECRET not configured');
+    return NextResponse.json({
+      success: false,
+      error: 'Webhook configuration error'
+    }, { status: 500 });
   }
 
   let event: Stripe.Event;
