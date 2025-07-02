@@ -98,7 +98,7 @@ export default function Header() {
               </ul>
             </nav>
             <Link
-              href="/booking"
+              href="/contact"
               className="bg-[#A52A2A] text-white px-6 py-2 rounded-full hover:bg-[#8B2323] transition-colors font-medium hover:shadow-md"
             >
               Book Now
@@ -193,7 +193,7 @@ export default function Header() {
               </li>
               <li>
                 <Link
-                  href="/booking"
+                  href="/contact"
                   className="bg-[#A52A2A] text-white px-6 py-2 rounded-full hover:bg-[#8B2323] transition-colors inline-block font-medium hover:shadow-md"
                   onClick={() => setIsMenuOpen(false)}
                 >

@@ -23,7 +23,7 @@ export default function Footer() {
             <Link href="/what-to-expect" className="text-gray-600 hover:text-[#002147]">
               What to Expect
             </Link>
-            <Link href="/booking" className="text-gray-600 hover:text-[#002147]">
+            <Link href="/contact" className="text-gray-600 hover:text-[#002147]">
               Book Now
             </Link>
             <Link href="/testimonials" className="text-gray-600 hover:text-[#002147]">

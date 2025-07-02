@@ -51,7 +51,7 @@ export default function HeroSection() {
               Stop the confusion and delays. We eliminate sloppy signings that kill funding with our professional, reliable service, ensuring every document is handled correctly and clearly explained.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Link href="/booking">
+                              <Link href="/contact">
                 <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white w-full sm:w-auto">
                   Book Your Service Now
                 </Button>

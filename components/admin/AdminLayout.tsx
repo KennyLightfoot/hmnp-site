@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
-  Users, Clipboard, Calendar, CreditCard, Bell, AlertTriangle,
+  Users, Clipboard, Bell, AlertTriangle,
   Settings, BarChart4, LogOut, Menu, X
 } from 'lucide-react';
 
@@ -18,9 +18,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: BarChart4 },
-    { name: 'Bookings', href: '/admin/bookings', icon: Calendar },
     { name: 'Clients', href: '/admin/clients', icon: Users },
-    { name: 'Payments', href: '/admin/payments', icon: CreditCard },
     { name: 'Notifications', href: '/admin/notifications', icon: Bell },
     { name: 'System Alerts', href: '/admin/alerts', icon: AlertTriangle },
     { name: 'Settings', href: '/admin/settings', icon: Settings },

@@ -15,7 +15,7 @@ export default function CtaSection() {
           </div>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
-            <Link href="/booking">
+            <Link href="/contact">
               <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white w-full sm:w-auto">
                 Book Now
               </Button>
