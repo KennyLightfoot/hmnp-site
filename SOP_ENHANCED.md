@@ -24,12 +24,13 @@
 ### 1.1 Required Information
 - ☑️ Full legal name(s) of signer(s) and verifying government-issued ID
 - ☑️ Document type(s) and count
-- ☑️ Service type (Standard Notary, Extended Hours Notary, Loan Signing Specialist, Specialty Notary Services)
-- ☑️ Physical address of signing location
+- ☑️ Service type (Standard Notary, Extended Hours Notary, Loan Signing Specialist, RON Services, Specialty Notary Services)
+- ☑️ Physical address of signing location (or Remote for RON)
 - ☑️ **Available appointment windows**:
   - Standard Notary: 9am-5pm Mon-Fri (Base: up to 2 documents, 1-2 signers, 15-mile travel included)
   - Extended Hours Notary: 7am-9pm Daily (Base: up to 5 documents, 2 signers, 20-mile travel included). Also for urgent/same-day needs during standard hours.
   - Loan Signing Specialist: By appointment (Flat fee service)
+  - **RON Services: 24/7 availability** (Remote Online Notarization - no travel required)
 
 ### 1.2 Service Area & Verification
 - **Primary Service Area (Standard Notary)**: 15-mile radius from ZIP code 77591
@@ -40,9 +41,11 @@
 
 ### 1.2.1 **Digital Booking System Architecture**
 - **Multi-step Enhanced Booking Flow**: `/booking/enhanced` with real-time pricing
+- **RON Booking Flow**: `/ron/dashboard` with document upload and session management
 - **Service Area Geofencing**: Automatic distance calculation with travel fee computation
 - **Payment Integration**: Stripe payment processing with deposit handling
 - **GHL CRM Integration**: Automatic contact creation and workflow triggers
+- **Proof.com RON Integration**: Secure remote notarization platform
 - **Mobile-first Design**: PWA-ready responsive interface
 
 ### 1.3 Appointment Requirements
@@ -72,6 +75,36 @@ During each appointment, conduct a "Quick Overview" (formerly "5-Minute Walkthro
 - Strictly prohibited from explaining loan terms
 - Require title company contact verification
 - Maintain $100k E&O insurance
+
+### 2.3 Remote Online Notarization (RON) Protocols ✅ FULLY OPERATIONAL
+**Texas-Compliant RON Services:**
+- **RON Standard Acknowledgment**: $35 ($25 RON fee + $10 acknowledgment per TX Gov't Code §406.111 & §406.024)
+- **RON Oath/Affirmation**: $35 ($25 RON fee + $10 oath fee)
+- **RON Business Documents**: Starting at $35 (pricing per notarization)
+- **Additional Signers**: +$1 each (Texas maximum compliance)
+
+**RON Platform Features:**
+- Proof.com integration for secure sessions
+- Identity verification with credential analysis
+- Knowledge-based authentication (KBA)
+- Audio-video recording (5-year retention)
+- Electronic seal and signature application
+- Real-time document collaboration
+- 24/7 availability for client convenience
+
+**RON Requirements:**
+- Valid government-issued photo ID
+- Reliable internet connection
+- Computer/device with camera and microphone
+- Documents prepared for signing (unsigned)
+
+**RON Workflow:**
+1. Client books RON session via `/ron/dashboard`
+2. Document upload and preparation
+3. Identity verification and KBA
+4. Live notarization session with video recording
+5. Electronic seal application
+6. Secure document delivery and storage
 
 ## 3. Compliance & Legal Protocols
 

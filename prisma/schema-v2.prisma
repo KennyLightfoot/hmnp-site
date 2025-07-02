@@ -1,0 +1,484 @@
+// 🚀 HMNP Booking System V2 Database Schema
+// Bulletproof design for production excellence
+// Single source of truth, proper relationships, data integrity
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// 🎯 CORE BUSINESS MODELS
+// ============================================================================
+
+model Service {
+  id                String            @id @default(cuid())
+  name              String            // "Standard Notary", "RON Acknowledgment"
+  type              ServiceType       // MOBILE, RON
+  description       String?
+  basePrice         Decimal           @db.Decimal(10, 2)
+  depositRequired   Boolean           @default(false)
+  depositAmount     Decimal?          @db.Decimal(10, 2)
+  duration          Int               // Duration in minutes
+  maxSigners        Int               @default(2)
+  maxDocuments      Int               @default(5)
+  isActive          Boolean           @default(true)
+  
+  // Service area configuration (for mobile services)
+  serviceRadius     Int?              // Miles from center point
+  extendedRadius    Int?              // Extended service area
+  travelFeeRate     Decimal?          @db.Decimal(5, 2) // Per mile rate
+  
+  // Business rules
+  businessHours     Json?             // Operating hours configuration
+  availability      Json?             // Available days/times
+  
+  // Metadata
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  
+  // Relations
+  bookings          Booking[]
+  pricingRules      ServicePricingRule[]
+  
+  @@index([type, isActive])
+  @@index([isActive])
+}
+
+model Booking {
+  id                    String                @id @default(cuid())
+  
+  // Service & Customer Information
+  serviceId             String
+  service               Service               @relation(fields: [serviceId], references: [id])
+  customerEmail         String
+  customerName          String
+  customerPhone         String?
+  
+  // Guest vs Authenticated User
+  userId                String?               // NULL for guest bookings
+  user                  User?                 @relation(fields: [userId], references: [id])
+  
+  // Scheduling
+  scheduledDateTime     DateTime
+  estimatedDuration     Int                   // Minutes
+  timeZone              String                @default("America/Chicago")
+  
+  // Location (Mobile services only)
+  locationType          LocationType?
+  addressStreet         String?
+  addressCity           String?
+  addressState          String?
+  addressZip            String?
+  locationNotes         String?
+  
+  // RON specific fields
+  ronSessionId          String?               // Proof.com session ID
+  ronDocumentUrl        String?               // Document URL for RON
+  
+  // Pricing (Calculated and locked at booking)
+  basePrice             Decimal               @db.Decimal(10, 2)
+  travelFee             Decimal               @default(0.00) @db.Decimal(10, 2)
+  timeSurcharge         Decimal               @default(0.00) @db.Decimal(10, 2)
+  emergencyFee          Decimal               @default(0.00) @db.Decimal(10, 2)
+  promoDiscount         Decimal               @default(0.00) @db.Decimal(10, 2)
+  taxAmount             Decimal               @default(0.00) @db.Decimal(10, 2)
+  finalPrice            Decimal               @db.Decimal(10, 2)
+  
+  // Deposit handling
+  depositRequired       Boolean               @default(false)
+  depositAmount         Decimal               @default(0.00) @db.Decimal(10, 2)
+  
+  // Status tracking
+  status                BookingStatus         @default(PENDING)
+  paymentStatus         PaymentStatus         @default(PENDING)
+  
+  // Promo code
+  promoCodeId           String?
+  promoCode             PromoCode?            @relation(fields: [promoCodeId], references: [id])
+  
+  // Integration IDs
+  stripePaymentIntentId String?               @unique
+  ghlContactId          String?
+  googleCalendarEventId String?
+  
+  // Special instructions and notes
+  specialInstructions   String?
+  internalNotes         String?               // Admin only
+  
+  // Metadata for distance/pricing calculation
+  calculatedDistance    Float?                // Distance in miles
+  serviceAreaValidated  Boolean               @default(false)
+  pricingVersion        String                @default("2.0")
+  pricingSnapshot       Json                  // Complete pricing breakdown
+  
+  // Timestamps
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  confirmedAt           DateTime?
+  completedAt           DateTime?
+  cancelledAt           DateTime?
+  
+  // Relations
+  payments              Payment[]
+  notifications         BookingNotification[]
+  auditLogs             BookingAuditLog[]
+  
+  @@index([serviceId, status])
+  @@index([scheduledDateTime])
+  @@index([customerEmail])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([stripePaymentIntentId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Payment {
+  id                    String                @id @default(cuid())
+  bookingId             String
+  booking               Booking               @relation(fields: [bookingId], references: [id])
+  
+  // Payment details
+  amount                Decimal               @db.Decimal(10, 2)
+  status                PaymentStatus         @default(PENDING)
+  provider              PaymentProvider       @default(STRIPE)
+  
+  // Stripe integration
+  stripePaymentIntentId String?               @unique
+  stripeChargeId        String?
+  stripeSessionId       String?
+  
+  // Payment metadata
+  paymentMethod         String?               // card, ach, etc.
+  lastFour              String?               // Last 4 digits
+  brand                 String?               // visa, mastercard, etc.
+  
+  // Refund handling
+  refundedAmount        Decimal               @default(0.00) @db.Decimal(10, 2)
+  refundReason          String?
+  
+  // Timestamps
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  paidAt                DateTime?
+  failedAt              DateTime?
+  refundedAt            DateTime?
+  
+  @@index([bookingId])
+  @@index([status])
+  @@index([stripePaymentIntentId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// 🛠️ SUPPORT MODELS
+// ============================================================================
+
+model ServicePricingRule {
+  id                String              @id @default(cuid())
+  serviceId         String
+  service           Service             @relation(fields: [serviceId], references: [id])
+  
+  ruleType          PricingRuleType     // TIME_SURCHARGE, DISTANCE_FEE, EMERGENCY_FEE
+  name              String              // "Weekend Surcharge", "After Hours Fee"
+  description       String?
+  
+  // Rule conditions
+  conditions        Json                // Flexible conditions (time ranges, distances, etc.)
+  feeType           FeeType             // FIXED, PERCENTAGE, PER_MILE, PER_HOUR
+  feeAmount         Decimal             @db.Decimal(10, 2)
+  
+  isActive          Boolean             @default(true)
+  priority          Int                 @default(0)
+  
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  @@index([serviceId, isActive])
+}
+
+model PromoCode {
+  id                String              @id @default(cuid())
+  code              String              @unique
+  description       String?
+  
+  // Discount configuration
+  discountType      DiscountType        // FIXED, PERCENTAGE
+  discountAmount    Decimal             @db.Decimal(10, 2)
+  
+  // Usage limits
+  maxUses           Int?                // NULL = unlimited
+  currentUses       Int                 @default(0)
+  maxUsesPerUser    Int?                // NULL = unlimited per user
+  
+  // Validity period
+  validFrom         DateTime
+  validUntil        DateTime?
+  
+  // Restrictions
+  minimumOrder      Decimal?            @db.Decimal(10, 2)
+  applicableServices Json?              // Service IDs this code applies to
+  
+  isActive          Boolean             @default(true)
+  
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  createdById       String?
+  
+  // Relations
+  bookings          Booking[]
+  usageLog          PromoCodeUsage[]
+  
+  @@index([code])
+  @@index([isActive, validFrom, validUntil])
+}
+
+model PromoCodeUsage {
+  id            String      @id @default(cuid())
+  promoCodeId   String
+  promoCode     PromoCode   @relation(fields: [promoCodeId], references: [id])
+  
+  bookingId     String?     // NULL if not used in booking
+  userEmail     String
+  discountApplied Decimal   @db.Decimal(10, 2)
+  
+  usedAt        DateTime    @default(now())
+  
+  @@index([promoCodeId])
+  @@index([userEmail])
+}
+
+// ============================================================================
+// 📧 NOTIFICATION & AUDIT MODELS
+// ============================================================================
+
+model BookingNotification {
+  id                String                    @id @default(cuid())
+  bookingId         String
+  booking           Booking                   @relation(fields: [bookingId], references: [id])
+  
+  type              NotificationType          // CONFIRMATION, REMINDER, STATUS_UPDATE
+  method            NotificationMethod        // EMAIL, SMS, WEBHOOK
+  
+  recipient         String                    // Email or phone number
+  subject           String?
+  message           String
+  
+  status            NotificationStatus        @default(PENDING)
+  sentAt            DateTime?
+  failedAt          DateTime?
+  errorMessage      String?
+  
+  // External IDs
+  externalId        String?                   // Provider message ID
+  
+  createdAt         DateTime                  @default(now())
+  
+  @@index([bookingId, type])
+  @@index([status])
+  @@index([sentAt])
+}
+
+model BookingAuditLog {
+  id                String              @id @default(cuid())
+  bookingId         String
+  booking           Booking             @relation(fields: [bookingId], references: [id])
+  
+  action            AuditAction         // CREATED, UPDATED, CANCELLED, PAYMENT_PROCESSED
+  actorType         ActorType           // CUSTOMER, ADMIN, SYSTEM
+  actorId           String?             // User ID or system identifier
+  
+  changes           Json?               // What changed
+  previousValues    Json?               // Previous values
+  newValues         Json?               // New values
+  
+  metadata          Json?               // Additional context
+  ipAddress         String?
+  userAgent         String?
+  
+  createdAt         DateTime            @default(now())
+  
+  @@index([bookingId, action])
+  @@index([actorType, actorId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// 👤 USER MANAGEMENT (Existing models kept for compatibility)
+// ============================================================================
+
+model User {
+  id                String                @id @default(cuid())
+  email             String                @unique
+  firstName         String?
+  lastName          String?
+  phone             String?
+  role              UserRole              @default(CUSTOMER)
+  isActive          Boolean               @default(true)
+  
+  // Authentication
+  emailVerified     DateTime?
+  image             String?
+  
+  // Timestamps
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  
+  // Relations
+  accounts          Account[]
+  sessions          Session[]
+  bookings          Booking[]             // As customer
+  
+  @@index([email])
+  @@index([role, isActive])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  
+  @@unique([identifier, token])
+}
+
+// ============================================================================
+// 📊 ENUMS
+// ============================================================================
+
+enum ServiceType {
+  MOBILE                    // Mobile notary services
+  RON                       // Remote Online Notarization
+}
+
+enum LocationType {
+  CLIENT_SPECIFIED_ADDRESS  // Customer's chosen location
+  NOTARY_OFFICE            // Notary's office
+  NEUTRAL_LOCATION         // Agreed upon neutral location
+  REMOTE_ONLINE            // RON session
+}
+
+enum BookingStatus {
+  PENDING                  // Just created, payment pending
+  CONFIRMED                // Payment confirmed, booking active
+  IN_PROGRESS              // Service is being performed
+  COMPLETED                // Service completed successfully
+  CANCELLED                // Cancelled by customer or admin
+  NO_SHOW                  // Customer didn't show up
+  EXPIRED                  // Time slot expired
+}
+
+enum PaymentStatus {
+  PENDING                  // Payment not yet processed
+  PROCESSING               // Payment being processed
+  PAID                     // Payment successful
+  FAILED                   // Payment failed
+  REFUNDED                 // Payment refunded
+  PARTIALLY_REFUNDED       // Partial refund issued
+}
+
+enum PaymentProvider {
+  STRIPE
+  PAYPAL
+  CASH
+  CHECK
+}
+
+enum PricingRuleType {
+  TIME_SURCHARGE           // Weekend, after-hours fees
+  DISTANCE_FEE             // Travel fees
+  EMERGENCY_FEE            // Rush/emergency service
+  VOLUME_DISCOUNT          // Multiple document discount
+  LOYALTY_DISCOUNT         // Returning customer discount
+}
+
+enum FeeType {
+  FIXED                    // Fixed dollar amount
+  PERCENTAGE               // Percentage of base price
+  PER_MILE                 // Per mile for travel
+  PER_HOUR                 // Per hour for time
+  PER_DOCUMENT             // Per document for volume
+}
+
+enum DiscountType {
+  FIXED                    // Fixed dollar amount off
+  PERCENTAGE               // Percentage off
+}
+
+enum NotificationType {
+  CONFIRMATION             // Booking confirmed
+  REMINDER                 // Upcoming appointment reminder
+  STATUS_UPDATE            // Status change notification
+  PAYMENT_RECEIVED         // Payment confirmation
+  CANCELLATION             // Booking cancelled
+}
+
+enum NotificationMethod {
+  EMAIL
+  SMS
+  WEBHOOK
+  PUSH
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  BOUNCED
+}
+
+enum AuditAction {
+  CREATED
+  UPDATED
+  CANCELLED
+  PAYMENT_PROCESSED
+  REFUND_ISSUED
+  STATUS_CHANGED
+  NOTIFICATION_SENT
+}
+
+enum ActorType {
+  CUSTOMER
+  ADMIN
+  SYSTEM
+  INTEGRATION
+}
+
+enum UserRole {
+  CUSTOMER
+  NOTARY
+  ADMIN
+  SUPER_ADMIN
+}
