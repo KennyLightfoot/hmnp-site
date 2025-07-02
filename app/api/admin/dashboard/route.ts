@@ -325,7 +325,7 @@ async function getRecentActivity() {
       createdAt: 'desc'
     },
     include: {
-      service: {
+      Service: {
         select: {
           name: true
         }

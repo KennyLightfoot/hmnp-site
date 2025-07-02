@@ -21,6 +21,7 @@ export async function POST() {
     // Log this action
     await prisma.systemLog.create({
       data: {
+        id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         level: 'INFO',
         component: 'WORKER_MANAGER',
         message: `All workers stopped by admin user ${(session.user as any).email}`,

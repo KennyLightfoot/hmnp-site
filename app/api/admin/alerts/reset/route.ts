@@ -33,6 +33,7 @@ export async function POST() {
     // Create a system log entry
     await prisma.systemLog.create({
       data: {
+        id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         level: 'INFO',
         component: 'ALERT_MANAGER',
         message: `Admin cleared ${updateResult.count} system alerts`,

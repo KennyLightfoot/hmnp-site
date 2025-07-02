@@ -23,7 +23,19 @@ const AddressSchema = z.object({
 const PricingRequestSchema = z.object({
   serviceId: z.string().min(1, 'Service ID is required'),
   address: AddressSchema.optional(),
-  scheduledDateTime: z.string().datetime('Invalid date format'),
+  scheduledDateTime: z.string()
+    .refine((date) => {
+      try {
+        // Handle datetime-local format (YYYY-MM-DDTHH:mm)
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(date)) {
+          return !isNaN(new Date(date + ':00').getTime());
+        }
+        // Handle full ISO format
+        return !isNaN(new Date(date).getTime());
+      } catch {
+        return false;
+      }
+    }, 'Invalid date format'),
   promoCode: z.string().optional(),
   additionalSigners: z.number().int().min(0).max(10).optional().default(0),
   additionalDocuments: z.number().int().min(0).max(50).optional().default(0)
@@ -34,11 +46,15 @@ const PricingRequestSchema = z.object({
 // ============================================================================
 
 export async function POST(request: NextRequest) {
+  const requestId = generateRequestId();
+  
   try {
     const body = await request.json();
+    console.log('Pricing API Request:', { requestId, body });
     
     // Validate request
     const validatedRequest = PricingRequestSchema.parse(body);
+    console.log('Validated pricing request:', { requestId, validatedRequest });
     
     // Validate service exists
     if (!validateServiceId(validatedRequest.serviceId)) {
@@ -52,8 +68,12 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
     
-    // Parse scheduled date
-    const scheduledDateTime = new Date(validatedRequest.scheduledDateTime);
+    // Parse scheduled date - handle both datetime-local and ISO formats
+    const scheduledDateTime = new Date(
+      validatedRequest.scheduledDateTime.includes('T') && !validatedRequest.scheduledDateTime.includes('Z')
+        ? validatedRequest.scheduledDateTime + ':00'
+        : validatedRequest.scheduledDateTime
+    );
     
     // Validate future date
     if (scheduledDateTime <= new Date()) {
@@ -68,6 +88,14 @@ export async function POST(request: NextRequest) {
     }
     
     // Calculate pricing
+    console.log('Calculating pricing with:', {
+      requestId,
+      serviceId: validatedRequest.serviceId,
+      address: validatedRequest.address,
+      scheduledDateTime: scheduledDateTime.toISOString(),
+      promoCode: validatedRequest.promoCode
+    });
+    
     const pricingCalculation = await calculatePricing({
       serviceId: validatedRequest.serviceId,
       address: validatedRequest.address,
@@ -76,6 +104,8 @@ export async function POST(request: NextRequest) {
       additionalSigners: validatedRequest.additionalSigners,
       additionalDocuments: validatedRequest.additionalDocuments
     });
+    
+    console.log('Pricing calculation result:', { requestId, pricingCalculation });
     
     // Validate calculation integrity
     if (!validatePricingCalculation(pricingCalculation)) {
@@ -119,7 +149,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(response);
     
   } catch (error) {
-    console.error('Pricing API Error:', error);
+    console.error('Pricing API Error:', { requestId, error });
     
     // Handle validation errors
     if (error instanceof z.ZodError) {
@@ -131,7 +161,8 @@ export async function POST(request: NextRequest) {
           details: error.errors.map(err => ({
             field: err.path.join('.'),
             message: err.message
-          }))
+          })),
+          requestId
         }
       }, { status: 400 });
     }
@@ -142,7 +173,8 @@ export async function POST(request: NextRequest) {
         success: false,
         error: {
           code: 'INVALID_SERVICE',
-          message: error.message
+          message: error.message,
+          requestId
         }
       }, { status: 400 });
     }
@@ -153,7 +185,8 @@ export async function POST(request: NextRequest) {
       error: {
         code: 'PRICING_CALCULATION_ERROR',
         message: 'Failed to calculate pricing',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
+        requestId
       }
     }, { status: 500 });
   }

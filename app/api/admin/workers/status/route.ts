@@ -85,6 +85,7 @@ export async function POST() {
     // Log this activity
     await prisma.systemLog.create({
       data: {
+        id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         level: 'INFO',
         component: 'WORKER_MONITOR',
         message: `Worker status refreshed by admin`,

@@ -34,8 +34,8 @@ async function verifySeeding() {
 
     console.log(`  Total Services: ${services.length}`);
     
-    const mobileServices = services.filter(s => s.serviceType === 'MOBILE');
-    const ronServices = services.filter(s => s.serviceType === 'RON');
+    const mobileServices = services.filter(s => s.serviceType.toString() === 'MOBILE');
+    const ronServices = services.filter(s => s.serviceType.toString() === 'RON');
     
     console.log(`  Mobile Services: ${mobileServices.length}`);
     console.log(`  RON Services: ${ronServices.length}`);

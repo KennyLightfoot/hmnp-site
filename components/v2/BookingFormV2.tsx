@@ -148,10 +148,25 @@ export default function BookingFormV2() {
 
   // Calculate pricing when relevant fields change
   useEffect(() => {
-    if (selectedService && watchedValues[1] && watchedValues[2] && watchedValues[3] && watchedValues[4] && watchedValues[5]) {
+    const shouldCalculatePricing = () => {
+      if (!selectedService || !watchedValues[1]) return false; // Need service and date
+      
+      // For mobile services, need address
+      if (selectedService.type === 'MOBILE') {
+        return watchedValues[2] && watchedValues[3] && watchedValues[4] && watchedValues[5]; // street, city, state, zip
+      }
+      
+      // For RON services, just need service and date
+      return true;
+    };
+    
+    if (shouldCalculatePricing()) {
       calculatePricing();
+    } else {
+      // Clear pricing if requirements not met
+      setPricing(null);
     }
-  }, [selectedService, ...watchedValues]);
+  }, [selectedService, watchedValues[1], watchedValues[2], watchedValues[3], watchedValues[4], watchedValues[5], watchedValues[6]]); // Include promo code
 
   // ============================================================================
   // 🎯 API FUNCTIONS
@@ -182,34 +197,51 @@ export default function BookingFormV2() {
     try {
       setIsCalculatingPrice(true);
       
-      const address = {
+      // Transform datetime format for API if needed
+      let formattedDateTime = watchedValues[1];
+      if (formattedDateTime && !formattedDateTime.includes('Z')) {
+        // If it's datetime-local format, convert to ISO
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(formattedDateTime)) {
+          formattedDateTime = new Date(formattedDateTime + ':00').toISOString();
+        }
+      }
+      
+      const address = selectedService.type === 'MOBILE' ? {
         street: watchedValues[2],
         city: watchedValues[3],
         state: watchedValues[4],
         zip: watchedValues[5]
+      } : undefined;
+
+      const requestPayload = {
+        serviceId: selectedService.id,
+        scheduledDateTime: formattedDateTime,
+        address,
+        promoCode: watchedValues[6] || undefined
       };
+
+      console.log('Calculating pricing with payload:', requestPayload);
 
       const response = await fetch('/api/v2/services/pricing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          serviceId: selectedService.id,
-          address: selectedService.type === 'MOBILE' ? address : undefined,
-          scheduledDateTime: watchedValues[1],
-          promoCode: watchedValues[6] || undefined
-        })
+        body: JSON.stringify(requestPayload)
       });
 
       const data = await response.json();
       
       if (data.success) {
         setPricing(data.data.pricing);
+        console.log('Pricing calculated successfully:', data.data.pricing);
       } else {
-        toast.error('Failed to calculate pricing');
+        console.error('Pricing calculation failed:', data.error);
+        toast.error(data.error?.message || 'Failed to calculate pricing');
+        setPricing(null);
       }
     } catch (error) {
-      toast.error('Failed to calculate pricing');
       console.error('Error calculating pricing:', error);
+      toast.error('Failed to calculate pricing - please try again');
+      setPricing(null);
     } finally {
       setIsCalculatingPrice(false);
     }
@@ -371,7 +403,21 @@ export default function BookingFormV2() {
   // ============================================================================
 
   const PricingDisplay = () => {
-    if (!pricing) return null;
+    if (!pricing && !isCalculatingPrice) {
+      // Show a message when pricing prerequisites aren't met
+      return (
+        <Card className="bg-gradient-to-br from-yellow-50 to-amber-50 border-yellow-200">
+          <CardContent className="p-6 text-center">
+            <div className="text-yellow-800">
+              {selectedService?.type === 'MOBILE' 
+                ? 'Please fill in your address to see pricing'
+                : 'Please select a date and time to see pricing'
+              }
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
 
     return (
       <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
@@ -621,7 +667,7 @@ export default function BookingFormV2() {
         )}
 
         {/* Pricing Display */}
-        {currentStep >= 2 && pricing && <PricingDisplay />}
+        {currentStep >= 2 && selectedService && <PricingDisplay />}
 
         {/* Step 3: Contact Information */}
         {currentStep >= 3 && (

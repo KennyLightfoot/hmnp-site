@@ -48,6 +48,7 @@ export async function POST() {
     // Create a system log entry
     await prisma.systemLog.create({
       data: {
+        id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         level: 'INFO',
         component: 'BOOKING_PROCESSOR',
         message: `Admin requested processing of ${pendingBookings.length} pending bookings`,

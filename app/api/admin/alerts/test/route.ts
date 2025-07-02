@@ -53,6 +53,7 @@ export async function POST() {
     // Log this health check
     await prisma.systemLog.create({
       data: {
+        id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         level: 'INFO',
         component: 'HEALTH_CHECK',
         message: `Manual health check triggered by admin user ${(session.user as any).email}`,
@@ -65,6 +66,7 @@ export async function POST() {
     for (const issue of healthResults.issues) {
       await prisma.systemAlert.create({
         data: {
+          id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           component: issue.component,
           message: issue.message,
           severity: issue.severity,

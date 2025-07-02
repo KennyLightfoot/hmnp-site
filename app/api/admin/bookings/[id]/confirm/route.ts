@@ -66,6 +66,7 @@ export async function POST(
     // Create a system log entry
     await prisma.systemLog.create({
       data: {
+        id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         level: 'INFO',
         component: 'BOOKING_MANAGER',
         message: `Admin confirmed booking ID: ${bookingId} for client: ${booking.User_Booking_signerIdToUser?.name}`,
