@@ -1,12 +1,29 @@
+import * as dotenv from 'dotenv';
 import { PrismaClient, ServiceType, DiscountType } from '@prisma/client';
 
+// Load environment variables from .env.local
+dotenv.config({ path: '.env.local' });
+
+// Verify DATABASE_URL is loaded
+if (!process.env.DATABASE_URL) {
+  console.error('❌ DATABASE_URL not found in environment variables');
+  console.log('Available env vars:', Object.keys(process.env).filter(key => key.includes('DATABASE')));
+  process.exit(1);
+}
+
+console.log('✅ DATABASE_URL loaded successfully');
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log(`Start seeding ...`);
-
-  // Create services using upsert (create if not exists, update if exists)
-  console.log('📱 Seeding Mobile Services...');
+  console.log(`🌱 Start seeding database...`);
+  
+  try {
+    // Test database connection
+    await prisma.$connect();
+    console.log('✅ Database connection successful');
+    
+    // Create services using upsert (create if not exists, update if exists)
+    console.log('📱 Seeding Mobile Services...');
   const mobileServices = [
     {
       id: 'cmb8ovso10000ve9xwvtf0my0',
@@ -252,14 +269,30 @@ async function main() {
     console.log(`Upserted promo code: ${promo.code}`);
   }
 
-  console.log(`🎉 Comprehensive seeding finished!`);
+    console.log(`✅ Seeding completed successfully!`);
+    
+    // Verify seeding by counting records
+    const serviceCount = await prisma.service.count();
+    const businessSettingCount = await prisma.businessSettings.count();
+    const promoCodeCount = await prisma.promoCode.count();
+    
+    console.log('📊 Seeding Results:');
+    console.log(`  - Services: ${serviceCount}`);
+    console.log(`  - Business Settings: ${businessSettingCount}`);
+    console.log(`  - Promo Codes: ${promoCodeCount}`);
+    
+  } catch (error) {
+    console.error('❌ Seeding failed:', error);
+    throw error;
+  }
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('❌ Fatal seeding error:', e);
     process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
+    console.log('🔌 Database connection closed');
   });
