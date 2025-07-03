@@ -38,6 +38,7 @@ import {
 } from 'lucide-react';
 
 import { CreateBooking } from '@/lib/booking-validation';
+import TrustBar from '../TrustBar';
 
 // Use imported ReviewStepProps from booking-interfaces
 
@@ -592,6 +593,9 @@ export default function ReviewStep({
         </CardContent>
       </Card>
 
+      {/* Trust Bar */}
+      <TrustBar />
+      
       {/* Help Footer */}
       <div className="text-center">
         <div className="text-sm text-gray-600 mb-2">
@@ -599,7 +603,7 @@ export default function ReviewStep({
         </div>
         <Button variant="outline" size="sm">
           <Phone className="h-4 w-4 mr-2" />
-          Call (713) 234-5678
+          Call (832) 617-4285
         </Button>
       </div>
     </div>

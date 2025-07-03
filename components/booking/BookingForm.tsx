@@ -35,6 +35,7 @@ import {
 // Import our championship components and utilities
 import ServiceSelector from './ServiceSelector';
 import UpsellModal from './UpsellModal';
+import BookingStepHeader from './BookingStepHeader';
 import { CreateBookingSchema, type CreateBooking } from '@/lib/booking-validation';
 import { PricingResult } from '@/lib/pricing-engine';
 import { SlotReservation } from '@/lib/slot-reservation';
@@ -415,53 +416,13 @@ export default function BookingForm({
 
   return (
     <div className={`max-w-4xl mx-auto space-y-6 ${className}`}>
-      {/* Championship Confidence Bar */}
-      <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="font-semibold text-green-800">
-                  Booking Progress: {completionProgress}%
-                </span>
-              </div>
-              {livePrice && (
-                <div className="flex items-center space-x-2">
-                  <DollarSign className="h-5 w-5 text-green-600" />
-                  <span className="font-bold text-green-800 text-lg">
-                    Live Estimate: ${livePrice.total.toFixed(2)}
-                  </span>
-                  {livePrice.confidence.level === 'high' && (
-                    <Badge variant="secondary" className="bg-green-100 text-green-800">
-                      Best Price Guaranteed
-                    </Badge>
-                  )}
-                </div>
-              )}
-            </div>
-            
-            {/* Trust Signals */}
-            <div className="flex items-center space-x-4 text-sm">
-              <div className="flex items-center space-x-1">
-                <Shield className="h-4 w-4 text-green-600" />
-                <span className="text-green-700">$100K Insured</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Star className="h-4 w-4 text-yellow-500" />
-                <span className="text-green-700">4.9/5 Rating</span>
-              </div>
-            </div>
-          </div>
-          
-          <Progress value={completionProgress} className="h-2" />
-          
-          <div className="flex justify-between text-sm text-green-700 mt-2">
-            <span>Confidence Level: {bookingConfidence.level}%</span>
-            <span>{bookingConfidence.nextAction}</span>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Unified Step Header */}
+      <BookingStepHeader
+        currentStep={currentStep}
+        totalSteps={BOOKING_STEPS.length}
+        completion={completionProgress}
+        totalPrice={livePrice?.total || 0}
+      />
 
       {/* Slot Reservation Alert */}
       {slotReservation && timeRemaining && timeRemaining > 0 && (
@@ -478,37 +439,9 @@ export default function BookingForm({
         </Alert>
       )}
 
-      {/* Step Navigation */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center space-x-2">
-                {React.createElement(BOOKING_STEPS[currentStep].icon, { className: "h-5 w-5" })}
-                <span>{BOOKING_STEPS[currentStep].title}</span>
-                <Badge variant="outline">
-                  Step {currentStep + 1} of {BOOKING_STEPS.length}
-                </Badge>
-              </CardTitle>
-              <CardDescription>
-                {BOOKING_STEPS[currentStep].description}
-              </CardDescription>
-            </div>
-            
-            {livePrice && currentStep > 0 && (
-              <div className="text-right">
-                <div className="text-2xl font-bold text-green-600">
-                  ${livePrice.total.toFixed(2)}
-                </div>
-                {priceLoading && (
-                  <div className="text-sm text-gray-500">Updating...</div>
-                )}
-              </div>
-            )}
-          </div>
-        </CardHeader>
-
-        <CardContent>
+      {/* Content Area - Clean and Focused */}
+      <Card className="border-gray-200">
+        <CardContent className="p-6">
           <FormProvider {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               {CurrentStepComponent && (
@@ -524,42 +457,53 @@ export default function BookingForm({
         </CardContent>
       </Card>
 
-      {/* Navigation Buttons */}
-      <div className="flex justify-between">
-        <Button
-          variant="outline"
-          onClick={prevStep}
-          disabled={currentStep === 0 || isSubmitting}
-        >
-          Previous
-        </Button>
+      {/* Footer Navigation */}
+      <div className="flex flex-col space-y-4">
+        <div className="flex justify-between items-center">
+          <Button
+            variant="outline"
+            onClick={prevStep}
+            disabled={currentStep === 0 || isSubmitting}
+            className="min-h-[44px] border-gray-300 text-gray-600 hover:text-gray-800"
+          >
+            Back
+          </Button>
 
-        <div className="flex space-x-2">
-          {currentStep < BOOKING_STEPS.length - 2 && (
-            <Button
-              onClick={nextStep}
-              disabled={!isStepValid || isSubmitting}
-            >
-              Next Step
-            </Button>
-          )}
-          
-          {currentStep === BOOKING_STEPS.length - 2 && (
-            <Button
-              onClick={form.handleSubmit(onSubmit)}
-              disabled={!isStepValid || isSubmitting}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {isSubmitting ? (
-                'Creating Booking...'
-              ) : (
-                <>
-                  <Zap className="h-4 w-4 mr-2" />
-                  Complete Booking
-                </>
-              )}
-            </Button>
-          )}
+          <div className="flex space-x-3">
+            {currentStep < BOOKING_STEPS.length - 2 && (
+              <Button
+                onClick={nextStep}
+                disabled={!isStepValid || isSubmitting}
+                className="min-h-[44px] bg-primary hover:bg-primary/90 text-white px-8"
+              >
+                Next
+              </Button>
+            )}
+            
+            {currentStep === BOOKING_STEPS.length - 2 && (
+              <Button
+                onClick={form.handleSubmit(onSubmit)}
+                disabled={!isStepValid || isSubmitting}
+                className="min-h-[44px] bg-primary hover:bg-primary/90 text-white px-8"
+              >
+                {isSubmitting ? (
+                  'Creating Booking...'
+                ) : (
+                  'Complete Booking'
+                )}
+              </Button>
+            )}
+          </div>
+        </div>
+        
+        {/* Help Link */}
+        <div className="text-center">
+          <a 
+            href="tel:832-617-4285" 
+            className="text-sm text-gray-600 hover:text-secondary underline"
+          >
+            Need help? 832-617-4285
+          </a>
         </div>
       </div>
 

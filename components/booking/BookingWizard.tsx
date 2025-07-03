@@ -32,6 +32,7 @@ import {
 import ServiceSelector from './ServiceSelector';
 import UpsellModal from './UpsellModal';
 import ProgressTracker from './ProgressTracker';
+import BookingStepHeader from './BookingStepHeader';
 
 // Import step components
 import CustomerInfoStep from './steps/CustomerInfoStep';
