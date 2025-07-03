@@ -14,21 +14,45 @@ import { logger } from '@/lib/logger';
 import { 
   CreateBookingSchema, 
   validateBookingData,
-  formatValidationError 
+  formatValidationError,
+  BookingTriageSchema,
+  ServiceTypeSchema,
+  LocationTypeSchema,
+  CustomerInfoSchema,
+  LocationSchema,
+  ServiceDetailsSchema,
+  SchedulingSchema,
+  PaymentInfoSchema
 } from '@/lib/booking-validation';
 import { calculateBookingPrice } from '@/lib/pricing-engine';
 import { slotReservationEngine } from '@/lib/slot-reservation';
 import { headers } from 'next/headers';
 
-// Enhanced request schema with additional metadata
-const BookingCreationSchema = CreateBookingSchema.extend({
+// Enhanced request schema with additional metadata - using safer schema composition
+const BookingCreationSchema = z.object({
+  // Base CreateBookingSchema fields
+  triageResults: BookingTriageSchema.optional(),
+  serviceType: ServiceTypeSchema,
+  locationType: LocationTypeSchema,
+  customer: CustomerInfoSchema,
+  location: LocationSchema.optional(),
+  serviceDetails: ServiceDetailsSchema,
+  scheduling: SchedulingSchema,
+  payment: PaymentInfoSchema,
+  promoCode: z.string().max(20).optional(),
+  referralCode: z.string().max(50).optional(),
+  bookingSource: z.string().default('website'),
+  userAgent: z.string().optional(),
+  ipAddress: z.string().optional(),
+  utmParameters: z.record(z.string()).optional(),
+  
+  // Additional fields for creation
   reservationId: z.string().optional(),
   paymentMethodId: z.string().optional(), // Stripe payment method ID
   savePaymentMethod: z.boolean().default(false),
   agreedToTerms: z.boolean().refine(val => val === true, 'You must agree to terms and conditions'),
   marketingConsent: z.boolean().default(false),
-  source: z.string().default('website'),
-  utmParameters: z.record(z.string()).optional()
+  source: z.string().default('website')
 });
 
 type BookingCreationRequest = z.infer<typeof BookingCreationSchema>;

@@ -199,10 +199,26 @@ export const CreateBookingSchema = z.object({
   path: ['serviceDetails', 'documentCount']
 });
 
-// Update Booking Schema
-export const UpdateBookingSchema = CreateBookingSchema.partial().extend({
+// Update Booking Schema - using safer partial implementation
+export const UpdateBookingSchema = z.object({
   id: z.string().min(1, "Booking ID is required"),
-  version: z.number().optional() // For optimistic locking
+  version: z.number().optional(), // For optimistic locking
+  
+  // All fields from CreateBookingSchema as optional
+  triageResults: BookingTriageSchema.optional(),
+  serviceType: ServiceTypeSchema.optional(),
+  locationType: LocationTypeSchema.optional(),
+  customer: CustomerInfoSchema.optional(),
+  location: LocationSchema.optional(),
+  serviceDetails: ServiceDetailsSchema.optional(),
+  scheduling: SchedulingSchema.optional(),
+  payment: PaymentInfoSchema.optional(),
+  promoCode: z.string().max(20).optional(),
+  referralCode: z.string().max(50).optional(),
+  bookingSource: z.string().optional(),
+  userAgent: z.string().optional(),
+  ipAddress: z.string().optional(),
+  utmParameters: z.record(z.string()).optional()
 });
 
 // Booking Query/Filter Schema
