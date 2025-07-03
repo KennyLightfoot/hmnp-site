@@ -8,7 +8,7 @@ console.log('🔧 Fixing build errors...\n');
 // 1. Set environment variables for build
 process.env.SKIP_ENV_VALIDATION = 'true';
 process.env.NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com';
-process.env.NODE_ENV = 'production';
+// NODE_ENV is automatically set by Vercel - removing redundant setting
 
 console.log('✅ Environment variables set for build');
 
