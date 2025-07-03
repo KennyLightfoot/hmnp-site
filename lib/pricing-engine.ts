@@ -672,9 +672,27 @@ export class PricingEngine {
   private async cacheResult(params: PricingCalculationParams, result: PricingResult): Promise<void> {
     try {
       const cacheKey = `pricing_${this.hashParams(params)}`;
-      await redis.setex(cacheKey, 300, JSON.stringify(result)); // Cache for 5 minutes
+      
+      // FIX: Use proper Redis client method
+      // Check if redis.setex exists, otherwise use redis.set with EX
+      if (typeof redis.setex === 'function') {
+        await redis.setex(cacheKey, 300, JSON.stringify(result));
+      } else {
+        // Alternative method for different Redis clients
+        await redis.set(cacheKey, JSON.stringify(result), 'EX', 300);
+      }
+      
+      logger.info('Pricing result cached successfully', { 
+        cacheKey, 
+        ttl: 300,
+        method: typeof redis.setex === 'function' ? 'setex' : 'set-EX'
+      });
+      
     } catch (error) {
-      logger.warn('Failed to cache pricing result', { error: error.message });
+      logger.warn('Failed to cache pricing result', { 
+        error: error.message,
+        redisClient: Object.getOwnPropertyNames(redis).join(', ')
+      });
     }
   }
 

@@ -341,8 +341,7 @@ async function checkPaymentSystemHealth(): Promise<HealthCheckResult> {
     let stripeStatus = 'unknown';
     try {
       if (process.env.STRIPE_SECRET_KEY) {
-        const { getStripeClient } = await import('@/lib/stripe-client');
-        const stripe = getStripeClient();
+        const { stripe } = await import('@/lib/stripe');
         // Simple API call to test connectivity without manual headers
         await stripe.balance.retrieve();
         stripeStatus = 'healthy';

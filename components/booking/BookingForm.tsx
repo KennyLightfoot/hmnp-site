@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { debounce } from 'lodash';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent } from '@/components/ui/card';
@@ -163,6 +164,7 @@ export default function BookingForm({
   const [slotReservation, setSlotReservation] = useState<SlotReservation | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [showUpsell, setShowUpsell] = useState(false);
+  const [lastPricingHash, setLastPricingHash] = useState('');
 
   // Watch form values for real-time updates
   const watchedValues = form.watch();
@@ -178,7 +180,7 @@ export default function BookingForm({
   }, [currentStep, watchedValues]);
 
 
-  // Real-time pricing calculation
+  // Optimized pricing calculation with smart debouncing
   const calculateLivePrice = useCallback(async () => {
     if (!watchedValues.serviceType) return;
 
@@ -206,6 +208,16 @@ export default function BookingForm({
         referralCode: watchedValues.referralCode
       };
 
+      // Update pricing hash to prevent duplicate requests
+      const currentHash = JSON.stringify({
+        serviceType: watchedValues.serviceType,
+        zipCode: watchedValues.location?.zipCode,
+        date: watchedValues.scheduling?.preferredDate,
+        time: watchedValues.scheduling?.preferredTime,
+        documentCount: watchedValues.serviceDetails?.documentCount
+      });
+      setLastPricingHash(currentHash);
+
       const response = await fetch('/api/booking/calculate-price', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -226,13 +238,34 @@ export default function BookingForm({
     } finally {
       setPriceLoading(false);
     }
-  }, [watchedValues, currentStep]);
+  }, [watchedValues.serviceType, watchedValues.location?.zipCode, watchedValues.scheduling?.preferredDate, currentStep]);
 
-  // Debounced price calculation
+  // Smart debouncing - only on meaningful changes
+  const debouncedCalculatePrice = useMemo(
+    () => debounce(calculateLivePrice, 2000), // Increased from 500ms to 2000ms
+    [watchedValues.serviceType, watchedValues.location?.zipCode, watchedValues.scheduling?.preferredDate]
+  );
+
+  // Check if pricing recalculation is needed
+  const shouldRecalculatePrice = useMemo(() => {
+    const relevantData = {
+      serviceType: watchedValues.serviceType,
+      zipCode: watchedValues.location?.zipCode,
+      date: watchedValues.scheduling?.preferredDate,
+      time: watchedValues.scheduling?.preferredTime,
+      documentCount: watchedValues.serviceDetails?.documentCount
+    };
+    
+    const currentHash = JSON.stringify(relevantData);
+    return currentHash !== lastPricingHash;
+  }, [watchedValues, lastPricingHash]);
+
+  // Optimized pricing trigger
   useEffect(() => {
-    const timer = setTimeout(calculateLivePrice, 500);
-    return () => clearTimeout(timer);
-  }, [calculateLivePrice]);
+    if (shouldRecalculatePrice && watchedValues.serviceType) {
+      debouncedCalculatePrice();
+    }
+  }, [shouldRecalculatePrice, debouncedCalculatePrice, watchedValues.serviceType]);
 
   // Slot reservation timer
   useEffect(() => {

@@ -449,6 +449,11 @@ export async function calculateDistance(
   }
 }
 
+// Named exports for backward compatibility
+export { EnhancedDistanceCalculator as DistanceCalculator };
+
 // Legacy compatibility exports
 export const DistanceService = EnhancedDistanceCalculator;
+
+// Default export
 export default EnhancedDistanceCalculator;

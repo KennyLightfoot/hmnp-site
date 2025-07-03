@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { debounce } from 'lodash';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent } from '@/components/ui/card';
@@ -160,6 +161,9 @@ export default function BookingWizard() {
     completedBooking: null
   });
 
+  // Add pricing hash tracking
+  const [lastPricingHash, setLastPricingHash] = useState('');
+
   // Watch form values for real-time updates
   const watchedValues = form.watch();
   const formErrors = form.formState.errors;
@@ -195,7 +199,7 @@ export default function BookingWizard() {
     return Math.min(progress, 100);
   }, [watchedValues, state.slotReservation, state.currentStep]);
 
-  // Real-time pricing calculation
+  // Optimized pricing calculation with smart debouncing
   const calculatePricing = useCallback(async () => {
     if (!watchedValues.serviceType) return;
 
@@ -224,6 +228,16 @@ export default function BookingWizard() {
         referralCode: watchedValues.referralCode
       };
 
+      // Update pricing hash to prevent duplicate requests
+      const currentHash = JSON.stringify({
+        serviceType: watchedValues.serviceType,
+        zipCode: watchedValues.location?.zipCode,
+        date: watchedValues.scheduling?.preferredDate,
+        time: watchedValues.scheduling?.preferredTime,
+        documentCount: watchedValues.serviceDetails?.documentCount
+      });
+      setLastPricingHash(currentHash);
+
       const response = await fetch('/api/booking/calculate-price', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -243,13 +257,34 @@ export default function BookingWizard() {
     } finally {
       setState(prev => ({ ...prev, pricingLoading: false }));
     }
-  }, [watchedValues, state.currentStep]);
+  }, [watchedValues.serviceType, watchedValues.location?.zipCode, watchedValues.scheduling?.preferredDate, state.currentStep]);
 
-  // Debounced pricing calculation
+  // Smart debouncing - only on meaningful changes
+  const debouncedCalculatePricing = useMemo(
+    () => debounce(calculatePricing, 2000), // Increased from 500ms to 2000ms
+    [watchedValues.serviceType, watchedValues.location?.zipCode, watchedValues.scheduling?.preferredDate]
+  );
+
+  // Check if pricing recalculation is needed
+  const shouldRecalculatePrice = useMemo(() => {
+    const relevantData = {
+      serviceType: watchedValues.serviceType,
+      zipCode: watchedValues.location?.zipCode,
+      date: watchedValues.scheduling?.preferredDate,
+      time: watchedValues.scheduling?.preferredTime,
+      documentCount: watchedValues.serviceDetails?.documentCount
+    };
+    
+    const currentHash = JSON.stringify(relevantData);
+    return currentHash !== lastPricingHash;
+  }, [watchedValues, lastPricingHash]);
+
+  // Optimized pricing trigger
   useEffect(() => {
-    const timer = setTimeout(calculatePricing, 500);
-    return () => clearTimeout(timer);
-  }, [calculatePricing]);
+    if (shouldRecalculatePrice && watchedValues.serviceType) {
+      debouncedCalculatePricing();
+    }
+  }, [shouldRecalculatePrice, debouncedCalculatePricing, watchedValues.serviceType]);
 
   // Slot reservation management
   const reserveSlot = useCallback(async () => {

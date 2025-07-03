@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { createHash } from 'crypto';
 import { calculateBookingPrice, PricingCalculationParamsSchema } from '@/lib/pricing-engine';
 import { logger } from '@/lib/logger';
 import { headers } from 'next/headers';
@@ -16,8 +17,11 @@ import { headers } from 'next/headers';
 const rateLimitMap = new Map<string, { count: number; timestamp: number }>();
 const RATE_LIMIT = {
   windowMs: 60 * 1000, // 1 minute
-  maxRequests: 30       // 30 requests per minute per IP
+  maxRequests: 60       // Increased from 30 to 60 for optimized frontend
 };
+
+// Request deduplication cache
+const requestCache = new Map<string, { result: any; timestamp: number }>();
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
@@ -48,7 +52,7 @@ export async function POST(request: NextRequest) {
   
   try {
     // Get client IP for rate limiting
-    const headersList = headers();
+    const headersList = await headers();
     const ip = headersList.get('x-forwarded-for') || 
                 headersList.get('x-real-ip') || 
                 'unknown';
@@ -71,10 +75,22 @@ export async function POST(request: NextRequest) {
     
     requestId = validatedRequest.requestId || `api_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
+    // Request fingerprinting to prevent duplicate processing
+    const requestFingerprint = createHash('md5')
+      .update(JSON.stringify(validatedRequest))
+      .digest('hex');
+
+    const cached = requestCache.get(requestFingerprint);
+    if (cached && Date.now() - cached.timestamp < 30000) { // 30 seconds
+      logger.info('Returning cached pricing result', { requestId, fingerprint: requestFingerprint.substring(0, 8) });
+      return NextResponse.json(cached.result);
+    }
+    
     logger.info('Pricing calculation request received', {
       requestId,
       serviceType: validatedRequest.serviceType,
       source: validatedRequest.source,
+      fingerprint: requestFingerprint.substring(0, 8),
       ip: ip.substring(0, 10) + '...' // Partial IP for privacy
     });
 
@@ -90,8 +106,8 @@ export async function POST(request: NextRequest) {
       upsellCount: pricingResult.upsellSuggestions.length
     });
 
-    // Return pricing result with performance metrics
-    return NextResponse.json({
+    // Prepare response
+    const response = {
       success: true,
       data: pricingResult,
       metadata: {
@@ -100,7 +116,20 @@ export async function POST(request: NextRequest) {
         timestamp: new Date().toISOString(),
         api_version: '2.0.0'
       }
-    });
+    };
+
+    // Cache the result for deduplication
+    requestCache.set(requestFingerprint, { result: response, timestamp: Date.now() });
+    
+    // Clean up old cache entries (prevent memory leaks)
+    const now = Date.now();
+    for (const [key, value] of requestCache.entries()) {
+      if (now - value.timestamp > 60000) { // Remove entries older than 1 minute
+        requestCache.delete(key);
+      }
+    }
+
+    return NextResponse.json(response);
 
   } catch (error) {
     const processingTime = Date.now() - startTime;

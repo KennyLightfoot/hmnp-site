@@ -23,7 +23,7 @@ if (!stripePublishableKey) {
 
 // Initialize Stripe with proper configuration
 export const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: '2024-06-20', // Latest stable API version
+  apiVersion: '2024-12-18', // Latest stable API version
   typescript: true,
   telemetry: false, // Disable telemetry for privacy
   maxNetworkRetries: 3,

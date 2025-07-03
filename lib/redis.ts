@@ -83,6 +83,7 @@ class RedisClient {
         }
         return upstashClient.set(key, value);
       },
+      setex: (key: string, seconds: number, value: string) => upstashClient.setex(key, seconds, value),
       del: (key: string) => upstashClient.del(key),
       exists: (key: string) => upstashClient.exists(key),
       incr: (key: string) => upstashClient.incr(key),
@@ -314,6 +315,12 @@ class RedisClient {
 
 // Create singleton instance
 export const redis = new RedisClient();
+
+// Add debugging for development
+if (process.env.NODE_ENV === 'development') {
+  console.log('Redis client methods:', Object.getOwnPropertyNames(redis));
+  console.log('Redis setex available:', typeof (redis as any).setex === 'function');
+}
 
 // Export types and utilities
 export type { RedisConfig };
