@@ -502,7 +502,6 @@ export class RONService {
 
 // Export everything
 export default proofAPI;
-export { ProofAPIClient, RONService };
 
 // Export types for external use
 export type {
