@@ -425,6 +425,30 @@ export class EnhancedDistanceCalculator {
   }
 }
 
+/**
+ * Legacy calculateDistance function for backward compatibility
+ * Simple interface for basic distance calculations
+ */
+export async function calculateDistance(
+  origin: string = SERVICE_CONFIG.CENTER_LOCATION,
+  destination: string
+): Promise<{ distance: number; duration: number; success: boolean }> {
+  try {
+    const result = await EnhancedDistanceCalculator.calculateDistanceAndValidate(destination);
+    return {
+      distance: result.distance.miles,
+      duration: result.duration.minutes,
+      success: result.success
+    };
+  } catch (error) {
+    return {
+      distance: 15, // Safe fallback
+      duration: 25,
+      success: false
+    };
+  }
+}
+
 // Legacy compatibility exports
 export const DistanceService = EnhancedDistanceCalculator;
 export default EnhancedDistanceCalculator;
