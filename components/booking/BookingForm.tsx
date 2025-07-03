@@ -229,16 +229,27 @@ export default function BookingForm({
         body: JSON.stringify(pricingParams)
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        setLivePrice(result.data);
-
-        // Check for upsell opportunities
-        if (result.data.upsellSuggestions?.length > 0 && currentStep >= 3) {
-          setShowUpsell(true);
+      if (!response.ok) {
+        let errorMessage = `Pricing calculation failed (${response.status})`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+          // If JSON parsing fails, use the default message
         }
-      } else {
-        throw new Error(`Pricing calculation failed: ${response.status}`);
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+      if (!result.success && !result.data) {
+        throw new Error(result.error || 'Invalid pricing response');
+      }
+
+      setLivePrice(result.data);
+
+      // Check for upsell opportunities
+      if (result.data.upsellSuggestions?.length > 0 && currentStep >= 3) {
+        setShowUpsell(true);
       }
     } catch (error) {
       console.error('Failed to calculate price:', error);
@@ -326,16 +337,23 @@ export default function BookingForm({
             })
           });
 
-          if (reservationResponse.ok) {
-            const result = await reservationResponse.json();
-            if (result.success) {
-              setSlotReservation(result.reservation);
-            } else {
-              throw new Error(result.error || 'Slot reservation failed');
+          if (!reservationResponse.ok) {
+            let errorMessage = `Slot reservation failed (${reservationResponse.status})`;
+            try {
+              const errorData = await reservationResponse.json();
+              errorMessage = errorData.error || errorData.message || errorMessage;
+            } catch {
+              // If JSON parsing fails, use the default message
             }
-          } else {
-            throw new Error(`Slot reservation failed: ${reservationResponse.status}`);
+            throw new Error(errorMessage);
           }
+
+          const result = await reservationResponse.json();
+          if (!result.success) {
+            throw new Error(result.error || 'Slot reservation failed - please try a different time');
+          }
+
+          setSlotReservation(result.reservation);
         } catch (error) {
           console.error('Failed to reserve slot:', error);
           toast({
@@ -379,18 +397,28 @@ export default function BookingForm({
         body: JSON.stringify(bookingData)
       });
 
-      const result = await response.json();
-
-      if (result.success) {
-        onComplete?.(result.booking);
-        setCurrentStep(BOOKING_STEPS.length - 1); // Go to confirmation
-        toast({
-          title: 'Booking Confirmed!',
-          description: 'Your appointment has been successfully booked. Check your email for confirmation details.'
-        });
-      } else {
-        throw new Error(result.error || 'Booking creation failed');
+      if (!response.ok) {
+        let errorMessage = `Booking creation failed (${response.status})`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+          // If JSON parsing fails, use the default message
+        }
+        throw new Error(errorMessage);
       }
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Booking creation failed - please try again');
+      }
+
+      onComplete?.(result.booking);
+      setCurrentStep(BOOKING_STEPS.length - 1); // Go to confirmation
+      toast({
+        title: 'Booking Confirmed!',
+        description: 'Your appointment has been successfully booked. Check your email for confirmation details.'
+      });
     } catch (error) {
       console.error('Booking submission failed:', error);
       toast({

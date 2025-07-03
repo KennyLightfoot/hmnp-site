@@ -9,6 +9,7 @@
 import { redis } from './redis';
 import { logger } from './logger';
 import { z } from 'zod';
+import { webSocketManager } from './realtime/websocket-manager';
 
 // Reservation Configuration
 const RESERVATION_CONFIG = {
@@ -156,6 +157,9 @@ export class SlotReservationEngine {
       }
       
       await pipeline.exec();
+      
+      // Broadcast real-time slot update
+      await this.broadcastSlotUpdate(datetime, serviceType, false, reservationId);
       
       logger.info('Slot reserved successfully', {
         reservationId,
@@ -395,6 +399,9 @@ export class SlotReservationEngine {
       
       await redis.del(...keysToDelete);
       
+      // Broadcast real-time slot update
+      await this.broadcastSlotUpdate(reservation.datetime, reservation.serviceType, true);
+      
       logger.info('Reservation released', { reservationId });
       return true;
       
@@ -552,6 +559,40 @@ export class SlotReservationEngine {
       sanitized.customerEmail = this.maskEmail(sanitized.customerEmail);
     }
     return sanitized;
+  }
+
+  /**
+   * Broadcast slot availability update via WebSocket
+   */
+  private async broadcastSlotUpdate(datetime: string, serviceType: string, available: boolean, reservationId?: string): Promise<void> {
+    try {
+      const viewerCount = webSocketManager.getSlotViewerCount(datetime, serviceType);
+      
+      await webSocketManager.broadcastSlotUpdate({
+        datetime,
+        serviceType,
+        available,
+        reservationId,
+        viewerCount
+      });
+      
+      // Also publish to Redis for other instances
+      await redis.publish('slot_updates', JSON.stringify({
+        datetime,
+        serviceType,
+        available,
+        reservationId,
+        viewerCount,
+        timestamp: new Date().toISOString()
+      }));
+    } catch (error) {
+      logger.error('Failed to broadcast slot update', { 
+        datetime, 
+        serviceType, 
+        available, 
+        error: error.message 
+      });
+    }
   }
 }
 

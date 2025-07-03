@@ -122,7 +122,7 @@ export default function UnifiedBookingCalendar({
       const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       setUserTimezone(detectedTimezone);
     } catch (error) {
-      logger.warn('Could not detect timezone', 'CALENDAR', { error: error.message });
+      logger.warn('Could not detect timezone', 'CALENDAR', { error: error instanceof Error ? error.message : 'Unknown error' });
       setUserTimezone('America/Chicago'); // Fallback
     }
   }, []);
@@ -154,9 +154,9 @@ export default function UnifiedBookingCalendar({
         if (signers === 1) return 'r9koQ0kxmuMuWryZkjdo';
         if (signers === 2) return 'wkTW5ZX4EMl5hOAbCk9D';
         return 'Vy3hd6Or6Xi2ogW0mvEG'; // 3+ signers
-      case 'extended-hours-notary':
+      case 'extended-hours':
         return 'xtHXReq1dfd0wGA7dLc0';
-      case 'loan-signing-specialist':
+      case 'loan-signing':
         return 'EJ5ED9UXPHCjBePUTJ0W';
       case 'specialty-notary-service':
         return 'h4X7cZ0mZ3c52XSzvpjU';
@@ -178,9 +178,9 @@ export default function UnifiedBookingCalendar({
     if (!service) return 60;
     
     switch (service.toLowerCase()) {
-      case 'loan-signing-specialist':
+      case 'loan-signing':
         return 90; // SOP: 90-minute session for loan signing
-      case 'extended-hours-notary':
+      case 'extended-hours':
         return 60; // SOP: Standard duration
       case 'standard-notary':
       case 'specialty-notary-service':
@@ -299,7 +299,7 @@ export default function UnifiedBookingCalendar({
                     endTime: end.toISOString(),
                     formattedTime: format(start, 'hh:mm aa'),
                     available: true
-                  };
+                  } as TimeSlot;
                 } catch (parseError) {
                   console.error('Error parsing slot:', startTimeString, parseError);
                   return null;

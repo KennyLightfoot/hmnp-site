@@ -123,15 +123,12 @@ model Booking {
   price_snapshot_cents           Int?
   pricing_calculated_at          DateTime?              @db.Timestamptz(6)
   security_flags                 Json?                  @default("{}")
-  
-  // Enhanced Pricing Fields (SOP_ENHANCED.md)
-  calculatedDistance             Float?                 // Distance in miles from service center (ZIP 77591)
-  travelFee                      Decimal?               @default(0.00) @db.Decimal(10, 2) // Travel fee based on distance
-  serviceAreaValidated           Boolean?               @default(false) // Whether location validated against service area
-  pricingBreakdown               Json?                  // Complete pricing breakdown JSON
-  distanceCalculationMeta        Json?                  // Distance calculation metadata
-  pricingVersion                 String?                @default("2.0.0") @db.VarChar(10) // Pricing engine version
-  
+  calculatedDistance             Float?
+  travelFee                      Decimal?               @default(0.00) @db.Decimal(10, 2)
+  serviceAreaValidated           Boolean?               @default(false)
+  pricingBreakdown               Json?
+  distanceCalculationMeta        Json?
+  pricingVersion                 String?                @default("2.0.0") @db.VarChar(10)
   User_Booking_notaryIdToUser    User?                  @relation("Booking_notaryIdToUser", fields: [notaryId], references: [id])
   PromoCode                      PromoCode?             @relation(fields: [promoCodeId], references: [id])
   Service                        Service                @relation(fields: [serviceId], references: [id])
@@ -140,10 +137,10 @@ model Booking {
   NotarizationDocument           NotarizationDocument[]
   NotificationLog                NotificationLog[]
   Payment                        Payment[]
+  PricingAuditLog                PricingAuditLog[]
   notary_journal                 notary_journal[]
   promo_code_usage               promo_code_usage[]
   stripe_webhook_log             stripe_webhook_log[]
-  PricingAuditLog                PricingAuditLog[]              // Enhanced pricing audit logs
 
   @@unique([notaryId, scheduledDateTime])
   @@index([depositStatus])
@@ -409,6 +406,7 @@ model User {
   DownloadLog                    DownloadLog[]
   InvitationToken                InvitationToken[]
   NotarizationDocument           NotarizationDocument[]
+  PricingAuditLog                PricingAuditLog[]
   PromoCode                      PromoCode[]
   Session                        Session[]
   StatusHistory                  StatusHistory[]
@@ -417,7 +415,6 @@ model User {
   notary_journal                 notary_journal[]
   notary_profiles                notary_profiles?
   security_audit_log             security_audit_log[]
-  PricingAuditLog                PricingAuditLog[]              // Enhanced pricing audit logs
 }
 
 model VerificationToken {
@@ -605,6 +602,238 @@ model stripe_webhook_log {
   @@index([stripe_event_id])
 }
 
+model NewBooking {
+  id                    String               @id @default(cuid())
+  bookingNumber         String               @unique @default(cuid())
+  serviceType           ServiceType
+  serviceVariant        String?
+  customerEmail         String
+  customerName          String
+  customerPhone         String?
+  companyName           String?
+  scheduledDateTime     DateTime
+  estimatedDuration     Int                  @default(60)
+  timeZone              String               @default("America/Chicago")
+  locationType          NewLocationType      @default(CLIENT_ADDRESS)
+  locationAddress       String?
+  locationLatitude      Float?
+  locationLongitude     Float?
+  locationNotes         String?
+  calculatedDistance    Float?
+  documentCount         Int                  @default(1)
+  documentTypes         String[]
+  signerCount           Int                  @default(1)
+  specialInstructions   String?
+  accessInstructions    String?
+  basePrice             Decimal              @db.Decimal(10, 2)
+  travelFee             Decimal              @default(0) @db.Decimal(10, 2)
+  surcharges            Decimal              @default(0) @db.Decimal(10, 2)
+  discounts             Decimal              @default(0) @db.Decimal(10, 2)
+  totalPrice            Decimal              @db.Decimal(10, 2)
+  paymentStatus         PaymentStatus        @default(PENDING)
+  depositAmount         Decimal?             @db.Decimal(10, 2)
+  depositPaid           Boolean              @default(false)
+  balanceDue            Decimal?             @db.Decimal(10, 2)
+  status                NewBookingStatus     @default(PENDING)
+  confirmationSentAt    DateTime?
+  remindersSentAt       DateTime[]
+  stripePaymentIntentId String?
+  stripeCustomerId      String?
+  ghlContactId          String?
+  ghlOpportunityId      String?
+  googleCalendarEventId String?
+  notaryUserId          String?
+  estimatedArrival      DateTime?
+  actualArrival         DateTime?
+  actualStartTime       DateTime?
+  actualEndTime         DateTime?
+  bookingSource         String               @default("website")
+  referralCode          String?
+  promoCode             String?
+  clientNotes           String?
+  internalNotes         String?
+  proofTransactionId    String?              // Proof.com transaction ID for RON sessions
+  ronSessionUrl         String?              // RON session URL for customers
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  auditLogs             NewBookingAuditLog[]
+  documents             NewBookingDocument[]
+  notifications         NewNotification[]
+  payments              NewPayment[]
+
+  @@index([serviceType, status])
+  @@index([scheduledDateTime])
+  @@index([customerEmail])
+  @@index([ghlContactId])
+  @@map("new_bookings")
+}
+
+model NewPayment {
+  id                    String           @id @default(cuid())
+  bookingId             String
+  amount                Decimal          @db.Decimal(10, 2)
+  currency              String           @default("usd")
+  paymentMethod         NewPaymentMethod
+  stripePaymentIntentId String?
+  stripeChargeId        String?
+  status                PaymentStatus    @default(PENDING)
+  paidAt                DateTime?
+  refundedAt            DateTime?
+  refundAmount          Decimal?         @db.Decimal(10, 2)
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  booking               NewBooking       @relation(fields: [bookingId], references: [id])
+
+  @@map("new_payments")
+}
+
+model NewNotification {
+  id               String              @id @default(cuid())
+  bookingId        String
+  notificationType NewNotificationType
+  method           NotificationMethod
+  recipientEmail   String?
+  recipientPhone   String?
+  subject          String?
+  message          String
+  sentAt           DateTime            @default(now())
+  status           NotificationStatus  @default(SENT)
+  errorMessage     String?
+  metadata         Json?
+  createdAt        DateTime            @default(now())
+  booking          NewBooking          @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([method])
+  @@index([notificationType])
+  @@map("new_notifications")
+}
+
+model NewBookingDocument {
+  id         String     @id @default(cuid())
+  bookingId  String
+  filename   String
+  s3Key      String
+  uploadedAt DateTime   @default(now())
+  booking    NewBooking @relation(fields: [bookingId], references: [id])
+
+  @@map("new_booking_documents")
+}
+
+model NewBookingAuditLog {
+  id        String     @id @default(cuid())
+  bookingId String
+  action    String
+  oldValues Json?
+  newValues Json?
+  userId    String?
+  timestamp DateTime   @default(now())
+  booking   NewBooking @relation(fields: [bookingId], references: [id])
+
+  @@map("new_booking_audit_logs")
+}
+
+model SlotReservation {
+  id            String   @id @default(cuid())
+  datetime      DateTime
+  serviceType   String
+  userId        String?
+  customerEmail String?
+  reservedAt    DateTime @default(now())
+  expiresAt     DateTime
+  extended      Boolean  @default(false)
+  bookingId     String?
+
+  @@unique([datetime, serviceType])
+  @@index([expiresAt])
+  @@index([userId])
+  @@index([customerEmail])
+  @@map("slot_reservations")
+}
+
+model UpsellSuggestion {
+  id             String    @id @default(cuid())
+  bookingId      String?
+  customerEmail  String?
+  suggestionType String
+  fromService    String?
+  toService      String?
+  priceIncrease  Decimal   @db.Decimal(10, 2)
+  headline       String
+  benefit        String
+  presented      Boolean   @default(false)
+  accepted       Boolean   @default(false)
+  presentedAt    DateTime?
+  respondedAt    DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([customerEmail])
+  @@index([bookingId])
+  @@index([presented])
+  @@map("upsell_suggestions")
+}
+
+model TrustSignal {
+  id          String   @id @default(cuid())
+  type        String
+  title       String
+  description String
+  value       String
+  icon        String
+  priority    Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([type])
+  @@index([priority])
+  @@index([isActive])
+  @@map("trust_signals")
+}
+
+model PricingAuditLog {
+  id                String   @id @default(cuid())
+  bookingId         String?
+  serviceType       String
+  calculationInputs Json
+  pricingResult     Json
+  distanceData      Json?
+  version           String   @default("2.0.0") @db.VarChar(10)
+  calculatedAt      DateTime @default(now())
+  requestId         String?
+  userId            String?
+  booking           Booking? @relation(fields: [bookingId], references: [id])
+  user              User?    @relation(fields: [userId], references: [id])
+
+  @@index([bookingId])
+  @@index([serviceType])
+  @@index([calculatedAt])
+  @@index([requestId])
+}
+
+model ServiceAreaCache {
+  id                   String   @id @default(cuid())
+  addressHash          String   @unique @db.VarChar(64)
+  originalAddress      String
+  normalizedAddress    String
+  distanceMiles        Float
+  durationMinutes      Int
+  isWithinStandardArea Boolean
+  isWithinExtendedArea Boolean
+  travelFeeStandard    Decimal  @db.Decimal(10, 2)
+  travelFeeExtended    Decimal  @db.Decimal(10, 2)
+  apiSource            String   @default("google_maps") @db.VarChar(20)
+  calculatedAt         DateTime @default(now())
+  expiresAt            DateTime
+  hitCount             Int      @default(1)
+  lastAccessedAt       DateTime @default(now())
+
+  @@index([addressHash])
+  @@index([distanceMiles])
+  @@index([expiresAt])
+  @@index([lastAccessedAt])
+}
+
 enum AlertSeverity {
   CRITICAL
   HIGH
@@ -741,98 +970,6 @@ enum witness_source {
   proof_provided
 }
 
-// Enhanced Booking System - Championship Level Models
-
-model NewBooking {
-  id                    String   @id @default(cuid())
-  bookingNumber        String   @unique @default(cuid()) // Customer-facing ID
-  
-  // Service configuration
-  serviceType          ServiceType
-  serviceVariant       String?  // For custom configurations
-  
-  // Customer information
-  customerEmail        String
-  customerName         String
-  customerPhone        String?
-  companyName          String?
-  
-  // Scheduling
-  scheduledDateTime    DateTime
-  estimatedDuration    Int      @default(60) // Minutes
-  timeZone            String   @default("America/Chicago")
-  
-  // Location (null for RON)
-  locationType        NewLocationType @default(CLIENT_ADDRESS)
-  locationAddress     String?
-  locationLatitude    Float?
-  locationLongitude   Float?
-  locationNotes       String?
-  calculatedDistance  Float?   // Miles from base (77591)
-  
-  // Service details
-  documentCount       Int      @default(1)
-  documentTypes       String[] // Array of document types
-  signerCount         Int      @default(1)
-  specialInstructions String?
-  accessInstructions  String?  // Building access, parking, etc.
-  
-  // Pricing breakdown
-  basePrice          Decimal  @db.Decimal(10,2)
-  travelFee          Decimal  @default(0) @db.Decimal(10,2)
-  surcharges         Decimal  @default(0) @db.Decimal(10,2)
-  discounts          Decimal  @default(0) @db.Decimal(10,2)
-  totalPrice         Decimal  @db.Decimal(10,2)
-  
-  // Payment information
-  paymentStatus      PaymentStatus @default(PENDING)
-  depositAmount      Decimal? @db.Decimal(10,2)
-  depositPaid        Boolean  @default(false)
-  balanceDue         Decimal? @db.Decimal(10,2)
-  
-  // Status tracking
-  status             NewBookingStatus @default(PENDING)
-  confirmationSentAt DateTime?
-  remindersSentAt    DateTime[]
-  
-  // Integration tracking
-  stripePaymentIntentId String?
-  stripeCustomerId     String?
-  ghlContactId        String?
-  ghlOpportunityId    String?
-  googleCalendarEventId String?
-  
-  // Operational data
-  notaryUserId       String?
-  estimatedArrival   DateTime?
-  actualArrival      DateTime?
-  actualStartTime    DateTime?
-  actualEndTime      DateTime?
-  
-  // Metadata
-  bookingSource      String   @default("website") // website, phone, referral
-  referralCode       String?
-  promoCode          String?
-  clientNotes        String?
-  internalNotes      String?
-  
-  // Timestamps
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  
-  // Relations
-  payments           NewPayment[]
-  notifications      NewNotification[]
-  documents          NewBookingDocument[]
-  auditLogs          NewBookingAuditLog[]
-  
-  @@map("new_bookings")
-  @@index([serviceType, status])
-  @@index([scheduledDateTime])
-  @@index([customerEmail])
-  @@index([ghlContactId])
-}
-
 enum NewLocationType {
   CLIENT_ADDRESS
   NOTARY_OFFICE
@@ -841,39 +978,15 @@ enum NewLocationType {
 }
 
 enum NewBookingStatus {
-  PENDING           // Initial booking created
-  PAYMENT_PENDING   // Awaiting payment
-  CONFIRMED         // Payment received, booking confirmed
-  SCHEDULED         // On calendar, ready for service
-  IN_PROGRESS       // Notary en route or at location
-  COMPLETED         // Service completed successfully
-  CANCELLED         // Cancelled by client or notary
-  NO_SHOW          // Client didn't show up
-  RESCHEDULED      // Moved to different time
-}
-
-model NewPayment {
-  id                 String        @id @default(cuid())
-  bookingId          String
-  amount             Decimal       @db.Decimal(10,2)
-  currency           String        @default("usd")
-  paymentMethod      NewPaymentMethod
-  
-  // Stripe information
-  stripePaymentIntentId String?
-  stripeChargeId       String?
-  
-  status             PaymentStatus @default(PENDING)
-  paidAt            DateTime?
-  refundedAt        DateTime?
-  refundAmount      Decimal?      @db.Decimal(10,2)
-  
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  
-  booking           NewBooking    @relation(fields: [bookingId], references: [id])
-  
-  @@map("new_payments")
+  PENDING
+  PAYMENT_PENDING
+  CONFIRMED
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  RESCHEDULED
 }
 
 enum NewPaymentMethod {
@@ -882,29 +995,6 @@ enum NewPaymentMethod {
   CASH
   CHECK
   BANK_TRANSFER
-}
-
-model NewNotification {
-  id               String                   @id @default(cuid())
-  bookingId        String
-  notificationType NewNotificationType
-  method           NotificationMethod
-  recipientEmail   String?
-  recipientPhone   String?
-  subject          String?
-  message          String
-  sentAt           DateTime                 @default(now())
-  status           NotificationStatus       @default(SENT)
-  errorMessage     String?
-  metadata         Json?
-  createdAt        DateTime                 @default(now())
-  
-  booking          NewBooking               @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  
-  @@map("new_notifications")
-  @@index([bookingId])
-  @@index([method])
-  @@index([notificationType])
 }
 
 enum NewNotificationType {
@@ -917,133 +1007,76 @@ enum NewNotificationType {
   FOLLOWUP
 }
 
-model NewBookingDocument {
-  id          String     @id @default(cuid())
-  bookingId   String
-  filename    String
-  s3Key       String
-  uploadedAt  DateTime   @default(now())
-  
-  booking     NewBooking @relation(fields: [bookingId], references: [id])
-  
-  @@map("new_booking_documents")
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+  REFUNDED
 }
 
-model NewBookingAuditLog {
-  id          String     @id @default(cuid())
-  bookingId   String
-  action      String
-  oldValues   Json?
-  newValues   Json?
-  userId      String?
-  timestamp   DateTime   @default(now())
-  
-  booking     NewBooking @relation(fields: [bookingId], references: [id])
-  
-  @@map("new_booking_audit_logs")
+enum PaymentMethod {
+  STRIPE
+  CASH
+  CHECK
+  BANK_TRANSFER
+  CREDIT_CARD
+  OTHER
 }
 
-model SlotReservation {
-  id              String   @id @default(cuid())
-  datetime        DateTime
-  serviceType     String
-  userId          String?
-  customerEmail   String?
-  reservedAt      DateTime @default(now())
-  expiresAt       DateTime
-  extended        Boolean  @default(false)
-  bookingId       String?  // Set when converted to actual booking
-  
-  @@unique([datetime, serviceType])
-  @@index([expiresAt])
-  @@index([userId])
-  @@index([customerEmail])
-  @@map("slot_reservations")
+enum InvoiceDeliveryMethod {
+  EMAIL
+  POSTAL_MAIL
+  PORTAL
+  SMS
 }
 
-model UpsellSuggestion {
-  id              String   @id @default(cuid())
-  bookingId       String?
-  customerEmail   String?
-  suggestionType  String
-  fromService     String?
-  toService       String?
-  priceIncrease   Decimal  @db.Decimal(10,2)
-  headline        String
-  benefit         String
-  presented       Boolean  @default(false)
-  accepted        Boolean  @default(false)
-  presentedAt     DateTime?
-  respondedAt     DateTime?
-  createdAt       DateTime @default(now())
-  
-  @@index([customerEmail])
-  @@index([bookingId])
-  @@index([presented])
-  @@map("upsell_suggestions")
+enum PaymentFailureType {
+  INSUFFICIENT_FUNDS
+  CARD_DECLINED
+  EXPIRED_CARD
+  AUTHENTICATION_REQUIRED
+  PROCESSING_ERROR
+  NETWORK_ERROR
+  OTHER
 }
 
-model TrustSignal {
-  id            String   @id @default(cuid())
-  type          String   // insurance, reviews, certifications, etc.
-  title         String
-  description   String
-  value         String   // "$100K", "4.9/5", etc.
-  icon          String
-  priority      Int      @default(0)
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  @@index([type])
-  @@index([priority])
-  @@index([isActive])
-  @@map("trust_signals")
+enum RetryStrategy {
+  LINEAR
+  EXPONENTIAL
+  IMMEDIATE
+  MANUAL
 }
 
-// Enhanced Pricing Models (SOP_ENHANCED.md)
-
-model PricingAuditLog {
-  id                String   @id @default(cuid())
-  bookingId         String?
-  serviceType       String
-  calculationInputs Json
-  pricingResult     Json
-  distanceData      Json?
-  version           String   @default("2.0.0") @db.VarChar(10)
-  calculatedAt      DateTime @default(now())
-  requestId         String?
-  userId            String?
-
-  // Relations
-  booking           Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
-  user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([bookingId])
-  @@index([serviceType])
-  @@index([calculatedAt])
-  @@index([requestId])
+enum BillingInterval {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
 }
 
-model ServiceAreaCache {
-  id                    String   @id @default(cuid())
-  addressHash           String   @unique @db.VarChar(64) // SHA-256 hash of normalized address
-  originalAddress       String
-  normalizedAddress     String
-  distanceMiles         Float
-  durationMinutes       Int
-  isWithinStandardArea  Boolean
-  isWithinExtendedArea  Boolean
-  travelFeeStandard     Decimal  @db.Decimal(10, 2)
-  travelFeeExtended     Decimal  @db.Decimal(10, 2)
-  apiSource             String   @default("google_maps") @db.VarChar(20)
-  calculatedAt          DateTime @default(now())
-  expiresAt             DateTime // Cache expiration
-  hitCount              Int      @default(1)
-  lastAccessedAt        DateTime @default(now())
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  TRIALING
+  UNPAID
+}
 
-  @@index([addressHash])
-  @@index([distanceMiles])
-  @@index([expiresAt])
-  @@index([lastAccessedAt])
+enum ScheduledNotificationStatus {
+  SCHEDULED
+  SENT
+  FAILED
+  CANCELLED
+}
+
+enum PricingAdjustmentType {
+  MULTIPLIER
+  FIXED_AMOUNT
+  MINIMUM_FEE
+  MAXIMUM_FEE
+  REPLACEMENT
 }

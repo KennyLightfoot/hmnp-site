@@ -1,7 +1,35 @@
 {
+  "crons": [
+    {
+      "path": "/api/cron/synthetic-monitor?type=health",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/synthetic-monitor?type=booking", 
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/synthetic-monitor?type=full-flow",
+      "schedule": "0 * * * *"
+    }
+  ],
   "functions": {
     "app/api/**/*.ts": {
       "maxDuration": 30
+    },
+    "app/api/cron/synthetic-monitor/route.ts": {
+      "maxDuration": 60
     }
-  }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    }
+  ]
 }

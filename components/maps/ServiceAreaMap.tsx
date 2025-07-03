@@ -11,7 +11,7 @@ interface ServiceAreaMapProps {
   showServiceAreaCircle?: boolean
   showBusinessMarker?: boolean
   showMultipleServiceAreas?: boolean
-  selectedServiceType?: 'STANDARD_NOTARY' | 'EXTENDED_HOURS_NOTARY' | 'LOAN_SIGNING_SPECIALIST'
+  selectedServiceType?: 'STANDARD_NOTARY' | 'EXTENDED_HOURS' | 'LOAN_SIGNING'
   onLocationSelect?: (location: { address: string; distance: number; isWithinServiceArea: boolean; travelFee: number }) => void
   zoom?: number
   height?: string

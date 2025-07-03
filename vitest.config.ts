@@ -13,9 +13,9 @@ export default defineConfig({
     setupFiles: ['./tests/setupEnv.ts'], // Add the setup file here
     coverage: {
       provider: 'v8', // Use V8 for coverage
-      reporter: ['text', 'json', 'html'], // Coverage report formats
-      include: ['app/**/*', 'components/**/*', 'lib/**/*'], // Adjust paths as needed
-      exclude: [ // Exclude files/folders from coverage
+      reporter: ['text', 'json', 'html', 'lcov'], // Add lcov for CI
+      include: ['app/**/*', 'components/**/*', 'lib/**/*'], 
+      exclude: [ 
         'app/api/auth/**/*',
         '**/*.config.ts',
         '**/*.config.js',
@@ -23,9 +23,35 @@ export default defineConfig({
         'node_modules/**/*',
         'prisma/**/*',
         'coverage/**/*',
-        'tests/**/*', // Exclude test files themselves
+        'tests/**/*',
         '*.d.ts',
+        'app/**/layout.tsx',
+        'app/**/page.tsx',
+        'app/**/not-found.tsx',
+        'app/**/loading.tsx',
+        'app/**/error.tsx',
       ],
+      // Set coverage thresholds for critical booking modules
+      thresholds: {
+        'lib/pricing-engine.ts': {
+          branches: 90,
+          functions: 90,
+          lines: 90,
+          statements: 90
+        },
+        'lib/booking-validation.ts': {
+          branches: 85,
+          functions: 90,
+          lines: 90,
+          statements: 90
+        },
+        'lib/slot-reservation.ts': {
+          branches: 85,
+          functions: 85,
+          lines: 85,
+          statements: 85
+        }
+      }
     },
   },
 }); 

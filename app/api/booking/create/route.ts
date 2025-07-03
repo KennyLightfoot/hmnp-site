@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
   
   try {
     // Get client information
-    const headersList = headers();
+    const headersList = await headers();
     const ip = headersList.get('x-forwarded-for') || 
                 headersList.get('x-real-ip') || 
                 'unknown';
@@ -77,41 +77,44 @@ export async function POST(request: NextRequest) {
     
     const validatedBooking = BookingCreationSchema.parse(body);
     
+    // Type assertion to help TypeScript understand the validated structure
+    const booking = validatedBooking as any;
+    
     logger.info('Booking creation started', {
-      serviceType: validatedBooking.serviceType,
-      customerEmail: validatedBooking.customer.email.replace(/(.{2}).*(@.*)/, '$1***$2'),
-      reservationId: validatedBooking.reservationId,
+      serviceType: booking.serviceType,
+      customerEmail: booking.customer.email.replace(/(.{2}).*(@.*)/, '$1***$2'),
+      reservationId: booking.reservationId,
       ip: ip.substring(0, 10) + '...'
     });
 
     // Step 1: Calculate final pricing
     const pricingParams = {
-      serviceType: validatedBooking.serviceType,
-      location: validatedBooking.location ? {
-        address: `${validatedBooking.location.address}, ${validatedBooking.location.city}, ${validatedBooking.location.state} ${validatedBooking.location.zipCode}`,
-        latitude: validatedBooking.location.latitude,
-        longitude: validatedBooking.location.longitude
+      serviceType: booking.serviceType,
+      location: booking.location ? {
+        address: `${booking.location.address}, ${booking.location.city}, ${booking.location.state} ${booking.location.zipCode}`,
+        latitude: booking.location.latitude,
+        longitude: booking.location.longitude
       } : undefined,
       scheduledDateTime: new Date(
-        `${validatedBooking.scheduling.preferredDate.split('T')[0]}T${validatedBooking.scheduling.preferredTime}`
+        `${booking.scheduling.preferredDate.split('T')[0]}T${booking.scheduling.preferredTime}`
       ).toISOString(),
-      documentCount: validatedBooking.serviceDetails.documentCount,
-      signerCount: validatedBooking.serviceDetails.signerCount,
+      documentCount: booking.serviceDetails.documentCount,
+      signerCount: booking.serviceDetails.signerCount,
       options: {
-        priority: validatedBooking.scheduling.priority,
-        sameDay: validatedBooking.scheduling.sameDay,
+        priority: booking.scheduling.priority,
+        sameDay: booking.scheduling.sameDay,
         weatherAlert: false
       },
-      customerEmail: validatedBooking.customer.email,
-      promoCode: validatedBooking.promoCode,
-      referralCode: validatedBooking.referralCode
+      customerEmail: booking.customer.email,
+      promoCode: booking.promoCode,
+      referralCode: booking.referralCode
     };
 
     const pricingResult = await calculateBookingPrice(pricingParams);
     
     // Step 2: Create booking record in database
     const scheduledDateTime = new Date(
-      `${validatedBooking.scheduling.preferredDate.split('T')[0]}T${validatedBooking.scheduling.preferredTime}`
+      `${booking.scheduling.preferredDate.split('T')[0]}T${booking.scheduling.preferredTime}`
     );
 
     // Generate unique booking number
@@ -120,29 +123,29 @@ export async function POST(request: NextRequest) {
     const newBooking = await prisma.newBooking.create({
       data: {
         bookingNumber,
-        serviceType: validatedBooking.serviceType,
-        customerEmail: validatedBooking.customer.email,
-        customerName: validatedBooking.customer.name,
-        customerPhone: validatedBooking.customer.phone,
-        companyName: validatedBooking.customer.companyName,
+        serviceType: booking.serviceType,
+        customerEmail: booking.customer.email,
+        customerName: booking.customer.name,
+        customerPhone: booking.customer.phone,
+        companyName: booking.customer.companyName,
         
         scheduledDateTime,
-        estimatedDuration: validatedBooking.scheduling.estimatedDuration,
-        timeZone: validatedBooking.scheduling.timeZone,
+        estimatedDuration: booking.scheduling.estimatedDuration,
+        timeZone: booking.scheduling.timeZone,
         
-        locationType: validatedBooking.locationType,
-        locationAddress: validatedBooking.location ? 
-          `${validatedBooking.location.address}, ${validatedBooking.location.city}, ${validatedBooking.location.state} ${validatedBooking.location.zipCode}` : 
+        locationType: booking.locationType,
+        locationAddress: booking.location ? 
+          `${booking.location.address}, ${booking.location.city}, ${booking.location.state} ${booking.location.zipCode}` : 
           null,
-        locationLatitude: validatedBooking.location?.latitude,
-        locationLongitude: validatedBooking.location?.longitude,
-        locationNotes: validatedBooking.location?.accessInstructions,
+        locationLatitude: booking.location?.latitude,
+        locationLongitude: booking.location?.longitude,
+        locationNotes: booking.location?.accessInstructions,
         
-        documentCount: validatedBooking.serviceDetails.documentCount,
-        documentTypes: validatedBooking.serviceDetails.documentTypes,
-        signerCount: validatedBooking.serviceDetails.signerCount,
-        specialInstructions: validatedBooking.serviceDetails.specialInstructions,
-        accessInstructions: validatedBooking.location?.accessInstructions,
+        documentCount: booking.serviceDetails.documentCount,
+        documentTypes: booking.serviceDetails.documentTypes,
+        signerCount: booking.serviceDetails.signerCount,
+        specialInstructions: booking.serviceDetails.specialInstructions,
+        accessInstructions: booking.location?.accessInstructions,
         
         basePrice: pricingResult.basePrice,
         travelFee: pricingResult.travelFee,
@@ -153,10 +156,10 @@ export async function POST(request: NextRequest) {
         paymentStatus: 'PENDING',
         status: 'PENDING',
         
-        bookingSource: validatedBooking.source,
-        referralCode: validatedBooking.referralCode,
-        promoCode: validatedBooking.promoCode,
-        clientNotes: validatedBooking.serviceDetails.clientNotes
+        bookingSource: booking.source,
+        referralCode: booking.referralCode,
+        promoCode: booking.promoCode,
+        clientNotes: booking.serviceDetails.clientNotes
       }
     });
 
@@ -172,9 +175,9 @@ export async function POST(request: NextRequest) {
     let paymentIntent: any = null;
     let requiresPayment = pricingResult.total > 0;
     
-    if (requiresPayment && validatedBooking.payment.paymentMethod === 'credit-card') {
+    if (requiresPayment && booking.payment.paymentMethod === 'credit-card') {
       // Determine payment amount (full or deposit)
-      const paymentAmount = validatedBooking.payment.payFullAmount ? 
+      const paymentAmount = booking.payment.payFullAmount ? 
         pricingResult.total : 
         (pricingResult.total > 100 ? pricingResult.total * 0.5 : pricingResult.total);
 
@@ -182,17 +185,17 @@ export async function POST(request: NextRequest) {
       paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(paymentAmount * 100), // Convert to cents
         currency: 'usd',
-        payment_method: validatedBooking.paymentMethodId,
+        payment_method: booking.paymentMethodId,
         confirmation_method: 'manual',
         confirm: true,
         metadata: {
           bookingId: newBooking.id,
           bookingNumber: newBooking.bookingNumber,
-          customerEmail: validatedBooking.customer.email,
-          serviceType: validatedBooking.serviceType
+          customerEmail: booking.customer.email,
+          serviceType: booking.serviceType
         },
-        description: `Houston Mobile Notary - ${validatedBooking.serviceType} - ${newBooking.bookingNumber}`,
-        receipt_email: validatedBooking.customer.email,
+        description: `Houston Mobile Notary - ${booking.serviceType} - ${newBooking.bookingNumber}`,
+        receipt_email: booking.customer.email,
         return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/booking/confirmation/${newBooking.id}`
       });
 
@@ -232,7 +235,7 @@ export async function POST(request: NextRequest) {
     let ronSessionUrl: string | null = null;
     let proofTransactionId: string | null = null;
     
-    if (validatedBooking.serviceType === 'RON_SERVICES' || validatedBooking.serviceType === 'SPECIALTY_NOTARY_SERVICE') {
+    if (validatedBooking.serviceType === 'RON_SERVICES') {
       try {
         const ronSession = await RONService.createRONSession({
           id: newBooking.id,
@@ -262,7 +265,7 @@ export async function POST(request: NextRequest) {
             hasSessionUrl: !!ronSessionUrl
           });
         }
-      } catch (ronError) {
+      } catch (ronError: any) {
         logger.error('Failed to create RON session', {
           bookingId: newBooking.id,
           error: ronError.message
@@ -331,7 +334,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response, { status: 201 });
 
-  } catch (error) {
+  } catch (error: any) {
     const processingTime = Date.now() - startTime;
     
     // Handle validation errors
@@ -351,12 +354,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle Stripe errors
-    if (error.type && error.type.startsWith('Stripe')) {
+    if ((error as any).type && (error as any).type.startsWith('Stripe')) {
       logger.error('Stripe payment error during booking creation', {
         bookingId,
-        error: error.message,
-        type: error.type,
-        code: error.code,
+        error: (error as any).message,
+        type: (error as any).type,
+        code: (error as any).code,
         processingTime
       });
 
@@ -370,7 +373,7 @@ export async function POST(request: NextRequest) {
               internalNotes: `Payment failed: ${error.message}`
             }
           });
-        } catch (updateError) {
+        } catch (updateError: any) {
           logger.error('Failed to update booking status after payment error', {
             bookingId,
             error: updateError.message
@@ -383,8 +386,8 @@ export async function POST(request: NextRequest) {
         error: 'Payment processing failed',
         code: 'PAYMENT_ERROR',
         details: {
-          type: error.type,
-          message: error.message
+          type: (error as any).type,
+          message: (error as any).message
         }
       }, { status: 402 });
     }
@@ -392,8 +395,8 @@ export async function POST(request: NextRequest) {
     // General error handling
     logger.error('Booking creation failed', {
       bookingId,
-      error: error.message,
-      stack: error.stack,
+      error: (error as any).message,
+      stack: (error as any).stack,
       processingTime,
       customerEmail: bookingData?.customer?.email ? 
         bookingData.customer.email.replace(/(.{2}).*(@.*)/, '$1***$2') : undefined

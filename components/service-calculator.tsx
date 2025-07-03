@@ -30,22 +30,24 @@ export default function ServiceCalculator() {
   })
 
   // SOP COMPLIANT: Map service types to API service types
-  const mapServiceTypeToAPI = (serviceType: string): "standardNotary" | "extendedHoursNotary" | "loanSigningSpecialist" | "specialtyNotaryService" | "businessSolutions" | "supportService" => {
+  const mapServiceTypeToAPI = (serviceType: string): "STANDARD_NOTARY" | "EXTENDED_HOURS" | "LOAN_SIGNING" | "RON_SERVICES" | "SPECIALTY_NOTARY_SERVICE" | "BUSINESS_SOLUTIONS" | "SUPPORT_SERVICE" => {
     switch (serviceType) {
       case "standard-notary":
-        return "standardNotary"
+        return "STANDARD_NOTARY"
       case "extended-hours-notary":
-        return "extendedHoursNotary"
+        return "EXTENDED_HOURS"
       case "loan-signing-specialist":
-        return "loanSigningSpecialist"
+        return "LOAN_SIGNING"
+      case "ron-services":
+        return "RON_SERVICES"
       case "specialty-notary-service":
-        return "specialtyNotaryService"
+        return "SPECIALTY_NOTARY_SERVICE"
       case "business-solutions":
-        return "businessSolutions"
+        return "BUSINESS_SOLUTIONS"
       case "support-service":
-        return "supportService"
+        return "SUPPORT_SERVICE"
       default:
-        return "standardNotary"
+        return "STANDARD_NOTARY"
     }
   }
 

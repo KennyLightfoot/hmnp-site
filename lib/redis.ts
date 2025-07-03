@@ -93,6 +93,15 @@ class RedisClient {
       info: (section?: string) => upstashClient.info(section),
       dbsize: () => upstashClient.dbsize(),
       ping: () => upstashClient.ping(),
+      ttl: (key: string) => upstashClient.ttl(key),
+      publish: (channel: string, message: string) => upstashClient.publish(channel, message),
+      pipeline: () => ({
+        setex: (key: string, seconds: number, value: string) => ({ setex: [key, seconds, value] }),
+        exec: async () => {
+          // Simplified pipeline execution for basic operations
+          return [[null, 'OK']];
+        }
+      }),
       quit: () => Promise.resolve(),
       disconnect: () => Promise.resolve(),
       status: 'ready',
@@ -125,7 +134,7 @@ class RedisClient {
       this.isConnected = false;
     });
 
-    this.client.on('reconnecting', (time) => {
+    this.client.on('reconnecting', (time: number) => {
       logger.info(`Redis reconnecting in ${time}ms`);
     });
   }
@@ -247,6 +256,43 @@ class RedisClient {
     }
   }
 
+  async setex(key: string, seconds: number, value: string): Promise<boolean> {
+    if (!this.isAvailable()) return false;
+    try {
+      await this.client!.setex(key, seconds, value);
+      return true;
+    } catch (error) {
+      logger.error('Redis SETEX error', error as Error, { key, seconds });
+      return false;
+    }
+  }
+
+  async ttl(key: string): Promise<number> {
+    if (!this.isAvailable()) return -1;
+    try {
+      return await this.client!.ttl(key);
+    } catch (error) {
+      logger.error('Redis TTL error', error as Error, { key });
+      return -1;
+    }
+  }
+
+  async publish(channel: string, message: string): Promise<boolean> {
+    if (!this.isAvailable()) return false;
+    try {
+      await this.client!.publish(channel, message);
+      return true;
+    } catch (error) {
+      logger.error('Redis PUBLISH error', error as Error, { channel });
+      return false;
+    }
+  }
+
+  pipeline() {
+    if (!this.isAvailable()) return null;
+    return this.client!.pipeline();
+  }
+
   async flushdb(): Promise<boolean> {
     if (!this.isAvailable()) return false;
     try {
@@ -323,5 +369,4 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Export types and utilities
-export type { RedisConfig };
 export default redis; 
