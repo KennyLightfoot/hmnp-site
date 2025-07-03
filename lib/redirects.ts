@@ -102,12 +102,6 @@ export const API_REDIRECTS: RedirectMapping[] = [
     permanent: true,
   },
   
-  // Booking API redirects (redirect legacy /api/booking to /api/bookings)
-  {
-    source: '/api/booking/:path*',
-    destination: '/api/bookings/:path*',
-    permanent: true,
-  },
 ];
 
 /**

@@ -26,6 +26,7 @@ import {
 } from '@/lib/booking-validation';
 import { calculateBookingPrice } from '@/lib/pricing-engine';
 import { slotReservationEngine } from '@/lib/slot-reservation';
+import { RONService } from '@/lib/proof/api';
 import { headers } from 'next/headers';
 
 // Enhanced request schema with additional metadata - using safer schema composition
@@ -227,7 +228,50 @@ export async function POST(request: NextRequest) {
       await slotReservationEngine.convertToBooking(validatedBooking.reservationId, newBooking.id);
     }
 
-    // Step 5: Create audit log
+    // Step 5: Create RON session if applicable
+    let ronSessionUrl: string | null = null;
+    let proofTransactionId: string | null = null;
+    
+    if (validatedBooking.serviceType === 'RON_SERVICES' || validatedBooking.serviceType === 'SPECIALTY_NOTARY_SERVICE') {
+      try {
+        const ronSession = await RONService.createRONSession({
+          id: newBooking.id,
+          customerName: validatedBooking.customer.name,
+          customerEmail: validatedBooking.customer.email,
+          customerPhone: validatedBooking.customer.phone,
+          documentTypes: validatedBooking.serviceDetails.documentTypes || ['General Document'],
+          scheduledDateTime
+        });
+        
+        if (ronSession) {
+          proofTransactionId = ronSession.id;
+          ronSessionUrl = ronSession.sessionUrl;
+          
+          // Update booking with RON session info
+          await prisma.newBooking.update({
+            where: { id: newBooking.id },
+            data: {
+              proofTransactionId,
+              ronSessionUrl
+            }
+          });
+          
+          logger.info('RON session created for booking', {
+            bookingId: newBooking.id,
+            proofTransactionId,
+            hasSessionUrl: !!ronSessionUrl
+          });
+        }
+      } catch (ronError) {
+        logger.error('Failed to create RON session', {
+          bookingId: newBooking.id,
+          error: ronError.message
+        });
+        // Don't fail the booking if RON setup fails - continue without it
+      }
+    }
+    
+    // Step 6: Create audit log
     await prisma.newBookingAuditLog.create({
       data: {
         bookingId: newBooking.id,
@@ -237,7 +281,8 @@ export async function POST(request: NextRequest) {
           serviceType: validatedBooking.serviceType,
           totalPrice: pricingResult.total,
           source: validatedBooking.source,
-          paymentStatus: newBooking.paymentStatus
+          paymentStatus: newBooking.paymentStatus,
+          proofTransactionId
         },
         timestamp: new Date()
       }
@@ -270,11 +315,17 @@ export async function POST(request: NextRequest) {
         requiresAction: paymentIntent.status === 'requires_action',
         clientSecret: paymentIntent.client_secret
       } : null,
+      ron: ronSessionUrl ? {
+        sessionUrl: ronSessionUrl,
+        transactionId: proofTransactionId
+      } : null,
+      ronSessionUrl, // Include for backward compatibility
       pricing: pricingResult,
       metadata: {
         processingTime,
         timestamp: new Date().toISOString(),
-        bookingCreated: true
+        bookingCreated: true,
+        ronEnabled: !!ronSessionUrl
       }
     };
 

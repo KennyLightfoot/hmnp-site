@@ -123,9 +123,9 @@ export async function POST(request: NextRequest) {
       payload: body
     });
 
-    // Enhanced webhook signature verification
+    // Enhanced webhook signature verification - accept both header formats
     if (process.env.GHL_WEBHOOK_SECRET) {
-      const signature = headersList.get('x-ghl-signature');
+      const signature = headersList.get('x-ghl-signature') || headersList.get('x-wh-signature');
       if (!signature) {
         console.error('❌ Missing webhook signature');
         return NextResponse.json({ 

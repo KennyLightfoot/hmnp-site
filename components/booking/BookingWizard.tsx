@@ -16,6 +16,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { trackError } from '@/lib/monitoring/error-handler';
 import { 
   Clock, 
   DollarSign, 
@@ -111,6 +113,9 @@ const BOOKING_STEPS: BookingStep[] = [
 ];
 
 export default function BookingWizard() {
+  // Toast and error handling
+  const { toast } = useToast();
+  
   // Form setup
   const form = useForm<CreateBooking>({
     resolver: zodResolver(CreateBookingSchema),
@@ -251,13 +256,24 @@ export default function BookingWizard() {
           pricing: result.data,
           showUpsell: result.data.upsellSuggestions?.length > 0 && state.currentStep >= 2
         }));
+      } else {
+        throw new Error(`Pricing calculation failed: ${response.status}`);
       }
     } catch (error) {
       console.error('Failed to calculate price:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Pricing Error',
+        description: 'Unable to calculate pricing. Please try again or contact support.'
+      });
+      trackError(error as Error, {
+        context: 'pricing-calculation',
+        data: { serviceType: watchedValues.serviceType }
+      });
     } finally {
       setState(prev => ({ ...prev, pricingLoading: false }));
     }
-  }, [watchedValues.serviceType, watchedValues.location?.zipCode, watchedValues.scheduling?.preferredDate, state.currentStep]);
+  }, [watchedValues.serviceType, watchedValues.location?.zipCode, watchedValues.scheduling?.preferredDate, state.currentStep, toast]);
 
   // Smart debouncing - only on meaningful changes
   const debouncedCalculatePricing = useMemo(
@@ -308,12 +324,28 @@ export default function BookingWizard() {
         const result = await reservationResponse.json();
         if (result.success) {
           setState(prev => ({ ...prev, slotReservation: result.reservation }));
+        } else {
+          throw new Error(result.error || 'Slot reservation failed');
         }
+      } else {
+        throw new Error(`Slot reservation failed: ${reservationResponse.status}`);
       }
     } catch (error) {
       console.error('Failed to reserve slot:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Slot Reservation Failed',
+        description: 'Unable to reserve your time slot. Please try selecting a different time.'
+      });
+      trackError(error as Error, {
+        context: 'slot-reservation',
+        data: { 
+          datetime: watchedValues.scheduling?.preferredDate,
+          serviceType: watchedValues.serviceType
+        }
+      });
     }
-  }, [watchedValues]);
+  }, [watchedValues, toast]);
 
   // Slot reservation timer
   useEffect(() => {
@@ -383,16 +415,31 @@ export default function BookingWizard() {
           completedBooking: result.booking,
           currentStep: BOOKING_STEPS.length - 1 
         }));
+        toast({
+          title: 'Booking Confirmed!',
+          description: 'Your appointment has been successfully booked. Check your email for confirmation details.'
+        });
       } else {
         throw new Error(result.error || 'Booking creation failed');
       }
     } catch (error) {
       console.error('Booking submission failed:', error);
-      // Handle error - could show error modal or alert
+      toast({
+        variant: 'destructive',
+        title: 'Booking Failed',
+        description: 'Unable to complete your booking. Please try again or contact support at 832-617-4285.'
+      });
+      trackError(error as Error, {
+        context: 'booking-submission',
+        data: { 
+          serviceType: data.serviceType,
+          customerEmail: data.customer?.email
+        }
+      });
     } finally {
       setState(prev => ({ ...prev, isSubmitting: false }));
     }
-  }, [state.slotReservation]);
+  }, [state.slotReservation, toast]);
 
   // Upsell handlers
   const handleUpsellAccept = useCallback((suggestionId: string) => {
