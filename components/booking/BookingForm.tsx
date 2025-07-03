@@ -11,25 +11,18 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { 
   Clock, 
-  DollarSign, 
-  Shield, 
-  Star, 
   CheckCircle, 
-  AlertCircle,
   Calendar,
   MapPin,
   FileText,
   Users,
-  CreditCard,
-  Zap
+  CreditCard
 } from 'lucide-react';
 
 // Import our championship components and utilities
@@ -56,12 +49,6 @@ import PaymentStep from './steps/PaymentStep';
 import ConfirmationStep from './steps/ConfirmationStep';
 
 // Use imported types from booking-interfaces
-
-interface BookingConfidence {
-  level: number; // 0-100
-  factors: string[];
-  nextAction: string;
-}
 
 // Form steps configuration
 const BOOKING_STEPS: BookingStep[] = [
@@ -176,11 +163,6 @@ export default function BookingForm({
   const [slotReservation, setSlotReservation] = useState<SlotReservation | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [showUpsell, setShowUpsell] = useState(false);
-  const [bookingConfidence, setBookingConfidence] = useState<BookingConfidence>({
-    level: 20,
-    factors: ['Service selected'],
-    nextAction: 'Complete service details'
-  });
 
   // Watch form values for real-time updates
   const watchedValues = form.watch();
@@ -195,56 +177,6 @@ export default function BookingForm({
     return Math.round((validSteps / BOOKING_STEPS.length) * 100);
   }, [currentStep, watchedValues]);
 
-  // Update booking confidence
-  useEffect(() => {
-    const factors = [];
-    let level = 20;
-
-    if (watchedValues.serviceType) {
-      factors.push('Service selected');
-      level += 15;
-    }
-
-    if (watchedValues.serviceDetails?.documentCount > 0) {
-      factors.push('Requirements specified');
-      level += 15;
-    }
-
-    if (watchedValues.location?.address || watchedValues.serviceType === 'RON_SERVICES') {
-      factors.push('Location confirmed');
-      level += 15;
-    }
-
-    if (watchedValues.scheduling?.preferredDate) {
-      factors.push('Time scheduled');
-      level += 15;
-    }
-
-    if (watchedValues.customer?.email && watchedValues.customer?.name) {
-      factors.push('Contact info provided');
-      level += 15;
-    }
-
-    if (slotReservation) {
-      factors.push('Slot reserved');
-      level += 5;
-    }
-
-    const nextActions = [
-      'Complete service details',
-      'Choose location',
-      'Schedule appointment',
-      'Provide contact info',
-      'Complete payment',
-      'Finalize booking'
-    ];
-
-    setBookingConfidence({
-      level: Math.min(level, 100),
-      factors,
-      nextAction: nextActions[currentStep] || 'Complete booking'
-    });
-  }, [watchedValues, currentStep, slotReservation]);
 
   // Real-time pricing calculation
   const calculateLivePrice = useCallback(async () => {

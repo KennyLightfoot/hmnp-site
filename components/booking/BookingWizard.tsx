@@ -31,7 +31,6 @@ import {
 // Import our championship components
 import ServiceSelector from './ServiceSelector';
 import UpsellModal from './UpsellModal';
-import ProgressTracker from './ProgressTracker';
 import BookingStepHeader from './BookingStepHeader';
 
 // Import step components
@@ -385,14 +384,12 @@ export default function BookingWizard() {
 
   return (
     <div className="space-y-6">
-      {/* Progress Tracker */}
-      <ProgressTracker
-        steps={BOOKING_STEPS}
+      {/* Unified Step Header */}
+      <BookingStepHeader
         currentStep={state.currentStep}
-        completionProgress={completionProgress}
-        pricing={state.pricing}
-        pricingLoading={state.pricingLoading}
-        timeRemaining={state.timeRemaining}
+        totalSteps={BOOKING_STEPS.length}
+        completion={completionProgress}
+        totalPrice={state.pricing?.total || 0}
       />
 
       {/* Slot Reservation Alert */}
@@ -431,7 +428,7 @@ export default function BookingWizard() {
               {/* Live Price Display */}
               {state.pricing && state.currentStep > 0 && (
                 <div className="text-right">
-                  <div className="text-3xl font-bold text-green-600">
+                  <div className="text-3xl font-bold text-primary">
                     ${state.pricing.total.toFixed(2)}
                   </div>
                   {state.pricingLoading && (
@@ -440,7 +437,7 @@ export default function BookingWizard() {
                     </div>
                   )}
                   {state.pricing.confidence.level === 'high' && (
-                    <Badge variant="secondary" className="mt-1 bg-green-100 text-green-800">
+                    <Badge variant="secondary" className="mt-1 bg-primary/10 text-primary">
                       Best Price Guaranteed
                     </Badge>
                   )}
@@ -453,7 +450,7 @@ export default function BookingWizard() {
               <span>Step {state.currentStep + 1} of {BOOKING_STEPS.length}</span>
               <div className="flex-1 bg-gray-200 rounded-full h-1.5 ml-4">
                 <div 
-                  className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                  className="bg-primary h-1.5 rounded-full transition-all duration-300"
                   style={{ width: `${((state.currentStep + 1) / BOOKING_STEPS.length) * 100}%` }}
                 />
               </div>
@@ -497,8 +494,8 @@ export default function BookingWizard() {
               <div className="text-sm text-gray-600 flex items-center space-x-1">
                 <Phone className="h-4 w-4" />
                 <span>Need help?</span>
-                <a href="tel:7132345678" className="text-blue-600 hover:text-blue-700 font-medium">
-                  (713) 234-5678
+                <a href="tel:832-617-4285" className="text-secondary hover:text-secondary/80 font-medium">
+                  832-617-4285
                 </a>
               </div>
 
@@ -507,7 +504,7 @@ export default function BookingWizard() {
                 <Button
                   onClick={nextStep}
                   disabled={!isCurrentStepValid || state.isSubmitting}
-                  className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700"
+                  className="flex items-center space-x-2 bg-primary hover:bg-primary/90"
                 >
                   <span>Continue</span>
                   <ArrowRight className="h-4 w-4" />
@@ -516,7 +513,7 @@ export default function BookingWizard() {
                 <Button
                   onClick={form.handleSubmit(onSubmit)}
                   disabled={!isCurrentStepValid || state.isSubmitting}
-                  className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-lg px-8 py-3"
+                  className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-lg px-8 py-3"
                 >
                   {state.isSubmitting ? (
                     'Processing...'
@@ -534,19 +531,19 @@ export default function BookingWizard() {
       </Card>
 
       {/* Trust Signals Footer */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
         <div className="flex items-center justify-center space-x-8 text-sm">
           <div className="flex items-center space-x-2">
-            <Shield className="h-4 w-4 text-blue-600" />
-            <span className="text-blue-700 font-medium">$100K Insured</span>
+            <Shield className="h-4 w-4 text-primary" />
+            <span className="text-gray-700 font-medium">$100K Insured</span>
           </div>
           <div className="flex items-center space-x-2">
             <Star className="h-4 w-4 text-yellow-500" />
-            <span className="text-blue-700 font-medium">4.9/5 Rating</span>
+            <span className="text-gray-700 font-medium">4.9/5 Rating</span>
           </div>
           <div className="flex items-center space-x-2">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <span className="text-blue-700 font-medium">30-Day Guarantee</span>
+            <CheckCircle className="h-4 w-4 text-secondary" />
+            <span className="text-gray-700 font-medium">30-Day Guarantee</span>
           </div>
         </div>
       </div>
