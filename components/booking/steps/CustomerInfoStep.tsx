@@ -33,12 +33,12 @@ import {
 } from 'lucide-react';
 
 import { CreateBooking } from '@/lib/booking-validation';
+import {
+  CustomerInfoStepProps,
+  InputChangeHandler
+} from '@/lib/types/booking-interfaces';
 
-interface CustomerInfoStepProps {
-  data: Partial<CreateBooking>;
-  onUpdate: (updates: any) => void;
-  errors?: any;
-}
+// Use imported CustomerInfoStepProps from booking-interfaces
 
 const TRUST_INDICATORS = [
   {
@@ -92,7 +92,7 @@ export default function CustomerInfoStep({ data, onUpdate, errors }: CustomerInf
   const watchedCustomer = watch('customer') || {};
   const watchedServiceType = watch('serviceType');
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange: InputChangeHandler = (field, value) => {
     setValue(`customer.${field}` as any, value);
     onUpdate({ customer: { ...watchedCustomer, [field]: value } });
   };

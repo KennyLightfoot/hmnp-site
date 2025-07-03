@@ -39,14 +39,7 @@ import {
 
 import { CreateBooking } from '@/lib/booking-validation';
 
-interface ReviewStepProps {
-  data: Partial<CreateBooking>;
-  onUpdate: (updates: any) => void;
-  errors?: any;
-  pricing?: any;
-  isSubmitting?: boolean;
-  completedBooking?: any;
-}
+// Use imported ReviewStepProps from booking-interfaces
 
 const PAYMENT_METHODS = [
   {
@@ -124,7 +117,7 @@ export default function ReviewStep({
     onUpdate({ payment: { ...watchedPayment, paymentMethod: method } });
   };
 
-  const handlePaymentOptionChange = (field: string, value: any) => {
+  const handlePaymentOptionChange: PaymentOptionChangeHandler = (field, value) => {
     setValue(`payment.${field}` as any, value);
     onUpdate({ payment: { ...watchedPayment, [field]: value } });
   };
@@ -332,7 +325,7 @@ export default function ReviewStep({
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {pricing.breakdown?.lineItems?.map((item: any, index: number) => (
+              {pricing.breakdown?.lineItems?.map((item: PricingLineItem, index: number) => (
                 <div key={index} className="flex justify-between">
                   <span className="text-gray-600">{item.description}</span>
                   <span className={`font-medium ${

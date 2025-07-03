@@ -2,6 +2,7 @@ import { prisma } from './prisma'
 import { BookingStatus, NotificationType, NotificationMethod } from '@prisma/client'
 import { NotificationService } from './notifications'
 import { getContactsByTag, getContactByEmail, addTagsToContactByEmail } from './ghl'
+import { logger } from '@/lib/logger'
 
 export interface NurtureSequence {
   id: string
@@ -418,13 +419,13 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
           if (processed.messageSent) results.messagesScheduled++
           if (processed.completed) results.enrollmentsCompleted++
         } catch (error) {
-          console.error(`Error processing enrollment ${enrollment.id}:`, error)
+          logger.error(`Error processing enrollment ${enrollment.id}`, 'LEAD_NURTURING', error instanceof Error ? error : new Error(String(error)))
           results.errors.push(`Enrollment ${enrollment.id}: ${error instanceof Error ? error.message : 'Unknown error'}`)
         }
       }
 
     } catch (error) {
-      console.error('Error in processNurtureSequences:', error)
+      logger.error('Error in processNurtureSequences', 'LEAD_NURTURING', error instanceof Error ? error : new Error(String(error)))
       results.errors.push(`Global error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
 
@@ -457,7 +458,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
         // Check if user has email before processing
         const userEmail = booking.User_Booking_signerIdToUser.email
         if (!userEmail) {
-          console.warn(`Skipping booking ${booking.id} - no email for user`)
+          logger.warn(`Skipping booking ${booking.id} - no email for user`, 'LEAD_NURTURING')
           continue
         }
 
@@ -477,7 +478,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
       }
 
     } catch (error) {
-      console.error('Error processing abandoned bookings:', error)
+      logger.error('Error processing abandoned bookings', 'LEAD_NURTURING', error instanceof Error ? error : new Error(String(error)))
     }
   }
 
@@ -510,7 +511,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
       }
 
     } catch (error) {
-      console.error('Error processing quote follow-ups:', error)
+      logger.error('Error processing quote follow-ups', 'LEAD_NURTURING', error instanceof Error ? error : new Error(String(error)))
     }
   }
 
@@ -537,7 +538,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
         // Check if user has email before processing
         const userEmail = booking.User_Booking_signerIdToUser.email
         if (!userEmail) {
-          console.warn(`Skipping booking ${booking.id} - no email for user`)
+          logger.warn(`Skipping booking ${booking.id} - no email for user`, 'LEAD_NURTURING')
           continue
         }
 
@@ -568,7 +569,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
       }
 
     } catch (error) {
-      console.error('Error processing inactive clients:', error)
+      logger.error('Error processing inactive clients', 'LEAD_NURTURING', error instanceof Error ? error : new Error(String(error)))
     }
   }
 
@@ -611,10 +612,10 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
         ])
       }
 
-      console.log(`Enrolled ${email} in sequence: ${sequenceId}`)
+      logger.info(`Enrolled ${email} in sequence: ${sequenceId}`, 'LEAD_NURTURING')
 
     } catch (error) {
-      console.error('Error enrolling in sequence:', error)
+      logger.error('Error enrolling in sequence', 'LEAD_NURTURING', error instanceof Error ? error : new Error(String(error)))
       throw error
     }
   }
@@ -662,7 +663,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
       return { messageSent: false, completed: false }
 
     } catch (error) {
-      console.error('Error processing enrollment:', error)
+      logger.error('Error processing enrollment', 'LEAD_NURTURING', error instanceof Error ? error : new Error(String(error)))
       return { messageSent: false, completed: false }
     }
   }
@@ -740,7 +741,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
       }
 
     } catch (error) {
-      console.error('Error sending nurture message:', error)
+      logger.error('Error sending nurture message', 'LEAD_NURTURING', error instanceof Error ? error : new Error(String(error)))
       throw error
     }
   }

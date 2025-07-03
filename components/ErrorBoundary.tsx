@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { logger } from '@/lib/logger';
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 
@@ -116,7 +117,7 @@ export class ErrorBoundary extends Component<Props, State> {
           },
           body: JSON.stringify(errorData),
         }).catch(err => {
-          console.warn('Failed to send error to monitoring service:', err);
+          logger.warn('Failed to send error to monitoring service', 'ERROR_BOUNDARY', { error: err.message });
         });
       }
     } catch (loggingError) {

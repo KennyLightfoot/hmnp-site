@@ -1,6 +1,7 @@
 'use client'
 
 import Script from 'next/script'
+import { logger } from '@/lib/logger'
 
 export default function ThirdPartyScripts() {
   return (
@@ -31,7 +32,7 @@ export default function ThirdPartyScripts() {
                 return new URL(url, window.location.origin).pathname;
               } catch (e) {
                 // Fallback: if all else fails, just use the string as-is
-                console.warn('⚠️ Could not parse URL path for:', url, 'using as-is');
+                // Note: Using console.warn here instead of logger because this runs in browser context before logger is available
                 return String(url);
               }
             }
@@ -49,14 +50,14 @@ export default function ThirdPartyScripts() {
               const count = requestCounts.get(countKey) || 0;
               
               if (count > RATE_LIMIT) {
-                console.warn('🚨 Rate limit exceeded for:', url);
+                // Note: Using console.warn here instead of logger because this runs in browser context
                 return Promise.reject(new Error('Rate limit exceeded'));
               }
               requestCounts.set(countKey, count + 1);
               
               // Deduplication
               if (pendingRequests.has(key)) {
-                console.log('♻️ Deduplicating request:', url);
+                // Note: Using console.log here instead of logger because this runs in browser context
                 return pendingRequests.get(key).then(r => r.clone());
               }
               
@@ -64,7 +65,7 @@ export default function ThirdPartyScripts() {
               const concurrent = Array.from(pendingRequests.keys())
                 .filter(k => k.includes(urlPath)).length;
               if (concurrent >= MAX_CONCURRENT) {
-                console.warn('🚨 Too many concurrent requests to:', url);
+                // Note: Using console.warn here instead of logger because this runs in browser context
                 return Promise.reject(new Error('Too many concurrent requests'));
               }
               
@@ -88,7 +89,7 @@ export default function ThirdPartyScripts() {
               }
             }, WINDOW);
             
-            console.log('✅ Request storm protection enabled');
+            // Note: Using console.log here instead of logger because this runs in browser context
           })();
         `}
       </Script>
@@ -97,14 +98,14 @@ export default function ThirdPartyScripts() {
       <Script id="service-worker" strategy="afterInteractive">
         {`
           // Service Worker temporarily disabled to fix offline redirect loop
-          console.log('ℹ️ Service Worker disabled - investigating offline redirect issue');
+          // Note: Using console.log here instead of logger because this runs in browser context
           
           // Unregister existing service worker if present
           if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(registrations) {
               for(let registration of registrations) {
                 registration.unregister().then(function(boolean) {
-                  console.log('🗑️ Service Worker unregistered:', boolean);
+                  // Note: Using console.log here instead of logger because this runs in browser context
                 });
               }
             });
@@ -116,8 +117,8 @@ export default function ThirdPartyScripts() {
       <Script 
         id="meta-pixel" 
         strategy="afterInteractive"
-        onError={() => console.warn('⚠️ Meta Pixel failed to load')}
-        onLoad={() => console.log('✅ Meta Pixel loaded')}
+        onError={() => logger.warn('Meta Pixel failed to load', 'ANALYTICS')}
+        onLoad={() => logger.info('Meta Pixel loaded', 'ANALYTICS')}
       >
         {`
           try {
@@ -131,9 +132,9 @@ export default function ThirdPartyScripts() {
             'https://connect.facebook.net/en_US/fbevents.js');
             fbq('init', '1459938351663284');
             fbq('track', 'PageView');
-            console.log('✅ Meta Pixel initialized');
+            // Note: Using console.log here instead of logger because this runs in browser context
           } catch (error) {
-            console.warn('⚠️ Meta Pixel initialization failed:', error);
+            // Note: Using console.warn here instead of logger because this runs in browser context
           }
         `}
       </Script>
@@ -142,8 +143,8 @@ export default function ThirdPartyScripts() {
       <Script 
         id="gtm" 
         strategy="afterInteractive"
-        onError={() => console.warn('⚠️ Google Tag Manager failed to load')}
-        onLoad={() => console.log('✅ Google Tag Manager loaded')}
+        onError={() => logger.warn('Google Tag Manager failed to load', 'ANALYTICS')}
+        onLoad={() => logger.info('Google Tag Manager loaded', 'ANALYTICS')}
       >
         {`
           try {
@@ -152,9 +153,9 @@ export default function ThirdPartyScripts() {
             j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
             })(window,document,'script','dataLayer','GTM-PMHB36X5');
-            console.log('✅ Google Tag Manager initialized');
+            // Note: Using console.log here instead of logger because this runs in browser context
           } catch (error) {
-            console.warn('⚠️ Google Tag Manager initialization failed:', error);
+            // Note: Using console.warn here instead of logger because this runs in browser context
           }
         `}
       </Script>
@@ -163,8 +164,8 @@ export default function ThirdPartyScripts() {
       <Script 
         id="linkedin-insight-tag" 
         strategy="afterInteractive"
-        onError={() => console.warn('⚠️ LinkedIn Insight Tag failed to load')}
-        onLoad={() => console.log('✅ LinkedIn Insight Tag loaded')}
+        onError={() => logger.warn('LinkedIn Insight Tag failed to load', 'ANALYTICS')}
+        onLoad={() => logger.info('LinkedIn Insight Tag loaded', 'ANALYTICS')}
       >
         {`
           try {
@@ -178,9 +179,9 @@ export default function ThirdPartyScripts() {
             b.type = "text/javascript";b.async = true;
             b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
             s.parentNode.insertBefore(b, s);})(window.lintrk);
-            console.log('✅ LinkedIn Insight Tag initialized');
+            // Note: Using console.log here instead of logger because this runs in browser context
           } catch (error) {
-            console.warn('⚠️ LinkedIn Insight Tag initialization failed:', error);
+            // Note: Using console.warn here instead of logger because this runs in browser context
           }
         `}
       </Script>

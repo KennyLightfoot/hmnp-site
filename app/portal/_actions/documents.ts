@@ -8,6 +8,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Role } from "@prisma/client";
 import { randomUUID } from "crypto";
+import { logger } from '@/lib/logger';
 
 // Ensure necessary environment variables are set
 if (!process.env.S3_BUCKET_NAME) {
@@ -41,7 +42,7 @@ export async function getPresignedDownloadUrl(documentId: string): Promise<{ err
   const userRole = user.role as Role;
 
   if (!userId || !userRole) {
-    console.error("User ID or Role missing from session");
+    logger.error('User ID or Role missing from session', 'DOCUMENTS');
     return { error: "Authentication error" };
   }
 
@@ -65,7 +66,7 @@ export async function getPresignedDownloadUrl(documentId: string): Promise<{ err
     const isAssignedPartner = userRole === Role.PARTNER && document.assignment.partnerAssignedToId === userId;
 
     if (!isStaffOrAdmin && !isAssignedPartner) {
-      console.warn(`User ${userId} (${userRole}) unauthorized download attempt for doc ${documentId}`);
+      logger.warn(`User ${userId} (${userRole}) unauthorized download attempt for doc ${documentId}`, 'DOCUMENTS');
       return { error: "Unauthorized" };
     }
 
@@ -87,7 +88,7 @@ export async function getPresignedDownloadUrl(documentId: string): Promise<{ err
     return { url };
 
   } catch (error) {
-    console.error(`Failed to generate pre-signed URL for doc ${documentId}:`, error);
+    logger.error(`Failed to generate pre-signed URL for doc ${documentId}`, 'DOCUMENTS', error instanceof Error ? error : new Error(String(error)));
     return { error: "Failed to prepare download link." };
   }
 }
@@ -119,7 +120,7 @@ export async function getPresignedUploadUrl(
 
   // Authorization Check: Only Staff or Admin can upload
   if (userRole !== Role.ADMIN && userRole !== Role.STAFF) {
-    console.warn(`User ${userId} (${userRole}) unauthorized upload attempt for assignment ${assignmentId}`);
+    logger.warn(`User ${userId} (${userRole}) unauthorized upload attempt for assignment ${assignmentId}`, 'DOCUMENTS');
     return { error: "Unauthorized" };
   }
 
@@ -163,7 +164,7 @@ export async function getPresignedUploadUrl(
     return { url, fields, key };
 
   } catch (error) {
-    console.error(`Failed to generate pre-signed upload URL for ${filename}:`, error);
+    logger.error(`Failed to generate pre-signed upload URL for ${filename}`, 'DOCUMENTS', error instanceof Error ? error : new Error(String(error)));
     return { error: "Failed to prepare upload link." };
   }
 }
@@ -216,7 +217,7 @@ export async function registerUploadedDocument(
     return { documentId: newDocument.id };
 
   } catch (error) {
-    console.error(`Failed to register document ${filename} (key: ${s3Key}):`, error);
+    logger.error(`Failed to register document ${filename} (key: ${s3Key})`, 'DOCUMENTS', error instanceof Error ? error : new Error(String(error)));
     // TODO: Consider deleting the orphaned S3 object if DB registration fails?
     return { error: "Failed to save document record." };
   }

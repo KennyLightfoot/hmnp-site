@@ -35,13 +35,13 @@ import {
 } from 'lucide-react';
 
 import { CreateBooking } from '@/lib/booking-validation';
+import {
+  LocationStepProps,
+  LocationChangeHandler,
+  PopularArea
+} from '@/lib/types/booking-interfaces';
 
-interface LocationStepProps {
-  data: Partial<CreateBooking>;
-  onUpdate: (updates: any) => void;
-  errors?: any;
-  pricing?: any;
-}
+// Use imported LocationStepProps from booking-interfaces
 
 interface AddressSuggestion {
   address: string;
@@ -119,7 +119,7 @@ export default function LocationStep({ data, onUpdate, errors, pricing }: Locati
     }
   };
 
-  const handleLocationChange = (field: string, value: any) => {
+  const handleLocationChange: LocationChangeHandler = (field, value) => {
     const updatedLocation = { ...watchedLocation, [field]: value };
     setValue(`location.${field}` as any, value);
     onUpdate({ location: updatedLocation });
@@ -212,7 +212,7 @@ export default function LocationStep({ data, onUpdate, errors, pricing }: Locati
     setShowSuggestions(false);
   };
 
-  const selectPopularArea = (area: any) => {
+  const selectPopularArea = (area: PopularArea) => {
     handleLocationChange('city', area.name.includes('Houston') ? 'Houston' : area.name);
     handleLocationChange('state', 'TX');
     handleLocationChange('zipCode', area.zipCode);

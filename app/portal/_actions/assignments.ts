@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Role, AssignmentStatus, Assignment } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { logger } from '@/lib/logger';
 
 /**
  * Updates the status of an assignment and records the change in history.
@@ -31,7 +32,7 @@ export async function updateAssignmentStatus(
 
   // Authorization Check: Only Staff or Admin can change status
   if (userRole !== Role.ADMIN && userRole !== Role.STAFF) {
-    console.warn(`User ${userId} (${userRole}) unauthorized status update attempt for assignment ${assignmentId}`);
+    logger.warn(`User ${userId} (${userRole}) unauthorized status update attempt for assignment ${assignmentId}`, 'ASSIGNMENTS');
     return { error: "Unauthorized" };
   }
 
@@ -70,7 +71,7 @@ export async function updateAssignmentStatus(
     return { success: true };
 
   } catch (error) {
-    console.error(`Failed to update status for assignment ${assignmentId}:`, error);
+    logger.error(`Failed to update status for assignment ${assignmentId}`, 'ASSIGNMENTS', error instanceof Error ? error : new Error(String(error)));
     let errorMessage = "Failed to update status.";
     if (error instanceof Error) {
         errorMessage = error.message;
@@ -105,7 +106,7 @@ export async function fetchAssignmentsAction(params: FetchAssignmentsParams): Pr
     if (userRole === 'PARTNER') {
       whereClause.partnerAssignedToId = userId;
     } else if (userRole !== 'ADMIN' && userRole !== 'STAFF') {
-      console.warn(`fetchAssignmentsAction: Unhandled user role for assignment fetching: ${userRole}`);
+      logger.warn(`fetchAssignmentsAction: Unhandled user role for assignment fetching: ${userRole}`, 'ASSIGNMENTS');
       // If not ADMIN, STAFF, or a specific PARTNER, they see nothing by default
       // Or handle as an error, depending on desired behavior
       return { assignments: [], totalAssignments: 0, error: "Unauthorized role for fetching assignments." };
@@ -151,7 +152,7 @@ export async function fetchAssignmentsAction(params: FetchAssignmentsParams): Pr
     return { assignments, totalAssignments };
 
   } catch (error) {
-    console.error("Failed to fetch assignments via action:", error);
+    logger.error('Failed to fetch assignments via action', 'ASSIGNMENTS', error instanceof Error ? error : new Error(String(error)));
     return { assignments: [], totalAssignments: 0, error: "Error loading assignments. Please try again later." };
   }
 } 

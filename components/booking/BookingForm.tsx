@@ -38,6 +38,13 @@ import UpsellModal from './UpsellModal';
 import { CreateBookingSchema, type CreateBooking } from '@/lib/booking-validation';
 import { PricingResult } from '@/lib/pricing-engine';
 import { SlotReservation } from '@/lib/slot-reservation';
+import {
+  BookingFormProps,
+  BookingStep,
+  CompletedBooking,
+  BookingError,
+  BaseStepProps
+} from '@/lib/types/booking-interfaces';
 
 // Form step components (we'll import these)
 import CustomerInfoStep from './steps/CustomerInfoStep';
@@ -47,22 +54,7 @@ import SchedulingStep from './steps/SchedulingStep';
 import PaymentStep from './steps/PaymentStep';
 import ConfirmationStep from './steps/ConfirmationStep';
 
-// Types
-interface BookingFormProps {
-  initialData?: Partial<CreateBooking>;
-  onComplete?: (booking: any) => void;
-  onError?: (error: any) => void;
-  className?: string;
-}
-
-interface BookingStep {
-  id: string;
-  title: string;
-  description: string;
-  component: React.ComponentType<any>;
-  isValid?: (data: any) => boolean;
-  icon: React.ComponentType<any>;
-}
+// Use imported types from booking-interfaces
 
 interface BookingConfidence {
   level: number; // 0-100
@@ -78,7 +70,7 @@ const BOOKING_STEPS: BookingStep[] = [
     description: 'Select the perfect notary service for your needs',
     component: ServiceSelector,
     icon: FileText,
-    isValid: (data) => !!data.serviceType
+    isValid: (data: Partial<CreateBooking>) => !!data.serviceType
   },
   {
     id: 'details',
@@ -86,7 +78,7 @@ const BOOKING_STEPS: BookingStep[] = [
     description: 'Tell us about your documents and requirements',
     component: ServiceDetailsStep,
     icon: Users,
-    isValid: (data) => data.serviceDetails?.documentCount > 0
+    isValid: (data: Partial<CreateBooking>) => data.serviceDetails?.documentCount > 0
   },
   {
     id: 'location',
@@ -94,7 +86,7 @@ const BOOKING_STEPS: BookingStep[] = [
     description: 'Where should we meet you?',
     component: LocationStep,
     icon: MapPin,
-    isValid: (data) => data.serviceType === 'RON_SERVICES' || !!data.location?.address
+    isValid: (data: Partial<CreateBooking>) => data.serviceType === 'RON_SERVICES' || !!data.location?.address
   },
   {
     id: 'scheduling',
@@ -492,7 +484,7 @@ export default function BookingForm({
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center space-x-2">
-                <BOOKING_STEPS[currentStep].icon className="h-5 w-5" />
+                {React.createElement(BOOKING_STEPS[currentStep].icon, { className: "h-5 w-5" })}
                 <span>{BOOKING_STEPS[currentStep].title}</span>
                 <Badge variant="outline">
                   Step {currentStep + 1} of {BOOKING_STEPS.length}

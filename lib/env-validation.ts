@@ -5,6 +5,7 @@
  */
 
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
 
 // Add build-time safety checks at the top
 const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || 
@@ -148,7 +149,7 @@ function validateProductionRequirements(): string[] {
  */
 export function validateEnvironment(): ValidationResult {
   if (shouldSkipValidation) {
-    console.log('⏭️ Skipping environment validation (build time)');
+    logger.info('Skipping environment validation (build time)', 'ENV_VALIDATION');
     return {
       success: true,
       errors: [],
@@ -230,17 +231,17 @@ export function validateEnvironmentOrThrow(): Record<string, any> {
   const result = validateEnvironment();
   
   if (!result.success) {
-    console.error('❌ Environment validation failed:');
-    result.errors.forEach(error => console.error(`  - ${error}`));
+    logger.error('Environment validation failed', 'ENV_VALIDATION', { errors: result.errors });
+    result.errors.forEach(error => logger.error(`  - ${error}`, 'ENV_VALIDATION'));
     throw new Error('Invalid environment configuration');
   }
   
   if (result.warnings.length > 0) {
-    console.warn('⚠️ Environment warnings:');
-    result.warnings.forEach(warning => console.warn(`  - ${warning}`));
+    logger.warn('Environment warnings', 'ENV_VALIDATION', { warnings: result.warnings });
+    result.warnings.forEach(warning => logger.warn(`  - ${warning}`, 'ENV_VALIDATION'));
   }
   
-  console.log('✅ Environment validation passed');
+  logger.info('Environment validation passed', 'ENV_VALIDATION');
   return result.env!;
 }
 
@@ -259,12 +260,12 @@ if (process.env.NODE_ENV === 'development' && !shouldSkipValidation) {
   const result = validateEnvironment();
   
   if (!result.success) {
-    console.error('❌ Environment validation failed on import:');
-    result.errors.forEach(error => console.error(`  - ${error}`));
+    logger.error('Environment validation failed on import', 'ENV_VALIDATION', { errors: result.errors });
+    result.errors.forEach(error => logger.error(`  - ${error}`, 'ENV_VALIDATION'));
   } else if (result.warnings.length > 0) {
-    console.warn('⚠️ Environment warnings on import:');
-    result.warnings.forEach(warning => console.warn(`  - ${warning}`));
+    logger.warn('Environment warnings on import', 'ENV_VALIDATION', { warnings: result.warnings });
+    result.warnings.forEach(warning => logger.warn(`  - ${warning}`, 'ENV_VALIDATION'));
   } else {
-    console.log('✅ Environment validation passed on import');
+    logger.info('Environment validation passed on import', 'ENV_VALIDATION');
   }
 } 

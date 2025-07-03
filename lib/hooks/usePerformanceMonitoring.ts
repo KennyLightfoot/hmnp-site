@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useRef } from 'react';
+import { logger } from '@/lib/logger';
 
 interface PerformanceMetric {
   name: string;
@@ -60,11 +61,11 @@ export function usePerformanceMonitoring(
           metrics: metrics
         })
       }).catch(error => {
-        console.warn('[PERFORMANCE] Failed to send metrics:', error);
+        logger.warn('Failed to send performance metrics', 'PERFORMANCE_MONITORING', { error: error instanceof Error ? error.message : String(error) });
       });
 
     } catch (error) {
-      console.warn('[PERFORMANCE] Failed to track metrics:', error);
+      logger.warn('Failed to track performance metrics', 'PERFORMANCE_MONITORING', { error: error instanceof Error ? error.message : String(error) });
     }
   }, [componentName]);
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import { format, addDays, startOfDay, endOfDay, parseISO, isToday, addHours } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 import { Calendar } from '@/components/ui/calendar';
@@ -121,7 +122,7 @@ export default function UnifiedBookingCalendar({
       const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       setUserTimezone(detectedTimezone);
     } catch (error) {
-      console.warn('Could not detect timezone:', error);
+      logger.warn('Could not detect timezone', 'CALENDAR', { error: error.message });
       setUserTimezone('America/Chicago'); // Fallback
     }
   }, []);
@@ -164,7 +165,7 @@ export default function UnifiedBookingCalendar({
       case 'support-service':
         return 'r9koQ0kxmuMuWryZkjdo'; // Use default for now
       default:
-        console.warn(`Unknown service type: ${service}, using fallback`);
+        logger.warn('Unknown service type, using fallback', 'CALENDAR', { serviceType: service });
         return 'r9koQ0kxmuMuWryZkjdo';
     }
   };

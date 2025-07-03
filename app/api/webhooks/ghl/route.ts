@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 import { headers } from 'next/headers';
 import crypto from 'crypto';
 
@@ -58,7 +59,7 @@ function checkRateLimit(ip: string): boolean {
   }
   
   if (current.count >= RATE_LIMIT_MAX) {
-    console.warn(`🚨 Webhook rate limit exceeded for IP: ${ip}`);
+    logger.warn('Webhook rate limit exceeded', 'GHL_WEBHOOK', { ip });
     return false;
   }
   

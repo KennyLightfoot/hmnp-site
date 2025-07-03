@@ -32,13 +32,9 @@ import {
 } from 'lucide-react';
 
 import { CreateBooking } from '@/lib/booking-validation';
+import { SchedulingStepProps } from '@/lib/types/booking-interfaces';
 
-interface SchedulingStepProps {
-  data: Partial<CreateBooking>;
-  onUpdate: (updates: any) => void;
-  errors?: any;
-  pricing?: any;
-}
+// Use imported SchedulingStepProps from booking-interfaces
 
 interface TimeSlot {
   time: string;
@@ -451,7 +447,7 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
                       {!slot.available && (
                         <div className="text-xs mt-1">Booked</div>
                       )}
-                    </div>
+                    </button>
                   ))}
                 </div>
 

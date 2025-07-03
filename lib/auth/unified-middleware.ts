@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import jwt from 'jsonwebtoken';
@@ -253,7 +254,7 @@ export function validateAuthEnvironment(): void {
 
   const missingRecommended = recommended.filter(key => !process.env[key]);
   if (missingRecommended.length > 0) {
-    console.warn(`Missing recommended auth environment variables: ${missingRecommended.join(', ')}`);
+    logger.warn('Missing recommended auth environment variables', 'AUTH_MIDDLEWARE', { missingVars: missingRecommended });
   }
 }
 

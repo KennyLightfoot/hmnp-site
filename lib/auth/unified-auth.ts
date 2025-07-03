@@ -16,6 +16,7 @@ import EmailProvider from 'next-auth/providers/email';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import { prisma } from '@/lib/db';
+import { logger } from '@/lib/logger';
 import { Resend } from 'resend';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -555,7 +556,7 @@ export function validateAuthEnvironment(): void {
 
   const missingRecommended = recommended.filter(key => !process.env[key]);
   if (missingRecommended.length > 0) {
-    console.warn(`Missing recommended auth environment variables: ${missingRecommended.join(', ')}`);
+    logger.warn('Missing recommended auth environment variables', 'AUTH', { missingVars: missingRecommended });
   }
 }
 

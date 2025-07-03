@@ -42,13 +42,19 @@ import ReviewStep from './steps/ReviewStep';
 import { CreateBookingSchema, type CreateBooking } from '@/lib/booking-validation';
 import { PricingResult } from '@/lib/pricing-engine';
 import { SlotReservation } from '@/lib/slot-reservation';
+import {
+  CompletedBooking,
+  BookingStepUpdate,
+  BookingErrors,
+  BaseStepProps
+} from '@/lib/types/booking-interfaces';
 
 // Types for booking flow
 interface BookingStep {
   id: string;
   title: string;
   subtitle: string;
-  component: React.ComponentType<any>;
+  component: React.ComponentType<BaseStepProps>;
   isOptional?: boolean;
   showInProgress?: boolean;
 }
@@ -61,7 +67,7 @@ interface BookingState {
   timeRemaining: number | null;
   showUpsell: boolean;
   isSubmitting: boolean;
-  completedBooking: any | null;
+  completedBooking: CompletedBooking | null;
 }
 
 // Booking steps configuration
@@ -459,7 +465,7 @@ export default function BookingWizard() {
               {CurrentStepComponent && (
                 <CurrentStepComponent
                   data={watchedValues}
-                  onUpdate={(updates: any) => {
+                  onUpdate={(updates: BookingStepUpdate) => {
                     Object.keys(updates).forEach(key => {
                       form.setValue(key as any, updates[key]);
                     });

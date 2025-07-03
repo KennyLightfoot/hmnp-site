@@ -5,6 +5,8 @@
  * which can cause request storms and exponential traffic growth.
  */
 
+import { logger } from '@/lib/logger';
+
 interface PendingRequest {
   promise: Promise<Response>;
   timestamp: number;
@@ -59,19 +61,19 @@ class RequestDeduplicator {
 
     // Check concurrent request limit
     if (!this.checkConcurrentLimit(baseUrl)) {
-      console.warn(`🚨 Too many concurrent requests to ${baseUrl}, blocking request`);
+      logger.warn(`Too many concurrent requests to ${baseUrl}, blocking request`, 'REQUEST_DEDUPLICATION');
       throw new Error(`Too many concurrent requests to ${baseUrl}`);
     }
 
     // If we already have this exact request pending, return the existing promise
     const existing = this.pendingRequests.get(key);
     if (existing) {
-      console.log(`♻️ Deduplicating request: ${url}`);
+      logger.info(`Deduplicating request: ${url}`, 'REQUEST_DEDUPLICATION');
       return existing.promise.then(response => response.clone());
     }
 
     // Create new request
-    console.log(`🔄 Making new request: ${url}`);
+    logger.info(`Making new request: ${url}`, 'REQUEST_DEDUPLICATION');
     const promise = fetch(url, options);
     
     this.pendingRequests.set(key, {
@@ -104,7 +106,7 @@ class RequestDeduplicator {
    * Clear all pending requests (emergency reset)
    */
   clear(): void {
-    console.warn('🚨 Emergency clearing all pending requests');
+    logger.warn('Emergency clearing all pending requests', 'REQUEST_DEDUPLICATION');
     this.pendingRequests.clear();
   }
 }
@@ -142,7 +144,7 @@ if (typeof window !== 'undefined') {
     requestCount++;
     
     if (requestCount > maxRequestsPerMinute) {
-      console.error('🚨 REQUEST STORM DETECTED - blocking excessive requests');
+      logger.error('REQUEST STORM DETECTED - blocking excessive requests', 'REQUEST_DEDUPLICATION');
       return Promise.reject(new Error('Request storm detected - too many requests'));
     }
     
@@ -152,7 +154,7 @@ if (typeof window !== 'undefined') {
   // Reset counter every minute
   setInterval(() => {
     if (requestCount > 100) {
-      console.warn(`⚠️ High request volume: ${requestCount} requests in last minute`);
+      logger.warn(`High request volume: ${requestCount} requests in last minute`, 'REQUEST_DEDUPLICATION');
     }
     requestCount = 0;
   }, resetInterval);
