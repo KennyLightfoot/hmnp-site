@@ -2,6 +2,7 @@ export * from './types';
 export * from './client';
 export * from './worker';
 export * from './config';
+export * from './queue-config';
 
 // Re-export singleton methods for convenience
 import { QueueClient } from './client';

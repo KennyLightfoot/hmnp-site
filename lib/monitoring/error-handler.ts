@@ -468,6 +468,17 @@ export const BookingErrors = {
   )
 };
 
+/**
+ * Track error function for components (simplified interface)
+ */
+export async function trackError(
+  error: Error | string,
+  context: ErrorContext = {}
+): Promise<string> {
+  const errorInstance = typeof error === 'string' ? new Error(error) : error;
+  return await errorMonitor.logError(errorInstance, context);
+}
+
 export {
   AppError,
   ErrorMonitor

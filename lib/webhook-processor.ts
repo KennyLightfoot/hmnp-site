@@ -31,6 +31,51 @@ export class WebhookProcessor {
   private static readonly LOCK_TIMEOUT_MS = 30000; // 30 seconds
 
   /**
+   * Process webhook with generic interface (for compatibility)
+   */
+  async processWebhook(options: {
+    source: string;
+    eventId: string;
+    eventType: string;
+    data: any;
+    rawPayload: string;
+    processor: () => Promise<any>;
+  }): Promise<{ success: boolean; error?: string; processingTime?: number }> {
+    const startTime = Date.now();
+    
+    try {
+      // Use the static processEvent method with a mock Stripe event
+      const mockEvent = {
+        id: options.eventId,
+        type: options.eventType,
+        data: { object: options.data }
+      };
+
+      const result = await WebhookProcessor.processEvent(
+        mockEvent as any,
+        async () => {
+          return await options.processor();
+        }
+      );
+
+      const processingTime = Date.now() - startTime;
+
+      return {
+        success: result.success,
+        error: result.error,
+        processingTime
+      };
+    } catch (error) {
+      const processingTime = Date.now() - startTime;
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        processingTime
+      };
+    }
+  }
+
+  /**
    * Process a Stripe webhook event with idempotency and race condition protection
    */
   static async processEvent<T>(
@@ -255,4 +300,7 @@ export class WebhookProcessor {
       successRate: Math.round(successRate * 100) / 100
     };
   }
-} 
+}
+
+// Export singleton instance for compatibility
+export const webhookProcessor = new WebhookProcessor(); 
