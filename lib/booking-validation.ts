@@ -93,7 +93,7 @@ export const ServiceDetailsSchema = z.object({
 
 // Scheduling Schema with Smart Validation
 export const SchedulingSchema = z.object({
-  preferredDate: z.string().datetime(),
+  preferredDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Please provide date in YYYY-MM-DD format"),
   preferredTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Please provide time in HH:MM format"),
   timeZone: z.string().default("America/Chicago"),
   flexibleTiming: z.boolean().default(false),

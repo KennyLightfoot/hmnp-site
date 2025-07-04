@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
   
   try {
     // Get client information
-    const headersList = headers();
+    const headersList = await headers();
     const ip = headersList.get('x-forwarded-for') || 
                 headersList.get('x-real-ip') || 
                 'unknown';
