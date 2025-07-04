@@ -144,11 +144,11 @@ export async function getContactByEmail(email: string): Promise<GhlContact | nul
     // Try multiple approaches for better compatibility
     console.log(`[getContactByEmail] Searching for contact with email: ${email}`);
     
-    // Method 1: Use the updated contacts search endpoint
+    // Method 1: Use the updated contacts search endpoint (v2 format)
     const response = await callGhlApi('/contacts/search', 'POST', {
       locationId: process.env.GHL_LOCATION_ID,
       query: email.toLowerCase().trim(),
-      pageLimit: 10
+      limit: 10
     });
 
     let foundContact: GhlContact | null = null;
@@ -179,7 +179,7 @@ export async function getContactByEmail(email: string): Promise<GhlContact | nul
     // Method 2: If search fails, try the contacts list endpoint with email filter
     console.log(`[getContactByEmail] Search method didn't find contact, trying list endpoint`);
     
-    const listResponse = await callGhlApi(`/contacts?locationId=${process.env.GHL_LOCATION_ID}&email=${encodeURIComponent(email)}`, 'GET');
+    const listResponse = await callGhlApi(`/contacts?locationId=${process.env.GHL_LOCATION_ID}&email=${encodeURIComponent(email)}&limit=10`, 'GET');
     
     if (listResponse && listResponse.contacts && Array.isArray(listResponse.contacts)) {
       foundContact = listResponse.contacts.find(
@@ -248,7 +248,14 @@ export async function upsertContact(contactData: GhlContact): Promise<any> {
     let customFieldsArray: { id: string, field_value: any }[] = [];
     
     if (customField) {
-      customFieldsArray = convertCustomFieldsObjectToArray(customField);
+      // Handle both array format (from contact form) and object format (legacy)
+      if (Array.isArray(customField)) {
+        // Already in correct format from contact form
+        customFieldsArray = customField;
+      } else {
+        // Convert object format to array format
+        customFieldsArray = convertCustomFieldsObjectToArray(customField);
+      }
     }
     
     // Create the final payload with proper GHL API format
@@ -258,6 +265,7 @@ export async function upsertContact(contactData: GhlContact): Promise<any> {
     };
     
     console.log('[upsertContact] Using updated payload format with', customFieldsArray.length, 'custom fields');
+    console.log('[upsertContact] Custom fields payload:', JSON.stringify(customFieldsArray, null, 2));
     
     // Use the updated upsert endpoint
     const response = await callGhlApi('/contacts/upsert', 'POST', payload);
@@ -424,65 +432,118 @@ export function getHardcodedCustomFields(): GhlCustomField[] {
   // These are the custom fields we know are used in the booking flow
   return [
     {
-      id: 'service_date',
+      id: 'cf_service_date',
       name: 'Service Date',
+      key: 'cf_service_date',
       fieldKey: 'contact.cf_service_date',
       dataType: 'date',
       value: null,
       options: undefined
     },
     {
-      id: 'service_time',
+      id: 'cf_service_time',
       name: 'Service Time',
+      key: 'cf_service_time',
       fieldKey: 'contact.cf_service_time',
       dataType: 'text',
       value: null,
       options: undefined
     },
     {
-      id: 'service_address',
+      id: 'cf_service_address',
       name: 'Service Address',
+      key: 'cf_service_address',
       fieldKey: 'contact.cf_service_address',
       dataType: 'text',
       value: null,
       options: undefined
     },
     {
-      id: 'service_name',
+      id: 'cf_service_name',
       name: 'Service Name',
+      key: 'cf_service_name',
       fieldKey: 'contact.cf_service_name',
       dataType: 'text',
       value: null,
       options: undefined
     },
     {
-      id: 'service_price',
+      id: 'cf_service_price',
       name: 'Service Price',
+      key: 'cf_service_price',
       fieldKey: 'contact.cf_service_price',
       dataType: 'number',
       value: null,
       options: undefined
     },
     {
-      id: 'booking_id',
+      id: 'cf_booking_id',
       name: 'Booking ID',
+      key: 'cf_booking_id',
       fieldKey: 'contact.cf_booking_id',
       dataType: 'text',
       value: null,
       options: undefined
     },
     {
-      id: 'number_of_signatures',
+      id: 'cf_number_of_signatures',
       name: 'Number of Signatures',
+      key: 'cf_number_of_signatures',
       fieldKey: 'contact.cf_number_of_signatures',
       dataType: 'number',
       value: null,
       options: undefined
     },
     {
-      id: 'document_type',
+      id: 'cf_document_type',
       name: 'Document Type',
+      key: 'cf_document_type',
       fieldKey: 'contact.cf_document_type',
+      dataType: 'text',
+      value: null,
+      options: undefined
+    },
+    {
+      id: 'cf_lead_source_detail',
+      name: 'Lead Source Detail',
+      key: 'cf_lead_source_detail',
+      fieldKey: 'contact.cf_lead_source_detail',
+      dataType: 'text',
+      value: null,
+      options: undefined
+    },
+    {
+      id: 'cf_consent_sms_communications',
+      name: 'SMS Communications Consent',
+      key: 'cf_consent_sms_communications',
+      fieldKey: 'contact.cf_consent_sms_communications',
+      dataType: 'boolean',
+      value: null,
+      options: undefined
+    },
+    {
+      id: 'cf_consent_terms_conditions',
+      name: 'Terms & Conditions Consent',
+      key: 'cf_consent_terms_conditions',
+      fieldKey: 'contact.cf_consent_terms_conditions',
+      dataType: 'boolean',
+      value: null,
+      options: undefined
+    },
+    {
+      id: 'cf_preferred_call_time',
+      name: 'Preferred Call Time',
+      key: 'cf_preferred_call_time',
+      fieldKey: 'contact.cf_preferred_call_time',
+      dataType: 'text',
+      value: null,
+      options: undefined
+    },
+    {
+      id: 'cf_call_request_notes',
+      name: 'Call Request Notes',
+      key: 'cf_call_request_notes',
+      fieldKey: 'contact.cf_call_request_notes',
       dataType: 'text',
       value: null,
       options: undefined
@@ -519,10 +580,12 @@ export async function getLocationCustomFields(locationId: string): Promise<GhlCu
     throw new Error('Location ID is required to fetch custom fields.');
   }
 
+  // Updated endpoints to use correct GHL v2 API format
   const endpointsToTry = [
-    `/objects/schema/contact?locationId=${locationId}`, // v2 API schema-based approach
-    `/contacts/custom-fields?locationId=${locationId}`,  // Alternative location-specific format
-    `/locations/${locationId}/custom-fields`,            // Original endpoint format
+    `/locations/${locationId}/customFields`,               // Primary v2 endpoint
+    `/locations/${locationId}/custom-fields`,              // Alternative format
+    `/objects/schema/contact?locationId=${locationId}`,    // Schema-based approach
+    `/contacts/custom-fields?locationId=${locationId}`,    // Query parameter format
   ];
 
   let fieldsToReturn: GhlCustomField[] = [];
@@ -533,43 +596,65 @@ export async function getLocationCustomFields(locationId: string): Promise<GhlCu
       const response = await callGhlApi<any>(endpoint, 'GET');
       let extractedFields: GhlCustomField[] = [];
 
+      // Handle different response formats from GHL API
       if (response?.customFields && Array.isArray(response.customFields)) {
-        extractedFields = response.customFields;
+        extractedFields = response.customFields.map((field: any) => ({
+          id: field.id,
+          name: field.name,
+          key: field.key,
+          fieldKey: field.fieldKey || field.key || `contact.cf_${field.name?.toLowerCase().replace(/\s+/g, '_')}`,
+          dataType: field.dataType || field.type,
+          options: field.options,
+          value: field.value || null,
+        }));
       } else if (response?.fields && Array.isArray(response.fields)) {
         extractedFields = response.fields.map((field: any) => ({
           id: field.id,
           name: field.name,
-          fieldKey: field.key || `contact.cf_${field.name?.toLowerCase().replace(/\s+/g, '_')}`,
-          dataType: field.type,
+          key: field.key,
+          fieldKey: field.fieldKey || field.key || `contact.cf_${field.name?.toLowerCase().replace(/\s+/g, '_')}`,
+          dataType: field.dataType || field.type,
           options: field.options,
-          value: null,
+          value: field.value || null,
+        }));
+      } else if (response?.data?.customFields && Array.isArray(response.data.customFields)) {
+        extractedFields = response.data.customFields.map((field: any) => ({
+          id: field.id,
+          name: field.name,
+          key: field.key,
+          fieldKey: field.fieldKey || field.key || `contact.cf_${field.name?.toLowerCase().replace(/\s+/g, '_')}`,
+          dataType: field.dataType || field.type,
+          options: field.options,
+          value: field.value || null,
         }));
       } else if (response?.data?.fields && Array.isArray(response.data.fields)) {
         extractedFields = response.data.fields.map((field: any) => ({
           id: field.id,
           name: field.name,
-          fieldKey: field.key || `contact.cf_${field.name?.toLowerCase().replace(/\s+/g, '_')}`,
-          dataType: field.type,
+          key: field.key,
+          fieldKey: field.fieldKey || field.key || `contact.cf_${field.name?.toLowerCase().replace(/\s+/g, '_')}`,
+          dataType: field.dataType || field.type,
           options: field.options,
-          value: null,
+          value: field.value || null,
         }));
       } else if (Array.isArray(response)) {
         extractedFields = response.map((field: any) => ({
           id: field.id,
           name: field.name,
-          fieldKey: field.key || field.fieldKey || `contact.cf_${field.name?.toLowerCase().replace(/\s+/g, '_')}`,
-          dataType: field.type || field.dataType,
+          key: field.key,
+          fieldKey: field.fieldKey || field.key || `contact.cf_${field.name?.toLowerCase().replace(/\s+/g, '_')}`,
+          dataType: field.dataType || field.type,
           options: field.options,
           value: field.value || null,
         }));
       }
 
       if (extractedFields.length > 0) {
-        console.log(`[getLocationCustomFields] Successfully fetched and processed custom fields from ${endpoint}`);
+        console.log(`[getLocationCustomFields] Successfully fetched ${extractedFields.length} custom fields from ${endpoint}`);
         fieldsToReturn = extractedFields;
         break; // Exit loop once fields are successfully fetched and processed
       }
-      console.log(`[getLocationCustomFields] Endpoint ${endpoint} returned data but no recognizable fields format:`, response);
+      console.log(`[getLocationCustomFields] Endpoint ${endpoint} returned data but no recognizable fields format:`, JSON.stringify(response, null, 2));
     } catch (error) {
       console.error(`[getLocationCustomFields] Error fetching custom fields from ${endpoint}:`, error);
       // Continue to next endpoint
@@ -586,11 +671,9 @@ export async function getLocationCustomFields(locationId: string): Promise<GhlCu
     timestamp: Date.now(),
     fields: fieldsToReturn,
   };
-  console.log(`[getLocationCustomFields] Cached custom fields for location ${locationId}`);
+  console.log(`[getLocationCustomFields] Cached ${fieldsToReturn.length} custom fields for location ${locationId}`);
   return fieldsToReturn;
 }
-
-// End of new getLocationCustomFields function. Old content remnants removed.
 
 /**
  * Convert an array of custom field objects to a key-value object format 

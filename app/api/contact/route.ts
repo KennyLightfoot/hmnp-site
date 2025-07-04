@@ -152,19 +152,19 @@ export async function POST(request: Request) {
 
     const customFieldsPayload = [];
     const cfLeadSourceDetailId = findCustomFieldId("cf_lead_source_detail");
-    if (cfLeadSourceDetailId) customFieldsPayload.push({ id: cfLeadSourceDetailId, value: "Website General Inquiry" });
+    if (cfLeadSourceDetailId) customFieldsPayload.push({ id: cfLeadSourceDetailId, field_value: "Website General Inquiry" });
 
     const cfSmsConsentId = findCustomFieldId("cf_consent_sms_communications");
-    if (cfSmsConsentId) customFieldsPayload.push({ id: cfSmsConsentId, value: smsConsent });
+    if (cfSmsConsentId) customFieldsPayload.push({ id: cfSmsConsentId, field_value: smsConsent });
     
     const cfTermsAcceptedId = findCustomFieldId("cf_consent_terms_conditions");
-    if (cfTermsAcceptedId) customFieldsPayload.push({ id: cfTermsAcceptedId, value: termsAccepted });
+    if (cfTermsAcceptedId) customFieldsPayload.push({ id: cfTermsAcceptedId, field_value: termsAccepted });
 
     const cfPreferredCallTimeId = findCustomFieldId("cf_preferred_call_time");
-    if (cfPreferredCallTimeId && preferredCallTime) customFieldsPayload.push({ id: cfPreferredCallTimeId, value: preferredCallTime });
+    if (cfPreferredCallTimeId && preferredCallTime) customFieldsPayload.push({ id: cfPreferredCallTimeId, field_value: preferredCallTime });
 
     const cfCallRequestNotesId = findCustomFieldId("cf_call_request_notes"); 
-    if (cfCallRequestNotesId && callRequestReason) customFieldsPayload.push({ id: cfCallRequestNotesId, value: callRequestReason });
+    if (cfCallRequestNotesId && callRequestReason) customFieldsPayload.push({ id: cfCallRequestNotesId, field_value: callRequestReason });
 
     const contactPayload: any = {
       firstName: firstName,
