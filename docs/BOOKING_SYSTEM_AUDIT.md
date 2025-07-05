@@ -29,6 +29,103 @@
 
 ---
 
+## 📊 PRODUCTION LOG ANALYSIS
+
+### **Specific Error Details from Logs**
+
+#### **Stripe Payment Failure Pattern**
+```
+[2025-07-04T20:58:42.104Z] [ERROR] [LOGGER.TS:32:19)] Stripe payment error during booking creation {
+  bookingId: 'cmcpara600000ve569r7dqn4p',
+  error: 'Invalid Stripe API version: 2024-12-18',
+  type: 'StripeInvalidRequestError',
+  code: undefined,
+  processingTime: 1592
+}
+POST /api/booking/create 402 in 1771ms
+```
+
+**Key Insights:**
+- **Error Type**: `StripeInvalidRequestError` (specific error class)
+- **Processing Time**: 1592ms (significant performance impact)
+- **HTTP Status**: 402 (Payment Required - but actually payment failed)
+- **Total Request Time**: 1771ms (very slow user experience)
+- **Booking Success**: Record created successfully before payment failure
+
+#### **Database Performance Issues**
+```
+prisma:query INSERT INTO "public"."new_bookings" (
+  "id","bookingNumber","serviceType","customerEmail","customerName",
+  "customerPhone","scheduledDateTime","estimatedDuration","timeZone",
+  "locationType","locationAddress","locationLatitude","locationLongitude",
+  "documentCount","documentTypes","signerCount","basePrice","travelFee",
+  "surcharges","discounts","totalPrice","paymentStatus","depositPaid",
+  "status","bookingSource","createdAt","updatedAt"
+) VALUES ($1,$2,CAST($3::text AS "public"."ServiceType"),$4,$5,$6,$7,$8,$9,
+CAST($10::text AS "public"."NewLocationType"),$11,$12,$13,$14,$15,$16,$17,$18,
+$19,$20,$21,CAST($22::text AS "public"."PaymentStatus"),$23,
+CAST($24::text AS "public"."NewBookingStatus"),$25,$26,$27)
+```
+
+**Key Insights:**
+- **Complex Query**: Massive INSERT with 27+ fields and type casting
+- **Type Casting Overhead**: Multiple `CAST()` operations slowing down queries
+- **Schema Complexity**: Complex enum types and relationships
+- **Performance Impact**: This query is taking significant time
+
+#### **Distance Calculation Fallback**
+```
+{
+  requestId: 'dist_1751662720516_0rjpe1ljv',
+  duration: '546ms',
+  distance: 15,
+  travelFee: 0,
+  apiSource: 'fallback'
+}
+```
+
+**Key Insights:**
+- **API Source**: `'fallback'` (Google Maps API failing)
+- **Duration**: 546ms (slow distance calculation)
+- **Impact**: Using estimated distances instead of accurate ones
+
+#### **Redis Connection Instability**
+```
+[2025-07-04T23:44:53.421Z] [ERROR] [LOGGER.TS:32:19)] Redis connection error undefined {
+  name: 'Error',
+  message: 'read ECONNRESET',
+  stack: 'Error: read ECONNRESET\n' +
+    '    at __node_internal_captureLargerStackTrace (node:internal/errors:496:5)\n' +
+    '    at __node_internal_errnoException (node:internal/errors:623:12)\n' +
+    '    at TCP.onStreamRead (node:internal/stream_base_commons:217:20)\n' +
+    '    at TCP.callbackTrampoline (node:internal/async_hooks:128:17)'
+}
+```
+
+**Key Insights:**
+- **Error Pattern**: `ECONNRESET` every 2-3 minutes
+- **Stack Trace**: Node.js internal TCP connection issues
+- **Recovery**: Auto-reconnects successfully but causes intermittent failures
+
+### **User Journey Impact Analysis**
+
+#### **Successful Flow (Until Payment)**
+1. ✅ **Service Selection**: Works correctly
+2. ✅ **Customer Info**: Validates and saves
+3. ✅ **Location**: Distance calculation (fallback mode)
+4. ✅ **Scheduling**: Slot reservation works
+5. ✅ **Database Insert**: Booking record created successfully
+6. ❌ **Payment Processing**: Fails with Stripe API error
+7. ❌ **User Experience**: 402 error after 1.7 seconds
+
+#### **Performance Bottlenecks**
+- **Distance Calculation**: 546ms (Google Maps API failing)
+- **Database Insert**: Complex query with type casting
+- **Payment Processing**: 1592ms (Stripe API version error)
+- **Total Request Time**: 1771ms (unacceptable for user experience)
+
+---
+
 ## 📊 CURRENT ARCHITECTURE ANALYSIS
 
 ### **Booking Components Structure**
@@ -199,24 +296,25 @@ app/api/booking/
 - Mixed concerns (rate limiting + pricing + caching)
 
 **Cleanup Plan**:
-- [ ] Move caching to Redis
-- [ ] Extract rate limiting to middleware
-- [ ] Simplify request deduplication
-- [ ] Create separate pricing service
+- [ ] Move to Redis-based caching
+- [ ] Simplify request fingerprinting
+- [ ] Separate rate limiting concerns
+- [ ] Add proper error handling
 
 ### **Phase 4: Validation & Types**
 
 #### 12. `lib/booking-validation.ts` (460 lines)
 **Status**: ⚠️ NEEDS CLEANUP
 **Issues**:
-- Schema doesn't match database
-- Complex refinements
-- Mixed concerns
+- Large validation file
+- Some schemas don't match database
+- Complex nested validations
 
 **Cleanup Plan**:
-- [ ] Align with actual database schema
-- [ ] Split into smaller schema files
-- [ ] Simplify refinements
+- [ ] Align schemas with database fields
+- [ ] Split into domain-specific files
+- [ ] Simplify complex validations
+- [ ] Add better error messages
 
 #### 13. `lib/types/booking-interfaces.ts` (273 lines)
 **Status**: ✅ GOOD - WELL STRUCTURED
@@ -229,104 +327,6 @@ app/api/booking/
 - [ ] Make interfaces more specific
 - [ ] Add better documentation
 - [ ] Consider splitting into domain-specific files
-
----
-
-## 🛠️ CLEANUP STRATEGY
-
-### **Phase 1: Critical Fixes (Week 1)**
-1. **Fix Stripe API Version** - Immediate payment fix
-2. **Fix Validation Schema** - Align with database
-3. **Fix Continue Button** - Implement proper step validation
-4. **Remove BookingForm.tsx** - Eliminate confusion
-
-### **Phase 2: Component Cleanup (Week 2)**
-1. **Break Down Large Components** - Split 400+ line files
-2. **Extract Business Logic** - Move to custom hooks
-3. **Standardize Patterns** - Consistent validation and state management
-4. **Create Reusable Components** - Address picker, date picker, etc.
-
-### **Phase 3: API Cleanup (Week 3)**
-1. **Split Large Route Handlers** - Break down 500+ line files
-2. **Extract Services** - Business logic separation
-3. **Improve Error Handling** - Consistent error responses
-4. **Add Request Validation** - Better input validation
-
-### **Phase 4: Database Cleanup (Week 4)**
-1. **Migrate to Single Schema** - Use only `new_bookings`
-2. **Update All References** - Fix API routes and components
-3. **Remove Legacy Fields** - Clean up unused columns
-4. **Add Database Constraints** - Prevent invalid data
-
-### **Phase 5: Testing & Documentation (Week 5)**
-1. **Add Unit Tests** - Test individual components
-2. **Add Integration Tests** - Test booking flow
-3. **Update Documentation** - Clear component documentation
-4. **Performance Optimization** - Reduce bundle size
-
----
-
-## 📋 ACTION ITEMS
-
-### **Immediate (Today)**
-- [ ] Fix Stripe API version in `lib/stripe.ts`
-- [ ] Test payment processing
-- [ ] Document current validation issues
-
-### **This Week**
-- [ ] Remove `BookingForm.tsx` duplicate
-- [ ] Fix `stepFieldMap` validation in `BookingWizard.tsx`
-- [ ] Align validation schema with database
-- [ ] Test booking flow end-to-end
-
-### **Next Week**
-- [ ] Start breaking down large step components
-- [ ] Extract business logic to hooks
-- [ ] Create reusable UI components
-- [ ] Improve error handling
-
----
-
-## 🎯 SUCCESS METRICS
-
-### **Code Quality**
-- [ ] No files over 300 lines
-- [ ] Single responsibility principle followed
-- [ ] Consistent validation patterns
-- [ ] Clear separation of concerns
-
-### **Functionality**
-- [ ] 100% booking success rate
-- [ ] All payments process correctly
-- [ ] Step validation works properly
-- [ ] No duplicate components
-
-### **Performance**
-- [ ] Faster component rendering
-- [ ] Smaller bundle size
-- [ ] Better error handling
-- [ ] Improved user experience
-
----
-
-## 📝 NOTES & OBSERVATIONS
-
-### **Current State**
-- The booking system is functional but messy
-- Too many responsibilities in single files
-- Inconsistent patterns across components
-- Legacy code mixed with new features
-
-### **Key Insights**
-- The `stepFieldMap` pattern is correct but not consistently used
-- Database schema is more complex than validation schemas
-- Payment processing is tightly coupled with booking creation
-- Error handling is inconsistent across components
-
-### **Risk Assessment**
-- **High Risk**: Stripe API version blocking all payments
-- **Medium Risk**: Large files making maintenance difficult
-- **Low Risk**: Duplicate components causing confusion
 
 ---
 
@@ -350,45 +350,52 @@ app/api/booking/
 - **In-memory Solutions**: 2 files (15%)
 - **Complex State Management**: 4 files (31%)
 
+### **Performance Issues**
+- **Slow Database Queries**: Complex INSERT with type casting
+- **API Response Times**: 1771ms total (unacceptable)
+- **Distance Calculation**: 546ms (fallback mode)
+- **Payment Processing**: 1592ms (API version error)
+
 ### **Cleanup Priority Matrix**
 ```
 HIGH PRIORITY (Week 1):
 ├── Fix Stripe API version (PAYMENTS BLOCKED)
 ├── Remove BookingForm.tsx (DUPLICATE)
 ├── Fix step validation (USER EXPERIENCE)
-└── Align validation schemas (BOOKING FAILURES)
+└── Optimize database queries (PERFORMANCE)
 
-MEDIUM PRIORITY (Week 2-3):
+MEDIUM PRIORITY (Week 2):
 ├── Break down large components (MAINTAINABILITY)
 ├── Extract business logic (SEPARATION OF CONCERNS)
-├── Move to Redis caching (SCALABILITY)
-└── Split API handlers (SINGLE RESPONSIBILITY)
+├── Fix Google Maps API (ACCURACY)
+└── Implement Redis caching (SCALABILITY)
 
-LOW PRIORITY (Week 4-5):
-├── Database schema cleanup (DATA INTEGRITY)
+LOW PRIORITY (Week 3-4):
+├── Standardize patterns (CONSISTENCY)
 ├── Add comprehensive testing (RELIABILITY)
-├── Performance optimization (USER EXPERIENCE)
+├── Improve error handling (USER EXPERIENCE)
 └── Documentation updates (MAINTAINABILITY)
 ```
 
 ---
 
-## 🎯 NEXT STEPS
+## 🎯 IMMEDIATE ACTION PLAN
 
-### **Immediate Actions (Today)**
+### **Today (Critical Fixes)**
 1. **Fix Stripe API Version** - Check Stripe docs for current stable version
 2. **Test Payment Flow** - Ensure payments work after fix
-3. **Remove BookingForm.tsx** - Eliminate confusion
+3. **Document Redis Issues** - Log connection patterns
 
-### **This Week**
-1. **Fix Step Validation** - Implement proper `stepFieldMap` usage
-2. **Align Validation Schemas** - Match database fields
-3. **Test End-to-End Flow** - Ensure booking works completely
+### **This Week (Infrastructure)**
+1. **Fix Redis Connection Issues** - Implement proper connection pooling
+2. **Fix Google Maps API** - Verify API key and quota
+3. **Test All Systems** - Ensure infrastructure stability
 
-### **Next Week**
-1. **Start Component Breakdown** - Begin with largest files
-2. **Extract Business Logic** - Create custom hooks
-3. **Improve Error Handling** - Consistent error responses
+### **Next Week (System Review)**
+1. **Audit Admin Dashboard** - Examine all admin functionality
+2. **Audit Customer Portal** - Examine portal features
+3. **Audit Notification System** - Examine notification flows
+4. **Audit Queue System** - Examine background job processing
 
 ---
 
