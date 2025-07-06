@@ -129,7 +129,7 @@ export class UnifiedDistanceService {
   }
 
   /**
-   * Get address predictions using Google Places Autocomplete with enhanced error handling
+   * Get address predictions using server-side proxy (CORS Fix)
    */
   static async getPlacePredictions(
     input: string,
@@ -143,50 +143,58 @@ export class UnifiedDistanceService {
     const startTime = Date.now();
 
     try {
-      const apiKey = getApiKey('server');
-      if (!apiKey) {
-        console.warn('Google Maps API key not available, using fallback predictions', { requestId });
-        return this.getFallbackPredictions(input);
-      }
-
-      const url = new URL(GOOGLE_MAPS_CONFIG.ENDPOINTS.PLACES_AUTOCOMPLETE);
+      // Use server-side proxy to avoid CORS issues
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+      const url = new URL('/api/places-autocomplete', baseUrl);
       url.searchParams.set('input', input);
-      url.searchParams.set('key', apiKey);
-      url.searchParams.set('components', `country:${GOOGLE_MAPS_CONFIG.RESTRICTIONS.country}`);
-      url.searchParams.set('types', 'address');
-      url.searchParams.set('region', GOOGLE_MAPS_CONFIG.RESTRICTIONS.region);
       
       if (sessionToken) {
         url.searchParams.set('sessiontoken', sessionToken);
       }
 
-      console.log('Fetching address predictions', { 
+      console.log('Fetching address predictions via proxy', { 
         input: input.substring(0, 20) + '...', 
         requestId,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        proxyUrl: url.pathname
       });
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
       const response = await fetch(url.toString(), {
         signal: controller.signal,
         headers: {
-          'User-Agent': 'Houston Mobile Notary Pros Booking System'
+          'Content-Type': 'application/json'
         }
       });
 
       clearTimeout(timeoutId);
       
       if (!response.ok) {
-        throw new Error(`Places API HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(`Places proxy HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
 
+      // Handle server-side error responses
+      if (data.error) {
+        console.warn('Places proxy returned error', { 
+          error: data.error, 
+          fallback: data.fallback,
+          requestId 
+        });
+        
+        if (data.fallback) {
+          return this.getFallbackPredictions(input);
+        }
+        
+        throw new Error(data.error);
+      }
+
       // Enhanced status validation
       if (!data) {
-        throw new Error('Empty response from Places API');
+        throw new Error('Empty response from places proxy');
       }
 
       if (data.status === 'ZERO_RESULTS') {
@@ -197,17 +205,17 @@ export class UnifiedDistanceService {
       if (data.status !== 'OK') {
         const errorDetails = {
           status: data.status,
-          errorMessage: data.error_message || 'Unknown error',
           input: input.substring(0, 20) + '...',
           requestId
         };
-        console.error('Places API error:', errorDetails);
-        throw new Error(`Places API status: ${data.status} - ${data.error_message || 'Unknown error'}`);
+        console.error('Places proxy API error:', errorDetails);
+        return this.getFallbackPredictions(input);
       }
 
       // Validate predictions array
       if (!data.predictions || !Array.isArray(data.predictions)) {
-        throw new Error('Invalid predictions array in response');
+        console.warn('Invalid predictions array in proxy response', { requestId });
+        return this.getFallbackPredictions(input);
       }
 
       const predictions = data.predictions.map((prediction: any, index: number) => {
@@ -239,7 +247,7 @@ export class UnifiedDistanceService {
       }).filter(Boolean) as PlacePrediction[];
 
       const duration = Date.now() - startTime;
-      console.log('Address predictions fetched successfully', {
+      console.log('Address predictions fetched successfully via proxy', {
         input: input.substring(0, 20) + '...',
         resultCount: predictions.length,
         duration: `${duration}ms`,
@@ -259,7 +267,7 @@ export class UnifiedDistanceService {
         timestamp: new Date().toISOString()
       };
 
-      console.error('CRITICAL: Places API prediction failure', errorDetails);
+      console.error('CRITICAL: Places proxy request failure', errorDetails);
       
       // Return enhanced fallback predictions
       return this.getFallbackPredictions(input);
