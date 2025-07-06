@@ -86,12 +86,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(cached.result);
     }
     
-    logger.info('Pricing calculation request received', {
+    logger.info('🌐 API CALL RECEIVED:', {
       requestId,
       serviceType: validatedRequest.serviceType,
       source: validatedRequest.source,
       fingerprint: requestFingerprint.substring(0, 8),
-      ip: ip.substring(0, 10) + '...' // Partial IP for privacy
+      ip: ip.substring(0, 10) + '...', // Partial IP for privacy
+      timestamp: new Date().toISOString(),
+      userAgent: request.headers.get('user-agent')?.substring(0, 50) + '...',
+      referer: request.headers.get('referer'),
+      hasLocation: !!validatedRequest.location,
+      locationInfo: validatedRequest.location ? {
+        hasAddress: !!validatedRequest.location.address,
+        hasCoordinates: !!(validatedRequest.location.latitude && validatedRequest.location.longitude)
+      } : null
     });
 
     // Calculate pricing using our championship engine

@@ -213,9 +213,65 @@ export default function BookingWizard() {
     return Math.min(progress, 100);
   }, [watchedValues, state.slotReservation, state.currentStep]);
 
+  // Pricing call tracker for debugging
+  const pricingCallTracker = useMemo(() => ({
+    sessionId: `session_${Date.now()}`,
+    calls: [] as Array<{trigger: string, timestamp: number, stackTrace: string}>,
+    addCall: function(trigger: string) {
+      this.calls.push({
+        trigger,
+        timestamp: Date.now(),
+        stackTrace: new Error().stack || 'No stack trace'
+      });
+      console.log('🔍 PRICING CALCULATION TRIGGERED:', {
+        trigger,
+        callNumber: this.calls.length,
+        timestamp: new Date().toISOString(),
+        sessionId: this.sessionId,
+        timeSinceLastCall: this.calls.length > 1 ? 
+          Date.now() - this.calls[this.calls.length - 2].timestamp : 0,
+        currentStep: state.currentStep,
+        serviceType: watchedValues.serviceType,
+        hasLocation: !!watchedValues.location?.address,
+        pricingLoading: state.pricingLoading
+      });
+    },
+    getReport: function() {
+      return {
+        totalCalls: this.calls.length,
+        triggers: this.calls.map(c => c.trigger),
+        avgTimeBetweenCalls: this.calls.length > 1 ? 
+          (this.calls[this.calls.length - 1].timestamp - this.calls[0].timestamp) / (this.calls.length - 1) : 0,
+        sessionId: this.sessionId
+      };
+    }
+  }), []);
+
   // Optimized pricing calculation with smart debouncing
   const calculatePricing = useCallback(async () => {
-    if (!watchedValues.serviceType) return;
+    // Add debug tracking
+    pricingCallTracker.addCall('calculatePricing_direct');
+    
+    if (!watchedValues.serviceType) {
+      console.log('⚠️ PRICING SKIPPED: No service type selected');
+      return;
+    }
+
+    console.log('📊 STATE BEFORE PRICING:', {
+      serviceType: watchedValues.serviceType,
+      location: watchedValues.location ? {
+        hasAddress: !!watchedValues.location.address,
+        zipCode: watchedValues.location.zipCode
+      } : null,
+      scheduling: watchedValues.scheduling ? {
+        hasDate: !!watchedValues.scheduling.preferredDate,
+        hasTime: !!watchedValues.scheduling.preferredTime
+      } : null,
+      serviceDetails: watchedValues.serviceDetails,
+      currentStep: state.currentStep,
+      pricingLoading: state.pricingLoading,
+      lastPricingHash
+    });
 
     setState(prev => ({ ...prev, pricingLoading: true }));
     
@@ -293,13 +349,25 @@ export default function BookingWizard() {
     } finally {
       setState(prev => ({ ...prev, pricingLoading: false }));
     }
-  }, [watchedValues.serviceType, watchedValues.location?.zipCode, watchedValues.scheduling?.preferredDate, state.currentStep, toast]);
+  }, [watchedValues.serviceType, watchedValues.location?.zipCode, watchedValues.scheduling?.preferredDate]);
 
   // Smart debouncing - only on meaningful changes
-  const debouncedCalculatePricing = useMemo(
-    () => debounce(calculatePricing, 2000), // 2 second delay to prevent excessive API calls
-    [calculatePricing]
-  );
+  const debouncedCalculatePricing = useMemo(() => {
+    console.log('🔄 CREATING NEW DEBOUNCED FUNCTION:', {
+      timestamp: new Date().toISOString(),
+      calculatePricingRef: calculatePricing.toString().substring(0, 100) + '...'
+    });
+    
+    return debounce(() => {
+      pricingCallTracker.addCall('debouncedCalculatePricing');
+      console.log('⏰ DEBOUNCED PRICING TRIGGERED:', {
+        timestamp: new Date().toISOString(),
+        currentStep: state.currentStep,
+        serviceType: watchedValues.serviceType
+      });
+      calculatePricing();
+    }, 2000); // 2 second delay to prevent excessive API calls
+  }, [calculatePricing]);
 
   // Check if pricing recalculation is needed
   const shouldRecalculatePrice = useMemo(() => {
@@ -312,15 +380,42 @@ export default function BookingWizard() {
     };
     
     const currentHash = JSON.stringify(relevantData);
-    return currentHash !== lastPricingHash;
-  }, [watchedValues, lastPricingHash]);
+    const shouldRecalc = currentHash !== lastPricingHash;
+    
+    console.log('🔍 PRICE RECALCULATION CHECK:', {
+      timestamp: new Date().toISOString(),
+      shouldRecalculate: shouldRecalc,
+      currentHash: currentHash.substring(0, 50) + '...',
+      lastHash: lastPricingHash.substring(0, 50) + '...',
+      relevantData,
+      hashesEqual: currentHash === lastPricingHash
+    });
+    
+    return shouldRecalc;
+  }, [watchedValues.serviceType, watchedValues.location?.zipCode, watchedValues.scheduling?.preferredDate, watchedValues.scheduling?.preferredTime, watchedValues.serviceDetails?.documentCount, lastPricingHash]);
 
   // Optimized pricing trigger
   useEffect(() => {
+    console.log('🎯 PRICING USEEFFECT TRIGGERED:', {
+      timestamp: new Date().toISOString(),
+      shouldRecalculatePrice,
+      hasServiceType: !!watchedValues.serviceType,
+      serviceType: watchedValues.serviceType,
+      willTriggerPricing: shouldRecalculatePrice && !!watchedValues.serviceType,
+      currentStep: state.currentStep,
+      dependencies: {
+        shouldRecalculatePrice,
+        debouncedCalculatePricing: typeof debouncedCalculatePricing,
+        serviceType: watchedValues.serviceType
+      }
+    });
+    
     if (shouldRecalculatePrice && watchedValues.serviceType) {
+      pricingCallTracker.addCall('useEffect_pricing_trigger');
+      console.log('🚀 TRIGGERING DEBOUNCED PRICING from useEffect');
       debouncedCalculatePricing();
     }
-  }, [shouldRecalculatePrice, debouncedCalculatePricing, watchedValues.serviceType]);
+  }, [shouldRecalculatePrice, debouncedCalculatePricing]);
 
   // Slot reservation management
   const reserveSlot = useCallback(async () => {
