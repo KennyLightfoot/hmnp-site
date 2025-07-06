@@ -176,7 +176,7 @@ export default function BookingWizard() {
   // Map each step to its required validation fields
   const stepFieldMap = {
     service: ['serviceType'] as const,
-    customer: ['customer.name', 'customer.email'] as const,
+    customer: ['customer.name', 'customer.email', 'customer.phone'] as const,
     location: ['location.address', 'location.city', 'location.state', 'location.zipCode'] as const,
     scheduling: ['scheduling.preferredDate', 'scheduling.preferredTime'] as const,
     review: ['payment.paymentMethod'] as const,
@@ -395,14 +395,7 @@ export default function BookingWizard() {
     }
   }, [state.slotReservation]);
 
-  // Step field mapping for validation
-  const stepFieldMap = {
-    service: ['serviceType'],
-    customer: ['customer.name', 'customer.email', 'customer.phone'],
-    location: ['location.address', 'location.city', 'location.state', 'location.zipCode'],
-    scheduling: ['scheduling.preferredDate', 'scheduling.preferredTime'],
-    review: ['payment.paymentMethod']
-  };
+
 
   // Navigation handlers
   const nextStep = useCallback(async () => {
