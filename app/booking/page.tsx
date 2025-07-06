@@ -74,6 +74,16 @@ function BookingPageSkeleton() {
 }
 
 export default function BookingPage() {
+  console.log("BookingPage rendered", { 
+    selectedService: undefined, 
+    currentStep: undefined, 
+    formData: { 
+      firstName: undefined, 
+      lastName: undefined, 
+      email: undefined, 
+      phone: undefined 
+    } 
+  });
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       {/* SEO-optimized structured data */}
