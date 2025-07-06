@@ -103,7 +103,7 @@ export default function LocationStep({ data, onUpdate, errors, pricing }: Locati
   const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   
-  const watchedLocation = watch('location') || {};
+  const watchedLocation = watch('location') || {} as any;
   const watchedLocationType = watch('locationType') || 'CLIENT_ADDRESS';
   const watchedServiceType = watch('serviceType');
 
@@ -125,9 +125,13 @@ export default function LocationStep({ data, onUpdate, errors, pricing }: Locati
     onUpdate({ location: updatedLocation });
   };
 
-  // Debounced address validation and travel calculation
+  // Real-time address validation and travel calculation
   const calculateTravel = useCallback(async () => {
-    if (!watchedLocation.address || !watchedLocation.city || !watchedLocation.state || !watchedLocation.zipCode) {
+    if (!watchedLocation || 
+        !('address' in watchedLocation) || !watchedLocation.address || 
+        !('city' in watchedLocation) || !watchedLocation.city || 
+        !('state' in watchedLocation) || !watchedLocation.state || 
+        !('zipCode' in watchedLocation) || !watchedLocation.zipCode) {
       setTravelCalculation(null);
       return;
     }
@@ -142,25 +146,38 @@ export default function LocationStep({ data, onUpdate, errors, pricing }: Locati
     try {
       const fullAddress = `${watchedLocation.address}, ${watchedLocation.city}, ${watchedLocation.state} ${watchedLocation.zipCode}`;
       
-      // Mock calculation - in real app, this would call Google Maps API
-      const mockDistance = Math.random() * 30 + 5; // 5-35 miles
-      const mockDuration = mockDistance * 2.5; // Rough minutes estimate
-      const includedRadius = watchedServiceType === 'EXTENDED_HOURS' ? 20 : 15;
-      const fee = Math.max(0, (mockDistance - includedRadius) * 0.50);
+      // Use real UnifiedDistanceService for accurate calculations
+      const { UnifiedDistanceService } = await import('@/lib/maps/unified-distance-service');
+      const result = await UnifiedDistanceService.calculateDistance(fullAddress, watchedServiceType || 'STANDARD_NOTARY');
       
       setTravelCalculation({
-        distance: mockDistance,
-        duration: mockDuration,
-        fee: fee,
-        withinServiceArea: mockDistance <= includedRadius,
-        serviceAreaName: mockDistance <= 25 ? 'Houston Metro' : 'Extended Service Area'
+        distance: result.distance.miles,
+        duration: result.duration.minutes,
+        fee: result.travelFee,
+        withinServiceArea: result.isWithinServiceArea,
+        serviceAreaName: result.serviceArea.isWithinStandardArea ? 'Standard Service Area' : 
+                        result.serviceArea.isWithinExtendedArea ? 'Extended Service Area' : 
+                        'Outer Service Area'
       });
       
       // Update the form with calculated distance
-      handleLocationChange('calculatedDistance', mockDistance);
+      handleLocationChange('calculatedDistance', result.distance.miles);
       
     } catch (error) {
       console.error('Travel calculation failed:', error);
+      // Fallback calculation if API fails
+      const estimatedDistance = 15; // Safe fallback
+      const estimatedFee = Math.max(0, (estimatedDistance - 15) * 0.50);
+      
+      setTravelCalculation({
+        distance: estimatedDistance,
+        duration: estimatedDistance * 2,
+        fee: estimatedFee,
+        withinServiceArea: estimatedDistance <= 50,
+        serviceAreaName: 'Estimated Service Area'
+      });
+      
+      handleLocationChange('calculatedDistance', estimatedDistance);
     } finally {
       setCalculating(false);
     }
@@ -172,31 +189,52 @@ export default function LocationStep({ data, onUpdate, errors, pricing }: Locati
     return () => clearTimeout(timer);
   }, [calculateTravel]);
 
-  // Address autocomplete mock
+  // Real Google Places API address autocomplete
   const handleAddressInput = async (address: string) => {
     handleLocationChange('address', address);
     
     if (address.length > 3) {
-      // Mock address suggestions - in real app, this would use Google Places API
-      const suggestions: AddressSuggestion[] = [
-        {
-          address: `${address} Main St`,
-          city: 'Houston',
-          state: 'TX',
-          zipCode: '77002',
-          confidence: 0.9
-        },
-        {
-          address: `${address} Memorial Dr`,
-          city: 'Houston', 
-          state: 'TX',
-          zipCode: '77024',
-          confidence: 0.8
-        }
-      ];
-      
-      setAddressSuggestions(suggestions);
-      setShowSuggestions(true);
+      try {
+        // Use real Google Places API instead of mock
+        const { UnifiedDistanceService } = await import('@/lib/maps/unified-distance-service');
+        const predictions = await UnifiedDistanceService.getPlacePredictions(address);
+        
+        // Convert Google Places predictions to our suggestion format
+        const suggestions: AddressSuggestion[] = predictions.map(prediction => {
+          // Extract city, state, zip from secondary text
+          const secondary = prediction.structuredFormatting.secondaryText;
+          const parts = secondary.split(', ');
+          const city = parts[0] || 'Houston';
+          const stateZip = parts[1]?.split(' ') || ['TX', '77001'];
+          const state = stateZip[0] || 'TX';
+          const zipCode = stateZip[1] || '77001';
+          
+          return {
+            address: prediction.structuredFormatting.mainText,
+            city,
+            state,
+            zipCode,
+            confidence: 0.9 // Google Places API is generally high confidence
+          };
+        });
+        
+        setAddressSuggestions(suggestions);
+        setShowSuggestions(true);
+      } catch (error) {
+        console.error('Address prediction failed:', error);
+        // Fallback to simple suggestions if API fails
+        const fallbackSuggestions: AddressSuggestion[] = [
+          {
+            address: `${address} (enter full address)`,
+            city: 'Houston',
+            state: 'TX',
+            zipCode: '77001',
+            confidence: 0.5
+          }
+        ];
+        setAddressSuggestions(fallbackSuggestions);
+        setShowSuggestions(true);
+      }
     } else {
       setShowSuggestions(false);
     }
