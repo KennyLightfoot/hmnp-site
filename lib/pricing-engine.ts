@@ -9,7 +9,7 @@
 import { z } from 'zod';
 import { logger } from './logger';
 import { redis } from './redis';
-import { calculateDistance } from './maps/distance-calculator';
+import { calculateDistanceWithFallbacks } from './maps/distance-fallback';
 
 // Service Configuration - The Foundation of Our Championship System
 export const SERVICES = {
@@ -196,9 +196,19 @@ export class PricingEngine {
       const basePrice = this.getServiceBasePrice(validatedParams.serviceType);
       
       // Calculate travel fees if location provided
-      const travelData = validatedParams.location 
-        ? await this.calculateTravelFee(validatedParams.serviceType, validatedParams.location)
-        : { fee: 0, distance: 0, withinArea: true };
+      let travelData = { fee: 0, distance: 0, withinArea: true };
+      if (validatedParams.location) {
+        try {
+          travelData = await this.calculateTravelFee(validatedParams.serviceType, validatedParams.location);
+        } catch (error) {
+          logger.warn('Travel fee calculation failed, using fallback', { 
+            error: error.message,
+            requestId: this.requestId 
+          });
+          // Fallback to estimated travel fee
+          travelData = { fee: 10, distance: 20, withinArea: false };
+        }
+      }
       
       // Apply time-based and situational surcharges
       const surcharges = this.calculateSurcharges(
@@ -208,13 +218,22 @@ export class PricingEngine {
       );
       
       // Check for applicable discounts
-      const discounts = await this.calculateDiscounts(
-        validatedParams.promoCode,
-        validatedParams.customerEmail,
-        validatedParams.referralCode,
-        validatedParams.documentCount,
-        validatedParams.serviceType
-      );
+      let discounts = 0;
+      try {
+        discounts = await this.calculateDiscounts(
+          validatedParams.promoCode,
+          validatedParams.customerEmail,
+          validatedParams.referralCode,
+          validatedParams.documentCount,
+          validatedParams.serviceType
+        );
+      } catch (error) {
+        logger.warn('Discount calculation failed', { 
+          error: error.message,
+          requestId: this.requestId 
+        });
+        // Continue without discounts
+      }
       
       // Detect upsell opportunities - Conversion gold!
       const upsellSuggestions = this.detectUpsellOpportunities(validatedParams, travelData);
@@ -268,10 +287,44 @@ export class PricingEngine {
         requestId: this.requestId
       });
       
-      throw new PricingCalculationError(
-        'Unable to calculate pricing. Please try again.',
-        { originalError: error, requestId: this.requestId }
-      );
+      // Return fallback pricing to prevent complete failure
+      const fallbackResult: PricingResult = {
+        basePrice: 75,
+        travelFee: 0,
+        surcharges: 0,
+        discounts: 0,
+        total: 75,
+        breakdown: {
+          lineItems: [{
+            description: 'Standard Notary Service (Fallback)',
+            amount: 75,
+            type: 'base'
+          }],
+          transparency: {
+            travelCalculation: 'Fallback pricing due to calculation error',
+            discountEligibility: 'Unable to verify discounts at this time',
+            surchargeExplanation: 'Standard pricing applied'
+          }
+        },
+        upsellSuggestions: [],
+        confidence: {
+          level: 'low',
+          factors: ['Calculation error occurred', 'Using fallback pricing']
+        },
+        metadata: {
+          calculatedAt: new Date().toISOString(),
+          version: '2.0.0',
+          factors: { error: error.message },
+          requestId: this.requestId
+        }
+      };
+      
+      logger.warn('Returning fallback pricing', { 
+        requestId: this.requestId,
+        fallbackTotal: fallbackResult.total
+      });
+      
+      return fallbackResult;
     }
   }
 
@@ -302,8 +355,8 @@ export class PricingEngine {
         return { fee: 0, distance: 0, withinArea: true };
       }
 
-      // Calculate distance from base location (77591)
-      const distanceResult = await calculateDistance(
+      // Calculate distance from base location (77591) with fallbacks
+      const distanceResult = await calculateDistanceWithFallbacks(
         PRICING_CONFIG.baseLocation,
         location.address
       );

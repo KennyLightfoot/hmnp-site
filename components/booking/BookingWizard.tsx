@@ -179,7 +179,7 @@ export default function BookingWizard() {
     customer: ['customer.name', 'customer.email', 'customer.phone'] as const,
     location: ['location.address', 'location.city', 'location.state', 'location.zipCode'] as const,
     scheduling: ['scheduling.preferredDate', 'scheduling.preferredTime'] as const,
-    review: ['payment.paymentMethod'] as const,
+    review: [] as const, // No validation needed for review step
   } as const;
 
   // Determine if current step is valid
@@ -297,8 +297,8 @@ export default function BookingWizard() {
 
   // Smart debouncing - only on meaningful changes
   const debouncedCalculatePricing = useMemo(
-    () => debounce(calculatePricing, 2000), // Increased from 500ms to 2000ms
-    [watchedValues.serviceType, watchedValues.location?.zipCode, watchedValues.scheduling?.preferredDate]
+    () => debounce(calculatePricing, 2000), // 2 second delay to prevent excessive API calls
+    [calculatePricing]
   );
 
   // Check if pricing recalculation is needed
@@ -404,9 +404,20 @@ export default function BookingWizard() {
       const currentStepId = BOOKING_STEPS[state.currentStep].id as keyof typeof stepFieldMap;
       const fieldsToValidate = stepFieldMap[currentStepId];
       
-      // CRITICAL: Only validate current step's fields
-      const isValid = await form.trigger(fieldsToValidate as any);
-      if (!isValid || !isCurrentStepValid) return;
+      // CRITICAL: Only validate current step's fields if there are any
+      if (fieldsToValidate && fieldsToValidate.length > 0) {
+        const isValid = await form.trigger(fieldsToValidate as any);
+        if (!isValid) {
+          console.log('Step validation failed for fields:', fieldsToValidate);
+          return;
+        }
+      }
+      
+      // Additional business logic validation
+      if (!isCurrentStepValid) {
+        console.log('Business logic validation failed for step:', currentStepId);
+        return;
+      }
 
       // Reserve slot when moving from scheduling step
       if (state.currentStep === 3 && !state.slotReservation) {
