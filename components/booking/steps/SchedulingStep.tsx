@@ -502,8 +502,10 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
                 )}
                 {urgencyData && (
                   <div className="flex items-center space-x-2">
-                    <urgencyData.icon className={`h-4 w-4 ${urgencyData.color}`} />
-                    <span className="text-sm">{urgencyData.title}</span>
+                    {urgencyData.icon && (
+                      <urgencyData.icon className={`h-4 w-4 ${urgencyData.color || 'text-gray-600'}`} />
+                    )}
+                    <span className="text-sm">{urgencyData.title || 'Unknown'}</span>
                   </div>
                 )}
               </CardContent>

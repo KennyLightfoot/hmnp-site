@@ -1,7 +1,19 @@
 'use client'
 
 import Script from 'next/script'
-import { logger } from '@/lib/logger'
+
+// Note: Using console methods instead of logger since this runs in browser context
+const logInfo = (message: string) => {
+  if (typeof window !== 'undefined') {
+    console.log(`[ThirdPartyScripts] ${message}`)
+  }
+}
+
+const logWarn = (message: string) => {
+  if (typeof window !== 'undefined') {
+    console.warn(`[ThirdPartyScripts] ${message}`)
+  }
+}
 
 export default function ThirdPartyScripts() {
   return (
@@ -117,8 +129,8 @@ export default function ThirdPartyScripts() {
       <Script 
         id="meta-pixel" 
         strategy="afterInteractive"
-        onError={() => logger.warn('Meta Pixel failed to load', 'ANALYTICS')}
-        onLoad={() => logger.info('Meta Pixel loaded', 'ANALYTICS')}
+        onError={() => logWarn('Meta Pixel failed to load')}
+        onLoad={() => logInfo('Meta Pixel loaded')}
       >
         {`
           try {
@@ -143,8 +155,8 @@ export default function ThirdPartyScripts() {
       <Script 
         id="gtm" 
         strategy="afterInteractive"
-        onError={() => logger.warn('Google Tag Manager failed to load', 'ANALYTICS')}
-        onLoad={() => logger.info('Google Tag Manager loaded', 'ANALYTICS')}
+        onError={() => logWarn('Google Tag Manager failed to load')}
+        onLoad={() => logInfo('Google Tag Manager loaded')}
       >
         {`
           try {
@@ -164,8 +176,8 @@ export default function ThirdPartyScripts() {
       <Script 
         id="linkedin-insight-tag" 
         strategy="afterInteractive"
-        onError={() => logger.warn('LinkedIn Insight Tag failed to load', 'ANALYTICS')}
-        onLoad={() => logger.info('LinkedIn Insight Tag loaded', 'ANALYTICS')}
+        onError={() => logWarn('LinkedIn Insight Tag failed to load')}
+        onLoad={() => logInfo('LinkedIn Insight Tag loaded')}
       >
         {`
           try {

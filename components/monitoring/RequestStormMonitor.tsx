@@ -38,9 +38,14 @@ export default function RequestStormMonitor() {
 
   useEffect(() => {
     // Show monitor in development or when explicitly enabled
-    const isDev = process.env.NODE_ENV === 'development'
-    const showMonitor = localStorage.getItem('show-request-monitor') === 'true'
-    const hasAlerts = localStorage.getItem('request-alerts') === 'true'
+    // Use window.location.hostname to detect development environment safely
+    const isDev = typeof window !== 'undefined' && (
+      window.location.hostname === 'localhost' || 
+      window.location.hostname === '127.0.0.1' || 
+      window.location.hostname.includes('dev')
+    )
+    const showMonitor = typeof window !== 'undefined' && localStorage.getItem('show-request-monitor') === 'true'
+    const hasAlerts = typeof window !== 'undefined' && localStorage.getItem('request-alerts') === 'true'
     setIsVisible(isDev || showMonitor || hasAlerts)
   }, [])
 
