@@ -129,7 +129,7 @@ export class UnifiedDistanceService {
   }
 
   /**
-   * Get address predictions using Google Places Autocomplete
+   * Get address predictions using Google Places Autocomplete with enhanced error handling
    */
   static async getPlacePredictions(
     input: string,
@@ -139,9 +139,13 @@ export class UnifiedDistanceService {
       return [];
     }
 
+    const requestId = `predictions_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const startTime = Date.now();
+
     try {
       const apiKey = getApiKey('server');
       if (!apiKey) {
+        console.warn('Google Maps API key not available, using fallback predictions', { requestId });
         return this.getFallbackPredictions(input);
       }
 
@@ -156,30 +160,108 @@ export class UnifiedDistanceService {
         url.searchParams.set('sessiontoken', sessionToken);
       }
 
-      const response = await fetch(url.toString());
+      console.log('Fetching address predictions', { 
+        input: input.substring(0, 20) + '...', 
+        requestId,
+        timestamp: new Date().toISOString()
+      });
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
+      const response = await fetch(url.toString(), {
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Houston Mobile Notary Pros Booking System'
+        }
+      });
+
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
-        throw new Error(`Places API HTTP ${response.status}`);
+        throw new Error(`Places API HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
 
-      if (data.status !== 'OK') {
-        throw new Error(`Places API status: ${data.status}`);
+      // Enhanced status validation
+      if (!data) {
+        throw new Error('Empty response from Places API');
       }
 
-      return data.predictions.map((prediction: any) => ({
-        description: prediction.description,
-        placeId: prediction.place_id,
-        structuredFormatting: {
-          mainText: prediction.structured_formatting?.main_text || '',
-          secondaryText: prediction.structured_formatting?.secondary_text || ''
-        },
-        types: prediction.types || []
-      }));
+      if (data.status === 'ZERO_RESULTS') {
+        console.warn('No predictions found for input', { input, requestId });
+        return this.getFallbackPredictions(input);
+      }
+
+      if (data.status !== 'OK') {
+        const errorDetails = {
+          status: data.status,
+          errorMessage: data.error_message || 'Unknown error',
+          input: input.substring(0, 20) + '...',
+          requestId
+        };
+        console.error('Places API error:', errorDetails);
+        throw new Error(`Places API status: ${data.status} - ${data.error_message || 'Unknown error'}`);
+      }
+
+      // Validate predictions array
+      if (!data.predictions || !Array.isArray(data.predictions)) {
+        throw new Error('Invalid predictions array in response');
+      }
+
+      const predictions = data.predictions.map((prediction: any, index: number) => {
+        try {
+          // Validate each prediction
+          if (!prediction) {
+            console.warn('Null prediction in response', { index, requestId });
+            return null;
+          }
+
+          return {
+            description: prediction.description || '',
+            placeId: prediction.place_id || `fallback_${index}`,
+            structuredFormatting: {
+              mainText: prediction.structured_formatting?.main_text || prediction.description || '',
+              secondaryText: prediction.structured_formatting?.secondary_text || ''
+            },
+            types: Array.isArray(prediction.types) ? prediction.types : []
+          };
+        } catch (parseError) {
+          console.warn('Failed to parse individual prediction', { 
+            prediction, 
+            index, 
+            error: parseError,
+            requestId 
+          });
+          return null;
+        }
+      }).filter(Boolean) as PlacePrediction[];
+
+      const duration = Date.now() - startTime;
+      console.log('Address predictions fetched successfully', {
+        input: input.substring(0, 20) + '...',
+        resultCount: predictions.length,
+        duration: `${duration}ms`,
+        requestId
+      });
+
+      return predictions;
 
     } catch (error) {
-      console.error('Places API failed, using fallback:', error);
+      const duration = Date.now() - startTime;
+      const errorDetails = {
+        input: input.substring(0, 20) + '...',
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
+        duration: `${duration}ms`,
+        requestId,
+        timestamp: new Date().toISOString()
+      };
+
+      console.error('CRITICAL: Places API prediction failure', errorDetails);
+      
+      // Return enhanced fallback predictions
       return this.getFallbackPredictions(input);
     }
   }

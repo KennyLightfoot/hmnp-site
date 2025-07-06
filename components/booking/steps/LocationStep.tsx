@@ -102,6 +102,8 @@ export default function LocationStep({ data, onUpdate, errors, pricing }: Locati
   const [calculating, setCalculating] = useState(false);
   const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [addressServiceStatus, setAddressServiceStatus] = useState<'normal' | 'degraded' | 'offline'>('normal');
+  const [travelServiceStatus, setTravelServiceStatus] = useState<'normal' | 'degraded' | 'offline'>('normal');
   
   const watchedLocation = watch('location') || {} as any;
   const watchedLocationType = watch('locationType') || 'CLIENT_ADDRESS';
@@ -125,8 +127,9 @@ export default function LocationStep({ data, onUpdate, errors, pricing }: Locati
     onUpdate({ location: updatedLocation });
   };
 
-  // Real-time address validation and travel calculation
+  // Enhanced real-time address validation and travel calculation with comprehensive error handling
   const calculateTravel = useCallback(async () => {
+    // Validate required location data
     if (!watchedLocation || 
         !('address' in watchedLocation) || !watchedLocation.address || 
         !('city' in watchedLocation) || !watchedLocation.city || 
@@ -136,6 +139,7 @@ export default function LocationStep({ data, onUpdate, errors, pricing }: Locati
       return;
     }
 
+    // Skip calculation for services that don't require travel
     if (watchedLocationType === 'NOTARY_OFFICE' || watchedServiceType === 'RON_SERVICES') {
       setTravelCalculation(null);
       return;
@@ -146,9 +150,35 @@ export default function LocationStep({ data, onUpdate, errors, pricing }: Locati
     try {
       const fullAddress = `${watchedLocation.address}, ${watchedLocation.city}, ${watchedLocation.state} ${watchedLocation.zipCode}`;
       
+      // Validate address format before sending to service
+      if (fullAddress.length < 10) {
+        throw new Error('Address too short for reliable calculation');
+      }
+      
       // Use real UnifiedDistanceService for accurate calculations
       const { UnifiedDistanceService } = await import('@/lib/maps/unified-distance-service');
       const result = await UnifiedDistanceService.calculateDistance(fullAddress, watchedServiceType || 'STANDARD_NOTARY');
+      
+      // Validate service response
+      if (!result || !result.success) {
+        throw new Error('Invalid response from distance service');
+      }
+
+      if (!result.distance || typeof result.distance.miles !== 'number') {
+        throw new Error('Invalid distance data in service response');
+      }
+
+      // Log successful calculation for monitoring
+      console.log('Travel calculation successful', {
+        address: fullAddress.substring(0, 30) + '...',
+        distance: result.distance.miles,
+        fee: result.travelFee,
+        serviceType: watchedServiceType,
+        timestamp: new Date().toISOString()
+      });
+
+      // Update service status
+      setTravelServiceStatus('normal');
       
       setTravelCalculation({
         distance: result.distance.miles,
@@ -165,23 +195,95 @@ export default function LocationStep({ data, onUpdate, errors, pricing }: Locati
       
     } catch (error) {
       console.error('Travel calculation failed:', error);
-      // Fallback calculation if API fails
-      const estimatedDistance = 15; // Safe fallback
-      const estimatedFee = Math.max(0, (estimatedDistance - 15) * 0.50);
+      
+      // Enhanced error tracking
+      const errorDetails = {
+        address: `${watchedLocation.address}, ${watchedLocation.city}, ${watchedLocation.state} ${watchedLocation.zipCode}`,
+        serviceType: watchedServiceType,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
+        timestamp: new Date().toISOString(),
+        stackTrace: error instanceof Error ? error.stack : undefined
+      };
+      
+      console.error('CRITICAL: Travel calculation system failure', errorDetails);
+
+      // Update service status to indicate degraded service
+      setTravelServiceStatus('degraded');
+      
+      // Intelligent fallback calculation based on address data
+      let estimatedDistance = 15; // Default safe fallback
+      let estimatedFee = 0;
+      let serviceAreaName = 'Estimated Service Area';
+      
+      try {
+        // Enhanced fallback logic based on known Houston area data
+        const city = watchedLocation.city?.toLowerCase() || '';
+        const zipCode = watchedLocation.zipCode || '';
+        
+        // Distance estimates for common Houston areas from Texas City (77591)
+        if (city.includes('league city') || zipCode.startsWith('77573')) {
+          estimatedDistance = 5;
+        } else if (city.includes('webster') || zipCode.startsWith('77598')) {
+          estimatedDistance = 8;
+        } else if (city.includes('clear lake') || zipCode.startsWith('77058')) {
+          estimatedDistance = 10;
+        } else if (city.includes('pasadena') || zipCode.startsWith('77506')) {
+          estimatedDistance = 12;
+        } else if (city.includes('houston') || zipCode.startsWith('770')) {
+          estimatedDistance = 18;
+        } else if (city.includes('sugar land') || zipCode.startsWith('77478')) {
+          estimatedDistance = 18;
+        } else if (city.includes('katy') || zipCode.startsWith('77449')) {
+          estimatedDistance = 20;
+        } else if (city.includes('cypress') || zipCode.startsWith('77429')) {
+          estimatedDistance = 22;
+        } else if (city.includes('tomball') || zipCode.startsWith('77375')) {
+          estimatedDistance = 25;
+        } else if (city.includes('conroe') || zipCode.startsWith('77301')) {
+          estimatedDistance = 30;
+        }
+        
+        // Calculate estimated fee based on service type
+        const serviceRadius = watchedServiceType === 'EXTENDED_HOURS' ? 20 : 15;
+        estimatedFee = Math.max(0, (estimatedDistance - serviceRadius) * 0.50);
+        
+        serviceAreaName = estimatedDistance <= 15 ? 'Standard Service Area (Estimated)' :
+                        estimatedDistance <= 20 ? 'Extended Service Area (Estimated)' :
+                        'Outer Service Area (Estimated)';
+        
+        console.log('Applied intelligent fallback calculation', {
+          city,
+          zipCode,
+          estimatedDistance,
+          estimatedFee,
+          serviceAreaName
+        });
+        
+      } catch (fallbackError) {
+        console.error('Fallback calculation also failed, using safe defaults', fallbackError);
+        // Use absolute safe defaults
+        estimatedDistance = 20;
+        estimatedFee = 5;
+        serviceAreaName = 'Estimated Service Area (Safe Default)';
+      }
       
       setTravelCalculation({
         distance: estimatedDistance,
-        duration: estimatedDistance * 2,
-        fee: estimatedFee,
-        withinServiceArea: estimatedDistance <= 50,
-        serviceAreaName: 'Estimated Service Area'
+        duration: Math.round(estimatedDistance * 1.5), // ~1.5 minutes per mile
+        fee: Math.round(estimatedFee * 100) / 100, // Round to nearest cent
+        withinServiceArea: estimatedDistance <= 25, // Conservative estimate
+        serviceAreaName
       });
       
       handleLocationChange('calculatedDistance', estimatedDistance);
+      
+      // TODO: Send error to monitoring service in production
+      // await trackError('travel_calculation_failure', errorDetails);
     } finally {
       setCalculating(false);
     }
-  }, [watchedLocation, watchedLocationType, watchedServiceType]);
+  }, [watchedLocation, watchedLocationType, watchedServiceType, handleLocationChange]);
 
   // Trigger calculation when address changes
   useEffect(() => {
@@ -189,7 +291,7 @@ export default function LocationStep({ data, onUpdate, errors, pricing }: Locati
     return () => clearTimeout(timer);
   }, [calculateTravel]);
 
-  // Real Google Places API address autocomplete
+  // Enhanced address autocomplete with comprehensive error handling
   const handleAddressInput = async (address: string) => {
     handleLocationChange('address', address);
     
@@ -199,41 +301,140 @@ export default function LocationStep({ data, onUpdate, errors, pricing }: Locati
         const { UnifiedDistanceService } = await import('@/lib/maps/unified-distance-service');
         const predictions = await UnifiedDistanceService.getPlacePredictions(address);
         
-        // Convert Google Places predictions to our suggestion format
-        const suggestions: AddressSuggestion[] = predictions.map(prediction => {
-          // Extract city, state, zip from secondary text
-          const secondary = prediction.structuredFormatting.secondaryText;
-          const parts = secondary.split(', ');
-          const city = parts[0] || 'Houston';
-          const stateZip = parts[1]?.split(' ') || ['TX', '77001'];
-          const state = stateZip[0] || 'TX';
-          const zipCode = stateZip[1] || '77001';
+        // Validate predictions response
+        if (!predictions || !Array.isArray(predictions)) {
+          throw new Error('Invalid predictions response from service');
+        }
+
+        if (predictions.length === 0) {
+          // No predictions found - show helpful fallback
+          const fallbackSuggestions: AddressSuggestion[] = [
+            {
+              address: `${address} (no matches found - enter complete address)`,
+              city: 'Houston',
+              state: 'TX',
+              zipCode: '77001',
+              confidence: 0.3
+            }
+          ];
+          setAddressSuggestions(fallbackSuggestions);
+          setShowSuggestions(true);
           
-          return {
-            address: prediction.structuredFormatting.mainText,
-            city,
-            state,
-            zipCode,
-            confidence: 0.9 // Google Places API is generally high confidence
-          };
+          // Log for monitoring
+          console.warn('No address predictions found', { 
+            input: address, 
+            length: address.length,
+            timestamp: new Date().toISOString()
+          });
+          return;
+        }
+        
+        // Convert Google Places predictions to our suggestion format with enhanced validation
+        const suggestions: AddressSuggestion[] = predictions.map(prediction => {
+          try {
+            // Validate prediction structure
+            if (!prediction.structuredFormatting) {
+              throw new Error('Missing structured formatting in prediction');
+            }
+
+            // Extract city, state, zip from secondary text with better parsing
+            const secondary = prediction.structuredFormatting.secondaryText || '';
+            const parts = secondary.split(', ');
+            
+            // Enhanced parsing logic
+            let city = 'Houston';
+            let state = 'TX';
+            let zipCode = '77001';
+            
+            if (parts.length >= 1 && parts[0]) {
+              city = parts[0].trim();
+            }
+            
+            if (parts.length >= 2 && parts[1]) {
+              const stateZipMatch = parts[1].match(/^([A-Z]{2})\s*(\d{5})?/);
+              if (stateZipMatch) {
+                state = stateZipMatch[1];
+                if (stateZipMatch[2]) {
+                  zipCode = stateZipMatch[2];
+                }
+              }
+            }
+            
+            return {
+              address: prediction.structuredFormatting.mainText || address,
+              city,
+              state,
+              zipCode,
+              confidence: 0.9,
+              latitude: undefined,
+              longitude: undefined
+            };
+          } catch (parseError) {
+            console.warn('Failed to parse prediction', { prediction, error: parseError });
+            // Return safe fallback for this prediction
+            return {
+              address: prediction.description || address,
+              city: 'Houston',
+              state: 'TX',
+              zipCode: '77001',
+              confidence: 0.7
+            };
+          }
         });
         
         setAddressSuggestions(suggestions);
         setShowSuggestions(true);
+        
+        // Log successful prediction for monitoring
+        console.log('Address predictions loaded successfully', {
+          input: address,
+          resultCount: suggestions.length,
+          timestamp: new Date().toISOString()
+        });
+
+        // Update service status
+        setAddressServiceStatus('normal');
+        
       } catch (error) {
         console.error('Address prediction failed:', error);
-        // Fallback to simple suggestions if API fails
+        
+        // Enhanced error tracking
+        const errorDetails = {
+          input: address,
+          errorMessage: error instanceof Error ? error.message : 'Unknown error',
+          errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
+          timestamp: new Date().toISOString(),
+          stackTrace: error instanceof Error ? error.stack : undefined
+        };
+        
+        // Log error for monitoring and debugging
+        console.error('CRITICAL: Address prediction system failure', errorDetails);
+
+        // Update service status to indicate degraded service
+        setAddressServiceStatus('degraded');
+        
+        // Show user-friendly fallback with clear indication of service issue
         const fallbackSuggestions: AddressSuggestion[] = [
           {
-            address: `${address} (enter full address)`,
+            address: `${address} (address service temporarily unavailable)`,
             city: 'Houston',
             state: 'TX',
             zipCode: '77001',
             confidence: 0.5
+          },
+          {
+            address: `Continue with: ${address}`,
+            city: 'Houston',
+            state: 'TX',
+            zipCode: '77001',
+            confidence: 0.4
           }
         ];
         setAddressSuggestions(fallbackSuggestions);
         setShowSuggestions(true);
+        
+        // TODO: Send error to monitoring service in production
+        // await trackError('address_prediction_failure', errorDetails);
       }
     } else {
       setShowSuggestions(false);
@@ -387,13 +588,22 @@ export default function LocationStep({ data, onUpdate, errors, pricing }: Locati
                     <span>Street Address</span>
                     <span className="text-red-500">*</span>
                   </Label>
-                  <Input
-                    id="location.address"
-                    placeholder="123 Main Street, Apt 4B"
-                    value={watchedLocation.address || ''}
-                    onChange={(e) => handleAddressInput(e.target.value)}
-                    className={errors?.location?.address ? 'border-red-500' : ''}
-                  />
+                  <div className="relative">
+                    <Input
+                      id="location.address"
+                      placeholder="123 Main Street, Apt 4B"
+                      value={watchedLocation.address || ''}
+                      onChange={(e) => handleAddressInput(e.target.value)}
+                      className={`${errors?.location?.address ? 'border-red-500' : ''} ${
+                        addressServiceStatus === 'degraded' ? 'border-orange-300 bg-orange-50' : ''
+                      }`}
+                    />
+                    {addressServiceStatus === 'degraded' && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                        <AlertCircle className="h-4 w-4 text-orange-500" />
+                      </div>
+                    )}
+                  </div>
                   
                   {/* Address Suggestions Dropdown */}
                   {showSuggestions && addressSuggestions.length > 0 && (
@@ -457,6 +667,29 @@ export default function LocationStep({ data, onUpdate, errors, pricing }: Locati
                   </div>
                 </div>
 
+                {/* Service Status Indicators */}
+                {(addressServiceStatus === 'degraded' || travelServiceStatus === 'degraded') && (
+                  <Alert className="border-orange-200 bg-orange-50">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      <div className="space-y-1">
+                        <div className="font-medium text-orange-900">Service Notice</div>
+                        <div className="text-sm text-orange-800">
+                          {addressServiceStatus === 'degraded' && (
+                            <div>• Address suggestions are temporarily limited</div>
+                          )}
+                          {travelServiceStatus === 'degraded' && (
+                            <div>• Travel calculations are using estimated values</div>
+                          )}
+                          <div className="mt-1 text-xs">
+                            Pricing accuracy will be verified during booking confirmation.
+                          </div>
+                        </div>
+                      </div>
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 {/* Access Instructions */}
                 <div className="space-y-2">
                   <Label htmlFor="location.accessInstructions" className="text-sm font-medium">
@@ -503,6 +736,12 @@ export default function LocationStep({ data, onUpdate, errors, pricing }: Locati
                   <CardTitle className="text-lg flex items-center space-x-2">
                     <Calculator className="h-5 w-5" />
                     <span>Travel Details</span>
+                    {travelServiceStatus === 'degraded' && (
+                      <div className="flex items-center space-x-1">
+                        <AlertCircle className="h-4 w-4 text-orange-500" />
+                        <span className="text-xs text-orange-600">(Estimated)</span>
+                      </div>
+                    )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">

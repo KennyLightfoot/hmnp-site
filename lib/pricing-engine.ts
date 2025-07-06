@@ -9,7 +9,7 @@
 import { z } from 'zod';
 import { logger } from './logger';
 import { redis } from './redis';
-import { calculateDistanceWithFallbacks } from './maps/distance-fallback';
+import { UnifiedDistanceService } from './maps/unified-distance-service';
 
 // Service Configuration - The Foundation of Our Championship System
 export const SERVICES = {
@@ -197,9 +197,9 @@ export class PricingEngine {
       
       // Calculate travel fees if location provided
       let travelData = { fee: 0, distance: 0, withinArea: true };
-      if (validatedParams.location) {
+      if (validatedParams.location && validatedParams.location.address) {
         try {
-          travelData = await this.calculateTravelFee(validatedParams.serviceType, validatedParams.location);
+          travelData = await this.calculateTravelFee(validatedParams.serviceType, validatedParams.location as { address: string; latitude?: number; longitude?: number });
         } catch (error) {
           logger.warn('Travel fee calculation failed, using fallback', { 
             error: error.message,
@@ -302,7 +302,6 @@ export class PricingEngine {
           }],
           transparency: {
             travelCalculation: 'Fallback pricing due to calculation error',
-            discountEligibility: 'Unable to verify discounts at this time',
             surchargeExplanation: 'Standard pricing applied'
           }
         },
@@ -355,13 +354,13 @@ export class PricingEngine {
         return { fee: 0, distance: 0, withinArea: true };
       }
 
-      // Calculate distance from base location (77591) with fallbacks
-      const distanceResult = await calculateDistanceWithFallbacks(
-        PRICING_CONFIG.baseLocation,
-        location.address
+      // Calculate distance using UnifiedDistanceService for consistency
+      const distanceResult = await UnifiedDistanceService.calculateDistance(
+        location.address,
+        serviceType
       );
 
-      const distance = distanceResult.distance || 0;
+      const distance = distanceResult.distance.miles || 0;
       const withinArea = distance <= service.includedRadius;
       
       // Calculate excess distance fee
@@ -370,7 +369,7 @@ export class PricingEngine {
 
       return { fee, distance, withinArea };
       
-    } catch (error) {
+    } catch (error: any) {
       logger.warn('Travel fee calculation failed, using fallback', { 
         serviceType, 
         location: location.address,
@@ -726,13 +725,11 @@ export class PricingEngine {
     try {
       const cacheKey = `pricing_${this.hashParams(params)}`;
       
-      // FIX: Use proper Redis client method
-      // Check if redis.setex exists, otherwise use redis.set with EX
+      // Use proper Redis client method
       if (typeof redis.setex === 'function') {
         await redis.setex(cacheKey, 300, JSON.stringify(result));
-      } else {
-        // Alternative method for different Redis clients
-        await redis.set(cacheKey, JSON.stringify(result), 'EX', 300);
+      } else if (typeof redis.set === 'function') {
+        await redis.set(cacheKey, JSON.stringify(result), { EX: 300 });
       }
       
       logger.info('Pricing result cached successfully', { 
