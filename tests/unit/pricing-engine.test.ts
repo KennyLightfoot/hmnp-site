@@ -27,18 +27,20 @@ vi.mock('@/lib/redis', () => ({
   }
 }));
 
-vi.mock('@/lib/maps/distance-calculator', () => ({
-  calculateDistance: vi.fn()
+vi.mock('@/lib/maps/unified-distance-service', () => ({
+  UnifiedDistanceService: {
+    calculateDistance: vi.fn()
+  }
 }));
 
 // Import mocked modules for type safety
 import { logger } from '@/lib/logger';
 import { redis } from '@/lib/redis';
-import { calculateDistance } from '@/lib/maps/distance-calculator';
+import { UnifiedDistanceService } from '@/lib/maps/unified-distance-service';
 
 const mockedLogger = vi.mocked(logger);
 const mockedRedis = vi.mocked(redis);
-const mockedCalculateDistance = vi.mocked(calculateDistance);
+const mockedCalculateDistance = vi.mocked(UnifiedDistanceService.calculateDistance);
 
 describe('PricingEngine - Pure Logic Tests', () => {
   let pricingEngine: PricingEngine;

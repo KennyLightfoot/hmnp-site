@@ -7,13 +7,16 @@
  */
 
 import { 
-  getApiKey, 
+  getCleanApiKey,
+  getApiStatus,
   SERVICE_AREA_CONFIG, 
   GOOGLE_MAPS_CONFIG,
   calculateTravelFee,
   isWithinServiceArea,
   metersToMiles,
-  getServiceConfig
+  getServiceConfig,
+  estimateDistanceFromAddress,
+  getFallbackAddressPredictions
 } from '@/lib/config/maps';
 
 // ============================================================================
@@ -96,8 +99,11 @@ export class UnifiedDistanceService {
 
       let result: DistanceResult;
 
-      // Try Google Maps API first
-      if (getApiKey('server')) {
+      // Check API configuration first
+      const apiStatus = getApiStatus();
+      
+      // Try Google Maps API first if properly configured
+      if (apiStatus.hasServerKey) {
         try {
           result = await this.calculateWithGoogleMaps(destination, serviceType, requestId);
         } catch (error) {
@@ -105,7 +111,7 @@ export class UnifiedDistanceService {
           result = this.calculateWithFallback(destination, serviceType, requestId);
         }
       } else {
-        console.warn('Google Maps API key not configured, using fallback');
+        console.warn('Google Maps API key not configured, using fallback', { apiStatus });
         result = this.calculateWithFallback(destination, serviceType, requestId);
       }
 
@@ -340,7 +346,7 @@ export class UnifiedDistanceService {
     url.searchParams.set('units', 'imperial');
     url.searchParams.set('mode', 'driving');
     url.searchParams.set('avoid', 'tolls');
-    url.searchParams.set('key', getApiKey('server'));
+    url.searchParams.set('key', getCleanApiKey('server'));
 
     const response = await fetch(url.toString());
     
@@ -383,7 +389,7 @@ export class UnifiedDistanceService {
     serviceType: string,
     requestId: string
   ): DistanceResult {
-    const estimatedMiles = this.estimateDistanceFromAddress(destination);
+    const estimatedMiles = estimateDistanceFromAddress(destination);
     const estimatedMinutes = Math.round(estimatedMiles * 1.5); // ~1.5 minutes per mile
 
     return this.buildResult({
@@ -466,54 +472,13 @@ export class UnifiedDistanceService {
     };
   }
 
-  /**
-   * Estimate distance using local Houston area knowledge
-   */
-  private static estimateDistanceFromAddress(address: string): number {
-    const lower = address.toLowerCase();
-    
-    // Houston Metro area estimates from ZIP 77591 (Texas City)
-    if (lower.includes('77591') || lower.includes('texas city')) return 0;
-    if (lower.includes('league city') || lower.includes('77573')) return 5;
-    if (lower.includes('webster') || lower.includes('77598')) return 8;
-    if (lower.includes('friendswood') || lower.includes('77546')) return 8;
-    if (lower.includes('clear lake') || lower.includes('77058')) return 10;
-    if (lower.includes('pasadena') || lower.includes('77506')) return 12;
-    if (lower.includes('baytown') || lower.includes('77520')) return 15;
-    if (lower.includes('houston downtown') || lower.includes('77002')) return 18;
-    if (lower.includes('sugar land') || lower.includes('77478')) return 18;
-    if (lower.includes('pearland') || lower.includes('77584')) return 20;
-    if (lower.includes('katy') || lower.includes('77449')) return 20;
-    if (lower.includes('cypress') || lower.includes('77429')) return 22;
-    if (lower.includes('tomball') || lower.includes('77375')) return 25;
-    if (lower.includes('conroe') || lower.includes('77301')) return 30;
-    if (lower.includes('galveston') || lower.includes('77550')) return 45;
-    
-    // Default estimate for unknown Houston area locations
-    return 15;
-  }
+  // Note: estimateDistanceFromAddress moved to central config
 
   /**
-   * Get fallback address predictions
+   * Get fallback address predictions (uses centralized function)
    */
   private static getFallbackPredictions(input: string): PlacePrediction[] {
-    const commonAreas = [
-      { main: `${input} Main St`, secondary: 'Houston, TX' },
-      { main: `${input} Memorial Dr`, secondary: 'Houston, TX' },
-      { main: `${input} Westheimer Rd`, secondary: 'Houston, TX' },
-      { main: `${input} FM 1960`, secondary: 'Houston, TX' },
-      { main: `${input} Highway 6`, secondary: 'Houston, TX' }
-    ];
-
-    return commonAreas.map((area, index) => ({
-      description: `${area.main}, ${area.secondary}`,
-      placeId: `fallback_${index}`,
-      structuredFormatting: {
-        mainText: area.main,
-        secondaryText: area.secondary
-      },
-      types: ['street_address']
-    }));
+    return getFallbackAddressPredictions(input);
   }
 
   /**

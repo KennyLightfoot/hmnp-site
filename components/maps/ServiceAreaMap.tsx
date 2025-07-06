@@ -5,7 +5,7 @@ import { GoogleMap, useJsApiLoader, Circle, Marker } from '@react-google-maps/ap
 import { MapPin, Loader2, Info } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { EnhancedDistanceCalculator } from '@/lib/maps/distance-calculator'
+import { UnifiedDistanceService } from '@/lib/maps/unified-distance-service'
 
 interface ServiceAreaMapProps {
   showServiceAreaCircle?: boolean
@@ -95,7 +95,7 @@ export default function ServiceAreaMap({
             const response = await geocoder.geocode({ location: e.latLng })
             if (response.results[0]) {
               const address = response.results[0].formatted_address
-              const result = await EnhancedDistanceCalculator.calculateDistanceAndValidate(address, selectedServiceType)
+              const result = await UnifiedDistanceService.calculateDistanceAndValidate(address, selectedServiceType)
               
               const locationData = {
                 address,

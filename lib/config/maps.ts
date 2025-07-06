@@ -11,16 +11,27 @@
 // ============================================================================
 
 /**
- * Primary API key for client-side operations
- * Used for: Google Maps JavaScript API, Places API (client-side)
+ * Server-side API key for backend operations (SECURE)
+ * Used for: Distance Matrix API, Geocoding API, Places API proxy
+ * This key should have server-side restrictions only
  */
-export const GOOGLE_MAPS_CLIENT_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+export const GOOGLE_MAPS_SERVER_API_KEY = process.env.GOOGLE_MAPS_API_KEY?.replace(/\s+/g, '') || '';
 
 /**
- * Server-side API key for backend operations
- * Used for: Distance Matrix API, Geocoding API (server-side)
+ * Client-side API key for frontend operations (RESTRICTED)
+ * Used for: Google Maps JavaScript API (if needed)
+ * This key should have domain and API restrictions
  */
-export const GOOGLE_MAPS_SERVER_API_KEY = process.env.GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_CLIENT_API_KEY;
+export const GOOGLE_MAPS_CLIENT_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.replace(/\s+/g, '') || '';
+
+/**
+ * Configuration validation
+ */
+export const API_KEY_STATUS = {
+  hasServerKey: !!GOOGLE_MAPS_SERVER_API_KEY,
+  hasClientKey: !!GOOGLE_MAPS_CLIENT_API_KEY,
+  isConfigured: !!GOOGLE_MAPS_SERVER_API_KEY // Server key is primary requirement
+} as const;
 
 // ============================================================================
 // SERVICE AREA CONFIGURATION
@@ -157,7 +168,7 @@ export const GOOGLE_MAPS_CONFIG = {
 /**
  * Get the appropriate API key for the operation type
  */
-export function getApiKey(operation: 'client' | 'server' = 'client'): string {
+export function getApiKey(operation: 'client' | 'server' = 'server'): string {
   if (operation === 'server') {
     return GOOGLE_MAPS_SERVER_API_KEY;
   }
@@ -165,10 +176,30 @@ export function getApiKey(operation: 'client' | 'server' = 'client'): string {
 }
 
 /**
+ * Get clean API key (removes whitespace/newlines)
+ */
+export function getCleanApiKey(operation: 'client' | 'server' = 'server'): string {
+  const key = getApiKey(operation);
+  return key.replace(/\s+/g, '');
+}
+
+/**
  * Check if Google Maps API is properly configured
  */
 export function isGoogleMapsConfigured(): boolean {
-  return !!(GOOGLE_MAPS_CLIENT_API_KEY || GOOGLE_MAPS_SERVER_API_KEY);
+  return API_KEY_STATUS.isConfigured;
+}
+
+/**
+ * Get comprehensive API status
+ */
+export function getApiStatus() {
+  return {
+    ...API_KEY_STATUS,
+    serverKeyLength: GOOGLE_MAPS_SERVER_API_KEY.length,
+    clientKeyLength: GOOGLE_MAPS_CLIENT_API_KEY.length,
+    environment: process.env.NODE_ENV || 'unknown'
+  };
 }
 
 /**
@@ -213,6 +244,70 @@ export function metersToMiles(meters: number): number {
  */
 export function milesToMeters(miles: number): number {
   return miles / 0.000621371;
+}
+
+/**
+ * Advanced Houston area distance estimation for fallbacks
+ * Consolidated from multiple files into single source of truth
+ */
+export function estimateDistanceFromAddress(address: string): number {
+  const lower = address.toLowerCase();
+  
+  // Texas City area (base location)
+  if (lower.includes('77591') || lower.includes('texas city')) return 0;
+  
+  // Close suburbs (under 10 miles)
+  if (lower.includes('league city') || lower.includes('77573')) return 5;
+  if (lower.includes('webster') || lower.includes('77598')) return 8;
+  if (lower.includes('friendswood') || lower.includes('77546')) return 8;
+  if (lower.includes('clear lake') || lower.includes('77058')) return 10;
+  
+  // Houston metro (10-20 miles)
+  if (lower.includes('pasadena') || lower.includes('77506')) return 12;
+  if (lower.includes('baytown') || lower.includes('77520')) return 15;
+  if (lower.includes('houston downtown') || lower.includes('77002')) return 18;
+  if (lower.includes('sugar land') || lower.includes('77478')) return 18;
+  if (lower.includes('pearland') || lower.includes('77584')) return 20;
+  
+  // Extended area (20-30 miles)
+  if (lower.includes('katy') || lower.includes('77449')) return 20;
+  if (lower.includes('cypress') || lower.includes('77429')) return 22;
+  if (lower.includes('tomball') || lower.includes('77375')) return 25;
+  if (lower.includes('conroe') || lower.includes('77301')) return 30;
+  
+  // Outer limits (30+ miles)
+  if (lower.includes('galveston') || lower.includes('77550')) return 45;
+  
+  // Default estimate for unknown Houston area locations
+  return 15;
+}
+
+/**
+ * Get intelligent fallback predictions for address autocomplete
+ */
+export function getFallbackAddressPredictions(input: string): Array<{
+  description: string;
+  placeId: string;
+  structuredFormatting: { mainText: string; secondaryText: string };
+  types: string[];
+}> {
+  const commonAreas = [
+    { main: `${input} Main St`, secondary: 'Houston, TX' },
+    { main: `${input} Memorial Dr`, secondary: 'Houston, TX' },
+    { main: `${input} Westheimer Rd`, secondary: 'Houston, TX' },
+    { main: `${input} FM 1960`, secondary: 'Houston, TX' },
+    { main: `${input} Highway 6`, secondary: 'Houston, TX' }
+  ];
+
+  return commonAreas.map((area, index) => ({
+    description: `${area.main}, ${area.secondary}`,
+    placeId: `fallback_${index}`,
+    structuredFormatting: {
+      mainText: area.main,
+      secondaryText: area.secondary
+    },
+    types: ['street_address']
+  }));
 }
 
 // ============================================================================

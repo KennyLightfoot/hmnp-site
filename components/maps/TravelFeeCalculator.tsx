@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { MapPin, Calculator, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
-import { DistanceService } from '@/lib/maps/distance'
+import { UnifiedDistanceService } from '@/lib/maps/unified-distance-service'
 
 interface TravelFeeCalculatorProps {
   onFeeCalculated?: (data: {
@@ -43,8 +43,8 @@ export default function TravelFeeCalculator({
     setResult(null)
 
     try {
-      const distanceResult = await DistanceService.calculateDistance(address.trim())
-      const travelFee = DistanceService.calculateTravelFee(distanceResult.distance.miles)
+      const distanceResult = await UnifiedDistanceService.calculateDistance(address.trim())
+      const travelFee = UnifiedDistanceService.calculateTravelFee(distanceResult.distance.miles)
       
       const calculationResult = {
         distance: distanceResult.distance.miles,

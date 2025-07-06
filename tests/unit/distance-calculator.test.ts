@@ -30,18 +30,18 @@ vi.mock('@/lib/logger', () => ({
   }
 }));
 
-import { EnhancedDistanceCalculator } from '@/lib/maps/distance-calculator';
+import { UnifiedDistanceService } from '@/lib/maps/unified-distance-service';
 import type { 
   ServiceAreaConfig, 
   DistanceCalculationResult, 
   GeofenceValidationResult 
-} from '@/lib/maps/distance-calculator';
+} from '@/lib/maps/unified-distance-service';
 import { logger } from '@/lib/logger';
 
 const mockedFetch = vi.mocked(fetch);
 const mockedLogger = vi.mocked(logger);
 
-describe('EnhancedDistanceCalculator', () => {
+describe('UnifiedDistanceService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     
@@ -61,7 +61,7 @@ describe('EnhancedDistanceCalculator', () => {
 
   describe('Service Area Configuration', () => {
     it('should return correct config for STANDARD_NOTARY', () => {
-      const config = EnhancedDistanceCalculator.getServiceAreaConfig('STANDARD_NOTARY');
+      const config = UnifiedDistanceService.getServiceAreaConfig('STANDARD_NOTARY');
       
       expect(config).toEqual({
         serviceType: 'STANDARD_NOTARY',
@@ -71,7 +71,7 @@ describe('EnhancedDistanceCalculator', () => {
     });
 
     it('should return correct config for EXTENDED_HOURS_NOTARY', () => {
-      const config = EnhancedDistanceCalculator.getServiceAreaConfig('EXTENDED_HOURS_NOTARY');
+      const config = UnifiedDistanceService.getServiceAreaConfig('EXTENDED_HOURS_NOTARY');
       
       expect(config).toEqual({
         serviceType: 'EXTENDED_HOURS_NOTARY',
@@ -81,7 +81,7 @@ describe('EnhancedDistanceCalculator', () => {
     });
 
     it('should return correct config for LOAN_SIGNING_SPECIALIST', () => {
-      const config = EnhancedDistanceCalculator.getServiceAreaConfig('LOAN_SIGNING_SPECIALIST');
+      const config = UnifiedDistanceService.getServiceAreaConfig('LOAN_SIGNING_SPECIALIST');
       
       expect(config).toEqual({
         serviceType: 'LOAN_SIGNING_SPECIALIST',
@@ -91,7 +91,7 @@ describe('EnhancedDistanceCalculator', () => {
     });
 
     it('should return default config for unknown service types', () => {
-      const config = EnhancedDistanceCalculator.getServiceAreaConfig('UNKNOWN_SERVICE');
+      const config = UnifiedDistanceService.getServiceAreaConfig('UNKNOWN_SERVICE');
       
       expect(config).toEqual({
         serviceType: 'STANDARD_NOTARY',
@@ -106,7 +106,7 @@ describe('EnhancedDistanceCalculator', () => {
       const destination = '123 Main St, Houston, TX 77001';
       const serviceType = 'STANDARD_NOTARY';
 
-      const result = await EnhancedDistanceCalculator.calculateDistance(destination, serviceType);
+      const result = await UnifiedDistanceService.calculateDistance(destination, serviceType);
 
       expect(mockedFetch).toHaveBeenCalledWith(
         expect.stringContaining('maps.googleapis.com/maps/api/directions'),
@@ -127,7 +127,7 @@ describe('EnhancedDistanceCalculator', () => {
         json: () => Promise.resolve({ status: 'ZERO_RESULTS' })
       } as Response);
 
-      const result = await EnhancedDistanceCalculator.calculateDistance(
+      const result = await UnifiedDistanceService.calculateDistance(
         '123 Invalid Address, Nowhere, TX 00000',
         'STANDARD_NOTARY'
       );
@@ -139,7 +139,7 @@ describe('EnhancedDistanceCalculator', () => {
     it('should handle network errors and fall back gracefully', async () => {
       mockedFetch.mockRejectedValue(new Error('Network error'));
 
-      const result = await EnhancedDistanceCalculator.calculateDistance(
+      const result = await UnifiedDistanceService.calculateDistance(
         '123 Main St, Houston, TX 77001',
         'STANDARD_NOTARY'
       );
@@ -159,7 +159,7 @@ describe('EnhancedDistanceCalculator', () => {
         statusText: 'Forbidden'
       } as Response);
 
-      const result = await EnhancedDistanceCalculator.calculateDistance(
+      const result = await UnifiedDistanceService.calculateDistance(
         '123 Main St, Houston, TX 77001',
         'STANDARD_NOTARY'
       );
@@ -174,7 +174,7 @@ describe('EnhancedDistanceCalculator', () => {
         json: () => Promise.resolve({ invalid: 'response' })
       } as Response);
 
-      const result = await EnhancedDistanceCalculator.calculateDistance(
+      const result = await UnifiedDistanceService.calculateDistance(
         '123 Main St, Houston, TX 77001',
         'STANDARD_NOTARY'
       );
@@ -202,7 +202,7 @@ describe('EnhancedDistanceCalculator', () => {
         json: () => Promise.resolve(closeResponse)
       } as Response);
 
-      const result = await EnhancedDistanceCalculator.calculateDistance(
+      const result = await UnifiedDistanceService.calculateDistance(
         '123 Nearby St, League City, TX 77573',
         'STANDARD_NOTARY'
       );
@@ -231,7 +231,7 @@ describe('EnhancedDistanceCalculator', () => {
         json: () => Promise.resolve(farResponse)
       } as Response);
 
-      const result = await EnhancedDistanceCalculator.calculateDistance(
+      const result = await UnifiedDistanceService.calculateDistance(
         '123 Far St, Katy, TX 77449',
         'STANDARD_NOTARY'
       );
@@ -260,7 +260,7 @@ describe('EnhancedDistanceCalculator', () => {
         json: () => Promise.resolve(extendedResponse)
       } as Response);
 
-      const result = await EnhancedDistanceCalculator.calculateDistance(
+      const result = await UnifiedDistanceService.calculateDistance(
         '123 Medium St, Sugar Land, TX 77479',
         'EXTENDED_HOURS_NOTARY'
       );
@@ -289,7 +289,7 @@ describe('EnhancedDistanceCalculator', () => {
         json: () => Promise.resolve(veryFarResponse)
       } as Response);
 
-      const result = await EnhancedDistanceCalculator.calculateDistance(
+      const result = await UnifiedDistanceService.calculateDistance(
         '123 Very Far St, Austin, TX 78701',
         'STANDARD_NOTARY'
       );
@@ -302,7 +302,7 @@ describe('EnhancedDistanceCalculator', () => {
 
   describe('Geofence Validation', () => {
     it('should allow bookings within service area', () => {
-      const result = EnhancedDistanceCalculator.validateGeofence(
+      const result = UnifiedDistanceService.validateGeofence(
         12, // 12 miles
         'STANDARD_NOTARY'
       );
@@ -313,7 +313,7 @@ describe('EnhancedDistanceCalculator', () => {
     });
 
     it('should allow bookings with travel fee within max area', () => {
-      const result = EnhancedDistanceCalculator.validateGeofence(
+      const result = UnifiedDistanceService.validateGeofence(
         25, // 25 miles
         'STANDARD_NOTARY'
       );
@@ -324,7 +324,7 @@ describe('EnhancedDistanceCalculator', () => {
     });
 
     it('should block bookings beyond maximum service area', () => {
-      const result = EnhancedDistanceCalculator.validateGeofence(
+      const result = UnifiedDistanceService.validateGeofence(
         60, // 60 miles
         'STANDARD_NOTARY'
       );
@@ -335,8 +335,8 @@ describe('EnhancedDistanceCalculator', () => {
     });
 
     it('should handle different service types correctly', () => {
-      const standardResult = EnhancedDistanceCalculator.validateGeofence(18, 'STANDARD_NOTARY');
-      const extendedResult = EnhancedDistanceCalculator.validateGeofence(18, 'EXTENDED_HOURS_NOTARY');
+      const standardResult = UnifiedDistanceService.validateGeofence(18, 'STANDARD_NOTARY');
+      const extendedResult = UnifiedDistanceService.validateGeofence(18, 'EXTENDED_HOURS_NOTARY');
 
       expect(standardResult.travelFee).toBe(1.5); // (18 - 15) * $0.50
       expect(extendedResult.travelFee).toBe(0); // Within 20-mile free radius
@@ -355,21 +355,21 @@ describe('EnhancedDistanceCalculator', () => {
       ];
 
       testCases.forEach(({ distance, serviceType, expectedFee }) => {
-        const fee = EnhancedDistanceCalculator.calculateTravelFee(distance, serviceType);
+        const fee = UnifiedDistanceService.calculateTravelFee(distance, serviceType);
         expect(fee).toBe(expectedFee);
       });
     });
 
     it('should handle edge case distances correctly', () => {
-      expect(EnhancedDistanceCalculator.calculateTravelFee(0, 'STANDARD_NOTARY')).toBe(0);
-      expect(EnhancedDistanceCalculator.calculateTravelFee(-5, 'STANDARD_NOTARY')).toBe(0);
-      expect(EnhancedDistanceCalculator.calculateTravelFee(14.99, 'STANDARD_NOTARY')).toBe(0);
-      expect(EnhancedDistanceCalculator.calculateTravelFee(15.01, 'STANDARD_NOTARY')).toBe(0.005);
+      expect(UnifiedDistanceService.calculateTravelFee(0, 'STANDARD_NOTARY')).toBe(0);
+      expect(UnifiedDistanceService.calculateTravelFee(-5, 'STANDARD_NOTARY')).toBe(0);
+      expect(UnifiedDistanceService.calculateTravelFee(14.99, 'STANDARD_NOTARY')).toBe(0);
+      expect(UnifiedDistanceService.calculateTravelFee(15.01, 'STANDARD_NOTARY')).toBe(0.005);
     });
 
     it('should round travel fees appropriately', () => {
       // Test rounding behavior for fractional miles
-      const fee = EnhancedDistanceCalculator.calculateTravelFee(15.33, 'STANDARD_NOTARY');
+      const fee = UnifiedDistanceService.calculateTravelFee(15.33, 'STANDARD_NOTARY');
       expect(fee).toBeCloseTo(0.165, 3); // 0.33 * $0.50
     });
   });
@@ -379,7 +379,7 @@ describe('EnhancedDistanceCalculator', () => {
       // Mock API failure
       mockedFetch.mockRejectedValue(new Error('API unavailable'));
 
-      const result = await EnhancedDistanceCalculator.calculateDistance(
+      const result = await UnifiedDistanceService.calculateDistance(
         '123 Main St, Houston, TX 77001',
         'STANDARD_NOTARY'
       );
@@ -393,7 +393,7 @@ describe('EnhancedDistanceCalculator', () => {
     it('should provide reasonable fallback estimates for Houston area', async () => {
       mockedFetch.mockRejectedValue(new Error('API unavailable'));
 
-      const result = await EnhancedDistanceCalculator.calculateDistance(
+      const result = await UnifiedDistanceService.calculateDistance(
         'Houston, TX',
         'STANDARD_NOTARY'
       );
@@ -415,7 +415,7 @@ describe('EnhancedDistanceCalculator', () => {
       ];
 
       for (const address of addresses) {
-        const result = await EnhancedDistanceCalculator.calculateDistance(
+        const result = await UnifiedDistanceService.calculateDistance(
           address,
           'STANDARD_NOTARY'
         );
@@ -430,7 +430,7 @@ describe('EnhancedDistanceCalculator', () => {
       const invalidAddresses = ['', '   ', 'Invalid Address 12345'];
 
       for (const address of invalidAddresses) {
-        const result = await EnhancedDistanceCalculator.calculateDistance(
+        const result = await UnifiedDistanceService.calculateDistance(
           address,
           'STANDARD_NOTARY'
         );
@@ -444,7 +444,7 @@ describe('EnhancedDistanceCalculator', () => {
 
   describe('Performance and Caching', () => {
     it('should include request timing in metadata', async () => {
-      const result = await EnhancedDistanceCalculator.calculateDistance(
+      const result = await UnifiedDistanceService.calculateDistance(
         '123 Main St, Houston, TX 77001',
         'STANDARD_NOTARY'
       );
@@ -456,7 +456,7 @@ describe('EnhancedDistanceCalculator', () => {
 
     it('should handle concurrent requests correctly', async () => {
       const promises = Array.from({ length: 5 }, (_, i) =>
-        EnhancedDistanceCalculator.calculateDistance(
+        UnifiedDistanceService.calculateDistance(
           `123 Test St ${i}, Houston, TX 77001`,
           'STANDARD_NOTARY'
         )
@@ -480,7 +480,7 @@ describe('EnhancedDistanceCalculator', () => {
     it('should handle missing API key gracefully', async () => {
       delete process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-      const result = await EnhancedDistanceCalculator.calculateDistance(
+      const result = await UnifiedDistanceService.calculateDistance(
         '123 Main St, Houston, TX 77001',
         'STANDARD_NOTARY'
       );
@@ -496,7 +496,7 @@ describe('EnhancedDistanceCalculator', () => {
         statusText: 'Too Many Requests'
       } as Response);
 
-      const result = await EnhancedDistanceCalculator.calculateDistance(
+      const result = await UnifiedDistanceService.calculateDistance(
         '123 Main St, Houston, TX 77001',
         'STANDARD_NOTARY'
       );
@@ -511,7 +511,7 @@ describe('EnhancedDistanceCalculator', () => {
         json: () => Promise.resolve({ status: 'OVER_QUERY_LIMIT' })
       } as Response);
 
-      const result = await EnhancedDistanceCalculator.calculateDistance(
+      const result = await UnifiedDistanceService.calculateDistance(
         '123 Main St, Houston, TX 77001',
         'STANDARD_NOTARY'
       );

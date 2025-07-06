@@ -5,7 +5,7 @@ import { GoogleMap, useJsApiLoader, Circle, Marker, Autocomplete } from '@react-
 import { MapPin, Loader2, AlertCircle, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { DistanceService } from '@/lib/maps/distance'
+import { UnifiedDistanceService } from '@/lib/maps/unified-distance-service'
 
 interface BookingLocationMapProps {
   onLocationSelect?: (location: {
@@ -100,8 +100,8 @@ export default function BookingLocationMap({
 
         try {
           // Calculate distance and travel fee
-          const distanceResult = await DistanceService.calculateDistance(newAddress)
-          const travelFee = DistanceService.calculateTravelFee(distanceResult.distance.miles)
+          const distanceResult = await UnifiedDistanceService.calculateDistance(newAddress)
+          const travelFee = UnifiedDistanceService.calculateTravelFee(distanceResult.distance.miles)
           
           const locationData = {
             distance: distanceResult.distance.miles,
