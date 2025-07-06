@@ -58,6 +58,9 @@ const baseCircleOptions = {
   fillOpacity: 0.1,
 }
 
+// Stable reference for libraries to prevent reload issues
+const MAPS_LIBRARIES = ['places'] as const
+
 
 export default function ServiceAreaMap({
   showServiceAreaCircle = true,
@@ -77,7 +80,7 @@ export default function ServiceAreaMap({
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-    libraries: ['places']
+    libraries: MAPS_LIBRARIES
   })
 
   const onLoad = useCallback((map: google.maps.Map) => {

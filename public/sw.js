@@ -112,8 +112,18 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
   
-  // Skip non-GET requests and chrome-extension requests
-  if (request.method !== 'GET' || url.protocol === 'chrome-extension:') {
+  // Skip chrome-extension requests
+  if (url.protocol === 'chrome-extension:') {
+    return;
+  }
+  
+  // Let POST requests go through network directly (no service worker interference)
+  if (request.method === 'POST') {
+    return;
+  }
+  
+  // Only handle GET requests for caching
+  if (request.method !== 'GET') {
     return;
   }
   
@@ -568,8 +578,8 @@ self.addEventListener('push', (event) => {
   const data = event.data.json();
   const options = {
     body: data.body,
-    icon: '/icon-192.png',
-    badge: '/badge-72.png',
+    icon: '/icons/icon-192x192.svg',
+    badge: '/icons/icon-72x72.svg',
     vibrate: [100, 50, 100],
     data: data.data,
     actions: data.actions || []

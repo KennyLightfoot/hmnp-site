@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-import { notificationService } from '@/lib/notifications';
+import { NotificationService } from '@/lib/notifications';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';
 
@@ -126,7 +126,7 @@ async function handleSingleNotification(body: any, userAgent?: string | null): P
     }
 
     // Queue for scheduled delivery
-    const result = await notificationService.scheduleNotification({
+    const result = await NotificationService.getInstance().scheduleNotification({
       type,
       method,
       bookingId,
@@ -154,6 +154,7 @@ async function handleSingleNotification(body: any, userAgent?: string | null): P
 
   // Send immediately
   let result;
+  const notificationService = NotificationService.getInstance();
   
   if (bookingId) {
     // Booking-based notification

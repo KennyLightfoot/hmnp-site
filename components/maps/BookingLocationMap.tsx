@@ -38,6 +38,9 @@ const serviceAreaOptions = {
   fillOpacity: 0.08,
 }
 
+// Stable reference for libraries to prevent reload issues
+const MAPS_LIBRARIES = ['places']
+
 
 export default function BookingLocationMap({
   onLocationSelect,
@@ -60,7 +63,7 @@ export default function BookingLocationMap({
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-    libraries: ['places']
+    libraries: MAPS_LIBRARIES
   })
 
   const onLoad = useCallback((map: google.maps.Map) => {

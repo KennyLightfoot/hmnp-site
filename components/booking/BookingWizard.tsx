@@ -173,6 +173,15 @@ export default function BookingWizard() {
   const watchedValues = form.watch();
   const formErrors = form.formState.errors;
 
+  // Map each step to its required validation fields
+  const stepFieldMap = {
+    service: ['serviceType'] as const,
+    customer: ['customer.name', 'customer.email'] as const,
+    location: ['location.address', 'location.city', 'location.state', 'location.zipCode'] as const,
+    scheduling: ['scheduling.preferredDate', 'scheduling.preferredTime'] as const,
+    review: ['payment.paymentMethod'] as const,
+  } as const;
+
   // Determine if current step is valid
   const isCurrentStepValid = useMemo(() => {
     const step = BOOKING_STEPS[state.currentStep];
@@ -386,11 +395,24 @@ export default function BookingWizard() {
     }
   }, [state.slotReservation]);
 
+  // Step field mapping for validation
+  const stepFieldMap = {
+    service: ['serviceType'],
+    customer: ['customer.name', 'customer.email', 'customer.phone'],
+    location: ['location.address', 'location.city', 'location.state', 'location.zipCode'],
+    scheduling: ['scheduling.preferredDate', 'scheduling.preferredTime'],
+    review: ['payment.paymentMethod']
+  };
+
   // Navigation handlers
   const nextStep = useCallback(async () => {
     if (state.currentStep < BOOKING_STEPS.length - 1) {
-      // Validate current step
-      const isValid = await form.trigger();
+      // Get current step info
+      const currentStepId = BOOKING_STEPS[state.currentStep].id as keyof typeof stepFieldMap;
+      const fieldsToValidate = stepFieldMap[currentStepId];
+      
+      // CRITICAL: Only validate current step's fields
+      const isValid = await form.trigger(fieldsToValidate as any);
       if (!isValid || !isCurrentStepValid) return;
 
       // Reserve slot when moving from scheduling step

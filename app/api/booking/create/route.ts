@@ -28,6 +28,12 @@ import { calculateBookingPrice } from '@/lib/pricing-engine';
 import { slotReservationEngine } from '@/lib/slot-reservation';
 import { RONService } from '@/lib/proof/api';
 import { headers } from 'next/headers';
+import { 
+  upsertContact, 
+  addTagsToContact, 
+  getLocationCustomFields,
+  convertCustomFieldsArrayToObject 
+} from '@/lib/ghl';
 
 // Enhanced request schema with additional metadata - using safer schema composition
 const BookingCreationSchema = z.object({
@@ -274,7 +280,164 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // Step 6: Create audit log
+    // Step 6: Integrate with GoHighLevel (GHL) CRM
+    let ghlContactId: string | null = null;
+    try {
+      if (process.env.ENABLE_GHL_INTEGRATION === 'true' && process.env.GHL_LOCATION_ID) {
+        logger.info('Starting GHL integration for booking', { bookingId: newBooking.id });
+        
+        // Get custom fields from GHL
+        const allCustomFields = await getLocationCustomFields(process.env.GHL_LOCATION_ID);
+        
+        // Helper function to find custom field ID by key
+        const findCustomFieldId = (keyToSearch: string) => {
+          const field = allCustomFields.find(cf => 
+            cf.key === keyToSearch || 
+            cf.fieldKey === keyToSearch ||
+            cf.fieldKey === `contact.${keyToSearch}`
+          );
+          return field?.id;
+        };
+        
+        // Prepare booking-specific custom fields
+        const customFieldsArray = [];
+        
+        // Core booking information
+        const serviceDate = new Date(
+          `${validatedBooking.scheduling.preferredDate.split('T')[0]}T${validatedBooking.scheduling.preferredTime}`
+        );
+        
+        const addCustomField = (key: string, value: any) => {
+          const fieldId = findCustomFieldId(key);
+          if (fieldId && value !== null && value !== undefined) {
+            customFieldsArray.push({ id: fieldId, field_value: value });
+          }
+        };
+        
+        addCustomField('cf_booking_id', newBooking.id);
+        addCustomField('cf_service_date', serviceDate.toISOString().split('T')[0]);
+        addCustomField('cf_service_time', validatedBooking.scheduling.preferredTime);
+        addCustomField('cf_service_name', validatedBooking.serviceType);
+        addCustomField('cf_service_price', pricingResult.total.toString());
+        addCustomField('cf_number_of_signatures', validatedBooking.serviceDetails.signerCount.toString());
+        addCustomField('cf_booking_status', newBooking.status);
+        addCustomField('cf_lead_source_detail', 'Online Booking System');
+        
+        if (validatedBooking.location) {
+          const fullAddress = `${validatedBooking.location.address}, ${validatedBooking.location.city}, ${validatedBooking.location.state} ${validatedBooking.location.zipCode}`;
+          addCustomField('cf_service_address', fullAddress);
+        }
+        
+        if (validatedBooking.serviceDetails.documentTypes?.length) {
+          addCustomField('cf_document_type', validatedBooking.serviceDetails.documentTypes.join(', '));
+        }
+        
+        // Consent fields
+        addCustomField('cf_consent_terms_conditions', 'true'); // They agreed to terms to book
+        addCustomField('cf_consent_sms_communications', validatedBooking.customer.smsConsent?.toString() || 'false');
+        
+        // Prepare contact payload for GHL
+        const [firstName, ...lastNameParts] = validatedBooking.customer.name.split(' ');
+        const lastName = lastNameParts.join(' ') || '';
+        
+        const contactPayload = {
+          firstName: firstName,
+          lastName: lastName,
+          email: validatedBooking.customer.email,
+          phone: validatedBooking.customer.phone,
+          locationId: process.env.GHL_LOCATION_ID,
+          source: 'Online Booking System',
+          customField: customFieldsArray
+        };
+        
+        // Add company name if provided
+        if (validatedBooking.customer.companyName) {
+          contactPayload.companyName = validatedBooking.customer.companyName;
+        }
+        
+        // Add address if provided (for mobile services)
+        if (validatedBooking.location) {
+          contactPayload.address1 = validatedBooking.location.address;
+          contactPayload.city = validatedBooking.location.city;
+          contactPayload.state = validatedBooking.location.state;
+          contactPayload.postalCode = validatedBooking.location.zipCode;
+        }
+        
+        logger.info('Creating/updating GHL contact', { 
+          email: validatedBooking.customer.email.replace(/(.{2}).*(@.*)/, '$1***$2'),
+          customFieldsCount: customFieldsArray.length 
+        });
+        
+        // Create or update contact in GHL
+        const ghlContact = await upsertContact(contactPayload);
+        ghlContactId = ghlContact?.id || ghlContact?.contact?.id;
+        
+        if (ghlContactId) {
+          // Prepare tags for the contact
+          const tags = [
+            'Source:Online_Booking',
+            `Status:${newBooking.status}`,
+            `Service:${validatedBooking.serviceType}`,
+            'Lead_Status:Converted'
+          ];
+          
+          // Add priority tag if applicable
+          if (validatedBooking.scheduling.priority) {
+            tags.push('Priority:Rush');
+          }
+          
+          // Add same-day tag if applicable
+          if (validatedBooking.scheduling.sameDay) {
+            tags.push('Booking:Same_Day');
+          }
+          
+          // Add service type specific tags
+          switch (validatedBooking.serviceType) {
+            case 'RON_SERVICES':
+              tags.push('Service_Type:RON');
+              break;
+            case 'LOAN_SIGNING':
+              tags.push('Service_Type:Loan_Signing');
+              break;
+            case 'EXTENDED_HOURS_NOTARY':
+              tags.push('Service_Type:Extended_Hours');
+              break;
+            default:
+              tags.push('Service_Type:Standard');
+          }
+          
+          // Add tags to contact
+          await addTagsToContact(ghlContactId, tags);
+          
+          logger.info('GHL integration completed successfully', {
+            bookingId: newBooking.id,
+            ghlContactId,
+            tagsAdded: tags.length
+          });
+          
+          // Update booking record with GHL contact ID
+          await prisma.newBooking.update({
+            where: { id: newBooking.id },
+            data: { ghlContactId }
+          });
+        }
+      } else {
+        logger.info('GHL integration disabled or not configured', {
+          ghlEnabled: process.env.ENABLE_GHL_INTEGRATION,
+          hasLocationId: !!process.env.GHL_LOCATION_ID
+        });
+      }
+    } catch (ghlError: any) {
+      logger.error('GHL integration failed - continuing with booking', {
+        bookingId: newBooking.id,
+        error: ghlError.message,
+        stack: ghlError.stack
+      });
+      // Don't fail the entire booking if GHL integration fails
+      // This ensures customer bookings still go through even if CRM is down
+    }
+
+    // Step 7: Create audit log
     await prisma.newBookingAuditLog.create({
       data: {
         bookingId: newBooking.id,
@@ -285,7 +448,8 @@ export async function POST(request: NextRequest) {
           totalPrice: pricingResult.total,
           source: validatedBooking.source,
           paymentStatus: newBooking.paymentStatus,
-          proofTransactionId
+          proofTransactionId,
+          ghlContactId
         },
         timestamp: new Date()
       }
