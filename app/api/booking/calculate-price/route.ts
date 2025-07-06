@@ -165,8 +165,8 @@ export async function POST(request: NextRequest) {
 
     logger.error('Pricing calculation failed', {
       requestId,
-      error: error.message,
-      stack: error.stack,
+      error: (error as any).message,
+      stack: (error as any).stack,
       processingTime
     });
 
