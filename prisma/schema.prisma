@@ -319,7 +319,7 @@ model User {
   firstName         String?
   lastName          String?
   phone             String?
-  role              UserRole              @default(CUSTOMER)
+  role              Role                  @default(CUSTOMER)
   isActive          Boolean               @default(true)
   
   // Authentication
@@ -490,7 +490,7 @@ enum ActorType {
   INTEGRATION
 }
 
-enum UserRole {
+enum Role {
   CUSTOMER
   NOTARY
   ADMIN
