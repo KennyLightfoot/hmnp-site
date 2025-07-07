@@ -31,12 +31,20 @@ export default function SimpleBookingForm() {
   });
 
   const [pricing, setPricing] = useState({ basePrice: 0, travelFee: 0, totalPrice: 0 });
+  const [availableSlots, setAvailableSlots] = useState<any[]>([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (formData.serviceType) calculatePrice();
   }, [formData.serviceType, formData.locationAddress]);
+
+  useEffect(() => {
+    if (formData.serviceType && formData.bookingDate) {
+      fetchAvailableSlots();
+    }
+  }, [formData.serviceType, formData.bookingDate]);
 
   const calculatePrice = async () => {
     try {
@@ -58,6 +66,33 @@ export default function SimpleBookingForm() {
         travelFee: 0,
         totalPrice: SERVICE_PRICES[formData.serviceType as keyof typeof SERVICE_PRICES] || 75
       });
+    }
+  };
+
+  const fetchAvailableSlots = async () => {
+    setIsLoadingSlots(true);
+    setAvailableSlots([]);
+    setFormData(prev => ({ ...prev, bookingTime: '' })); // Clear selected time
+    
+    try {
+      const response = await fetch(
+        `/api/booking/availability?serviceType=${formData.serviceType}&date=${formData.bookingDate}&timezone=America/Chicago`
+      );
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setAvailableSlots(result.availableSlots || []);
+        } else {
+          setError('Unable to load available times');
+        }
+      } else {
+        setError('Unable to load available times');
+      }
+    } catch (error) {
+      setError('Unable to load available times');
+    } finally {
+      setIsLoadingSlots(false);
     }
   };
 
@@ -89,8 +124,8 @@ export default function SimpleBookingForm() {
         customerEmail: formData.customerEmail,
         customerPhone: formData.customerPhone,
         
-        // Combine date and time into proper DateTime
-        scheduledDateTime: new Date(`${formData.bookingDate}T${formData.bookingTime}`).toISOString(),
+        // Use the exact datetime from the selected slot
+        scheduledDateTime: formData.bookingTime, // This is already an ISO string from available slots
         timeZone: 'America/Chicago',
         
         // Parse address for mobile services
@@ -218,13 +253,38 @@ export default function SimpleBookingForm() {
                 />
               </div>
               <div>
-                <Label htmlFor="time">Time *</Label>
-                <Input
-                  id="time"
-                  type="time"
-                  value={formData.bookingTime}
-                  onChange={(e) => handleChange('bookingTime', e.target.value)}
-                />
+                <Label htmlFor="time">Available Times *</Label>
+                {formData.bookingDate && formData.serviceType ? (
+                  <>
+                    {isLoadingSlots ? (
+                      <div className="p-3 text-center text-gray-500 border rounded">
+                        Loading available times...
+                      </div>
+                    ) : availableSlots.length > 0 ? (
+                      <select
+                        id="time"
+                        value={formData.bookingTime}
+                        onChange={(e) => handleChange('bookingTime', e.target.value)}
+                        className="w-full p-2 border rounded"
+                      >
+                        <option value="">Select a time</option>
+                        {availableSlots.map((slot, index) => (
+                          <option key={index} value={slot.startTime}>
+                            {slot.displayTime} ({slot.duration} min)
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="p-3 text-center text-gray-500 border rounded">
+                        No available times for this date. Please select a different date.
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="p-3 text-center text-gray-400 border rounded">
+                    Select service and date to see available times
+                  </div>
+                )}
               </div>
             </div>
 

@@ -104,6 +104,7 @@ model Booking {
   // Integration IDs
   stripePaymentIntentId String?               @unique
   ghlContactId          String?
+  ghlAppointmentId      String?
   googleCalendarEventId String?
   
   // Special instructions and notes

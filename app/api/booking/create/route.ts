@@ -13,6 +13,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
 import { z } from 'zod';
+import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
+import { createContact, createAppointment, addContactToWorkflow } from '@/lib/ghl/management';
 
 // Validation schema matching schema-v2 structure
 const BookingCreateSchema = z.object({
@@ -96,6 +98,73 @@ export async function POST(request: NextRequest) {
       }
     });
     
+    // Create GHL contact and appointment BEFORE saving to database
+    let ghlContactId: string | null = null;
+    let ghlAppointmentId: string | null = null;
+    
+    try {
+      console.log('🔗 Creating GHL contact and appointment...');
+      
+      // 1. Create contact in GHL
+      const [firstName, ...lastNameParts] = validatedData.customerName.split(' ');
+      const lastName = lastNameParts.join(' ') || '';
+      
+      const ghlContact = await createContact({
+        firstName,
+        lastName,
+        name: validatedData.customerName,
+        email: validatedData.customerEmail,
+        phone: validatedData.customerPhone,
+        source: 'Website Booking',
+        tags: ['Status:BookingConfirmed', `Service:${validatedData.serviceType}`],
+        ...(validatedData.addressStreet && {
+          address1: validatedData.addressStreet,
+          city: validatedData.addressCity || 'Houston',
+          state: validatedData.addressState || 'TX',
+          postalCode: validatedData.addressZip
+        })
+      });
+      
+      ghlContactId = ghlContact.contact.id;
+      console.log(`✅ GHL contact created: ${ghlContactId}`);
+      
+      // 2. Create appointment in appropriate calendar
+      const calendarId = getCalendarIdForService(validatedData.serviceType);
+      const endDateTime = new Date(new Date(validatedData.scheduledDateTime).getTime() + (service.duration * 60000));
+      
+      const ghlAppointment = await createAppointment({
+        calendarId,
+        contactId: ghlContactId,
+        startTime: validatedData.scheduledDateTime,
+        endTime: endDateTime.toISOString(),
+        title: `${service.name} - ${validatedData.customerName}`,
+        appointmentStatus: 'confirmed',
+        address: validatedData.addressStreet ? 
+          `${validatedData.addressStreet}, ${validatedData.addressCity || 'Houston'}, ${validatedData.addressState || 'TX'}` : 
+          'Remote/Online Service',
+        ignoreDateRange: false,
+        toNotify: true
+      });
+      
+      ghlAppointmentId = ghlAppointment.id;
+      console.log(`✅ GHL appointment created: ${ghlAppointmentId}`);
+      
+      // 3. Add to booking workflow (optional)
+      const workflowId = process.env.GHL_NEW_CONTACT_WORKFLOW_ID;
+      if (workflowId) {
+        try {
+          await addContactToWorkflow(ghlContactId, workflowId);
+          console.log(`✅ Contact added to booking workflow`);
+        } catch (workflowError) {
+          console.warn('⚠️  Workflow addition failed (non-critical):', workflowError.message);
+        }
+      }
+      
+    } catch (ghlError) {
+      console.error('⚠️  GHL integration failed (booking will continue):', ghlError.message);
+      // Continue with booking creation even if GHL fails
+    }
+
     // Save booking to database with CORRECT schema-v2 structure
     const booking = await prisma.booking.create({
       data: {
@@ -123,7 +192,7 @@ export async function POST(request: NextRequest) {
         // Pricing - using schema-v2 structure
         basePrice: validatedData.pricing.basePrice,
         travelFee: validatedData.pricing.travelFee,
-        totalAmount: validatedData.pricing.totalPrice,
+        finalPrice: validatedData.pricing.totalPrice,
         
         // Documents
         numberOfDocuments: validatedData.numberOfDocuments,
@@ -132,6 +201,10 @@ export async function POST(request: NextRequest) {
         // Payment
         paymentStatus: 'PENDING',
         stripePaymentIntentId: paymentIntent.id,
+        
+        // GHL Integration IDs
+        ghlContactId,
+        ghlAppointmentId,
         
         // Status
         status: 'CONFIRMED'
@@ -151,7 +224,7 @@ export async function POST(request: NextRequest) {
           customerEmail: booking.customerEmail,
           serviceType: validatedData.serviceType,
           scheduledDateTime: booking.scheduledDateTime,
-          totalAmount: booking.totalAmount
+          totalAmount: booking.finalPrice
         },
         metadata: {
           source: 'api',
@@ -174,7 +247,7 @@ export async function POST(request: NextRequest) {
         confirmationNumber: booking.id,
         clientSecret: paymentIntent.client_secret,
         scheduledDateTime: booking.scheduledDateTime,
-        totalAmount: booking.totalAmount,
+        totalAmount: booking.finalPrice,
         service: {
           name: booking.service.name,
           type: booking.service.type
@@ -221,5 +294,5 @@ async function sendConfirmationEmail(booking: any) {
   console.log(`   Booking: ${booking.id}`);
   console.log(`   Service: ${booking.service.name}`);
   console.log(`   Date: ${booking.scheduledDateTime}`);
-  console.log(`   Amount: $${booking.totalAmount}`);
+  console.log(`   Amount: $${booking.finalPrice}`);
 }
