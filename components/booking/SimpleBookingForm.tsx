@@ -82,10 +82,35 @@ export default function SimpleBookingForm() {
 
     setIsSubmitting(true);
     try {
+      // Transform data to match schema-v2 structure
+      const bookingData = {
+        serviceType: formData.serviceType,
+        customerName: formData.customerName,
+        customerEmail: formData.customerEmail,
+        customerPhone: formData.customerPhone,
+        
+        // Combine date and time into proper DateTime
+        scheduledDateTime: new Date(`${formData.bookingDate}T${formData.bookingTime}`).toISOString(),
+        timeZone: 'America/Chicago',
+        
+        // Parse address for mobile services
+        ...(formData.serviceType !== 'RON_SERVICES' && formData.locationAddress ? {
+          locationType: 'OTHER',
+          addressStreet: formData.locationAddress, // Simple mapping for now
+          addressCity: 'Houston', // Default for now
+          addressState: 'TX',
+          addressZip: '77001' // Default for now
+        } : {}),
+        
+        pricing,
+        numberOfDocuments: 1,
+        numberOfSigners: 1
+      };
+
       const response = await fetch('/api/booking/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, pricing })
+        body: JSON.stringify(bookingData)
       });
 
       if (response.ok) {

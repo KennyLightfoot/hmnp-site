@@ -1,0 +1,1082 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  User              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Assignment {
+  id                   String               @id
+  reference            String?              @unique
+  title                String
+  status               AssignmentStatus     @default(REQUESTED)
+  partnerAssignedToId  String?
+  propertyAddress      String?
+  borrowerName         String?
+  closingDate          DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime
+  allowPartnerComments Boolean              @default(false)
+  User                 User?                @relation(fields: [partnerAssignedToId], references: [id])
+  AssignmentDocument   AssignmentDocument[]
+  Comment              Comment[]
+  StatusHistory        StatusHistory[]
+}
+
+model AssignmentDocument {
+  id                   String                 @id
+  assignmentId         String
+  key                  String
+  filename             String
+  uploadedAt           DateTime               @default(now())
+  uploadedById         String?
+  Assignment           Assignment             @relation(fields: [assignmentId], references: [id])
+  User                 User?                  @relation(fields: [uploadedById], references: [id])
+  DownloadLog          DownloadLog[]
+  NotarizationDocument NotarizationDocument[]
+}
+
+model BackgroundError {
+  id        String   @id
+  source    String
+  message   String
+  stack     String?
+  createdAt DateTime @default(now())
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model Booking {
+  id                             String                 @id
+  signerId                       String?
+  serviceId                      String
+  notaryId                       String?
+  scheduledDateTime              DateTime?
+  actualEndDateTime              DateTime?
+  status                         BookingStatus          @default(REQUESTED)
+  locationType                   LocationType?
+  addressStreet                  String?
+  addressCity                    String?
+  addressState                   String?
+  addressZip                     String?
+  locationNotes                  String?
+  priceAtBooking                 Decimal                @db.Decimal(10, 2)
+  notes                          String?
+  dailyRoomUrl                   String?
+  dailyRecordingId               String?
+  kbaStatus                      String?
+  idVerificationStatus           String?
+  notaryJournalEntry             String?
+  createdAt                      DateTime               @default(now())
+  updatedAt                      DateTime
+  confirmationEmailSentAt        DateTime?
+  confirmationSmsSentAt          DateTime?
+  followUpSentAt                 DateTime?
+  lastReminderSentAt             DateTime?
+  noShowCheckPerformedAt         DateTime?
+  reminder1hrSentAt              DateTime?
+  reminder24hrSentAt             DateTime?
+  reminder2hrSentAt              DateTime?
+  depositAmount                  Decimal?               @db.Decimal(10, 2)
+  depositStatus                  PaymentStatus?         @default(PENDING)
+  googleCalendarEventId          String?                @unique
+  promoCodeDiscount              Decimal?               @db.Decimal(10, 2)
+  promoCodeId                    String?
+  campaignName                   String?
+  customerEmail                  String?
+  ghlContactId                   String?
+  leadSource                     String?
+  stripePaymentUrl               String?
+  workflowId                     String?
+  witness_type                   witness_source?
+  witness_fee                    Decimal?               @default(0) @db.Decimal(5, 2)
+  mileage_miles                  Decimal?               @db.Decimal(5, 2)
+  mileage_fee                    Decimal?               @default(0) @db.Decimal(5, 2)
+  urgency_level                  String?                @default("standard") @db.VarChar(20)
+  urgency_fee                    Decimal?               @default(0) @db.Decimal(5, 2)
+  estimated_completion_time      DateTime?              @db.Timestamptz(6)
+  notary_travel_time_minutes     Int?
+  google_maps_distance_matrix    Json?
+  service_area_id                String?
+  is_first_time_discount_applied Boolean?               @default(false)
+  is_referral_discount_applied   Boolean?               @default(false)
+  payment_intent_id              String?
+  price_snapshot_cents           Int?
+  pricing_calculated_at          DateTime?              @db.Timestamptz(6)
+  security_flags                 Json?                  @default("{}")
+  calculatedDistance             Float?
+  travelFee                      Decimal?               @default(0.00) @db.Decimal(10, 2)
+  serviceAreaValidated           Boolean?               @default(false)
+  pricingBreakdown               Json?
+  distanceCalculationMeta        Json?
+  pricingVersion                 String?                @default("2.0.0") @db.VarChar(10)
+  User_Booking_notaryIdToUser    User?                  @relation("Booking_notaryIdToUser", fields: [notaryId], references: [id])
+  PromoCode                      PromoCode?             @relation(fields: [promoCodeId], references: [id])
+  Service                        Service                @relation(fields: [serviceId], references: [id])
+  service_areas                  service_areas?         @relation(fields: [service_area_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User_Booking_signerIdToUser    User?                  @relation("Booking_signerIdToUser", fields: [signerId], references: [id])
+  NotarizationDocument           NotarizationDocument[]
+  NotificationLog                NotificationLog[]
+  Payment                        Payment[]
+  PricingAuditLog                PricingAuditLog[]
+  notary_journal                 notary_journal[]
+  promo_code_usage               promo_code_usage[]
+  stripe_webhook_log             stripe_webhook_log[]
+
+  @@unique([notaryId, scheduledDateTime])
+  @@index([depositStatus])
+  @@index([lastReminderSentAt])
+  @@index([locationType])
+  @@index([noShowCheckPerformedAt])
+  @@index([notaryId])
+  @@index([priceAtBooking])
+  @@index([promoCodeId])
+  @@index([scheduledDateTime])
+  @@index([serviceId])
+  @@index([signerId])
+  @@index([status])
+  @@index([payment_intent_id], map: "idx_booking_payment_intent")
+  @@index([service_area_id], map: "idx_booking_service_area")
+  @@index([urgency_level], map: "idx_booking_urgency")
+  @@index([witness_type], map: "idx_booking_witness_type")
+  @@index([calculatedDistance], map: "idx_booking_calculated_distance")
+  @@index([travelFee], map: "idx_booking_travel_fee")
+  @@index([serviceAreaValidated], map: "idx_booking_service_area_validated")
+  @@index([pricingVersion], map: "idx_booking_pricing_version")
+}
+
+model BusinessSettings {
+  id          String   @id
+  key         String   @unique
+  value       String
+  dataType    String   @default("string")
+  description String?
+  category    String?
+  updatedAt   DateTime
+  updatedById String?
+  User        User?    @relation(fields: [updatedById], references: [id])
+
+  @@index([category])
+  @@index([key])
+  @@index([updatedById])
+}
+
+model Comment {
+  id           String     @id
+  text         String
+  createdAt    DateTime   @default(now())
+  assignmentId String
+  authorId     String
+  Assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  User         User       @relation(fields: [authorId], references: [id])
+
+  @@index([assignmentId])
+}
+
+model DownloadLog {
+  id                 String             @id
+  documentId         String
+  userId             String
+  downloadedAt       DateTime           @default(now())
+  AssignmentDocument AssignmentDocument @relation(fields: [documentId], references: [id])
+  User               User               @relation(fields: [userId], references: [id])
+}
+
+model InvitationToken {
+  id        String   @id
+  token     String   @unique
+  email     String
+  userId    String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  User      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([userId])
+}
+
+model NotarizationDocument {
+  id                         String              @id
+  s3Key                      String
+  originalFilename           String
+  uploadedAt                 DateTime            @default(now())
+  uploadedById               String
+  isSigned                   Boolean             @default(false)
+  signedS3Key                String?
+  signedAt                   DateTime?
+  createdAt                  DateTime            @default(now())
+  updatedAt                  DateTime
+  sourceAssignmentDocumentId String?
+  bookingId                  String
+  Booking                    Booking             @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  AssignmentDocument         AssignmentDocument? @relation(fields: [sourceAssignmentDocumentId], references: [id])
+  User                       User                @relation(fields: [uploadedById], references: [id])
+
+  @@index([bookingId])
+  @@index([sourceAssignmentDocumentId])
+  @@index([uploadedById])
+}
+
+model NotificationLog {
+  id               String             @id
+  bookingId        String
+  notificationType NotificationType
+  method           NotificationMethod
+  recipientEmail   String?
+  recipientPhone   String?
+  subject          String?
+  message          String
+  sentAt           DateTime           @default(now())
+  status           NotificationStatus @default(SENT)
+  errorMessage     String?
+  metadata         Json?
+  createdAt        DateTime           @default(now())
+  Booking          Booking            @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([method])
+  @@index([notificationType])
+  @@index([recipientEmail])
+  @@index([sentAt])
+}
+
+model Payment {
+  id              String          @id
+  bookingId       String
+  amount          Decimal         @db.Decimal(10, 2)
+  status          PaymentStatus   @default(PENDING)
+  provider        PaymentProvider
+  transactionId   String?         @unique
+  paymentIntentId String?         @unique
+  notes           String?
+  paidAt          DateTime?
+  refundedAmount  Decimal?        @db.Decimal(10, 2)
+  refundedAt      DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  Booking         Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([paymentIntentId])
+  @@index([provider])
+  @@index([status])
+}
+
+model PromoCode {
+  id                 String             @id
+  code               String             @unique
+  description        String?
+  discountType       DiscountType       @default(PERCENTAGE)
+  discountValue      Decimal            @db.Decimal(10, 2)
+  minimumAmount      Decimal?           @db.Decimal(10, 2)
+  maxDiscountAmount  Decimal?           @db.Decimal(10, 2)
+  usageLimit         Int?
+  usageCount         Int                @default(0)
+  perCustomerLimit   Int?               @default(1)
+  validFrom          DateTime           @default(now())
+  validUntil         DateTime?
+  isActive           Boolean            @default(true)
+  applicableServices String[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime
+  createdById        String?
+  Booking            Booking[]
+  User               User?              @relation(fields: [createdById], references: [id])
+  promo_code_usage   promo_code_usage[]
+
+  @@index([code])
+  @@index([createdById])
+  @@index([isActive])
+  @@index([validFrom, validUntil])
+}
+
+model Service {
+  id                 String      @id
+  name               String      @unique
+  description        String?
+  serviceType        ServiceType
+  durationMinutes    Int
+  basePrice          Decimal     @db.Decimal(10, 2)
+  isActive           Boolean     @default(true)
+  requiresDeposit    Boolean     @default(true)
+  depositAmount      Decimal     @default(25.00) @db.Decimal(10, 2)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime
+  externalCalendarId String?     @unique
+  Booking            Booking[]
+
+  @@index([isActive])
+  @@index([serviceType])
+}
+
+model Session {
+  id           String   @id
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model StatusHistory {
+  id           String           @id
+  assignmentId String
+  status       AssignmentStatus
+  note         String?
+  changedAt    DateTime         @default(now())
+  changedById  String?
+  Assignment   Assignment       @relation(fields: [assignmentId], references: [id])
+  User         User?            @relation(fields: [changedById], references: [id])
+}
+
+model SystemAlert {
+  id         String        @id
+  component  String
+  message    String
+  severity   AlertSeverity @default(MEDIUM)
+  status     AlertStatus   @default(ACTIVE)
+  createdAt  DateTime      @default(now())
+  resolvedAt DateTime?
+  resolvedBy String?
+  detail     Json?
+
+  @@index([createdAt])
+  @@index([severity])
+  @@index([status])
+}
+
+model SystemLog {
+  id        String   @id
+  component String
+  message   String
+  level     LogLevel @default(INFO)
+  timestamp DateTime @default(now())
+  metadata  Json?
+  userId    String?
+  User      User?    @relation(fields: [userId], references: [id])
+
+  @@index([component])
+  @@index([level])
+  @@index([timestamp])
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model User {
+  id                             String                 @id
+  name                           String?
+  email                          String?                @unique
+  emailVerified                  DateTime?
+  image                          String?
+  role                           Role                   @default(PARTNER)
+  createdAt                      DateTime               @default(now())
+  updatedAt                      DateTime
+  onboardedAt                    DateTime?
+  password                       String?
+  customer_preferences           Json?
+  notary_availability            Json?
+  marketing_consent              Boolean?               @default(false)
+  sms_consent                    Boolean?               @default(false)
+  push_notification_token        String?                @db.VarChar(500)
+  Account                        Account[]
+  Assignment                     Assignment[]
+  AssignmentDocument             AssignmentDocument[]
+  Booking_Booking_notaryIdToUser Booking[]              @relation("Booking_notaryIdToUser")
+  Booking_Booking_signerIdToUser Booking[]              @relation("Booking_signerIdToUser")
+  BusinessSettings               BusinessSettings[]
+  Comment                        Comment[]
+  DownloadLog                    DownloadLog[]
+  InvitationToken                InvitationToken[]
+  NotarizationDocument           NotarizationDocument[]
+  PricingAuditLog                PricingAuditLog[]
+  PromoCode                      PromoCode[]
+  Session                        Session[]
+  StatusHistory                  StatusHistory[]
+  SystemLog                      SystemLog[]
+  feature_flags                  feature_flags[]
+  notary_journal                 notary_journal[]
+  notary_profiles                notary_profiles?
+  security_audit_log             security_audit_log[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model daily_metrics {
+  date                  DateTime  @id @db.Date
+  total_bookings        Int?      @default(0)
+  mobile_bookings       Int?      @default(0)
+  ron_bookings          Int?      @default(0)
+  completed_bookings    Int?      @default(0)
+  cancelled_bookings    Int?      @default(0)
+  total_revenue         Decimal?  @default(0) @db.Decimal(10, 2)
+  mobile_revenue        Decimal?  @default(0) @db.Decimal(10, 2)
+  ron_revenue           Decimal?  @default(0) @db.Decimal(10, 2)
+  proof_costs           Decimal?  @default(0) @db.Decimal(10, 2)
+  mileage_costs         Decimal?  @default(0) @db.Decimal(10, 2)
+  stripe_fees           Decimal?  @default(0) @db.Decimal(10, 2)
+  net_revenue           Decimal?  @default(0) @db.Decimal(10, 2)
+  margin_percentage     Decimal?  @db.Decimal(5, 2)
+  average_booking_value Decimal?  @db.Decimal(10, 2)
+  conversion_rate       Decimal?  @db.Decimal(5, 2)
+  customer_satisfaction Decimal?  @db.Decimal(3, 2)
+  new_customers         Int?      @default(0)
+  repeat_customers      Int?      @default(0)
+  created_at            DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([date], map: "idx_daily_metrics_date")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model feature_flags {
+  key                String    @id @db.VarChar(100)
+  enabled            Boolean?  @default(false)
+  description        String?
+  rollout_percentage Int?      @default(0)
+  target_roles       String[]
+  target_users       String[]
+  environment        String?   @default("development") @db.VarChar(20)
+  created_at         DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime? @default(now()) @db.Timestamptz(6)
+  created_by         String?
+  User               User?     @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([environment], map: "idx_feature_flags_environment")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model mileage_cache {
+  id                   String    @id @default(dbgenerated("(gen_random_uuid())::text"))
+  origin_address       String?   @db.VarChar(500)
+  destination_address  String?   @db.VarChar(500)
+  distance_miles       Decimal?  @db.Decimal(5, 2)
+  duration_minutes     Int?
+  google_maps_response Json?
+  last_calculated      DateTime? @default(now()) @db.Timestamptz(6)
+  hit_count            Int?      @default(1)
+
+  @@unique([origin_address, destination_address])
+  @@index([origin_address, destination_address], map: "idx_mileage_cache_addresses")
+  @@index([last_calculated], map: "idx_mileage_cache_calculated")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model notary_journal {
+  id                String    @id @default(dbgenerated("(gen_random_uuid())::text"))
+  booking_id        String?
+  notary_id         String
+  entry_date        DateTime  @db.Date
+  journal_number    Int?
+  document_type     String?   @db.VarChar(100)
+  signer_name       String?   @db.VarChar(200)
+  signer_id_type    String?   @db.VarChar(50)
+  signer_id_state   String?   @db.VarChar(2)
+  notarial_act_type String?   @db.VarChar(50)
+  fee_charged       Decimal?  @db.Decimal(10, 2)
+  location          String?
+  additional_notes  String?
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  Booking           Booking?  @relation(fields: [booking_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User              User      @relation(fields: [notary_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([notary_id, journal_number])
+  @@index([booking_id], map: "idx_notary_journal_booking_id")
+  @@index([notary_id, entry_date], map: "idx_notary_journal_notary_date")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model notary_profiles {
+  id                      String    @id @default(dbgenerated("(gen_random_uuid())::text"))
+  user_id                 String    @unique
+  commission_number       String?   @db.VarChar(50)
+  commission_expiry       DateTime? @db.Date
+  base_address            String?
+  service_radius_miles    Int?      @default(25)
+  is_active               Boolean?  @default(true)
+  emergency_contact       String?   @db.VarChar(20)
+  preferred_service_types String[]
+  daily_capacity          Int?      @default(8)
+  created_at              DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime? @default(now()) @db.Timestamptz(6)
+  User                    User      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([is_active], map: "idx_notary_profiles_active")
+  @@index([user_id], map: "idx_notary_profiles_user_id")
+}
+
+model promo_code_usage {
+  id            String    @id @default(dbgenerated("(gen_random_uuid())::text"))
+  promo_code_id String
+  user_email    String
+  booking_id    String?
+  used_at       DateTime  @default(now()) @db.Timestamptz(6)
+  ip_address    String?
+  user_agent    String?
+  metadata      Json?
+  Booking       Booking?  @relation(fields: [booking_id], references: [id])
+  PromoCode     PromoCode @relation(fields: [promo_code_id], references: [id], onDelete: Cascade)
+
+  @@index([promo_code_id])
+  @@index([used_at])
+  @@index([user_email])
+}
+
+model security_audit_log {
+  id         String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  timestamp  DateTime @default(now()) @db.Timestamptz(6)
+  user_email String
+  user_id    String?
+  action     String
+  details    Json     @default("{}")
+  severity   String
+  ip_address String?
+  user_agent String?
+  session_id String?
+  request_id String?
+  User       User?    @relation(fields: [user_id], references: [id])
+
+  @@index([action])
+  @@index([severity])
+  @@index([timestamp])
+  @@index([user_email])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model service_areas {
+  id                     String    @id @default(dbgenerated("(gen_random_uuid())::text"))
+  name                   String    @unique @db.VarChar(100)
+  description            String?
+  polygon_coordinates    Json?
+  service_fee_multiplier Decimal?  @default(1.0) @db.Decimal(3, 2)
+  active                 Boolean?  @default(true)
+  created_at             DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at             DateTime? @default(now()) @db.Timestamptz(6)
+  Booking                Booking[]
+
+  @@index([active], map: "idx_service_areas_active")
+}
+
+model stripe_webhook_log {
+  id              String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  stripe_event_id String   @unique
+  event_type      String
+  processed_at    DateTime @default(now()) @db.Timestamptz(6)
+  status          String
+  booking_id      String?
+  error_message   String?
+  metadata        Json?
+  Booking         Booking? @relation(fields: [booking_id], references: [id])
+
+  @@index([booking_id])
+  @@index([processed_at])
+  @@index([stripe_event_id])
+}
+
+model NewBooking {
+  id                    String               @id @default(cuid())
+  bookingNumber         String               @unique @default(cuid())
+  serviceType           ServiceType
+  serviceVariant        String?
+  customerEmail         String
+  customerName          String
+  customerPhone         String?
+  companyName           String?
+  scheduledDateTime     DateTime
+  estimatedDuration     Int                  @default(60)
+  timeZone              String               @default("America/Chicago")
+  locationType          NewLocationType      @default(CLIENT_ADDRESS)
+  locationAddress       String?
+  locationLatitude      Float?
+  locationLongitude     Float?
+  locationNotes         String?
+  calculatedDistance    Float?
+  documentCount         Int                  @default(1)
+  documentTypes         String[]
+  signerCount           Int                  @default(1)
+  specialInstructions   String?
+  accessInstructions    String?
+  basePrice             Decimal              @db.Decimal(10, 2)
+  travelFee             Decimal              @default(0) @db.Decimal(10, 2)
+  surcharges            Decimal              @default(0) @db.Decimal(10, 2)
+  discounts             Decimal              @default(0) @db.Decimal(10, 2)
+  totalPrice            Decimal              @db.Decimal(10, 2)
+  paymentStatus         PaymentStatus        @default(PENDING)
+  depositAmount         Decimal?             @db.Decimal(10, 2)
+  depositPaid           Boolean              @default(false)
+  balanceDue            Decimal?             @db.Decimal(10, 2)
+  status                NewBookingStatus     @default(PENDING)
+  confirmationSentAt    DateTime?
+  remindersSentAt       DateTime[]
+  stripePaymentIntentId String?
+  stripeCustomerId      String?
+  ghlContactId          String?
+  ghlOpportunityId      String?
+  googleCalendarEventId String?
+  notaryUserId          String?
+  estimatedArrival      DateTime?
+  actualArrival         DateTime?
+  actualStartTime       DateTime?
+  actualEndTime         DateTime?
+  bookingSource         String               @default("website")
+  referralCode          String?
+  promoCode             String?
+  clientNotes           String?
+  internalNotes         String?
+  proofTransactionId    String?              // Proof.com transaction ID for RON sessions
+  ronSessionUrl         String?              // RON session URL for customers
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  auditLogs             NewBookingAuditLog[]
+  documents             NewBookingDocument[]
+  notifications         NewNotification[]
+  payments              NewPayment[]
+
+  @@index([serviceType, status])
+  @@index([scheduledDateTime])
+  @@index([customerEmail])
+  @@index([ghlContactId])
+  @@map("new_bookings")
+}
+
+model NewPayment {
+  id                    String           @id @default(cuid())
+  bookingId             String
+  amount                Decimal          @db.Decimal(10, 2)
+  currency              String           @default("usd")
+  paymentMethod         NewPaymentMethod
+  stripePaymentIntentId String?
+  stripeChargeId        String?
+  status                PaymentStatus    @default(PENDING)
+  paidAt                DateTime?
+  refundedAt            DateTime?
+  refundAmount          Decimal?         @db.Decimal(10, 2)
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  booking               NewBooking       @relation(fields: [bookingId], references: [id])
+
+  @@map("new_payments")
+}
+
+model NewNotification {
+  id               String              @id @default(cuid())
+  bookingId        String
+  notificationType NewNotificationType
+  method           NotificationMethod
+  recipientEmail   String?
+  recipientPhone   String?
+  subject          String?
+  message          String
+  sentAt           DateTime            @default(now())
+  status           NotificationStatus  @default(SENT)
+  errorMessage     String?
+  metadata         Json?
+  createdAt        DateTime            @default(now())
+  booking          NewBooking          @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([method])
+  @@index([notificationType])
+  @@map("new_notifications")
+}
+
+model NewBookingDocument {
+  id         String     @id @default(cuid())
+  bookingId  String
+  filename   String
+  s3Key      String
+  uploadedAt DateTime   @default(now())
+  booking    NewBooking @relation(fields: [bookingId], references: [id])
+
+  @@map("new_booking_documents")
+}
+
+model NewBookingAuditLog {
+  id        String     @id @default(cuid())
+  bookingId String
+  action    String
+  oldValues Json?
+  newValues Json?
+  userId    String?
+  timestamp DateTime   @default(now())
+  booking   NewBooking @relation(fields: [bookingId], references: [id])
+
+  @@map("new_booking_audit_logs")
+}
+
+model SlotReservation {
+  id            String   @id @default(cuid())
+  datetime      DateTime
+  serviceType   String
+  userId        String?
+  customerEmail String?
+  reservedAt    DateTime @default(now())
+  expiresAt     DateTime
+  extended      Boolean  @default(false)
+  bookingId     String?
+
+  @@unique([datetime, serviceType])
+  @@index([expiresAt])
+  @@index([userId])
+  @@index([customerEmail])
+  @@map("slot_reservations")
+}
+
+model UpsellSuggestion {
+  id             String    @id @default(cuid())
+  bookingId      String?
+  customerEmail  String?
+  suggestionType String
+  fromService    String?
+  toService      String?
+  priceIncrease  Decimal   @db.Decimal(10, 2)
+  headline       String
+  benefit        String
+  presented      Boolean   @default(false)
+  accepted       Boolean   @default(false)
+  presentedAt    DateTime?
+  respondedAt    DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([customerEmail])
+  @@index([bookingId])
+  @@index([presented])
+  @@map("upsell_suggestions")
+}
+
+model TrustSignal {
+  id          String   @id @default(cuid())
+  type        String
+  title       String
+  description String
+  value       String
+  icon        String
+  priority    Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([type])
+  @@index([priority])
+  @@index([isActive])
+  @@map("trust_signals")
+}
+
+model PricingAuditLog {
+  id                String   @id @default(cuid())
+  bookingId         String?
+  serviceType       String
+  calculationInputs Json
+  pricingResult     Json
+  distanceData      Json?
+  version           String   @default("2.0.0") @db.VarChar(10)
+  calculatedAt      DateTime @default(now())
+  requestId         String?
+  userId            String?
+  booking           Booking? @relation(fields: [bookingId], references: [id])
+  user              User?    @relation(fields: [userId], references: [id])
+
+  @@index([bookingId])
+  @@index([serviceType])
+  @@index([calculatedAt])
+  @@index([requestId])
+}
+
+model ServiceAreaCache {
+  id                   String   @id @default(cuid())
+  addressHash          String   @unique @db.VarChar(64)
+  originalAddress      String
+  normalizedAddress    String
+  distanceMiles        Float
+  durationMinutes      Int
+  isWithinStandardArea Boolean
+  isWithinExtendedArea Boolean
+  travelFeeStandard    Decimal  @db.Decimal(10, 2)
+  travelFeeExtended    Decimal  @db.Decimal(10, 2)
+  apiSource            String   @default("google_maps") @db.VarChar(20)
+  calculatedAt         DateTime @default(now())
+  expiresAt            DateTime
+  hitCount             Int      @default(1)
+  lastAccessedAt       DateTime @default(now())
+
+  @@index([addressHash])
+  @@index([distanceMiles])
+  @@index([expiresAt])
+  @@index([lastAccessedAt])
+}
+
+enum AlertSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum AlertStatus {
+  ACTIVE
+  RESOLVED
+  ACKNOWLEDGED
+}
+
+enum AssignmentStatus {
+  REQUESTED
+  SCHEDULED
+  IN_PROGRESS
+  SIGNED
+  RETURNED_TO_TITLE
+  COMPLETED
+  ARCHIVED
+}
+
+enum BookingStatus {
+  REQUESTED
+  PAYMENT_PENDING
+  CONFIRMED
+  SCHEDULED
+  AWAITING_CLIENT_ACTION
+  READY_FOR_SERVICE
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED_BY_CLIENT
+  CANCELLED_BY_STAFF
+  REQUIRES_RESCHEDULE
+  ARCHIVED
+  NO_SHOW
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum LocationType {
+  CLIENT_SPECIFIED_ADDRESS
+  OUR_OFFICE
+  REMOTE_ONLINE_NOTARIZATION
+  PUBLIC_PLACE
+}
+
+enum LogLevel {
+  ERROR
+  WARN
+  INFO
+  DEBUG
+}
+
+enum NotificationMethod {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  BOUNCED
+  UNSUBSCRIBED
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMATION
+  PAYMENT_CONFIRMATION
+  APPOINTMENT_REMINDER_24HR
+  APPOINTMENT_REMINDER_2HR
+  APPOINTMENT_REMINDER_1HR
+  APPOINTMENT_REMINDER_NOW
+  BOOKING_CANCELLED
+  BOOKING_RESCHEDULED
+  PAYMENT_FAILED
+  PAYMENT_REMINDER
+  NO_SHOW_CHECK
+  POST_SERVICE_FOLLOWUP
+  REVIEW_REQUEST
+  DOCUMENT_READY
+  DOCUMENT_REMINDER
+  NOTARY_ASSIGNMENT
+  EMERGENCY_NOTIFICATION
+  LEAD_NURTURING
+  PAYMENT_UPDATE
+}
+
+enum PaymentProvider {
+  STRIPE
+  SQUARE
+  PAYPAL
+  MANUAL
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  VOIDED
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  PARTNER
+  SIGNER
+  NOTARY
+}
+
+enum ServiceType {
+  STANDARD_NOTARY
+  EXTENDED_HOURS_NOTARY
+  LOAN_SIGNING_SPECIALIST
+  SPECIALTY_NOTARY_SERVICE
+  BUSINESS_SOLUTIONS
+  SUPPORT_SERVICE
+}
+
+enum witness_source {
+  customer_provided
+  staff_provided
+  proof_provided
+}
+
+enum NewLocationType {
+  CLIENT_ADDRESS
+  NOTARY_OFFICE
+  NEUTRAL_LOCATION
+  REMOTE_ONLINE
+}
+
+enum NewBookingStatus {
+  PENDING
+  PAYMENT_PENDING
+  CONFIRMED
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  RESCHEDULED
+}
+
+enum NewPaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  CASH
+  CHECK
+  BANK_TRANSFER
+}
+
+enum NewNotificationType {
+  BOOKING_CONFIRMATION
+  PAYMENT_CONFIRMATION
+  APPOINTMENT_REMINDER
+  BOOKING_CANCELLED
+  UPSELL_SUGGESTION
+  TRUST_BUILDING
+  FOLLOWUP
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  STRIPE
+  CASH
+  CHECK
+  BANK_TRANSFER
+  CREDIT_CARD
+  OTHER
+}
+
+enum InvoiceDeliveryMethod {
+  EMAIL
+  POSTAL_MAIL
+  PORTAL
+  SMS
+}
+
+enum PaymentFailureType {
+  INSUFFICIENT_FUNDS
+  CARD_DECLINED
+  EXPIRED_CARD
+  AUTHENTICATION_REQUIRED
+  PROCESSING_ERROR
+  NETWORK_ERROR
+  OTHER
+}
+
+enum RetryStrategy {
+  LINEAR
+  EXPONENTIAL
+  IMMEDIATE
+  MANUAL
+}
+
+enum BillingInterval {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  TRIALING
+  UNPAID
+}
+
+enum ScheduledNotificationStatus {
+  SCHEDULED
+  SENT
+  FAILED
+  CANCELLED
+}
+
+enum PricingAdjustmentType {
+  MULTIPLIER
+  FIXED_AMOUNT
+  MINIMUM_FEE
+  MAXIMUM_FEE
+  REPLACEMENT
+}
