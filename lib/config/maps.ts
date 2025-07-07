@@ -4,25 +4,37 @@
  * 
  * This file consolidates all Google Maps API configuration to resolve
  * the inconsistent API key usage across the application.
+ * 
+ * CRITICAL FIX: Updated to use environment variable cleaning utility
+ * to address persistent production issues with trailing \n characters.
  */
 
+import { getCleanEnv, detectEnvironmentCorruption } from '../env-clean';
+
+// Detect environment corruption for Google Maps at startup
+detectEnvironmentCorruption();
+
 // ============================================================================
-// API KEY CONFIGURATION
+// API KEY CONFIGURATION (WITH AUTOMATIC CLEANING)
 // ============================================================================
 
 /**
  * Server-side API key for backend operations (SECURE)
  * Used for: Distance Matrix API, Geocoding API, Places API proxy
  * This key should have server-side restrictions only
+ * 
+ * FIXED: Now uses comprehensive environment variable cleaning
  */
-export const GOOGLE_MAPS_SERVER_API_KEY = process.env.GOOGLE_MAPS_API_KEY?.replace(/\s+/g, '') || '';
+export const GOOGLE_MAPS_SERVER_API_KEY = getCleanEnv('GOOGLE_MAPS_API_KEY') || '';
 
 /**
  * Client-side API key for frontend operations (RESTRICTED)
  * Used for: Google Maps JavaScript API (if needed)
  * This key should have domain and API restrictions
+ * 
+ * FIXED: Now uses comprehensive environment variable cleaning
  */
-export const GOOGLE_MAPS_CLIENT_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.replace(/\s+/g, '') || '';
+export const GOOGLE_MAPS_CLIENT_API_KEY = getCleanEnv('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY') || '';
 
 /**
  * Configuration validation

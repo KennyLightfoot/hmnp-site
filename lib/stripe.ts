@@ -8,14 +8,16 @@
 
 import Stripe from 'stripe';
 import { logger } from './logger';
+import { getRequiredCleanEnv, getCleanEnv, detectEnvironmentCorruption } from './env-clean';
 
-// Environment validation
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+// Detect environment corruption at startup
+detectEnvironmentCorruption();
 
-if (!stripeSecretKey) {
-  throw new Error('STRIPE_SECRET_KEY environment variable is required');
-}
+// Environment validation with automatic cleaning
+const stripeSecretKey = getRequiredCleanEnv('STRIPE_SECRET_KEY', 'Required for Stripe payment processing');
+const stripePublishableKey = getCleanEnv('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY');
+
+// stripeSecretKey is already validated by getRequiredCleanEnv
 
 if (!stripePublishableKey) {
   logger.warn('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY not found - client-side features may not work');
@@ -309,8 +311,8 @@ export class StripeService {
 export default stripe;
 export { stripe as stripeClient };
 
-// Webhook endpoint secret (if configured)
-export const webhookEndpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+// Webhook endpoint secret (if configured) - cleaned
+export const webhookEndpointSecret = getCleanEnv('STRIPE_WEBHOOK_SECRET');
 
 // Publishable key for client-side usage
 export const publishableKey = stripePublishableKey;
