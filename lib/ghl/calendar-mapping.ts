@@ -7,20 +7,26 @@
 
 import { getRequiredCleanEnv } from '../env-clean';
 
-// Service types from schema-v2
+// Service types from schema-v2 - Updated to include all 6 website services
 export enum ServiceType {
+  QUICK_STAMP_LOCAL = 'QUICK_STAMP_LOCAL',        // NEW: Quick-Stamp Local ($50)
   STANDARD_NOTARY = 'STANDARD_NOTARY',
   EXTENDED_HOURS = 'EXTENDED_HOURS', 
   LOAN_SIGNING = 'LOAN_SIGNING',
-  RON_SERVICES = 'RON_SERVICES'
+  RON_SERVICES = 'RON_SERVICES',
+  BUSINESS_ESSENTIALS = 'BUSINESS_ESSENTIALS',    // NEW: Business Subscription - Essentials ($125)
+  BUSINESS_GROWTH = 'BUSINESS_GROWTH'             // NEW: Business Subscription - Growth ($349)
 }
 
-// Calendar mapping configuration
+// Calendar mapping configuration - Updated to include all 6 website services
 const CALENDAR_MAPPING = {
+  [ServiceType.QUICK_STAMP_LOCAL]: 'GHL_STANDARD_NOTARY_CALENDAR_ID',      // NEW: Use standard notary calendar
   [ServiceType.STANDARD_NOTARY]: 'GHL_STANDARD_NOTARY_CALENDAR_ID',
   [ServiceType.EXTENDED_HOURS]: 'GHL_EXTENDED_HOURS_CALENDAR_ID',
   [ServiceType.LOAN_SIGNING]: 'GHL_LOAN_SIGNING_SPECIALIST_CALENDAR_ID',
-  [ServiceType.RON_SERVICES]: 'GHL_BOOKING_CALENDAR_ID'
+  [ServiceType.RON_SERVICES]: 'GHL_BOOKING_CALENDAR_ID',
+  [ServiceType.BUSINESS_ESSENTIALS]: 'GHL_BOOKING_CALENDAR_ID',            // NEW: Use RON calendar
+  [ServiceType.BUSINESS_GROWTH]: 'GHL_BOOKING_CALENDAR_ID'                 // NEW: Use RON calendar
 } as const;
 
 /**
@@ -101,10 +107,13 @@ export function getServiceTypeFromCalendarId(calendarId: string): ServiceType | 
  */
 export function getCalendarDisplayName(serviceType: ServiceType): string {
   const displayNames = {
+    [ServiceType.QUICK_STAMP_LOCAL]: 'Quick-Stamp Local Services',        // NEW
     [ServiceType.STANDARD_NOTARY]: 'Standard Notary Services',
     [ServiceType.EXTENDED_HOURS]: 'Extended Hours Services',
     [ServiceType.LOAN_SIGNING]: 'Loan Signing Specialist',
-    [ServiceType.RON_SERVICES]: 'Remote Online Notarization'
+    [ServiceType.RON_SERVICES]: 'Remote Online Notarization',
+    [ServiceType.BUSINESS_ESSENTIALS]: 'Business Subscription - Essentials', // NEW
+    [ServiceType.BUSINESS_GROWTH]: 'Business Subscription - Growth'        // NEW
   };
   
   return displayNames[serviceType] || serviceType;

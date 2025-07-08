@@ -7,15 +7,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { UnifiedDistanceService } from '@/lib/maps/unified-distance-service';
 
 const SERVICE_PRICES = {
+  'QUICK_STAMP_LOCAL': 50,        // NEW: Fast local signings
   'STANDARD_NOTARY': 75,
   'EXTENDED_HOURS': 100,
   'LOAN_SIGNING': 150,
-  'RON_SERVICES': 35
+  'RON_SERVICES': 35,
+  'BUSINESS_ESSENTIALS': 125,     // NEW: Monthly subscription
+  'BUSINESS_GROWTH': 349          // NEW: Premium subscription
 };
 
-function calculateTravelFee(distance: number): number {
-  if (distance <= 15) return 0;  // Free within 15 miles
-  return (distance - 15) * 0.50; // $0.50 per mile beyond 15
+function calculateTravelFee(distance: number, serviceType: string): number {
+  // Quick-Stamp Local has 10-mile radius, all other mobile services have 30-mile radius
+  const freeRadius = serviceType === 'QUICK_STAMP_LOCAL' ? 10 : 30;
+  
+  if (distance <= freeRadius) return 0;  
+  return (distance - freeRadius) * 0.50; // $0.50 per mile beyond free radius
 }
 
 export async function POST(request: NextRequest) {
@@ -37,7 +43,7 @@ export async function POST(request: NextRequest) {
     if (address && serviceType !== 'RON_SERVICES') {
       try {
         const distanceResult = await UnifiedDistanceService.calculateDistance(address);
-        travelFee = calculateTravelFee(distanceResult.distance.miles);
+        travelFee = calculateTravelFee(distanceResult.distance.miles, serviceType);
       } catch (error) {
         console.error('Distance calculation failed:', error);
         // Continue with 0 travel fee if distance calculation fails

@@ -27,14 +27,14 @@
 - ☑️ Service type (Standard Notary, Extended Hours Notary, Loan Signing Specialist, RON Services, Specialty Notary Services)
 - ☑️ Physical address of signing location (or Remote for RON)
 - ☑️ **Available appointment windows**:
-  - Standard Notary: 9am-5pm Mon-Fri (Base: up to 2 documents, 1-2 signers, 15-mile travel included)
-  - Extended Hours Notary: 7am-9pm Daily (Base: up to 5 documents, 2 signers, 20-mile travel included). Also for urgent/same-day needs during standard hours.
+  - Standard Notary: 9am-5pm Mon-Fri (Base: up to 2 documents, 1-2 signers, 20-mile travel included)
+  - Extended Hours Notary: 7am-9pm Daily (Base: up to 5 documents, 2 signers, 30-mile travel included). Also for urgent/same-day needs during standard hours.
   - Loan Signing Specialist: By appointment (Flat fee service)
   - **RON Services: 24/7 availability** (Remote Online Notarization - no travel required)
 
 ### 1.2 Service Area & Verification
-- **Primary Service Area (Standard Notary)**: 15-mile radius from ZIP code 77591
-- **Primary Service Area (Extended Hours Notary)**: 20-mile radius from ZIP code 77591
+- **Primary Service Area (Standard Notary)**: 20-mile radius from ZIP code 77591
+- **Primary Service Area (Extended Hours Notary)**: 30-mile radius from ZIP code 77591
 - **Extended Travel Fee**: Beyond primary service area, $0.50/mile fee applies.
 - **Automated Distance Calculation**: System automatically calculates travel distance using Google Maps API
 - **Real-time Pricing Updates**: Live quote updates based on location, urgency, and service selections

@@ -66,8 +66,25 @@ interface SmartRecommendation {
   confidence: 'high' | 'medium' | 'low';
 }
 
-// Service configuration matching the pricing engine
+// Service configuration matching the pricing engine - ALL 6 SERVICES
 const SERVICES: ServiceOption[] = [
+  {
+    id: 'QUICK_STAMP_LOCAL',
+    name: 'Quick-Stamp Local',
+    price: 50,
+    description: 'Fast & simple local signings for routine documents',
+    hours: '9am-5pm Mon-Fri',
+    included: [
+      '≤ 1 document',
+      '1 signer included',
+      '10-mile travel radius',
+      'Same-day available (before 3pm)',
+      'Fast turnaround'
+    ],
+    maxDocuments: 1,
+    includedRadius: 10,
+    badge: 'value'
+  },
   {
     id: 'STANDARD_NOTARY',
     name: 'Standard Notary',
@@ -77,12 +94,12 @@ const SERVICES: ServiceOption[] = [
     included: [
       'Up to 2 documents',
       '1-2 signers included',
-      '15-mile travel radius',
+      '30-mile travel radius',
       'Professional notary service',
       'Same-day available (before 3pm)'
     ],
     maxDocuments: 2,
-    includedRadius: 15,
+    includedRadius: 30,
     badge: 'popular'
   },
   {
@@ -94,14 +111,14 @@ const SERVICES: ServiceOption[] = [
     included: [
       'Up to 5 documents',
       '2 signers included',
-      '20-mile travel radius',
+      '30-mile travel radius',
       'Same-day guarantee',
       'Evening appointments',
       'Weekend availability'
     ],
     features: ['urgent', 'same-day', 'evening'],
     maxDocuments: 5,
-    includedRadius: 20,
+    includedRadius: 30,
     badge: 'recommended'
   },
   {
@@ -116,10 +133,10 @@ const SERVICES: ServiceOption[] = [
       '90-minute session',
       'Real estate expertise',
       'Title company coordination',
-      '20-mile travel radius'
+      '30-mile travel radius'
     ],
     maxDocuments: 999,
-    includedRadius: 20,
+    includedRadius: 30,
     badge: 'value'
   },
   {
@@ -139,6 +156,43 @@ const SERVICES: ServiceOption[] = [
     maxDocuments: 10,
     includedRadius: 0,
     urgencyText: 'Available now'
+  },
+  {
+    id: 'BUSINESS_ESSENTIALS',
+    name: 'Business Subscription - Essentials',
+    price: 125,
+    description: 'Monthly subscription for regular business notarization needs',
+    hours: '24/7 RON availability',
+    included: [
+      'Up to 10 RON seals/month',
+      '10% off mobile rates',
+      'Monthly billing',
+      'Priority support',
+      'Remote service',
+      'No travel required'
+    ],
+    maxDocuments: 10,
+    includedRadius: 0,
+    badge: 'recommended'
+  },
+  {
+    id: 'BUSINESS_GROWTH',
+    name: 'Business Subscription - Growth',
+    price: 349,
+    description: 'Premium monthly subscription for high-volume business needs',
+    hours: '24/7 RON availability',
+    included: [
+      'Up to 40 RON seals/month',
+      '10% off mobile rates',
+      '1 free loan signing/month',
+      'Monthly billing',
+      'Priority support',
+      'Remote service',
+      'Account manager'
+    ],
+    maxDocuments: 40,
+    includedRadius: 0,
+    badge: 'value'
   }
 ];
 

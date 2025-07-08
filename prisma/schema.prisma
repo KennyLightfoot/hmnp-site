@@ -496,3 +496,22 @@ enum Role {
   ADMIN
   SUPER_ADMIN
 }
+
+// ============================================================================
+// 🏢 BUSINESS SETTINGS MODEL
+// ============================================================================
+
+model BusinessSettings {
+  id            String            @id @default(cuid())
+  key           String            @unique
+  value         String
+  dataType      String            @default("string") // string, number, boolean, json
+  category      String            @default("general") // general, booking, payment, notification, etc.
+  description   String?
+  
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  
+  @@index([category])
+  @@index([key])
+}

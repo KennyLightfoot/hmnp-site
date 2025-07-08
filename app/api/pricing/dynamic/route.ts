@@ -18,7 +18,7 @@ const RATE_LIMIT_MAX_REQUESTS = 30; // 30 requests per minute
 
 // Request validation schema
 const DynamicPricingRequestSchema = z.object({
-  serviceType: z.enum(['STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES']),
+  serviceType: z.enum(['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH']),
   scheduledDateTime: z.string().datetime(),
   location: z.object({
     zipCode: z.string().regex(/^\d{5}$/, 'Must be a valid 5-digit ZIP code'),

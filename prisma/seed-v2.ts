@@ -54,7 +54,7 @@ async function main() {
         maxSigners: 2,
         maxDocuments: 5,
         isActive: true,
-        serviceRadius: 20,
+        serviceRadius: 30,
         extendedRadius: 50,
         travelFeeRate: 0.50
       },

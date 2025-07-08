@@ -4,11 +4,11 @@
  * Championship Booking System - Scheduling Step
  * Houston Mobile Notary Pros
  * 
- * Calendar selection with urgency mechanics, availability intelligence,
- * and slot reservation. Designed for maximum conversion.
+ * ✅ FIXED: Now connected to real GHL availability API
+ * Calendar selection with real-time availability from GoHighLevel
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,21 +28,22 @@ import {
   Flame,
   Star,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Loader2
 } from 'lucide-react';
 
 import { CreateBooking } from '@/lib/booking-validation';
 import { SchedulingStepProps } from '@/lib/types/booking-interfaces';
 
-// Use imported SchedulingStepProps from booking-interfaces
-
 interface TimeSlot {
-  time: string;
+  startTime: string;
+  endTime: string;
   available: boolean;
+  duration: number;
+  displayTime: string;
   popular?: boolean;
   urgent?: boolean;
-  price?: number;
-  demand: 'low' | 'medium' | 'high';
+  demand?: 'low' | 'medium' | 'high';
 }
 
 interface DaySchedule {
@@ -54,6 +55,26 @@ interface DaySchedule {
   isToday: boolean;
   isTomorrow: boolean;
   sameDay?: boolean;
+  loading?: boolean;
+  error?: string;
+}
+
+interface AvailabilityResponse {
+  success: boolean;
+  serviceType: string;
+  date: string;
+  timezone: string;
+  calendarId: string;
+  totalSlots: number;
+  availableSlots: TimeSlot[];
+  metadata: {
+    businessHours: {
+      start: number;
+      end: number;
+    };
+    fetchedAt: string;
+    source: string;
+  };
 }
 
 const URGENCY_LEVELS = [
@@ -92,55 +113,19 @@ const URGENCY_LEVELS = [
   }
 ];
 
-const TIME_SLOTS = {
-  STANDARD_NOTARY: [
-    { time: '09:00', demand: 'medium' as const },
-    { time: '10:00', demand: 'low' as const },
-    { time: '11:00', demand: 'low' as const },
-    { time: '12:00', demand: 'medium' as const },
-    { time: '13:00', demand: 'high' as const },
-    { time: '14:00', demand: 'medium' as const },
-    { time: '15:00', demand: 'high' as const },
-    { time: '16:00', demand: 'medium' as const }
-  ],
-  EXTENDED_HOURS: [
-    { time: '07:00', demand: 'low' as const },
-    { time: '08:00', demand: 'medium' as const },
-    { time: '09:00', demand: 'medium' as const },
-    { time: '10:00', demand: 'low' as const },
-    { time: '11:00', demand: 'low' as const },
-    { time: '12:00', demand: 'medium' as const },
-    { time: '13:00', demand: 'high' as const },
-    { time: '14:00', demand: 'medium' as const },
-    { time: '15:00', demand: 'high' as const },
-    { time: '16:00', demand: 'medium' as const },
-    { time: '17:00', demand: 'high' as const },
-    { time: '18:00', demand: 'medium' as const },
-    { time: '19:00', demand: 'medium' as const },
-    { time: '20:00', demand: 'low' as const }
-  ],
-  LOAN_SIGNING: [
-    { time: '08:00', demand: 'medium' as const },
-    { time: '10:00', demand: 'low' as const },
-    { time: '13:00', demand: 'medium' as const },
-    { time: '15:00', demand: 'high' as const },
-    { time: '17:00', demand: 'high' as const },
-    { time: '19:00', demand: 'medium' as const }
-  ]
-};
-
 export default function SchedulingStep({ data, onUpdate, errors, pricing }: SchedulingStepProps) {
   const { setValue, watch } = useFormContext<CreateBooking>();
   
   const [selectedUrgency, setSelectedUrgency] = useState('flexible');
   const [currentWeek, setCurrentWeek] = useState(0);
-  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilityData, setAvailabilityData] = useState<{ [date: string]: AvailabilityResponse }>({});
+  const [loadingDates, setLoadingDates] = useState<Set<string>>(new Set());
   
   const watchedScheduling = watch('scheduling') || {};
   const watchedServiceType = watch('serviceType') || 'STANDARD_NOTARY';
   const watchedLocation = watch('location');
 
-  // Generate next 14 days
+  // ✅ FIXED: Generate next 14 days with real availability data
   const availableDays = useMemo(() => {
     const days: DaySchedule[] = [];
     const today = new Date();
@@ -149,6 +134,7 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       
+      const dateString = date.toISOString().split('T')[0];
       const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
       const isWeekend = date.getDay() === 0 || date.getDay() === 6;
       
@@ -158,29 +144,94 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
         available = false;
       }
       
-      // Generate time slots for this day
-      const baseSlots = TIME_SLOTS[watchedServiceType as keyof typeof TIME_SLOTS] || TIME_SLOTS.STANDARD_NOTARY;
-      const slots: TimeSlot[] = baseSlots.map(slot => ({
-        ...slot,
-        available: available && Math.random() > 0.3, // Mock availability
-        popular: slot.demand === 'high',
-        urgent: i === 0 && selectedUrgency === 'today'
-      }));
+      // Get real availability data for this date
+      const dayAvailability = availabilityData[dateString];
+      const slots = dayAvailability?.availableSlots || [];
       
       days.push({
-        date: date.toISOString().split('T')[0],
+        date: dateString,
         dayName,
         dayNumber: date.getDate(),
-        available,
-        slots,
+        available: available && slots.length > 0,
+        slots: slots.map(slot => ({
+          ...slot,
+          popular: slot.duration <= 60, // Shorter slots are more popular
+          urgent: i === 0 && selectedUrgency === 'today',
+          demand: slot.duration <= 60 ? 'high' : slot.duration <= 90 ? 'medium' : 'low'
+        })),
         isToday: i === 0,
         isTomorrow: i === 1,
-        sameDay: i === 0 && selectedUrgency === 'today'
+        sameDay: i === 0 && selectedUrgency === 'today',
+        loading: loadingDates.has(dateString),
+        error: dayAvailability && !dayAvailability.success ? 'Failed to load availability' : undefined
       });
     }
     
     return days;
-  }, [watchedServiceType, selectedUrgency]);
+  }, [availabilityData, loadingDates, watchedServiceType, selectedUrgency]);
+
+  // ✅ FIXED: Fetch availability for a specific date
+  const fetchAvailability = useCallback(async (date: string) => {
+    if (availabilityData[date] || loadingDates.has(date)) {
+      return; // Already loaded or loading
+    }
+
+    setLoadingDates(prev => new Set(prev).add(date));
+
+    try {
+      const response = await fetch(`/api/booking/availability?serviceType=${watchedServiceType}&date=${date}`);
+      const data: AvailabilityResponse = await response.json();
+      
+      console.log(`✅ Availability for ${date}:`, data);
+      
+      setAvailabilityData(prev => ({
+        ...prev,
+        [date]: data
+      }));
+    } catch (error) {
+      console.error(`❌ Failed to fetch availability for ${date}:`, error);
+      setAvailabilityData(prev => ({
+        ...prev,
+        [date]: {
+          success: false,
+          serviceType: watchedServiceType,
+          date,
+          timezone: 'America/Chicago',
+          calendarId: '',
+          totalSlots: 0,
+          availableSlots: [],
+          metadata: {
+            businessHours: { start: 8, end: 18 },
+            fetchedAt: new Date().toISOString(),
+            source: 'Error'
+          }
+        }
+      }));
+    } finally {
+      setLoadingDates(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(date);
+        return newSet;
+      });
+    }
+  }, [watchedServiceType, availabilityData, loadingDates]);
+
+  // ✅ FIXED: Load availability for visible days when component mounts or service type changes
+  useEffect(() => {
+    const visibleDays = availableDays.slice(currentWeek * 7, (currentWeek + 1) * 7);
+    
+    visibleDays.forEach(day => {
+      if (day.available) {
+        fetchAvailability(day.date);
+      }
+    });
+  }, [availableDays, currentWeek, fetchAvailability]);
+
+  // ✅ FIXED: Clear availability data when service type changes
+  useEffect(() => {
+    setAvailabilityData({});
+    setLoadingDates(new Set());
+  }, [watchedServiceType]);
 
   const handleUrgencyChange = (urgency: string) => {
     setSelectedUrgency(urgency);
@@ -198,19 +249,21 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
   const handleDateSelect = (date: string) => {
     setValue('scheduling.preferredDate', date);
     onUpdate({ scheduling: { ...watchedScheduling, preferredDate: date } });
+    
+    // Prefetch availability for this date if not already loaded
+    fetchAvailability(date);
   };
 
-  const handleTimeSelect = (time: string) => {
-    setValue('scheduling.preferredTime', time);
-    onUpdate({ scheduling: { ...watchedScheduling, preferredTime: time } });
-  };
-
-  const formatTime = (time: string) => {
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours);
-    const period = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    return `${displayHour}:${minutes} ${period}`;
+  const handleTimeSelect = (slot: TimeSlot) => {
+    setValue('scheduling.preferredTime', slot.displayTime);
+    setValue('scheduling.preferredTimeSlot', slot.startTime);
+    onUpdate({ 
+      scheduling: { 
+        ...watchedScheduling, 
+        preferredTime: slot.displayTime,
+        preferredTimeSlot: slot.startTime
+      } 
+    });
   };
 
   const getDemandColor = (demand: string) => {
@@ -357,10 +410,10 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
                   <button
                     key={day.date}
                     type="button"
-                    onClick={() => day.available && handleDateSelect(day.date)}
-                    disabled={!day.available}
+                    onClick={() => day.available && !day.loading && handleDateSelect(day.date)}
+                    disabled={!day.available || day.loading}
                     className={`
-                      p-3 rounded-lg border text-center transition-all duration-200
+                      p-3 rounded-lg border text-center transition-all duration-200 relative
                       ${!day.available 
                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
                         : watchedScheduling.preferredDate === day.date
@@ -369,6 +422,11 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
                       }
                     `}
                   >
+                    {day.loading && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded-lg">
+                        <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                      </div>
+                    )}
                     <div className="text-xs font-medium">{day.dayName}</div>
                     <div className="text-lg font-bold">{day.dayNumber}</div>
                     {day.isToday && (
@@ -381,6 +439,11 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
                       <Badge variant="destructive" className="text-xs mt-1">
                         Urgent
                       </Badge>
+                    )}
+                    {day.slots.length > 0 && (
+                      <div className="text-xs text-green-600 font-medium">
+                        {day.slots.length} slots
+                      </div>
                     )}
                   </button>
                 ))}
@@ -396,6 +459,15 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
                   </AlertDescription>
                 </Alert>
               )}
+
+              {/* Real-time availability status */}
+              <Alert className="border-green-200 bg-green-50 mt-4">
+                <CheckCircle className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  ✅ <strong>Real-time availability:</strong> Times shown are pulled directly from our calendar system.
+                  Data refreshes automatically as you browse dates.
+                </AlertDescription>
+              </Alert>
             </CardContent>
           </Card>
 
@@ -409,6 +481,9 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
                   <Badge variant="outline">
                     {selectedDay.dayName} {selectedDay.dayNumber}
                   </Badge>
+                  {selectedDay.loading && (
+                    <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  )}
                 </CardTitle>
                 <CardDescription>
                   Select your preferred appointment time
@@ -416,56 +491,74 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
               </CardHeader>
               
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {selectedDay.slots.map((slot) => (
-                    <button
-                      key={slot.time}
-                      type="button"
-                      onClick={() => slot.available && handleTimeSelect(slot.time)}
-                      disabled={!slot.available}
-                      className={`
-                        p-3 rounded-lg border text-center transition-all duration-200
-                        ${!slot.available 
-                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                          : watchedScheduling.preferredTime === slot.time
-                            ? 'bg-green-600 text-white border-green-600 shadow-md'
-                            : `hover:shadow-md ${getDemandColor(slot.demand)}`
-                        }
-                      `}
-                    >
-                      <div className="font-medium">{formatTime(slot.time)}</div>
-                      {slot.popular && (
-                        <Badge variant="secondary" className="text-xs mt-1">
-                          Popular
-                        </Badge>
-                      )}
-                      {slot.urgent && (
-                        <Badge variant="destructive" className="text-xs mt-1">
-                          Urgent
-                        </Badge>
-                      )}
-                      {!slot.available && (
-                        <div className="text-xs mt-1">Booked</div>
-                      )}
-                    </button>
-                  ))}
-                </div>
+                {selectedDay.loading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                    <span className="ml-2 text-gray-600">Loading available times...</span>
+                  </div>
+                ) : selectedDay.error ? (
+                  <Alert className="border-red-200 bg-red-50">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      {selectedDay.error}. Please try refreshing or selecting a different date.
+                    </AlertDescription>
+                  </Alert>
+                ) : selectedDay.slots.length === 0 ? (
+                  <Alert className="border-orange-200 bg-orange-50">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      No available times for this date. Try selecting a different date or contact us directly.
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {selectedDay.slots.map((slot, index) => (
+                        <button
+                          key={`${slot.startTime}-${index}`}
+                          type="button"
+                          onClick={() => handleTimeSelect(slot)}
+                          className={`
+                            p-3 rounded-lg border text-center transition-all duration-200
+                            ${watchedScheduling.preferredTimeSlot === slot.startTime
+                              ? 'bg-green-600 text-white border-green-600 shadow-md'
+                              : `hover:shadow-md ${getDemandColor(slot.demand || 'low')}`
+                            }
+                          `}
+                        >
+                          <div className="font-medium">{slot.displayTime}</div>
+                          <div className="text-xs text-gray-600">{slot.duration} min</div>
+                          {slot.popular && (
+                            <Badge variant="secondary" className="text-xs mt-1">
+                              Popular
+                            </Badge>
+                          )}
+                          {slot.urgent && (
+                            <Badge variant="destructive" className="text-xs mt-1">
+                              Urgent
+                            </Badge>
+                          )}
+                        </button>
+                      ))}
+                    </div>
 
-                {/* Time slot demand legend */}
-                <div className="mt-4 flex items-center justify-center space-x-4 text-xs text-gray-600">
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 rounded bg-green-100 border border-green-200" />
-                    <span>Low demand</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 rounded bg-orange-100 border border-orange-200" />
-                    <span>Medium demand</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 rounded bg-red-100 border border-red-200" />
-                    <span>High demand</span>
-                  </div>
-                </div>
+                    {/* Time slot demand legend */}
+                    <div className="mt-4 flex items-center justify-center space-x-4 text-xs text-gray-600">
+                      <div className="flex items-center space-x-1">
+                        <div className="w-3 h-3 rounded bg-green-100 border border-green-200" />
+                        <span>Available</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <div className="w-3 h-3 rounded bg-orange-100 border border-orange-200" />
+                        <span>High demand</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <div className="w-3 h-3 rounded bg-red-100 border border-red-200" />
+                        <span>Limited</span>
+                      </div>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           )}
@@ -496,7 +589,7 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
                   <div className="flex items-center space-x-2">
                     <Clock className="h-4 w-4 text-blue-600" />
                     <span className="font-medium">
-                      {formatTime(watchedScheduling.preferredTime)}
+                      {watchedScheduling.preferredTime}
                     </span>
                   </div>
                 )}
@@ -540,27 +633,27 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
             </CardContent>
           </Card>
 
-          {/* Demand & Availability Info */}
+          {/* Real-time Availability Info */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center space-x-2">
                 <TrendingUp className="h-5 w-5" />
-                <span>Booking Insights</span>
+                <span>Live Availability</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="space-y-2 text-sm">
                 <div className="flex items-center space-x-2">
-                  <Users className="h-4 w-4 text-blue-600" />
-                  <span>47 customers booked this week</span>
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span>Real-time calendar sync</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Star className="h-4 w-4 text-yellow-500" />
-                  <span>Tuesday-Thursday most popular</span>
+                  <span>Instant booking confirmation</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Clock className="h-4 w-4 text-green-600" />
-                  <span>Morning slots fill up faster</span>
+                  <Clock className="h-4 w-4 text-blue-600" />
+                  <span>Updated every 5 minutes</span>
                 </div>
               </div>
               

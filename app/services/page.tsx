@@ -388,7 +388,7 @@ export default function ServicesPage() {
               </div>
               <div className="flex items-center space-x-2">
                 <Check className="h-4 w-4 text-green-500" />
-                <span>≤ 15 miles travel included</span>
+                <span>≤ 30 miles travel included</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Check className="h-4 w-4 text-green-500" />
@@ -437,7 +437,7 @@ export default function ServicesPage() {
               </div>
               <div className="flex items-center space-x-2">
                 <Check className="h-4 w-4 text-green-500" />
-                <span>≤ 15 miles travel included</span>
+                <span>≤ 30 miles travel included</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Check className="h-4 w-4 text-green-500" />

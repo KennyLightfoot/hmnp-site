@@ -215,7 +215,16 @@ export async function POST(request: Request) {
 
     const triggerCallWebhook = subject.toLowerCase().includes("call request");
     if (triggerCallWebhook) {
-      const callRequestWebhookUrl = "https://services.leadconnectorhq.com/hooks/oUvYNTw2Wvul7JSJplqQ/webhook-trigger/49d653ab-1418-4c4e-aeab-85f12b11570c";
+      const callRequestWebhookUrl = process.env.GHL_CALL_REQUEST_WEBHOOK_URL;
+      if (!callRequestWebhookUrl) {
+        console.warn("GHL_CALL_REQUEST_WEBHOOK_URL not configured, skipping call request webhook");
+        return NextResponse.json({
+          success: true,
+          message: "Contact form submitted successfully",
+          contactId: ghlContactId
+        });
+      }
+      
       try {
         const webhookPayload = {
           firstName, lastName, email, phone, subject, message,

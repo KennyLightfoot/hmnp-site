@@ -19,7 +19,7 @@ import { createContact, createAppointment, addContactToWorkflow } from '@/lib/gh
 // Validation schema matching schema-v2 structure
 const BookingCreateSchema = z.object({
   // Service selection
-  serviceType: z.enum(['STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES']),
+  serviceType: z.enum(['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH']),
   
   // Customer information
   customerName: z.string().min(1, 'Name is required'),

@@ -23,7 +23,7 @@ const RESERVATION_CONFIG = {
 // Validation Schema
 const ReservationRequestSchema = z.object({
   datetime: z.string().datetime(),
-  serviceType: z.enum(['STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES']),
+  serviceType: z.enum(['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH']),
   userId: z.string().optional(),
   customerEmail: z.string().email().optional(),
   estimatedDuration: z.number().min(15).max(180).default(60),

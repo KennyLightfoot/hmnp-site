@@ -57,31 +57,31 @@ export const SERVICE_AREA_CONFIG = {
     zipCode: '77591'
   },
   
-  // Service radii (in miles)
+  // Service radii (in miles) - SIMPLIFIED UNIVERSAL SYSTEM
   RADII: {
-    STANDARD: 15,     // Standard notary services
-    EXTENDED: 20,     // Extended hours services
+    STANDARD: 30,     // Universal free radius for all mobile services
+    EXTENDED: 30,     // Universal free radius for all mobile services  
     MAXIMUM: 50,      // Absolute maximum service area
-    FREE: 20          // No travel fee within this radius
+    FREE: 30          // Universal 30-mile free radius
   },
   
   // Pricing
   TRAVEL_FEE_RATE: 0.50, // $0.50 per mile beyond free radius
   
-  // Service type configurations
+  // Service type configurations - UNIVERSAL 30-MILE FREE RADIUS
   SERVICES: {
     STANDARD_NOTARY: { 
-      freeRadius: 15, 
+      freeRadius: 30, // Universal free radius
       maxRadius: 50,
       name: 'Standard Notary'
     },
     EXTENDED_HOURS: { 
-      freeRadius: 20, 
+      freeRadius: 30, // Universal free radius
       maxRadius: 50,
       name: 'Extended Hours'
     },
     LOAN_SIGNING: { 
-      freeRadius: 20, 
+      freeRadius: 30, // Universal free radius
       maxRadius: 50,
       name: 'Loan Signing'
     },

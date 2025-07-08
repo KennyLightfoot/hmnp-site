@@ -8,12 +8,15 @@
 
 import { z } from 'zod';
 
-// Core Service Types Enum
+// Core Service Types Enum - Updated to include all 6 website services
 export const ServiceTypeSchema = z.enum([
+  'QUICK_STAMP_LOCAL',        // NEW: Quick-Stamp Local ($50)
   'STANDARD_NOTARY',
   'EXTENDED_HOURS', 
   'LOAN_SIGNING',
-  'RON_SERVICES'
+  'RON_SERVICES',
+  'BUSINESS_ESSENTIALS',      // NEW: Business Subscription - Essentials ($125)
+  'BUSINESS_GROWTH'           // NEW: Business Subscription - Growth ($349)
 ]);
 
 export const LocationTypeSchema = z.enum([
@@ -184,15 +187,18 @@ export const CreateBookingSchema = z.object({
   message: "Location is required for in-person services",
   path: ['location']
 }).refine((data) => {
-  // Validate document count against service limits
-  const serviceLimits = {
+  // Validate document count against service limits - Updated for all 6 services
+  const serviceLimits: Record<string, number> = {
+    'QUICK_STAMP_LOCAL': 1,       // NEW: Quick-Stamp Local (≤ 1 document)
     'STANDARD_NOTARY': 2,
     'EXTENDED_HOURS': 5,
     'LOAN_SIGNING': 999,
-    'RON_SERVICES': 10
+    'RON_SERVICES': 10,
+    'BUSINESS_ESSENTIALS': 10,    // NEW: Business Subscription - Essentials (10 RON seals)
+    'BUSINESS_GROWTH': 40         // NEW: Business Subscription - Growth (40 RON seals)
   };
   
-  const limit = serviceLimits[data.serviceType];
+  const limit = serviceLimits[data.serviceType] || 1; // Default to 1 if service type not found
   return data.serviceDetails.documentCount <= limit;
 }, {
   message: "Document count exceeds service limit",

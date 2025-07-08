@@ -1,7 +1,11 @@
-// import 'dotenv/config';
+require('dotenv').config();
 
-// Using the API keys from the GHL setup guide
-const GHL_API_KEY = 'pit-f7f2fad9-fe5a-4c19-86ff-cb3a4177784a';
+// Using the API keys from environment variables
+const GHL_API_KEY = process.env.GHL_PRIVATE_INTEGRATION_TOKEN || process.env.GHL_API_KEY;
+if (!GHL_API_KEY) {
+  console.error('❌ GHL_PRIVATE_INTEGRATION_TOKEN or GHL_API_KEY environment variable is required');
+  process.exit(1);
+}
 const GHL_API_BASE = 'https://rest.gohighlevel.com/v1';
 
 // Helper function to add delay
