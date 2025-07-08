@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { CalendarIcon, Clock, CalendarDays, Loader2 } from 'lucide-react';
+import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
 
 // Unified types for all calendar implementations
 export interface TimeSlot {
@@ -145,28 +146,51 @@ export default function UnifiedBookingCalendar({
   
   /**
    * Get calendar ID based on service type and number of signers
+   * FIXED: Now uses environment-based mapping instead of hardcoded IDs
    */
   const getCalendarId = (service: string, signers: number): string => {
-    if (!service) return 'r9koQ0kxmuMuWryZkjdo'; // Default fallback
+    if (!service) {
+      // Try to get the standard notary calendar as fallback
+      try {
+        return getCalendarIdForService('STANDARD_NOTARY');
+      } catch (error) {
+        console.error('Failed to get fallback calendar ID:', error);
+        return 'r9koQ0kxmuMuWryZkjdo'; // Ultimate fallback
+      }
+    }
     
+    // Map service types to our standard service enum
+    let serviceType: string;
     switch (service.toLowerCase()) {
       case 'standard-notary':
-        if (signers === 1) return 'r9koQ0kxmuMuWryZkjdo';
-        if (signers === 2) return 'wkTW5ZX4EMl5hOAbCk9D';
-        return 'Vy3hd6Or6Xi2ogW0mvEG'; // 3+ signers
+        serviceType = 'STANDARD_NOTARY';
+        break;
       case 'extended-hours':
-        return 'xtHXReq1dfd0wGA7dLc0';
+        serviceType = 'EXTENDED_HOURS';
+        break;
       case 'loan-signing':
-        return 'EJ5ED9UXPHCjBePUTJ0W';
+        serviceType = 'LOAN_SIGNING';
+        break;
       case 'specialty-notary-service':
-        return 'h4X7cZ0mZ3c52XSzvpjU';
       case 'business-solutions':
-        return 'r9koQ0kxmuMuWryZkjdo'; // Use default for now
       case 'support-service':
-        return 'r9koQ0kxmuMuWryZkjdo'; // Use default for now
+        // These services use the standard notary calendar
+        serviceType = 'STANDARD_NOTARY';
+        break;
       default:
-        logger.warn('Unknown service type, using fallback', 'CALENDAR', { serviceType: service });
-        return 'r9koQ0kxmuMuWryZkjdo';
+        logger.warn('Unknown service type, using standard notary calendar', 'CALENDAR', { serviceType: service });
+        serviceType = 'STANDARD_NOTARY';
+    }
+    
+    try {
+      return getCalendarIdForService(serviceType);
+    } catch (error) {
+      logger.error('Failed to get calendar ID for service', 'CALENDAR', { 
+        serviceType, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+      // Return hardcoded fallback only if environment mapping fails
+      return 'r9koQ0kxmuMuWryZkjdo';
     }
   };
   
