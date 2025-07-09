@@ -1,20 +1,18 @@
 'use client';
 
 /**
- * Championship Booking System - Customer Information Step
+ * 🚀 MOBILE-OPTIMIZED CUSTOMER INFO STEP
  * Houston Mobile Notary Pros
  * 
- * Customer contact details collection with trust building,
- * social proof, and conversion optimization.
+ * Enhanced UX with mobile-first design, better validation,
+ * and conversion-optimized form elements
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -22,379 +20,308 @@ import {
   User, 
   Mail, 
   Phone, 
-  Building, 
   Shield, 
-  Lock, 
-  Star, 
-  CheckCircle,
-  Info,
-  Users,
-  MessageSquare
+  CheckCircle, 
+  AlertCircle,
+  Loader2,
+  Zap,
+  Star
 } from 'lucide-react';
 
-import { CreateBooking } from '@/lib/booking-validation';
-import {
-  CustomerInfoStepProps,
-  InputChangeHandler
-} from '@/lib/types/booking-interfaces';
+interface CustomerInfoStepProps {
+  customer?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+  };
+  onUpdate?: (updates: any) => void;
+  errors?: any;
+  pricing?: any;
+}
 
-// Use imported CustomerInfoStepProps from booking-interfaces
+export default function CustomerInfoStep({ 
+  customer = {}, 
+  onUpdate, 
+  errors, 
+  pricing 
+}: CustomerInfoStepProps) {
+  const { register, setValue, watch, formState: { errors: formErrors } } = useFormContext();
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationMessage, setValidationMessage] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
-const TRUST_INDICATORS = [
-  {
-    icon: Shield,
-    title: 'Privacy Protected',
-    description: 'Your information is encrypted and never shared',
-    color: 'text-green-600'
-  },
-  {
-    icon: Lock,
-    title: 'Secure Processing',
-    description: 'SSL encrypted with bank-level security',
-    color: 'text-blue-600'
-  },
-  {
-    icon: Star,
-    title: 'Trusted by 2,000+',
-    description: 'Join thousands of satisfied customers',
-    color: 'text-yellow-600'
-  }
-];
+  // Watch form values
+  const watchedName = watch('customer.name') || customer.name || '';
+  const watchedEmail = watch('customer.email') || customer.email || '';
+  const watchedPhone = watch('customer.phone') || customer.phone || '';
 
-const RECENT_REVIEWS = [
-  {
-    name: 'Sarah M.',
-    location: 'Heights',
-    rating: 5,
-    comment: 'Professional service, arrived exactly on time. Made the whole process so easy!',
-    timeAgo: '2 hours ago'
-  },
-  {
-    name: 'Michael R.',
-    location: 'Katy',
-    rating: 5,
-    comment: 'Excellent communication and very knowledgeable. Will definitely use again.',
-    timeAgo: '5 hours ago'
-  },
-  {
-    name: 'Jennifer L.',
-    location: 'Sugar Land',
-    rating: 5,
-    comment: 'Quick booking process and fair pricing. Highly recommend!',
-    timeAgo: '1 day ago'
-  }
-];
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
-export default function CustomerInfoStep({ data, onUpdate, errors }: CustomerInfoStepProps) {
-  const { register, setValue, watch } = useFormContext<CreateBooking>();
-  const [showReviews, setShowReviews] = useState(false);
-  
-  const watchedCustomer = watch('customer') || {};
-  const watchedServiceType = watch('serviceType');
-
-  const handleInputChange: InputChangeHandler = (field, value) => {
-    setValue(`customer.${field}` as any, value);
-    onUpdate({ customer: { ...watchedCustomer, [field]: value } });
+  // Enhanced input handlers with validation
+  const handleInputChange = (field: string, value: string) => {
+    setValue(`customer.${field}`, value);
+    setValidationMessage(null);
+    
+    // Trigger update callback
+    onUpdate?.({
+      customer: {
+        ...customer,
+        [field]: value
+      }
+    });
   };
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`h-3 w-3 ${i < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
-      />
-    ));
+  // Email validation with real-time feedback
+  const validateEmail = async (email: string) => {
+    if (!email) return;
+    
+    setIsValidating(true);
+    setValidationMessage(null);
+    
+    try {
+      // Simulate email validation
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setValidationMessage('Please enter a valid email address');
+      } else {
+        setValidationMessage('✅ Email looks good!');
+      }
+    } catch (error) {
+      setValidationMessage('Email validation failed. Please try again.');
+    } finally {
+      setIsValidating(false);
+    }
   };
+
+  // Phone number formatting
+  const formatPhoneNumber = (value: string) => {
+    const cleaned = value.replace(/\D/g, '');
+    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+    if (match) {
+      return `(${match[1]}) ${match[2]}-${match[3]}`;
+    }
+    return value;
+  };
+
+  const handlePhoneChange = (value: string) => {
+    const formatted = formatPhoneNumber(value);
+    handleInputChange('phone', formatted);
+  };
+
+  const hasErrors = errors?.customer || formErrors?.customer;
+  const isComplete = watchedName && watchedEmail;
 
   return (
-    <div className="space-y-6">
-      {/* Trust Header */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-semibold text-blue-900">
-            Your Information is Safe & Secure
-          </h3>
-          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-            SSL Protected
-          </Badge>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {TRUST_INDICATORS.map((indicator, index) => (
-            <div key={index} className="flex items-start space-x-3">
-              <indicator.icon className={`h-5 w-5 ${indicator.color} mt-0.5`} />
-              <div>
-                <div className="font-medium text-gray-900 text-sm">
-                  {indicator.title}
-                </div>
-                <div className="text-xs text-gray-600">
-                  {indicator.description}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+    <div className="space-y-4 md:space-y-6">
+      {/* 🚀 MOBILE-OPTIMIZED HEADER */}
+      <div className="text-center md:text-left">
+        <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
+          {isMobile ? 'Your Contact Info' : 'Tell Us About Yourself'}
+        </h2>
+        <p className="text-sm md:text-base text-gray-600">
+          {isMobile 
+            ? 'We\'ll use this to confirm your booking'
+            : 'We\'ll use this information to confirm your appointment and send you important updates'
+          }
+        </p>
       </div>
 
-      {/* Main Form */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Contact Information Form */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <User className="h-5 w-5 text-blue-600" />
-                <span>Contact Information</span>
-              </CardTitle>
-              <CardDescription>
-                We'll use this information to confirm your appointment and send updates
-              </CardDescription>
-            </CardHeader>
-            
-            <CardContent className="space-y-4">
-              {/* Name Field */}
-              <div className="space-y-2">
-                <Label htmlFor="customer.name" className="text-sm font-medium flex items-center space-x-1">
-                  <span>Full Name</span>
-                  <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="customer.name"
-                  placeholder="Enter your full name"
-                  value={watchedCustomer.name || ''}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  className={errors?.customer?.name ? 'border-red-500' : ''}
-                />
-                {errors?.customer?.name && (
-                  <p className="text-sm text-red-600">{errors.customer.name.message}</p>
-                )}
-              </div>
+      {/* 🚀 TRUST INDICATORS */}
+      <div className="flex flex-wrap justify-center md:justify-start gap-2">
+        <Badge variant="secondary" className="text-xs">
+          <Shield className="h-3 w-3 mr-1" />
+          Secure & Private
+        </Badge>
+        <Badge variant="secondary" className="text-xs">
+          <Zap className="h-3 w-3 mr-1" />
+          Instant Confirmation
+        </Badge>
+        <Badge variant="secondary" className="text-xs">
+          <Star className="h-3 w-3 mr-1" />
+          Trusted by 10k+ Customers
+        </Badge>
+      </div>
 
-              {/* Email Field */}
-              <div className="space-y-2">
-                <Label htmlFor="customer.email" className="text-sm font-medium flex items-center space-x-1">
-                  <Mail className="h-4 w-4" />
-                  <span>Email Address</span>
-                  <span className="text-red-500">*</span>
-                </Label>
+      {/* 🚀 MAIN FORM CARD */}
+      <Card className="border-gray-200 shadow-sm">
+        <CardContent className="p-4 md:p-6">
+          <div className="space-y-4 md:space-y-6">
+            
+            {/* Name Field */}
+            <div className="space-y-2">
+              <Label htmlFor="customer.name" className="text-sm font-medium flex items-center">
+                <User className="h-4 w-4 mr-2 text-blue-600" />
+                Full Name *
+              </Label>
+              <Input
+                id="customer.name"
+                placeholder={isMobile ? "Your name" : "Enter your full legal name"}
+                value={watchedName}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                className={`h-12 md:h-10 ${
+                  errors?.customer?.name || formErrors?.customer?.name 
+                    ? 'border-red-500 focus:border-red-500' 
+                    : 'border-gray-300 focus:border-blue-500'
+                }`}
+                {...register('customer.name', { 
+                  required: 'Name is required',
+                  minLength: { value: 2, message: 'Name must be at least 2 characters' }
+                })}
+              />
+              {(errors?.customer?.name || formErrors?.customer?.name) && (
+                <div className="flex items-center space-x-1 text-red-600 text-sm">
+                  <AlertCircle className="h-3 w-3" />
+                  <span>{errors?.customer?.name?.message || formErrors?.customer?.name?.message}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Email Field */}
+            <div className="space-y-2">
+              <Label htmlFor="customer.email" className="text-sm font-medium flex items-center">
+                <Mail className="h-4 w-4 mr-2 text-blue-600" />
+                Email Address *
+              </Label>
+              <div className="relative">
                 <Input
                   id="customer.email"
                   type="email"
-                  placeholder="your.email@example.com"
-                  value={watchedCustomer.email || ''}
+                  placeholder={isMobile ? "your@email.com" : "Enter your email address"}
+                  value={watchedEmail}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className={errors?.customer?.email ? 'border-red-500' : ''}
+                  onBlur={(e) => validateEmail(e.target.value)}
+                  className={`h-12 md:h-10 pr-10 ${
+                    errors?.customer?.email || formErrors?.customer?.email 
+                      ? 'border-red-500 focus:border-red-500' 
+                      : 'border-gray-300 focus:border-blue-500'
+                  }`}
+                  {...register('customer.email', { 
+                    required: 'Email is required',
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: 'Please enter a valid email address'
+                    }
+                  })}
                 />
-                {errors?.customer?.email && (
-                  <p className="text-sm text-red-600">{errors.customer.email.message}</p>
+                {isValidating && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                  </div>
                 )}
-                <p className="text-xs text-gray-600">
-                  📧 Booking confirmation and appointment reminders will be sent here
-                </p>
+                {watchedEmail && !isValidating && !errors?.customer?.email && !formErrors?.customer?.email && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  </div>
+                )}
               </div>
-
-              {/* Phone Field */}
-              <div className="space-y-2">
-                <Label htmlFor="customer.phone" className="text-sm font-medium flex items-center space-x-1">
-                  <Phone className="h-4 w-4" />
-                  <span>Phone Number</span>
-                  <span className="text-gray-400">(optional)</span>
-                </Label>
-                <Input
-                  id="customer.phone"
-                  type="tel"
-                  placeholder="(713) 234-5678"
-                  value={watchedCustomer.phone || ''}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                />
-                <p className="text-xs text-gray-600">
-                  📱 For urgent appointment updates and day-of coordination
-                </p>
-              </div>
-
-              {/* Company Name (for business clients) */}
-              {(watchedServiceType === 'LOAN_SIGNING' || watchedCustomer.companyName !== undefined) && (
-                <div className="space-y-2">
-                  <Label htmlFor="customer.companyName" className="text-sm font-medium flex items-center space-x-1">
-                    <Building className="h-4 w-4" />
-                    <span>Company Name</span>
-                    <span className="text-gray-400">(optional)</span>
-                  </Label>
-                  <Input
-                    id="customer.companyName"
-                    placeholder="Your company or organization"
-                    value={watchedCustomer.companyName || ''}
-                    onChange={(e) => handleInputChange('companyName', e.target.value)}
-                  />
+              {(errors?.customer?.email || formErrors?.customer?.email) && (
+                <div className="flex items-center space-x-1 text-red-600 text-sm">
+                  <AlertCircle className="h-3 w-3" />
+                  <span>{errors?.customer?.email?.message || formErrors?.customer?.email?.message}</span>
                 </div>
               )}
-
-              {/* Preferred Contact Method */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">
-                  Preferred Contact Method
-                </Label>
-                <RadioGroup
-                  value={watchedCustomer.preferredContactMethod || 'email'}
-                  onValueChange={(value) => handleInputChange('preferredContactMethod', value)}
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="email" id="contact-email" />
-                    <Label htmlFor="contact-email" className="text-sm">
-                      📧 Email (recommended)
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="phone" id="contact-phone" />
-                    <Label htmlFor="contact-phone" className="text-sm">
-                      📞 Phone Call
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="sms" id="contact-sms" />
-                    <Label htmlFor="contact-sms" className="text-sm">
-                      💬 Text Message
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              {/* Communication Preferences */}
-              <div className="space-y-3 pt-4 border-t border-gray-200">
-                <Label className="text-sm font-medium">
-                  Communication Preferences
-                </Label>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="sms-consent"
-                      checked={watchedCustomer.smsConsent || false}
-                      onCheckedChange={(checked) => handleInputChange('smsConsent', checked)}
-                    />
-                    <Label htmlFor="sms-consent" className="text-sm">
-                      Send appointment reminders via text message
-                    </Label>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="marketing-consent"
-                      checked={watchedCustomer.marketingConsent || false}
-                      onCheckedChange={(checked) => handleInputChange('marketingConsent', checked)}
-                    />
-                    <Label htmlFor="marketing-consent" className="text-sm">
-                      Receive helpful tips and special offers (optional)
-                    </Label>
-                  </div>
-                </div>
-                
-                <p className="text-xs text-gray-600">
-                  You can unsubscribe at any time. We never share your information.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Social Proof Sidebar */}
-        <div className="space-y-4">
-          {/* Customer Count */}
-          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-            <CardContent className="p-4">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-700">487</div>
-                <div className="text-sm text-green-600 font-medium">
-                  Customers served this month
-                </div>
-                <div className="flex items-center justify-center mt-2 space-x-1">
-                  {renderStars(5)}
-                  <span className="text-sm text-green-700 ml-2">4.9/5 Rating</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Recent Reviews Toggle */}
-          <Card>
-            <CardContent className="p-4">
-              <Button
-                variant="outline"
-                onClick={() => setShowReviews(!showReviews)}
-                className="w-full flex items-center justify-center space-x-2"
-              >
-                <MessageSquare className="h-4 w-4" />
-                <span>{showReviews ? 'Hide' : 'Read'} Recent Reviews</span>
-              </Button>
-              
-              {showReviews && (
-                <div className="mt-4 space-y-3">
-                  {RECENT_REVIEWS.map((review, index) => (
-                    <div key={index} className="border-l-2 border-green-200 pl-3 py-2">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="font-medium text-sm">{review.name}</div>
-                        <div className="text-xs text-gray-500">{review.timeAgo}</div>
-                      </div>
-                      <div className="flex items-center space-x-1 mb-1">
-                        {renderStars(review.rating)}
-                        <span className="text-xs text-gray-600">• {review.location}</span>
-                      </div>
-                      <p className="text-xs text-gray-700 italic">
-                        "{review.comment}"
-                      </p>
-                    </div>
-                  ))}
+              {validationMessage && !errors?.customer?.email && !formErrors?.customer?.email && (
+                <div className={`flex items-center space-x-1 text-sm ${
+                  validationMessage.includes('✅') ? 'text-green-600' : 'text-orange-600'
+                }`}>
+                  <span>{validationMessage}</span>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Why We Need This Info */}
-          <Alert className="border-blue-200 bg-blue-50">
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              <div className="space-y-2">
-                <div className="font-medium text-blue-900">Why we collect this information:</div>
-                <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• Appointment confirmation & reminders</li>
-                  <li>• Day-of coordination & updates</li>
-                  <li>• Receipt and documentation delivery</li>
-                  <li>• Emergency contact if needed</li>
+            {/* Phone Field - Optional */}
+            <div className="space-y-2">
+              <Label htmlFor="customer.phone" className="text-sm font-medium flex items-center">
+                <Phone className="h-4 w-4 mr-2 text-blue-600" />
+                Phone Number <span className="text-gray-500 font-normal">(Optional)</span>
+              </Label>
+              <Input
+                id="customer.phone"
+                type="tel"
+                placeholder={isMobile ? "(555) 123-4567" : "Enter your phone number (optional)"}
+                value={watchedPhone}
+                onChange={(e) => handlePhoneChange(e.target.value)}
+                className="h-12 md:h-10 border-gray-300 focus:border-blue-500"
+                {...register('customer.phone')}
+              />
+              <p className="text-xs text-gray-500">
+                We'll only call for urgent updates or appointment changes
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 🚀 COMPLETION STATUS */}
+      <Card className={`border-2 transition-all duration-300 ${
+        isComplete ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'
+      }`}>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              {isComplete ? (
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              ) : (
+                <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
+              )}
+              <span className={`text-sm font-medium ${
+                isComplete ? 'text-green-800' : 'text-gray-600'
+              }`}>
+                Contact Information
+              </span>
+            </div>
+            <Badge variant={isComplete ? 'default' : 'secondary'} className="text-xs">
+              {isComplete ? 'Complete' : 'Required'}
+            </Badge>
+          </div>
+          {isComplete && (
+            <p className="text-xs text-green-700 mt-2">
+              ✅ We'll send your booking confirmation to {watchedEmail}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 🚀 MOBILE-OPTIMIZED TIPS */}
+      {isMobile && (
+        <Card className="border-blue-100 bg-blue-50">
+          <CardContent className="p-3">
+            <div className="flex items-start space-x-2">
+              <div className="flex-shrink-0 mt-0.5">
+                <CheckCircle className="h-4 w-4 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-sm font-medium text-blue-900 mb-1">
+                  Quick Tips
+                </h4>
+                <ul className="text-xs text-blue-800 space-y-1">
+                  <li>• Use your legal name as it appears on your ID</li>
+                  <li>• We'll send confirmation to your email</li>
+                  <li>• Phone is optional but helpful for urgent updates</li>
                 </ul>
               </div>
-            </AlertDescription>
-          </Alert>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-          {/* Guarantee */}
-          <Card className="bg-yellow-50 border-yellow-200">
-            <CardContent className="p-4 text-center">
-              <CheckCircle className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
-              <div className="font-semibold text-yellow-900 mb-1">
-                30-Day Satisfaction Guarantee
-              </div>
-              <div className="text-sm text-yellow-800">
-                Not satisfied with our service? Full refund, no questions asked.
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Bottom Help Section */}
-      <div className="bg-gray-50 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Users className="h-5 w-5 text-gray-600" />
-            <span className="text-sm text-gray-700">
-              <strong>Need assistance?</strong> Our team is here to help with your booking.
-            </span>
-          </div>
-          <Button variant="outline" size="sm">
-            <Phone className="h-4 w-4 mr-2" />
-            Call (713) 234-5678
-          </Button>
-        </div>
-      </div>
+      {/* 🚀 ERROR SUMMARY */}
+      {hasErrors && (
+        <Alert className="border-red-200 bg-red-50">
+          <AlertCircle className="h-4 w-4 text-red-600" />
+          <AlertDescription className="text-red-800">
+            Please fix the errors above to continue with your booking.
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 }

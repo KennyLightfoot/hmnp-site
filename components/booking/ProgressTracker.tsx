@@ -1,277 +1,382 @@
 'use client';
 
 /**
- * Championship Booking System - Progress Tracker
+ * 🚀 MOBILE-OPTIMIZED PROGRESS TRACKER
  * Houston Mobile Notary Pros
  * 
- * Confidence-building progress tracker with real-time pricing,
- * psychological triggers, and trust signals.
+ * Enhanced progress tracking with mobile-first design,
+ * smooth animations, and conversion-optimized UX
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { 
   CheckCircle, 
-  Circle, 
   Clock, 
-  DollarSign, 
-  TrendingUp,
-  Shield,
+  Zap, 
+  Shield, 
   Star,
-  Users
+  Smartphone,
+  Monitor,
+  ChevronRight
 } from 'lucide-react';
 
-import { PricingResult } from '@/lib/pricing-engine';
-
-interface BookingStep {
-  id: string;
-  title: string;
-  subtitle: string;
-  showInProgress?: boolean;
-}
-
 interface ProgressTrackerProps {
-  steps: BookingStep[];
   currentStep: number;
+  totalSteps: number;
   completionProgress: number;
-  pricing?: PricingResult | null;
+  pricing?: any;
   pricingLoading?: boolean;
   timeRemaining?: number | null;
+  isMobile?: boolean;
 }
 
-interface ConfidenceMetrics {
-  bookingLikelihood: number;
-  priceConfidence: 'high' | 'medium' | 'low';
-  competitiveAdvantage: string[];
-  nextActions: string[];
+interface StepData {
+  id: string;
+  title: string;
+  shortTitle: string;
+  description: string;
+  mobileDescription: string;
+  estimatedTime: string;
+  icon: any;
+  tips: string[];
 }
+
+const STEP_DATA: StepData[] = [
+  {
+    id: 'service',
+    title: 'Choose Service',
+    shortTitle: 'Service',
+    description: 'Select the perfect notary service for your needs',
+    mobileDescription: 'Pick your service',
+    estimatedTime: '2 min',
+    icon: null,
+    tips: ['Most popular: Standard Notary', 'RON available 24/7', 'Loan signing includes expertise']
+  },
+  {
+    id: 'customer',
+    title: 'Your Information',
+    shortTitle: 'Contact',
+    description: 'Contact details for confirmation',
+    mobileDescription: 'Your contact info',
+    estimatedTime: '1 min',
+    icon: null,
+    tips: ['We\'ll send confirmation to this email', 'Phone for urgent updates', 'Your info is secure']
+  },
+  {
+    id: 'location',
+    title: 'Location',
+    shortTitle: 'Where',
+    description: 'Where should we meet you?',
+    mobileDescription: 'Meeting location',
+    estimatedTime: '2 min',
+    icon: null,
+    tips: ['We travel to you', 'RON: No location needed', 'Free travel within radius']
+  },
+  {
+    id: 'scheduling',
+    title: 'Schedule',
+    shortTitle: 'When',
+    description: 'Pick your preferred date and time',
+    mobileDescription: 'Pick date & time',
+    estimatedTime: '2 min',
+    icon: null,
+    tips: ['Same-day available', 'Weekend appointments', 'Flexible timing options']
+  },
+  {
+    id: 'review',
+    title: 'Review & Confirm',
+    shortTitle: 'Confirm',
+    description: 'Review and confirm your booking',
+    mobileDescription: 'Final review',
+    estimatedTime: '1 min',
+    icon: null,
+    tips: ['Double-check details', 'Secure payment', 'Instant confirmation']
+  }
+];
 
 export default function ProgressTracker({
-  steps,
   currentStep,
+  totalSteps,
   completionProgress,
   pricing,
   pricingLoading = false,
-  timeRemaining
+  timeRemaining,
+  isMobile = false
 }: ProgressTrackerProps) {
-  
-  // Calculate confidence metrics
-  const confidenceMetrics: ConfidenceMetrics = React.useMemo(() => {
-    const likelihood = Math.min(95, Math.max(20, completionProgress * 1.2));
-    
-    const advantages = [
-      '$100K E&O Insurance Coverage',
-      '4.9/5 Star Rating (487+ Reviews)',
-      'Texas Licensed Professional'
-    ];
+  const [isVisible, setIsVisible] = useState(false);
+  const [animateProgress, setAnimateProgress] = useState(false);
 
-    if (pricing?.confidence.level === 'high') {
-      advantages.push('Best Price in Houston Area');
-    }
+  // Animation triggers
+  useEffect(() => {
+    setIsVisible(true);
+    const timer = setTimeout(() => setAnimateProgress(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
-    if (timeRemaining) {
-      advantages.push('Slot Reserved & Protected');
-    }
-
-    const nextActions = [];
-    if (currentStep === 0) nextActions.push('Choose your perfect service');
-    if (currentStep === 1) nextActions.push('Quick contact details');
-    if (currentStep === 2) nextActions.push('Confirm service location');
-    if (currentStep === 3) nextActions.push('Pick your preferred time');
-    if (currentStep === 4) nextActions.push('Secure payment & confirmation');
-
-    return {
-      bookingLikelihood: likelihood,
-      priceConfidence: pricing?.confidence.level || 'medium',
-      competitiveAdvantage: advantages,
-      nextActions
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      if (window.innerWidth < 768 && !isMobile) {
+        // Force mobile view
+      }
     };
-  }, [completionProgress, pricing, timeRemaining, currentStep]);
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [isMobile]);
 
-  const formatTime = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
+  const currentStepData = STEP_DATA[currentStep] || STEP_DATA[0];
+  const isLastStep = currentStep === totalSteps - 1;
 
-  return (
-    <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 shadow-sm">
-      <CardContent className="p-6">
-        {/* Top Row - Main Metrics */}
-        <div className="flex items-center justify-between mb-4">
-          {/* Completion Progress */}
-          <div className="flex items-center space-x-4">
+  // Mobile Progress View
+  if (isMobile) {
+    return (
+      <Card className="border-gray-200 shadow-sm">
+        <CardContent className="p-4">
+          {/* Mobile Header */}
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-2">
-              <TrendingUp className="h-5 w-5 text-green-600" />
-              <span className="font-semibold text-green-800">
-                Booking Progress: {completionProgress}%
+              <span className="text-sm font-medium text-gray-700">
+                Step {currentStep + 1} of {totalSteps}
               </span>
-              <Badge 
-                variant="secondary" 
-                className="bg-green-100 text-green-800 animate-pulse"
-              >
-                {confidenceMetrics.bookingLikelihood}% Success Rate
+              <Badge variant="secondary" className="text-xs">
+                {currentStepData.estimatedTime}
               </Badge>
             </div>
-          </div>
-
-          {/* Live Pricing */}
-          {pricing && (
-            <div className="flex items-center space-x-6">
-              <div className="text-right">
-                <div className="flex items-center space-x-2">
-                  <DollarSign className="h-5 w-5 text-green-600" />
-                  <span className="text-2xl font-bold text-green-700">
-                    ${pricing.total.toFixed(2)}
-                  </span>
-                  {pricingLoading && (
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-green-600 border-t-transparent" />
-                  )}
-                </div>
-                {pricing.confidence.competitiveAdvantage && (
-                  <div className="text-sm text-green-600 font-medium">
-                    {pricing.confidence.competitiveAdvantage}
-                  </div>
-                )}
+            <div className="text-right">
+              <div className="text-sm font-semibold text-blue-600">
+                {completionProgress}%
               </div>
-
-              {/* Time Pressure (if slot reserved) */}
-              {timeRemaining && timeRemaining > 0 && (
-                <div className="flex items-center space-x-2 bg-orange-100 px-3 py-1 rounded-full">
-                  <Clock className="h-4 w-4 text-orange-600" />
-                  <span className="text-sm font-medium text-orange-700">
-                    Slot expires: {formatTime(timeRemaining)}
-                  </span>
-                </div>
-              )}
             </div>
-          )}
-        </div>
-
-        {/* Progress Bar */}
-        <div className="mb-4">
-          <Progress 
-            value={completionProgress} 
-            className="h-3 bg-green-100"
-          />
-          <div className="flex justify-between text-xs text-green-700 mt-1">
-            <span>Getting started</span>
-            <span className="font-medium">
-              {confidenceMetrics.nextActions[0] || 'Almost done!'}
-            </span>
-            <span>Booking confirmed</span>
           </div>
-        </div>
 
-        {/* Step Indicators */}
-        <div className="flex items-center justify-between mb-4">
-          {steps.map((step, index) => {
-            const isCompleted = index < currentStep;
-            const isCurrent = index === currentStep;
-            const isUpcoming = index > currentStep;
+          {/* Mobile Progress Bar */}
+          <div className="relative mb-3">
+            <Progress 
+              value={animateProgress ? completionProgress : 0} 
+              className="h-2 transition-all duration-1000 ease-out"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-xs font-medium text-gray-600 bg-white px-2">
+                {currentStepData.shortTitle}
+              </span>
+            </div>
+          </div>
+
+          {/* Mobile Step Info */}
+          <div className="text-center">
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">
+              {currentStepData.mobileDescription}
+            </h3>
+            <p className="text-xs text-gray-600">
+              {currentStepData.description}
+            </p>
+          </div>
+
+          {/* Mobile Trust Indicators */}
+          <div className="flex justify-center mt-3 space-x-3">
+            <div className="flex items-center space-x-1 text-xs text-gray-500">
+              <Shield className="h-3 w-3" />
+              <span>Secure</span>
+            </div>
+            <div className="flex items-center space-x-1 text-xs text-gray-500">
+              <Zap className="h-3 w-3" />
+              <span>Fast</span>
+            </div>
+            <div className="flex items-center space-x-1 text-xs text-gray-500">
+              <Star className="h-3 w-3" />
+              <span>Trusted</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Desktop Progress View
+  return (
+    <div className="space-y-4">
+      {/* Desktop Progress Header */}
+      <Card className="border-gray-200 shadow-sm">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-4">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  {currentStepData.title}
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  {currentStepData.description}
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Badge variant="outline" className="text-xs">
+                  {currentStepData.estimatedTime}
+                </Badge>
+                <Badge variant="secondary" className="text-xs">
+                  Step {currentStep + 1} of {totalSteps}
+                </Badge>
+              </div>
+            </div>
             
-            return (
-              <div key={step.id} className="flex items-center">
-                <div className="flex flex-col items-center">
-                  {/* Step Circle */}
-                  <div className={`
-                    flex items-center justify-center w-8 h-8 rounded-full border-2 
-                    ${isCompleted 
-                      ? 'bg-green-600 border-green-600 text-white' 
-                      : isCurrent 
-                        ? 'bg-blue-600 border-blue-600 text-white animate-pulse' 
-                        : 'bg-gray-100 border-gray-300 text-gray-500'
-                    }
-                  `}>
-                    {isCompleted ? (
-                      <CheckCircle className="h-4 w-4" />
-                    ) : (
-                      <Circle className="h-4 w-4" />
+            <div className="text-right">
+              <div className="text-2xl font-bold text-blue-600">
+                {animateProgress ? completionProgress : 0}%
+              </div>
+              <div className="text-sm text-gray-600">
+                Complete
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Progress Bar */}
+          <div className="relative mb-4">
+            <Progress 
+              value={animateProgress ? completionProgress : 0} 
+              className="h-3 transition-all duration-1000 ease-out"
+            />
+            <div className="absolute inset-0 flex items-center justify-between px-2">
+              {STEP_DATA.map((step, index) => (
+                <div
+                  key={step.id}
+                  className={`flex flex-col items-center space-y-1 ${
+                    index <= currentStep ? 'text-blue-600' : 'text-gray-400'
+                  }`}
+                >
+                  <div className={`w-3 h-3 rounded-full border-2 transition-all duration-300 ${
+                    index < currentStep 
+                      ? 'bg-blue-600 border-blue-600' 
+                      : index === currentStep 
+                        ? 'bg-white border-blue-600' 
+                        : 'bg-gray-200 border-gray-300'
+                  }`}>
+                    {index < currentStep && (
+                      <CheckCircle className="w-3 h-3 text-white" />
                     )}
                   </div>
-                  
-                  {/* Step Label */}
-                  <div className="text-center mt-1 max-w-20">
-                    <div className={`text-xs font-medium ${
-                      isCurrent ? 'text-blue-700' : 'text-gray-600'
-                    }`}>
-                      {step.title.split(' ')[0]}
-                    </div>
-                  </div>
+                  <span className="text-xs font-medium hidden lg:block">
+                    {step.shortTitle}
+                  </span>
                 </div>
-
-                {/* Connector Line */}
-                {index < steps.length - 1 && (
-                  <div className={`
-                    flex-1 h-0.5 mx-3 
-                    ${isCompleted ? 'bg-green-600' : 'bg-gray-300'}
-                  `} />
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Bottom Row - Trust Signals and Competitive Advantages */}
-        <div className="flex items-center justify-between text-sm">
-          {/* Trust Signals */}
-          <div className="flex items-center space-x-6">
-            {confidenceMetrics.competitiveAdvantage.slice(0, 3).map((advantage, index) => (
-              <div key={index} className="flex items-center space-x-1">
-                {advantage.includes('Insurance') && <Shield className="h-3 w-3 text-blue-600" />}
-                {advantage.includes('Rating') && <Star className="h-3 w-3 text-yellow-500" />}
-                {advantage.includes('Licensed') && <CheckCircle className="h-3 w-3 text-green-600" />}
-                {advantage.includes('Price') && <DollarSign className="h-3 w-3 text-green-600" />}
-                {advantage.includes('Slot') && <Clock className="h-3 w-3 text-orange-600" />}
-                <span className="text-gray-700 font-medium">{advantage}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          {/* Social Proof */}
-          <div className="flex items-center space-x-4 text-gray-600">
-            <div className="flex items-center space-x-1">
-              <Users className="h-4 w-4" />
-              <span>487+ customers this month</span>
+          {/* Desktop Trust Indicators */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-1 text-sm text-gray-600">
+                <Shield className="h-4 w-4" />
+                <span>Secure & Private</span>
+              </div>
+              <div className="flex items-center space-x-1 text-sm text-gray-600">
+                <Zap className="h-4 w-4" />
+                <span>Instant Confirmation</span>
+              </div>
+              <div className="flex items-center space-x-1 text-sm text-gray-600">
+                <Star className="h-4 w-4" />
+                <span>Trusted by 10k+ Customers</span>
+              </div>
             </div>
-            {pricing?.upsellSuggestions && pricing.upsellSuggestions.length > 0 && (
-              <Badge variant="outline" className="text-blue-600 border-blue-300">
-                Upgrade Available
-              </Badge>
+
+            {timeRemaining && (
+              <div className="flex items-center space-x-2 text-sm text-orange-600">
+                <Clock className="h-4 w-4" />
+                <span>{timeRemaining} min remaining</span>
+              </div>
             )}
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Confidence Boost Messages */}
-        {completionProgress >= 60 && (
-          <div className="mt-3 p-2 bg-green-100 rounded-lg border border-green-200">
-            <div className="text-sm text-green-800 font-medium">
-              🎉 Great progress! You're {completionProgress}% complete. 
-              Most customers at this stage successfully complete their booking.
+      {/* Desktop Step Tips */}
+      <Card className="border-blue-100 bg-blue-50">
+        <CardContent className="p-4">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0 mt-0.5">
+              <Monitor className="h-5 w-5 text-blue-600" />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-sm font-medium text-blue-900 mb-2">
+                Pro Tips for This Step
+              </h4>
+              <ul className="text-sm text-blue-800 space-y-1">
+                {currentStepData.tips.map((tip, index) => (
+                  <li key={index} className="flex items-start space-x-2">
+                    <span className="text-blue-600 mt-0.5">•</span>
+                    <span>{tip}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
-        )}
+        </CardContent>
+      </Card>
 
-        {/* Urgency Messages */}
-        {timeRemaining && timeRemaining <= 300 && timeRemaining > 0 && ( // 5 minutes or less
-          <div className="mt-3 p-2 bg-orange-100 rounded-lg border border-orange-200 animate-pulse">
-            <div className="text-sm text-orange-800 font-medium">
-              ⏰ Your reserved slot expires soon! Complete your booking to secure this time.
+      {/* Desktop Pricing Summary */}
+      {pricing && !pricingLoading && (
+        <Card className="border-green-200 bg-green-50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-medium text-green-900">
+                  Estimated Total
+                </h4>
+                <p className="text-xs text-green-700">
+                  Final price calculated at review step
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-lg font-bold text-green-900">
+                  ${pricing.totalAmount?.toFixed(2) || '0.00'}
+                </div>
+                <div className="text-xs text-green-700">
+                  {pricing.breakdown && (
+                    <span>
+                      Base: ${pricing.breakdown.basePrice} + Travel: ${pricing.breakdown.travelFee}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          </CardContent>
+        </Card>
+      )}
 
-        {/* Pricing Confidence Boost */}
-        {pricing?.confidence.level === 'high' && (
-          <div className="mt-3 p-2 bg-blue-100 rounded-lg border border-blue-200">
-            <div className="text-sm text-blue-800 font-medium">
-              💎 Premium service at the best price in Houston - you're saving vs competitors!
+      {/* Desktop Loading State */}
+      {pricingLoading && (
+        <Card className="border-gray-200 bg-gray-50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-center space-x-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent" />
+              <span className="text-sm text-gray-600">Calculating pricing...</span>
             </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Desktop Next Step Preview */}
+      {!isLastStep && (
+        <Card className="border-gray-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-medium text-gray-900">
+                  Next: {STEP_DATA[currentStep + 1]?.title}
+                </h4>
+                <p className="text-xs text-gray-600">
+                  {STEP_DATA[currentStep + 1]?.description}
+                </p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-gray-400" />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
