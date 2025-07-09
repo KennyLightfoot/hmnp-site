@@ -46,6 +46,7 @@ import ServiceSelector from './ServiceSelector';
 import CustomerInfoStep from './steps/CustomerInfoStep';
 import LocationStep from './steps/LocationStep';
 import SchedulingStep from './steps/SchedulingStep';
+import EnhancedSchedulingStep from './steps/EnhancedSchedulingStep';
 import ReviewStep from './steps/ReviewStep';
 
 // Validation schema
@@ -129,7 +130,7 @@ const BOOKING_STEPS = [
     shortTitle: 'When',
     description: 'Pick your preferred date and time',
     mobileDescription: 'Pick date & time',
-    component: SchedulingStep,
+    component: EnhancedSchedulingStep,
     icon: Calendar,
     estimatedTime: '2 min',
     tips: ['Same-day available', 'Weekend appointments', 'Flexible timing options']
@@ -308,7 +309,7 @@ export default function BookingForm({
     }
   }, [onComplete, onError]);
 
-  const CurrentStepComponent = BOOKING_STEPS[currentStep]?.component;
+  const CurrentStepComponent = BOOKING_STEPS[currentStep]?.component as any;
   const currentStepData = BOOKING_STEPS[currentStep];
 
   return (
@@ -411,23 +412,25 @@ export default function BookingForm({
             <form onSubmit={form.handleSubmit(onSubmit)}>
               {CurrentStepComponent && (
                 <div className={isNavigating ? 'opacity-50 pointer-events-none' : ''}>
-                  {React.createElement(CurrentStepComponent, {
-                    ...(currentStep === 0 ? {
-                      selectedService: watchedValues.serviceType,
-                      onServiceSelect: (serviceType: string) => 
-                        form.setValue('serviceType', serviceType),
-                      errors: formErrors
-                    } : {
-                      data: watchedValues,
-                      onUpdate: (updates: any) => {
+                  {currentStep === 0 ? (
+                    <CurrentStepComponent
+                      selectedService={watchedValues.serviceType}
+                      onServiceSelect={(serviceType: string) => 
+                        form.setValue('serviceType', serviceType)}
+                      errors={formErrors}
+                    />
+                  ) : (
+                    <CurrentStepComponent
+                      data={watchedValues}
+                      onUpdate={(updates: any) => {
                         Object.entries(updates).forEach(([key, value]) => {
                           form.setValue(key as any, value);
                         });
-                      },
-                      errors: formErrors,
-                      pricing: null
-                    })
-                  })}
+                      }}
+                      errors={formErrors}
+                      pricing={null}
+                    />
+                  )}
                 </div>
               )}
             </form>

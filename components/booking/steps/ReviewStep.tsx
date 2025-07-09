@@ -39,28 +39,12 @@ import {
 
 import { CreateBooking } from '@/lib/booking-validation';
 import TrustBar from '../TrustBar';
+import EnhancedPaymentForm from '@/components/payments/EnhancedPaymentForm';
+import PaymentSecurityIndicator from '@/components/payments/PaymentSecurityIndicator';
+import PaymentRecoveryForm from '@/components/payments/PaymentRecoveryForm';
+import { ReviewStepProps, PaymentOptionChangeHandler, PricingLineItem } from '@/lib/types/booking-interfaces';
 
-// Use imported ReviewStepProps from booking-interfaces
-
-const PAYMENT_METHODS = [
-  {
-    id: 'credit-card',
-    title: 'Credit or Debit Card',
-    description: 'Secure payment via Stripe',
-    icon: CreditCard,
-    popular: true,
-    fee: 0
-  },
-  {
-    id: 'cash',
-    title: 'Cash at Appointment',
-    description: 'Pay when we arrive (exact change)',
-    icon: DollarSign,
-    popular: false,
-    fee: 0,
-    note: 'Must pay deposit online'
-  }
-];
+// Enhanced payment methods are now handled by EnhancedPaymentForm component
 
 const GUARANTEES = [
   {
@@ -98,6 +82,10 @@ export default function ReviewStep({
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [showPaymentRecovery, setShowPaymentRecovery] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<any>(null);
+  const [selectedPaymentOption, setSelectedPaymentOption] = useState<any>(null);
   
   const watchedPayment = watch('payment') || {};
   const watchedServiceType = watch('serviceType');
@@ -114,7 +102,7 @@ export default function ReviewStep({
   }, [watchedPayment.paymentMethod, setValue, onUpdate, watchedPayment]);
 
   const handlePaymentMethodChange = (method: string) => {
-    setValue('payment.paymentMethod', method);
+    setValue('payment.paymentMethod', method as any);
     onUpdate({ payment: { ...watchedPayment, paymentMethod: method } });
   };
 
@@ -392,104 +380,65 @@ export default function ReviewStep({
         </CardContent>
       </Card>
 
-      {/* Payment Method */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <CreditCard className="h-5 w-5 text-blue-600" />
-            <span>Payment Method</span>
-          </CardTitle>
-          <CardDescription>
-            Choose how you'd like to pay for your appointment
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <RadioGroup 
-            value={watchedPayment.paymentMethod} 
-            onValueChange={handlePaymentMethodChange}
-            className="space-y-3"
-          >
-            {PAYMENT_METHODS.map((method) => (
-              <div key={method.id} className="relative">
-                <RadioGroupItem value={method.id} id={method.id} className="sr-only" />
-                <Label
-                  htmlFor={method.id}
-                  className="cursor-pointer block"
-                >
-                  <Card className={`transition-all duration-200 ${
-                    watchedPayment.paymentMethod === method.id 
-                      ? 'ring-2 ring-blue-500 border-blue-500 bg-blue-50' 
-                      : 'hover:border-gray-300'
-                  }`}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <method.icon className="h-5 w-5 text-blue-600" />
-                          <div>
-                            <div className="flex items-center space-x-2">
-                              <span className="font-medium">{method.title}</span>
-                              {method.popular && (
-                                <Badge variant="secondary" className="text-xs">
-                                  Recommended
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              {method.description}
-                            </div>
-                            {method.note && (
-                              <div className="text-xs text-orange-600 mt-1">
-                                {method.note}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        {method.fee > 0 && (
-                          <span className="text-sm text-gray-600">
-                            +${method.fee.toFixed(2)}
-                          </span>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Label>
-              </div>
-            ))}
-          </RadioGroup>
+      {/* Enhanced Payment Form */}
+      <EnhancedPaymentForm
+        totalAmount={pricing.totalPrice}
+        depositAmount={Math.min(50, pricing.totalPrice * 0.25)}
+        onPaymentMethodSelect={setSelectedPaymentMethod}
+        onPaymentOptionSelect={setSelectedPaymentOption}
+        onPaymentSubmit={async (paymentData) => {
+          try {
+            setPaymentError(null);
+            // Handle payment submission
+            console.log('Payment submitted:', paymentData);
+          } catch (error) {
+            setPaymentError(error instanceof Error ? error.message : 'Payment failed');
+            setShowPaymentRecovery(true);
+          }
+        }}
+        selectedMethod={selectedPaymentMethod}
+        selectedOption={selectedPaymentOption}
+        isLoading={isSubmitting}
+        error={paymentError}
+        serviceType={watchedServiceType}
+        isMobile={false}
+      />
 
-          {/* Payment Options */}
-          {pricing && pricing.total > 100 && (
-            <div className="mt-4 space-y-3">
-              <h4 className="font-medium">Payment Options</h4>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem 
-                    value="deposit" 
-                    id="payment-deposit"
-                    checked={!watchedPayment.payFullAmount}
-                    onClick={() => handlePaymentOptionChange('payFullAmount', false)}
-                  />
-                  <Label htmlFor="payment-deposit" className="text-sm">
-                    Pay 50% deposit now (${(pricing.total * 0.5).toFixed(2)}), 
-                    balance at appointment
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem 
-                    value="full" 
-                    id="payment-full"
-                    checked={watchedPayment.payFullAmount}
-                    onClick={() => handlePaymentOptionChange('payFullAmount', true)}
-                  />
-                  <Label htmlFor="payment-full" className="text-sm">
-                    Pay full amount now (${pricing.total.toFixed(2)})
-                  </Label>
-                </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Payment Security Indicator */}
+      <PaymentSecurityIndicator
+        showDetails={false}
+        isMobile={false}
+      />
+
+      {/* Payment Recovery Form */}
+      {showPaymentRecovery && paymentError && (
+        <PaymentRecoveryForm
+          failure={{
+            id: 'recovery-1',
+            bookingId: 'temp',
+            amount: pricing.totalPrice,
+            originalMethod: selectedPaymentMethod?.id || 'unknown',
+            failureReason: paymentError,
+            customerMessage: paymentError,
+            timestamp: new Date().toISOString(),
+            retryCount: 0,
+            maxRetries: 3
+          }}
+          onRetryPayment={async (option) => {
+            console.log('Retry payment with option:', option);
+          }}
+          onAlternativePayment={async (method) => {
+            console.log('Alternative payment method:', method);
+          }}
+          onContactSupport={() => {
+            window.open('tel:+17135550123', '_blank');
+          }}
+          onCancel={() => {
+            setShowPaymentRecovery(false);
+            setPaymentError(null);
+          }}
+        />
+      )}
 
       {/* Terms and Agreements */}
       <Card>
