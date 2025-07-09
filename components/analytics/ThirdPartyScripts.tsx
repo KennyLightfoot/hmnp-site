@@ -216,22 +216,8 @@ export default function ThirdPartyScripts() {
         `}
       </Script>
 
-      {/* Noscript fallbacks */}
-      <noscript>
-        <img height="1" width="1" style={{display: 'none'}} 
-             src="https://www.facebook.com/tr?id=1459938351663284&ev=PageView&noscript=1" />
-      </noscript>
-
-      <noscript>
-        <img height="1" width="1" style={{display: 'none'}} 
-             src="https://px.ads.linkedin.com/collect/?pid=514942430&fmt=gif" />
-      </noscript>
-
-      {/* Google Tag Manager (noscript) */}
-      <noscript>
-        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PMHB36X5"
-                height="0" width="0" style={{display: 'none', visibility: 'hidden'}}></iframe>
-      </noscript>
+      {/* Noscript fallbacks - Removed to prevent SSR Html import conflicts 
+          These will be added via GTM or other means when needed */}
     </>
   )
 }

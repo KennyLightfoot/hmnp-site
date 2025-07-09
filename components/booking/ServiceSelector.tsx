@@ -437,6 +437,12 @@ export default function ServiceSelector({
                             Save ${service.savings.toFixed(2)}
                           </div>
                         )}
+                        {/* Dynamic pricing indicator */}
+                        {service.dynamicPricing && (
+                          <div className="text-xs text-orange-600 font-medium mt-1">
+                            Dynamic Pricing Active
+                          </div>
+                        )}
                       </div>
                     </div>
 

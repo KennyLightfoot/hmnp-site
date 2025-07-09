@@ -14,10 +14,10 @@ const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
 
 // Your calendar IDs that need to work
 const CALENDARS_TO_FIX = {
-  'STANDARD_NOTARY': 'XhHkzwNbT1MSWcGsfBjl',
-  'EXTENDED_HOURS': 'BjSsV5TuN8kJSexADD9W',
-  'LOAN_SIGNING': 'gp2EBhGYgfYTNwJ0LlhK',
-  'RON_SERVICES': 'FMg76LwuDd9RLJNekQId'
+  'STANDARD_NOTARY': 'w3sjmTzBfuahySgQvKoV',
+  'EXTENDED_HOURS': 'OmcFGOLhrR9lil6AQa2z',
+  'LOAN_SIGNING': 'yf6tpA7YMn3oyZc6GVZK',
+  'RON_SERVICES': 'xFRCVGNlnZASiQnBVHEG'
 };
 
 async function makeGHLRequest(endpoint, method = 'GET', body = null) {

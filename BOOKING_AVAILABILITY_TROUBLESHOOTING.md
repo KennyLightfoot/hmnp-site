@@ -4,7 +4,7 @@
 
 ### ✅ **CONFIRMED WORKING COMPONENTS**
 - GHL API connection: ✅ Working (HTTP 200, valid traceId)
-- Calendar ID mapping: ✅ Correct (`XhHkzwNbT1MSWcGsfBjl`)
+- Calendar ID mapping: ✅ Correct (`w3sjmTzBfuahySgQvKoV`)
 - Endpoint and format: ✅ Correct (`/calendars/{id}/free-slots`)
 - Calendar configuration: ✅ Properly set (Mon-Fri 9AM-5PM)
 

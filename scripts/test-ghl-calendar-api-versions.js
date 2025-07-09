@@ -4,7 +4,7 @@ async function testDifferentGHLApproaches() {
   console.log('🧪 Testing Different GHL Calendar API Approaches');
   console.log('=============================================\n');
 
-  const calendarId = process.env.GHL_STANDARD_NOTARY_CALENDAR_ID || 'XhHkzwNbT1MSWcGsfBjl';
+  const calendarId = process.env.GHL_STANDARD_NOTARY_CALENDAR_ID || 'w3sjmTzBfuahySgQvKoV';
   const token = process.env.GHL_PRIVATE_INTEGRATION_TOKEN;
   const locationId = process.env.GHL_LOCATION_ID;
 

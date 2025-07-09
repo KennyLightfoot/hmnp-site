@@ -14,28 +14,28 @@ Your system already has a perfectly organized service structure! Here's what we'
 - **Hours**: 9am-5pm Mon-Fri  
 - **Duration**: 60 minutes
 - **Features**: Up to 2 docs, 1-2 signers, 15-mile travel
-- **Calendar**: `GHL_STANDARD_NOTARY_CALENDAR_ID` = `XhHkzwNbT1MSWcGsfBjl`
+- **Calendar**: `GHL_STANDARD_NOTARY_CALENDAR_ID` = `w3sjmTzBfuahySgQvKoV`
 
 #### **2. EXTENDED_HOURS**
 - **Price**: $100.00
 - **Hours**: 7am-9pm Daily
 - **Duration**: 90 minutes  
 - **Features**: Up to 5 docs, 2 signers, 20-mile travel, same-day guarantee
-- **Calendar**: `GHL_EXTENDED_HOURS_CALENDAR_ID` = `BjSsV5TuN8kJSexADD9W`
+- **Calendar**: `GHL_EXTENDED_HOURS_CALENDAR_ID` = `OmcFGOLhrR9lil6AQa2z`
 
 #### **3. LOAN_SIGNING**
 - **Price**: $150.00
 - **Hours**: By appointment
 - **Duration**: 120 minutes
 - **Features**: Unlimited docs, up to 4 signers, real estate expertise
-- **Calendar**: `GHL_LOAN_SIGNING_SPECIALIST_CALENDAR_ID` = `gp2EBhGYgfYTNwJ0LlhK`
+- **Calendar**: `GHL_LOAN_SIGNING_SPECIALIST_CALENDAR_ID` = `yf6tpA7YMn3oyZc6GVZK`
 
 #### **4. RON_SERVICES**
 - **Price**: $35.00 ($25 RON + $10 notarial)
 - **Hours**: 24/7 Availability  
 - **Duration**: 45 minutes
 - **Features**: Remote service, up to 10 docs, Proof.com platform
-- **Calendar**: `GHL_BOOKING_CALENDAR_ID` = `FMg76LwuDd9RLJNekQId`
+- **Calendar**: `GHL_BOOKING_CALENDAR_ID` = `xFRCVGNlnZASiQnBVHEG`
 
 ---
 
@@ -129,10 +129,10 @@ Payment:Refunded
 ### **Service → Calendar Mapping**
 ```javascript
 const SERVICE_CALENDAR_MAPPING = {
-  'STANDARD_NOTARY': 'XhHkzwNbT1MSWcGsfBjl',
-  'EXTENDED_HOURS': 'BjSsV5TuN8kJSexADD9W', 
-  'LOAN_SIGNING': 'gp2EBhGYgfYTNwJ0LlhK',
-  'RON_SERVICES': 'FMg76LwuDd9RLJNekQId'
+  'STANDARD_NOTARY': 'w3sjmTzBfuahySgQvKoV',
+  'EXTENDED_HOURS': 'OmcFGOLhrR9lil6AQa2z', 
+  'LOAN_SIGNING': 'yf6tpA7YMn3oyZc6GVZK',
+  'RON_SERVICES': 'xFRCVGNlnZASiQnBVHEG'
 };
 ```
 

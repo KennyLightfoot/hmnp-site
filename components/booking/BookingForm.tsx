@@ -49,6 +49,14 @@ import SchedulingStep from './steps/SchedulingStep';
 import EnhancedSchedulingStep from './steps/EnhancedSchedulingStep';
 import ReviewStep from './steps/ReviewStep';
 
+// Import transparent pricing components
+import { useBookingPricing } from '../../hooks/use-transparent-pricing';
+import { CompactPricingDisplay } from './EnhancedPricingDisplay';
+
+// Business Rules Integration
+import { validateBusinessRules } from '../../lib/business-rules/engine';
+import { BUSINESS_RULES_CONFIG } from '../../lib/business-rules/config';
+
 // Validation schema
 import { z } from 'zod';
 
@@ -188,9 +196,41 @@ export default function BookingForm({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
+  // Business Rules state
+  const [businessRulesValidation, setBusinessRulesValidation] = useState<{
+    isValid: boolean;
+    violations: string[];
+    recommendations: string[];
+    serviceAreaWarning?: string;
+    extraFees?: number;
+  } | null>(null);
+  const [isValidatingBusinessRules, setIsValidatingBusinessRules] = useState(false);
+
   // Watch form values
   const watchedValues = form.watch();
   const formErrors = form.formState.errors;
+  
+  // Enhanced transparent pricing integration
+  const {
+    pricing: transparentPricing,
+    isCalculating: isPricingCalculating,
+    error: pricingError,
+    totalPrice,
+    hasDiscounts,
+    dynamicPricingActive,
+    alternatives
+  } = useBookingPricing({
+    serviceType: watchedValues.serviceType,
+    documentCount: 1, // Could be enhanced to get from form
+    address: watchedValues.location?.address,
+    scheduledDateTime: watchedValues.scheduling?.preferredDateTime,
+    customerType: 'new', // Could be enhanced based on user auth
+    customerEmail: watchedValues.customer?.email
+  }, {
+    onPricingChange: (pricing) => {
+      console.log('💰 Pricing updated:', pricing?.totalPrice);
+    }
+  });
 
   // Mobile detection
   useEffect(() => {
@@ -231,13 +271,69 @@ export default function BookingForm({
     return Math.round(((currentStep + 1) / BOOKING_STEPS.length) * 100);
   }, [currentStep]);
 
+  // Business Rules validation function
+  const validateCurrentStepBusinessRules = useCallback(async () => {
+    setIsValidatingBusinessRules(true);
+    
+    try {
+      // Service Area validation (Location step)
+      if (currentStep === 2 && watchedValues.location?.address && watchedValues.serviceType !== 'RON_SERVICES') {
+        const result = await validateBusinessRules({
+          serviceType: watchedValues.serviceType,
+          location: { address: watchedValues.location.address },
+          documentCount: 1, // Default for now
+          ghlContactId: undefined
+        });
+        
+        setBusinessRulesValidation({
+          isValid: result.isValid,
+          violations: result.violations,
+          recommendations: result.ghlActions.tags || [],
+          serviceAreaWarning: result.violations.find(v => v.includes('distance')) || undefined
+        });
+        
+        return result.isValid;
+      }
+      
+      // Document Limits validation (Service Details step if exists)
+      if (currentStep === 1 && watchedValues.serviceType) {
+        const serviceLimits = BUSINESS_RULES_CONFIG.documentLimits.serviceLimits;
+        const limit = serviceLimits[watchedValues.serviceType as keyof typeof serviceLimits];
+        
+        if (limit) {
+          const documentCount = 1; // Default, could be enhanced to get from form
+          const isWithinLimits = documentCount <= limit.base;
+          
+          if (!isWithinLimits) {
+            setBusinessRulesValidation({
+              isValid: false,
+              violations: [`This service is limited to ${limit.base} document(s)`],
+              recommendations: [`Extra documents will incur $${limit.extraFee} per document`],
+              extraFees: (documentCount - limit.base) * limit.extraFee
+            });
+            return false;
+          }
+        }
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Business rules validation error:', error);
+      return true; // Don't block on business rules errors
+    } finally {
+      setIsValidatingBusinessRules(false);
+    }
+  }, [currentStep, watchedValues]);
+
   // Enhanced navigation with loading states
   const nextStep = useCallback(async () => {
     if (currentStep < BOOKING_STEPS.length - 1) {
       setIsNavigating(true);
       setErrorMessage(null);
+      setBusinessRulesValidation(null);
       
       try {
+        // 1. Form validation (existing)
         const currentStepFields = STEP_FIELD_MAPPING[currentStep];
         let currentStepValid = true;
         
@@ -252,7 +348,15 @@ export default function BookingForm({
           return;
         }
 
-        // Smooth transition with delay
+        // 2. Business Rules validation (new)
+        const businessRulesValid = await validateCurrentStepBusinessRules();
+        
+        if (!businessRulesValid) {
+          setErrorMessage('Please address the business policy requirements to continue');
+          return;
+        }
+
+        // 3. Smooth transition with delay
         await new Promise(resolve => setTimeout(resolve, 300));
         setCurrentStep(prev => prev + 1);
         
@@ -263,7 +367,7 @@ export default function BookingForm({
         setIsNavigating(false);
       }
     }
-  }, [currentStep, form, watchedValues]);
+  }, [currentStep, form, watchedValues, validateCurrentStepBusinessRules]);
 
   const prevStep = useCallback(async () => {
     if (currentStep > 0) {
@@ -379,6 +483,74 @@ export default function BookingForm({
           <CheckCircle className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800">
             {successMessage}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Business Rules Validation Results */}
+      {businessRulesValidation && (
+        <Alert className={`animate-in slide-in-from-top-2 ${
+          businessRulesValidation.isValid 
+            ? 'border-blue-200 bg-blue-50' 
+            : 'border-orange-200 bg-orange-50'
+        }`}>
+          <div className="flex items-start space-x-2">
+            {businessRulesValidation.isValid ? (
+              <CheckCircle className="h-4 w-4 text-blue-600 mt-0.5" />
+            ) : (
+              <AlertCircle className="h-4 w-4 text-orange-600 mt-0.5" />
+            )}
+            <div className="flex-1">
+              <AlertDescription className={
+                businessRulesValidation.isValid ? 'text-blue-800' : 'text-orange-800'
+              }>
+                {businessRulesValidation.isValid ? (
+                  <div>
+                    <div className="font-medium">✅ Business Policy Check Passed</div>
+                    {businessRulesValidation.recommendations.length > 0 && (
+                      <div className="mt-1 text-sm">
+                        <div className="font-medium">Recommendations:</div>
+                        <ul className="list-disc list-inside space-y-1">
+                          {businessRulesValidation.recommendations.map((rec, index) => (
+                            <li key={index}>{rec}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <div className="font-medium">⚠️ Business Policy Restrictions</div>
+                    {businessRulesValidation.violations.length > 0 && (
+                      <div className="mt-1">
+                        <ul className="list-disc list-inside space-y-1">
+                          {businessRulesValidation.violations.map((violation, index) => (
+                            <li key={index}>{violation}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {businessRulesValidation.extraFees && businessRulesValidation.extraFees > 0 && (
+                      <div className="mt-2 p-2 bg-orange-100 rounded border border-orange-200">
+                        <div className="text-sm">
+                          <strong>Additional fees apply:</strong> ${businessRulesValidation.extraFees.toFixed(2)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </AlertDescription>
+            </div>
+          </div>
+        </Alert>
+      )}
+
+      {/* Business Rules Loading State */}
+      {isValidatingBusinessRules && (
+        <Alert className="border-blue-200 bg-blue-50 animate-in slide-in-from-top-2">
+          <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
+          <AlertDescription className="text-blue-800">
+            Checking business policies...
           </AlertDescription>
         </Alert>
       )}

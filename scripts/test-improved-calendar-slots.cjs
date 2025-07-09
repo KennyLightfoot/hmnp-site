@@ -36,7 +36,7 @@ async function testImprovedCalendarSlots() {
   console.log('🧪 Testing Improved Calendar Slots Function');
   console.log('═'.repeat(60));
   
-  const calendarId = 'XhHkzwNbT1MSWcGsfBjl'; // Standard Notary Services
+  const calendarId = 'w3sjmTzBfuahySgQvKoV'; // Standard Notary Services
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const dateStr = tomorrow.toISOString().split('T')[0];

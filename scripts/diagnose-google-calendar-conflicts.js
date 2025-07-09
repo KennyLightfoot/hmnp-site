@@ -17,7 +17,7 @@ const GHL_PRIVATE_INTEGRATION_TOKEN = process.env.GHL_PRIVATE_INTEGRATION_TOKEN;
 const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
 
 // Test calendar and user
-const TEST_CALENDAR_ID = 'XhHkzwNbT1MSWcGsfBjl'; // Standard Notary
+const TEST_CALENDAR_ID = 'w3sjmTzBfuahySgQvKoV'; // Standard Notary
 const USER_ID = 'dYOQIx02wwBVjY4ihxoY'; // Kenny Lightfoot
 
 /**

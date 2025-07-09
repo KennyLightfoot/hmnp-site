@@ -48,19 +48,40 @@ export default function SimpleBookingForm() {
 
   const calculatePrice = async () => {
     try {
-      const response = await fetch('/api/booking/calculate-price', {
+      // Use new transparent pricing API
+      const response = await fetch('/api/pricing/transparent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           serviceType: formData.serviceType,
-          address: formData.serviceType !== 'RON_SERVICES' ? formData.locationAddress : null
+          address: formData.serviceType !== 'RON_SERVICES' ? formData.locationAddress : null,
+          documentCount: 1,
+          signerCount: 1,
+          customerType: 'new',
+          scheduledDateTime: formData.bookingDate && formData.bookingTime ? 
+            `${formData.bookingDate}T${formData.bookingTime.split('T')[1] || '10:00:00'}` : undefined
         })
       });
+      
       if (response.ok) {
         const result = await response.json();
-        setPricing(result);
+        if (result.success) {
+          // Transform transparent pricing to simple format for backward compatibility
+          setPricing({
+            basePrice: result.basePrice,
+            travelFee: result.breakdown.travelFee?.amount || 0,
+            totalPrice: result.totalPrice,
+            // Store full transparent data for enhanced display
+            transparentData: result
+          });
+        } else {
+          throw new Error(result.error);
+        }
+      } else {
+        throw new Error('Pricing calculation failed');
       }
     } catch (error) {
+      console.warn('Falling back to basic pricing:', error);
       setPricing({
         basePrice: SERVICE_PRICES[formData.serviceType as keyof typeof SERVICE_PRICES] || 75,
         travelFee: 0,
@@ -137,7 +158,15 @@ export default function SimpleBookingForm() {
           addressZip: '77001' // Default for now
         } : {}),
         
-        pricing,
+        // Enhanced pricing with transparent data
+        pricing: {
+          basePrice: pricing.basePrice,
+          travelFee: pricing.travelFee,
+          totalPrice: pricing.totalPrice,
+          // Include transparent pricing data if available
+          transparentData: pricing.transparentData
+        },
+        
         numberOfDocuments: 1,
         numberOfSigners: 1
       };
@@ -288,23 +317,94 @@ export default function SimpleBookingForm() {
               </div>
             </div>
 
-            {/* Price Display */}
+            {/* Enhanced Price Display */}
             {formData.serviceType && (
-              <div className="bg-gray-50 p-4 rounded">
-                <div className="flex justify-between">
-                  <span>Service:</span>
-                  <span>${pricing.basePrice}</span>
-                </div>
-                {pricing.travelFee > 0 && (
-                  <div className="flex justify-between">
-                    <span>Travel:</span>
-                    <span>${pricing.travelFee}</span>
+              <div className="space-y-3">
+                {/* Transparent Pricing Display */}
+                {pricing.transparentData ? (
+                  <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-medium text-blue-900">Transparent Pricing</h3>
+                      {pricing.transparentData.businessRules?.dynamicPricingActive && (
+                        <span className="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded">
+                          Dynamic Pricing
+                        </span>
+                      )}
+                    </div>
+                    
+                    {/* Breakdown */}
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>{pricing.transparentData.breakdown.serviceBase.label}:</span>
+                        <span>${pricing.transparentData.breakdown.serviceBase.amount}</span>
+                      </div>
+                      
+                      {pricing.transparentData.breakdown.travelFee && (
+                        <div className="flex justify-between">
+                          <span>{pricing.transparentData.breakdown.travelFee.label}:</span>
+                          <span>${pricing.transparentData.breakdown.travelFee.amount}</span>
+                        </div>
+                      )}
+                      
+                      {pricing.transparentData.breakdown.timeBasedSurcharges.map((surcharge, index) => (
+                        <div key={index} className="flex justify-between text-orange-700">
+                          <span>{surcharge.label}:</span>
+                          <span>+${surcharge.amount}</span>
+                        </div>
+                      ))}
+                      
+                      {pricing.transparentData.breakdown.discounts.map((discount, index) => (
+                        <div key={index} className="flex justify-between text-green-700">
+                          <span>{discount.label}:</span>
+                          <span>-${discount.amount}</span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="flex justify-between font-bold border-t border-blue-200 pt-2 mt-3 text-blue-900">
+                      <span>Total:</span>
+                      <span>${pricing.totalPrice}</span>
+                    </div>
+                    
+                    {/* Why This Price */}
+                    {pricing.transparentData.transparency?.whyThisPrice && (
+                      <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+                        <strong>Why this price?</strong> {pricing.transparentData.transparency.whyThisPrice}
+                      </div>
+                    )}
+                    
+                    {/* Savings Options */}
+                    {pricing.transparentData.transparency?.alternatives && 
+                     pricing.transparentData.transparency.alternatives.length > 0 && (
+                      <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded">
+                        <div className="text-xs font-medium text-green-800 mb-1">💰 Save Money:</div>
+                        {pricing.transparentData.transparency.alternatives.slice(0, 2).map((alt, index) => (
+                          <div key={index} className="text-xs text-green-700">
+                            • {alt.serviceType.replace(/_/g, ' ')}: ${alt.price} (save ${alt.savings})
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Fallback Basic Display */
+                  <div className="bg-gray-50 p-4 rounded">
+                    <div className="flex justify-between">
+                      <span>Service:</span>
+                      <span>${pricing.basePrice}</span>
+                    </div>
+                    {pricing.travelFee > 0 && (
+                      <div className="flex justify-between">
+                        <span>Travel:</span>
+                        <span>${pricing.travelFee}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-bold border-t pt-2 mt-2">
+                      <span>Total:</span>
+                      <span>${pricing.totalPrice}</span>
+                    </div>
                   </div>
                 )}
-                <div className="flex justify-between font-bold border-t pt-2 mt-2">
-                  <span>Total:</span>
-                  <span>${pricing.totalPrice}</span>
-                </div>
               </div>
             )}
 

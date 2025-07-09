@@ -11,7 +11,7 @@
 const CALENDAR_GROUPS = {
   'STANDARD_BUSINESS': {
     name: 'Standard Business Services',
-    calendars: ['XhHkzwNbT1MSWcGsfBjl'], // Standard Notary
+    calendars: ['w3sjmTzBfuahySgQvKoV'], // Standard Notary
     suggestedUrl: 'standard-business-services',
     displayName: 'Standard Business Services',
     description: 'Professional notary services during regular business hours'
@@ -19,7 +19,7 @@ const CALENDAR_GROUPS = {
   
   'EXTENDED_FLEXIBLE': {
     name: 'Extended & Flexible Services',
-    calendars: ['BjSsV5TuN8kJSexADD9W', 'FMg76LwuDd9RLJNekQId'], // Extended Hours + RON
+    calendars: ['OmcFGOLhrR9lil6AQa2z', 'xFRCVGNlnZASiQnBVHEG'], // Extended Hours + RON
     suggestedUrl: 'extended-flexible-services',
     displayName: 'Extended & Flexible Services',
     description: 'Extended hours and remote services for maximum flexibility'
@@ -27,7 +27,7 @@ const CALENDAR_GROUPS = {
   
   'SPECIALTY_SERVICES': {
     name: 'Specialty Services',
-    calendars: ['gp2EBhGYgfYTNwJ0LlhK'], // Loan Signing
+    calendars: ['yf6tpA7YMn3oyZc6GVZK'], // Loan Signing
     suggestedUrl: 'specialty-services',
     displayName: 'Specialty Services',
     description: 'Specialized loan signing and document services'

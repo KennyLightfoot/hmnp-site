@@ -110,56 +110,83 @@ async function main() {
       console.log(`✅ Upserted service: ${service.name}`);
     }
 
-    // Create promo codes using CORRECT schema-v2 structure
-    console.log('🎫 Seeding Promo Codes...');
+    // Create promotional campaigns using Phase 3 structure
+    console.log('🎫 Seeding Promotional Campaigns...');
     
-    const promoCodes = [
+    const promotionalCampaigns = [
       {
-        id: 'promo_first_time',
-        code: 'FIRST25',
-        description: 'First-time customer discount',
-        discountType: DiscountType.FIXED,  // CORRECT: Use FIXED instead of FIXED_AMOUNT
-        discountAmount: 25.00,  // CORRECT: Use discountAmount instead of discountValue
-        minimumOrder: 75.00,
-        maxUses: 100,
-        currentUses: 0,
-        maxUsesPerUser: 1,
-        validFrom: new Date('2024-01-01'),
-        validUntil: new Date('2024-12-31'),
+        code: 'WELCOME10',
+        name: '10% First-Time Customer Discount',
+        description: 'Welcome to Houston Mobile Notary Pros!',
+        type: 'first_time',
+        value: 10,
+        maxDiscount: 25,
+        minOrderValue: 0,
+        customerTypes: ['new'],
+        validFrom: new Date('2025-01-01'),
+        validUntil: new Date('2025-12-31'),
+        isActive: true
       },
       {
-        id: 'promo_loyalty',
-        code: 'LOYAL10',
-        description: 'Returning customer discount',
-        discountType: DiscountType.PERCENTAGE,
-        discountAmount: 10.00,  // 10% as decimal
-        minimumOrder: 50.00,
-        maxUses: 500,
-        currentUses: 0,
-        maxUsesPerUser: 5,
-        validFrom: new Date('2024-01-01'),
-        validUntil: new Date('2024-12-31'),
+        code: 'LOYAL20',
+        name: '20% Loyalty Customer Discount',
+        description: 'Thank you for being a loyal customer!',
+        type: 'loyalty',
+        value: 20,
+        maxDiscount: 50,
+        minOrderValue: 0,
+        customerTypes: ['loyalty'],
+        validFrom: new Date('2025-01-01'),
+        validUntil: new Date('2025-12-31'),
+        isActive: true
+      },
+      {
+        code: 'FRIEND15',
+        name: '15% Referral Discount',
+        description: 'Thank you for the referral!',
+        type: 'referral',
+        value: 15,
+        maxDiscount: 40,
+        minOrderValue: 0,
+        validFrom: new Date('2025-01-01'),
+        validUntil: new Date('2025-12-31'),
+        isActive: true
+      },
+      {
+        code: 'RON5OFF',
+        name: '$5 RON Service Discount',
+        description: 'Special discount for remote online notarization!',
+        type: 'fixed_amount',
+        value: 5,
+        serviceTypes: ['RON_SERVICES'],
+        validFrom: new Date('2025-01-01'),
+        validUntil: new Date('2025-12-31'),
+        maxUses: 100,
+        isActive: true
+      },
+      {
+        code: 'WINTER25',
+        name: '$25 Winter Special',
+        description: 'Stay warm while we handle your notarization!',
+        type: 'seasonal',
+        value: 25,
+        validFrom: new Date('2025-01-01'),
+        validUntil: new Date('2025-03-31'),
+        maxUses: 50,
+        isActive: true
       }
     ];
 
-    for (const promo of promoCodes) {
-      await prisma.promoCode.upsert({
-        where: { id: promo.id },
+    for (const campaign of promotionalCampaigns) {
+      await prisma.promotionalCampaign.upsert({
+        where: { code: campaign.code },
         update: {
-          code: promo.code,
-          description: promo.description,
-          discountType: promo.discountType,
-          discountAmount: promo.discountAmount,
-          minimumOrder: promo.minimumOrder,
-          maxUses: promo.maxUses,
-          currentUses: promo.currentUses,
-          maxUsesPerUser: promo.maxUsesPerUser,
-          validFrom: promo.validFrom,
-          validUntil: promo.validUntil,
+          ...campaign,
+          updatedAt: new Date()
         },
-        create: promo,
+        create: campaign,
       });
-      console.log(`✅ Upserted promo code: ${promo.code}`);
+      console.log(`✅ Upserted promotional campaign: ${campaign.code} - ${campaign.name}`);
     }
 
     console.log(`🌱 Database seeding completed successfully!`);

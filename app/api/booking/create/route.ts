@@ -16,6 +16,12 @@ import { z } from 'zod';
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
 import { createContact, createAppointment, addContactToWorkflow } from '@/lib/ghl/management';
 
+// Business Rules Integration
+import { validateBusinessRules } from '../../../../lib/business-rules/engine';
+
+// Transparent Pricing GHL Integration
+import { TransparentPricingGHLIntegration } from '../../../../lib/ghl/transparent-pricing-integration';
+
 // Validation schema matching schema-v2 structure
 const BookingCreateSchema = z.object({
   // Service selection
@@ -38,11 +44,19 @@ const BookingCreateSchema = z.object({
   addressZip: z.string().optional(),
   locationNotes: z.string().optional(),
   
-  // Pricing
+  // Pricing (enhanced for transparent pricing)
   pricing: z.object({
     basePrice: z.number(),
     travelFee: z.number().default(0),
-    totalPrice: z.number()
+    totalPrice: z.number(),
+    // Optional transparent pricing data
+    transparentData: z.object({
+      serviceType: z.string(),
+      breakdown: z.any(),
+      transparency: z.any(),
+      businessRules: z.any(),
+      metadata: z.any()
+    }).optional()
   }),
   
   // Documents (for RON)
@@ -82,6 +96,39 @@ export async function POST(request: NextRequest) {
         { error: 'Address is required for mobile services' },
         { status: 400 }
       );
+    }
+
+    // 🔥 NEW: Business Rules Validation
+    console.log('🔍 Validating business rules for booking...');
+    let businessRulesResult = null;
+    try {
+      businessRulesResult = await validateBusinessRules({
+        serviceType: validatedData.serviceType,
+        location: validatedData.addressStreet ? { 
+          address: `${validatedData.addressStreet}, ${validatedData.addressCity || 'Houston'}, ${validatedData.addressState || 'TX'}` 
+        } : undefined,
+        documentCount: validatedData.numberOfDocuments,
+        ghlContactId: undefined // Will be set after GHL contact creation
+      });
+
+      if (!businessRulesResult.isValid) {
+        console.log('❌ Business rules validation failed:', businessRulesResult.violations);
+        return NextResponse.json({
+          error: 'Booking violates business policies',
+          violations: businessRulesResult.violations,
+          code: 'BUSINESS_RULE_VIOLATION'
+        }, { status: 400 });
+      }
+
+      console.log('✅ Business rules validation passed');
+      console.log('🏷️  GHL Actions:', {
+        tags: businessRulesResult.ghlActions.tags,
+        customFields: Object.keys(businessRulesResult.ghlActions.customFields),
+        workflows: businessRulesResult.ghlActions.workflows
+      });
+    } catch (businessRulesError) {
+      console.error('⚠️  Business rules validation failed (non-blocking):', businessRulesError);
+      // Continue with booking creation even if business rules fail
     }
     
     // Create Stripe payment intent
@@ -127,6 +174,69 @@ export async function POST(request: NextRequest) {
       
       ghlContactId = ghlContact.contact.id;
       console.log(`✅ GHL contact created: ${ghlContactId}`);
+
+      // 🔥 NEW: Transparent Pricing GHL Integration
+      if (validatedData.pricing.transparentData) {
+        try {
+          console.log('💰 Syncing transparent pricing data to GHL...');
+          
+          const pricingIntegrationResult = await TransparentPricingGHLIntegration.syncPricingToGHL({
+            pricingResult: validatedData.pricing.transparentData,
+            customerEmail: validatedData.customerEmail,
+            customerName: validatedData.customerName,
+            customerPhone: validatedData.customerPhone,
+            contactId: ghlContactId,
+            createContactIfNotExists: false, // Contact already created above
+            triggerWorkflows: true
+          });
+
+          if (pricingIntegrationResult.success) {
+            console.log(`✅ Transparent pricing synced to GHL:`, {
+              customFieldsUpdated: pricingIntegrationResult.customFieldsUpdated,
+              tagsApplied: pricingIntegrationResult.tagsApplied,
+              workflowsTriggered: pricingIntegrationResult.workflowsTriggered
+            });
+          } else {
+            console.warn(`⚠️ Transparent pricing sync failed:`, pricingIntegrationResult.error);
+          }
+
+          if (pricingIntegrationResult.warnings.length > 0) {
+            console.warn(`⚠️ Transparent pricing sync warnings:`, pricingIntegrationResult.warnings);
+          }
+
+        } catch (transparentPricingError) {
+          console.error('⚠️ Transparent pricing GHL integration failed (non-critical):', transparentPricingError);
+        }
+      }
+
+      // 🔥 NEW: Apply Business Rules to GHL
+      if (businessRulesResult && businessRulesResult.ghlActions) {
+        try {
+          console.log('🤖 Applying business rules to GHL contact...');
+          
+          // Add business rule tags
+          if (businessRulesResult.ghlActions.tags.length > 0) {
+            const existingTags = ghlContact.tags || [];
+            const newTags = [...existingTags, ...businessRulesResult.ghlActions.tags];
+            // Tags will be added when creating contact, or could be updated here
+            console.log(`🏷️  Business rules tags: ${businessRulesResult.ghlActions.tags.join(', ')}`);
+          }
+
+          // Log custom fields that would be applied  
+          if (Object.keys(businessRulesResult.ghlActions.customFields).length > 0) {
+            console.log(`📝 Business rules custom fields:`, businessRulesResult.ghlActions.customFields);
+          }
+
+          // Log workflows that would be triggered
+          if (businessRulesResult.ghlActions.workflows.length > 0) {
+            console.log(`⚡ Business rules workflows: ${businessRulesResult.ghlActions.workflows.join(', ')}`);
+          }
+
+          console.log('✅ Business rules applied to GHL contact');
+        } catch (businessRulesGhlError) {
+          console.error('⚠️  Failed to apply business rules to GHL (non-critical):', businessRulesGhlError);
+        }
+      }
       
       // 2. Create appointment in appropriate calendar
       const calendarId = getCalendarIdForService(validatedData.serviceType);

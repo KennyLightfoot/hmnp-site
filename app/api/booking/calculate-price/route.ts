@@ -1,67 +1,89 @@
 /**
- * Simple Pricing API - Houston Mobile Notary Pros
- * Basic price calculation: service + distance
+ * Enhanced Pricing API - Houston Mobile Notary Pros
+ * Phase 2: Dynamic pricing with business rules integration
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { UnifiedDistanceService } from '@/lib/maps/unified-distance-service';
 
-const SERVICE_PRICES = {
-  'QUICK_STAMP_LOCAL': 50,        // NEW: Fast local signings
-  'STANDARD_NOTARY': 75,
-  'EXTENDED_HOURS': 100,
-  'LOAN_SIGNING': 150,
-  'RON_SERVICES': 35,
-  'BUSINESS_ESSENTIALS': 125,     // NEW: Monthly subscription
-  'BUSINESS_GROWTH': 349          // NEW: Premium subscription
-};
-
-function calculateTravelFee(distance: number, serviceType: string): number {
-  // Quick-Stamp Local has 10-mile radius, all other mobile services have 30-mile radius
-  const freeRadius = serviceType === 'QUICK_STAMP_LOCAL' ? 10 : 30;
-  
-  if (distance <= freeRadius) return 0;  
-  return (distance - freeRadius) * 0.50; // $0.50 per mile beyond free radius
-}
+// Phase 2: Enhanced Pricing Engine
+import { EnhancedPricingEngine } from '../../../../lib/business-rules/pricing-engine';
 
 export async function POST(request: NextRequest) {
   try {
-    const { serviceType, address } = await request.json();
+    const { 
+      serviceType, 
+      address, 
+      documentCount = 1, 
+      appointmentDateTime,
+      customerType = 'new',
+      referralCode,
+      promoCode,
+      customerId 
+    } = await request.json();
     
     // Validate service type
-    if (!serviceType || !SERVICE_PRICES[serviceType as keyof typeof SERVICE_PRICES]) {
+    const validServiceTypes = ['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH'];
+    if (!serviceType || !validServiceTypes.includes(serviceType)) {
       return NextResponse.json(
         { error: 'Invalid service type' },
         { status: 400 }
       );
     }
 
-    const basePrice = SERVICE_PRICES[serviceType as keyof typeof SERVICE_PRICES];
-    let travelFee = 0;
+    console.log('🔍 Applying business rules to pricing calculation...');
+    
+    // 🔥 NEW: Enhanced Pricing Calculation with Business Rules
+    const pricingResult = await EnhancedPricingEngine.calculateDynamicPricing({
+      serviceType,
+      address,
+      documentCount,
+      appointmentDateTime,
+      customerType,
+      referralCode,
+      promoCode,
+      customerId,
+      requestId: `api_${Date.now()}`
+    });
 
-    // Calculate travel fee for mobile services
-    if (address && serviceType !== 'RON_SERVICES') {
-      try {
-        const distanceResult = await UnifiedDistanceService.calculateDistance(address);
-        travelFee = calculateTravelFee(distanceResult.distance.miles, serviceType);
-      } catch (error) {
-        console.error('Distance calculation failed:', error);
-        // Continue with 0 travel fee if distance calculation fails
-      }
-    }
+    console.log('✅ Business rules applied to pricing');
 
-    const totalPrice = basePrice + travelFee;
-
+    // Return enhanced pricing result with detailed breakdown
     return NextResponse.json({
-      basePrice,
-      travelFee,
-      totalPrice
+      // Legacy format (for backward compatibility)
+      basePrice: pricingResult.pricing.basePrice,
+      travelFee: pricingResult.pricing.travelFee,
+      extraDocumentFees: pricingResult.pricing.extraDocumentFees,
+      totalPrice: pricingResult.pricing.totalPrice,
+      
+      // Enhanced Phase 2 format
+      pricing: pricingResult.pricing,
+      breakdown: pricingResult.breakdown,
+      businessRules: {
+        isValid: pricingResult.businessRules.violations.length === 0,
+        violations: pricingResult.businessRules.violations,
+        recommendations: pricingResult.businessRules.recommendations,
+        serviceAreaZone: pricingResult.businessRules.serviceAreaZone,
+        documentLimitsExceeded: pricingResult.businessRules.documentLimitsExceeded,
+        dynamicPricingActive: pricingResult.businessRules.dynamicPricingActive,
+        discountsApplied: pricingResult.businessRules.discountsApplied
+      },
+      ghlActions: pricingResult.ghlActions,
+      
+      // Status information
+      status: 'success',
+      requestId: `api_${Date.now()}`,
+      timestamp: new Date().toISOString()
     });
 
   } catch (error) {
-    console.error('Price calculation error:', error);
+    console.error('Enhanced pricing calculation error:', error);
     return NextResponse.json(
-      { error: 'Price calculation failed' },
+      { 
+        error: 'Price calculation failed',
+        details: error instanceof Error ? error.message : 'Unknown error',
+        status: 'error',
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     );
   }

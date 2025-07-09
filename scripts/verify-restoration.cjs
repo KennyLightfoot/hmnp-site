@@ -12,10 +12,10 @@ const GHL_API_BASE_URL = process.env.GHL_API_BASE_URL || "https://services.leadc
 const GHL_PRIVATE_INTEGRATION_TOKEN = process.env.GHL_PRIVATE_INTEGRATION_TOKEN;
 
 const CALENDARS = {
-  'STANDARD_NOTARY': { id: 'XhHkzwNbT1MSWcGsfBjl', name: 'Standard Notary Services' },
-  'EXTENDED_HOURS': { id: 'BjSsV5TuN8kJSexADD9W', name: 'Extended Hours Notary' },
-  'LOAN_SIGNING': { id: 'gp2EBhGYgfYTNwJ0LlhK', name: 'Loan Signing Specialist' },
-  'RON_SERVICES': { id: 'FMg76LwuDd9RLJNekQId', name: 'RON Services - Remote Online Notarization' }
+  'STANDARD_NOTARY': { id: 'w3sjmTzBfuahySgQvKoV', name: 'Standard Notary Services' },
+  'EXTENDED_HOURS': { id: 'OmcFGOLhrR9lil6AQa2z', name: 'Extended Hours Notary' },
+  'LOAN_SIGNING': { id: 'yf6tpA7YMn3oyZc6GVZK', name: 'Loan Signing Specialist' },
+  'RON_SERVICES': { id: 'xFRCVGNlnZASiQnBVHEG', name: 'RON Services - Remote Online Notarization' }
 };
 
 async function makeGHLRequest(endpoint) {

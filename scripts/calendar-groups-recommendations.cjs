@@ -9,10 +9,10 @@
 
 // Your current calendar configuration
 const CALENDAR_IDS = {
-  'STANDARD_NOTARY': 'XhHkzwNbT1MSWcGsfBjl',
-  'EXTENDED_HOURS': 'BjSsV5TuN8kJSexADD9W',
-  'LOAN_SIGNING': 'gp2EBhGYgfYTNwJ0LlhK',
-  'RON_SERVICES': 'FMg76LwuDd9RLJNekQId'
+  'STANDARD_NOTARY': 'w3sjmTzBfuahySgQvKoV',
+  'EXTENDED_HOURS': 'OmcFGOLhrR9lil6AQa2z',
+  'LOAN_SIGNING': 'yf6tpA7YMn3oyZc6GVZK',
+  'RON_SERVICES': 'xFRCVGNlnZASiQnBVHEG'
 };
 
 // Service details
@@ -183,18 +183,18 @@ function displayGroupingRecommendations() {
   
   console.log('2. 📁 Create Groups (Option 1 - Recommended)');
   console.log('   → Group 1: "Standard Business Services"');
-  console.log('     • Add calendar: XhHkzwNbT1MSWcGsfBjl (Standard Notary)');
+      console.log('     • Add calendar: w3sjmTzBfuahySgQvKoV (Standard Notary)');
   console.log('     • Set color: Green (#2E7D32)');
   console.log('     • Display order: 1');
   console.log('');
   console.log('   → Group 2: "Extended & Flexible Services"');
-  console.log('     • Add calendar: BjSsV5TuN8kJSexADD9W (Extended Hours)');
-  console.log('     • Add calendar: FMg76LwuDd9RLJNekQId (RON Services)');
+      console.log('     • Add calendar: OmcFGOLhrR9lil6AQa2z (Extended Hours)');
+    console.log('     • Add calendar: xFRCVGNlnZASiQnBVHEG (RON Services)');
   console.log('     • Set color: Blue (#1976D2)');
   console.log('     • Display order: 2');
   console.log('');
   console.log('   → Group 3: "Specialty Services"');
-  console.log('     • Add calendar: gp2EBhGYgfYTNwJ0LlhK (Loan Signing)');
+      console.log('     • Add calendar: yf6tpA7YMn3oyZc6GVZK (Loan Signing)');
   console.log('     • Set color: Orange (#F57C00)');
   console.log('     • Display order: 3');
   console.log('');

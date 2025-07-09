@@ -11,7 +11,11 @@ export class GoogleCalendarService {
     // Check if we have JSON content as environment variable (production)
     if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
       try {
-        const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+        const jsonString = process.env.GOOGLE_SERVICE_ACCOUNT_JSON.trim();
+        if (!jsonString) {
+          throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON is empty');
+        }
+        const credentials = JSON.parse(jsonString);
         auth = new google.auth.GoogleAuth({
           credentials,
           scopes: ['https://www.googleapis.com/auth/calendar'],
@@ -187,8 +191,11 @@ export function getGoogleCalendar(): GoogleCalendarService {
 
 // For backward compatibility, but only when not in build mode
 export const googleCalendar = (() => {
-  // Don't instantiate during build time
-  if (typeof window === 'undefined' && process.env.NODE_ENV !== 'production') {
+  // Don't instantiate during build time or if env vars are missing
+  if (typeof window === 'undefined' && 
+      (process.env.NODE_ENV !== 'production' || 
+       process.env.NEXT_PHASE === 'phase-production-build' ||
+       (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON && !process.env.GOOGLE_SERVICE_ACCOUNT_KEY))) {
     return null as any;
   }
   try {

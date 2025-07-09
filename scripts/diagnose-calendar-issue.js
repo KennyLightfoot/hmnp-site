@@ -17,7 +17,7 @@ const GHL_PRIVATE_INTEGRATION_TOKEN = process.env.GHL_PRIVATE_INTEGRATION_TOKEN;
 const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
 
 // Test calendar ID
-const TEST_CALENDAR_ID = 'XhHkzwNbT1MSWcGsfBjl'; // Standard Notary
+const TEST_CALENDAR_ID = 'w3sjmTzBfuahySgQvKoV'; // Standard Notary
 
 /**
  * Make authenticated request to GHL API

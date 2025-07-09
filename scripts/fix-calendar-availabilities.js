@@ -18,7 +18,7 @@ const GHL_PRIVATE_INTEGRATION_TOKEN = process.env.GHL_PRIVATE_INTEGRATION_TOKEN;
 // Calendar configurations to fix
 const CALENDARS_TO_FIX = {
   'STANDARD_NOTARY': {
-    id: 'XhHkzwNbT1MSWcGsfBjl',
+    id: 'w3sjmTzBfuahySgQvKoV',
     availabilities: [
       { dayOfTheWeek: 1, hours: [{ openHour: 9, openMinute: 0, closeHour: 17, closeMinute: 0 }] },
       { dayOfTheWeek: 2, hours: [{ openHour: 9, openMinute: 0, closeHour: 17, closeMinute: 0 }] },
@@ -28,7 +28,7 @@ const CALENDARS_TO_FIX = {
     ]
   },
   'EXTENDED_HOURS': {
-    id: 'BjSsV5TuN8kJSexADD9W',
+    id: 'OmcFGOLhrR9lil6AQa2z',
     availabilities: [
       { dayOfTheWeek: 0, hours: [{ openHour: 7, openMinute: 0, closeHour: 21, closeMinute: 0 }] },
       { dayOfTheWeek: 1, hours: [{ openHour: 7, openMinute: 0, closeHour: 21, closeMinute: 0 }] },
@@ -40,7 +40,7 @@ const CALENDARS_TO_FIX = {
     ]
   },
   'LOAN_SIGNING': {
-    id: 'gp2EBhGYgfYTNwJ0LlhK',
+    id: 'yf6tpA7YMn3oyZc6GVZK',
     availabilities: [
       { dayOfTheWeek: 0, hours: [{ openHour: 9, openMinute: 0, closeHour: 17, closeMinute: 0 }] },
       { dayOfTheWeek: 1, hours: [{ openHour: 8, openMinute: 0, closeHour: 20, closeMinute: 0 }] },
@@ -52,7 +52,7 @@ const CALENDARS_TO_FIX = {
     ]
   },
   'RON_SERVICES': {
-    id: 'FMg76LwuDd9RLJNekQId',
+    id: 'xFRCVGNlnZASiQnBVHEG',
     availabilities: [
       { dayOfTheWeek: 0, hours: [{ openHour: 0, openMinute: 0, closeHour: 23, closeMinute: 59 }] },
       { dayOfTheWeek: 1, hours: [{ openHour: 0, openMinute: 0, closeHour: 23, closeMinute: 59 }] },

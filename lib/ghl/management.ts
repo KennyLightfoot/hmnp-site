@@ -269,40 +269,48 @@ export async function getCalendarSlots(calendarId: string, startDate: string, en
       throw new Error(`Calendar ${calendarId} not found`);
     }
     
+    // ADD DEBUG LOGGING TO UNDERSTAND RESPONSE STRUCTURE
+    console.log(`🔍 RAW Calendar Response Structure:`, JSON.stringify(calendarDetails, null, 2));
+    console.log(`🔍 Calendar Response Keys:`, Object.keys(calendarDetails));
+    console.log(`🔍 Type of calendarDetails:`, typeof calendarDetails);
+    
+    // Check if response is wrapped in a 'calendar' property
+    const calendar = calendarDetails.calendar || calendarDetails;
+    
     console.log(`📋 Calendar Details Retrieved:`, {
-      name: calendarDetails.name,
-      isActive: calendarDetails.isActive,
-      calendarType: calendarDetails.calendarType,
-      slotDuration: calendarDetails.slotDuration,
-      slotInterval: calendarDetails.slotInterval,
-      teamMembersCount: calendarDetails.teamMembers?.length || 0,
-      availabilitiesCount: calendarDetails.availabilities?.length || 0,
-      openHoursCount: calendarDetails.openHours?.length || 0
+      name: calendar.name,
+      isActive: calendar.isActive,
+      calendarType: calendar.calendarType,
+      slotDuration: calendar.slotDuration,
+      slotInterval: calendar.slotInterval,
+      teamMembersCount: calendar.teamMembers?.length || 0,
+      availabilitiesCount: calendar.availabilities?.length || 0,
+      openHoursCount: calendar.openHours?.length || 0
     });
     
-    // Check if calendar is properly configured
-    if (!calendarDetails.isActive) {
+    // Check if calendar is properly configured - USE CORRECT OBJECT
+    if (!calendar.isActive) {
       console.log(`❌ Calendar ${calendarId} is not active`);
       return { slots: [], error: 'Calendar is not active', calendarDetails };
     }
     
-    if (!calendarDetails.teamMembers || calendarDetails.teamMembers.length === 0) {
+    if (!calendar.teamMembers || calendar.teamMembers.length === 0) {
       console.log(`❌ Calendar ${calendarId} has no team members assigned`);
       return { slots: [], error: 'Calendar has no team members assigned', calendarDetails };
     }
     
     // Check for Look Busy feature that might be hiding slots
-    if (calendarDetails.lookBusyConfig?.enabled) {
-      console.log(`⚠️  Look Busy is enabled at ${calendarDetails.lookBusyConfig.lookBusyPercentage}%`);
-      if (calendarDetails.lookBusyConfig.lookBusyPercentage >= 90) {
-        console.log(`❌ Look Busy is set too high (${calendarDetails.lookBusyConfig.lookBusyPercentage}%) - this may hide most slots`);
+    if (calendar.lookBusyConfig?.enabled) {
+      console.log(`⚠️  Look Busy is enabled at ${calendar.lookBusyConfig.lookBusyPercentage}%`);
+      if (calendar.lookBusyConfig.lookBusyPercentage >= 90) {
+        console.log(`❌ Look Busy is set too high (${calendar.lookBusyConfig.lookBusyPercentage}%) - this may hide most slots`);
       }
     }
     
     // Check availability blocks
-    if (!calendarDetails.availabilities || calendarDetails.availabilities.length === 0) {
+    if (!calendar.availabilities || calendar.availabilities.length === 0) {
       console.log(`❌ Calendar ${calendarId} has no availability blocks configured`);
-      if (!calendarDetails.openHours || calendarDetails.openHours.length === 0) {
+      if (!calendar.openHours || calendar.openHours.length === 0) {
         console.log(`❌ Calendar ${calendarId} also has no open hours configured`);
         return { 
           slots: [], 
@@ -314,8 +322,8 @@ export async function getCalendarSlots(calendarId: string, startDate: string, en
     }
     
     // Check minimum scheduling notice
-    if (calendarDetails.allowBookingAfter) {
-      const minNoticeHours = calendarDetails.allowBookingAfter;
+    if (calendar.allowBookingAfter) {
+      const minNoticeHours = calendar.allowBookingAfter;
       const minNoticeMs = minNoticeHours * 60 * 60 * 1000;
       const earliestBookingTime = new Date(Date.now() + minNoticeMs);
       const requestedStartTime = new Date(startOfDay * 1000);
@@ -327,8 +335,8 @@ export async function getCalendarSlots(calendarId: string, startDate: string, en
     }
     
     // Check booking window
-    if (calendarDetails.allowBookingFor) {
-      const maxAdvanceDays = calendarDetails.allowBookingFor;
+    if (calendar.allowBookingFor) {
+      const maxAdvanceDays = calendar.allowBookingFor;
       const maxBookingTime = new Date(Date.now() + (maxAdvanceDays * 24 * 60 * 60 * 1000));
       const requestedEndTime = new Date(endOfDay * 1000);
       
@@ -357,7 +365,7 @@ export async function getCalendarSlots(calendarId: string, startDate: string, en
     }
     
     // Generate available slots based on calendar configuration (fallback)
-    const generatedSlots = generateAvailableSlots(calendarDetails, startOfDay, endOfDay, []);
+    const generatedSlots = generateAvailableSlots(calendar, startOfDay, endOfDay, []);
     
     console.log(`🔧 Generated ${generatedSlots.length} available slots based on calendar configuration`);
     

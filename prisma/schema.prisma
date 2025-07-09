@@ -469,6 +469,98 @@ model VerificationToken {
 }
 
 // ============================================================================
+// 🎯 PHASE 3: PROMOTIONAL CAMPAIGNS & BUSINESS RULES MANAGEMENT
+// ============================================================================
+
+model PromotionalCampaign {
+  id                String                @id @default(uuid())
+  code              String                @unique @db.VarChar(20)
+  name              String                @db.VarChar(100)
+  description       String?
+  type              String                @db.VarChar(20) // 'percentage', 'fixed_amount', 'first_time', 'referral', 'loyalty', 'seasonal'
+  value             Decimal               @db.Decimal(10, 2)
+  maxDiscount       Decimal?              @db.Decimal(10, 2)
+  minOrderValue     Decimal               @default(0) @db.Decimal(10, 2)
+  maxUses           Int?
+  currentUses       Int                   @default(0)
+  serviceTypes      String[]              @default([])
+  customerTypes     String[]              @default([])
+  validFrom         DateTime
+  validUntil        DateTime
+  isActive          Boolean               @default(true)
+  createdBy         String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  
+  // Relations
+  performance       CampaignPerformance[]
+  usage             PromoCodeUsageTracking[]
+  
+  @@index([isActive])
+  @@index([validFrom, validUntil])
+  @@map("promotional_campaigns")
+}
+
+model CampaignPerformance {
+  id                String                @id @default(uuid())
+  campaignId        String
+  campaign          PromotionalCampaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  date              DateTime              @db.Date
+  usesCount         Int                   @default(0)
+  totalDiscount     Decimal               @default(0) @db.Decimal(10, 2)
+  revenueGenerated  Decimal               @default(0) @db.Decimal(10, 2)
+  bookingsCount     Int                   @default(0)
+  createdAt         DateTime              @default(now())
+  
+  @@index([campaignId, date])
+  @@map("campaign_performance")
+}
+
+model BusinessRulesConfig {
+  id                String                @id @default(uuid())
+  ruleType          String                @unique @db.VarChar(50) // 'service_area', 'document_limits', 'pricing_multipliers', 'heloc_restrictions'
+  config            Json
+  isActive          Boolean               @default(true)
+  createdBy         String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  
+  // Relations
+  changeLogs        RuleChangeLog[]
+  
+  @@index([isActive])
+  @@map("business_rules_config")
+}
+
+model RuleChangeLog {
+  id                String                @id @default(uuid())
+  ruleId            String
+  rule              BusinessRulesConfig   @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  oldConfig         Json?
+  newConfig         Json
+  changeReason      String?
+  changedBy         String?
+  changedAt         DateTime              @default(now())
+  
+  @@index([ruleId])
+  @@map("rule_change_log")
+}
+
+model PromoCodeUsageTracking {
+  id                String                @id @default(uuid())
+  campaignId        String
+  campaign          PromotionalCampaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  bookingId         String?
+  customerEmail     String?               @db.VarChar(255)
+  discountAmount    Decimal               @db.Decimal(10, 2)
+  usedAt            DateTime              @default(now())
+  
+  @@index([campaignId])
+  @@index([bookingId])
+  @@map("promo_code_usage")
+}
+
+// ============================================================================
 // 📊 ENUMS
 // ============================================================================
 

@@ -16,7 +16,7 @@ const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
 // COMPLETE calendar configurations - rebuilding everything from scratch
 const CALENDAR_RESTORATIONS = {
   'STANDARD_NOTARY': {
-    id: 'XhHkzwNbT1MSWcGsfBjl',
+    id: 'w3sjmTzBfuahySgQvKoV',
     name: 'Standard Notary Services',
     description: 'Professional notary services during business hours (9am-5pm Mon-Fri). Base service includes up to 2 documents, 1-2 signers, 15-mile travel included.',
     isActive: true,
@@ -58,7 +58,7 @@ const CALENDAR_RESTORATIONS = {
   },
   
   'EXTENDED_HOURS': {
-    id: 'BjSsV5TuN8kJSexADD9W',
+    id: 'OmcFGOLhrR9lil6AQa2z',
     name: 'Extended Hours Notary',
     description: 'Extended hours notary services (7am-9pm Daily). Perfect for busy schedules. Base service includes up to 5 documents, 2 signers, 20-mile travel included.',
     isActive: true,
@@ -99,7 +99,7 @@ const CALENDAR_RESTORATIONS = {
   },
   
   'LOAN_SIGNING': {
-    id: 'gp2EBhGYgfYTNwJ0LlhK',
+    id: 'yf6tpA7YMn3oyZc6GVZK',
     name: 'Loan Signing Specialist',
     description: 'Professional loan document signing services. $150 flat fee includes unlimited documents for a single signing session, up to 4 signers, 90-minute session.',
     isActive: true,
@@ -139,7 +139,7 @@ const CALENDAR_RESTORATIONS = {
   },
   
   'RON_SERVICES': {
-    id: 'FMg76LwuDd9RLJNekQId',
+    id: 'xFRCVGNlnZASiQnBVHEG',
     name: 'RON Services - Remote Online Notarization',
     description: '24/7 Remote Online Notarization services. No travel required! Texas-compliant RON with Proof.com integration.',
     isActive: true,

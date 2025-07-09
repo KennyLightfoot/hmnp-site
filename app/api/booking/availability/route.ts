@@ -81,6 +81,15 @@ export async function GET(request: NextRequest) {
     const calendarId = getCalendarIdForService(validatedData.serviceType);
     console.log(`📅 Using calendar: ${calendarId}`);
     
+    // DEBUG: Add environment variable logging
+    console.log(`🔍 Environment variable debug:`, {
+      serviceType: validatedData.serviceType,
+      envVarName: `GHL_${validatedData.serviceType.replace('_', '_')}_CALENDAR_ID`,
+      calendarId: calendarId,
+      calendarIdLength: calendarId?.length || 0,
+      hasCalendarId: !!calendarId
+    });
+    
     // Pass date strings - conversion to Unix timestamps happens in getCalendarSlots
     const startDate = validatedData.date;  // "2025-01-20"
     const endDate = validatedData.date;    // "2025-01-20" (same day)

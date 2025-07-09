@@ -10,10 +10,10 @@ const GHL_PRIVATE_INTEGRATION_TOKEN = process.env.GHL_PRIVATE_INTEGRATION_TOKEN;
 
 // Test calendar IDs from your system
 const TEST_CALENDARS = {
-  'STANDARD_NOTARY': 'XhHkzwNbT1MSWcGsfBjl',
-  'EXTENDED_HOURS': 'your-extended-hours-calendar-id', // Replace with actual ID
-  'LOAN_SIGNING': 'your-loan-signing-calendar-id',     // Replace with actual ID
-  'RON_SERVICES': 'your-ron-calendar-id'               // Replace with actual ID
+  'STANDARD_NOTARY': 'w3sjmTzBfuahySgQvKoV',
+  'EXTENDED_HOURS': 'OmcFGOLhrR9lil6AQa2z',
+  'LOAN_SIGNING': 'yf6tpA7YMn3oyZc6GVZK',
+  'RON_SERVICES': 'xFRCVGNlnZASiQnBVHEG'
 };
 
 async function makeGHLRequest(endpoint, method = 'GET', body = null) {
