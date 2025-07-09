@@ -128,6 +128,7 @@ model Booking {
   payments              Payment[]
   notifications         BookingNotification[]
   auditLogs             BookingAuditLog[]
+  supportTickets        SupportTicket[]
   
   @@index([serviceId, status])
   @@index([scheduledDateTime])
@@ -179,6 +180,86 @@ model Payment {
 // ============================================================================
 // 🛠️ SUPPORT MODELS
 // ============================================================================
+
+model SupportTicket {
+  id                    String                @id @default(cuid())
+  bookingId             String?
+  booking               Booking?              @relation(fields: [bookingId], references: [id])
+  
+  // Customer information
+  customerEmail         String
+  customerName          String
+  
+  // Issue details
+  issueType             SupportIssueType
+  priority              SupportPriority       @default(medium)
+  description           String
+  status                SupportStatus         @default(open)
+  
+  // Assignment
+  assignedTo            String?               // Team member or team name
+  
+  // Timestamps
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  resolvedAt            DateTime?
+  
+  // Customer feedback
+  customerSatisfaction  Int?                  // 1-5 rating
+  
+  // Metadata
+  tags                  String[]              @default([])
+  metadata              Json?
+  
+  // Relations
+  responses             SupportResponse[]
+  history               CustomerSupportHistory[]
+  
+  @@index([customerEmail])
+  @@index([bookingId])
+  @@index([status])
+  @@index([priority])
+  @@index([issueType])
+  @@index([assignedTo])
+}
+
+model SupportResponse {
+  id                    String                @id @default(cuid())
+  ticketId              String
+  ticket                SupportTicket         @relation(fields: [ticketId], references: [id])
+  
+  // Response details
+  message               String
+  isAutomated           Boolean               @default(false)
+  responseTime          Int                   // Minutes from ticket creation
+  nextSteps             String[]
+  escalationNeeded      Boolean               @default(false)
+  
+  // Metadata
+  createdAt             DateTime              @default(now())
+  createdBy             String?               // User ID who created response
+  metadata              Json?
+  
+  @@index([ticketId])
+  @@index([createdAt])
+}
+
+model CustomerSupportHistory {
+  id                    String                @id @default(cuid())
+  customerEmail         String
+  ticketId              String
+  ticket                SupportTicket         @relation(fields: [ticketId], references: [id])
+  
+  // Interaction details
+  interactionType       String                // email, phone, chat, etc.
+  description           String
+  createdAt             DateTime              @default(now())
+  metadata              Json?
+  
+  @@index([customerEmail])
+  @@index([ticketId])
+  @@index([createdAt])
+}
 
 model ServicePricingRule {
   id                String              @id @default(cuid())
@@ -495,6 +576,34 @@ enum Role {
   NOTARY
   ADMIN
   SUPER_ADMIN
+}
+
+enum SupportIssueType {
+  booking_question
+  payment_issue
+  reschedule_request
+  cancellation_request
+  service_issue
+  technical_support
+  billing_inquiry
+  general_inquiry
+  complaint
+  feedback
+}
+
+enum SupportPriority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum SupportStatus {
+  open
+  in_progress
+  waiting_customer
+  resolved
+  closed
 }
 
 // ============================================================================

@@ -233,8 +233,8 @@ export async function POST(request: NextRequest) {
       }
     });
     
-    // Send confirmation email (async, don't wait)
-    sendConfirmationEmail(booking).catch(error => {
+    // Send enhanced confirmation email (async, don't wait)
+    sendEnhancedConfirmationEmail(booking).catch((error: any) => {
       console.error('Email sending failed (non-blocking):', error);
     });
     
@@ -249,8 +249,8 @@ export async function POST(request: NextRequest) {
         scheduledDateTime: booking.scheduledDateTime,
         totalAmount: booking.finalPrice,
         service: {
-          name: booking.service.name,
-          type: booking.service.type
+          name: service.name,
+          type: service.type
         }
       }
     });
@@ -287,12 +287,72 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function sendConfirmationEmail(booking: any) {
-  // TODO: Implement proper email service
-  // For now, just log the confirmation
-  console.log(`📧 Confirmation email queued for ${booking.customerEmail}`);
-  console.log(`   Booking: ${booking.id}`);
-  console.log(`   Service: ${booking.service.name}`);
-  console.log(`   Date: ${booking.scheduledDateTime}`);
-  console.log(`   Amount: $${booking.finalPrice}`);
+async function sendEnhancedConfirmationEmail(booking: any) {
+  try {
+    // Import the enhanced email templates
+    const { bookingConfirmationEmail } = await import('@/lib/email/templates');
+    
+    // Get service details
+    const service = await prisma.service.findUnique({
+      where: { id: booking.serviceId }
+    });
+    
+    if (!service) {
+      console.error(`Service not found for booking ${booking.id}`);
+      return;
+    }
+    
+    // Prepare email data
+    const client = {
+      firstName: booking.customerName.split(' ')[0],
+      lastName: booking.customerName.split(' ').slice(1).join(' '),
+      email: booking.customerEmail
+    };
+    
+    const bookingDetails = {
+      bookingId: booking.id,
+      serviceName: service.name,
+      date: new Date(booking.scheduledDateTime).toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }),
+      time: new Date(booking.scheduledDateTime).toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        hour12: true 
+      }),
+      address: booking.addressCity || 'TBD',
+      numberOfSigners: 1, // Default, could be enhanced
+      status: booking.status,
+      paymentStatus: booking.paymentStatus,
+      totalAmount: booking.finalPrice,
+      bookingManagementLink: `${process.env.NEXT_PUBLIC_APP_URL}/booking/${booking.id}`
+    };
+    
+    // Generate email content
+    const emailContent = bookingConfirmationEmail(client, bookingDetails);
+    
+    // Send email using notification service
+    const { NotificationService } = await import('@/lib/notifications');
+    await NotificationService.sendNotification({
+      bookingId: booking.id,
+      type: 'BOOKING_CONFIRMATION' as any,
+      recipient: { email: booking.customerEmail },
+      content: {
+        subject: emailContent.subject,
+        message: emailContent.html
+      },
+      methods: ['EMAIL' as any]
+    });
+    
+    console.log(`📧 Enhanced confirmation email sent for ${booking.customerEmail}`);
+    console.log(`   Booking: ${booking.id}`);
+    console.log(`   Service: ${service.name}`);
+    console.log(`   Date: ${booking.scheduledDateTime}`);
+    console.log(`   Amount: $${booking.finalPrice}`);
+  } catch (error) {
+    console.error('Failed to send enhanced confirmation email:', error);
+  }
 }
