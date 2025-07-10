@@ -100,7 +100,26 @@ export class ProofAPIClient {
   }
 
   /**
-   * Create a new RON transaction
+   * Test API connection
+   */
+  async testConnection(): Promise<boolean> {
+    if (!this.isEnabled()) {
+      return false;
+    }
+
+    try {
+      const response = await this.makeRequest('GET', '/transactions?limit=1');
+      return response.ok;
+    } catch (error) {
+      logger.error('Proof API connection test failed', { 
+        error: error instanceof Error ? error.message : String(error) 
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Create a new RON transaction with minimal required fields
    */
   async createTransaction(request: CreateTransactionRequest): Promise<ProofTransaction | null> {
     if (!this.isEnabled()) {
@@ -111,35 +130,67 @@ export class ProofAPIClient {
     try {
       logger.info('Creating Proof transaction', {
         signerCount: request.signers.length,
-        documentCount: request.documents.length,
         title: request.title
       });
 
-      const response = await this.makeRequest('POST', '/transactions', {
-        ...request,
-        environment: this.environment,
-        webhook_url: request.webhookUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhooks/proof`
-      });
+      // OFFICIAL PROOF.COM APPROACH: Use draft for transactions without documents
+      const payload = {
+        signers: request.signers.map(signer => ({
+          email: signer.email,
+          first_name: signer.name.split(' ')[0] || 'Customer',
+          last_name: signer.name.split(' ').slice(1).join(' ') || 'User',
+          // Only include phone if it exists
+          ...(signer.phone && {
+            phone: {
+              country_code: "1",
+              number: signer.phone.replace(/\D/g, '')
+            }
+          }),
+          external_id: request.metadata?.bookingId || signer.email
+        })),
+        // CRITICAL: Create as draft when no documents (official Proof.com approach)
+        draft: true
+      };
+
+      logger.info('Sending official Proof.com draft payload', { payload });
+
+      const response = await this.makeRequest('POST', '/transactions', payload);
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json().catch(() => ({ message: 'Unknown error' }));
+        logger.error('Proof API error details', {
+          status: response.status,
+          statusText: response.statusText,
+          error: error,
+          sentPayload: payload
+        });
         throw new Error(`Proof API error: ${error.message || response.statusText}`);
       }
 
       const transaction = await response.json();
 
-      logger.info('Proof transaction created', {
+      logger.info('✅ Proof transaction created successfully', {
         transactionId: transaction.id,
         status: transaction.status,
-        sessionUrl: transaction.sessionUrl
+        signerEmail: request.signers[0]?.email?.replace(/(.{2}).*(@.*)/, '$1***$2')
       });
 
-      return transaction;
+      return {
+        id: transaction.id,
+        status: transaction.status || 'draft',
+        title: request.title,
+        signers: request.signers,
+        documents: [], // Empty initially - draft transactions
+        sessionUrl: transaction.signer_info?.transaction_access_link || null,
+        createdAt: transaction.date_created || new Date().toISOString(),
+        updatedAt: transaction.date_updated || new Date().toISOString(),
+        metadata: request.metadata
+      };
 
     } catch (error) {
-      logger.error('Failed to create Proof transaction', {
-        error: error.message,
-        request: this.sanitizeRequest(request)
+      logger.error('❌ Failed to create Proof transaction', {
+        error: error instanceof Error ? error.message : String(error),
+        signerEmail: request.signers[0]?.email?.replace(/(.{2}).*(@.*)/, '$1***$2')
       });
       return null;
     }
@@ -198,9 +249,73 @@ export class ProofAPIClient {
       logger.error('Failed to upload document to Proof', {
         transactionId,
         documentName: document.name,
-        error: error.message
+        error: error instanceof Error ? error.message : String(error)
       });
       return null;
+    }
+  }
+
+  /**
+   * Add document to an existing transaction
+   */
+  async addDocument(
+    transactionId: string,
+    document: ProofDocument
+  ): Promise<boolean> {
+    if (!this.isEnabled()) {
+      logger.warn('Proof API not enabled - cannot add document');
+      return false;
+    }
+
+    try {
+      logger.info('Adding document to Proof transaction', {
+        transactionId,
+        documentName: document.name,
+        contentType: document.contentType
+      });
+
+      // Format document for Proof API
+      const documentPayload = {
+        resource: document.content.startsWith('http') 
+          ? document.content 
+          : document.content.startsWith('data:') 
+            ? document.content  // Already has data URL prefix
+            : `data:application/pdf;base64,${document.content}`, // Add prefix only if needed
+        document_name: document.name,
+        requirement: document.requiresNotarization ? "notarization" : "esign"
+      };
+
+      const response = await this.makeRequest('POST', `/transactions/${transactionId}/documents`, documentPayload);
+
+      if (!response.ok) {
+        const error = await response.json() as any;
+        logger.error('Failed to add document to Proof transaction', {
+          transactionId,
+          status: response.status,
+          statusText: response.statusText,
+          error: error
+        });
+        throw new Error(`Proof API error: ${error.message || response.statusText}`);
+      }
+
+      const result = await response.json();
+
+      logger.info('Document added to Proof transaction', {
+        transactionId,
+        documentId: result.id,
+        documentName: document.name,
+        status: result.processing_state || 'added'
+      });
+
+      return true;
+
+    } catch (error) {
+      logger.error('Failed to add document to Proof transaction', {
+        transactionId,
+        documentName: document.name,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      return false;
     }
   }
 
@@ -230,7 +345,7 @@ export class ProofAPIClient {
 
       return documents;
 
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Failed to list Proof documents', {
         transactionId,
         error: error.message
@@ -266,7 +381,7 @@ export class ProofAPIClient {
 
       return transaction;
 
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Failed to get Proof transaction', {
         transactionId,
         error: error.message
@@ -301,7 +416,7 @@ export class ProofAPIClient {
 
       return true;
 
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Failed to cancel Proof transaction', {
         transactionId,
         error: error.message
@@ -337,7 +452,7 @@ export class ProofAPIClient {
 
       return [buffer]; // Return as array for consistency
 
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Failed to download Proof documents', {
         transactionId,
         error: error.message
@@ -358,7 +473,7 @@ export class ProofAPIClient {
       // Implement webhook signature validation based on Proof's spec
       // This is a placeholder - actual implementation depends on Proof's webhook security
       return true;
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Webhook validation failed', { error: error.message });
       return false;
     }
@@ -371,7 +486,7 @@ export class ProofAPIClient {
     const url = `${this.baseUrl}${endpoint}`;
     
     const headers: Record<string, string> = {
-      'Authorization': `Bearer ${this.apiKey}`,
+      'ApiKey': this.apiKey,
       'Content-Type': 'application/json',
       'User-Agent': 'Houston-Mobile-Notary-Pros/1.0'
     };
@@ -418,7 +533,7 @@ export const proofAPI = new ProofAPIClient();
 // Utility functions for common RON operations
 export class RONService {
   /**
-   * Create a complete RON session for a booking
+   * Create a complete RON session for a booking - SIMPLIFIED APPROACH
    */
   static async createRONSession(booking: {
     id: string;
@@ -429,6 +544,12 @@ export class RONService {
     scheduledDateTime: Date;
   }): Promise<ProofTransaction | null> {
     try {
+      logger.info('🔐 Creating RON session', {
+        bookingId: booking.id,
+        customerEmail: booking.customerEmail.replace(/(.{2}).*(@.*)/, '$1***$2')
+      });
+
+      // SIMPLIFIED: Only essential signer info
       const signers: ProofSigner[] = [
         {
           name: booking.customerName,
@@ -439,46 +560,39 @@ export class RONService {
         }
       ];
 
-      // Create placeholder documents (actual documents uploaded later)
-      const documents: ProofDocument[] = booking.documentTypes.map((type, index) => ({
-        name: `${type}_${index + 1}.pdf`,
-        content: '', // Will be uploaded separately
-        contentType: 'application/pdf',
-        requiresNotarization: true,
-        metadata: {
-          documentType: type,
-          bookingId: booking.id
-        }
-      }));
-
+      // SIMPLIFIED: Minimal transaction request
       const transaction = await proofAPI.createTransaction({
         title: `RON Session - ${booking.customerName}`,
-        description: `Remote notarization session for booking #${booking.id}`,
+        description: `Remote notarization for booking #${booking.id}`,
         signers,
-        documents,
-        requiresIdentityVerification: true,
-        requiresKnowledgeBasedAuth: false,
+        documents: [], // Always start empty
         metadata: {
           bookingId: booking.id,
-          scheduledDateTime: booking.scheduledDateTime.toISOString(),
           service: 'RON_SERVICES'
         }
       });
 
       if (transaction) {
-        logger.info('RON session created', {
+        logger.info('✅ RON session created successfully', {
           bookingId: booking.id,
           transactionId: transaction.id,
+          customerEmail: booking.customerEmail.replace(/(.{2}).*(@.*)/, '$1***$2'),
+          sessionUrl: transaction.sessionUrl || 'No URL provided'
+        });
+        return transaction;
+      } else {
+        logger.error('❌ RON session creation returned null', {
+          bookingId: booking.id,
           customerEmail: booking.customerEmail.replace(/(.{2}).*(@.*)/, '$1***$2')
         });
+        return null;
       }
 
-      return transaction;
-
     } catch (error) {
-      logger.error('Failed to create RON session', {
+      logger.error('❌ RON session creation failed', {
         bookingId: booking.id,
-        error: error.message
+        customerEmail: booking.customerEmail.replace(/(.{2}).*(@.*)/, '$1***$2'),
+        error: error instanceof Error ? error.message : String(error)
       });
       return null;
     }
@@ -502,13 +616,3 @@ export class RONService {
 
 // Export everything
 export default proofAPI;
-
-// Export types for external use
-export type {
-  CreateTransactionRequest,
-  ProofSigner,
-  ProofDocument,
-  ProofTransaction,
-  ProofUploadResponse,
-  ProofWebhookEvent
-};

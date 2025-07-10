@@ -105,6 +105,48 @@ const requiredEnvVars = {
     type: 'boolean',
     description: 'Development mode flag',
     allowedValues: ['true', 'false']
+  },
+
+  // Proof.com RON Integration
+  'PROOF_API_KEY': {
+    required: true,
+    type: 'string',
+    description: 'Proof.com API key for RON services',
+    example: 'proof_live_...',
+    security: 'SENSITIVE'
+  },
+  'PROOF_API_URL': {
+    required: false,
+    type: 'url',
+    description: 'Proof.com API base URL',
+    example: 'https://api.proof.com',
+    validation: (value) => value.startsWith('https://')
+  },
+  'PROOF_ORGANIZATION_ID': {
+    required: true,
+    type: 'string',
+    description: 'Proof.com organization identifier',
+    example: 'ord123abc456'
+  },
+  'PROOF_ENVIRONMENT': {
+    required: false,
+    type: 'enum',
+    description: 'Proof.com environment (sandbox or production)',
+    allowedValues: ['sandbox', 'production'],
+    validation: (value) => ['sandbox', 'production'].includes(value)
+  },
+  'PROOF_WEBHOOK_SECRET': {
+    required: true,
+    type: 'string',
+    description: 'Proof.com webhook signature verification secret',
+    example: 'whsec_...',
+    security: 'SENSITIVE'
+  },
+  'PROOF_REDIRECT_URL': {
+    required: false,
+    type: 'url',
+    description: 'Redirect URL after RON session completion',
+    example: 'https://houstonmobilenotarypros.com/ron/complete'
   }
 };
 

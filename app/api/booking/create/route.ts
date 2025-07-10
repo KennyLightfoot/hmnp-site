@@ -344,8 +344,50 @@ export async function POST(request: NextRequest) {
     
     // Note: Audit logging removed as bookingAuditLog table doesn't exist in current schema
     
+    // 🔥 NEW: RON Integration - Auto-create Proof.com transaction for RON bookings
+    let proofTransaction = null;
+    if (service.serviceType === 'RON_SERVICES') {
+      try {
+        console.log('🔐 Creating Proof.com RON session for booking:', booking.id);
+        
+        // Import RON service
+        const { RONService } = await import('@/lib/proof/api');
+        
+        // Create RON session
+        proofTransaction = await RONService.createRONSession({
+          id: booking.id,
+          customerName: validatedData.customerName,
+          customerEmail: validatedData.customerEmail,
+          customerPhone: validatedData.customerPhone || undefined,
+          documentTypes: ['General Document'], // Default, can be enhanced
+          scheduledDateTime: new Date(validatedData.scheduledDateTime)
+        });
+        
+        if (proofTransaction) {
+          // Update booking with Proof transaction details using existing schema fields
+          await prisma.booking.update({
+            where: { id: booking.id },
+            data: {
+              dailyRoomUrl: proofTransaction.sessionUrl, // Repurpose for Proof.com URL
+              kbaStatus: `proof_transaction:${proofTransaction.id}`, // Store transaction ID
+              idVerificationStatus: proofTransaction.status,
+              notes: `${booking.notes || ''}\n\nProof.com RON Session: ${proofTransaction.id}`
+            }
+          });
+          
+          console.log(`✅ Proof.com RON session created: ${proofTransaction.id}`);
+        } else {
+          console.warn('⚠️ Failed to create Proof.com RON session (non-blocking)');
+        }
+        
+      } catch (ronError) {
+        console.error('⚠️ RON session creation failed (non-blocking):', ronError);
+        // Continue with booking creation even if RON session fails
+      }
+    }
+    
     // Send enhanced confirmation email (async, don't wait)
-    sendEnhancedConfirmationEmail(booking).catch((error: any) => {
+    sendEnhancedConfirmationEmail(booking, validatedData.customerName, proofTransaction).catch((error: any) => {
       console.error('Email sending failed (non-blocking):', error);
     });
     
@@ -362,7 +404,16 @@ export async function POST(request: NextRequest) {
         service: {
           name: service.name,
           serviceType: service.serviceType
-        }
+        },
+        // Include RON session details if available
+        ...(proofTransaction && {
+          ron: {
+            transactionId: proofTransaction.id,
+            accessLink: proofTransaction.sessionUrl,
+            status: proofTransaction.status,
+            instructions: 'Check your email for RON session access link from Proof.com'
+          }
+        })
       }
     });
     
@@ -398,7 +449,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function sendEnhancedConfirmationEmail(booking: any) {
+async function sendEnhancedConfirmationEmail(booking: any, customerName: string, proofTransaction: any = null) {
   try {
     // Import the enhanced email templates
     const { bookingConfirmationEmail } = await import('@/lib/email/templates');
@@ -413,10 +464,10 @@ async function sendEnhancedConfirmationEmail(booking: any) {
       return;
     }
     
-    // Prepare email data
+    // Prepare email data - use passed customerName instead of booking.customerName
     const client = {
-      firstName: booking.customerName.split(' ')[0],
-      lastName: booking.customerName.split(' ').slice(1).join(' '),
+      firstName: customerName.split(' ')[0] || 'Valued',
+      lastName: customerName.split(' ').slice(1).join(' ') || 'Customer',
       email: booking.customerEmail
     };
     
