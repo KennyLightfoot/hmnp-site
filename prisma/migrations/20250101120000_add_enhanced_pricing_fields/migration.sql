@@ -1,6 +1,3 @@
--- CreateIndex
-CREATE INDEX IF NOT EXISTS "idx_booking_pricing_version" ON "Booking"("pricingVersion");
-
 -- AddColumn
 ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "calculatedDistance" REAL;
 
@@ -12,6 +9,9 @@ ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "pricingBreakdown" JSONB;
 
 -- AddColumn
 ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "pricingVersion" VARCHAR(10) DEFAULT '2.0.0';
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "idx_booking_pricing_version" ON "Booking"("pricingVersion");
 
 -- AddColumn
 ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "serviceAreaValidated" BOOLEAN DEFAULT false;
@@ -93,10 +93,10 @@ CREATE INDEX IF NOT EXISTS "idx_booking_service_area_validated" ON "Booking"("se
 CREATE INDEX IF NOT EXISTS "idx_booking_travel_fee" ON "Booking"("travelFee");
 
 -- AddForeignKey
-ALTER TABLE "PricingAuditLog" ADD CONSTRAINT IF NOT EXISTS "PricingAuditLog_bookingId_fkey" FOREIGN KEY ("bookingId") REFERENCES "Booking"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "PricingAuditLog" ADD CONSTRAINT "PricingAuditLog_bookingId_fkey" FOREIGN KEY ("bookingId") REFERENCES "Booking"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PricingAuditLog" ADD CONSTRAINT IF NOT EXISTS "PricingAuditLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "PricingAuditLog" ADD CONSTRAINT "PricingAuditLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- Add Column Comments
 DO $$
