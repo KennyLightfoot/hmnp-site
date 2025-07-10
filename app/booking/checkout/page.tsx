@@ -46,7 +46,7 @@ export default function BookingCheckoutPage() {
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [paymentMethod, setPaymentMethod] = useState('stripe-checkout');
 
   useEffect(() => {
     // Extract booking data from URL parameters
@@ -105,27 +105,38 @@ export default function BookingCheckoutPage() {
     setError('');
 
     try {
-      // Step 1: Create Stripe Payment Intent
+      // Step 1: Create Stripe Checkout Session
       const paymentResponse = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: parseFloat(bookingData.totalPrice) * 100, // Convert to cents
+          // Required top-level fields
+          customerEmail: bookingData.customerEmail,
+          customerName: bookingData.customerName,
+          description: `${getServiceDisplayName(bookingData.serviceType)} - ${bookingData.customerName}`,
+          amount: parseFloat(bookingData.totalPrice),
           currency: 'usd',
           metadata: {
             service_type: bookingData.serviceType,
-            customer_email: bookingData.customerEmail,
-            customer_name: bookingData.customerName,
-            scheduled_date: bookingData.bookingTime
+            booking_date: bookingData.bookingDate,
+            booking_time: bookingData.bookingTime,
+            location_address: bookingData.locationAddress || 'N/A'
           }
         })
       });
 
       if (!paymentResponse.ok) {
-        throw new Error('Failed to create payment session');
+        const errorData = await paymentResponse.json().catch(() => ({}));
+        throw new Error(errorData.message || errorData.error || 'Failed to create payment session');
       }
 
-      const { sessionId } = await paymentResponse.json();
+      const responseData = await paymentResponse.json();
+      
+      if (!responseData.success || !responseData.sessionId) {
+        throw new Error(responseData.error || 'Invalid payment session response');
+      }
+
+      const { sessionId } = responseData;
 
       // Step 2: Redirect to Stripe Checkout
       const stripe = (window as any).Stripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
@@ -283,6 +294,42 @@ export default function BookingCheckoutPage() {
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
+            )}
+
+            {/* Payment Method Selection */}
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="stripe-checkout"
+                  name="payment-method"
+                  value="stripe-checkout"
+                  checked={paymentMethod === 'stripe-checkout'}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="stripe-checkout" className="text-sm font-medium">
+                  Credit/Debit Card (Recommended)
+                </label>
+              </div>
+            </div>
+
+            {/* Test Cards Info (Development) */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="text-sm font-medium text-yellow-800 mb-2">
+                  🧪 Test Mode - Use These Test Cards:
+                </div>
+                <div className="text-xs text-yellow-700 space-y-1">
+                  <div><strong>Success:</strong> 4242 4242 4242 4242</div>
+                  <div><strong>Decline:</strong> 4000 0000 0000 0002</div>
+                  <div><strong>3D Secure:</strong> 4000 0000 0000 3220</div>
+                  <div><strong>Insufficient Funds:</strong> 4000 0000 0000 9995</div>
+                  <div className="mt-1 text-yellow-600">
+                    Use any future date for expiry, any 3-digit CVC, any US ZIP
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* Payment Button */}
