@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { format, toZonedTime, getTimezoneOffset } from 'date-fns-tz';
-import { addMinutes, isBefore, isAfter, isSameDay } from 'date-fns';
+import { format, toZonedTime } from 'date-fns-tz';
 import { prisma } from '@/lib/prisma';
 
 // Input validation schema
@@ -40,8 +39,6 @@ const DEFAULT_BUSINESS_HOURS: BusinessHours[] = [
 ];
 
 export async function GET(request: NextRequest) {
-  console.log('[AVAILABILITY API] Starting request processing:', new Date().toISOString());
-  
   try {
     const { searchParams } = new URL(request.url);
     const queryParams = {
@@ -51,7 +48,7 @@ export async function GET(request: NextRequest) {
       timezone: searchParams.get('timezone') || undefined,
     };
 
-    console.log('[AVAILABILITY API] Query params:', queryParams);
+    console.log('Availability API called with params:', queryParams);
 
     // Validate input parameters
     const validatedParams = availabilityQuerySchema.parse(queryParams);
@@ -60,8 +57,6 @@ export async function GET(request: NextRequest) {
     const businessSettings = await getBusinessSettings();
     const businessTimezone = businessSettings.business_timezone || 'America/Chicago';
     const clientTimezone = validatedParams.timezone;
-    
-    console.log('[AVAILABILITY API] Business timezone:', businessTimezone);
     
     // Convert requested date to business timezone for proper availability calculations
     const requestedDateInClientTz = new Date(`${validatedParams.date}T00:00:00`);
@@ -79,36 +74,27 @@ export async function GET(request: NextRequest) {
     }
 
     // Get service details
-    console.log('[AVAILABILITY API] Looking up service:', validatedParams.serviceId);
     const service = await prisma.Service.findUnique({
       where: { id: validatedParams.serviceId },
     });
 
     if (!service || !service.isActive) {
-      console.log('[AVAILABILITY API] Service not found or inactive:', service);
       return NextResponse.json(
         { error: 'Service not found or inactive' },
         { status: 404 }
       );
     }
 
-    console.log('[AVAILABILITY API] Service found:', service.name);
-
     // Get service duration (use override if provided, otherwise service default)
-        const serviceDurationMinutes = validatedParams.duration
+    const serviceDurationMinutes = validatedParams.duration
       ? parseInt(validatedParams.duration)
       : service.durationMinutes;
 
     // Get business hours for the requested day (using business timezone)
     const dayOfWeek = requestedDateInBusinessTz.getDay();
-    console.log('[DEBUG] Date:', validatedParams.date, 'Day of week:', dayOfWeek);
-    console.log('[DEBUG] Business settings keys:', Object.keys(businessSettings).filter(k => k.includes('hours')));
-    
     const businessHours = await getBusinessHoursForDay(dayOfWeek, businessSettings);
-    console.log('[DEBUG] Business hours result:', businessHours);
 
     if (!businessHours) {
-      console.log('[DEBUG] No business hours found for day', dayOfWeek);
       return NextResponse.json({
         date: validatedParams.date,
         availableSlots: [],
@@ -146,8 +132,6 @@ export async function GET(request: NextRequest) {
       clientTimezone,
     });
 
-    console.log('[AVAILABILITY API] Calculated', availableSlots.length, 'time slots');
-
     // Include timezone information in the response
     return NextResponse.json({
       date: validatedParams.date,
@@ -155,7 +139,7 @@ export async function GET(request: NextRequest) {
       serviceInfo: {
         name: service.name,
         duration: serviceDurationMinutes,
-        price: service.price,
+        price: Number(service.basePrice),
       },
       businessHours: {
         startTime: businessHours.startTime,
@@ -169,9 +153,8 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('[AVAILABILITY API] Error occurred:', error);
-    console.error('[AVAILABILITY API] Error stack:', error instanceof Error ? error.stack : 'No stack');
-    console.error('[AVAILABILITY API] Request URL:', request.url);
+    console.error('Availability API error:', error);
+    console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace available');
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -180,29 +163,37 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Return more detailed error information in development
+    const isDevelopment = process.env.NODE_ENV === 'development';
     return NextResponse.json(
       { 
-        error: 'Internal server error',
-        details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined,
-        timestamp: new Date().toISOString()
+        error: isDevelopment ? error instanceof Error ? error.message : 'Unknown error' : 'Internal server error',
+        ...(isDevelopment && { details: error instanceof Error ? error.stack : undefined })
       },
       { status: 500 }
     );
-  } finally {
-    // singleton - do not disconnect
   }
 }
 
 // Helper function to get business settings
 async function getBusinessSettings() {
-  const settings = await prisma.BusinessSettings.findMany({
-    where: { category: 'booking' },
-  });
+  try {
+    const settings = await prisma.BusinessSettings.findMany({
+      where: { category: 'booking' },
+    });
 
-  return settings.reduce((acc, setting) => {
-    acc[setting.key] = setting.value;
-    return acc;
-  }, {} as Record<string, string>);
+    const businessSettings = settings.reduce((acc, setting) => {
+      acc[setting.key] = setting.value;
+      return acc;
+    }, {} as Record<string, string>);
+
+    console.log('Business settings loaded:', Object.keys(businessSettings));
+    return businessSettings;
+  } catch (error) {
+    console.error('Error fetching business settings:', error);
+    // Return empty settings object on error - will use defaults
+    return {};
+  }
 }
 
 // Helper function to get business hours for a specific day
@@ -245,26 +236,35 @@ async function checkBlackoutDate(date: Date, businessSettings: Record<string, st
 
 // Helper function to get existing bookings for a date
 async function getExistingBookings(date: Date) {
-  const startOfDay = new Date(date);
-  startOfDay.setHours(0, 0, 0, 0);
-  
-  const endOfDay = new Date(date);
-  endOfDay.setHours(23, 59, 59, 999);
+  try {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
 
-  return await prisma.Booking.findMany({
-    where: {
-      scheduledDateTime: {
-        gte: startOfDay,
-        lte: endOfDay,
+    const bookings = await prisma.Booking.findMany({
+      where: {
+        scheduledDateTime: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+        status: {
+          notIn: ['CANCELLED_BY_CLIENT', 'CANCELLED_BY_STAFF', 'NO_SHOW', 'ARCHIVED'],
+        },
       },
-      status: {
-        notIn: ['CANCELLED_BY_CLIENT', 'CANCELLED_BY_STAFF', 'NO_SHOW', 'ARCHIVED'],
+      include: {
+        Service: true,
       },
-    },
-    include: {
-      Service: true,
-    },
-  });
+    });
+
+    console.log(`Found ${bookings.length} existing bookings for ${date.toDateString()}`);
+    return bookings;
+  } catch (error) {
+    console.error('Error fetching existing bookings:', error);
+    // Return empty array on error - will show all slots as available
+    return [];
+  }
 }
 
 // Helper function to get lead time
@@ -333,7 +333,10 @@ function calculateAvailableSlots({
       
       const bookingStart = new Date(booking.scheduledDateTime);
       const bookingEnd = new Date(bookingStart);
-              bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.Service.durationMinutes + bufferTimeMinutes);
+      
+      // Use Service duration with buffer time
+      const duration = booking.Service?.durationMinutes ?? serviceDurationMinutes;
+      bookingEnd.setMinutes(bookingEnd.getMinutes() + duration + bufferTimeMinutes);
       
       // Check if there's any overlap
       return (currentSlot < bookingEnd && slotEnd > bookingStart);

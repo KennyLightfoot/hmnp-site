@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { trackBookingConfirmation, trackLoanSigningBooked, trackRONCompleted, trackSameDayServiceRequested, trackAfterHoursServiceRequested } from '@/lib/tracking';
 import { sendGHLMessage } from '../../../lib/ghl-messaging';
 import { GoogleCalendarService } from '../../../lib/google-calendar';
+import { createGHLIntegration } from '@/lib/ghl/booking-integration';
 // Custom fields temporarily disabled - using standard GHL fields and tags
 
 // Using tags-only approach for optimal business operations
@@ -68,7 +69,7 @@ import { convertCustomFieldsArrayToObject } from '@/lib/ghl'; // Import the new 
 import type { GhlContact, GhlCustomField } from '@/lib/ghl'; // Import GHL types
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-const stripe = stripeSecretKey ? new Stripe(stripeSecretKey, { apiVersion: '2023-10-16' }) : null;
+const stripe = stripeSecretKey ? new Stripe(stripeSecretKey, { apiVersion: '2025-05-28.basil' }) : null;
 
 // Input validation schema for booking creation
 const createBookingSchema = z.object({
@@ -205,11 +206,11 @@ export async function GET(request: NextRequest) {
       }
 
       const [bookings, total] = await Promise.all([
-        prisma.Booking.findMany({
+        prisma.booking.findMany({
           where: whereClause,
           include: {
             Service: true,
-            promoCode: true,
+            PromoCode: true,
                     User_Booking_signerIdToUser: context.canViewAllBookings ? {
           select: { id: true, name: true, email: true }
         } : false,
@@ -219,7 +220,7 @@ export async function GET(request: NextRequest) {
           skip: (page - 1) * limit,
           take: limit,
         }),
-        prisma.Booking.count({ where: whereClause }),
+        prisma.booking.count({ where: whereClause }),
       ]);
 
       return NextResponse.json({
@@ -255,9 +256,14 @@ export async function POST(request: NextRequest) {
   
   try {
     const body = await request.json() as BookingRequestBody;
+    
+    // Handle field mapping for simple booking form compatibility
+    const customerName = (body as any).customerName || `${body.firstName || ''} ${body.lastName || ''}`.trim();
+    const customerEmail = (body as any).customerEmail || body.email;
+    const customerPhone = (body as any).customerPhone || body.phone;
+    
     // Extract email from request body - required for all bookings
-    // Handle both 'email' and 'customerEmail' field names for compatibility
-    signerUserEmail = body.email || (body as any).customerEmail;
+    signerUserEmail = customerEmail;
     
     if (!signerUserEmail) {
       return NextResponse.json({ error: 'Email is required for booking' }, { status: 400 });
@@ -267,8 +273,8 @@ export async function POST(request: NextRequest) {
     if (context.isAuthenticated && user.isAuthenticated) {
       signerUserId = user.id;
       // If logged in, prefer user email over form email for security
-      signerUserEmail = user.email || body.email;
-      signerUserName = user.name ?? null;
+      signerUserEmail = user.email || customerEmail;
+      signerUserName = user.name ?? customerName;
       
       console.log("Authenticated booking with USER IDs:", {
         signerUserId,
@@ -278,7 +284,7 @@ export async function POST(request: NextRequest) {
       
       // Verify authenticated user exists in database
       try {
-        const userExists = await prisma.User.findUnique({
+        const userExists = await prisma.user.findUnique({
           where: { id: signerUserId },
           select: { id: true }
         });
@@ -295,12 +301,7 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // For guest bookings, use form data
-      // Handle both field name formats for compatibility
-      const firstName = body.firstName || (body as any).customerName?.split(' ')[0];
-      const lastName = body.lastName || (body as any).customerName?.split(' ').slice(1).join(' ');
-      const customerName = (body as any).customerName;
-      
-      signerUserName = customerName || `${firstName || ''} ${lastName || ''}`.trim() || null;
+      signerUserName = customerName || null;
       console.log("Guest booking with data:", {
         signerUserEmail,
         signerUserName
@@ -341,7 +342,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Handle phone field compatibility
-    const phone = body.phone || (body as any).customerPhone;
+    const phone = customerPhone;
 
     let discountAmount = 0;
     const appliedPromoCodeNormalized = promoCode?.trim().toUpperCase();
@@ -377,7 +378,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Service ID is required' }, { status: 400 });
     }
 
-    const service = await prisma.Service.findUnique({
+    const service = await prisma.service.findUnique({
       where: { id: serviceId, isActive: true },
     });
 
@@ -462,7 +463,7 @@ export async function POST(request: NextRequest) {
       }
     
     // For guest bookings, we'll only store email/contact info in GHL, not linked to a user
-    let newBooking: any = await prisma.Booking.create({
+    let newBooking: any = await prisma.booking.create({
       data: bookingData,
       include: {
         Service: true,
@@ -517,335 +518,105 @@ export async function POST(request: NextRequest) {
         });
         checkoutUrl = stripeSession.url;
         console.log("!!!!!!!!!! STRIPE CHECKOUT SESSION CREATED !!!!!!!!!! URL:", checkoutUrl);
-        
-        // Store the payment URL in the booking notes
-        if (checkoutUrl) {
-          await prisma.Booking.update({
-            where: { id: newBooking.id },
-            data: { 
-              notes: newBooking.notes ? `${newBooking.notes}\nPayment URL: ${checkoutUrl}` : `Payment URL: ${checkoutUrl}`
-            }
-          });
-        }
-      } catch (stripeError: any) {
-        console.error("!!!!!!!!!! Error creating Stripe session:", stripeError);
-        // Log the error but proceed; the booking remains PAYMENT_PENDING.
-        // The client will not receive a checkoutUrl and thus cannot pay immediately via this flow.
-      } // End catch (stripeError: any)
-    } // End if (initialStatus === BookingStatus.PAYMENT_PENDING ...)
 
-    // --- GHL API Integration: Upsert Contact & Apply Tags/Fields ---
-    try {
-      // Use signerUserEmail which is always populated, and signerUserName for guest details
-          const emailForGhl = signerUserId ? newBooking.User_Booking_signerIdToUser?.email : signerUserEmail;
-    let nameForGhl = signerUserId ? newBooking.User_Booking_signerIdToUser?.name : signerUserName;
-
-      // Fallback for name if it's still null (e.g. guest didn't provide full name but might have provided first/last)
-      if (!nameForGhl && (body.firstName || body.lastName)) {
-        nameForGhl = `${body.firstName || ''} ${body.lastName || ''}`.trim();
+        // Update booking with Stripe payment URL
+        await prisma.booking.update({
+          where: { id: newBooking.id },
+          data: { stripePaymentUrl: checkoutUrl }
+        });
+      } catch (stripeError) {
+        console.error('Stripe error:', stripeError);
+        // Continue with booking creation even if Stripe fails
+        checkoutUrl = null;
       }
+    }
 
-      if (emailForGhl) {
-        let firstNameGhl = 'Client'; // Default if no name parts found
-        let lastNameGhl = '';
+    // GHL Contact Management and Workflow Integration
+    try {
+      if (signerUserEmail) {
+        // Prepare customer data for GHL
+        const customerData = {
+          firstName: signerUserName?.split(' ')[0] || '',
+          lastName: signerUserName?.split(' ').slice(1).join(' ') || '',
+          fullName: signerUserName || signerUserEmail,
+        };
 
-        if (nameForGhl) {
-          const nameParts = nameForGhl.trim().split(' ');
-          firstNameGhl = nameParts[0] || 'Client'; // Ensure firstNameGhl is never empty
-          if (nameParts.length > 1) {
-            lastNameGhl = nameParts.slice(1).join(' ');
+        // Create or update GHL contact
+        const ghlContact = await createGHLIntegration(
+          newBooking,
+          customerData,
+          service,
+          {
+            basePrice: Number(service.basePrice),
+            promoDiscount: discountAmount,
+            finalPrice: finalAmountDueAfterDiscount,
+            depositAmount: service.requiresDeposit ? Number(service.depositAmount) : 0,
+          },
+          checkoutUrl
+        );
+
+        const contactId = ghlContact?.id || ghlContact?.contact?.id;
+        if (contactId) {
+          // Update booking with GHL contact ID
+          await prisma.booking.update({
+            where: { id: newBooking.id },
+            data: { ghlContactId: contactId }
+          });
+
+          // Apply tags based on booking status and service type
+          const tagsToApply = [
+            'Status:New_Booking',
+            `Service:${service.serviceType}`,
+            `Booking:${initialStatus}`,
+          ];
+
+          if (discountAmount > 0) {
+            tagsToApply.push('discount:applied');
           }
-        } else if (body.firstName || body.lastName) { // Fallback to form names if nameForGhl is still null
-          firstNameGhl = body.firstName || 'Client';
-          lastNameGhl = body.lastName || '';
-        }
-        
-        // Define serviceAddressForGhl for GHL custom field
-        let serviceAddressForGhl: string;
-        if (body.locationType === 'CLIENT_SPECIFIED_ADDRESS') {
-          // Use the already destructured addressStreet, addressCity, etc. from the body
-          const parts = [
-            addressStreet, 
-            addressCity, 
-            addressState, 
-            addressZip
-          ].filter(Boolean); // Filter out null, undefined, empty strings
-          serviceAddressForGhl = parts.join(', ');
-        } else if (body.locationType === 'PUBLIC_PLACE') {
-          serviceAddressForGhl = 'Public Place';
+
+          // Create Google Calendar event
+          try {
+            const calendarService = new GoogleCalendarService();
+            const event = await calendarService.createBookingEvent(newBooking);
+            const eventId = event?.id || null;
+            
+            // Update booking with calendar event ID
+            if (eventId) {
+              await prisma.booking.update({
+                where: { id: newBooking.id },
+                data: { googleCalendarEventId: eventId }
+              });
+            }
+            
+            console.log(`✅ Google Calendar event created: ${eventId}`);
+          } catch (calendarError) {
+            console.error('❌ Failed to create Google Calendar event:', calendarError);
+            // Don't fail the booking if calendar creation fails
+          }
+
+          // Add tags and trigger workflows
+          try {
+            await ghl.addTagsToContact(contactId, tagsToApply);
+            console.log(`GHL: Contact ${contactId} upserted and tags applied: ${tagsToApply.join(', ')}`);
+            
+            // Trigger specific workflows based on booking status
+            await triggerGHLWorkflows(contactId, newBooking.status, service?.name);
+            
+          } catch (tagError) {
+            console.error('GHL: Error adding tags to contact:', tagError);
+            // Don't throw here, continue with booking creation
+          }
         } else {
-          // Fallback for any other location types or if body.locationType is undefined
-          serviceAddressForGhl = ''; // Or a more descriptive placeholder like 'Location N/A'
-        }
-
-        // Using BOTH tags and custom fields for complete workflow support
-        console.log("GHL: Populating custom fields for workflow automation");
-
-        // Prepare custom fields for GHL workflows
-        const customFields: { [key: string]: string } = {
-          // Core booking fields
-          booking_id: newBooking.id,
-          payment_url: checkoutUrl || '',
-          payment_amount: finalAmountDueAfterDiscount.toString(),
-          
-          // Service details
-          service_requested: service.name,
-          service_address: serviceAddressForGhl,
-          service_price: service.basePrice.toString(),
-          
-          // Date/Time fields (all three for compatibility)
-          appointment_date: scheduledDateTime ? 
-            new Date(scheduledDateTime).toLocaleDateString('en-US') : '',
-          appointment_time: scheduledDateTime ? 
-            new Date(scheduledDateTime).toLocaleTimeString('en-US', { 
-              hour: '2-digit', 
-              minute: '2-digit' 
-            }) : '',
-          appointment_datetime: scheduledDateTime ? 
-            new Date(scheduledDateTime).toISOString()
-              .replace('T', ' ')
-              .substring(0, 19) : '',
-          
-          // Workflow support fields
-          preferred_datetime: scheduledDateTime || '',
-          urgency_level: 'new',
-          hours_old: '0',
-        };
-
-        // Define the main GHL contact payload
-        const ghlContactPayload: GhlContact = {
-          email: emailForGhl,
-          firstName: firstNameGhl,
-          lastName: lastNameGhl,
-          phone: body.phone || undefined,
-          address1: addressStreet || undefined,
-          city: addressCity || undefined,
-          state: addressState || undefined,
-          postalCode: addressZip || undefined,
-          country: addressState ? 'US' : undefined,
-          source: 'HMNP Website Booking',
-          companyName: body.companyName || undefined,
-          locationId: ghlLocationId, // CRITICAL: Ensure locationId is included
-          customField: customFields, // Populate custom fields for workflows
-        };
-
-        console.log("GHL Contact Payload (excluding tags):", JSON.stringify(ghlContactPayload, null, 2));
-
-        try {
-          console.log("Attempting to upsert GHL contact with location ID:", ghlLocationId);
-          const ghlContact = await ghl.upsertContact(ghlContactPayload);
-          console.log("GHL contact successfully upserted:", JSON.stringify(ghlContact, null, 2));
-          
-          // Fix: Check if ghlContact has an id property, handle different response formats
-          const contactId = ghlContact?.id || ghlContact?.contact?.id;
-          
-          if (contactId) {
-            // Store GHL contact ID in booking
-            await prisma.Booking.update({
-              where: { id: newBooking.id },
-              data: { 
-                ghlContactId: contactId,
-                customerEmail: emailForGhl // Store email for guest bookings
-              }
-            });
-            
-            const tagsToApply: string[] = [];
-            if (service?.name) {
-              tagsToApply.push(`Service:${service.name.replace(/\s+/g, '_').toLowerCase()}`);
-            }
-            if (newBooking.status === BookingStatus.PAYMENT_PENDING) {
-              tagsToApply.push('status:booking_pendingpayment');
-            } else if (newBooking.status === BookingStatus.CONFIRMED) {
-              tagsToApply.push('status:booking_confirmed');
-            }
-
-            // Add booking created tag for notification workflow
-            tagsToApply.push('status:booking_created');
-            
-            // Check if this is an emergency service
-            if (service?.name && (service.name.toLowerCase().includes('emergency') || service.name.toLowerCase().includes('urgent'))) {
-              tagsToApply.push('Service:Emergency');
-              tagsToApply.push('extended-hours-notary:same_day');
-            }
-
-            if (isFirstTimeDiscountApplied) {
-              tagsToApply.push('discount:firsttime_applied');
-            }
-            if (isReferralDiscountApplied) {
-              tagsToApply.push('discount:referral_newclient_applied');
-              tagsToApply.push('status:referred_client'); // Also tag as referred client
-            }
-            
-            // Add consent tags based on body.smsNotifications and body.emailUpdates
-            if (body.smsNotifications) {
-              tagsToApply.push('consent:sms_opt_in');
-            }
-            if (body.emailUpdates) {
-              tagsToApply.push('consent:marketing_opt_in'); // More specific tag
-            }
-
-            // Enhanced tagging strategy optimized for business automation
-
-            // Add comprehensive business intelligence tags for current phase
-            tagsToApply.push('source:website_booking');
-            if (promoCode) {
-              tagsToApply.push(`promo:${promoCode.toLowerCase()}`);
-            }
-            if (locationType) {
-              tagsToApply.push(`location:${locationType.toLowerCase()}`);
-            }
-            if (isFirstTimeClient) {
-              tagsToApply.push('client:first_time');
-            }
-            if (discountAmount > 0) {
-              tagsToApply.push('discount:applied');
-            }
-
-            // Create Google Calendar event
-            try {
-              const calendarService = new GoogleCalendarService();
-              const event = await calendarService.createBookingEvent(newBooking);
-              const eventId = event?.id || null;
-              
-              // Update booking with calendar event ID
-              if (eventId) {
-                await prisma.Booking.update({
-                  where: { id: newBooking.id },
-                  data: { googleCalendarEventId: eventId }
-                });
-              }
-              
-              console.log(`✅ Google Calendar event created: ${eventId}`);
-            } catch (calendarError) {
-              console.error('❌ Failed to create Google Calendar event:', calendarError);
-              // Don't fail the booking if calendar creation fails
-            }
-
-            // Only add tags if we have tags to add and a valid contact ID
-            if (tagsToApply.length > 0) {
-              try {
-                await ghl.addTagsToContact(contactId, tagsToApply);
-                console.log(`GHL: Contact ${contactId} upserted and tags applied: ${tagsToApply.join(', ')}`);
-                
-                // NEW: Trigger specific workflows based on booking status
-                await triggerGHLWorkflows(contactId, newBooking.status, service?.name);
-                
-              } catch (tagError) {
-                console.error('GHL: Error adding tags to contact:', tagError);
-                // Don't throw here, continue with booking creation
-              }
-            } else {
-              console.log('GHL: No tags to apply to contact');
-            }
-          } else {
-            console.warn('GHL: Contact upsertion did not return a valid contact ID. Response:', ghlContact);
-          }
-        } catch (upsertError) {
-          console.error('GHL contact upsert error details:', upsertError instanceof Error ? {
-            message: upsertError.message,
-            name: upsertError.name,
-            stack: upsertError.stack
-          } : upsertError);
-          
-          // Enhanced error analysis for 403 errors
-          const errorMessage = upsertError instanceof Error ? upsertError.message : String(upsertError);
-          if (errorMessage.includes('403') || errorMessage.includes('does not have access to this location')) {
-            console.error('🚨 GHL 403 ERROR ANALYSIS:');
-            console.error('   - Location ID being used:', ghlLocationId);
-            console.error('   - This suggests your GHL_API_KEY does not have access to location:', ghlLocationId);
-            console.error('   - Possible solutions:');
-            console.error('     1. Verify GHL_LOCATION_ID matches your GHL sub-account');
-            console.error('     2. Regenerate your Private Integration Token (PIT)');
-            console.error('     3. Ensure PIT has correct scopes: contacts.write, contacts.read');
-            console.error('     4. Check if location ID changed after recent GHL updates');
-          }
-          
-          console.error('This suggests a possible issue with the Private Integration Token permissions or formatting.');
-          // Don't throw here to prevent booking failure, just log the error
-          console.error('Continuing with booking creation despite GHL error...');
+          console.warn('GHL: Contact upsertion did not return a valid contact ID. Response:', ghlContact);
         }
       } else {
         console.warn('GHL: Signer email is missing, skipping GHL contact creation.');
       }
     } catch (ghlOverallError) {
       console.error("Error in overall GHL integration block:", ghlOverallError);
-      // Optionally, add more specific error handling or re-throwing if needed
-      // For now, logging the error and continuing is consistent with previous intent.
+      // Log the error but continue with booking creation
     }
 
-    // Send booking confirmation notification
-    if (newBooking && newBooking.Service) {
-      try {
-        // Enhanced SOP tracking based on service type and booking details
-        const serviceType = newBooking.Service.serviceType;
-        const serviceName = newBooking.Service.name;
-        const bookingValue = Number(newBooking.priceAtBooking);
-        
-        // Determine if special SOP events should be tracked
-        const isLoanSigning = serviceType === 'LOAN_SIGNING_SPECIALIST' || 
-                             serviceName.toLowerCase().includes('loan');
-        const isRON = serviceName.toLowerCase().includes('ron') || 
-                     serviceName.toLowerCase().includes('remote online');
-        const isSameDay = newBooking.urgencyLevel === 'same-day';
-        const isAfterHours = newBooking.urgencyLevel === 'emergency' || 
-                           (newBooking.scheduledDateTime && 
-                            (new Date(newBooking.scheduledDateTime).getHours() >= 21 || 
-                             new Date(newBooking.scheduledDateTime).getHours() < 7));
-
-        // Track appropriate SOP events
-        if (isLoanSigning) {
-          trackLoanSigningBooked({
-            booking_id: newBooking.id,
-            booking_value: bookingValue,
-            loan_type: 'standard', // Could be enhanced based on booking notes
-            signer_count: newBooking.booking_number_of_signers || 1,
-            rush_service: isSameDay,
-            scan_back_requested: false // Could be enhanced based on service addons
-          });
-        } else if (isRON) {
-          trackRONCompleted({
-            session_id: newBooking.id,
-            service_value: bookingValue,
-            signer_count: newBooking.booking_number_of_signers || 1,
-            document_type: 'standard', // Could be enhanced based on booking details
-            completion_time_minutes: 30 // Estimated, could be tracked from actual session
-          });
-        } else {
-          // Standard booking tracking
-          trackBookingConfirmation({
-            booking_id: newBooking.id,
-            service_type: serviceName,
-            booking_value: bookingValue,
-            customer_type: isFirstTimeClient ? 'new' : 'returning',
-            payment_method: 'stripe'
-          });
-        }
-
-        // Track special service requests per SOP
-        if (isSameDay && !isLoanSigning) {
-          trackSameDayServiceRequested({
-            service_type: serviceName,
-            base_value: Number(newBooking.Service.basePrice),
-            surcharge_applied: 25, // SOP: $25 same-day fee
-            request_time: new Date().toISOString(),
-            urgency_reason: 'same_day_request'
-          });
-        }
-
-        if (isAfterHours && !isLoanSigning) {
-          trackAfterHoursServiceRequested({
-            service_type: serviceName,
-            base_value: Number(newBooking.Service.basePrice),
-            after_hours_fee: 50, // SOP: $50 after-hours fee
-            requested_time: newBooking.scheduledDateTime?.toISOString() || new Date().toISOString()
-          });
-        }
-
-               } catch (trackingError) {
-         console.error('SOP Tracking Error:', trackingError);
-         // Don't fail the booking if tracking fails
-       }
-     }
       // Return the created booking and checkoutUrl (which may be null if payment not needed or Stripe failed)
       const newBookingWithRelations = newBooking as BookingWithRelations;
       // Add guestName to the response if it was a guest booking for easier frontend display
@@ -901,7 +672,7 @@ async function validateTimeSlotAvailability(
   // Check for conflicting bookings
   type BookingWithService = Prisma.BookingGetPayload<{ include: { Service: true } }>;
 
-  const conflictingBookings: BookingWithService[] = await tx.Booking.findMany({
+  const conflictingBookings: BookingWithService[] = await tx.booking.findMany({
     where: {
       scheduledDateTime: {
         gte: new Date(scheduledDateTime.getTime() - (60 * 60 * 1000)), // 1 hour before
@@ -957,7 +728,7 @@ async function calculateBookingPricing(
   
   // Apply promo code if provided
   if (promoCodeStr) {
-    const promoCode = await tx.PromoCode.findUnique({
+    const promoCode = await tx.promoCode.findUnique({
       where: { code: promoCodeStr.toUpperCase() },
     });
     
@@ -1026,13 +797,13 @@ async function findOrCreateCustomer(tx: any, customerData: {
   phone: string;
 }) {
   // Try to find existing customer by email
-  let customer = await tx.User.findUnique({
+  let customer = await tx.user.findUnique({
     where: { email: customerData.email },
   });
   
   // If not found, create new customer
   if (!customer) {
-    customer = await tx.User.create({
+    customer = await tx.user.create({
       data: {
         name: customerData.name,
         email: customerData.email,

@@ -1,9 +1,7 @@
 /**
- * Comprehensive Logging System for HMNP Application
- * Provides structured logging with different levels and monitoring integration
+ * Simple Logging System for HMNP Application
+ * Provides structured logging with console output (Vercel-compatible)
  */
-
-import winston from 'winston';
 
 export enum LogLevel {
   DEBUG = 0,
@@ -41,93 +39,14 @@ export interface MonitoringAlert {
 }
 
 /**
- * Enhanced Logger Class with Multiple Transport Support
+ * Simple Logger Class with Console Output (Vercel-compatible)
  */
-class EnhancedLogger {
-  private winston: winston.Logger;
+class SimpleLogger {
   private requestId: string = '';
   private context: Record<string, any> = {};
 
   constructor() {
-    const transports: winston.transport[] = [
-      // Console transport for development
-      new winston.transports.Console({
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          winston.format.errors({ stack: true }),
-          winston.format.json(),
-          winston.format.colorize({ all: true })
-        )
-      })
-    ];
-
-    // File transports for production
-    if (process.env.NODE_ENV === 'production') {
-      transports.push(
-        new winston.transports.File({
-          filename: 'logs/error.log',
-          level: 'error',
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.errors({ stack: true }),
-            winston.format.json()
-          )
-        }),
-        new winston.transports.File({
-          filename: 'logs/combined.log',
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.errors({ stack: true }),
-            winston.format.json()
-          )
-        })
-      );
-    }
-
-    // Better Stack integration (recommended free option)
-    if (process.env.BETTER_STACK_SOURCE_TOKEN) {
-      // Better Stack uses a simple HTTP endpoint
-      const betterStackTransport = new winston.transports.Http({
-        host: 'in.logs.betterstack.com',
-        port: 443,
-        path: `/sources/${process.env.BETTER_STACK_SOURCE_TOKEN}/entries`,
-        ssl: true,
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          winston.format.json()
-        )
-      });
-      transports.push(betterStackTransport);
-    }
-
-    // Generic HTTP transport for other logging services
-    if (process.env.LOGGING_ENDPOINT && process.env.LOGGING_API_KEY) {
-      const httpTransport = new winston.transports.Http({
-        host: process.env.LOGGING_ENDPOINT,
-        port: 443,
-        ssl: true,
-        headers: {
-          'Authorization': `Bearer ${process.env.LOGGING_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          winston.format.json()
-        )
-      });
-      transports.push(httpTransport);
-    }
-
-    this.winston = winston.createLogger({
-      level: process.env.LOG_LEVEL || 'info',
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.errors({ stack: true }),
-        winston.format.json()
-      ),
-      transports,
-      exitOnError: false
-    });
+    // Simple console-based logging for Vercel compatibility
   }
 
   setRequestId(requestId: string): void {
@@ -166,18 +85,20 @@ class EnhancedLogger {
   }
 
   debug(message: string, service: string, metadata?: Record<string, any>): void {
-    const logEntry = this.formatLogEntry('debug', message, service, metadata);
-    this.winston.debug(logEntry);
+    if (process.env.NODE_ENV === 'development') {
+      const logEntry = this.formatLogEntry('debug', message, service, metadata);
+      console.debug(`[DEBUG] ${service}:`, message, metadata || '');
+    }
   }
 
   info(message: string, service: string, metadata?: Record<string, any>): void {
     const logEntry = this.formatLogEntry('info', message, service, metadata);
-    this.winston.info(logEntry);
+    console.info(`[INFO] ${service}:`, message, metadata || '');
   }
 
   warn(message: string, service: string, metadata?: Record<string, any>): void {
     const logEntry = this.formatLogEntry('warn', message, service, metadata);
-    this.winston.warn(logEntry);
+    console.warn(`[WARN] ${service}:`, message, metadata || '');
   }
 
   error(message: string, service: string, error?: Error, metadata?: Record<string, any>): void {
@@ -190,12 +111,13 @@ class EnhancedLogger {
         stack: error.stack,
         code: (error as any).code
       };
+      console.error(`[ERROR] ${service}:`, message, error, metadata || '');
+    } else {
+      console.error(`[ERROR] ${service}:`, message, metadata || '');
     }
-
-    this.winston.error(logEntry);
   }
 
-  critical(message: string, Service: string, error?: Error, metadata?: Record<string, any>): void {
+  critical(message: string, service: string, error?: Error, metadata?: Record<string, any>): void {
     const logEntry = this.formatLogEntry('error', message, service, metadata);
     logEntry.level = LogLevel.CRITICAL;
     
@@ -206,9 +128,10 @@ class EnhancedLogger {
         stack: error.stack,
         code: (error as any).code
       };
+      console.error(`[CRITICAL] ${service}:`, message, error, metadata || '');
+    } else {
+      console.error(`[CRITICAL] ${service}:`, message, metadata || '');
     }
-
-    this.winston.error(logEntry);
 
     // Send alert for critical errors
     this.sendAlert({
@@ -223,13 +146,8 @@ class EnhancedLogger {
 
   private async sendAlert(alert: MonitoringAlert): Promise<void> {
     try {
-      // You can integrate with your preferred alerting service here
-      // For now, we'll just log it as a critical entry
-      this.winston.error({
-        type: 'MONITORING_ALERT',
-        alert,
-        timestamp: new Date().toISOString()
-      });
+      // Simple console alert for critical issues
+      console.error('[ALERT]', alert);
     } catch (error) {
       console.error('Failed to send monitoring alert:', error);
     }
@@ -237,17 +155,15 @@ class EnhancedLogger {
 
   // Health check method
   async healthCheck(): Promise<{ status: string; transports: string[] }> {
-    const transportNames = this.winston.transports.map(t => t.constructor.name);
-    
     return {
       status: 'healthy',
-      transports: transportNames
+      transports: ['console']
     };
   }
 }
 
 // Export singleton instance
-export const logger = new EnhancedLogger();
+export const logger = new SimpleLogger();
 
 // Helper function to generate request IDs
 export function generateRequestId(): string {
