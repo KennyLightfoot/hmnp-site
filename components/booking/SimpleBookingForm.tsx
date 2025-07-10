@@ -14,10 +14,16 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CreditCard } from 'lucide-react';
 
 const SERVICE_PRICES = {
+  'QUICK_STAMP_LOCAL': 50,
   'STANDARD_NOTARY': 75,
   'EXTENDED_HOURS': 100,
   'LOAN_SIGNING': 150,
-  'RON_SERVICES': 35
+  'ESTATE_PLANNING': 250,
+  'SPECIALTY_NOTARY': 150,
+  'BUSINESS_SOLUTIONS': 250,
+  'RON_SERVICES': 35,
+  'BUSINESS_ESSENTIALS': 125,
+  'BUSINESS_GROWTH': 349
 };
 
 export default function SimpleBookingForm() {
@@ -31,7 +37,12 @@ export default function SimpleBookingForm() {
     locationAddress: ''
   });
 
-  const [pricing, setPricing] = useState({ basePrice: 0, travelFee: 0, totalPrice: 0 });
+  const [pricing, setPricing] = useState({ 
+    basePrice: 0, 
+    travelFee: 0, 
+    totalPrice: 0,
+    transparentData: null as any
+  });
   const [availableSlots, setAvailableSlots] = useState<any[]>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,7 +97,8 @@ export default function SimpleBookingForm() {
       setPricing({
         basePrice: SERVICE_PRICES[formData.serviceType as keyof typeof SERVICE_PRICES] || 75,
         travelFee: 0,
-        totalPrice: SERVICE_PRICES[formData.serviceType as keyof typeof SERVICE_PRICES] || 75
+        totalPrice: SERVICE_PRICES[formData.serviceType as keyof typeof SERVICE_PRICES] || 75,
+        transparentData: null
       });
     }
   };
@@ -231,10 +243,21 @@ export default function SimpleBookingForm() {
               <Label className="font-semibold">Select Service *</Label>
               <div className="grid gap-2 mt-2">
                 {[
-                  ['STANDARD_NOTARY', 'Standard Notary - $75'],
-                  ['EXTENDED_HOURS', 'Extended Hours - $100'],
-                  ['LOAN_SIGNING', 'Loan Signing - $150'],
-                  ['RON_SERVICES', 'Remote Online Notarization - $35']
+                  // Core Mobile Services
+                  ['QUICK_STAMP_LOCAL', 'Quick-Stamp Local - $50'],
+                  ['STANDARD_NOTARY', 'Standard Mobile Notary - $75'],
+                  ['EXTENDED_HOURS', 'Extended Hours Mobile - $100'],
+                  ['LOAN_SIGNING', 'Loan Signing Specialist - $150'],
+                  
+                  // Specialized Services
+                  ['ESTATE_PLANNING', 'Estate Planning Package - $250'],
+                  ['SPECIALTY_NOTARY', 'Specialty Notary Services - $150'],
+                  ['BUSINESS_SOLUTIONS', 'Business Notary Solutions - $250'],
+                  
+                  // Remote & Subscription Services
+                  ['RON_SERVICES', 'Remote Online Notarization - $35'],
+                  ['BUSINESS_ESSENTIALS', 'Business Subscription Essentials - $125/month'],
+                  ['BUSINESS_GROWTH', 'Business Subscription Growth - $349/month']
                 ].map(([key, label]) => (
                   <label key={key} className="flex items-center space-x-2 p-2 border rounded cursor-pointer hover:bg-gray-50">
                     <input
@@ -373,14 +396,14 @@ export default function SimpleBookingForm() {
                         </div>
                       )}
                       
-                      {pricing.transparentData.breakdown.timeBasedSurcharges.map((surcharge, index) => (
+                      {pricing.transparentData.breakdown.timeBasedSurcharges?.map((surcharge: any, index: number) => (
                         <div key={index} className="flex justify-between text-orange-700">
                           <span>{surcharge.label}:</span>
                           <span>+${surcharge.amount}</span>
                         </div>
                       ))}
                       
-                      {pricing.transparentData.breakdown.discounts.map((discount, index) => (
+                      {pricing.transparentData.breakdown.discounts?.map((discount: any, index: number) => (
                         <div key={index} className="flex justify-between text-green-700">
                           <span>{discount.label}:</span>
                           <span>-${discount.amount}</span>
@@ -405,7 +428,7 @@ export default function SimpleBookingForm() {
                      pricing.transparentData.transparency.alternatives.length > 0 && (
                       <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded">
                         <div className="text-xs font-medium text-green-800 mb-1">💰 Save Money:</div>
-                        {pricing.transparentData.transparency.alternatives.slice(0, 2).map((alt, index) => (
+                        {pricing.transparentData.transparency.alternatives.slice(0, 2).map((alt: any, index: number) => (
                           <div key={index} className="text-xs text-green-700">
                             • {alt.serviceType.replace(/_/g, ' ')}: ${alt.price} (save ${alt.savings})
                           </div>

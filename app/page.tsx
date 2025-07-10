@@ -182,8 +182,8 @@ export default function HomePage() {
               Want peace of mind with your next signing?
             </p>
             <Button asChild size="lg" className="bg-[#A52A2A] hover:bg-opacity-80 text-white">
-              <Link href="/contact">
-                Get Your Service Quote Now
+              <Link href="/booking">
+                Book Your Service Now
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
@@ -236,8 +236,8 @@ export default function HomePage() {
           </div>
           <div className="mt-10">
             <Button asChild size="lg" className="bg-[#A52A2A] hover:bg-opacity-80 text-white px-8 py-3">
-              <Link href="/contact">
-                Contact Us & Save <ArrowRight className="ml-2 h-5 w-5" />
+              <Link href="/booking">
+                Book Now & Save <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
           </div>
@@ -250,9 +250,9 @@ export default function HomePage() {
           <h3 className="text-xl font-semibold text-[#002147] mb-3">Quick-Stamp Local</h3>
           <div className="text-3xl font-bold text-[#A52A2A] mb-2">$50</div>
           <p className="text-gray-600 mb-4">Simple documents • ≤ 1 doc, ≤ 2 stamps • ≤ 10 mi travel</p>
-          <Link href="/contact">
+          <Link href="/booking">
             <Button className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
-              Get Quote
+              Book Now
             </Button>
           </Link>
         </div>
@@ -261,9 +261,9 @@ export default function HomePage() {
           <h3 className="text-xl font-semibold text-[#002147] mb-3">Standard Mobile Notary</h3>
           <div className="text-3xl font-bold text-[#A52A2A] mb-2">$75</div>
           <p className="text-gray-600 mb-4">Professional service • ≤ 4 docs • ≤ 2 signers • ≤ 15 mi travel</p>
-          <Link href="/contact">
+          <Link href="/booking">
             <Button className="bg-[#002147] hover:bg-[#001a38] text-white">
-              Get Quote
+              Book Now
             </Button>
           </Link>
         </div>
@@ -272,9 +272,9 @@ export default function HomePage() {
           <h3 className="text-xl font-semibold text-[#002147] mb-3">Loan Signing Specialist</h3>
           <div className="text-3xl font-bold text-[#A52A2A] mb-2">$150</div>
           <p className="text-gray-600 mb-4">Real estate closings • Flat fee • ≤ 4 signers • Expert handling</p>
-          <Link href="/contact">
+          <Link href="/booking">
             <Button className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
-              Get Quote
+              Book Now
             </Button>
           </Link>
         </div>

@@ -66,8 +66,9 @@ interface SmartRecommendation {
   confidence: 'high' | 'medium' | 'low';
 }
 
-// Service configuration matching the pricing engine - ALL 6 SERVICES
+// Service configuration matching the pricing engine - ALL 10 SERVICES
 const SERVICES: ServiceOption[] = [
+  // ===== CORE MOBILE SERVICES =====
   {
     id: 'QUICK_STAMP_LOCAL',
     name: 'Quick-Stamp Local',
@@ -87,7 +88,7 @@ const SERVICES: ServiceOption[] = [
   },
   {
     id: 'STANDARD_NOTARY',
-    name: 'Standard Notary',
+    name: 'Standard Mobile Notary',
     price: 75,
     description: 'Perfect for routine document notarization during business hours',
     hours: '9am-5pm Mon-Fri',
@@ -104,7 +105,7 @@ const SERVICES: ServiceOption[] = [
   },
   {
     id: 'EXTENDED_HOURS',
-    name: 'Extended Hours',
+    name: 'Extended Hours Mobile',
     price: 100,
     description: 'Extended availability for urgent needs and after-hours appointments',
     hours: '7am-9pm Daily',
@@ -139,6 +140,64 @@ const SERVICES: ServiceOption[] = [
     includedRadius: 30,
     badge: 'value'
   },
+  
+  // ===== SPECIALIZED SERVICES =====
+  {
+    id: 'ESTATE_PLANNING',
+    name: 'Estate Planning Package',
+    price: 250,
+    description: 'Comprehensive estate document notarization - Wills, Trusts, POAs, and more',
+    hours: 'By appointment',
+    included: [
+      'Up to 10 documents',
+      'Up to 4 signers',
+      '2.5-hour session',
+      'Estate planning expertise',
+      'Multiple document types',
+      '30-mile travel radius'
+    ],
+    maxDocuments: 10,
+    includedRadius: 30,
+    badge: 'value'
+  },
+  {
+    id: 'SPECIALTY_NOTARY',
+    name: 'Specialty Notary Services',
+    price: 150,
+    description: 'Apostilles, embassy certifications, translations, and complex notarial acts',
+    hours: 'By appointment',
+    included: [
+      'Complex documents',
+      'Apostille services',
+      'Embassy certifications',
+      'Translation notarization',
+      'Expert handling',
+      '30-mile travel radius'
+    ],
+    maxDocuments: 5,
+    includedRadius: 30,
+    badge: 'recommended'
+  },
+  {
+    id: 'BUSINESS_SOLUTIONS',
+    name: 'Business Notary Solutions',
+    price: 250,
+    description: 'Volume signings, block-booking discounts, corporate accounts, and recurring appointments',
+    hours: 'Flexible scheduling',
+    included: [
+      'Volume discounts',
+      'Corporate accounts',
+      'Recurring appointments',
+      'Block booking',
+      'Dedicated support',
+      '30-mile travel radius'
+    ],
+    maxDocuments: 999,
+    includedRadius: 30,
+    badge: 'value'
+  },
+  
+  // ===== REMOTE & SUBSCRIPTION SERVICES =====
   {
     id: 'RON_SERVICES',
     name: 'Remote Online Notarization',
