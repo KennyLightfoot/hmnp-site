@@ -23,7 +23,7 @@ if (!stripePublishableKey) {
 
 // Enhanced Stripe configuration
 export const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: '2024-12-18',
+  apiVersion: '2025-05-28.basil',
   typescript: true,
   telemetry: false,
   maxNetworkRetries: 3,
