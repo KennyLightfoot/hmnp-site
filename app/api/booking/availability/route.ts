@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
               lt: new Date(`${validatedData.date}T23:59:59`)
             },
             status: {
-              in: ['CONFIRMED', 'PENDING']
+              in: ['CONFIRMED', 'PAYMENT_PENDING']
             }
           },
           select: {

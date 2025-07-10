@@ -27,167 +27,147 @@ async function main() {
     
     const services = [
       {
-        id: 'service_mobile_standard',
-        name: 'Standard Mobile Notary',
-        type: ServiceType.MOBILE,  // CORRECT: Use 'type' field with MOBILE enum
-        description: 'General notary services at your location. Includes travel within a 20-mile radius.',
+        id: 'quick-stamp-local-001',
+        name: 'Quick-Stamp Local',
+        serviceType: ServiceType.QUICK_STAMP_LOCAL,
+        description: 'Fast & simple local signings for routine documents',
+        basePrice: 50.00,
+        requiresDeposit: false,
+        depositAmount: 0.00,
+        durationMinutes: 30,
+        isActive: true,
+      },
+      {
+        id: 'standard-notary-002',
+        name: 'Standard Notary',
+        serviceType: ServiceType.STANDARD_NOTARY,
+        description: 'Perfect for routine document notarization during business hours',
         basePrice: 75.00,
-        depositRequired: true,
+        requiresDeposit: true,
         depositAmount: 25.00,
-        duration: 90,  // CORRECT: Use 'duration' field (minutes)
-        maxSigners: 2,
-        maxDocuments: 5,
+        durationMinutes: 60,
         isActive: true,
-        serviceRadius: 20,
-        travelFeeRate: 2.50,
       },
       {
-        id: 'service_mobile_extended',
-        name: 'Extended Hours Mobile Notary',
-        type: ServiceType.MOBILE,
-        description: 'Mobile notary services during extended hours (evenings, weekends).',
+        id: 'extended-hours-003',
+        name: 'Extended Hours',
+        serviceType: ServiceType.EXTENDED_HOURS,
+        description: 'Extended availability for urgent needs and after-hours appointments',
         basePrice: 100.00,
-        depositRequired: true,
+        requiresDeposit: true,
         depositAmount: 25.00,
-        duration: 90,
-        maxSigners: 2,
-        maxDocuments: 5,
+        durationMinutes: 90,
         isActive: true,
-        serviceRadius: 15,
-        travelFeeRate: 3.00,
       },
       {
-        id: 'service_mobile_loan_signing',
+        id: 'loan-signing-004',
         name: 'Loan Signing Specialist',
-        type: ServiceType.MOBILE,
-        description: 'Specialized loan document signing services with certified loan signing agent.',
+        serviceType: ServiceType.LOAN_SIGNING,
+        description: 'Specialized expertise for loan documents and real estate transactions',
         basePrice: 150.00,
-        depositRequired: true,
+        requiresDeposit: true,
         depositAmount: 50.00,
-        duration: 120,
-        maxSigners: 4,
-        maxDocuments: 100,
+        durationMinutes: 120,
         isActive: true,
-        serviceRadius: 25,
-        travelFeeRate: 2.50,
       },
       {
-        id: 'service_ron_standard',
+        id: 'ron-services-005',
         name: 'Remote Online Notarization',
-        type: ServiceType.RON,  // CORRECT: Use RON enum value
-        description: 'Secure remote online notarization via video conference.',
+        serviceType: ServiceType.RON_SERVICES,
+        description: 'Secure remote notarization from anywhere, available 24/7',
         basePrice: 35.00,
-        depositRequired: false,
-        depositAmount: null,
-        duration: 30,
-        maxSigners: 1,
-        maxDocuments: 10,
+        requiresDeposit: false,
+        depositAmount: 0.00,
+        durationMinutes: 30,
         isActive: true,
-        serviceRadius: null,  // Not applicable for RON
-        travelFeeRate: null,
+      },
+      {
+        id: 'business-essentials-006',
+        name: 'Business Subscription - Essentials',
+        serviceType: ServiceType.BUSINESS_ESSENTIALS,
+        description: 'Monthly subscription for regular business notarization needs',
+        basePrice: 125.00,
+        requiresDeposit: false,
+        depositAmount: 0.00,
+        durationMinutes: 60,
+        isActive: true,
+      },
+      {
+        id: 'business-growth-007',
+        name: 'Business Subscription - Growth',
+        serviceType: ServiceType.BUSINESS_GROWTH,
+        description: 'Premium monthly subscription for high-volume business needs',
+        basePrice: 349.00,
+        requiresDeposit: false,
+        depositAmount: 0.00,
+        durationMinutes: 90,
+        isActive: true,
       }
     ];
 
     for (const service of services) {
       await prisma.service.upsert({
-        where: { id: service.id },
+        where: { name: service.name },
         update: {
-          name: service.name,
-          type: service.type,
+          serviceType: service.serviceType,
           description: service.description,
           basePrice: service.basePrice,
-          depositRequired: service.depositRequired,
+          requiresDeposit: service.requiresDeposit,
           depositAmount: service.depositAmount,
-          duration: service.duration,
-          maxSigners: service.maxSigners,
-          maxDocuments: service.maxDocuments,
+          durationMinutes: service.durationMinutes,
           isActive: service.isActive,
-          serviceRadius: service.serviceRadius,
-          travelFeeRate: service.travelFeeRate,
         },
         create: service,
       });
       console.log(`✅ Upserted service: ${service.name}`);
     }
 
-    // Create promotional campaigns using Phase 3 structure
-    console.log('🎫 Seeding Promotional Campaigns...');
+    // Create business settings needed for booking system
+    console.log('⚙️ Seeding Business Settings...');
     
-    const promotionalCampaigns = [
-      {
-        code: 'WELCOME10',
-        name: '10% First-Time Customer Discount',
-        description: 'Welcome to Houston Mobile Notary Pros!',
-        type: 'first_time',
-        value: 10,
-        maxDiscount: 25,
-        minOrderValue: 0,
-        customerTypes: ['new'],
-        validFrom: new Date('2025-01-01'),
-        validUntil: new Date('2025-12-31'),
-        isActive: true
-      },
-      {
-        code: 'LOYAL20',
-        name: '20% Loyalty Customer Discount',
-        description: 'Thank you for being a loyal customer!',
-        type: 'loyalty',
-        value: 20,
-        maxDiscount: 50,
-        minOrderValue: 0,
-        customerTypes: ['loyalty'],
-        validFrom: new Date('2025-01-01'),
-        validUntil: new Date('2025-12-31'),
-        isActive: true
-      },
-      {
-        code: 'FRIEND15',
-        name: '15% Referral Discount',
-        description: 'Thank you for the referral!',
-        type: 'referral',
-        value: 15,
-        maxDiscount: 40,
-        minOrderValue: 0,
-        validFrom: new Date('2025-01-01'),
-        validUntil: new Date('2025-12-31'),
-        isActive: true
-      },
-      {
-        code: 'RON5OFF',
-        name: '$5 RON Service Discount',
-        description: 'Special discount for remote online notarization!',
-        type: 'fixed_amount',
-        value: 5,
-        serviceTypes: ['RON_SERVICES'],
-        validFrom: new Date('2025-01-01'),
-        validUntil: new Date('2025-12-31'),
-        maxUses: 100,
-        isActive: true
-      },
-      {
-        code: 'WINTER25',
-        name: '$25 Winter Special',
-        description: 'Stay warm while we handle your notarization!',
-        type: 'seasonal',
-        value: 25,
-        validFrom: new Date('2025-01-01'),
-        validUntil: new Date('2025-03-31'),
-        maxUses: 50,
-        isActive: true
-      }
+    const businessSettings = [
+      // Business hours
+      { key: 'business_hours_monday_start', value: '09:00', dataType: 'string', description: 'Monday start time', category: 'booking' },
+      { key: 'business_hours_monday_end', value: '17:00', dataType: 'string', description: 'Monday end time', category: 'booking' },
+      { key: 'business_hours_tuesday_start', value: '09:00', dataType: 'string', description: 'Tuesday start time', category: 'booking' },
+      { key: 'business_hours_tuesday_end', value: '17:00', dataType: 'string', description: 'Tuesday end time', category: 'booking' },
+      { key: 'business_hours_wednesday_start', value: '09:00', dataType: 'string', description: 'Wednesday start time', category: 'booking' },
+      { key: 'business_hours_wednesday_end', value: '17:00', dataType: 'string', description: 'Wednesday end time', category: 'booking' },
+      { key: 'business_hours_thursday_start', value: '09:00', dataType: 'string', description: 'Thursday start time', category: 'booking' },
+      { key: 'business_hours_thursday_end', value: '17:00', dataType: 'string', description: 'Thursday end time', category: 'booking' },
+      { key: 'business_hours_friday_start', value: '09:00', dataType: 'string', description: 'Friday start time', category: 'booking' },
+      { key: 'business_hours_friday_end', value: '17:00', dataType: 'string', description: 'Friday end time', category: 'booking' },
+      { key: 'business_hours_saturday_start', value: '10:00', dataType: 'string', description: 'Saturday start time', category: 'booking' },
+      { key: 'business_hours_saturday_end', value: '15:00', dataType: 'string', description: 'Saturday end time', category: 'booking' },
+      
+      // Booking configuration
+      { key: 'minimum_lead_time_hours', value: '2', dataType: 'number', description: 'Minimum lead time in hours', category: 'booking' },
+      { key: 'slot_duration_minutes', value: '30', dataType: 'number', description: 'Time slot duration in minutes', category: 'booking' },
+      { key: 'buffer_time_minutes', value: '15', dataType: 'number', description: 'Buffer time between appointments', category: 'booking' },
+      { key: 'timezone', value: 'America/Chicago', dataType: 'string', description: 'Business timezone', category: 'booking' },
+      
+      // Pricing
+      { key: 'travel_fee_per_mile', value: '2.50', dataType: 'number', description: 'Travel fee per mile', category: 'pricing' },
+      { key: 'service_radius_miles', value: '20', dataType: 'number', description: 'Service radius in miles', category: 'pricing' },
     ];
 
-    for (const campaign of promotionalCampaigns) {
-      await prisma.promotionalCampaign.upsert({
-        where: { code: campaign.code },
+    for (const setting of businessSettings) {
+      await prisma.businessSettings.upsert({
+        where: { key: setting.key },
         update: {
-          ...campaign,
-          updatedAt: new Date()
+          value: setting.value,
+          dataType: setting.dataType,
+          description: setting.description,
+          category: setting.category,
         },
-        create: campaign,
+        create: setting,
       });
-      console.log(`✅ Upserted promotional campaign: ${campaign.code} - ${campaign.name}`);
+      console.log(`✅ Upserted business setting: ${setting.key}`);
     }
+
+    // Create promotional campaigns using Phase 3 structure
+    // console.log('🎫 Seeding Promotional Campaigns...');
+    // TODO: Fix promotional campaigns schema mapping later
 
     console.log(`🌱 Database seeding completed successfully!`);
     
