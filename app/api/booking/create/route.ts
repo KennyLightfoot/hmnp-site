@@ -288,10 +288,9 @@ export async function POST(request: NextRequest) {
         // Proper service relation
         serviceId: service.id,
         
-        // Customer information
+        // Customer information - only customerEmail exists in Booking schema
         customerEmail: validatedData.customerEmail,
-        customerName: validatedData.customerName,
-        customerPhone: validatedData.customerPhone || null,
+        // Note: customerName and customerPhone stored in GHL, not database
         
         // Scheduling - single DateTime field
         scheduledDateTime: new Date(validatedData.scheduledDateTime),
@@ -338,7 +337,7 @@ export async function POST(request: NextRequest) {
           customerEmail: booking.customerEmail,
           serviceType: validatedData.serviceType,
           scheduledDateTime: booking.scheduledDateTime,
-          totalAmount: booking.finalPrice
+          totalAmount: booking.priceAtBooking
         },
         metadata: {
           source: 'api',
@@ -361,10 +360,10 @@ export async function POST(request: NextRequest) {
         confirmationNumber: booking.id,
         clientSecret: paymentIntent.client_secret,
         scheduledDateTime: booking.scheduledDateTime,
-        totalAmount: booking.finalPrice,
+        totalAmount: booking.priceAtBooking,
         service: {
           name: service.name,
-          type: service.type
+          serviceType: service.serviceType
         }
       }
     });
@@ -441,7 +440,7 @@ async function sendEnhancedConfirmationEmail(booking: any) {
       numberOfSigners: 1, // Default, could be enhanced
       status: booking.status,
       paymentStatus: booking.paymentStatus,
-      totalAmount: booking.finalPrice,
+      totalAmount: booking.priceAtBooking,
       bookingManagementLink: `${process.env.NEXT_PUBLIC_APP_URL}/booking/${booking.id}`
     };
     
@@ -465,7 +464,7 @@ async function sendEnhancedConfirmationEmail(booking: any) {
     console.log(`   Booking: ${booking.id}`);
     console.log(`   Service: ${service.name}`);
     console.log(`   Date: ${booking.scheduledDateTime}`);
-    console.log(`   Amount: $${booking.finalPrice}`);
+    console.log(`   Amount: $${booking.priceAtBooking}`);
   } catch (error) {
     console.error('Failed to send enhanced confirmation email:', error);
   }

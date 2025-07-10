@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CreditCard } from 'lucide-react';
 
 const SERVICE_PRICES = {
   'STANDARD_NOTARY': 75,
@@ -440,13 +441,40 @@ export default function SimpleBookingForm() {
               </Alert>
             )}
 
-            <Button
-              type="submit"
-              disabled={!formData.serviceType || isSubmitting}
-              className="w-full"
-            >
-              {isSubmitting ? 'Processing...' : `Book Now - $${pricing.totalPrice}`}
-            </Button>
+            {/* CRITICAL: PAYMENT REQUIRED BEFORE BOOKING */}
+            <div className="border-t pt-4 mt-4">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                <div className="flex items-center space-x-2">
+                  <CreditCard className="h-5 w-5 text-yellow-600" />
+                  <span className="font-semibold text-yellow-800">Payment Required</span>
+                </div>
+                <p className="text-sm text-yellow-700 mt-1">
+                  Complete payment to secure your booking. You'll receive instant confirmation.
+                </p>
+              </div>
+              
+              <Button
+                type="button"
+                disabled={!formData.serviceType || isSubmitting}
+                onClick={() => {
+                  // Redirect to full booking form with payment collection
+                  const params = new URLSearchParams({
+                    serviceType: formData.serviceType,
+                    customerName: formData.customerName,
+                    customerEmail: formData.customerEmail,
+                    customerPhone: formData.customerPhone || '',
+                    bookingDate: formData.bookingDate,
+                    bookingTime: formData.bookingTime,
+                    locationAddress: formData.locationAddress || '',
+                    totalPrice: pricing.totalPrice.toString()
+                  });
+                  window.location.href = `/booking/checkout?${params.toString()}`;
+                }}
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+              >
+                Continue to Payment - $${pricing.totalPrice}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
