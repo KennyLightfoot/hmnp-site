@@ -7,25 +7,81 @@ import crypto from 'crypto';
 function verifyGHLWebhookSignature(payload: string, signature: string, secret: string): boolean {
   if (!signature || !secret) return false;
   
-  // Remove 'sha256=' prefix if present
-  const cleanSignature = signature.startsWith('sha256=') 
-    ? signature.substring(7)
-    : signature;
-  
-  const expectedSignature = crypto
-    .createHmac('sha256', secret)
-    .update(payload, 'utf8')
-    .digest('hex');
-  
   try {
-    return crypto.timingSafeEqual(
-      Buffer.from(cleanSignature, 'hex'),
-      Buffer.from(expectedSignature, 'hex')
-    );
+    // Remove 'sha256=' prefix if present
+    const cleanSignature = signature.startsWith('sha256=') 
+      ? signature.substring(7)
+      : signature;
+    
+    // Create expected signature
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(payload, 'utf8')
+      .digest('hex');
+    
+    // Ensure both signatures are the same length before comparison
+    if (cleanSignature.length !== expectedSignature.length) {
+      console.warn('Signature length mismatch:', {
+        received: cleanSignature.length,
+        expected: expectedSignature.length,
+        receivedStart: cleanSignature.substring(0, 10),
+        expectedStart: expectedSignature.substring(0, 10)
+      });
+      return false;
+    }
+    
+    // Convert to buffers with proper error handling
+    let receivedBuffer: Buffer;
+    let expectedBuffer: Buffer;
+    
+    try {
+      receivedBuffer = Buffer.from(cleanSignature, 'hex');
+      expectedBuffer = Buffer.from(expectedSignature, 'hex');
+    } catch (bufferError) {
+      console.error('Buffer conversion error:', bufferError);
+      return false;
+    }
+    
+    // Ensure buffers are the same length
+    if (receivedBuffer.length !== expectedBuffer.length) {
+      console.warn('Buffer length mismatch after conversion:', {
+        received: receivedBuffer.length,
+        expected: expectedBuffer.length
+      });
+      return false;
+    }
+    
+         return crypto.timingSafeEqual(
+       new Uint8Array(receivedBuffer), 
+       new Uint8Array(expectedBuffer)
+     );
   } catch (error) {
     console.error('Signature verification error:', error);
     return false;
   }
+}
+
+// Helper function to detect GitHub notifications
+function isGitHubNotification(body: any): boolean {
+  // Check for GitHub-specific indicators
+  if (body.messageType === 'Email' && 
+      (body.from?.includes('notifications@github.com') || 
+       body.subject?.includes('GitHub') ||
+       body.subject?.includes('CI Pipeline') ||
+       body.subject?.includes('Run failed') ||
+       body.subject?.includes('workflow run'))) {
+    return true;
+  }
+  
+  // Check for HTML content containing GitHub elements
+  if (body.body && typeof body.body === 'string' && 
+      (body.body.includes('github.githubassets.com') ||
+       body.body.includes('GitHub Actions') ||
+       body.body.includes('workflow run'))) {
+    return true;
+  }
+  
+  return false;
 }
 
 // Define webhook event types
@@ -41,7 +97,17 @@ type WebhookEventType =
   | 'FormSubmit'
   | 'TaskCreate'
   | 'TaskUpdate'
-  | 'TaskComplete';
+  | 'TaskComplete'
+  | 'contact.created'
+  | 'contact.updated'
+  | 'contact.tag_update'
+  | 'opportunity.created'
+  | 'opportunity.status_update'
+  | 'appointment.created'
+  | 'appointment.scheduled'
+  | 'appointment.updated'
+  | 'appointment.cancelled'
+  | 'InboundMessage';
 
 // EMERGENCY: Rate limiting to prevent webhook spam
 const webhookRateLimit = new Map<string, { count: number; resetTime: number }>();
@@ -70,7 +136,7 @@ function checkRateLimit(ip: string): boolean {
 export async function POST(request: NextRequest) {
   try {
     // EMERGENCY: Apply rate limiting
-    const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
     if (!checkRateLimit(ip)) {
       return NextResponse.json({
         success: false,
@@ -93,6 +159,17 @@ export async function POST(request: NextRequest) {
     }
     
     const eventType = body.type || body.event_type;
+    
+    // 🚫 Filter out GitHub notifications
+    if (isGitHubNotification(body)) {
+      console.log('🚫 Ignoring GitHub notification webhook');
+      return NextResponse.json({ 
+        status: 'ignored',
+        message: 'GitHub notification - not processed',
+        type: eventType,
+        timestamp: new Date().toISOString()
+      });
+    }
     
     console.log('📥 GHL Webhook received:', {
       type: eventType,

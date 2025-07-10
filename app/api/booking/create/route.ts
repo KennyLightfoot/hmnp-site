@@ -32,8 +32,19 @@ const BookingCreateSchema = z.object({
   customerEmail: z.string().email('Valid email is required'),
   customerPhone: z.string().optional(),
   
-  // Scheduling - now using proper DateTime
-  scheduledDateTime: z.string().datetime('Valid date/time required'),
+  // Scheduling - now using proper DateTime with flexible validation
+  scheduledDateTime: z.string()
+    .min(1, 'Date and time is required')
+    .refine((val) => {
+      // Try to parse the date - accept various formats
+      const date = new Date(val);
+      return !isNaN(date.getTime());
+    }, 'Valid date/time required')
+    .transform((val) => {
+      // Ensure we return a proper ISO string
+      const date = new Date(val);
+      return date.toISOString();
+    }),
   timeZone: z.string().default('America/Chicago'),
   
   // Location (for mobile services)
@@ -71,15 +82,11 @@ export async function POST(request: NextRequest) {
     // Validate input data
     const validatedData = BookingCreateSchema.parse(data);
     
-    // Get service by type (map serviceType to actual service)
+    // Get service by type (match the exact serviceType from enum)
     const service = await prisma.service.findFirst({
       where: { 
-        type: validatedData.serviceType === 'RON_SERVICES' ? 'RON' : 'MOBILE',
-        isActive: true,
-        name: {
-          contains: validatedData.serviceType.replace('_', ' '),
-          mode: 'insensitive'
-        }
+        serviceType: validatedData.serviceType as any, // Direct match with enum
+        isActive: true
       }
     });
     
@@ -90,8 +97,8 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Validate mobile service has address
-    if (service.type === 'MOBILE' && !validatedData.addressStreet) {
+    // Validate mobile service has address (RON_SERVICES doesn't need address)
+    if (service.serviceType !== 'RON_SERVICES' && !validatedData.addressStreet) {
       return NextResponse.json(
         { error: 'Address is required for mobile services' },
         { status: 400 }
@@ -288,8 +295,6 @@ export async function POST(request: NextRequest) {
         
         // Scheduling - single DateTime field
         scheduledDateTime: new Date(validatedData.scheduledDateTime),
-        estimatedDuration: service.duration,
-        timeZone: validatedData.timeZone,
         
         // Location fields (proper structure)
         locationType: validatedData.locationType || null,
@@ -299,10 +304,9 @@ export async function POST(request: NextRequest) {
         addressZip: validatedData.addressZip || null,
         locationNotes: validatedData.locationNotes || null,
         
-        // Pricing - using schema-v2 structure
-        basePrice: validatedData.pricing.basePrice,
+        // Pricing - using correct schema fields
+        priceAtBooking: validatedData.pricing.totalPrice,
         travelFee: validatedData.pricing.travelFee,
-        finalPrice: validatedData.pricing.totalPrice,
         
         // Documents
         numberOfDocuments: validatedData.numberOfDocuments,
