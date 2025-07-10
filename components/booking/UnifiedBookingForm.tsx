@@ -439,7 +439,7 @@ export default function UnifiedBookingForm({
         <div className="my-6 p-4 border rounded-md bg-slate-50">
           <h3 className="text-lg font-semibold mb-3 text-gray-800">Select Appointment Time</h3>
           <UnifiedBookingCalendar
-            serviceType={selectedService.id}
+            serviceId={selectedService.id}
             numberOfSigners={watchedNumberOfSigners}
             onTimeSelected={handleTimeSelected}
           />
@@ -575,7 +575,7 @@ export default function UnifiedBookingForm({
         {selectedService && watchedNumberOfSigners > 0 ? (
           <div className="space-y-4">
             <UnifiedBookingCalendar
-              serviceType={selectedService.id}
+              serviceId={selectedService.id}
               numberOfSigners={watchedNumberOfSigners}
               onTimeSelected={handleTimeSelected}
             />
