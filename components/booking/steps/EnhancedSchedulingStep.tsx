@@ -162,8 +162,22 @@ export default function EnhancedSchedulingStep({
     setAvailabilityError(null);
     
     try {
+      // Map serviceType to serviceId for the working endpoint (real database IDs)
+      const serviceMapping = {
+        'STANDARD_NOTARY': 'standard-notary-002',
+        'EXTENDED_HOURS': 'extended-hours-003',
+        'LOAN_SIGNING': 'loan-signing-004', 
+        'RON_SERVICES': 'ron-services-005'
+      };
+      
+      const serviceId = serviceMapping[watchedServiceType as keyof typeof serviceMapping];
+      if (!serviceId) {
+        throw new Error(`Invalid service type: ${watchedServiceType}`);
+      }
+      
+      // Use the WORKING availability endpoint
       const response = await fetch(
-        `/api/booking/availability?serviceType=${watchedServiceType}&date=${date}&timezone=America/Chicago&includeDemand=true&includeUrgency=true`
+        `/api/availability?serviceId=${serviceId}&date=${date}&timezone=America/Chicago`
       );
       
       if (!response.ok) {
@@ -172,16 +186,31 @@ export default function EnhancedSchedulingStep({
       
       const result = await response.json();
       
-      if (result.success) {
+      if (result.availableSlots) {
+        // Transform to enhanced format
+        const enhancedSlots = result.availableSlots.map((slot: any) => ({
+          startTime: `${date}T${slot.startTime}:00`,
+          endTime: `${date}T${slot.endTime}:00`,
+          displayTime: slot.startTime,
+          duration: 60,
+          available: slot.available,
+          popular: false,
+          urgent: false,
+          demand: 'low' as const,
+          recommended: false,
+          sameDay: false,
+          nextDay: false
+        })).filter((slot: any) => slot.available);
+        
         // Update the day with availability data
         setAvailableDays(prev => prev.map(day => {
           if (day.date === date) {
             return {
               ...day,
               loading: false,
-              slots: result.availableSlots || [],
-              popularCount: result.summary?.popularSlots || 0,
-              urgentCount: result.summary?.urgentSlots || 0,
+              slots: enhancedSlots,
+              popularCount: enhancedSlots.filter((s: any) => s.popular).length,
+              urgentCount: enhancedSlots.filter((s: any) => s.urgent).length,
               error: undefined
             };
           }

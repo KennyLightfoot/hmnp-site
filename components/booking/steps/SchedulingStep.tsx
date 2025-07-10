@@ -179,14 +179,53 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
     setLoadingDates(prev => new Set(prev).add(date));
 
     try {
-      const response = await fetch(`/api/booking/availability?serviceType=${watchedServiceType}&date=${date}`);
-      const data: AvailabilityResponse = await response.json();
+      // Map serviceType to serviceId for the working endpoint (real database IDs)
+      const serviceMapping = {
+        'STANDARD_NOTARY': 'standard-notary-002',
+        'EXTENDED_HOURS': 'extended-hours-003',
+        'LOAN_SIGNING': 'loan-signing-004',
+        'RON_SERVICES': 'ron-services-005'
+      };
       
-      console.log(`✅ Availability for ${date}:`, data);
+      const serviceId = serviceMapping[watchedServiceType as keyof typeof serviceMapping];
+      if (!serviceId) {
+        throw new Error(`Invalid service type: ${watchedServiceType}`);
+      }
+      
+      // Use the WORKING availability endpoint
+      const response = await fetch(`/api/availability?serviceId=${serviceId}&date=${date}&timezone=America/Chicago`);
+      const result = await response.json();
+      
+      console.log(`✅ Availability for ${date}:`, result);
+      
+      // Transform to match expected AvailabilityResponse format
+      const transformedData: AvailabilityResponse = {
+        success: !!result.availableSlots,
+        serviceType: watchedServiceType,
+        date,
+        timezone: 'America/Chicago',
+        calendarId: serviceId,
+        totalSlots: result.availableSlots?.length || 0,
+        availableSlots: result.availableSlots?.map((slot: any) => ({
+          startTime: `${date}T${slot.startTime}:00`,
+          endTime: `${date}T${slot.endTime}:00`,
+          available: slot.available,
+          duration: 60,
+          displayTime: slot.startTime,
+          popular: false,
+          urgent: false,
+          demand: 'low' as const
+        })).filter((slot: any) => slot.available) || [],
+        metadata: {
+          businessHours: { start: 8, end: 18 },
+          fetchedAt: new Date().toISOString(),
+          source: 'Database Availability API'
+        }
+      };
       
       setAvailabilityData(prev => ({
         ...prev,
-        [date]: data
+        [date]: transformedData
       }));
     } catch (error) {
       console.error(`❌ Failed to fetch availability for ${date}:`, error);

@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
 
     // Get service details
     console.log('[AVAILABILITY API] Looking up service:', validatedParams.serviceId);
-    const service = await prisma.Service.findUnique({
+    const service = await prisma.service.findUnique({
       where: { id: validatedParams.serviceId },
     });
 
@@ -155,7 +155,7 @@ export async function GET(request: NextRequest) {
       serviceInfo: {
         name: service.name,
         duration: serviceDurationMinutes,
-        price: service.price,
+        price: service.basePrice,
       },
       businessHours: {
         startTime: businessHours.startTime,
@@ -195,11 +195,11 @@ export async function GET(request: NextRequest) {
 
 // Helper function to get business settings
 async function getBusinessSettings() {
-  const settings = await prisma.BusinessSettings.findMany({
+  const settings = await prisma.businessSettings.findMany({
     where: { category: 'booking' },
   });
 
-  return settings.reduce((acc, setting) => {
+  return settings.reduce((acc: Record<string, string>, setting: any) => {
     acc[setting.key] = setting.value;
     return acc;
   }, {} as Record<string, string>);
@@ -251,7 +251,7 @@ async function getExistingBookings(date: Date) {
   const endOfDay = new Date(date);
   endOfDay.setHours(23, 59, 59, 999);
 
-  return await prisma.Booking.findMany({
+  return await prisma.booking.findMany({
     where: {
       scheduledDateTime: {
         gte: startOfDay,
@@ -261,9 +261,9 @@ async function getExistingBookings(date: Date) {
         notIn: ['CANCELLED_BY_CLIENT', 'CANCELLED_BY_STAFF', 'NO_SHOW', 'ARCHIVED'],
       },
     },
-    include: {
-      Service: true,
-    },
+      include: {
+    service: true,
+  },
   });
 }
 

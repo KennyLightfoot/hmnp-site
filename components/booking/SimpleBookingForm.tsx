@@ -96,21 +96,47 @@ export default function SimpleBookingForm() {
     setFormData(prev => ({ ...prev, bookingTime: '' })); // Clear selected time
     
     try {
+      // Get serviceId from serviceType mapping (real database IDs)
+      const serviceMapping = {
+        'STANDARD_NOTARY': 'standard-notary-002',
+        'EXTENDED_HOURS': 'extended-hours-003', 
+        'LOAN_SIGNING': 'loan-signing-004',
+        'RON_SERVICES': 'ron-services-005'
+      };
+      
+      const serviceId = serviceMapping[formData.serviceType as keyof typeof serviceMapping];
+      if (!serviceId) {
+        setError('Invalid service type selected');
+        return;
+      }
+      
+      // Use the WORKING availability endpoint
       const response = await fetch(
-        `/api/booking/availability?serviceType=${formData.serviceType}&date=${formData.bookingDate}&timezone=America/Chicago`
+        `/api/availability?serviceId=${serviceId}&date=${formData.bookingDate}&timezone=America/Chicago`
       );
       
       if (response.ok) {
         const result = await response.json();
-        if (result.success) {
-          setAvailableSlots(result.availableSlots || []);
+        if (result.availableSlots) {
+          // Transform the response to match expected format
+          const transformedSlots = result.availableSlots.map((slot: any) => ({
+            startTime: `${formData.bookingDate}T${slot.startTime}:00`,
+            endTime: `${formData.bookingDate}T${slot.endTime}:00`,
+            displayTime: slot.startTime,
+            duration: 60,
+            available: slot.available
+          })).filter((slot: any) => slot.available);
+          
+          setAvailableSlots(transformedSlots);
         } else {
-          setError('Unable to load available times');
+          setError(result.message || 'No available times for this date');
         }
       } else {
-        setError('Unable to load available times');
+        const errorData = await response.json().catch(() => ({}));
+        setError(errorData.error || 'Unable to load available times');
       }
     } catch (error) {
+      console.error('Availability fetch error:', error);
       setError('Unable to load available times');
     } finally {
       setIsLoadingSlots(false);
