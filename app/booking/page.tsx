@@ -596,6 +596,7 @@ export default function BookingPage() {
                   <CardContent className="space-y-6">
                     <UnifiedBookingCalendar
                       serviceType={mapServiceTypeForCalendar(serviceType)}
+                      serviceId={selectedService?.id}
                       numberOfSigners={numberOfSigners}
                       onTimeSelected={handleTimeSelected}
                       variant="full"

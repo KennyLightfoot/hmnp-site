@@ -146,9 +146,9 @@ export default function UnifiedBookingCalendar({
    * Get calendar ID based on service type and number of signers
    */
   const getCalendarId = (Service: string, signers: number): string => {
-    if (!service) return 'r9koQ0kxmuMuWryZkjdo'; // Default fallback
+    if (!Service) return 'r9koQ0kxmuMuWryZkjdo'; // Default fallback
     
-    switch (service.toLowerCase()) {
+    switch (Service.toLowerCase()) {
       case 'standard-notary':
         if (signers === 1) return 'r9koQ0kxmuMuWryZkjdo';
         if (signers === 2) return 'wkTW5ZX4EMl5hOAbCk9D';
@@ -164,7 +164,7 @@ export default function UnifiedBookingCalendar({
       case 'support-service':
         return 'r9koQ0kxmuMuWryZkjdo'; // Use default for now
       default:
-        console.warn(`Unknown service type: ${service}, using fallback`);
+        console.warn(`Unknown service type: ${Service}, using fallback`);
         return 'r9koQ0kxmuMuWryZkjdo';
     }
   };
@@ -172,11 +172,11 @@ export default function UnifiedBookingCalendar({
   /**
    * Get appointment duration based on service type
    */
-  const getDuration = (service?: string): number => {
+  const getDuration = (serviceTypeParam?: string): number => {
     if (serviceDuration) return serviceDuration;
-    if (!service) return 60;
+    if (!serviceTypeParam) return 60;
     
-    switch (service.toLowerCase()) {
+    switch (serviceTypeParam.toLowerCase()) {
       case 'loan-signing-specialist':
         return 90; // SOP: 90-minute session for loan signing
       case 'extended-hours-notary':
