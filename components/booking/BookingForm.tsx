@@ -49,6 +49,9 @@ import SchedulingStep from './steps/SchedulingStep';
 import EnhancedSchedulingStep from './steps/EnhancedSchedulingStep';
 import ReviewStep from './steps/ReviewStep';
 
+// Import AI Booking Assistant
+import AIBookingAssistant from './AIBookingAssistant';
+
 // Import transparent pricing components
 import { useBookingPricing } from '../../hooks/use-transparent-pricing';
 import { CompactPricingDisplay } from './EnhancedPricingDisplay';
@@ -195,6 +198,11 @@ export default function BookingForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  
+  // AI Assistant state
+  const [stepStartTime, setStepStartTime] = useState(Date.now());
+  const [userActions, setUserActions] = useState<string[]>([]);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
   // Business Rules state
   const [businessRulesValidation, setBusinessRulesValidation] = useState<{
@@ -223,7 +231,9 @@ export default function BookingForm({
     serviceType: watchedValues.serviceType,
     documentCount: 1, // Could be enhanced to get from form
     address: watchedValues.location?.address,
-    scheduledDateTime: watchedValues.scheduling?.preferredDateTime,
+    scheduledDateTime: watchedValues.scheduling?.preferredDate ? 
+      `${watchedValues.scheduling.preferredDate} ${watchedValues.scheduling.preferredTime || ''}` : 
+      undefined,
     customerType: 'new', // Could be enhanced based on user auth
     customerEmail: watchedValues.customer?.email
   }, {
@@ -356,9 +366,14 @@ export default function BookingForm({
           return;
         }
 
-        // 3. Smooth transition with delay
+        // 3. Track step completion for AI
+        setCompletedSteps(prev => [...prev, currentStep]);
+        setUserActions(prev => [...prev, `completed_step_${currentStep}`]);
+        
+        // 4. Smooth transition with delay
         await new Promise(resolve => setTimeout(resolve, 300));
         setCurrentStep(prev => prev + 1);
+        setStepStartTime(Date.now()); // Reset timer for new step
         
       } catch (error) {
         setErrorMessage('Something went wrong. Please try again.');
@@ -766,6 +781,48 @@ export default function BookingForm({
           </CardContent>
         </Card>
       </div>
+      
+      {/* 🤖 AI BOOKING ASSISTANT - PHASE 3 ENHANCEMENT */}
+      <AIBookingAssistant
+        bookingContext={{
+          currentStep,
+          stepId: BOOKING_STEPS[currentStep]?.id || '',
+          formData: watchedValues,
+          errors: Object.keys(form.formState.errors),
+          completedSteps,
+          timeOnStep: Date.now() - stepStartTime,
+          userActions,
+          selectedService: watchedValues.serviceType,
+          location: typeof watchedValues.location === 'object' ? watchedValues.location?.address : watchedValues.location,
+          urgency: 'flexible' // Default since urgency is not in form schema
+        }}
+        onContextualHelp={(action, data) => {
+          // Handle contextual help actions
+          setUserActions(prev => [...prev, `ai_help_${action}`]);
+          
+          if (action === 'focus_field' && data?.fieldName) {
+            // Focus on specific field
+            const field = document.querySelector(`[name="${data.fieldName}"]`) as HTMLElement;
+            if (field) {
+              field.focus();
+              field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }
+        }}
+        onServiceRecommendation={(serviceId) => {
+          // Handle AI service recommendations
+          form.setValue('serviceType', serviceId);
+          setUserActions(prev => [...prev, `ai_recommended_${serviceId}`]);
+        }}
+        onFieldFocus={(fieldName) => {
+          // Handle field focus assistance
+          const field = document.querySelector(`[name="${fieldName}"]`) as HTMLElement;
+          if (field) {
+            field.focus();
+            field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }}
+      />
     </div>
   );
 }

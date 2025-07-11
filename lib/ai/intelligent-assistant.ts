@@ -58,9 +58,9 @@ export class IntelligentAssistant {
     }
     
     this.genAI = new GoogleGenerativeAI(apiKey);
-    // Using Gemini 2.5 Flash for optimal cost/performance balance and advanced reasoning
+    // Using Gemini 2.0 Flash for optimal cost/performance balance and advanced reasoning
     this.model = this.genAI.getGenerativeModel({ 
-      model: "gemini-2.5-flash",
+      model: "gemini-2.0-flash-exp",
       generationConfig: {
         temperature: 0.7,
         topP: 0.9,
@@ -382,11 +382,22 @@ Please respond in JSON format with the following structure:
         };
       }
 
-      // Monitor AI usage
-      await monitoring.recordMetric('ai_service_call', 1, {
-        model: 'gemini-2.5-flash',
+      // Track AI analytics (Phase 4 enhancement)
+      const { trackAIInteraction } = await import('./analytics-tracker');
+      trackAIInteraction({
+        sessionId: `ai_${Date.now()}`,
+        messageId: `msg_${Date.now()}`,
+        userMessage: params.user.substring(0, 100), // Truncate for privacy
+        aiResponse: parsedResponse.content.substring(0, 100),
+        confidence: parsedResponse.confidence,
         intent: parsedResponse.intent,
-        confidence: parsedResponse.confidence
+        responseTime: 50, // Approximate since we don't have startTime in this scope
+        context: {
+          page: params.context.currentPage || '/',
+          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server',
+          isMobile: typeof window !== 'undefined' ? window.innerWidth <= 768 : false,
+          source: 'chat_widget'
+        }
       });
 
       return parsedResponse;
@@ -537,7 +548,7 @@ Please respond in JSON format with the following structure:
       totalSpent: bookings.reduce((sum: number, b: any) => sum + ((b as any).totalAmount || 0), 0),
       averageBookingValue: bookings.length > 0 ? bookings.reduce((sum: number, b: any) => sum + ((b as any).totalAmount || 0), 0) / bookings.length : 0,
       lastBookingDate: bookings.length > 0 ? bookings[bookings.length - 1].createdAt : null,
-      preferredServices: bookings.map(b => b.Service?.name).filter(Boolean),
+      preferredServices: bookings.map(b => b.service?.name).filter(Boolean),
       bookingFrequency: bookings.length > 0 ? this.calculateFrequency(bookings) : 0
     };
   }

@@ -129,7 +129,8 @@ export class EnhancedBookingService {
           customerEmail: bookingData.customerEmail
         });
       } catch (emailError) {
-        errors.push(`Email sending failed: ${emailError.message}`);
+        const errorMessage = emailError instanceof Error ? emailError.message : 'Unknown error';
+        errors.push(`Email sending failed: ${errorMessage}`);
         logger.error('Enhanced booking email failed', 'ENHANCED_BOOKING', emailError as Error);
       }
 
@@ -180,7 +181,8 @@ export class EnhancedBookingService {
           eventId: calendarEvent.id
         });
       } catch (calendarError) {
-        errors.push(`Calendar event creation failed: ${calendarError.message}`);
+        const errorMessage = calendarError instanceof Error ? calendarError.message : 'Unknown error';
+        errors.push(`Calendar event creation failed: ${errorMessage}`);
         logger.error('Enhanced calendar event failed', 'ENHANCED_BOOKING', calendarError as Error);
       }
 
@@ -196,7 +198,7 @@ export class EnhancedBookingService {
         emailSent,
         calendarEventCreated,
         conversationTracked,
-        errors: [...errors, `Processing failed: ${error.message}`]
+        errors: [...errors, `Processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`]
       };
     }
   }
@@ -278,51 +280,53 @@ export class EnhancedBookingService {
             eventId: calendarEventId
           });
         }
-      } catch (calendarError) {
-        errors.push(`Calendar update failed: ${calendarError.message}`);
-        logger.error('Calendar update failed', 'ENHANCED_BOOKING', calendarError as Error);
-      }
-
-      // 4. Send update notification email if significant changes
-      if (this.isSignificantChange(bookingData.changes)) {
-        try {
-          await NotificationService.sendNotification({
-            bookingId: bookingData.bookingId,
-            type: 'BOOKING_RESCHEDULED' as any,
-            recipient: { email: bookingData.customerEmail },
-            content: {
-              subject: `Booking Updated - ${booking.service?.name}`,
-              message: `Your booking has been updated: ${bookingData.updateReason}`
-            },
-            methods: ['EMAIL' as any]
-          });
-          
-          emailSent = true;
-          logger.info('Booking update email sent', 'ENHANCED_BOOKING', {
-            bookingId: bookingData.bookingId,
-            customerEmail: bookingData.customerEmail
-          });
-        } catch (emailError) {
-          errors.push(`Update email failed: ${emailError.message}`);
-          logger.error('Update email failed', 'ENHANCED_BOOKING', emailError as Error);
+              } catch (calendarError) {
+          const errorMessage = calendarError instanceof Error ? calendarError.message : 'Unknown error';
+          errors.push(`Calendar update failed: ${errorMessage}`);
+          logger.error('Calendar update failed', 'ENHANCED_BOOKING', calendarError as Error);
         }
-      }
 
-      return {
-        emailSent,
-        calendarEventUpdated,
-        conversationTracked,
-        errors
-      };
-    } catch (error) {
-      logger.error('Enhanced booking update failed', 'ENHANCED_BOOKING', error as Error);
-      return {
-        emailSent,
-        calendarEventUpdated,
-        conversationTracked,
-        errors: [...errors, `Update failed: ${error.message}`]
-      };
-    }
+        // 4. Send update notification email if significant changes
+        if (this.isSignificantChange(bookingData.changes)) {
+          try {
+            await NotificationService.sendNotification({
+              bookingId: bookingData.bookingId,
+              type: 'BOOKING_RESCHEDULED' as any,
+              recipient: { email: bookingData.customerEmail },
+              content: {
+                subject: `Booking Updated - ${booking.service?.name}`,
+                message: `Your booking has been updated: ${bookingData.updateReason}`
+              },
+              methods: ['EMAIL' as any]
+            });
+            
+            emailSent = true;
+            logger.info('Booking update email sent', 'ENHANCED_BOOKING', {
+              bookingId: bookingData.bookingId,
+              customerEmail: bookingData.customerEmail
+            });
+          } catch (emailError) {
+            const errorMessage = emailError instanceof Error ? emailError.message : 'Unknown error';
+            errors.push(`Update email failed: ${errorMessage}`);
+            logger.error('Update email failed', 'ENHANCED_BOOKING', emailError as Error);
+          }
+        }
+
+        return {
+          emailSent,
+          calendarEventUpdated,
+          conversationTracked,
+          errors
+        };
+      } catch (error) {
+        logger.error('Enhanced booking update failed', 'ENHANCED_BOOKING', error as Error);
+        return {
+          emailSent,
+          calendarEventUpdated,
+          conversationTracked,
+          errors: [...errors, `Update failed: ${error instanceof Error ? error.message : 'Unknown error'}`]
+        };
+      }
   }
 
   /**
@@ -393,7 +397,7 @@ export class EnhancedBookingService {
         return {
           name: notary.name,
           email: notary.email,
-          phone: notary.customer_preferences?.phone,
+          phone: typeof notary.customer_preferences?.phone === 'string' ? notary.customer_preferences.phone : null,
           commissionNumber: notary.notary_profiles?.commission_number,
           estimatedArrival: null // Would be calculated based on travel time
         };

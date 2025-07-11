@@ -71,6 +71,12 @@
       "purpose": "maskable any"
     },
     {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
       "src": "/icons/icon-384x384.svg",
       "sizes": "384x384",
       "type": "image/svg+xml",
@@ -81,6 +87,18 @@
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "maskable any"
+    },
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
   "shortcuts": [
