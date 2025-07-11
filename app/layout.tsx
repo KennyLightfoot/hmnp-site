@@ -16,7 +16,7 @@ import ThirdPartyScriptMonitor from '@/components/analytics/ThirdPartyScriptMoni
 import RequestStormMonitor from '@/components/monitoring/RequestStormMonitor'
 import ThirdPartyScripts from '@/components/analytics/ThirdPartyScripts'
 import AIChatWidget from '@/components/ai/AIChatWidget'
-import ProactiveEngagementEngine from '@/components/ai/ProactiveEngagementEngine'
+import ProactiveEngagementWrapper from '@/components/ai/ProactiveEngagementWrapper'
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -217,16 +217,7 @@ export default async function RootLayout({
           />
           
           {/* 🎯 Phase 4: Proactive Engagement Engine */}
-          <ProactiveEngagementEngine
-            onEngagement={(trigger, behavior) => {
-              console.log('🎯 Proactive Engagement:', { trigger: trigger.name, behavior });
-              // This would open the AI chat widget with the trigger message
-            }}
-            onAnalytics={(event, data) => {
-              console.log('📊 Engagement Analytics:', { event, data });
-              // This would send to your analytics service
-            }}
-          />
+          <ProactiveEngagementWrapper />
         </Providers>
       </body>
     </html>
