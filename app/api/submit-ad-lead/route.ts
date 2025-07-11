@@ -101,6 +101,7 @@ export async function POST(request: NextRequest) {
       lastName,
       email,
       phone,
+      locationId: process.env.GHL_LOCATION_ID, // Required for upsertContact
       source: utmData?.utm_source || customFieldsFromProps?.cf_ad_platform || campaignName || 'Website Ad Lead',
       tags: Array.isArray(tags) ? tags : [], 
       customFields: ghlCustomFields,
