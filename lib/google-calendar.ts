@@ -48,12 +48,17 @@ export class GoogleCalendarService {
     return GoogleCalendarService.instance;
   }
   
-  async createBookingEvent(booking: any) {
+  async createBookingEvent(booking: any, conversationHistory?: any, notaryInfo?: any) {
     try {
+      const customerName = booking.User_Booking_signerIdToUser?.name || booking.customerName || 'Guest';
+      const serviceName = booking.Service.name || booking.serviceName;
+      
       const event = {
-        summary: `${booking.Service.name} - ${booking.User_Booking_signerIdToUser?.name || 'Guest'}`,
-        location: `${booking.addressStreet}, ${booking.addressCity}, ${booking.addressState} ${booking.addressZip}`,
-        description: this.formatEventDescription(booking),
+        summary: `${serviceName} - ${customerName}`,
+        location: booking.addressStreet ? 
+          `${booking.addressStreet}, ${booking.addressCity}, ${booking.addressState} ${booking.addressZip}` : 
+          'Remote/Online Service',
+        description: this.formatEventDescription(booking, conversationHistory, notaryInfo),
         start: {
           dateTime: booking.scheduledDateTime.toISOString(),
           timeZone: 'America/Chicago',
@@ -68,8 +73,33 @@ export class GoogleCalendarService {
           overrides: [
             { method: 'popup', minutes: 120 },
             { method: 'email', minutes: 1440 }, // 24 hours
+            { method: 'popup', minutes: 30 }, // 30 minutes before
           ],
         },
+        // Add attendees
+        attendees: [
+          {
+            email: booking.User_Booking_signerIdToUser?.email || booking.customerEmail,
+            displayName: customerName,
+            responseStatus: 'accepted'
+          },
+          ...(notaryInfo?.email ? [{
+            email: notaryInfo.email,
+            displayName: notaryInfo.name || 'Houston Mobile Notary',
+            responseStatus: 'accepted'
+          }] : [])
+        ],
+        // Add conference data for RON services
+        ...(booking.Service.serviceType === 'RON_SERVICES' && {
+          conferenceData: {
+            createRequest: {
+              requestId: `ron-${booking.id}`,
+              conferenceSolutionKey: {
+                type: 'hangoutsMeet'
+              }
+            }
+          }
+        })
       };
       
       if (!process.env.GOOGLE_CALENDAR_ID) {
@@ -79,6 +109,7 @@ export class GoogleCalendarService {
       const response = await this.calendar.events.insert({
         calendarId: process.env.GOOGLE_CALENDAR_ID,
         requestBody: event,
+        conferenceDataVersion: 1, // Enable conference data
       });
       
       return response.data;
@@ -88,17 +119,242 @@ export class GoogleCalendarService {
     }
   }
   
-  private formatEventDescription(booking: any): string {
-    return `
-service: ${booking.Service.name}
-Customer: ${booking.User_Booking_signerIdToUser?.name || 'Guest'}
-Phone: ${booking.User_Booking_signerIdToUser?.phone || booking.guestPhone || 'Not provided'}
-Email: ${booking.User_Booking_signerIdToUser?.email || booking.guestEmail}
+  private formatEventDescription(booking: any, conversationHistory?: any, notaryInfo?: any): string {
+    const serviceType = booking.Service.serviceType || booking.serviceType;
+    
+    // Get service-specific preparation instructions
+    const preparationInstructions = this.getServicePreparationInstructions(serviceType);
+    const documentRequirements = this.getDocumentRequirements(serviceType);
+    const idRequirements = this.getIdRequirements(serviceType);
+
+    let description = `
+📋 APPOINTMENT DETAILS
+===================
+Service: ${booking.Service.name}
+Service Type: ${serviceType}
+Booking ID: ${booking.id}
+Customer: ${booking.User_Booking_signerIdToUser?.name || booking.customerName || 'Guest'}
+Phone: ${booking.User_Booking_signerIdToUser?.phone || booking.customerPhone || 'Not provided'}
+Email: ${booking.User_Booking_signerIdToUser?.email || booking.customerEmail}
 Payment Status: ${booking.status}
 Amount: $${booking.priceAtBooking}
-Notes: ${booking.notes || 'None'}
-Special Instructions: ${booking.specialInstructions || 'None'}
-    `.trim();
+Number of Signers: ${booking.numberOfSigners || 1}
+Number of Documents: ${booking.numberOfDocuments || 1}
+${booking.notes ? `Notes: ${booking.notes}` : ''}
+${booking.specialInstructions ? `Special Instructions: ${booking.specialInstructions}` : ''}
+${booking.locationNotes ? `Location Notes: ${booking.locationNotes}` : ''}
+
+📍 LOCATION INFORMATION
+====================
+${booking.addressStreet ? `Address: ${booking.addressStreet}, ${booking.addressCity}, ${booking.addressState} ${booking.addressZip}` : 'Address: TBD'}
+${booking.locationNotes ? `Location Notes: ${booking.locationNotes}` : ''}
+
+👤 NOTARY INFORMATION
+==================
+${notaryInfo ? `
+Name: ${notaryInfo.name || 'Will be assigned 24 hours before appointment'}
+Phone: ${notaryInfo.phone || 'TBD'}
+Email: ${notaryInfo.email || 'TBD'}
+Commission #: ${notaryInfo.commissionNumber || 'TBD'}
+Estimated Arrival: ${notaryInfo.estimatedArrival || 'TBD'}
+` : 'Notary will be assigned 24 hours before appointment'}
+
+`;
+
+    // Add conversation history if available
+    if (conversationHistory) {
+      description += `
+💬 SERVICE CONTEXT
+================
+`;
+      if (conversationHistory.initialInquiry) {
+        description += `Initial Request: "${conversationHistory.initialInquiry}"\n`;
+      }
+      if (conversationHistory.serviceRequests?.length) {
+        description += `Service Requirements:\n`;
+        conversationHistory.serviceRequests.forEach((req: string) => {
+          description += `  • ${req}\n`;
+        });
+      }
+      if (conversationHistory.specialNeeds?.length) {
+        description += `Special Accommodations:\n`;
+        conversationHistory.specialNeeds.forEach((need: string) => {
+          description += `  • ${need}\n`;
+        });
+      }
+      if (conversationHistory.previousInteractions?.length) {
+        description += `Previous Interactions:\n`;
+        conversationHistory.previousInteractions.forEach((interaction: any) => {
+          description += `  • ${interaction.date} - ${interaction.type}: ${interaction.summary}\n`;
+        });
+      }
+    }
+
+    // Add preparation instructions
+    description += `
+📝 PREPARATION INSTRUCTIONS
+=========================
+✅ Required Documentation:
+`;
+    documentRequirements.forEach((req: string) => {
+      description += `  • ${req}\n`;
+    });
+
+    description += `
+🆔 Acceptable Forms of ID:
+`;
+    idRequirements.forEach((req: string) => {
+      description += `  • ${req}\n`;
+    });
+
+    description += `
+🎯 Service-Specific Instructions:
+`;
+    preparationInstructions.forEach((instruction: string) => {
+      description += `  • ${instruction}\n`;
+    });
+
+    description += `
+⚠️ IMPORTANT REMINDERS
+====================
+• Arrive 5 minutes early to allow time for setup
+• All signers must be present with valid ID
+• Documents must be complete before notarization
+• No changes allowed to documents during notarization
+${booking.witnessRequired ? '• Witness required - Please have your witness present' : ''}
+
+📞 CONTACT INFORMATION
+====================
+Houston Mobile Notary Pros
+Phone: (832) 617-4285
+Email: support@houstonmobilenotarypros.com
+Website: https://houstonmobilenotarypros.com
+`;
+
+    return description.trim();
+  }
+
+  private getServicePreparationInstructions(serviceType: string): string[] {
+    const instructions = {
+      'QUICK_STAMP_LOCAL': [
+        'Document should be printed and ready for signing',
+        'Ensure all information is accurate before arrival',
+        'Have a flat surface available for signing'
+      ],
+      'STANDARD_NOTARY': [
+        'Review all documents before our arrival',
+        'Ensure all signers will be present',
+        'Have a quiet, well-lit space ready',
+        'Prepare any questions you may have'
+      ],
+      'EXTENDED_HOURS': [
+        'Confirm appointment time via text/call',
+        'Ensure location is accessible after hours',
+        'Have exterior lighting if evening appointment',
+        'Consider neighbors for evening appointments'
+      ],
+      'LOAN_SIGNING': [
+        'Review loan documents in advance if possible',
+        'Ensure all borrowers will be present',
+        'Have wire transfer information ready',
+        'Prepare questions about loan terms',
+        'Allow 90-120 minutes for full signing',
+        'Clear large table space for documents'
+      ],
+      'RON_SERVICES': [
+        'Test your camera and microphone',
+        'Ensure stable internet connection',
+        'Have good lighting for ID verification',
+        'Download any required software',
+        'Be in a quiet, private space',
+        'Have documents ready for upload'
+      ],
+      'BUSINESS_ESSENTIALS': [
+        'Prepare all business documents',
+        'Have corporate seal if applicable',
+        'Ensure authorized signers are present',
+        'Review corporate resolutions'
+      ],
+      'BUSINESS_GROWTH': [
+        'Prepare comprehensive document package',
+        'Have all corporate documentation ready',
+        'Ensure board resolutions are current',
+        'Prepare for multiple document review'
+      ]
+    };
+
+    return instructions[serviceType as keyof typeof instructions] || [
+      'Review all documents before appointment',
+      'Ensure all required parties are present',
+      'Have valid identification ready'
+    ];
+  }
+
+  private getDocumentRequirements(serviceType: string): string[] {
+    const requirements = {
+      'QUICK_STAMP_LOCAL': [
+        'Single document ready for notarization',
+        'Document must be complete and unsigned'
+      ],
+      'STANDARD_NOTARY': [
+        'Up to 2 documents ready for notarization',
+        'Documents must be complete and unsigned',
+        'Any supporting documentation'
+      ],
+      'EXTENDED_HOURS': [
+        'All documents printed and ready',
+        'Supporting identification documents',
+        'Any reference materials needed'
+      ],
+      'LOAN_SIGNING': [
+        'Complete loan package (provided by lender)',
+        'Borrower identification documents',
+        'Any additional lender requirements',
+        'Wire transfer instructions if required'
+      ],
+      'RON_SERVICES': [
+        'Documents uploaded to secure portal',
+        'Digital copies of all supporting docs',
+        'Any additional electronic requirements'
+      ],
+      'BUSINESS_ESSENTIALS': [
+        'Corporate documents and resolutions',
+        'Business licenses and certificates',
+        'Authorized signer documentation'
+      ],
+      'BUSINESS_GROWTH': [
+        'Complete business document package',
+        'Corporate resolutions and bylaws',
+        'Multiple authorized signer documents'
+      ]
+    };
+
+    return requirements[serviceType as keyof typeof requirements] || [
+      'All documents ready for notarization',
+      'Supporting identification documents'
+    ];
+  }
+
+  private getIdRequirements(serviceType: string): string[] {
+    const baseRequirements = [
+      'Valid driver\'s license',
+      'State-issued ID card',
+      'Passport',
+      'Military ID',
+      'Concealed handgun license'
+    ];
+
+    // RON has additional requirements
+    if (serviceType === 'RON_SERVICES') {
+      return [
+        ...baseRequirements,
+        'ID must be readable on camera',
+        'RFID-enabled documents preferred',
+        'Backup form of ID recommended'
+      ];
+    }
+
+    return baseRequirements;
   }
   
   private getEventColor(status: BookingStatus): string {
@@ -120,7 +376,7 @@ Special Instructions: ${booking.specialInstructions || 'None'}
     return colorMap[status] || '7'; // Default cyan
   }
   
-  async updateBookingEvent(googleEventId: string, booking: any) {
+  async updateBookingEvent(googleEventId: string, booking: any, conversationHistory?: any, notaryInfo?: any) {
     try {
       if (!process.env.GOOGLE_CALENDAR_ID) {
         throw new Error('GOOGLE_CALENDAR_ID environment variable is required');
@@ -132,12 +388,17 @@ Special Instructions: ${booking.specialInstructions || 'None'}
         eventId: googleEventId,
       });
       
+      const customerName = booking.User_Booking_signerIdToUser?.name || booking.customerName || 'Guest';
+      const serviceName = booking.Service.name || booking.serviceName;
+      
       // Update with new data
       const updatedEvent = {
         ...existingEvent.data,
-        summary: `${booking.Service.name} - ${booking.User_Booking_signerIdToUser?.name || 'Guest'}`,
-        location: `${booking.addressStreet}, ${booking.addressCity}, ${booking.addressState} ${booking.addressZip}`,
-        description: this.formatEventDescription(booking),
+        summary: `${serviceName} - ${customerName}`,
+        location: booking.addressStreet ? 
+          `${booking.addressStreet}, ${booking.addressCity}, ${booking.addressState} ${booking.addressZip}` : 
+          'Remote/Online Service',
+        description: this.formatEventDescription(booking, conversationHistory, notaryInfo),
         start: {
           dateTime: booking.scheduledDateTime.toISOString(),
           timeZone: 'America/Chicago',
@@ -147,12 +408,26 @@ Special Instructions: ${booking.specialInstructions || 'None'}
           timeZone: 'America/Chicago',
         },
         colorId: this.getEventColor(booking.status),
+        // Update attendees
+        attendees: [
+          {
+            email: booking.User_Booking_signerIdToUser?.email || booking.customerEmail,
+            displayName: customerName,
+            responseStatus: 'accepted'
+          },
+          ...(notaryInfo?.email ? [{
+            email: notaryInfo.email,
+            displayName: notaryInfo.name || 'Houston Mobile Notary',
+            responseStatus: 'accepted'
+          }] : [])
+        ],
       };
       
       const response = await this.calendar.events.update({
         calendarId: process.env.GOOGLE_CALENDAR_ID,
         eventId: googleEventId,
         requestBody: updatedEvent,
+        conferenceDataVersion: 1, // Enable conference data
       });
       
       return response.data;

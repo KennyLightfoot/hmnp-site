@@ -386,10 +386,54 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // Send enhanced confirmation email (async, don't wait)
-    sendEnhancedConfirmationEmail(booking, validatedData.customerName, proofTransaction).catch((error: any) => {
-      console.error('Email sending failed (non-blocking):', error);
-    });
+    // Send enhanced confirmation email and create calendar event using new enhanced service
+    try {
+      const { EnhancedBookingService } = await import('@/lib/enhanced-booking-service');
+      
+      const result = await EnhancedBookingService.processBooking({
+        bookingId: booking.id,
+        customerEmail: validatedData.customerEmail,
+        customerName: validatedData.customerName,
+        serviceType: validatedData.serviceType,
+        serviceName: service.name,
+        scheduledDateTime: new Date(validatedData.scheduledDateTime),
+        addressStreet: validatedData.addressStreet,
+        addressCity: validatedData.addressCity,
+        addressState: validatedData.addressState,
+        addressZip: validatedData.addressZip,
+        locationNotes: validatedData.locationNotes,
+        specialInstructions: booking.notes,
+        numberOfSigners: validatedData.numberOfSigners,
+        numberOfDocuments: validatedData.numberOfDocuments,
+        totalAmount: validatedData.pricing.totalPrice,
+        paymentStatus: booking.depositStatus,
+        bookingManagementLink: `${process.env.NEXT_PUBLIC_APP_URL}/booking/${booking.id}`,
+        metadata: {
+          stripePaymentIntentId: paymentIntent.id,
+          proofTransactionId: proofTransaction?.id,
+          ghlContactId,
+          ghlAppointmentId
+        }
+      });
+
+      console.log('📧 Enhanced booking processing completed:', {
+        emailSent: result.emailSent,
+        calendarEventCreated: result.calendarEventCreated,
+        conversationTracked: result.conversationTracked,
+        errors: result.errors
+      });
+
+      if (result.errors.length > 0) {
+        console.warn('⚠️  Enhanced booking processing had errors:', result.errors);
+      }
+    } catch (enhancedError) {
+      console.error('⚠️  Enhanced booking processing failed (non-blocking):', enhancedError);
+      
+      // Fallback to basic confirmation email
+      sendEnhancedConfirmationEmail(booking, validatedData.customerName, proofTransaction).catch((error: any) => {
+        console.error('Fallback email sending failed:', error);
+      });
+    }
     
     console.log(`✅ Booking created successfully: ${booking.id} for ${booking.customerEmail}`);
     

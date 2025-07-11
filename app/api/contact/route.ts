@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
+import { headers } from 'next/headers';
 import {
   getLocationCustomFields,
   getContactByEmail,
@@ -212,6 +213,33 @@ export async function POST(request: Request) {
     }
 
     await sendEmailNotification(data);
+
+    // Track conversation history
+    try {
+      const { ConversationTracker } = await import('@/lib/conversation-tracker');
+      const headersList = await headers();
+      
+      await ConversationTracker.trackContactForm({
+        customerEmail: email,
+        customerName: `${firstName} ${lastName}`,
+        subject: subject,
+        message: message,
+        phone: phone,
+        metadata: {
+          smsConsent,
+          preferredCallTime,
+          callRequestReason,
+          termsAccepted,
+          ghlContactId,
+          ipAddress: headersList.get('x-forwarded-for') || headersList.get('x-real-ip') || 'unknown',
+          userAgent: headersList.get('user-agent') || 'unknown'
+        }
+      });
+      
+      console.log('📝 Contact form conversation tracked successfully');
+    } catch (trackingError) {
+      console.error('⚠️  Contact form tracking failed (non-blocking):', trackingError);
+    }
 
     if (ghlContactId) {
       try {
