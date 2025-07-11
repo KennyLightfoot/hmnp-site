@@ -6,19 +6,19 @@ import {
   upsertContact,
   addTagsToContact,
   GhlCustomField,
+  getCleanLocationId,
 } from '@/lib/ghl';
 import { z } from 'zod';
 
-const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
 const GHL_CONTACT_FORM_WORKFLOW_ID = process.env.GHL_CONTACT_FORM_WORKFLOW_ID;
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Email configuration with proper validation
 const CONTACT_FORM_CONFIG = {
-  receiverEmail: process.env.CONTACT_FORM_RECEIVER_EMAIL,
-  senderEmail: process.env.CONTACT_FORM_SENDER_EMAIL,
-  resendApiKey: process.env.RESEND_API_KEY
+  receiverEmail: process.env.CONTACT_FORM_RECEIVER_EMAIL?.trim(),
+  senderEmail: process.env.CONTACT_FORM_SENDER_EMAIL?.trim(),
+  resendApiKey: process.env.RESEND_API_KEY?.trim()
 };
 
 // Validate email configuration
@@ -32,11 +32,21 @@ if (!CONTACT_FORM_CONFIG.resendApiKey) {
   console.warn('⚠️ RESEND_API_KEY not configured - contact form emails will not be sent');
 }
 
+// Validate email formats
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+if (CONTACT_FORM_CONFIG.receiverEmail && !emailRegex.test(CONTACT_FORM_CONFIG.receiverEmail)) {
+  console.error('❌ CONTACT_FORM_RECEIVER_EMAIL has invalid format:', CONTACT_FORM_CONFIG.receiverEmail);
+}
+if (CONTACT_FORM_CONFIG.senderEmail && !emailRegex.test(CONTACT_FORM_CONFIG.senderEmail)) {
+  console.error('❌ CONTACT_FORM_SENDER_EMAIL has invalid format:', CONTACT_FORM_CONFIG.senderEmail);
+}
+
 const notificationEmailTo = CONTACT_FORM_CONFIG.receiverEmail || 'your-receiving-email@example.com';
 const emailFrom = CONTACT_FORM_CONFIG.senderEmail || 'noreply@yourdomain.com';
 
 async function createNoteForGHL(contactId: string, message: string) {
-  if (!contactId || !process.env.GHL_API_BASE_URL || !process.env.GHL_API_KEY) {
+  const apiKey = process.env.GHL_PRIVATE_INTEGRATION_TOKEN || process.env.GHL_API_KEY;
+  if (!contactId || !process.env.GHL_API_BASE_URL || !apiKey) {
     console.warn("Missing contactId or GHL API credentials, skipping GHL note creation.");
     return null;
   }
@@ -44,7 +54,7 @@ async function createNoteForGHL(contactId: string, message: string) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.GHL_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
       Version: "2021-07-28",
     },
     body: JSON.stringify({
@@ -60,7 +70,8 @@ async function createNoteForGHL(contactId: string, message: string) {
 }
 
 async function triggerGHLWorkflow(contactId: string) {
-  if (!contactId || !GHL_CONTACT_FORM_WORKFLOW_ID || !process.env.GHL_API_BASE_URL || !process.env.GHL_API_KEY) {
+  const apiKey = process.env.GHL_PRIVATE_INTEGRATION_TOKEN || process.env.GHL_API_KEY;
+  if (!contactId || !GHL_CONTACT_FORM_WORKFLOW_ID || !process.env.GHL_API_BASE_URL || !apiKey) {
     console.warn("Missing contactId, workflow ID, or GHL API credentials, skipping workflow trigger");
     return null;
   }
@@ -69,7 +80,7 @@ async function triggerGHLWorkflow(contactId: string) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.GHL_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
       Version: "2021-07-28",
     },
     body: JSON.stringify({}),
@@ -140,7 +151,7 @@ export async function POST(request: Request) {
     let allCustomFields: GhlCustomField[] = [];
 
     try {
-      allCustomFields = await getLocationCustomFields(GHL_LOCATION_ID!) || [];
+      allCustomFields = await getLocationCustomFields(getCleanLocationId()) || [];
     } catch (error) {
       console.error("Failed to fetch GHL custom fields:", error);
     }
@@ -171,7 +182,7 @@ export async function POST(request: Request) {
       lastName: lastName,
       email: email,
       phone: phone,
-      locationId: GHL_LOCATION_ID, 
+      locationId: getCleanLocationId(), 
       source: "Website Contact Form",
       customField: customFieldsPayload.length > 0 ? customFieldsPayload : undefined, 
     };

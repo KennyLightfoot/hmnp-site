@@ -69,14 +69,24 @@ interface GhlApiConfig {
 }
 
 const getGhlApiConfig = (): GhlApiConfig => {
-  const apiKey = process.env.GHL_API_KEY;
+  // Try multiple environment variable names for backward compatibility
+  const apiKey = process.env.GHL_PRIVATE_INTEGRATION_TOKEN || process.env.GHL_API_KEY;
   const baseUrl = process.env.GHL_API_BASE_URL || 'https://services.leadconnectorhq.com';
 
   if (!apiKey) {
-    console.error('GHL_API_KEY (Private Integration Token) environment variable is not set');
-    throw new Error('GHL_API_KEY (Private Integration Token) environment variable is not set');
+    console.error('GHL_PRIVATE_INTEGRATION_TOKEN or GHL_API_KEY environment variable is not set');
+    throw new Error('GHL_PRIVATE_INTEGRATION_TOKEN or GHL_API_KEY environment variable is not set');
   }
   return { apiKey, baseUrl };
+};
+
+// Utility function to get clean location ID (trim whitespace/newlines)
+export const getCleanLocationId = (): string => {
+  const locationId = process.env.GHL_LOCATION_ID;
+  if (!locationId) {
+    throw new Error('GHL_LOCATION_ID environment variable is not set');
+  }
+  return locationId.trim();
 };
 
 async function callGhlApi<T = any>(endpoint: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE', body?: any): Promise<T | null> {
@@ -146,7 +156,7 @@ export async function getContactByEmail(email: string): Promise<GhlContact | nul
     
     // Method 1: Use the updated contacts search endpoint (v2 format)
     const response = await callGhlApi('/contacts/search', 'POST', {
-      locationId: process.env.GHL_LOCATION_ID,
+      locationId: getCleanLocationId(),
       query: email.toLowerCase().trim(),
       limit: 10
     });
@@ -179,7 +189,7 @@ export async function getContactByEmail(email: string): Promise<GhlContact | nul
     // Method 2: If search fails, try the contacts list endpoint with email filter
     console.log(`[getContactByEmail] Search method didn't find contact, trying list endpoint`);
     
-    const listResponse = await callGhlApi(`/contacts?locationId=${process.env.GHL_LOCATION_ID}&email=${encodeURIComponent(email)}&limit=10`, 'GET');
+    const listResponse = await callGhlApi(`/contacts?locationId=${getCleanLocationId()}&email=${encodeURIComponent(email)}&limit=10`, 'GET');
     
     if (listResponse && listResponse.contacts && Array.isArray(listResponse.contacts)) {
       foundContact = listResponse.contacts.find(
@@ -369,17 +379,12 @@ export async function getContactsByTag(tag: string): Promise<GhlContact[]> {
     throw new Error('Tag is required to get contacts by tag.');
   }
   
-  const locationId = process.env.GHL_LOCATION_ID;
-  if (!locationId) {
-    throw new Error('GHL_LOCATION_ID environment variable is not set');
-  }
-  
   try {
     console.log(`[getContactsByTag] Fetching contacts with tag: ${tag}`);
     
     // Use the contacts list endpoint with tag filter
     const response = await callGhlApi(
-      `/contacts?locationId=${locationId}&tags=${encodeURIComponent(tag)}&limit=100`,
+      `/contacts?locationId=${getCleanLocationId()}&tags=${encodeURIComponent(tag)}&limit=100`,
       'GET'
     );
     
@@ -756,10 +761,7 @@ export async function testGhlConnection(locationId: string): Promise<any> {
  * Test function to get location details with enhanced error reporting
  */
 export async function testGetLocationDetails(): Promise<any> {
-  const locationId = process.env.GHL_LOCATION_ID;
-  if (!locationId) {
-    throw new Error('GHL_LOCATION_ID environment variable is required');
-  }
+  const locationId = getCleanLocationId();
   
   console.log('🔍 Getting GHL Location Details...');
   console.log('Location ID:', locationId.substring(0, 10) + '...');
