@@ -8,7 +8,7 @@
 
 import { gmbService } from './api-service';
 import { logger } from '@/lib/logger';
-import { prisma } from '@/lib/database';
+import { prisma } from '@/lib/prisma';
 
 interface ServiceCompletionEvent {
   bookingId: string;
@@ -44,12 +44,20 @@ export class GMBAutomationService {
   private postingEnabled: boolean;
   private lastPostTime: Date | null = null;
   private postCooldown: number = 60 * 60 * 1000; // 1 hour cooldown between posts
+  private gmbService: GMBAPIService | null = null;
 
   constructor() {
     this.postingEnabled = process.env.GMB_POSTING_ENABLED === 'true';
     if (!this.postingEnabled) {
       logger.warn('GMB posting is disabled - set GMB_POSTING_ENABLED=true to enable');
     }
+  }
+
+  private getGMBService(): GMBAPIService {
+    if (!this.gmbService) {
+      this.gmbService = new GMBAPIService();
+    }
+    return this.gmbService;
   }
 
   static getInstance(): GMBAutomationService {
@@ -87,7 +95,7 @@ export class GMBAutomationService {
         ? "Another satisfied customer! 🌟"
         : "Professional service delivered with precision!";
 
-      await gmbService.createServiceCompletionPost({
+      await this.getGMBService().createServiceCompletionPost({
         serviceType: serviceDisplayName,
         location: locationName,
         satisfactionNote
@@ -142,7 +150,7 @@ export class GMBAutomationService {
         return;
       }
 
-      await gmbService.createReviewThankYouPost({
+      await this.getGMBService().createReviewThankYouPost({
         reviewerName: event.reviewerName,
         rating: event.rating,
         serviceType: event.serviceType,
