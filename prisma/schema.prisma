@@ -625,6 +625,28 @@ model daily_metrics {
   @@index([date], map: "idx_daily_metrics_date")
 }
 
+model GMBActivity {
+  id              String    @id @default(cuid())
+  type            String    // 'SERVICE_COMPLETION', 'REVIEW_THANK_YOU', 'PROMOTIONAL_POST', etc.
+  status          String    @default("SUCCESS") // 'SUCCESS', 'FAILED', 'PENDING'
+  data            Json?     // Store the post data/metadata
+  gmbPostId       String?   // ID returned from GMB API
+  bookingId       String?   // Reference to booking if applicable
+  reviewId        String?   // Reference to review if applicable
+  ghlContactId    String?   // Reference to GHL contact if applicable
+  engagement      Json?     // Store engagement metrics when available
+  errorMessage    String?   // Store error details if failed
+  createdAt       DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime  @updatedAt @db.Timestamptz(6)
+
+  @@index([type], map: "idx_gmb_activity_type")
+  @@index([status], map: "idx_gmb_activity_status")
+  @@index([createdAt], map: "idx_gmb_activity_created_at")
+  @@index([bookingId], map: "idx_gmb_activity_booking_id")
+  @@index([ghlContactId], map: "idx_gmb_activity_ghl_contact_id")
+  @@map("gmb_activity")
+}
+
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model feature_flags {

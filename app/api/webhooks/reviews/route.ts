@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getContactByEmail, addTagsToContact } from '@/lib/ghl';
 import { createContact, searchContacts } from '@/lib/ghl/management';
+import { triggerReviewThankYouPost } from '@/lib/gmb/automation-service';
 
 /**
  * Review Monitoring Webhook for Workflow 20
@@ -125,6 +126,22 @@ export async function POST(request: NextRequest) {
       contactId: ghlContact.id
     });
 
+    // 🎯 NEW: Trigger GMB automation for review thank you post
+    try {
+      await triggerReviewThankYouPost({
+        platform: payload.platform,
+        reviewerName: payload.reviewer_name,
+        rating: payload.rating,
+        reviewText: payload.review_text,
+        reviewId: payload.review_id,
+        ghlContactId: ghlContact.id
+      });
+      console.log('GMB review thank you post triggered successfully');
+    } catch (gmbError) {
+      console.error('Failed to trigger GMB review post:', gmbError);
+      // Don't fail the main workflow if GMB posting fails
+    }
+
     console.log(`Review processing complete for ${payload.reviewer_name} - ${payload.rating} stars on ${payload.platform}`);
 
     return NextResponse.json({
@@ -133,7 +150,8 @@ export async function POST(request: NextRequest) {
       contactId: ghlContact.id,
       rating: payload.rating,
       platform: payload.platform,
-      workflowTriggered: true
+      workflowTriggered: true,
+      gmbPostTriggered: true
     });
 
   } catch (error) {
