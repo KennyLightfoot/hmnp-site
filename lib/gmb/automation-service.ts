@@ -8,7 +8,7 @@
 
 import { gmbService } from './api-service';
 import { logger } from '@/lib/logger';
-import { prisma } from '@/lib/database';
+import { prisma } from '@/lib/db';
 
 interface ServiceCompletionEvent {
   bookingId: string;
