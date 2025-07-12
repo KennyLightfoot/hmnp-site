@@ -683,6 +683,140 @@ model Review {
   @@map("reviews")
 }
 
+// Phase 5: Local SEO - Citation Management Models
+model Citation {
+  id                String   @id @default(cuid())
+  platform          String   // 'Google My Business', 'Yelp', 'Facebook', etc.
+  business_name     String
+  phone             String?
+  website           String?
+  address_street    String?
+  address_city      String?
+  address_state     String?
+  address_zip       String?
+  address_formatted String?
+  business_hours    Json?    // Store hours as JSON object
+  categories        String[] // Array of business categories
+  rating            Float?   // Average rating
+  review_count      Int?     // Number of reviews
+  photos            String[] // Array of photo URLs
+  description       String?  @db.Text
+  verified          Boolean  @default(false)
+  claimed           Boolean  @default(false)
+  url               String   // Direct URL to the listing
+  last_updated      DateTime @default(now())
+  discovered_at     DateTime @default(now())
+  status            String   @default("active") // 'active', 'inactive', 'pending', 'error'
+  nap_consistency   Int      @default(0) // 0-100 consistency score
+  
+  // SEO tracking
+  domain_authority  Int?     // Domain authority of the platform
+  platform_category String?  // 'major', 'local', 'niche', 'social'
+  importance        String?  // 'high', 'medium', 'low'
+  
+  // Management tracking
+  submission_method String?  // 'api', 'manual', 'bulk'
+  managed_by        String?  // User ID who manages this citation
+  notes             String?  @db.Text
+  
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  
+  // Relations
+  audit_logs        CitationAudit[]
+  
+  @@map("citations")
+  @@index([platform])
+  @@index([nap_consistency])
+  @@index([status])
+}
+
+model CitationAudit {
+  id                String   @id @default(cuid())
+  citation_id       String
+  audit_type        String   // 'discovery', 'consistency_check', 'update', 'verification'
+  previous_data     Json?    // Previous citation data
+  current_data      Json?    // Current citation data
+  consistency_score Int      // 0-100 score
+  inconsistencies   Json?    // Array of inconsistency objects
+  recommendations   String[] // Array of recommendation strings
+  audit_date        DateTime @default(now())
+  audited_by        String?  // User ID or 'system'
+  
+  // Relations
+  citation          Citation @relation(fields: [citation_id], references: [id], onDelete: Cascade)
+  
+  @@map("citation_audits")
+  @@index([citation_id])
+  @@index([audit_date])
+}
+
+model DirectorySubmission {
+  id                String   @id @default(cuid())
+  directory_name    String
+  directory_url     String
+  submission_status String   @default("pending") // 'pending', 'submitted', 'approved', 'rejected', 'error'
+  submission_date   DateTime @default(now())
+  approval_date     DateTime?
+  business_data     Json     // Business data submitted
+  submission_method String   // 'api', 'manual', 'bulk'
+  tracking_id       String?  // External tracking ID
+  notes             String?  @db.Text
+  
+  // Performance tracking
+  clicks            Int      @default(0)
+  views             Int      @default(0)
+  conversions       Int      @default(0)
+  
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  
+  @@map("directory_submissions")
+  @@index([submission_status])
+  @@index([submission_date])
+}
+
+model LocalSEOMetrics {
+  id                    String   @id @default(cuid())
+  date                  DateTime @db.Date
+  
+  // Citation metrics
+  total_citations       Int      @default(0)
+  verified_citations    Int      @default(0)
+  claimed_citations     Int      @default(0)
+  consistent_citations  Int      @default(0)
+  avg_consistency_score Float    @default(0)
+  
+  // Platform distribution
+  google_citations      Int      @default(0)
+  yelp_citations        Int      @default(0)
+  facebook_citations    Int      @default(0)
+  local_citations       Int      @default(0)
+  niche_citations       Int      @default(0)
+  
+  // Review metrics
+  total_reviews         Int      @default(0)
+  avg_rating            Float    @default(0)
+  new_reviews           Int      @default(0)
+  
+  // Local search performance
+  local_search_clicks   Int      @default(0)
+  local_search_views    Int      @default(0)
+  local_ctr             Float    @default(0)
+  
+  // Directory performance
+  directory_submissions Int      @default(0)
+  approved_submissions  Int      @default(0)
+  pending_submissions   Int      @default(0)
+  
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+  
+  @@map("local_seo_metrics")
+  @@unique([date])
+  @@index([date])
+}
+
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model feature_flags {
