@@ -59,8 +59,23 @@ export class GMBAPIService {
   private mybusiness: any;
   private locationId: string;
   private accountId: string;
+  private initialized: boolean = false;
+
+  private logError(message: string, error: unknown): void {
+    logger.error(message, error instanceof Error ? error : String(error));
+  }
   
   constructor() {
+    // Remove initialization from constructor to prevent build-time errors
+    this.locationId = '';
+    this.accountId = '';
+  }
+
+  private async ensureInitialized(): Promise<void> {
+    if (this.initialized) {
+      return;
+    }
+
     this.locationId = process.env.GOOGLE_MY_BUSINESS_LOCATION_ID || '';
     this.accountId = process.env.GOOGLE_MY_BUSINESS_ACCOUNT_ID || '';
     
@@ -69,6 +84,7 @@ export class GMBAPIService {
     }
     
     this.initializeAuth();
+    this.initialized = true;
   }
 
   private initializeAuth() {
@@ -92,7 +108,7 @@ export class GMBAPIService {
       
       logger.info('GMB API service initialized successfully');
     } catch (error) {
-      logger.error('Failed to initialize GMB API service:', error);
+      logger.error('Failed to initialize GMB API service:', error instanceof Error ? error : String(error));
       throw error;
     }
   }
@@ -111,6 +127,8 @@ export class GMBAPIService {
     ctaPhone?: string;
     imageUrl?: string;
   }): Promise<any> {
+    await this.ensureInitialized();
+    
     const post: GMBPost = {
       type: 'SERVICE',
       content: {
@@ -136,7 +154,7 @@ export class GMBAPIService {
       });
       return response;
     } catch (error) {
-      logger.error('Failed to create service post:', error);
+      logger.error('Failed to create service post:', error instanceof Error ? error : String(error));
       throw error;
     }
   }
@@ -152,6 +170,8 @@ export class GMBAPIService {
     ctaUrl?: string;
     imageUrl?: string;
   }): Promise<any> {
+    await this.ensureInitialized();
+    
     const post: GMBPost = {
       type: 'OFFER',
       content: {
@@ -176,7 +196,7 @@ export class GMBAPIService {
       });
       return response;
     } catch (error) {
-      logger.error('Failed to create offer post:', error);
+      this.logError('Failed to create offer post:', error);
       throw error;
     }
   }
@@ -189,6 +209,8 @@ export class GMBAPIService {
     location: string;
     satisfactionNote?: string;
   }): Promise<any> {
+    await this.ensureInitialized();
+    
     const post: GMBPost = {
       type: 'WHAT_IS_NEW',
       content: {
@@ -224,6 +246,8 @@ export class GMBAPIService {
     serviceType?: string;
     reviewText?: string;
   }): Promise<any> {
+    await this.ensureInitialized();
+    
     const stars = '⭐'.repeat(data.rating);
     const post: GMBPost = {
       type: 'WHAT_IS_NEW',
@@ -259,6 +283,7 @@ export class GMBAPIService {
    * Get GMB insights and performance metrics
    */
   async getInsights(timeRange: 'DAILY' | 'WEEKLY' | 'MONTHLY' = 'WEEKLY'): Promise<any> {
+    await this.ensureInitialized();
     try {
       const response = await this.mybusiness.locations.getGoogleUpdated({
         name: `accounts/${this.accountId}/locations/${this.locationId}`,
@@ -276,6 +301,7 @@ export class GMBAPIService {
    * Get recent reviews from GMB
    */
   async getRecentReviews(limit: number = 10): Promise<GMBReview[]> {
+    await this.ensureInitialized();
     try {
       const response = await this.mybusiness.accounts.locations.reviews.list({
         parent: `accounts/${this.accountId}/locations/${this.locationId}`,
@@ -298,6 +324,7 @@ export class GMBAPIService {
    * Reply to a GMB review
    */
   async replyToReview(reviewId: string, replyText: string): Promise<any> {
+    await this.ensureInitialized();
     try {
       const response = await this.mybusiness.accounts.locations.reviews.updateReply({
         name: `accounts/${this.accountId}/locations/${this.locationId}/reviews/${reviewId}`,
@@ -323,6 +350,7 @@ export class GMBAPIService {
    */
 
   private async createPost(post: GMBPost): Promise<any> {
+    await this.ensureInitialized();
     try {
       const response = await this.mybusiness.accounts.locations.localPosts.create({
         parent: `accounts/${this.accountId}/locations/${this.locationId}`,
@@ -340,6 +368,7 @@ export class GMBAPIService {
    * Get location information
    */
   async getLocationInfo(): Promise<GMBLocation> {
+    await this.ensureInitialized();
     try {
       const response = await this.mybusiness.accounts.locations.get({
         name: `accounts/${this.accountId}/locations/${this.locationId}`,
@@ -367,6 +396,7 @@ export class GMBAPIService {
    * Check if GMB API is properly configured
    */
   async testConnection(): Promise<boolean> {
+    await this.ensureInitialized();
     try {
       await this.getLocationInfo();
       logger.info('GMB API connection test successful');
@@ -378,5 +408,65 @@ export class GMBAPIService {
   }
 }
 
-// Export singleton instance
-export const gmbService = new GMBAPIService(); 
+// Create a singleton instance that doesn't initialize during build
+let _gmbServiceInstance: GMBAPIService | null = null;
+
+export const gmbService = {
+  async createServicePost(data: any) {
+    if (!_gmbServiceInstance) {
+      _gmbServiceInstance = new GMBAPIService();
+    }
+    return _gmbServiceInstance.createServicePost(data);
+  },
+  
+  async createOfferPost(data: any) {
+    if (!_gmbServiceInstance) {
+      _gmbServiceInstance = new GMBAPIService();
+    }
+    return _gmbServiceInstance.createOfferPost(data);
+  },
+  
+  async createServiceCompletionPost(data: any) {
+    if (!_gmbServiceInstance) {
+      _gmbServiceInstance = new GMBAPIService();
+    }
+    return _gmbServiceInstance.createServiceCompletionPost(data);
+  },
+  
+  async createReviewThankYouPost(data: any) {
+    if (!_gmbServiceInstance) {
+      _gmbServiceInstance = new GMBAPIService();
+    }
+    return _gmbServiceInstance.createReviewThankYouPost(data);
+  },
+  
+  async getLocationInfo() {
+    if (!_gmbServiceInstance) {
+      _gmbServiceInstance = new GMBAPIService();
+    }
+    return _gmbServiceInstance.getLocationInfo();
+  },
+  
+  async getRecentReviews(limit: number) {
+    if (!_gmbServiceInstance) {
+      _gmbServiceInstance = new GMBAPIService();
+    }
+    return _gmbServiceInstance.getRecentReviews(limit);
+  },
+  
+  async testConnection() {
+    if (!_gmbServiceInstance) {
+      _gmbServiceInstance = new GMBAPIService();
+    }
+    return _gmbServiceInstance.testConnection();
+  },
+  
+  async replyToReview(reviewId: string, replyText: string) {
+    if (!_gmbServiceInstance) {
+      _gmbServiceInstance = new GMBAPIService();
+    }
+    return _gmbServiceInstance.replyToReview(reviewId, replyText);
+  }
+};
+
+// Class already exported above 

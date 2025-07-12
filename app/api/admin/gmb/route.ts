@@ -22,6 +22,8 @@ async function checkAdminAuth(request: NextRequest): Promise<boolean> {
   return authHeader === `Bearer ${adminApiKey}`;
 }
 
+// GMB services are now lazily initialized
+
 /**
  * GET /api/admin/gmb - Get GMB analytics and recent activity
  */
@@ -31,6 +33,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // GMB services are now lazily initialized and will handle configuration errors
     const { searchParams } = new URL(request.url);
     const days = parseInt(searchParams.get('days') || '30');
     const action = searchParams.get('action');
@@ -83,7 +86,7 @@ export async function GET(request: NextRequest) {
               totalPosts: analyticsData.totalPosts,
               successRate: analyticsData.successRate,
               averageRating: recentReviews.length > 0 
-                ? (recentReviews.reduce((sum, r) => sum + r.starRating, 0) / recentReviews.length).toFixed(1)
+                ? (recentReviews.reduce((sum: number, r: any) => sum + r.starRating, 0) / recentReviews.length).toFixed(1)
                 : 'N/A',
               lastPostDate: analyticsData.recentActivity[0]?.createdAt || 'Never'
             }
@@ -91,7 +94,7 @@ export async function GET(request: NextRequest) {
         });
     }
   } catch (error) {
-    logger.error('GMB admin API error:', error);
+    logger.error('GMB admin API error:', error instanceof Error ? error : String(error));
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'

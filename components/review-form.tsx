@@ -40,14 +40,29 @@ export function ReviewForm({ serviceName }: ReviewFormProps) {
     }
 
     try {
-      const result = await safeFormSubmit("/api/reviews/submit", {
-        name,
-        email,
-        rating,
-        reviewText,
-        service,
-        date: new Date().toISOString(),
-      })
+      // Submit to new review API
+      const response = await fetch("/api/reviews", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          reviewerName: name,
+          reviewerEmail: email,
+          rating,
+          reviewText,
+          serviceType: service,
+          platform: 'internal',
+          isVerified: false, // Can be verified later if booking is linked
+          metadata: {
+            submittedVia: 'website-form',
+            userAgent: navigator.userAgent,
+            timestamp: new Date().toISOString()
+          }
+        })
+      });
+
+      const result = await response.json();
 
       if (result.success) {
         setSuccess(true)
@@ -63,7 +78,7 @@ export function ReviewForm({ serviceName }: ReviewFormProps) {
           router.push("/reviews/thank-you")
         }, 2000)
       } else {
-        setError(result.message || "Failed to submit review. Please try again.")
+        setError(result.error || "Failed to submit review. Please try again.")
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again later.")

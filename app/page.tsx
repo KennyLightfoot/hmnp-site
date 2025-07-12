@@ -26,13 +26,13 @@ import FaqSection from "@/components/faq-section"
 import CtaSection from "@/components/cta-section"
 
 export const metadata: Metadata = {
-  title: "Houston Mobile Notary | Flawless Signings or We Pay Redraw Fee | HMNP",
-  description: "Houston's premier mobile notary service. Flawless the first time—or we pay the redraw fee. 24/7 loan signings, wills, POAs & more. Book same-day service.",
+  title: "Mobile Notary Houston | Notary Near Me | 24/7 Loan Signing Agent",
+  description: "Need a notary near you in Houston? We come to you! Mobile notary services, loan signing agent, RON, and emergency notarization. Book online now.",
   keywords:
-    "mobile notary Houston, notary public, Houston notary, Galveston notary, Pearland notary, League City notary, traveling notary, notary services, loan signing agent, document notarization, mobile notary service",
+    "mobile notary Houston, notary near me, Houston notary, notary public, loan signing agent, traveling notary, notary services, electronic notary, mobile notary near me, after hours notary, emergency notary Houston, RON notary, remote online notarization",
   openGraph: {
-    title: "Houston Mobile Notary Pros | Premier Mobile Notary Service",
-    description: "Your trusted mobile notary serving Houston, Galveston, Pearland, and more. Convenient, professional notarization at your location.",
+    title: "Mobile Notary Houston | Notary Near Me | Houston Mobile Notary Pros",
+    description: "Need a notary near you in Houston? We come to you! Mobile notary services, loan signing agent, RON, and emergency notarization available 24/7.",
     url: "/", // Assuming this is the root URL
     siteName: 'Houston Mobile Notary Pros',
     images: [
@@ -48,8 +48,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Houston Mobile Notary Pros | Your Trusted Mobile Notary",
-    description: "Need a notary in Houston? We travel to you! Professional mobile notary services for loan signings, POAs, wills, and more.",
+    title: "Mobile Notary Houston | Notary Near Me | 24/7 Service",
+    description: "Need a notary near you in Houston? We come to you! Mobile notary services, loan signing agent, RON, and emergency notarization available now.",
     images: [`/og-image.jpg`], // Must be an absolute URL relative to the domain
   },
 }

@@ -30,7 +30,7 @@ export default function HeroSection() {
               <span className="text-white font-medium">Professional Mobile Notary Services</span>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-              Your Important Signings, <span className="text-[#91A3B0]">Handled with Care & Precision</span>
+              Mobile Notary Houston - <span className="text-[#91A3B0]">Notary Near Me</span>
             </h1>
             
             {/* Guarantee Banner */}
@@ -48,7 +48,7 @@ export default function HeroSection() {
             </div>
             
             <p className="text-xl text-gray-100">
-              Stop the confusion and delays. We eliminate sloppy signings that kill funding with our professional, reliable service, ensuring every document is handled correctly and clearly explained.
+              Need a mobile notary in Houston? We come to you! Professional loan signing agent, RON services, and emergency notarization available 24/7. Same-day service across Greater Houston.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link href="/booking">

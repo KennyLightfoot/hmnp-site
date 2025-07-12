@@ -9,11 +9,11 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Houston Loan Signing Agent | Certified Specialists | HMNP",
+  title: "Loan Signing Agent Houston | Mortgage Notary | Real Estate Closing",
   description:
-    "Houston's certified loan signing agents. Expert handling of purchases, refinances, HELOCs. Flawless signings or we pay the redraw fee. Book today for precision you can trust.",
+    "Professional loan signing agent in Houston. Certified mortgage notary for closings, refinances, HELOCs. Mobile loan signing services available 24/7. Book today!",
   keywords:
-    "loan signing specialist Houston, mobile notary loan signing, certified loan signer, mortgage signing agent, HELOC notary, reverse mortgage signing Houston, RON notary, real estate closing, courier returns, paperwork pros",
+    "loan signing agent Houston, mortgage notary, loan signing agent, real estate closing notary, mobile loan signing, certified loan signer, mortgage signing agent, HELOC notary, refinance notary, loan notary near me, closing agent Houston",
   alternates: {
     canonical: '/services/loan-signing-specialist',
   },
@@ -91,7 +91,7 @@ export default function LoanSigningPage() {
       {/* Hero Section */}
       <section className="text-center mb-12">
         <h1 className="text-4xl font-bold text-[#002147] mb-3">
-          Loan Signing Specialist Services
+          Loan Signing Agent Houston | Mortgage Notary
         </h1>
         <p className="text-2xl font-semibold text-[#A52A2A] mb-6">
           Paperwork pros you can trust.

@@ -95,6 +95,7 @@ model Booking {
   PricingAuditLog             PricingAuditLog[]
   supportTickets              SupportTicket[]
   notary_journal              notary_journal[]
+  reviews                     Review[]
 
   @@index([scheduledDateTime])
   @@index([status])
@@ -645,6 +646,41 @@ model GMBActivity {
   @@index([bookingId], map: "idx_gmb_activity_booking_id")
   @@index([ghlContactId], map: "idx_gmb_activity_ghl_contact_id")
   @@map("gmb_activity")
+}
+
+model Review {
+  id                String    @id @default(cuid())
+  reviewerName      String    @db.VarChar(200)
+  reviewerEmail     String?   @db.VarChar(255)
+  rating            Int       @db.SmallInt // 1-5 stars
+  reviewText        String    @db.Text
+  serviceType       String?   @db.VarChar(100)
+  platform          String?   @db.VarChar(50) // 'google', 'internal', 'yelp', 'facebook'
+  externalId        String?   @unique @db.VarChar(255) // ID from external platform
+  externalUrl       String?   @db.VarChar(500) // URL to review on external platform
+  bookingId         String?   // Reference to booking if from customer
+  ghlContactId      String?   @db.VarChar(100) // Reference to GHL contact
+  isVerified        Boolean   @default(false) // Verified purchase/service
+  isApproved        Boolean   @default(true) // Admin approval status
+  isFeatured        Boolean   @default(false) // Featured on website
+  helpfulCount      Int       @default(0) // Number of helpful votes
+  responseText      String?   @db.Text // Business response to review
+  responseDate      DateTime? @db.Timestamptz(6)
+  metadata          Json?     // Additional platform-specific data
+  createdAt         DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime  @updatedAt @db.Timestamptz(6)
+  
+  // Relations
+  booking           Booking?  @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([rating], map: "idx_reviews_rating")
+  @@index([platform], map: "idx_reviews_platform") 
+  @@index([isApproved], map: "idx_reviews_approved")
+  @@index([isFeatured], map: "idx_reviews_featured")
+  @@index([createdAt], map: "idx_reviews_created_at")
+  @@index([bookingId], map: "idx_reviews_booking_id")
+  @@index([ghlContactId], map: "idx_reviews_ghl_contact")
+  @@map("reviews")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
