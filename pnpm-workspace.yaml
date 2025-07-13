@@ -10,7 +10,3 @@ onlyBuiltDependencies:
   - prisma
   - sharp
   - unrs-resolver
-# Temporarily commenting out overrides to fix Vercel build
-# overrides:
-#   prismjs@<1.30.0: '>=1.30.0'
-#   brace-expansion@>=1.0.0 <=1.1.11: '>=1.1.12'
