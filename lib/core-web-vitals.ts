@@ -12,7 +12,22 @@
  * - INP (Interaction to Next Paint): < 200ms
  */
 
-import { getLCP, getFID, getCLS, getFCP, getTTFB } from 'web-vitals';
+import { onLCP, onINP, onCLS, onFCP, onTTFB } from 'web-vitals';
+
+// Type declaration for Google Analytics gtag function
+declare global {
+  function gtag(command: string, ...args: any[]): void;
+}
+
+// Web Vitals types
+interface WebVitalsMetric {
+  value: number;
+  rating: 'good' | 'needs-improvement' | 'poor';
+  id: string;
+  name: string;
+  delta: number;
+  entries: any[];
+}
 
 // =============================================================================
 // 📊 CORE WEB VITALS MONITORING
@@ -20,11 +35,10 @@ import { getLCP, getFID, getCLS, getFCP, getTTFB } from 'web-vitals';
 
 export interface WebVitalsMetrics {
   lcp: number;
-  fid: number;
+  inp: number;
   cls: number;
   fcp: number;
   ttfb: number;
-  inp?: number;
 }
 
 export interface OptimizationReport {
@@ -47,7 +61,7 @@ export function initializeWebVitalsMonitoring() {
   if (typeof window === 'undefined') return;
 
   // Largest Contentful Paint (LCP) - Critical for mobile "near me" searches
-  getLCP((metric) => {
+  onLCP((metric) => {
     performanceData.lcp = metric.value;
     
     // Log LCP performance
@@ -66,25 +80,25 @@ export function initializeWebVitalsMonitoring() {
     }
   });
 
-  // First Input Delay (FID) - Critical for booking conversions
-  getFID((metric) => {
-    performanceData.fid = metric.value;
+  // Interaction to Next Paint (INP) - Critical for booking conversions (replaces FID)
+  onINP((metric) => {
+    performanceData.inp = metric.value;
     
-    console.log(`⚡ FID: ${metric.value}ms`, {
+    console.log(`⚡ INP: ${metric.value}ms`, {
       rating: metric.rating,
-      target: '< 100ms',
-      passed: metric.value < 100
+      target: '< 200ms',
+      passed: metric.value < 200
     });
 
-    sendToAnalytics('fid', metric.value, metric.rating);
+    sendToAnalytics('inp', metric.value, metric.rating);
     
-    if (metric.value > 100) {
-      optimizeFID();
+    if (metric.value > 200) {
+      optimizeINP();
     }
   });
 
   // Cumulative Layout Shift (CLS) - Critical for mobile UX
-  getCLS((metric) => {
+  onCLS((metric) => {
     performanceData.cls = metric.value;
     
     console.log(`📐 CLS: ${metric.value}`, {
@@ -101,13 +115,13 @@ export function initializeWebVitalsMonitoring() {
   });
 
   // First Contentful Paint (FCP)
-  getFCP((metric) => {
+  onFCP((metric) => {
     performanceData.fcp = metric.value;
     sendToAnalytics('fcp', metric.value, metric.rating);
   });
 
   // Time to First Byte (TTFB)
-  getTTFB((metric) => {
+  onTTFB((metric) => {
     performanceData.ttfb = metric.value;
     sendToAnalytics('ttfb', metric.value, metric.rating);
   });
@@ -465,11 +479,11 @@ export function generateOptimizationReport(): OptimizationReport {
     optimizations.push('Implement image lazy loading and WebP format');
   }
   
-  // Analyze FID
-  if (performanceData.fid && performanceData.fid > 100) {
-    issues.push(`FID is ${performanceData.fid}ms (target: < 100ms)`);
-    recommendations.push('Reduce JavaScript execution time');
-    optimizations.push('Use web workers for heavy computations');
+  // Analyze INP
+  if (performanceData.inp && performanceData.inp > 200) {
+    issues.push(`INP is ${performanceData.inp}ms (target: < 200ms)`);
+    recommendations.push('Reduce JavaScript execution time and optimize interactions');
+    optimizations.push('Use web workers for heavy computations and break up long tasks');
   }
   
   // Analyze CLS
@@ -500,10 +514,10 @@ function calculatePerformanceScore(metrics: Partial<WebVitalsMetrics>): number {
     else if (metrics.lcp > 2000) score -= 15;
   }
   
-  // FID penalty
-  if (metrics.fid) {
-    if (metrics.fid > 100) score -= 25;
-    else if (metrics.fid > 50) score -= 10;
+  // INP penalty
+  if (metrics.inp) {
+    if (metrics.inp > 200) score -= 25;
+    else if (metrics.inp > 100) score -= 10;
   }
   
   // CLS penalty
