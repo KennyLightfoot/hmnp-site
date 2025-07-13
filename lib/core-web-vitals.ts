@@ -178,6 +178,8 @@ function optimizeLCP() {
 }
 
 function preloadCriticalResources() {
+  if (typeof window === 'undefined') return;
+  
   const head = document.head;
   
   // Preload hero image
@@ -205,6 +207,8 @@ function preloadCriticalResources() {
 }
 
 function optimizeImages() {
+  if (typeof window === 'undefined') return;
+  
   // Lazy load images below the fold
   const images = document.querySelectorAll('img[data-src]');
   
@@ -223,6 +227,8 @@ function optimizeImages() {
 }
 
 function optimizeRenderBlocking() {
+  if (typeof window === 'undefined') return;
+  
   // Defer non-critical CSS
   const stylesheets = document.querySelectorAll('link[rel="stylesheet"]');
   stylesheets.forEach((stylesheet) => {
@@ -237,6 +243,8 @@ function optimizeRenderBlocking() {
 }
 
 function optimizeServerResponse() {
+  if (typeof window === 'undefined') return;
+  
   // Prefetch likely navigation targets
   const prefetchTargets = [
     '/booking',
@@ -289,6 +297,8 @@ function optimizeLongTasks() {
 }
 
 function deferNonEssentialJS() {
+  if (typeof window === 'undefined') return;
+  
   // Defer analytics scripts
   const scripts = document.querySelectorAll('script[data-defer]');
   scripts.forEach((script) => {
@@ -301,6 +311,8 @@ function deferNonEssentialJS() {
 }
 
 function useWebWorkers() {
+  if (typeof window === 'undefined') return;
+  
   // Use web workers for pricing calculations
   if ('Worker' in window) {
     const worker = new Worker('/workers/pricing-calculator.js');
@@ -335,6 +347,8 @@ function optimizeCLS() {
 }
 
 function reserveSpaceForDynamicContent() {
+  if (typeof window === 'undefined') return;
+  
   // Reserve space for images
   const images = document.querySelectorAll('img:not([width]):not([height])');
   images.forEach((img) => {
@@ -353,6 +367,8 @@ function reserveSpaceForDynamicContent() {
 }
 
 function avoidContentInsertion() {
+  if (typeof window === 'undefined') return;
+  
   // Use transform instead of top/left changes
   const animations = document.querySelectorAll('[data-animate]');
   animations.forEach((element) => {
@@ -363,6 +379,8 @@ function avoidContentInsertion() {
 }
 
 function useCSSContainment() {
+  if (typeof window === 'undefined') return;
+  
   // Add CSS containment to independent sections
   const sections = document.querySelectorAll('section, .container');
   sections.forEach((section) => {
@@ -389,6 +407,8 @@ function optimizeINP() {
 }
 
 function debounceInteractions() {
+  if (typeof window === 'undefined') return;
+  
   // Debounce search input
   const searchInputs = document.querySelectorAll('input[type="search"], input[data-search]');
   searchInputs.forEach((input) => {
@@ -404,6 +424,8 @@ function debounceInteractions() {
 }
 
 function useEventDelegation() {
+  if (typeof window === 'undefined') return;
+  
   // Use event delegation for dynamic content
   document.addEventListener('click', (event) => {
     const target = event.target as HTMLElement;
@@ -421,6 +443,8 @@ function useEventDelegation() {
 }
 
 function optimizeFormInputs() {
+  if (typeof window === 'undefined') return;
+  
   // Optimize form validation
   const forms = document.querySelectorAll('form');
   forms.forEach((form) => {
@@ -441,6 +465,9 @@ function optimizeFormInputs() {
 // =============================================================================
 
 function sendToAnalytics(metric: string, value: number, rating: string) {
+  // Only run in browser environment
+  if (typeof window === 'undefined') return;
+  
   // Send to Google Analytics
   if (typeof gtag !== 'undefined') {
     gtag('event', 'core_web_vitals', {
@@ -556,6 +583,8 @@ function performSearch(query: string) {
 }
 
 function navigateToBooking() {
+  if (typeof window === 'undefined') return;
+  
   // Navigate to booking page
   window.location.href = '/booking';
 }
