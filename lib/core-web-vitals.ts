@@ -15,6 +15,9 @@
 // Dynamic import to prevent server-side execution
 // import { onLCP, onINP, onCLS, onFCP, onTTFB } from 'web-vitals';
 
+// Import logging utilities
+import { perfLogger, debugLogger, errorLogger } from '@/lib/utils/logger';
+
 // Type declaration for Google Analytics gtag function
 declare global {
   function gtag(command: string, ...args: any[]): void;
@@ -70,7 +73,7 @@ export async function initializeWebVitalsMonitoring() {
       performanceData.lcp = metric.value;
       
       // Log LCP performance
-      console.log(`📊 LCP: ${metric.value}ms`, {
+      perfLogger.metrics(`LCP: ${metric.value}ms`, {
         rating: metric.rating,
         target: '< 2500ms',
         passed: metric.value < 2500
@@ -89,7 +92,7 @@ export async function initializeWebVitalsMonitoring() {
     onINP((metric) => {
       performanceData.inp = metric.value;
       
-      console.log(`⚡ INP: ${metric.value}ms`, {
+      perfLogger.metrics(`INP: ${metric.value}ms`, {
         rating: metric.rating,
         target: '< 200ms',
         passed: metric.value < 200
@@ -106,7 +109,7 @@ export async function initializeWebVitalsMonitoring() {
     onCLS((metric) => {
       performanceData.cls = metric.value;
       
-      console.log(`📐 CLS: ${metric.value}`, {
+      perfLogger.metrics(`CLS: ${metric.value}`, {
         rating: metric.rating,
         target: '< 0.1',
         passed: metric.value < 0.1
@@ -131,7 +134,7 @@ export async function initializeWebVitalsMonitoring() {
       sendToAnalytics('ttfb', metric.value, metric.rating);
     });
   } catch (error) {
-    console.warn('Failed to initialize web vitals monitoring:', error);
+    errorLogger.warn('Failed to initialize web vitals monitoring:', error);
   }
 }
 
@@ -140,7 +143,7 @@ export async function initializeWebVitalsMonitoring() {
 // =============================================================================
 
 function optimizeLCP() {
-  console.log('🔧 Optimizing LCP performance...');
+  perfLogger.optimization('Optimizing LCP performance...');
   
   // Strategy 1: Preload critical resources
   preloadCriticalResources();
@@ -167,12 +170,8 @@ function preloadCriticalResources() {
   heroPreload.href = '/hero-mobile-notary-houston.jpg';
   head.appendChild(heroPreload);
   
-  // Preload critical CSS
-  const cssPreload = document.createElement('link');
-  cssPreload.rel = 'preload';
-  cssPreload.as = 'style';
-  cssPreload.href = '/_next/static/css/app.css';
-  head.appendChild(cssPreload);
+  // Note: Removed hard-coded CSS preload as it causes 404s due to dynamic file names
+  // Next.js automatically handles critical CSS loading
   
   // Preload critical fonts
   const fontPreload = document.createElement('link');
@@ -244,7 +243,7 @@ function optimizeServerResponse() {
 // =============================================================================
 
 function optimizeFID() {
-  console.log('🔧 Optimizing FID performance...');
+  perfLogger.optimization('Optimizing FID performance...');
   
   // Strategy 1: Break up long tasks
   optimizeLongTasks();
@@ -312,7 +311,7 @@ function useWebWorkers() {
 // =============================================================================
 
 function optimizeCLS() {
-  console.log('🔧 Optimizing CLS performance...');
+  perfLogger.optimization('Optimizing CLS performance...');
   
   // Strategy 1: Reserve space for dynamic content
   reserveSpaceForDynamicContent();
@@ -372,7 +371,7 @@ function useCSSContainment() {
 // =============================================================================
 
 function optimizeINP() {
-  console.log('🔧 Optimizing INP performance...');
+  perfLogger.optimization('Optimizing INP performance...');
   
   // Strategy 1: Debounce frequent interactions
   debounceInteractions();
@@ -469,7 +468,7 @@ function sendToAnalytics(metric: string, value: number, rating: string) {
       url: window.location.href,
       userAgent: navigator.userAgent
     })
-  }).catch(console.error);
+  }).catch(error => errorLogger.error('Failed to send web vitals to analytics:', error));
 }
 
 export function generateOptimizationReport(): OptimizationReport {
@@ -557,7 +556,7 @@ function initializeNonCriticalComponents() {
 
 function performSearch(query: string) {
   // Implement search functionality
-  console.log('Searching for:', query);
+  debugLogger.debug('Searching for:', query);
 }
 
 function navigateToBooking() {
@@ -569,17 +568,17 @@ function navigateToBooking() {
 
 function selectService(service: string) {
   // Handle service selection
-  console.log('Selected service:', service);
+  debugLogger.debug('Selected service:', service);
 }
 
 function validateField(input: HTMLInputElement) {
   // Validate form field
-  console.log('Validating field:', input.name);
+  debugLogger.debug('Validating field:', input.name);
 }
 
 function updatePricingUI(data: any) {
   // Update pricing display
-  console.log('Updating pricing UI:', data);
+  debugLogger.debug('Updating pricing UI:', data);
 }
 
 function initializeTestimonialsCarousel() {

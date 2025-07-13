@@ -15,6 +15,9 @@
  * - CDN integration and edge caching
  */
 
+// Import logging utilities
+import { perfLogger, debugLogger, errorLogger } from '@/lib/utils/logger';
+
 // =============================================================================
 // 📊 PERFORMANCE CONFIGURATION
 // =============================================================================
@@ -89,7 +92,7 @@ export class ResourceOptimizer {
   }
 
   initialize(): void {
-    console.log('🚀 Initializing resource optimizer...');
+    perfLogger.info('🚀 Initializing resource optimizer...');
     
     if (PERFORMANCE_CONFIG.optimization.enablePreloading) {
       this.preloadCriticalResources();
@@ -109,17 +112,11 @@ export class ResourceOptimizer {
   }
 
   private preloadCriticalResources(): void {
-    console.log('📦 Preloading critical resources...');
+    perfLogger.info('📦 Preloading critical resources...');
     
     // Define critical resources for Houston Mobile Notary Pros
+    // Note: Removed hard-coded Next.js assets as they cause 404s due to dynamic file names
     this.criticalResources = [
-      // Critical CSS
-      '/_next/static/css/app.css',
-      
-      // Critical JavaScript
-      '/_next/static/chunks/main.js',
-      '/_next/static/chunks/pages/_app.js',
-      
       // Critical fonts
       'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2',
       
@@ -151,19 +148,23 @@ export class ResourceOptimizer {
     } else if (url.match(/\.(woff2|woff|ttf|otf)$/)) {
       link.as = 'font';
       link.crossOrigin = 'anonymous';
-    } else if (url.match(/\.(jpg|jpeg|png|webp|avif)$/)) {
+    } else if (url.match(/\.(jpg|jpeg|png|webp|avif|ico)$/)) {
       link.as = 'image';
+    } else {
+      // Fallback for unknown file types - don't preload them
+      console.warn(`Unknown file type for preload: ${url}`);
+      return;
     }
     
     link.href = url;
     document.head.appendChild(link);
     
     this.preloadedResources.add(url);
-    console.log(`📦 Preloaded: ${url}`);
+    perfLogger.debug(`📦 Preloaded: ${url}`);
   }
 
   private setupIntelligentPrefetching(): void {
-    console.log('🔮 Setting up intelligent prefetching...');
+    perfLogger.info('🔮 Setting up intelligent prefetching...');
     
     // Prefetch likely navigation targets based on user behavior
     const prefetchTargets = this.getPrefetchTargets();
@@ -217,11 +218,11 @@ export class ResourceOptimizer {
     document.head.appendChild(link);
     
     this.prefetchedResources.add(url);
-    console.log(`🔮 Prefetched: ${url}`);
+    perfLogger.debug(`🔮 Prefetched: ${url}`);
   }
 
   private optimizeImages(): void {
-    console.log('🖼️ Optimizing images...');
+    perfLogger.info('🖼️ Optimizing images...');
     
     // Implement progressive image loading
     this.setupProgressiveImageLoading();
@@ -319,7 +320,7 @@ export class ResourceOptimizer {
   }
 
   private extractCriticalCSS(): void {
-    console.log('🎨 Extracting critical CSS...');
+    perfLogger.info('🎨 Extracting critical CSS...');
     
     // Identify critical CSS for above-the-fold content
     const criticalElements = document.querySelectorAll('header, nav, .hero, .hero-section, .above-fold');
@@ -405,7 +406,7 @@ export class AdvancedCaching {
   }
 
   async initialize(): Promise<void> {
-    console.log('🗃️ Initializing advanced caching...');
+    perfLogger.info('🗃️ Initializing advanced caching...');
     
     // Initialize Cache API
     if ('caches' in window) {
@@ -672,7 +673,7 @@ export class PerformanceMonitor {
 // =============================================================================
 
 export async function initializeAdvancedPageSpeed(): Promise<void> {
-  console.log('🚀 Initializing advanced page speed optimization...');
+  perfLogger.info('🚀 Initializing advanced page speed optimization...');
   
   try {
     // Initialize resource optimizer

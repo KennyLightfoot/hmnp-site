@@ -11,7 +11,7 @@ const logInfo = (message: string) => {
 
 const logWarn = (message: string) => {
   if (typeof window !== 'undefined') {
-    console.warn(`[ThirdPartyScripts] ${message}`)
+    console.warn(`[ThirdPartyScripts] ${message} - This may be due to ad blockers or privacy tools and is expected behavior.`)
   }
 }
 
