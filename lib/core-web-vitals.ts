@@ -12,7 +12,8 @@
  * - INP (Interaction to Next Paint): < 200ms
  */
 
-import { onLCP, onINP, onCLS, onFCP, onTTFB } from 'web-vitals';
+// Dynamic import to prevent server-side execution
+// import { onLCP, onINP, onCLS, onFCP, onTTFB } from 'web-vitals';
 
 // Type declaration for Google Analytics gtag function
 declare global {
@@ -57,103 +58,80 @@ let optimizationCallbacks: ((report: OptimizationReport) => void)[] = [];
 // 🎯 PERFORMANCE MONITORING INITIALIZATION
 // =============================================================================
 
-export function initializeWebVitalsMonitoring() {
+export async function initializeWebVitalsMonitoring() {
   if (typeof window === 'undefined') return;
 
-  // Largest Contentful Paint (LCP) - Critical for mobile "near me" searches
-  onLCP((metric) => {
-    performanceData.lcp = metric.value;
-    
-    // Log LCP performance
-    console.log(`📊 LCP: ${metric.value}ms`, {
-      rating: metric.rating,
-      target: '< 2500ms',
-      passed: metric.value < 2500
-    });
+  try {
+    // Dynamic import to prevent server-side execution
+    const { onLCP, onINP, onCLS, onFCP, onTTFB } = await import('web-vitals');
 
-    // Send to analytics
-    sendToAnalytics('lcp', metric.value, metric.rating);
-    
-    // Auto-optimize if LCP is poor
-    if (metric.value > 2500) {
-      optimizeLCP();
-    }
-  });
-
-  // Interaction to Next Paint (INP) - Critical for booking conversions (replaces FID)
-  onINP((metric) => {
-    performanceData.inp = metric.value;
-    
-    console.log(`⚡ INP: ${metric.value}ms`, {
-      rating: metric.rating,
-      target: '< 200ms',
-      passed: metric.value < 200
-    });
-
-    sendToAnalytics('inp', metric.value, metric.rating);
-    
-    if (metric.value > 200) {
-      optimizeINP();
-    }
-  });
-
-  // Cumulative Layout Shift (CLS) - Critical for mobile UX
-  onCLS((metric) => {
-    performanceData.cls = metric.value;
-    
-    console.log(`📐 CLS: ${metric.value}`, {
-      rating: metric.rating,
-      target: '< 0.1',
-      passed: metric.value < 0.1
-    });
-
-    sendToAnalytics('cls', metric.value, metric.rating);
-    
-    if (metric.value > 0.1) {
-      optimizeCLS();
-    }
-  });
-
-  // First Contentful Paint (FCP)
-  onFCP((metric) => {
-    performanceData.fcp = metric.value;
-    sendToAnalytics('fcp', metric.value, metric.rating);
-  });
-
-  // Time to First Byte (TTFB)
-  onTTFB((metric) => {
-    performanceData.ttfb = metric.value;
-    sendToAnalytics('ttfb', metric.value, metric.rating);
-  });
-
-  // Interaction to Next Paint (INP) - New Core Web Vital
-  if ('PerformanceObserver' in window) {
-    try {
-      const observer = new PerformanceObserver((list) => {
-        const entries = list.getEntries();
-        entries.forEach((entry: any) => {
-          if (entry.processingStart && entry.processingEnd) {
-            const inp = entry.processingEnd - entry.processingStart;
-            performanceData.inp = inp;
-            
-            console.log(`🔄 INP: ${inp}ms`, {
-              target: '< 200ms',
-              passed: inp < 200
-            });
-
-            sendToAnalytics('inp', inp, inp < 200 ? 'good' : 'poor');
-            
-            if (inp > 200) {
-              optimizeINP();
-            }
-          }
-        });
-      });
+    // Largest Contentful Paint (LCP) - Critical for mobile "near me" searches
+    onLCP((metric) => {
+      performanceData.lcp = metric.value;
       
-      observer.observe({ entryTypes: ['event'] });
-    } catch (error) {
-      console.warn('INP monitoring not supported:', error);
-    }
+      // Log LCP performance
+      console.log(`📊 LCP: ${metric.value}ms`, {
+        rating: metric.rating,
+        target: '< 2500ms',
+        passed: metric.value < 2500
+      });
+
+      // Send to analytics
+      sendToAnalytics('lcp', metric.value, metric.rating);
+      
+      // Auto-optimize if LCP is poor
+      if (metric.value > 2500) {
+        optimizeLCP();
+      }
+    });
+
+    // Interaction to Next Paint (INP) - Critical for booking conversions (replaces FID)
+    onINP((metric) => {
+      performanceData.inp = metric.value;
+      
+      console.log(`⚡ INP: ${metric.value}ms`, {
+        rating: metric.rating,
+        target: '< 200ms',
+        passed: metric.value < 200
+      });
+
+      sendToAnalytics('inp', metric.value, metric.rating);
+      
+      if (metric.value > 200) {
+        optimizeINP();
+      }
+    });
+
+    // Cumulative Layout Shift (CLS) - Critical for mobile UX
+    onCLS((metric) => {
+      performanceData.cls = metric.value;
+      
+      console.log(`📐 CLS: ${metric.value}`, {
+        rating: metric.rating,
+        target: '< 0.1',
+        passed: metric.value < 0.1
+      });
+
+      sendToAnalytics('cls', metric.value, metric.rating);
+      
+      if (metric.value > 0.1) {
+        optimizeCLS();
+      }
+    });
+
+    // First Contentful Paint (FCP)
+    onFCP((metric) => {
+      performanceData.fcp = metric.value;
+      sendToAnalytics('fcp', metric.value, metric.rating);
+    });
+
+    // Time to First Byte (TTFB)
+    onTTFB((metric) => {
+      performanceData.ttfb = metric.value;
+      sendToAnalytics('ttfb', metric.value, metric.rating);
+    });
+  } catch (error) {
+    console.warn('Failed to initialize web vitals monitoring:', error);
   }
 }
 
@@ -620,12 +598,5 @@ function initializeServiceAreaMap() {
 // 🚀 INITIALIZATION
 // =============================================================================
 
-// Auto-initialize if in browser
-if (typeof window !== 'undefined') {
-  // Initialize after DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeWebVitalsMonitoring);
-  } else {
-    initializeWebVitalsMonitoring();
-  }
-} 
+// Note: Initialization is now handled by the Phase5TechnicalSEO component
+// No auto-initialization to prevent server-side execution 
