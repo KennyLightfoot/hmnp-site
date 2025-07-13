@@ -1,16 +1,16 @@
 'use client';
 
 /**
- * 🤖 Proactive Engagement Engine - Phase 4 Enhancement
+ * 🤖 Proactive Engagement Engine - Phase 3 AI Assistant
  * Houston Mobile Notary Pros
  * 
- * Features:
- * - Behavior pattern analysis
+ * This component intelligently analyzes user behavior and triggers
+ * contextual engagement opportunities to boost conversion rates.
+ * 
+ * Key Features:
+ * - Real-time behavior tracking
  * - Smart engagement triggers
- * - A/B testing for messaging
- * - Exit intent detection
- * - Scroll depth tracking
- * - Time-based engagement
+ * - A/B testing capabilities
  * - Conversion optimization
  */
 
@@ -189,7 +189,7 @@ export default function ProactiveEngagementEngine({
     mouseMovements: 0,
     clickCount: 0,
     formInteractions: 0,
-    pageViews: [window.location.pathname],
+    pageViews: typeof window !== 'undefined' ? [window.location.pathname] : ['/'],
     engagementScore: 0,
     exitIntentDetected: false,
     conversionLikelihood: 0,
@@ -207,18 +207,20 @@ export default function ProactiveEngagementEngine({
   const scrollDepthRef = useRef(0);
   const mouseMovementRef = useRef(0);
   const lastScrollPosition = useRef(0);
-  const exitIntentTimeoutRef = useRef<NodeJS.Timeout>();
+  const exitIntentTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Initialize A/B test variant
   useEffect(() => {
-    const savedVariant = localStorage.getItem('ai_engagement_variant') as 'A' | 'B' | 'C';
-    if (savedVariant) {
-      setAbTestVariant(savedVariant);
-    } else {
-      const variants: ('A' | 'B' | 'C')[] = ['A', 'B', 'C'];
-      const randomVariant = variants[Math.floor(Math.random() * variants.length)];
-      setAbTestVariant(randomVariant);
-      localStorage.setItem('ai_engagement_variant', randomVariant);
+    if (typeof window !== 'undefined') {
+      const savedVariant = localStorage.getItem('ai_engagement_variant') as 'A' | 'B' | 'C';
+      if (savedVariant) {
+        setAbTestVariant(savedVariant);
+      } else {
+        const variants: ('A' | 'B' | 'C')[] = ['A', 'B', 'C'];
+        const randomVariant = variants[Math.floor(Math.random() * variants.length)];
+        setAbTestVariant(randomVariant);
+        localStorage.setItem('ai_engagement_variant', randomVariant);
+      }
     }
   }, []);
 

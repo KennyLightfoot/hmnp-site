@@ -16,7 +16,7 @@
 // import { onLCP, onINP, onCLS, onFCP, onTTFB } from 'web-vitals';
 
 // Import logging utilities
-import { perfLogger, debugLogger, errorLogger } from '@/lib/utils/logger';
+import { perfLogger, debugLogger, errorLogger } from '@/lib/logger';
 
 // Type declaration for Google Analytics gtag function
 declare global {
@@ -134,7 +134,7 @@ export async function initializeWebVitalsMonitoring() {
       sendToAnalytics('ttfb', metric.value, metric.rating);
     });
   } catch (error) {
-    errorLogger.warn('Failed to initialize web vitals monitoring:', error);
+    errorLogger.error('Failed to initialize web vitals monitoring:', error);
   }
 }
 

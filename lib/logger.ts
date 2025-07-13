@@ -297,6 +297,56 @@ class Logger {
       this.writeLog(entry);
     }
   }
+  
+  // =============================================================================
+  // 🚀 PERFORMANCE LOGGING METHODS
+  // =============================================================================
+  
+  /**
+   * Log performance metrics with special formatting
+   */
+  perf(message: string, data?: any) {
+    if (this.shouldLog(LogLevel.INFO)) {
+      const perfData = data ? ` | ${JSON.stringify(data)}` : '';
+      this.info(`⚡ ${message}${perfData}`);
+    }
+  }
+  
+  /**
+   * Log optimization activities
+   */
+  optimization(message: string, data?: any) {
+    if (this.shouldLog(LogLevel.INFO)) {
+      const optData = data ? ` | ${JSON.stringify(data)}` : '';
+      this.info(`🔧 ${message}${optData}`);
+    }
+  }
+  
+  /**
+   * Log metrics with special formatting
+   */
+  metrics(message: string, data?: any) {
+    if (this.shouldLog(LogLevel.INFO)) {
+      const metricData = data ? ` | ${JSON.stringify(data)}` : '';
+      this.info(`📊 ${message}${metricData}`);
+    }
+  }
+  
+  /**
+   * Update logger configuration
+   */
+  updateConfig(config: { enableInProduction?: boolean; enableInDevelopment?: boolean }) {
+    // For compatibility with the simple logger interface
+    // The main logger uses LOG_LEVEL env var for configuration
+    if (config.enableInProduction !== undefined || config.enableInDevelopment !== undefined) {
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      const shouldEnable = isDevelopment ? config.enableInDevelopment : config.enableInProduction;
+      
+      if (shouldEnable !== undefined) {
+        this.currentLogLevel = shouldEnable ? LogLevel.DEBUG : LogLevel.ERROR;
+      }
+    }
+  }
 }
 
 export const logger = new Logger();
@@ -309,7 +359,63 @@ export const paymentLogger = logger.forService('PAYMENT');
 export const authLogger = logger.forService('AUTH');
 export const apiLogger = logger.forService('API');
 
-// Convenience functions for common use cases
+// =============================================================================
+// 🎯 SPECIALIZED LOGGER INSTANCES
+// =============================================================================
+
+// Performance logger - can be enabled in production for monitoring
+export const perfLogger = logger.forService('PERFORMANCE');
+
+// Error logger - always enabled  
+export const errorLogger = logger.forService('ERROR');
+
+// Debug logger - development focused
+export const debugLogger = logger.forService('DEBUG');
+
+// =============================================================================
+// 🚀 CONVENIENCE FUNCTIONS (LEGACY COMPATIBILITY)
+// =============================================================================
+
+// Legacy console.log replacement
+export const log = (...args: any[]) => logger.info(args.join(' '));
+
+// Development-only logging
+export const devLog = (...args: any[]) => debugLogger.info(args.join(' '));
+
+// Production-safe performance logging
+export const perfLog = (message: string, data?: any) => perfLogger.perf(message, data);
+
+// Always log errors
+export const errorLog = (message: string, error?: any) => errorLogger.error(message, error);
+
+// Conditional logging based on environment
+export const conditionalLog = (condition: boolean, message: string, ...args: any[]) => {
+  if (condition) {
+    logger.info(message, ...args);
+  }
+};
+
+// =============================================================================
+// 🎛️ CONFIGURATION HELPERS
+// =============================================================================
+
+export function configureLogging(config: {
+  enablePerformanceLogsInProduction?: boolean;
+  enableDebugLogsInProduction?: boolean;
+}) {
+  if (config.enablePerformanceLogsInProduction !== undefined) {
+    perfLogger.updateConfig({ enableInProduction: config.enablePerformanceLogsInProduction });
+  }
+  
+  if (config.enableDebugLogsInProduction !== undefined) {
+    debugLogger.updateConfig({ enableInProduction: config.enableDebugLogsInProduction });
+  }
+}
+
+// =============================================================================
+// 🔧 EXISTING CONVENIENCE FUNCTIONS
+// =============================================================================
+
 export const logGHLRequest = (endpoint: string, method: string, metadata?: Record<string, any>) => {
   ghlLogger.info(`GHL API Request: ${method} ${endpoint}`, metadata);
 };

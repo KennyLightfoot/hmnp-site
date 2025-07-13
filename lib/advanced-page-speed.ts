@@ -16,7 +16,7 @@
  */
 
 // Import logging utilities
-import { perfLogger, debugLogger, errorLogger } from '@/lib/utils/logger';
+import { perfLogger, debugLogger, errorLogger } from '@/lib/logger';
 
 // =============================================================================
 // 📊 PERFORMANCE CONFIGURATION
