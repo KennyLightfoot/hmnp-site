@@ -48,7 +48,7 @@ export default function Phase5TechnicalSEO() {
       // Initialize Core Web Vitals monitoring
       setStatus(prev => ({ ...prev, webVitals: 'loading' }));
       const webVitalsInit = await initializeWebVitalsMonitoring();
-      await webVitalsInit();
+      await webVitalsInit(); // This is now async
       setStatus(prev => ({ ...prev, webVitals: 'loaded' }));
       console.log('✅ Phase 5: Core Web Vitals optimization initialized');
 
