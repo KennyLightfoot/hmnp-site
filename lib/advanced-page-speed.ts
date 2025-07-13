@@ -121,8 +121,7 @@ export class ResourceOptimizer {
       'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2',
       
       // Hero images
-      '/hero-mobile-notary-houston.jpg',
-      '/hero-mobile-notary-houston.webp',
+      '/hero-background.jpg',
       
       // Critical icons
       '/favicon.ico',
@@ -673,6 +672,14 @@ export class PerformanceMonitor {
 // =============================================================================
 
 export async function initializeAdvancedPageSpeed(): Promise<void> {
+  // Singleton guard to prevent duplicate initialization
+  if (typeof window !== 'undefined' && (window as any).__advancedPageSpeedInitialized) {
+    return;
+  }
+  if (typeof window !== 'undefined') {
+    (window as any).__advancedPageSpeedInitialized = true;
+  }
+
   perfLogger.info('🚀 Initializing advanced page speed optimization...');
   
   try {

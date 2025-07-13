@@ -97,7 +97,7 @@ const SCHEMA_CONFIG: SchemaConfig = {
     url: 'https://houstonmobilenotarypros.com',
     logo: 'https://houstonmobilenotarypros.com/logo.png',
     image: [
-      'https://houstonmobilenotarypros.com/hero-mobile-notary-houston.jpg',
+              'https://houstonmobilenotarypros.com/hero-background.jpg',
       'https://houstonmobilenotarypros.com/notary-services-houston.jpg',
       'https://houstonmobilenotarypros.com/ron-services-houston.jpg'
     ],

@@ -63,6 +63,12 @@ let optimizationCallbacks: ((report: OptimizationReport) => void)[] = [];
 
 export async function initializeWebVitalsMonitoring() {
   if (typeof window === 'undefined') return;
+  
+  // Singleton guard to prevent duplicate initialization
+  if ((window as any).__webVitalsInitialized) {
+    return;
+  }
+  (window as any).__webVitalsInitialized = true;
 
   try {
     // Dynamic import to prevent server-side execution
@@ -134,7 +140,7 @@ export async function initializeWebVitalsMonitoring() {
       sendToAnalytics('ttfb', metric.value, metric.rating);
     });
   } catch (error) {
-    errorLogger.error('Failed to initialize web vitals monitoring:', error);
+    errorLogger.error('Failed to initialize web vitals monitoring:', error instanceof Error ? error : new Error(String(error)));
   }
 }
 
@@ -167,7 +173,7 @@ function preloadCriticalResources() {
   const heroPreload = document.createElement('link');
   heroPreload.rel = 'preload';
   heroPreload.as = 'image';
-  heroPreload.href = '/hero-mobile-notary-houston.jpg';
+  heroPreload.href = '/hero-background.jpg';
   head.appendChild(heroPreload);
   
   // Note: Removed hard-coded CSS preload as it causes 404s due to dynamic file names

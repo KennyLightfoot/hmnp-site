@@ -5,30 +5,24 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    // Log the web vitals metrics
-    logger.info('Web vitals metrics received:', 'WEB_VITALS', {
-      metric: body.metric,
-      value: body.value,
-      rating: body.rating,
-      url: body.url,
-      userAgent: body.userAgent?.substring(0, 100) // Truncate long user agents
-    });
+    // Log the performance metrics for now
+    logger.info('Performance metrics received:', 'ANALYTICS', body);
     
     // In the future, you could store these in Supabase:
     // await supabase.from('web_vitals').insert({
     //   metric: body.metric,
     //   value: body.value,
     //   rating: body.rating,
-    //   timestamp: new Date(body.timestamp),
+    //   timestamp: body.timestamp,
     //   url: body.url,
     //   user_agent: body.userAgent
     // });
     
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    logger.error('Failed to process web vitals metrics:', error instanceof Error ? error : new Error(String(error)));
+    logger.error('Failed to process performance metrics:', error instanceof Error ? error : new Error(String(error)));
     return NextResponse.json(
-      { error: 'Failed to process web vitals metrics' },
+      { error: 'Failed to process performance metrics' },
       { status: 500 }
     );
   }
