@@ -244,6 +244,306 @@ export const faqs: FAQ[] = [
     popular: true,
   },
 
+  // Additional Pricing Questions
+  {
+    id: "pricing-whats-included",
+    question: "What's included in your $75 base fee?",
+    answer: (
+      <div>
+        <p>Our $75 Standard Mobile Notary service includes:</p>
+        <div className="mt-2 space-y-2">
+          <div className="flex items-center p-2 bg-green-50 rounded">
+            <span className="text-green-600 mr-2">✓</span>
+            <span>Up to 2 documents notarized</span>
+          </div>
+          <div className="flex items-center p-2 bg-green-50 rounded">
+            <span className="text-green-600 mr-2">✓</span>
+            <span>1-2 signers included</span>
+          </div>
+          <div className="flex items-center p-2 bg-green-50 rounded">
+            <span className="text-green-600 mr-2">✓</span>
+            <span>Travel within 30 miles of Pearland (77591)</span>
+          </div>
+          <div className="flex items-center p-2 bg-green-50 rounded">
+            <span className="text-green-600 mr-2">✓</span>
+            <span>Professional service binder</span>
+          </div>
+          <div className="flex items-center p-2 bg-green-50 rounded">
+            <span className="text-green-600 mr-2">✓</span>
+            <span>All notarial acts (acknowledgments, jurats, oaths)</span>
+          </div>
+        </div>
+        <p className="mt-4 text-sm text-gray-600">
+          Additional documents are $5 each. Additional signers are $10 each beyond the first two.
+        </p>
+        <div className="mt-4 p-3 bg-blue-50 rounded-md">
+          <p className="text-sm text-blue-800">
+            <strong>Professional Service:</strong> Licensed, insured, and bonded notary with professional equipment.
+          </p>
+        </div>
+      </div>
+    ),
+    category: "pricing",
+    keywords: ["included", "base fee", "$75", "standard mobile", "what's included", "service package"],
+    relatedQuestions: ["pricing-standard", "travel-fees", "extra-documents"],
+    popular: true,
+  },
+
+  {
+    id: "pricing-travel-calculation",
+    question: "How do you calculate travel fees?",
+    answer: (
+      <div>
+        <p>Travel fees are calculated transparently based on distance from our base in Pearland (77591):</p>
+        <div className="mt-3 space-y-3">
+          <div className="p-3 border border-gray-200 rounded">
+            <h4 className="font-semibold text-green-700">Free Travel Zones</h4>
+            <ul className="mt-2 space-y-1 text-sm">
+              <li>• <strong>Quick-Stamp Local:</strong> 10 miles from 77591</li>
+              <li>• <strong>All Other Services:</strong> 30 miles from 77591</li>
+            </ul>
+          </div>
+          <div className="p-3 border border-gray-200 rounded">
+            <h4 className="font-semibold text-orange-700">Travel Fee Calculation</h4>
+            <p className="text-sm mt-2">
+              <strong>$0.50 per mile</strong> (one-way) beyond the free zone
+            </p>
+          </div>
+        </div>
+        <p className="mt-4">Examples:</p>
+        <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
+          <li><strong>Sugar Land (15 miles):</strong> No travel fee - within all free zones</li>
+          <li><strong>Houston Downtown (20 miles):</strong> No travel fee for Standard+ services</li>
+          <li><strong>Galveston (35 miles):</strong> $2.50 travel fee (5 miles beyond free zone)</li>
+          <li><strong>Katy (40 miles):</strong> $5.00 travel fee (10 miles beyond free zone)</li>
+        </ul>
+        <div className="mt-4 p-3 bg-yellow-50 rounded-md">
+          <p className="text-sm text-yellow-800">
+            <strong>Transparent Pricing:</strong> We use Google Maps to calculate distances and provide exact travel fees before booking.
+          </p>
+        </div>
+      </div>
+    ),
+    category: "pricing",
+    keywords: ["travel fee", "mileage", "distance", "calculation", "77591", "Pearland", "free travel"],
+    relatedQuestions: ["pricing-whats-included", "service-area"],
+    popular: true,
+  },
+
+  {
+    id: "pricing-hidden-fees",
+    question: "Are there any hidden fees I should know about?",
+    answer: (
+      <div>
+        <p className="text-green-700 font-semibold">No hidden fees - complete transparency guaranteed!</p>
+        <p className="mt-2">All fees are disclosed upfront, including:</p>
+        <div className="mt-3 space-y-2">
+          <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+            <span>Base Service Fee</span>
+            <span className="font-semibold">Clear from start</span>
+          </div>
+          <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+            <span>Travel Fee (if applicable)</span>
+            <span className="font-semibold">$0.50/mile beyond free zone</span>
+          </div>
+          <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+            <span>Time-Based Fees</span>
+            <span className="font-semibold">Disclosed when booking</span>
+          </div>
+          <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+            <span>Additional Services</span>
+            <span className="font-semibold">Optional, priced clearly</span>
+          </div>
+        </div>
+        <p className="mt-4">Common additional fees (always disclosed):</p>
+        <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
+          <li>Same-day service: +$25</li>
+          <li>Weekend service: +$40</li>
+          <li>Extra documents: $5-$10 each</li>
+          <li>Extra signers: $10 each</li>
+        </ul>
+        <div className="mt-4 p-3 bg-green-50 rounded-md">
+          <p className="text-sm text-green-800">
+            <strong>Our Promise:</strong> The price we quote is the price you pay. No surprises, no hidden charges.
+          </p>
+        </div>
+      </div>
+    ),
+    category: "pricing",
+    keywords: ["hidden fees", "transparency", "no hidden charges", "upfront pricing", "disclosed fees"],
+    relatedQuestions: ["pricing-whats-included", "pricing-travel-calculation"],
+    popular: true,
+  },
+
+  {
+    id: "pricing-service-comparison",
+    question: "When should I choose Standard vs. Extended Hours service?",
+    answer: (
+      <div>
+        <p>Choose the service that best fits your needs and schedule:</p>
+        <div className="mt-3 space-y-4">
+          <div className="p-3 border border-blue-200 rounded bg-blue-50">
+            <h4 className="font-semibold text-blue-800">Standard Mobile Notary ($75)</h4>
+            <p className="text-sm text-blue-700 mt-1">Best for routine documents during business hours</p>
+            <ul className="mt-2 text-sm space-y-1">
+              <li>• Up to 2 documents, 1-2 signers</li>
+              <li>• Monday-Friday, 9am-5pm</li>
+              <li>• Standard scheduling (24-48 hours notice)</li>
+              <li>• Perfect for: POAs, affidavits, business docs</li>
+            </ul>
+          </div>
+          <div className="p-3 border border-orange-200 rounded bg-orange-50">
+            <h4 className="font-semibold text-orange-800">Extended Hours Mobile ($100)</h4>
+            <p className="text-sm text-orange-700 mt-1">Best for urgent needs and flexible scheduling</p>
+            <ul className="mt-2 text-sm space-y-1">
+              <li>• Up to 5 documents, 2 signers</li>
+              <li>• 7am-9pm daily (including weekends)</li>
+              <li>• 2-hour response time</li>
+              <li>• Perfect for: Urgent docs, evening/weekend needs</li>
+            </ul>
+          </div>
+        </div>
+        <p className="mt-4 text-sm text-gray-600">
+          <strong>Need help deciding?</strong> Call us at (832) 617-4285 and we'll recommend the best service for your situation.
+        </p>
+      </div>
+    ),
+    category: "pricing",
+    keywords: ["service comparison", "standard vs extended", "choose service", "which service", "service selection"],
+    relatedQuestions: ["pricing-whats-included", "response-time"],
+    popular: true,
+  },
+
+  {
+    id: "pricing-loan-signing-worth",
+    question: "Is loan signing worth the extra cost?",
+    answer: (
+      <div>
+        <p>Absolutely! Our $150 Loan Signing service provides exceptional value for mortgage transactions:</p>
+        <div className="mt-3 space-y-3">
+          <div className="p-3 border border-green-200 rounded bg-green-50">
+            <h4 className="font-semibold text-green-800">What's Included ($150 flat fee)</h4>
+            <ul className="mt-2 text-sm space-y-1">
+              <li>• <strong>Unlimited loan documents</strong> (usually 80-150 pages)</li>
+              <li>• <strong>Up to 4 signers</strong> (borrowers, co-signers)</li>
+              <li>• <strong>90-minute appointment</strong> (no rush)</li>
+              <li>• <strong>Loan signing expertise</strong> (we know the docs)</li>
+              <li>• <strong>Professional closing binder</strong></li>
+              <li>• <strong>Title company coordination</strong></li>
+            </ul>
+          </div>
+          <div className="p-3 border border-red-200 rounded bg-red-50">
+            <h4 className="font-semibold text-red-800">Alternative Cost Comparison</h4>
+            <ul className="mt-2 text-sm space-y-1">
+              <li>• Standard service: $75 base + $5 per extra document</li>
+              <li>• 100 documents would cost: $75 + $490 = $565</li>
+              <li>• <strong>Loan signing saves you $415!</strong></li>
+            </ul>
+          </div>
+        </div>
+        <p className="mt-4 text-sm text-gray-600">
+          Plus, loan signings require specific expertise to ensure documents are completed correctly for your closing.
+        </p>
+        <div className="mt-4 p-3 bg-blue-50 rounded-md">
+          <p className="text-sm text-blue-800">
+            <strong>Bottom Line:</strong> Loan signing service provides better value, expertise, and peace of mind for mortgage transactions.
+          </p>
+        </div>
+      </div>
+    ),
+    category: "pricing",
+    keywords: ["loan signing worth it", "loan signing cost", "loan signing value", "mortgage notary", "closing cost"],
+    relatedQuestions: ["pricing-service-comparison", "loan-signing-service"],
+    popular: true,
+  },
+
+  {
+    id: "pricing-payment-plans",
+    question: "Do you offer payment plans for large services?",
+    answer: (
+      <div>
+        <p>Yes! We offer flexible payment options for larger services:</p>
+        <div className="mt-3 space-y-3">
+          <div className="p-3 border border-blue-200 rounded">
+            <h4 className="font-semibold text-blue-800">Payment Plans Available For:</h4>
+            <ul className="mt-2 text-sm space-y-1">
+              <li>• Services over $200</li>
+              <li>• Multiple appointment packages</li>
+              <li>• Business volume contracts</li>
+              <li>• Estate planning packages</li>
+            </ul>
+          </div>
+          <div className="p-3 border border-green-200 rounded">
+            <h4 className="font-semibold text-green-800">Payment Options</h4>
+            <ul className="mt-2 text-sm space-y-1">
+              <li>• <strong>Split payments:</strong> 50% booking, 50% completion</li>
+              <li>• <strong>Monthly plans:</strong> For ongoing business needs</li>
+              <li>• <strong>Cash, check, Venmo, Zelle</strong></li>
+              <li>• <strong>All major credit cards</strong></li>
+            </ul>
+          </div>
+        </div>
+        <p className="mt-4 text-sm text-gray-600">
+          Contact us at (832) 617-4285 to discuss payment plan options for your specific needs.
+        </p>
+        <div className="mt-4 p-3 bg-yellow-50 rounded-md">
+          <p className="text-sm text-yellow-800">
+            <strong>Business Clients:</strong> We offer NET 30 billing for established business relationships.
+          </p>
+        </div>
+      </div>
+    ),
+    category: "pricing",
+    keywords: ["payment plans", "financing", "split payments", "large services", "business billing"],
+    relatedQuestions: ["payment-methods", "business-services"],
+    popular: false,
+  },
+
+  {
+    id: "pricing-notary-vs-service-fees",
+    question: "What's the difference between notary fees and service fees?",
+    answer: (
+      <div>
+        <p>Great question! Texas law requires us to separate these fees:</p>
+        <div className="mt-3 space-y-3">
+          <div className="p-3 border border-blue-200 rounded bg-blue-50">
+            <h4 className="font-semibold text-blue-800">State-Regulated Notary Fees</h4>
+            <p className="text-sm text-blue-700 mt-1">Maximum fees set by Texas Government Code</p>
+            <ul className="mt-2 text-sm space-y-1">
+              <li>• Acknowledgments: $10 maximum per signature</li>
+              <li>• Jurats: $10 maximum per signature</li>
+              <li>• Oaths/Affirmations: $10 maximum</li>
+              <li>• Certified copies: $10 maximum</li>
+            </ul>
+          </div>
+          <div className="p-3 border border-orange-200 rounded bg-orange-50">
+            <h4 className="font-semibold text-orange-800">Mobile Service Fees</h4>
+            <p className="text-sm text-orange-700 mt-1">Market-based fees for additional services</p>
+            <ul className="mt-2 text-sm space-y-1">
+              <li>• Travel time and expenses</li>
+              <li>• Professional expertise</li>
+              <li>• Equipment and supplies</li>
+              <li>• Scheduling flexibility</li>
+              <li>• Insurance and bonding</li>
+            </ul>
+          </div>
+        </div>
+        <p className="mt-4 text-sm text-gray-600">
+          <strong>Example:</strong> Our $75 standard service includes $6-10 in notary fees plus $65-69 in service fees.
+        </p>
+        <div className="mt-4 p-3 bg-green-50 rounded-md">
+          <p className="text-sm text-green-800">
+            <strong>Full Transparency:</strong> We provide itemized receipts showing both fee types for your records.
+          </p>
+        </div>
+      </div>
+    ),
+    category: "pricing",
+    keywords: ["notary fees vs service fees", "Texas law", "state regulated", "itemized receipt", "fee breakdown"],
+    relatedQuestions: ["pricing-whats-included", "pricing-hidden-fees"],
+    popular: false,
+  },
+
   // Scheduling
   {
     id: "response-time",

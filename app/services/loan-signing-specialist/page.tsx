@@ -9,11 +9,11 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Loan Signing Agent Houston | Mortgage Notary | Real Estate Closing",
+  title: "Loan Signing Agent Houston | Pearland to Galveston | Mobile Mortgage Notary",
   description:
-    "Professional loan signing agent in Houston. Certified mortgage notary for closings, refinances, HELOCs. Mobile loan signing services available 24/7. Book today!",
+    "Certified loan signing agent serving Houston, Pearland, Sugar Land, Galveston & 25-mile radius. Mobile mortgage notary for closings, refinances, HELOCs. Same-day available!",
   keywords:
-    "loan signing agent Houston, mortgage notary, loan signing agent, real estate closing notary, mobile loan signing, certified loan signer, mortgage signing agent, HELOC notary, refinance notary, loan notary near me, closing agent Houston",
+    "loan signing agent Houston, loan signing agent Pearland, loan signing agent Sugar Land, mortgage notary Houston, mobile loan signing, certified loan signer, loan signing agent near me, Houston closing agent, 77591 loan signing, Galveston loan signing agent",
   alternates: {
     canonical: '/services/loan-signing-specialist',
   },

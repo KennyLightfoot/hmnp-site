@@ -10,7 +10,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Star, ThumbsUp, ExternalLink, Calendar, User } from 'lucide-react';
-import { IndividualReviewSchema, formatReviewForSchema, calculateAggregateRating } from '@/components/schema/IndividualReviewSchema';
+import IndividualReviewSchema, { formatReviewForSchema, calculateAggregateRating } from '@/components/schema/IndividualReviewSchema';
 
 interface Review {
   id: string;

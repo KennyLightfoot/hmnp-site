@@ -5,6 +5,8 @@ interface StructuredDataProps {
 }
 
 export function StructuredData({ nonce }: StructuredDataProps) {
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'
+  
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -18,16 +20,67 @@ export function StructuredData({ nonce }: StructuredDataProps) {
     priceRange: "$$",
     address: {
       "@type": "PostalAddress",
-      streetAddress: "3118 FM 528 Rd",
-      addressLocality: "Webster",
+      streetAddress: "Based in Pearland Area",
+      addressLocality: "Houston",
       addressRegion: "TX",
-      postalCode: "77598",
+      postalCode: "77591",
       addressCountry: "US",
     },
     geo: {
       "@type": "GeoCoordinates",
-      latitude: 29.53858,
-      longitude: -95.11935,
+      latitude: 29.5630556,
+      longitude: -95.2861111,
+    },
+    areaServed: [
+      {
+        "@type": "City",
+        "name": "Houston",
+        "sameAs": "https://en.wikipedia.org/wiki/Houston"
+      },
+      {
+        "@type": "City", 
+        "name": "Pearland",
+        "sameAs": "https://en.wikipedia.org/wiki/Pearland,_Texas"
+      },
+      {
+        "@type": "City",
+        "name": "Sugar Land", 
+        "sameAs": "https://en.wikipedia.org/wiki/Sugar_Land,_Texas"
+      },
+      {
+        "@type": "City",
+        "name": "Missouri City",
+        "sameAs": "https://en.wikipedia.org/wiki/Missouri_City,_Texas"
+      },
+      {
+        "@type": "City",
+        "name": "Galveston",
+        "sameAs": "https://en.wikipedia.org/wiki/Galveston,_Texas"
+      },
+      {
+        "@type": "City",
+        "name": "Stafford",
+        "sameAs": "https://en.wikipedia.org/wiki/Stafford,_Texas"
+      },
+      {
+        "@type": "City",
+        "name": "League City",
+        "sameAs": "https://en.wikipedia.org/wiki/League_City,_Texas"
+      },
+      {
+        "@type": "City",
+        "name": "Friendswood",
+        "sameAs": "https://en.wikipedia.org/wiki/Friendswood,_Texas"
+      }
+    ],
+    serviceArea: {
+      "@type": "GeoCircle",
+      "geoMidpoint": {
+        "@type": "GeoCoordinates",
+        "latitude": 29.5630556,
+        "longitude": -95.2861111
+      },
+      "geoRadius": "25 miles"
     },
     openingHoursSpecification: [
       {
@@ -138,10 +191,116 @@ export function StructuredData({ nonce }: StructuredDataProps) {
         name: "What areas does Houston Mobile Notary Pros serve?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "We serve Houston, Galveston, League City, Pearland, Sugar Land, and surrounding areas within a 50-mile radius of Webster, TX with mobile notary services at your location."
+          text: "We serve Houston, Pearland, Sugar Land, Missouri City, Galveston, Stafford, and surrounding areas within a 25-mile radius of 77591 with mobile notary services at your location."
+        }
+      },
+      {
+        "@type": "Question",
+        name: "How much does mobile notary service cost in Houston?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Mobile notary costs in Houston start at $75 for standard service, $100 for extended hours, and $150 for loan signing specialist services. RON (Remote Online Notarization) starts at $25. Transparent pricing with no hidden fees."
+        }
+      },
+      {
+        "@type": "Question",
+        name: "Do you charge travel fees for mobile notary service?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Travel is included within our 25-mile service area from 77591 (Pearland area). Additional travel fees of $0.50 per mile apply beyond 25 miles for Houston metro and Galveston corridor service."
+        }
+      },
+      {
+        "@type": "Question",
+        name: "What is the cost difference between mobile notary and office visits?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Mobile notary services cost more than office visits but provide significant value through time savings, convenience, and professional service at your location. No travel time, parking fees, or schedule disruption."
         }
       }
     ]
+  }
+
+  // Service-specific schema markup for better SERP features
+  const serviceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "@id": `${BASE_URL}/#mobile-notary-service`,
+    "name": "Mobile Notary Services Houston",
+    "description": "Professional mobile notary services throughout Houston metro area. We come to you for document notarization, loan signings, and emergency services.",
+    "serviceType": "Mobile Notary Public Services",
+    "areaServed": [
+      {
+        "@type": "City",
+        "name": "Houston",
+        "sameAs": "https://en.wikipedia.org/wiki/Houston"
+      },
+      {
+        "@type": "City",
+        "name": "Pearland",
+        "sameAs": "https://en.wikipedia.org/wiki/Pearland,_Texas"
+      },
+      {
+        "@type": "City",
+        "name": "Sugar Land",
+        "sameAs": "https://en.wikipedia.org/wiki/Sugar_Land,_Texas"
+      },
+      {
+        "@type": "City",
+        "name": "Galveston",
+        "sameAs": "https://en.wikipedia.org/wiki/Galveston,_Texas"
+      }
+    ],
+    "provider": {
+      "@type": "LocalBusiness",
+      "name": "Houston Mobile Notary Pros",
+      "url": BASE_URL
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "75",
+      "priceCurrency": "USD",
+      "description": "Starting price for mobile notary services including travel within 25-mile service area"
+    },
+    "additionalType": "https://schema.org/NotaryService"
+  }
+
+  const loanSigningSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "@id": `${BASE_URL}/#loan-signing-service`,
+    "name": "Loan Signing Agent Houston",
+    "description": "Certified loan signing agent services for real estate transactions. Mobile mortgage notary for closings, refinances, and HELOCs throughout Houston area.",
+    "serviceType": "Loan Signing Agent Services",
+    "areaServed": [
+      {
+        "@type": "City",
+        "name": "Houston",
+        "sameAs": "https://en.wikipedia.org/wiki/Houston"
+      },
+      {
+        "@type": "City",
+        "name": "Pearland",
+        "sameAs": "https://en.wikipedia.org/wiki/Pearland,_Texas"
+      },
+      {
+        "@type": "City",
+        "name": "Sugar Land",
+        "sameAs": "https://en.wikipedia.org/wiki/Sugar_Land,_Texas"
+      }
+    ],
+    "provider": {
+      "@type": "LocalBusiness",
+      "name": "Houston Mobile Notary Pros",
+      "url": BASE_URL
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "200",
+      "priceCurrency": "USD",
+      "description": "Starting price for comprehensive loan signing services including all documents and travel"
+    },
+    "additionalType": "https://schema.org/RealEstateService"
   }
 
   return (
@@ -157,6 +316,18 @@ export function StructuredData({ nonce }: StructuredDataProps) {
         type="application/ld+json"
         nonce={nonce}
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <Script
+        id="service-schema"
+        type="application/ld+json"
+        nonce={nonce}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+      />
+      <Script
+        id="loan-signing-schema"
+        type="application/ld+json"
+        nonce={nonce}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(loanSigningSchema) }}
       />
     </>
   )

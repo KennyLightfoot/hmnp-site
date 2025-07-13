@@ -6,11 +6,11 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Frequently Asked Questions | Houston Mobile Notary Pros",
+  title: "Notary Fees Houston | Mobile Notary Pricing | How Much Does Notarization Cost?",
   description:
-    "Find comprehensive answers to common questions about mobile notary services, document requirements, pricing, scheduling, and legal compliance for notarizations in Houston.",
+    "Mobile notary fees and pricing in Houston. Complete cost breakdown for notarization, loan signings, travel fees, and emergency services. Transparent pricing - no hidden charges.",
   keywords:
-    "mobile notary FAQ, notary questions, Houston notary services, loan signing FAQ, notary requirements, notary pricing, document notarization, Texas notary laws",
+    "notary fees Houston, mobile notary cost, notary pricing, how much does notarization cost, notary service fees, mobile notary rates, loan signing cost, notary prices near me, 77591 notary fees",
   alternates: {
     canonical: '/faq',
   },
