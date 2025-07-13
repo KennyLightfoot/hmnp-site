@@ -116,16 +116,15 @@ export class ResourceOptimizer {
     
     // Define critical resources for Houston Mobile Notary Pros
     // Note: Removed hard-coded Next.js assets as they cause 404s due to dynamic file names
+    // Only preload resources that are immediately needed for LCP
     this.criticalResources = [
-      // Critical fonts
+      // Critical fonts - only if used above the fold
       'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2',
       
-      // Hero images
-      '/hero-background.jpg',
+      // Hero images - only if displayed above the fold
+      '/hero-background.jpg'
       
-      // Critical icons
-      '/favicon.ico',
-      '/icons/icon-192x192.png'
+      // Note: Removed favicon and icons as they're not critical for LCP
     ];
     
     this.criticalResources.forEach(resource => {

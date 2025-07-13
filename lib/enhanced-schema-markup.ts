@@ -761,6 +761,14 @@ export class EnhancedSchemaMarkup {
 // =============================================================================
 
 export function initializeEnhancedSchemaMarkup(): void {
+  // Singleton guard to prevent duplicate initialization
+  if (typeof window !== 'undefined' && (window as any).__enhancedSchemaInitialized) {
+    return;
+  }
+  if (typeof window !== 'undefined') {
+    (window as any).__enhancedSchemaInitialized = true;
+  }
+
   console.log('🚀 Initializing enhanced schema markup...');
   
   const schemaMarkup = EnhancedSchemaMarkup.getInstance();

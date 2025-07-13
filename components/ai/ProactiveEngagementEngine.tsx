@@ -378,6 +378,26 @@ export default function ProactiveEngagementEngine({
     userBehavior.pageViews.length
   ]);
 
+  // Trigger engagement
+  const triggerEngagement = useCallback((trigger: EngagementTrigger) => {
+    if (triggeredEngagements.has(trigger.id)) return;
+    
+    setCurrentTrigger(trigger);
+    setShowEngagementPopup(true);
+    setTriggeredEngagements(prev => new Set([...prev, trigger.id]));
+    setLastTriggerTime(prev => new Map([...prev, [trigger.id, Date.now()]]));
+    
+    // Analytics tracking
+    onAnalytics('proactive_engagement_triggered', {
+      triggerId: trigger.id,
+      triggerName: trigger.name,
+      priority: trigger.priority,
+      userBehavior,
+      abTestVariant,
+      conversionWeight: trigger.conversionWeight
+    });
+  }, [triggeredEngagements, onAnalytics, userBehavior.engagementScore, userBehavior.timeOnPage, abTestVariant]);
+
   // Trigger evaluation
   useEffect(() => {
     const evaluateTriggers = () => {
@@ -405,27 +425,7 @@ export default function ProactiveEngagementEngine({
 
     const evaluationInterval = setInterval(evaluateTriggers, 2000); // Check every 2 seconds
     return () => clearInterval(evaluationInterval);
-  }, [userBehavior, abTestVariant, lastTriggerTime]);
-
-  // Trigger engagement
-  const triggerEngagement = useCallback((trigger: EngagementTrigger) => {
-    if (triggeredEngagements.has(trigger.id)) return;
-    
-    setCurrentTrigger(trigger);
-    setShowEngagementPopup(true);
-    setTriggeredEngagements(prev => new Set([...prev, trigger.id]));
-    setLastTriggerTime(prev => new Map([...prev, [trigger.id, Date.now()]]));
-    
-    // Analytics tracking
-    onAnalytics('proactive_engagement_triggered', {
-      triggerId: trigger.id,
-      triggerName: trigger.name,
-      priority: trigger.priority,
-      userBehavior,
-      abTestVariant,
-      conversionWeight: trigger.conversionWeight
-    });
-  }, [triggeredEngagements, onAnalytics, userBehavior, abTestVariant]);
+  }, [userBehavior.engagementScore, userBehavior.timeOnPage, userBehavior.exitIntentDetected, abTestVariant, lastTriggerTime, triggerEngagement]);
 
   // Handle engagement action
   const handleEngagementAction = useCallback((action: 'accept' | 'dismiss') => {

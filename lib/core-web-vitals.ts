@@ -179,14 +179,7 @@ function preloadCriticalResources() {
   // Note: Removed hard-coded CSS preload as it causes 404s due to dynamic file names
   // Next.js automatically handles critical CSS loading
   
-  // Preload critical fonts
-  const fontPreload = document.createElement('link');
-  fontPreload.rel = 'preload';
-  fontPreload.as = 'font';
-  fontPreload.type = 'font/woff2';
-  fontPreload.crossOrigin = 'anonymous';
-  fontPreload.href = 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2';
-  head.appendChild(fontPreload);
+  // Note: Font preloading is handled by advanced-page-speed.ts to avoid duplication
 }
 
 function optimizeImages() {
