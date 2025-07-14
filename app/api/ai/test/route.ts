@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { IntelligentAssistant } from '@/lib/ai/intelligent-assistant';
+import { sendChat } from '@/lib/vertex';
 
 /**
  * Test API route for Gemini AI integration
@@ -7,16 +7,12 @@ import { IntelligentAssistant } from '@/lib/ai/intelligent-assistant';
  * POST /api/ai/test - Customer inquiry test
  */
 
-const ai = new IntelligentAssistant();
+// No need to instantiate – we call sendChat directly
 
 export async function GET() {
   try {
-    const testResponse = await ai.handleCustomerInquiry(
-      "Hello, I need to schedule a notary appointment in Houston.",
-      {
-        sessionData: { source: 'test' }
-      }
-    );
+    const vertexResponse = await sendChat("Hello, I need to schedule a notary appointment in Houston.");
+    const testResponse = { response: vertexResponse.text };
 
     return NextResponse.json({
       success: true,
@@ -44,7 +40,8 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const response = await ai.handleCustomerInquiry(message, context || {});
+    const vertexRes = await sendChat(message);
+    const response = { response: vertexRes.text };
 
     return NextResponse.json({
       success: true,

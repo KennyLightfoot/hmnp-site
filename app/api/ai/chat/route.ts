@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { IntelligentAssistant } from '@/lib/ai/intelligent-assistant';
+import { sendChat } from '@/lib/vertex';
 import { ConversationTracker } from '@/lib/conversation-tracker';
 
-// Initialize AI assistant
-const aiAssistant = new IntelligentAssistant();
+// Vertex-based chat helper does not need initialisation
 
 /**
  * 🤖 AI Chat API - Universal Customer Assistant
@@ -34,8 +33,6 @@ interface ChatRequest {
   }>;
   customerId?: string;
 }
-
-const ai = new IntelligentAssistant();
 
 // Context-specific system prompts
 const CONTEXT_PROMPTS = {
@@ -133,8 +130,15 @@ export async function POST(request: NextRequest) {
     // Get context-specific system prompt
     const systemPrompt = CONTEXT_PROMPTS[context?.type || 'general'];
     
-    // Call AI with enhanced context
-    const aiResponse = await aiAssistant.handleCustomerInquiry(message, enhancedContext);
+    // Call Vertex AI via sendChat
+    const vertexResult = await sendChat(message);
+    const aiResponse = {
+      response: vertexResult.text || 'Sorry, I could not process that.',
+      confidence: 1,
+      intent: 'unknown',
+      suggestedActions: [],
+      escalationRequired: false
+    };
     
     // Track conversation if we have customer info
     if (customerId) {
