@@ -33,3 +33,13 @@ updates:
     allow:
       - dependency-type: "production"
       - dependency-type: "development"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:30"
+      timezone: "America/Chicago"
+    reviewers:
+      - "KennyLightfoot"
+    open-pull-requests-limit: 5

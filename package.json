@@ -36,6 +36,7 @@
     "prisma:seed": "pnpm dotenv -e .env -- prisma db seed",
     "setup:booking": "node --loader ts-node/esm scripts/setup-booking-system.ts",
     "postinstall": "prisma generate",
+    "prepare": "husky install",
     "db:migrate": "dotenv -e .env.local -- prisma migrate deploy",
     "db:seed": "dotenv -e .env.local -- prisma db seed",
     "setup-ghl-oauth": "node scripts/setup-ghl-oauth.js",
@@ -187,6 +188,7 @@
     "typescript": "5.7.2",
     "vite": "^6.3.5",
     "vite-tsconfig-paths": "^5.1.4",
+    "husky": "^9.0.10",
     "vitest": "^3.2.4",
     "webpack-bundle-analyzer": "^4.10.2"
   },
