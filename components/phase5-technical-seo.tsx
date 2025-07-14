@@ -37,8 +37,22 @@ export default function Phase5TechnicalSEO() {
   const [initializationComplete, setInitializationComplete] = useState(false);
 
   useEffect(() => {
-    // Initialize Phase 5 optimizations
-    initializePhase5Optimizations();
+    // Defer heavy initialization until the browser is idle (or next tick as fallback)
+    const run = () => initializePhase5Optimizations();
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      // @ts-ignore - requestIdleCallback is still experimental in TS lib
+      const id = (window as any).requestIdleCallback(run);
+      return () => {
+        // @ts-ignore - cancelIdleCallback may not exist in all browsers
+        if ((window as any).cancelIdleCallback) {
+          (window as any).cancelIdleCallback(id);
+        }
+      };
+    } else {
+      const id = setTimeout(run, 1);
+      return () => clearTimeout(id);
+    }
   }, []);
 
   const initializePhase5Optimizations = async () => {
