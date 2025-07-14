@@ -130,8 +130,8 @@ export async function POST(request: NextRequest) {
     // Get context-specific system prompt
     const systemPrompt = CONTEXT_PROMPTS[context?.type || 'general'];
     
-    // Call Vertex AI via sendChat
-    const vertexResult = await sendChat(message);
+    // Call Vertex AI via sendChat with system prompt and context
+    const vertexResult = await sendChat(message, systemPrompt, enhancedContext);
     const aiResponse = {
       response: vertexResult.text || 'Sorry, I could not process that.',
       confidence: 1,

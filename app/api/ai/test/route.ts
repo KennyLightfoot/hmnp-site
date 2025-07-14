@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const vertexRes = await sendChat(message);
+    const vertexRes = await sendChat(message, context?.systemPrompt, context);
     const response = { response: vertexRes.text };
 
     return NextResponse.json({

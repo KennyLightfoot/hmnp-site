@@ -29,7 +29,11 @@ const promptId = process.env.VERTEX_CHAT_PROMPT_ID;
 
 const apiEndpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/${model}:streamGenerateContent`;
 
-export async function sendChat(userPrompt: string): Promise<LLMResponse> {
+export async function sendChat(
+  userPrompt: string, 
+  systemPrompt?: string, 
+  context?: any
+): Promise<LLMResponse> {
   // Use service account credentials from environment
   const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
   if (!serviceAccountJson) {
@@ -44,29 +48,35 @@ export async function sendChat(userPrompt: string): Promise<LLMResponse> {
   const client = await auth.getClient();
   const accessToken = await client.getAccessToken();
 
-  const body = {
-    systemInstruction: { "reference": promptId },
+  // Build the request body
+  const body: any = {
     contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
     tools: [{
       citationSources: [{ corpus: corpus }]
     }],
     generationConfig: { 
       temperature: 0.3,
-      responseSchema: {
-        type: "object",
-        properties: {
-          serviceType: { type: "string", enum: ["RON", "Mobile", "LoanSigning"] },
-          meetingDate: { type: "string", format: "date" },
-          meetingTime: { type: "string" },
-          clientName: { type: "string" },
-          phone: { type: "string" },
-          email: { type: "string" },
-          address: { type: "string" }
-        },
-        required: ["serviceType", "meetingDate", "meetingTime", "clientName", "phone"]
-      }
+      maxOutputTokens: 1000
     }
   };
+
+  // Add system instruction - prefer custom systemPrompt over default promptId
+  if (systemPrompt) {
+    body.systemInstruction = { 
+      parts: [{ text: systemPrompt }] 
+    };
+  } else if (promptId) {
+    body.systemInstruction = { "reference": promptId };
+  }
+
+  // Add context as additional parts if provided
+  if (context) {
+    const contextText = `Context: ${JSON.stringify(context, null, 2)}`;
+    body.contents[0].parts.push({ text: contextText });
+  }
+
+  // Remove the structured response schema for now - it's too restrictive for general chat
+  // body.generationConfig.responseSchema = { ... }
 
   const res = await fetch(apiEndpoint, {
     method: 'POST',
