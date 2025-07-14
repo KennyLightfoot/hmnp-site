@@ -25,6 +25,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
+    "test": "vitest",
     "script:set-admin-password": "node --loader ts-node/esm scripts/set-admin-password.ts",
     "db:analyze": "node scripts/analyze-db-usage.cjs",
     "db:cleanup": "node scripts/cleanup-database.cjs",

@@ -478,3 +478,18 @@ Based on the workflow guide implementation:
 ---
 
 **🎉 Your Houston Mobile Notary business now has the most advanced automation system in the industry!**# CodeRabbit Health Check Investigation
+
+## Chatbot + Booking Integration
+
+This app exposes a `/api/chat` endpoint that streams responses from Vertex AI with RAG support. When the model returns structured booking data it is forwarded to `/api/booking` which validates the payload and schedules the appointment.
+
+1. **/api/chat** – POST `{ user: string }` and receive Server‑Sent Events.
+2. **/api/booking** – POST booking JSON. Required fields are `serviceType`, `meetingDate`, `meetingTime`, `clientName` and `phone`.
+
+Logs are written to `logs/vertex.log` and `logs/bookings.log`.
+
+Run tests with:
+
+```bash
+pnpm test
+```
