@@ -42,12 +42,54 @@ This API server implements the comprehensive workflow automation system outlined
 - Comprehensive audit logging
 - CORS and Helmet security
 
+## 🤖 **Chatbot + Booking Integration**
+
+### **Vertex-AI RAG Chatbot System**
+The application features a sophisticated AI-powered chatbot that integrates with Google Cloud Vertex AI and provides intelligent booking assistance.
+
+#### **Features**
+- **RAG (Retrieval-Augmented Generation)** - Uses `hmnp-notary-corpus` for accurate, context-aware responses
+- **Structured Output** - Automatically extracts booking information from conversations
+- **Real-time Streaming** - Server-Sent Events for smooth chat experience
+- **Mobile Optimized** - Touch-friendly interface with voice input support
+- **Proactive Engagement** - Context-aware suggestions based on user behavior
+
+#### **Architecture**
+- **Vertex AI Model**: `gemini-2.5-flash` with custom prompt template `hmnp_constitution_v1`
+- **RAG Corpus**: `hmnp-notary-corpus` in `us-central1` region
+- **Storage**: Document corpus in `gs://hmnp-rag-docs/`
+- **Structured Schema**: JSON schema for booking extraction
+
+#### **API Endpoints**
+- `POST /api/chat` - Streaming chat interface with booking detection
+- `POST /api/booking` - Processes extracted booking information
+- Automatic integration with Prisma database and GoHighLevel calendar
+
+#### **Environment Variables**
+```bash
+GOOGLE_PROJECT_ID=august-valor-444600-r7
+GOOGLE_REGION=us-central1
+VERTEX_CHAT_PROMPT_ID=hmnp_constitution_v1
+VERTEX_RAG_CORPUS=hmnp-notary-corpus
+VERTEX_MODEL_ID=gemini-2.5-flash
+GHLCAL_API_KEY=your_ghl_calendar_api_key
+GHLCAL_LOCATION_ID=your_ghl_calendar_location_id
+```
+
+#### **Usage**
+1. User chats with AI assistant on any page
+2. AI provides helpful responses using RAG knowledge base
+3. When booking intent is detected, structured JSON is extracted
+4. Booking is automatically validated and saved to database
+5. Calendar appointment is created in GoHighLevel
+
 ## 📋 **Quick Start**
 
 ### **Prerequisites**
 - Node.js >= 18.0.0
 - Neon PostgreSQL database
 - pnpm package manager (already configured)
+- Google Cloud Project with Vertex AI enabled
 - GoHighLevel account with API access
 - (Optional) Stripe account for payment processing
 

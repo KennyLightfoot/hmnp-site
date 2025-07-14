@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { createAppointment } from '@/lib/ghl/api';
 import fs from 'fs';
 
-const BookingSchema = z.object({
+export const BookingSchema = z.object({
   serviceType: z.enum(['RON', 'Mobile', 'LoanSigning']),
   meetingDate: z.string(),
   meetingTime: z.string(),
@@ -15,8 +15,12 @@ const BookingSchema = z.object({
 });
 
 function logBooking(message: string) {
-  fs.mkdirSync('logs', { recursive: true });
-  fs.appendFileSync('logs/bookings.log', message + '\n');
+  try {
+    fs.mkdirSync('logs', { recursive: true });
+    fs.appendFileSync('logs/bookings.log', `${new Date().toISOString()} - ${message}\n`);
+  } catch (error) {
+    console.error('Failed to write to booking log:', error);
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -29,9 +33,24 @@ export async function POST(req: NextRequest) {
 
   const iso = new Date(`${data.meetingDate}T${data.meetingTime}`);
 
+  // Map service types to actual service IDs
+  const serviceTypeMap = {
+    'RON': 'ron-services-005',
+    'Mobile': 'standard-notary-002',
+    'LoanSigning': 'loan-signing-004'
+  };
+  
+  const serviceId = serviceTypeMap[data.serviceType as keyof typeof serviceTypeMap];
+  if (!serviceId) {
+    return new Response(JSON.stringify({ 
+      ok: false, 
+      error: `Invalid service type: ${data.serviceType}` 
+    }), { status: 400 });
+  }
+
   const booking = await prisma.booking.create({
     data: {
-      serviceId: data.serviceType,
+      serviceId: serviceId,
       customerEmail: data.email,
       addressStreet: data.address,
       scheduledDateTime: iso,
