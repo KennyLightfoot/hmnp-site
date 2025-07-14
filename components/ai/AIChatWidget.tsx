@@ -56,6 +56,17 @@ interface PageContext {
   metadata?: Record<string, any>;
 }
 
+interface LocationContext {
+  zipCode?: string;
+  address?: string;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+  preferredDateTime?: string;
+  serviceType?: string;
+}
+
 interface AIChatWidgetProps {
   className?: string;
   initialMessage?: string;
@@ -88,7 +99,9 @@ export default function AIChatWidget({
   const [isListening, setIsListening] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [context, setContext] = useState<PageContext>();
+  const [locationContext, setLocationContext] = useState<LocationContext>({});
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   
   // Phase 4: Mobile optimization state
   const [isMobile, setIsMobile] = useState(false);
@@ -98,6 +111,73 @@ export default function AIChatWidget({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
+
+  // Location detection functions
+  const detectLocation = useCallback(async () => {
+    if ('geolocation' in navigator) {
+      try {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 300000 // 5 minutes
+          });
+        });
+        
+        const { latitude, longitude } = position.coords;
+        setLocationContext(prev => ({
+          ...prev,
+          coordinates: { latitude, longitude }
+        }));
+        
+        // Reverse geocode to get ZIP code
+        try {
+          const response = await fetch(`/api/geocode?lat=${latitude}&lng=${longitude}`);
+          const data = await response.json();
+          if (data.zipCode) {
+            setLocationContext(prev => ({
+              ...prev,
+              zipCode: data.zipCode,
+              address: data.address
+            }));
+          }
+        } catch (error) {
+          console.warn('Failed to reverse geocode:', error);
+        }
+      } catch (error) {
+        console.warn('Geolocation failed:', error);
+        setShowLocationPrompt(true);
+      }
+    } else {
+      setShowLocationPrompt(true);
+    }
+  }, []);
+
+  // Check if message contains scheduling intent
+  const containsSchedulingIntent = (message: string): boolean => {
+    const schedulingKeywords = [
+      'appointment', 'schedule', 'book', 'available', 'time', 'date',
+      'tomorrow', 'today', 'next week', 'monday', 'tuesday', 'wednesday',
+      'thursday', 'friday', 'saturday', 'sunday', 'morning', 'afternoon',
+      'evening', 'come to', 'visit', 'meet', 'when can'
+    ];
+    
+    return schedulingKeywords.some(keyword => 
+      message.toLowerCase().includes(keyword.toLowerCase())
+    );
+  };
+
+  // Check if message contains location intent
+  const containsLocationIntent = (message: string): boolean => {
+    const locationKeywords = [
+      'zip', 'address', 'location', 'come to', 'visit', 'travel',
+      'distance', 'miles', 'far', 'close', 'near', 'area'
+    ];
+    
+    return locationKeywords.some(keyword => 
+      message.toLowerCase().includes(keyword.toLowerCase())
+    );
+  };
   
   // Detect page context and mobile
   useEffect(() => {
@@ -203,6 +283,12 @@ export default function AIChatWidget({
     setHasInteracted(true);
     setIsLoading(true);
     
+    // Check if we need location data for this message
+    const needsLocation = containsLocationIntent(content) || containsSchedulingIntent(content);
+    if (needsLocation && !locationContext.zipCode && !locationContext.coordinates) {
+      await detectLocation();
+    }
+    
     // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -222,6 +308,7 @@ export default function AIChatWidget({
         body: JSON.stringify({
           message: content,
           context: context,
+          locationContext: locationContext,
           sessionId: `chat-${Date.now()}`,
           conversationHistory: messages.slice(-5) // Last 5 messages for context
         })
@@ -262,7 +349,7 @@ export default function AIChatWidget({
     } finally {
       setIsLoading(false);
     }
-  }, [context, messages]);
+  }, [context, messages, locationContext, containsLocationIntent, containsSchedulingIntent, detectLocation]);
   
   // Handle quick actions
   const handleQuickAction = useCallback(async (actionId: string) => {

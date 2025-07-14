@@ -24,6 +24,16 @@ interface ChatRequest {
     intent: 'discovery' | 'comparison' | 'conversion' | 'support' | 'connection' | 'assistance';
     metadata?: Record<string, any>;
   };
+  locationContext?: {
+    zipCode?: string;
+    address?: string;
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
+    preferredDateTime?: string;
+    serviceType?: string;
+  };
   sessionId?: string;
   conversationHistory?: Array<{
     id: string;
@@ -103,7 +113,7 @@ const CONTEXT_PROMPTS = {
 export async function POST(request: NextRequest) {
   try {
     const body: ChatRequest = await request.json();
-    const { message, context, sessionId, conversationHistory, customerId } = body;
+    const { message, context, locationContext, sessionId, conversationHistory, customerId } = body;
     
     if (!message || !message.trim()) {
       return NextResponse.json({
@@ -117,6 +127,7 @@ export async function POST(request: NextRequest) {
       pageContext: context?.type || 'general',
       currentPath: context?.path || '/',
       userIntent: context?.intent || 'assistance',
+      locationContext: locationContext,
       conversationHistory: conversationHistory || [],
       sessionId: sessionId || `session-${Date.now()}`,
       customerId: customerId,
