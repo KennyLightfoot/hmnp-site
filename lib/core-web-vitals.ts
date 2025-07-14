@@ -167,19 +167,9 @@ function optimizeLCP() {
 function preloadCriticalResources() {
   if (typeof window === 'undefined') return;
   
-  const head = document.head;
-  
-  // Preload hero image
-  const heroPreload = document.createElement('link');
-  heroPreload.rel = 'preload';
-  heroPreload.as = 'image';
-  heroPreload.href = '/hero-background.jpg';
-  head.appendChild(heroPreload);
-  
+  // Note: Hero image and font preloading are handled by advanced-page-speed.ts to avoid duplication
   // Note: Removed hard-coded CSS preload as it causes 404s due to dynamic file names
   // Next.js automatically handles critical CSS loading
-  
-  // Note: Font preloading is handled by advanced-page-speed.ts to avoid duplication
 }
 
 function optimizeImages() {

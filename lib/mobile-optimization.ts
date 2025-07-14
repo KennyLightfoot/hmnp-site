@@ -549,6 +549,14 @@ function sendMobilePerformanceData(data: any): void {
 // =============================================================================
 
 export function initializeMobileOptimization(): void {
+  // Singleton guard to prevent duplicate initialization
+  if (typeof window !== 'undefined' && (window as any).__mobileOptimizationInitialized) {
+    return;
+  }
+  if (typeof window !== 'undefined') {
+    (window as any).__mobileOptimizationInitialized = true;
+  }
+
   console.log('🚀 Initializing mobile optimization system...');
   
   const device = detectMobileDevice();

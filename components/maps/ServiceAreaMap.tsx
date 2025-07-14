@@ -107,22 +107,43 @@ export default function ServiceAreaMap({
               setSelectedLocation(locationData)
               onLocationSelect(locationData)
               
-              // Add marker for selected location
-              new google.maps.Marker({
-                position: e.latLng,
-                map,
-                title: `${address} - ${result.distance.miles.toFixed(1)} miles`,
-                icon: {
-                  url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                    <svg width="32" height="40" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M16 0C7.164 0 0 7.164 0 16c0 8.836 16 24 16 24s16-15.164 16-24c0-8.836-7.164-16-16-16z" fill="${locationData.isWithinServiceArea ? '#22c55e' : '#ef4444'}"/>
-                      <circle cx="16" cy="16" r="8" fill="white"/>
-                    </svg>
-                  `)}`,
-                  scaledSize: new google.maps.Size(32, 40),
-                  anchor: new google.maps.Point(16, 40)
-                }
-              })
+              // Add marker for selected location using modern AdvancedMarkerElement
+              if (google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
+                // Create a custom marker element
+                const markerContent = document.createElement('div');
+                markerContent.innerHTML = `
+                  <svg width="32" height="40" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 0C7.164 0 0 7.164 0 16c0 8.836 16 24 16 24s16-15.164 16-24c0-8.836-7.164-16-16-16z" fill="${locationData.isWithinServiceArea ? '#22c55e' : '#ef4444'}"/>
+                    <circle cx="16" cy="16" r="8" fill="white"/>
+                  </svg>
+                `;
+                markerContent.style.cursor = 'pointer';
+                markerContent.title = `${address} - ${result.distance.miles.toFixed(1)} miles`;
+
+                new google.maps.marker.AdvancedMarkerElement({
+                  position: e.latLng,
+                  map,
+                  content: markerContent,
+                  title: `${address} - ${result.distance.miles.toFixed(1)} miles`
+                });
+              } else {
+                // Fallback to legacy Marker for older browsers
+                new google.maps.Marker({
+                  position: e.latLng,
+                  map,
+                  title: `${address} - ${result.distance.miles.toFixed(1)} miles`,
+                  icon: {
+                    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+                      <svg width="32" height="40" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 0C7.164 0 0 7.164 0 16c0 8.836 16 24 16 24s16-15.164 16-24c0-8.836-7.164-16-16-16z" fill="${locationData.isWithinServiceArea ? '#22c55e' : '#ef4444'}"/>
+                        <circle cx="16" cy="16" r="8" fill="white"/>
+                      </svg>
+                    `)}`,
+                    scaledSize: new google.maps.Size(32, 40),
+                    anchor: new google.maps.Point(16, 40)
+                  }
+                });
+              }
             }
           } catch (error) {
             console.error('Location selection failed:', error)

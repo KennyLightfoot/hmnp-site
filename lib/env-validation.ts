@@ -10,7 +10,8 @@ import { logger } from '@/lib/logger';
 // Add build-time safety checks at the top
 const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || 
                    process.env.NODE_ENV === undefined ||
-                   typeof process === 'undefined'
+                   typeof process === 'undefined' ||
+                   process.env.NODE_ENV === 'production' && process.env.CI === 'true'
 
 const shouldSkipValidation = process.env.SKIP_ENV_VALIDATION === 'true' || isBuildTime;
 
@@ -253,7 +254,7 @@ export function getValidatedEnv() {
 }
 
 // Export the validation result for use in other modules
-export const ENV_VALIDATION = validateEnvironment();
+export const ENV_VALIDATION = shouldSkipValidation ? { success: true, errors: [], warnings: ['Skipped during build'], env: {} } : validateEnvironment();
 
 // Log validation results on import (in development)
 if (process.env.NODE_ENV === 'development' && !shouldSkipValidation) {

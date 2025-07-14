@@ -92,7 +92,9 @@ export class ResourceOptimizer {
   }
 
   initialize(): void {
-    perfLogger.info('🚀 Initializing resource optimizer...');
+    perfLogger.info('🚀 Initializing resource optimizer...', { 
+      config: PERFORMANCE_CONFIG.optimization 
+    });
     
     if (PERFORMANCE_CONFIG.optimization.enablePreloading) {
       this.preloadCriticalResources();
@@ -112,7 +114,9 @@ export class ResourceOptimizer {
   }
 
   private preloadCriticalResources(): void {
-    perfLogger.info('📦 Preloading critical resources...');
+    perfLogger.info('📦 Preloading critical resources...', { 
+      count: this.criticalResources.length 
+    });
     
     // Define critical resources for Houston Mobile Notary Pros
     // Note: Removed hard-coded Next.js assets as they cause 404s due to dynamic file names
@@ -709,12 +713,3 @@ if (typeof window !== 'undefined') {
     initializeAdvancedPageSpeed();
   }
 }
-
-// Auto-initialize when DOM is ready
-if (typeof window !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeAdvancedPageSpeed);
-  } else {
-    initializeAdvancedPageSpeed();
-  }
-} 

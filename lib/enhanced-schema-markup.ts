@@ -789,12 +789,3 @@ if (typeof window !== 'undefined') {
     initializeEnhancedSchemaMarkup();
   }
 }
-
-// Auto-initialize when DOM is ready
-if (typeof window !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeEnhancedSchemaMarkup);
-  } else {
-    initializeEnhancedSchemaMarkup();
-  }
-} 

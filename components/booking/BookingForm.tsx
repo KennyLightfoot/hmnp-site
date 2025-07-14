@@ -55,6 +55,7 @@ import AIBookingAssistant from './AIBookingAssistant';
 // Import transparent pricing components
 import { useBookingPricing } from '../../hooks/use-transparent-pricing';
 import { CompactPricingDisplay } from './EnhancedPricingDisplay';
+import InteractivePricingCalculator from './InteractivePricingCalculator';
 
 // Business Rules Integration
 import { validateBusinessRules } from '../../lib/business-rules/engine';
@@ -432,10 +433,15 @@ export default function BookingForm({
   const currentStepData = BOOKING_STEPS[currentStep];
 
   return (
-    <div className={`w-full max-w-4xl mx-auto space-y-4 md:space-y-6 ${className}`}>
+    <div className={`w-full max-w-7xl mx-auto space-y-4 md:space-y-6 ${className}`}>
       
-      {/* 🚀 ENHANCED PROGRESS INDICATOR - MOBILE OPTIMIZED */}
-      <Card className="border-gray-200 shadow-sm">
+      {/* 🚀 PHASE 1: TWO-COLUMN LAYOUT WITH INTERACTIVE PRICING */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* LEFT COLUMN: BOOKING FORM */}
+        <div className="lg:col-span-2 space-y-4 md:space-y-6">
+          
+          {/* 🚀 ENHANCED PROGRESS INDICATOR - MOBILE OPTIMIZED */}
+          <Card className="border-gray-200 shadow-sm">
         <CardContent className="p-4 md:p-6">
           {/* Mobile Progress Bar */}
           <div className="md:hidden">
@@ -823,6 +829,29 @@ export default function BookingForm({
           }
         }}
       />
+      
+      </div>
+      
+      {/* RIGHT COLUMN: INTERACTIVE PRICING CALCULATOR */}
+      <div className="lg:col-span-1">
+        <div className="sticky top-4">
+          <InteractivePricingCalculator
+            serviceType={watchedValues.serviceType}
+            address={watchedValues.location?.address}
+            scheduledDateTime={watchedValues.scheduling?.preferredDate && watchedValues.scheduling?.preferredTime ? 
+              `${watchedValues.scheduling.preferredDate} ${watchedValues.scheduling.preferredTime}` : 
+              undefined}
+            onPricingChange={(breakdown) => {
+              console.log('💰 Interactive pricing updated:', breakdown);
+              // Could integrate with form state if needed
+            }}
+            isMobile={isMobile}
+            className="w-full"
+          />
+        </div>
+      </div>
+      
+      </div>
     </div>
   );
 }

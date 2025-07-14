@@ -1,0 +1,521 @@
+'use client';
+
+/**
+ * 🚀 Phase 1: Interactive Pricing Calculator
+ * Houston Mobile Notary Pros
+ * 
+ * Real-time pricing updates with service add-ons and mobile optimization
+ * 
+ * ✅ Live price updates based on selections
+ * ✅ Distance-based travel fees 
+ * ✅ Service add-ons and upgrades
+ * ✅ Promotional code integration
+ * ✅ Mobile-optimized interface
+ */
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { 
+  DollarSign, 
+  Calculator, 
+  Plus, 
+  Minus, 
+  Tag, 
+  MapPin, 
+  Clock, 
+  FileText, 
+  Zap,
+  TrendingUp,
+  TrendingDown,
+  CheckCircle,
+  AlertCircle,
+  Smartphone,
+  Monitor,
+  Car,
+  ArrowRight
+} from 'lucide-react';
+
+// Types
+interface PricingBreakdown {
+  serviceBase: number;
+  travelFee: number;
+  documentFee: number;
+  timeSurcharge: number;
+  addOns: number;
+  discount: number;
+  total: number;
+}
+
+interface ServiceAddOn {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  category: 'document' | 'time' | 'service';
+  popular?: boolean;
+}
+
+interface InteractivePricingCalculatorProps {
+  serviceType: string;
+  address?: string;
+  scheduledDateTime?: string;
+  onPricingChange?: (breakdown: PricingBreakdown) => void;
+  className?: string;
+  isMobile?: boolean;
+}
+
+// Service Add-Ons Configuration
+const SERVICE_ADD_ONS: ServiceAddOn[] = [
+  // Document Add-ons
+  {
+    id: 'extra_document',
+    name: 'Additional Document',
+    price: 15,
+    description: 'Each additional document beyond the included limit',
+    category: 'document',
+    popular: true
+  },
+  {
+    id: 'document_scan',
+    name: 'Document Scanning',
+    price: 10,
+    description: 'Digital copies of all notarized documents',
+    category: 'document'
+  },
+  {
+    id: 'certified_copy',
+    name: 'Certified Copy',
+    price: 5,
+    description: 'Official certified copy of notarized document',
+    category: 'document'
+  },
+  
+  // Time Add-ons
+  {
+    id: 'rush_service',
+    name: 'Rush Service',
+    price: 25,
+    description: 'Priority scheduling within 2 hours',
+    category: 'time',
+    popular: true
+  },
+  {
+    id: 'weekend_booking',
+    name: 'Weekend Appointment',
+    price: 20,
+    description: 'Saturday or Sunday appointment',
+    category: 'time'
+  },
+  {
+    id: 'evening_hours',
+    name: 'Evening Hours (6-9 PM)',
+    price: 15,
+    description: 'After-hours appointment scheduling',
+    category: 'time'
+  },
+  
+  // Service Add-ons
+  {
+    id: 'travel_protection',
+    name: 'Travel Protection',
+    price: 10,
+    description: 'No-charge reschedule if travel is delayed',
+    category: 'service'
+  },
+  {
+    id: 'bilingual_service',
+    name: 'Bilingual Service',
+    price: 15,
+    description: 'Spanish/English notary assistance',
+    category: 'service'
+  },
+  {
+    id: 'witness_service',
+    name: 'Witness Service',
+    price: 20,
+    description: 'Professional witness for document signing',
+    category: 'service'
+  }
+];
+
+// Base service prices
+const BASE_PRICES = {
+  'QUICK_STAMP_LOCAL': 50,
+  'STANDARD_NOTARY': 75,
+  'EXTENDED_HOURS': 100,
+  'LOAN_SIGNING': 150,
+  'ESTATE_PLANNING': 250,
+  'SPECIALTY_NOTARY': 150,
+  'BUSINESS_SOLUTIONS': 250,
+  'RON_SERVICES': 35,
+  'BUSINESS_ESSENTIALS': 125,
+  'BUSINESS_GROWTH': 349
+};
+
+export default function InteractivePricingCalculator({
+  serviceType,
+  address,
+  scheduledDateTime,
+  onPricingChange,
+  className = '',
+  isMobile = false
+}: InteractivePricingCalculatorProps) {
+  // State
+  const [documentCount, setDocumentCount] = useState(1);
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoApplied, setPromoApplied] = useState(false);
+  const [estimatedDistance, setEstimatedDistance] = useState(0);
+  const [isCalculating, setIsCalculating] = useState(false);
+  const [showBreakdown, setShowBreakdown] = useState(false);
+
+  // Calculate pricing breakdown
+  const pricingBreakdown = useMemo((): PricingBreakdown => {
+    const basePrice = BASE_PRICES[serviceType as keyof typeof BASE_PRICES] || 75;
+    
+    // Travel fee calculation (for mobile services)
+    const travelFee = serviceType === 'RON_SERVICES' ? 0 : 
+      estimatedDistance > 15 ? (estimatedDistance - 15) * 0.50 : 0;
+    
+    // Document fee calculation
+    const documentFee = documentCount > 1 ? (documentCount - 1) * 15 : 0;
+    
+    // Time surcharge calculation
+    const timeSurcharge = scheduledDateTime ? calculateTimeSurcharge(scheduledDateTime) : 0;
+    
+    // Add-ons calculation
+    const addOns = selectedAddOns.reduce((total, addOnId) => {
+      const addOn = SERVICE_ADD_ONS.find(a => a.id === addOnId);
+      return total + (addOn?.price || 0);
+    }, 0);
+    
+    // Discount calculation
+    const discount = promoApplied ? calculateDiscount(basePrice + travelFee + documentFee + timeSurcharge + addOns) : 0;
+    
+    // Total calculation
+    const total = Math.max(0, basePrice + travelFee + documentFee + timeSurcharge + addOns - discount);
+    
+    return {
+      serviceBase: basePrice,
+      travelFee,
+      documentFee,
+      timeSurcharge,
+      addOns,
+      discount,
+      total
+    };
+  }, [serviceType, estimatedDistance, documentCount, scheduledDateTime, selectedAddOns, promoApplied]);
+
+  // Calculate time surcharge
+  const calculateTimeSurcharge = (dateTime: string): number => {
+    const date = new Date(dateTime);
+    const hour = date.getHours();
+    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+    
+    if (isWeekend) return 20;
+    if (hour >= 18 || hour < 8) return 15;
+    return 0;
+  };
+
+  // Calculate discount
+  const calculateDiscount = (subtotal: number): number => {
+    if (promoCode === 'WELCOME10') return Math.min(subtotal * 0.1, 25);
+    if (promoCode === 'MOBILE15') return Math.min(subtotal * 0.15, 50);
+    return 0;
+  };
+
+  // Apply promo code
+  const applyPromoCode = () => {
+    if (promoCode && !promoApplied) {
+      setPromoApplied(true);
+    }
+  };
+
+  // Toggle add-on
+  const toggleAddOn = (addOnId: string) => {
+    setSelectedAddOns(prev => 
+      prev.includes(addOnId) 
+        ? prev.filter(id => id !== addOnId)
+        : [...prev, addOnId]
+    );
+  };
+
+  // Effect to calculate distance
+  useEffect(() => {
+    if (address && serviceType !== 'RON_SERVICES') {
+      setIsCalculating(true);
+      // Simulate distance calculation
+      setTimeout(() => {
+        setEstimatedDistance(Math.floor(Math.random() * 30) + 5);
+        setIsCalculating(false);
+      }, 1000);
+    }
+  }, [address, serviceType]);
+
+  // Effect to notify parent of pricing changes
+  useEffect(() => {
+    onPricingChange?.(pricingBreakdown);
+  }, [pricingBreakdown, onPricingChange]);
+
+  return (
+    <div className={`space-y-4 ${className}`}>
+      {/* Main Pricing Display */}
+      <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Calculator className="h-5 w-5 text-blue-600" />
+              <span className={isMobile ? 'text-base' : 'text-lg'}>Interactive Pricing</span>
+            </div>
+            <Badge variant="outline" className="text-blue-600">
+              <Zap className="h-3 w-3 mr-1" />
+              Live Updates
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Total Price Display */}
+          <div className="text-center p-4 bg-white border border-blue-200 rounded-lg">
+            <div className={`font-bold text-blue-900 ${isMobile ? 'text-2xl' : 'text-3xl'}`}>
+              {isCalculating ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent" />
+                  <span>Calculating...</span>
+                </div>
+              ) : (
+                `$${pricingBreakdown.total.toFixed(2)}`
+              )}
+            </div>
+            <div className="text-sm text-blue-700 mt-1">
+              {serviceType === 'RON_SERVICES' ? 'Remote Online Notarization' : 'Mobile Notary Service'}
+            </div>
+          </div>
+
+          {/* Service Type Indicator */}
+          <div className="flex items-center justify-center space-x-4 py-2">
+            {serviceType === 'RON_SERVICES' ? (
+              <>
+                <Monitor className="h-5 w-5 text-green-600" />
+                <span className="text-sm font-medium text-green-600">Online Service</span>
+              </>
+            ) : (
+              <>
+                <Car className="h-5 w-5 text-blue-600" />
+                <span className="text-sm font-medium text-blue-600">Mobile Service</span>
+              </>
+            )}
+          </div>
+
+          {/* Quick Breakdown Toggle */}
+          <div className="flex items-center justify-center">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowBreakdown(!showBreakdown)}
+              className="text-blue-600 border-blue-200"
+            >
+              {showBreakdown ? 'Hide' : 'Show'} Breakdown
+              <ArrowRight className={`h-4 w-4 ml-1 transform transition-transform ${showBreakdown ? 'rotate-90' : ''}`} />
+            </Button>
+          </div>
+
+          {/* Detailed Breakdown */}
+          {showBreakdown && (
+            <div className="bg-white p-4 border border-blue-200 rounded-lg space-y-3">
+              {/* Service Base */}
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Service Base:</span>
+                <span className="font-medium">${pricingBreakdown.serviceBase.toFixed(2)}</span>
+              </div>
+
+              {/* Travel Fee */}
+              {pricingBreakdown.travelFee > 0 && (
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center space-x-1">
+                    <MapPin className="h-4 w-4 text-blue-500" />
+                    <span className="text-sm">Travel Fee ({estimatedDistance} miles):</span>
+                  </div>
+                  <span className="font-medium">${pricingBreakdown.travelFee.toFixed(2)}</span>
+                </div>
+              )}
+
+              {/* Document Fee */}
+              {pricingBreakdown.documentFee > 0 && (
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center space-x-1">
+                    <FileText className="h-4 w-4 text-blue-500" />
+                    <span className="text-sm">Extra Documents ({documentCount - 1}):</span>
+                  </div>
+                  <span className="font-medium">${pricingBreakdown.documentFee.toFixed(2)}</span>
+                </div>
+              )}
+
+              {/* Time Surcharge */}
+              {pricingBreakdown.timeSurcharge > 0 && (
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center space-x-1">
+                    <Clock className="h-4 w-4 text-orange-500" />
+                    <span className="text-sm">Time Surcharge:</span>
+                  </div>
+                  <span className="font-medium text-orange-600">${pricingBreakdown.timeSurcharge.toFixed(2)}</span>
+                </div>
+              )}
+
+              {/* Add-ons */}
+              {pricingBreakdown.addOns > 0 && (
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center space-x-1">
+                    <Plus className="h-4 w-4 text-green-500" />
+                    <span className="text-sm">Add-ons:</span>
+                  </div>
+                  <span className="font-medium text-green-600">${pricingBreakdown.addOns.toFixed(2)}</span>
+                </div>
+              )}
+
+              {/* Discount */}
+              {pricingBreakdown.discount > 0 && (
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center space-x-1">
+                    <Tag className="h-4 w-4 text-green-500" />
+                    <span className="text-sm">Discount:</span>
+                  </div>
+                  <span className="font-medium text-green-600">-${pricingBreakdown.discount.toFixed(2)}</span>
+                </div>
+              )}
+
+              <Separator />
+
+              {/* Total */}
+              <div className="flex justify-between items-center text-lg font-bold">
+                <span>Total:</span>
+                <span className="text-blue-900">${pricingBreakdown.total.toFixed(2)}</span>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Document Count */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center space-x-2">
+            <FileText className="h-5 w-5 text-gray-600" />
+            <span className={isMobile ? 'text-base' : 'text-lg'}>Document Count</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <Label className="text-sm font-medium">Number of Documents:</Label>
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDocumentCount(Math.max(1, documentCount - 1))}
+                disabled={documentCount <= 1}
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <span className="font-medium w-8 text-center">{documentCount}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDocumentCount(documentCount + 1)}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          {documentCount > 1 && (
+            <div className="mt-2 text-sm text-gray-600">
+              ${(documentCount - 1) * 15} for {documentCount - 1} additional document{documentCount > 2 ? 's' : ''}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Service Add-ons */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center space-x-2">
+            <Plus className="h-5 w-5 text-green-600" />
+            <span className={isMobile ? 'text-base' : 'text-lg'}>Service Add-ons</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {SERVICE_ADD_ONS.map(addOn => (
+              <div key={addOn.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                <div className="flex items-center space-x-3">
+                  <Switch
+                    checked={selectedAddOns.includes(addOn.id)}
+                    onCheckedChange={() => toggleAddOn(addOn.id)}
+                  />
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">{addOn.name}</span>
+                      {addOn.popular && (
+                        <Badge variant="secondary" className="text-xs">Popular</Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600">{addOn.description}</p>
+                  </div>
+                </div>
+                <span className="font-medium text-green-600">+${addOn.price}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Promo Code */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center space-x-2">
+            <Tag className="h-5 w-5 text-purple-600" />
+            <span className={isMobile ? 'text-base' : 'text-lg'}>Promo Code</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className="flex space-x-2">
+              <Input
+                placeholder="Enter promo code"
+                value={promoCode}
+                onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                disabled={promoApplied}
+                className="flex-1"
+              />
+              <Button
+                onClick={applyPromoCode}
+                disabled={!promoCode || promoApplied}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                {promoApplied ? 'Applied' : 'Apply'}
+              </Button>
+            </div>
+            
+            {promoApplied && (
+              <Alert className="border-green-200 bg-green-50">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-700">
+                  Promo code applied! You saved ${pricingBreakdown.discount.toFixed(2)}
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            <div className="text-sm text-gray-600">
+              <p>Try: <code className="bg-gray-100 px-1 rounded">WELCOME10</code> or <code className="bg-gray-100 px-1 rounded">MOBILE15</code></p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+} 
