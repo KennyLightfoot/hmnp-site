@@ -127,6 +127,17 @@ const nextConfig = {
       );
     }
 
+    // Stub out Node.js-only modules when bundling for the browser so libraries
+    // like `ioredis` don’t cause webpack to fail during client compilation.
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...(config.resolve.fallback || {}),
+        dns: false,
+        net: false,
+        tls: false,
+      };
+    }
+
     return config;
   },
   
