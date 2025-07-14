@@ -6,6 +6,17 @@ export interface LLMResponse {
   bookingJson?: any;
 }
 
+// Function calling interfaces
+interface FunctionCall {
+  name: string;
+  args: Record<string, any>;
+}
+
+interface FunctionResult {
+  name: string;
+  response: any;
+}
+
 function logVertexResponse(prompt: string, response: LLMResponse) {
   try {
     fs.mkdirSync('logs', { recursive: true });
@@ -30,7 +41,106 @@ const promptId = process.env.VERTEX_CHAT_PROMPT_ID;
 const apiEndpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/${model}:streamGenerateContent`;
 
 // Response formatting instructions appended to every system prompt for consistency
-const STYLE_GUIDE = `\n\nSTYLE GUIDE (internal):\n• Keep answers to 2–4 sentences.\n• First sentence: give the price or direct answer.\n• Second: briefly explain what’s included / why.\n• Third: offer to book, get a quote, or call.\n• Use clear, friendly tone. No markdown or code fences.`;
+const STYLE_GUIDE = `\n\nSTYLE GUIDE (internal):\n• Keep answers to 2–4 sentences.\n• First sentence: give the price or direct answer.\n• Second: briefly explain what's included / why.\n• Third: offer to book, get a quote, or call.\n• Use clear, friendly tone. No markdown or code fences.`;
+
+// Function definitions for AI tools
+const FUNCTION_DEFINITIONS = [
+  {
+    name: 'get_distance',
+    description: 'Calculate distance and travel fee from business location to customer address',
+    parameters: {
+      type: 'object',
+      properties: {
+        address: {
+          type: 'string',
+          description: 'Customer address or ZIP code (e.g., "77008" or "123 Main St, Houston, TX")'
+        },
+        serviceType: {
+          type: 'string',
+          description: 'Type of service for pricing calculation',
+          enum: ['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH'],
+          default: 'STANDARD_NOTARY'
+        }
+      },
+      required: ['address']
+    }
+  },
+  {
+    name: 'get_availability',
+    description: 'Check if a specific datetime is available for booking',
+    parameters: {
+      type: 'object',
+      properties: {
+        datetime: {
+          type: 'string',
+          description: 'Requested appointment datetime in ISO format (e.g., "2025-01-17T15:00")'
+        },
+        serviceType: {
+          type: 'string',
+          description: 'Type of service to check availability for',
+          enum: ['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH'],
+          default: 'STANDARD_NOTARY'
+        }
+      },
+      required: ['datetime']
+    }
+  }
+];
+
+// Execute function calls by hitting our internal APIs
+async function executeFunction(functionCall: FunctionCall): Promise<FunctionResult> {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://houstonmobilenotarypros.com';
+  
+  try {
+    if (functionCall.name === 'get_distance') {
+      const { address, serviceType = 'STANDARD_NOTARY' } = functionCall.args;
+      const url = new URL('/api/_ai/get-distance', baseUrl);
+      
+      // Handle both ZIP codes and full addresses
+      if (address.match(/^\d{5}$/)) {
+        url.searchParams.set('zip', address);
+      } else {
+        url.searchParams.set('address', address);
+      }
+      url.searchParams.set('serviceType', serviceType);
+      
+      const response = await fetch(url.toString());
+      const data = await response.json();
+      
+      return {
+        name: 'get_distance',
+        response: data
+      };
+    }
+    
+    if (functionCall.name === 'get_availability') {
+      const { datetime, serviceType = 'STANDARD_NOTARY' } = functionCall.args;
+      const url = new URL('/api/_ai/get-availability', baseUrl);
+      url.searchParams.set('datetime', datetime);
+      url.searchParams.set('serviceType', serviceType);
+      
+      const response = await fetch(url.toString());
+      const data = await response.json();
+      
+      return {
+        name: 'get_availability',
+        response: data
+      };
+    }
+    
+    throw new Error(`Unknown function: ${functionCall.name}`);
+    
+  } catch (error) {
+    console.error(`Function execution error for ${functionCall.name}:`, error);
+    return {
+      name: functionCall.name,
+      response: {
+        error: `Failed to execute ${functionCall.name}`,
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }
+    };
+  }
+}
 
 export async function sendChat(
   userPrompt: string, 
@@ -60,18 +170,23 @@ export async function sendChat(
     throw new Error('Failed to obtain access token from GoogleAuth');
   }
 
-  // Build the request body
+  // Build the request body with both retrieval and function tools
   const body: any = {
     contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-    tools: [{
-      retrieval: {
-        vertex_rag_store: {
-          rag_resources: [{ rag_corpus: corpus }],
-          similarity_top_k: 5
-        },
-        disable_attribution: false
+    tools: [
+      {
+        retrieval: {
+          vertex_rag_store: {
+            rag_resources: [{ rag_corpus: corpus }],
+            similarity_top_k: 5
+          },
+          disable_attribution: false
+        }
+      },
+      {
+        function_declarations: FUNCTION_DEFINITIONS
       }
-    }],
+    ],
     generationConfig: { 
       temperature: 0.2,
       maxOutputTokens: 300
@@ -93,83 +208,132 @@ export async function sendChat(
     body.contents[0].parts.push({ text: contextText });
   }
 
-  // Remove the structured response schema for now - it's too restrictive for general chat
-  // body.generationConfig.responseSchema = { ... }
+  // Function calling loop - may need multiple requests
+  let conversationHistory = [...body.contents];
+  let finalResponse = { text: '', bookingJson: null };
+  let maxIterations = 3; // Prevent infinite loops
+  
+  for (let iteration = 0; iteration < maxIterations; iteration++) {
+    // Update body with current conversation history
+    body.contents = conversationHistory;
+    
+    const res = await fetch(apiEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      },
+      body: JSON.stringify(body)
+    });
 
-  const res = await fetch(apiEndpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`
-    },
-    body: JSON.stringify(body)
-  });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Vertex request failed: ${text}`);
+    }
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Vertex request failed: ${text}`);
-  }
+    const reader = res.body!.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let assembledText = '';
+    let bookingJson: any = null;
+    let functionCalls: FunctionCall[] = [];
 
-  const reader = res.body!.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  let assembledText = '';
-  let bookingJson: any = null;
+    // Parse streaming response
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
 
-  // Vertex streams the response as NDJSON lines prefixed with `data:`. Process each
-  // complete line as soon as it is available so we can build a clean answer.
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split(/\n/);
+      buffer = lines.pop() || '';
 
-    // Split on newline – the last element may be an incomplete fragment, so keep it in the buffer
-    const lines = buffer.split(/\n/);
-    buffer = lines.pop() || '';
+      for (const raw of lines) {
+        const line = raw.trim();
+        if (!line) continue;
 
-    for (const raw of lines) {
-      const line = raw.trim();
-      if (!line) continue;
+        const jsonStr = line.startsWith('data:') ? line.slice(5).trim() : line;
 
-      // Remove the SSE "data:" prefix if present
-      const jsonStr = line.startsWith('data:') ? line.slice(5).trim() : line;
-
-      try {
-        const parsed = JSON.parse(jsonStr);
-        const candidate = parsed?.candidates?.[0];
-        const parts = candidate?.content?.parts;
-        if (Array.isArray(parts)) {
-          for (const part of parts) {
-            if (typeof part?.text === 'string') {
-              assembledText += part.text;
-            }
-            // Detect inlineData blob that may contain structured booking info (base64-encoded JSON)
-            if (!bookingJson && part?.inlineData?.data) {
-              try {
-                bookingJson = JSON.parse(Buffer.from(part.inlineData.data, 'base64').toString('utf8'));
-              } catch (_) {
-                /* noop */
+        try {
+          const parsed = JSON.parse(jsonStr);
+          const candidate = parsed?.candidates?.[0];
+          const parts = candidate?.content?.parts;
+          
+          if (Array.isArray(parts)) {
+            for (const part of parts) {
+              // Text content
+              if (typeof part?.text === 'string') {
+                assembledText += part.text;
+              }
+              
+              // Function calls
+              if (part?.functionCall) {
+                functionCalls.push({
+                  name: part.functionCall.name,
+                  args: part.functionCall.args || {}
+                });
+              }
+              
+              // Booking JSON (existing functionality)
+              if (!bookingJson && part?.inlineData?.data) {
+                try {
+                  bookingJson = JSON.parse(Buffer.from(part.inlineData.data, 'base64').toString('utf8'));
+                } catch (_) {
+                  /* noop */
+                }
               }
             }
           }
+        } catch (_err) {
+          // Ignore parse errors
         }
-      } catch (_err) {
-        // Ignore parse errors – may be keep-alive events or partial JSON
       }
     }
+
+    // If no function calls, we're done
+    if (functionCalls.length === 0) {
+      let cleanText = assembledText.trim();
+      if (cleanText.startsWith(']')) {
+        cleanText = cleanText.slice(1).trimStart();
+      }
+      
+      finalResponse = { text: cleanText, bookingJson };
+      break;
+    }
+
+    // Execute function calls
+    console.log(`Executing ${functionCalls.length} function calls:`, functionCalls.map(fc => fc.name));
+    
+    const functionResults: FunctionResult[] = [];
+    for (const functionCall of functionCalls) {
+      const result = await executeFunction(functionCall);
+      functionResults.push(result);
+    }
+
+    // Add function call and results to conversation history
+    conversationHistory.push({
+      role: 'model',
+      parts: functionCalls.map(fc => ({
+        functionCall: {
+          name: fc.name,
+          args: fc.args
+        }
+      }))
+    });
+
+    conversationHistory.push({
+      role: 'function',
+      parts: functionResults.map(fr => ({
+        functionResponse: {
+          name: fr.name,
+          response: fr.response
+        }
+      }))
+    });
+
+    // Continue loop to get final response with function results
   }
 
-  // If nothing parsed (e.g. non-streaming endpoint), fall back to buffer contents
-  if (!assembledText && buffer) {
-    assembledText = buffer;
-  }
-
-  let cleanText = assembledText.trim();
-  if (cleanText.startsWith(']')) {
-    cleanText = cleanText.slice(1).trimStart();
-  }
-
-  const result = { text: cleanText, bookingJson };
+  const result = finalResponse;
   logVertexResponse(userPrompt, result);
   return result;
 }
