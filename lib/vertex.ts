@@ -62,7 +62,11 @@ export async function sendChat(
     contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
     tools: [{
       retrieval: {
-        ragCorpus: corpus
+        vertex_rag_store: {
+          rag_resources: [{ rag_corpus: corpus }],
+          similarity_top_k: 5
+        },
+        disable_attribution: false
       }
     }],
     generationConfig: { 
