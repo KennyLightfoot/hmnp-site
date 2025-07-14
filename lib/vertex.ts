@@ -61,7 +61,9 @@ export async function sendChat(
   const body: any = {
     contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
     tools: [{
-      citationSources: [{ corpus: corpus }]
+      retrieval: {
+        ragCorpus: corpus
+      }
     }],
     generationConfig: { 
       temperature: 0.3,
