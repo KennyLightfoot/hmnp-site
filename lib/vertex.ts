@@ -175,13 +175,13 @@ export async function sendChat(
     contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
     tools: [
       {
-        retrieval: {
-          vertex_rag_store: {
-            rag_resources: [{ rag_corpus: corpus }],
-            similarity_top_k: 5
-          },
-          disable_attribution: false
-        }
+      retrieval: {
+        vertex_rag_store: {
+          rag_resources: [{ rag_corpus: corpus }],
+          similarity_top_k: 5
+        },
+        disable_attribution: false
+      }
       },
       {
         function_declarations: FUNCTION_DEFINITIONS
@@ -216,32 +216,32 @@ export async function sendChat(
   for (let iteration = 0; iteration < maxIterations; iteration++) {
     // Update body with current conversation history
     body.contents = conversationHistory;
-    
-    const res = await fetch(apiEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`
-      },
-      body: JSON.stringify(body)
-    });
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Vertex request failed: ${text}`);
-    }
+  const res = await fetch(apiEndpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`
+    },
+    body: JSON.stringify(body)
+  });
 
-    const reader = res.body!.getReader();
-    const decoder = new TextDecoder();
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Vertex request failed: ${text}`);
+  }
+
+  const reader = res.body!.getReader();
+  const decoder = new TextDecoder();
     let buffer = '';
     let assembledText = '';
-    let bookingJson: any = null;
+  let bookingJson: any = null;
     let functionCalls: FunctionCall[] = [];
 
     // Parse streaming response
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
       buffer += decoder.decode(value, { stream: true });
 
       const lines = buffer.split(/\n/);
@@ -253,7 +253,7 @@ export async function sendChat(
 
         const jsonStr = line.startsWith('data:') ? line.slice(5).trim() : line;
 
-        try {
+  try {
           const parsed = JSON.parse(jsonStr);
           const candidate = parsed?.candidates?.[0];
           const parts = candidate?.content?.parts;
@@ -263,7 +263,7 @@ export async function sendChat(
               // Text content
               if (typeof part?.text === 'string') {
                 assembledText += part.text;
-              }
+      }
               
               // Function calls
               if (part?.functionCall) {
@@ -281,11 +281,11 @@ export async function sendChat(
                   /* noop */
                 }
               }
-            }
-          }
+      }
+    }
         } catch (_err) {
           // Ignore parse errors
-        }
+  }
       }
     }
 
