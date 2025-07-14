@@ -19,6 +19,8 @@ import {
   getFallbackAddressPredictions
 } from '@/lib/config/maps';
 
+import { calculateDistanceWithCache, CachedDistanceResult } from './distance';
+
 // ============================================================================
 // TYPES & INTERFACES
 // ============================================================================
@@ -50,6 +52,7 @@ export interface DistanceResult {
     apiSource: 'google_maps' | 'fallback';
     requestId: string;
     serviceType: string;
+    cacheHit?: boolean;
   };
 }
 
@@ -76,11 +79,9 @@ export interface GeofenceResult {
 // ============================================================================
 
 export class UnifiedDistanceService {
-  private static readonly requestCache = new Map<string, DistanceResult>();
-  private static readonly CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
-
   /**
    * Calculate distance and travel information from base location to destination
+   * Now uses Redis caching for improved performance and persistence
    */
   static async calculateDistance(
     destination: string,
@@ -90,47 +91,63 @@ export class UnifiedDistanceService {
     const startTime = Date.now();
 
     try {
-      // Check cache first
-      const cacheKey = `${destination}:${serviceType}`;
-      const cachedResult = this.getCachedResult(cacheKey);
-      if (cachedResult) {
-        return cachedResult;
-      }
-
-      let result: DistanceResult;
-
-      // Check API configuration first
-      const apiStatus = getApiStatus();
+      // Use Redis-cached distance calculation
+      const cachedResult = await calculateDistanceWithCache(destination, {
+        serviceType,
+        forceFresh: false
+      });
       
-      // Try Google Maps API first if properly configured
-      if (apiStatus.hasServerKey) {
-        try {
-          result = await this.calculateWithGoogleMaps(destination, serviceType, requestId);
-        } catch (error) {
-          console.warn('Google Maps API failed, using fallback:', error);
-          result = this.calculateWithFallback(destination, serviceType, requestId);
-        }
-      } else {
-        console.warn('Google Maps API key not configured, using fallback', { apiStatus });
-        result = this.calculateWithFallback(destination, serviceType, requestId);
-      }
-
-      // Cache the result
-      this.setCachedResult(cacheKey, result);
+      // Convert CachedDistanceResult to DistanceResult format
+      const result: DistanceResult = this.convertCachedToDistanceResult(
+        cachedResult,
+        requestId,
+        serviceType
+      );
 
       const duration = Date.now() - startTime;
       console.log(`Distance calculation completed in ${duration}ms`, {
         requestId,
         distance: result.distance.miles,
         travelFee: result.travelFee,
-        apiSource: result.metadata.apiSource
+        apiSource: result.metadata.apiSource,
+        cacheHit: result.metadata.cacheHit
       });
 
       return result;
 
     } catch (error) {
       console.error('Distance calculation failed:', error);
-      return this.getSafetyFallback(destination, serviceType, requestId);
+      
+      // Try fallback calculation if Redis cache fails
+      try {
+        const fallbackResult = this.calculateWithFallback(destination, serviceType, requestId);
+        return fallbackResult;
+      } catch (fallbackError) {
+        console.error('Fallback calculation also failed:', fallbackError);
+      }
+      
+      return {
+        success: false,
+        distance: { miles: 0, kilometers: 0, text: 'Unknown' },
+        duration: { minutes: 0, seconds: 0, text: 'Unknown' },
+        travelFee: 0,
+        isWithinServiceArea: false,
+        serviceArea: {
+          isWithinStandardArea: false,
+          isWithinExtendedArea: false,
+          isWithinMaxArea: false,
+          applicableRadius: 0
+        },
+        warnings: ['Distance calculation failed'],
+        recommendations: ['Please try again or contact support'],
+        metadata: {
+          calculatedAt: new Date().toISOString(),
+          apiSource: 'fallback',
+          requestId,
+          serviceType,
+          cacheHit: false
+        }
+      };
     }
   }
 
@@ -472,6 +489,77 @@ export class UnifiedDistanceService {
     };
   }
 
+  /**
+   * Convert CachedDistanceResult to DistanceResult format
+   */
+  private static convertCachedToDistanceResult(
+    cachedResult: CachedDistanceResult,
+    requestId: string,
+    serviceType: string
+  ): DistanceResult {
+    const miles = cachedResult.distance.miles;
+    const serviceConfig = getServiceConfig(serviceType);
+    
+    return {
+      success: true,
+      distance: cachedResult.distance,
+      duration: cachedResult.duration,
+      travelFee: cachedResult.travelFee,
+      isWithinServiceArea: cachedResult.isWithinServiceArea,
+      serviceArea: {
+        isWithinStandardArea: miles <= SERVICE_AREA_CONFIG.RADII.STANDARD,
+        isWithinExtendedArea: miles <= SERVICE_AREA_CONFIG.RADII.EXTENDED,
+        isWithinMaxArea: miles <= SERVICE_AREA_CONFIG.RADII.MAXIMUM,
+        applicableRadius: serviceConfig.maxRadius
+      },
+      warnings: this.generateWarnings(miles, serviceType),
+      recommendations: this.generateRecommendations(miles, serviceType),
+      metadata: {
+        calculatedAt: cachedResult.calculatedAt,
+        apiSource: cachedResult.source === 'cache' ? 'google_maps' : cachedResult.source,
+        requestId,
+        serviceType,
+        cacheHit: cachedResult.cacheHit
+      }
+    };
+  }
+
+  /**
+   * Generate warnings based on distance and service type
+   */
+  private static generateWarnings(miles: number, serviceType: string): string[] {
+    const warnings: string[] = [];
+    const serviceConfig = getServiceConfig(serviceType);
+    
+    if (miles > serviceConfig.maxRadius) {
+      warnings.push(`Distance ${miles} miles exceeds service area limit of ${serviceConfig.maxRadius} miles`);
+    }
+    
+    if (miles > SERVICE_AREA_CONFIG.RADII.FREE) {
+      const travelFee = calculateTravelFee(miles, serviceType);
+      warnings.push(`Travel fee of $${travelFee.toFixed(2)} applies for distances over ${SERVICE_AREA_CONFIG.RADII.FREE} miles`);
+    }
+    
+    return warnings;
+  }
+
+  /**
+   * Generate recommendations based on distance and service type
+   */
+  private static generateRecommendations(miles: number, serviceType: string): string[] {
+    const recommendations: string[] = [];
+    
+    if (miles > 30) {
+      recommendations.push('Consider scheduling during extended hours to allow for travel time');
+    }
+    
+    if (miles > SERVICE_AREA_CONFIG.RADII.STANDARD && serviceType === 'STANDARD_NOTARY') {
+      recommendations.push('Extended Hours service may be more suitable for this distance');
+    }
+    
+    return recommendations;
+  }
+
   // Note: estimateDistanceFromAddress moved to central config
 
   /**
@@ -502,31 +590,15 @@ export class UnifiedDistanceService {
   }
 
   // ============================================================================
-  // CACHE MANAGEMENT
+  // CACHE MANAGEMENT (Redis-based)
   // ============================================================================
 
-  private static getCachedResult(key: string): DistanceResult | null {
-    const cached = this.requestCache.get(key);
-    if (cached) {
-      const age = Date.now() - new Date(cached.metadata.calculatedAt).getTime();
-      if (age < this.CACHE_DURATION) {
-        return cached;
-      } else {
-        this.requestCache.delete(key);
-      }
-    }
-    return null;
-  }
-
-  private static setCachedResult(key: string, result: DistanceResult): void {
-    this.requestCache.set(key, result);
-  }
-
   /**
-   * Clear all cached results
+   * Clear all cached results (Redis-based)
    */
-  static clearCache(): void {
-    this.requestCache.clear();
+  static async clearCache(): Promise<void> {
+    const { clearDistanceCache } = await import('./distance');
+    await clearDistanceCache();
   }
 }
 

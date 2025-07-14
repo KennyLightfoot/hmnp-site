@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UnifiedDistanceService } from '@/lib/maps/unified-distance-service';
+import { calculateDistanceWithCache } from '@/lib/maps/distance';
 
 /**
  * AI Helper API - Distance Calculation
@@ -7,6 +7,8 @@ import { UnifiedDistanceService } from '@/lib/maps/unified-distance-service';
  * 
  * Used by Vertex AI function calling to get real-time distance and travel fee
  * calculations for the chatbot.
+ * 
+ * Now uses Redis caching for improved performance and reduced API calls.
  */
 
 export async function GET(request: NextRequest) {
@@ -19,48 +21,46 @@ export async function GET(request: NextRequest) {
     // Validate input
     if (!zip && !address) {
       return NextResponse.json({
-        error: 'Either zip or address parameter is required'
+        success: false,
+        error: 'ZIP code or address is required'
       }, { status: 400 });
     }
 
-    // Build destination string
-    const destination = address || zip;
-    
-    if (!destination) {
+    const destination = zip || address!;
+
+    try {
+      // Calculate distance using Redis-cached distance helper
+      const result = await calculateDistanceWithCache(destination, {
+        serviceType,
+        forceFresh: false // Use cache when available
+      });
+      
+      // Return simplified response for AI consumption
       return NextResponse.json({
-        error: 'Invalid destination provided'
+        success: true,
+        miles: result.distance.miles,
+        travelFee: result.travelFee,
+        duration: result.duration.minutes,
+        withinServiceArea: result.isWithinServiceArea,
+        cacheHit: result.cacheHit,
+        source: result.source
+      });
+
+    } catch (error) {
+      console.error('Distance calculation error:', error);
+      
+      return NextResponse.json({
+        success: false,
+        error: 'Distance calculation service unavailable'
       }, { status: 400 });
     }
-
-    // Calculate distance using existing service
-    const result = await UnifiedDistanceService.calculateDistance(destination, serviceType);
-
-    // Return simplified response for AI consumption
-    return NextResponse.json({
-      success: true,
-      miles: result.distance.miles,
-      travelFee: result.travelFee,
-      isWithinServiceArea: result.isWithinServiceArea,
-      duration: {
-        minutes: result.duration.minutes,
-        text: result.duration.text
-      },
-      warnings: result.warnings,
-      recommendations: result.recommendations,
-      metadata: {
-        calculatedAt: result.metadata.calculatedAt,
-        apiSource: result.metadata.apiSource,
-        serviceType: result.metadata.serviceType
-      }
-    });
 
   } catch (error) {
-    console.error('AI Distance API error:', error);
+    console.error('API error:', error);
     
     return NextResponse.json({
       success: false,
-      error: 'Failed to calculate distance',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      error: 'Distance calculation service unavailable'
     }, { status: 500 });
   }
 }
