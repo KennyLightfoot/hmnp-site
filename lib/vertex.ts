@@ -29,6 +29,9 @@ const promptId = process.env.VERTEX_CHAT_PROMPT_ID;
 
 const apiEndpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/${model}:streamGenerateContent`;
 
+// Response formatting instructions appended to every system prompt for consistency
+const STYLE_GUIDE = `\n\nSTYLE GUIDE (internal):\n• Keep answers to 2–4 sentences.\n• First sentence: give the price or direct answer.\n• Second: briefly explain what’s included / why.\n• Third: offer to book, get a quote, or call.\n• Use clear, friendly tone. No markdown or code fences.`;
+
 export async function sendChat(
   userPrompt: string, 
   systemPrompt?: string, 
@@ -70,15 +73,15 @@ export async function sendChat(
       }
     }],
     generationConfig: { 
-      temperature: 0.3,
-      maxOutputTokens: 1000
+      temperature: 0.2,
+      maxOutputTokens: 300
     }
   };
 
   // Add system instruction - prefer custom systemPrompt over default promptId
   if (systemPrompt) {
     body.systemInstruction = { 
-      parts: [{ text: systemPrompt }] 
+      parts: [{ text: systemPrompt + STYLE_GUIDE }] 
     };
   } else if (promptId) {
     body.systemInstruction = { "reference": promptId };
@@ -161,7 +164,12 @@ export async function sendChat(
     assembledText = buffer;
   }
 
-  const result = { text: assembledText.trim(), bookingJson };
+  let cleanText = assembledText.trim();
+  if (cleanText.startsWith(']')) {
+    cleanText = cleanText.slice(1).trimStart();
+  }
+
+  const result = { text: cleanText, bookingJson };
   logVertexResponse(userPrompt, result);
   return result;
 }
