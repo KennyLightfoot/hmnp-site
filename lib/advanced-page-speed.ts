@@ -107,10 +107,11 @@ export class ResourceOptimizer {
     if (PERFORMANCE_CONFIG.optimization.enableImageOptimization) {
       this.optimizeImages();
     }
-    
-    if (PERFORMANCE_CONFIG.optimization.enableCriticalCSS) {
-      this.extractCriticalCSS();
-    }
+
+    // Removed extractCriticalCSS call – feature temporarily disabled pending rewrite
+    // if (PERFORMANCE_CONFIG.optimization.enableCriticalCSS) {
+    //   this.extractCriticalCSS();
+    // }
   }
 
   private preloadCriticalResources(): void {
