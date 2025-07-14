@@ -81,7 +81,6 @@ export const metadata: Metadata = {
     ],
     shortcut: "/favicon-16x16.png",
     apple: [
-      { url: "/icons/icon-180x180.png" },
       { url: "/icons/icon-152x152.png", sizes: "152x152" },
       { url: "/icons/icon-144x144.png", sizes: "144x144" },
       { url: "/icons/icon-120x120.png", sizes: "120x120" },
@@ -89,7 +88,7 @@ export const metadata: Metadata = {
       { url: "/icons/icon-76x76.png", sizes: "76x76" },
       { url: "/icons/icon-72x72.png", sizes: "72x72" },
       { url: "/icons/icon-60x60.png", sizes: "60x60" },
-      { url: "/icons/icon-57x57.png", sizes: "57x57" },
+      // 57x57 icon removed to avoid 404 in logs
     ],
     other: [
       {
