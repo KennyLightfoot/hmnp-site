@@ -2,6 +2,31 @@
 
 Professional mobile notary and loan signing services in Houston, TX.
 
+## 🤖 AI Receptionist System
+
+**NEW**: Complete intelligent customer service automation with real-time data integration.
+
+### Key Features
+- **Real-time Distance Calculation** - Automatic travel fee computation using Google Maps
+- **Live Calendar Availability** - Real-time appointment checking via GoHighLevel
+- **Location Intelligence** - Automatic geolocation and ZIP code detection
+- **Function Calling System** - Dynamic data retrieval for personalized responses
+- **Context-Aware Responses** - Page-specific and intent-based conversations
+
+### Quick Demo
+```
+User: "Can you come to 77008 tomorrow at 3pm?"
+AI: "Yes! I can come to 77008 tomorrow at 3:00 PM. That's 15 miles away with no travel fee, so the total would be $75 for standard mobile notary service. Shall I book this appointment for you?"
+```
+
+### Architecture
+- **Chat Widget**: Location detection and context capture
+- **AI Chat API**: Function calling coordination
+- **Vertex AI**: Intelligent response generation with function tools
+- **Helper APIs**: Distance calculation and availability checking
+
+See [AI_RECEPTIONIST.md](docs/AI_RECEPTIONIST.md) for complete documentation.
+
 ## Services
 - Standard Notary Services
 - Extended Hours Notary Services  
@@ -11,6 +36,8 @@ Professional mobile notary and loan signing services in Houston, TX.
 - Next.js 15+ with App Router
 - TypeScript
 - PostgreSQL with Prisma
+- **Google Cloud Vertex AI** - Intelligent chat system
+- **Google Maps API** - Distance calculation
 - Stripe Payments
 - GoHighLevel CRM Integration
 
