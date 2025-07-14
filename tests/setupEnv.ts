@@ -205,6 +205,33 @@ beforeEach(() => {
   }
 });
 
+// ---------------------------------------------------------------------------
+// Jest compatibility shim (allows legacy tests that still call jest.* APIs)
+// ---------------------------------------------------------------------------
+// Vitest provides nearly identical mocking capability – we expose a lightweight
+// shim so existing Jest-style mocks (`jest.mock`, `jest.fn`, etc.) keep working
+// until each test file is migrated to pure Vitest syntax.
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore – augment global scope
+if (!(globalThis as any).jest) {
+  // Map basic APIs
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const jestShim: any = {
+    mock: vi.mock,
+    fn: vi.fn,
+    spyOn: vi.spyOn,
+    clearAllMocks: vi.clearAllMocks,
+    resetAllMocks: vi.resetAllMocks,
+    restoreAllMocks: vi.restoreAllMocks,
+    useFakeTimers: vi.useFakeTimers,
+    useRealTimers: vi.useRealTimers,
+    advanceTimersByTime: vi.advanceTimersByTime,
+  };
+
+  (globalThis as any).jest = jestShim;
+}
+
 // Export test utilities
 export const testUtils = {
   async waitForCondition(condition: () => boolean | Promise<boolean>, timeout = 5000): Promise<void> {

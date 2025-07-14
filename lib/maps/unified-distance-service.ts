@@ -69,6 +69,7 @@ export interface PlacePrediction {
 export interface GeofenceResult {
   isAllowed: boolean;
   distance: number;
+  travelFee?: number;
   warnings: string[];
   recommendations: string[];
   blockingReasons: string[];
@@ -589,6 +590,17 @@ export class UnifiedDistanceService {
     });
   }
 
+  /** Normalize various legacy service type strings to current ones */
+  private static normalizeServiceType(serviceType: string): string {
+    const map: Record<string, string> = {
+      EXTENDED_HOURS_NOTARY: 'EXTENDED_HOURS',
+      LOAN_SIGNING_SPECIALIST: 'LOAN_SIGNING'
+    };
+    return map[serviceType] ?? serviceType;
+  }
+
+  // Radius overrides removed – universal 30-mile free radius now applies to all
+
   // ============================================================================
   // CACHE MANAGEMENT (Redis-based)
   // ============================================================================
@@ -599,6 +611,63 @@ export class UnifiedDistanceService {
   static async clearCache(): Promise<void> {
     const { clearDistanceCache } = await import('./distance');
     await clearDistanceCache();
+  }
+
+  static getServiceAreaConfig(serviceType: string) {
+    const normalized = this.normalizeServiceType(serviceType);
+    const cfg = getServiceConfig(normalized);
+
+    const exists = !!SERVICE_AREA_CONFIG.SERVICES[normalized as keyof typeof SERVICE_AREA_CONFIG.SERVICES];
+
+    return {
+      serviceType: exists ? normalized : 'STANDARD_NOTARY',
+      freeRadius: cfg.freeRadius,
+      maxRadius: cfg.maxRadius
+    } as const;
+  }
+
+  /**
+   * Wrapper for legacy tests – calculates travel fee using shared utility
+   */
+  static calculateTravelFee(distanceMiles: number, serviceType: string = 'STANDARD_NOTARY') {
+    if (distanceMiles <= 0) return 0;
+
+    const normalized = this.normalizeServiceType(serviceType);
+    return calculateTravelFee(distanceMiles, normalized);
+  }
+
+  /**
+   * Legacy geofence validator expected by unit-tests.
+   * Returns whether a booking is allowed based on distance & serviceType.
+   */
+  static validateGeofence(distanceMiles: number, serviceType: string = 'STANDARD_NOTARY'): GeofenceResult {
+    const normalized = this.normalizeServiceType(serviceType);
+    const serviceConfig = getServiceConfig(normalized);
+    const isWithin = distanceMiles <= serviceConfig.maxRadius;
+    const requiresTravelFee = distanceMiles > serviceConfig.freeRadius && isWithin;
+    const travelFee = requiresTravelFee ? this.calculateTravelFee(distanceMiles, normalized) : 0;
+
+    const warnings: string[] = [];
+    const recommendations: string[] = [];
+    const blockingReasons: string[] = [];
+
+    if (requiresTravelFee) {
+      warnings.push('Travel fee applies');
+    }
+
+    if (!isWithin) {
+      blockingReasons.push('Distance exceeds maximum service area');
+      recommendations.push('Consider Remote Online Notarization');
+    }
+
+    return {
+      isAllowed: isWithin,
+      distance: distanceMiles,
+      travelFee,
+      warnings,
+      recommendations,
+      blockingReasons
+    };
   }
 }
 

@@ -5,7 +5,6 @@ import { GoogleMap, useJsApiLoader, Circle, Marker } from '@react-google-maps/ap
 import { MapPin, Loader2, Info } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { UnifiedDistanceService } from '@/lib/maps/unified-distance-service'
 
 interface ServiceAreaMapProps {
   showServiceAreaCircle?: boolean
@@ -95,13 +94,22 @@ export default function ServiceAreaMap({
             const response = await geocoder.geocode({ location: e.latLng })
             if (response.results[0]) {
               const address = response.results[0].formatted_address
-              const result = await UnifiedDistanceService.calculateDistanceAndValidate(address, selectedServiceType)
-              
+
+              // Fetch distance information from server-side API to avoid bundling Redis in the client
+              const apiRes = await fetch(`/api/maps/distance?address=${encodeURIComponent(address)}&serviceType=${selectedServiceType}`)
+              const apiData = await apiRes.json()
+
+              if (!apiData.success) {
+                throw new Error(apiData.error || 'Distance API error')
+              }
+
+              const distanceMiles = apiData.miles as number
+
               const locationData = {
                 address,
-                distance: result.distance.miles,
-                isWithinServiceArea: result.serviceArea.isWithinStandardArea || result.serviceArea.isWithinExtendedArea,
-                travelFee: result.pricing.travelFee
+                distance: distanceMiles,
+                isWithinServiceArea: apiData.withinServiceArea as boolean,
+                travelFee: apiData.travelFee as number
               }
               
               setSelectedLocation(locationData)
@@ -118,20 +126,20 @@ export default function ServiceAreaMap({
                   </svg>
                 `;
                 markerContent.style.cursor = 'pointer';
-                markerContent.title = `${address} - ${result.distance.miles.toFixed(1)} miles`;
+                markerContent.title = `${address} - ${distanceMiles.toFixed(1)} miles`;
 
                 new google.maps.marker.AdvancedMarkerElement({
                   position: e.latLng,
                   map,
                   content: markerContent,
-                  title: `${address} - ${result.distance.miles.toFixed(1)} miles`
+                  title: `${address} - ${distanceMiles.toFixed(1)} miles`
                 });
               } else {
                 // Fallback to legacy Marker for older browsers
                 new google.maps.Marker({
                   position: e.latLng,
                   map,
-                  title: `${address} - ${result.distance.miles.toFixed(1)} miles`,
+                  title: `${address} - ${distanceMiles.toFixed(1)} miles`,
                   icon: {
                     url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
                       <svg width="32" height="40" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">

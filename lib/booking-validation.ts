@@ -390,13 +390,25 @@ export const validatePaymentIntent = (data: unknown): PaymentIntent => {
 
 // Custom validation error formatter
 export const formatValidationError = (error: z.ZodError) => {
+  const fieldErrors: Record<string, string> = {};
+
+  error.errors.forEach(err => {
+    const path = err.path.join('.');
+    fieldErrors[path] = err.message;
+  });
+
+  const errorsArray = error.errors.map(err => ({
+    field: err.path.join('.'),
+    message: err.message,
+    code: err.code
+  }));
+
   return {
-    message: "Validation failed",
-    errors: error.errors.map(err => ({
-      field: err.path.join('.'),
-      message: err.message,
-      code: err.code
-    }))
+    message: 'Validation failed',
+    errors: errorsArray,
+    field_errors: fieldErrors,
+    summary: `${errorsArray.length} validation error(s) encountered`,
+    error_count: errorsArray.length
   };
 };
 
