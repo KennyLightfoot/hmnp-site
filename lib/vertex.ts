@@ -41,6 +41,9 @@ export async function sendChat(
   }
   
   const credentials = JSON.parse(serviceAccountJson);
+  // Explicitly format the private key to replace escaped newlines
+  credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
+
   const auth = new GoogleAuth({ 
     credentials,
     scopes: 'https://www.googleapis.com/auth/cloud-platform' 
