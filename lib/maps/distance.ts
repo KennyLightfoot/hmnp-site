@@ -53,9 +53,9 @@ export interface CacheStats {
 // ============================================================================
 
 const CACHE_CONFIG = {
-  // Cache TTL (Time To Live) in seconds
-  DEFAULT_TTL: 24 * 60 * 60, // 24 hours
-  EXTENDED_TTL: 7 * 24 * 60 * 60, // 7 days for frequent locations
+  // TTL values can be overridden via environment variables so ops can tune cache
+  DEFAULT_TTL: Number(process.env.DISTANCE_CACHE_DEFAULT_TTL ?? 24 * 60 * 60), // 24-hour fallback
+  EXTENDED_TTL: Number(process.env.DISTANCE_CACHE_EXTENDED_TTL ?? 7 * 24 * 60 * 60), // 7-day fallback
   SHORT_TTL: 60 * 60, // 1 hour for error responses
   
   // Cache key prefixes
@@ -150,7 +150,7 @@ export class DistanceHelper {
       const freshResult = await this.calculateFreshDistance(destination, serviceType);
       
       // Cache the result
-      const ttl = customTTL || this.determineTTL(destination);
+      const ttl = customTTL ?? await this.determineTTL(destination);
       await this.cacheDistance(cacheKey, freshResult, ttl);
       
       // Track popular locations
@@ -235,7 +235,7 @@ export class DistanceHelper {
     
     // Calculate travel fee
     const travelFee = calculateTravelFee(miles, serviceType);
-    const isWithinServiceArea = miles <= SERVICE_AREA_CONFIG.maxRadius;
+    const isWithinServiceArea = miles <= SERVICE_AREA_CONFIG.RADII.MAXIMUM;
 
     return {
       distance: {
@@ -426,7 +426,7 @@ export class DistanceHelper {
     try {
       const keys = await redis.keys(`${CACHE_CONFIG.DISTANCE_PREFIX}*`);
       if (keys.length > 0) {
-        await redis.del(...keys);
+        await redis.del(...(keys as string[]));
       }
       
       // Reset stats

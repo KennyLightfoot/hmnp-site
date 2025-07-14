@@ -53,10 +53,35 @@ describe('PricingEngine - Pure Logic Tests', () => {
     mockedRedis.get.mockResolvedValue(null);
     mockedRedis.set.mockResolvedValue('OK');
     mockedCalculateDistance.mockResolvedValue({
-      distance: 10, // 10 miles default
-      duration: 20, // 20 minutes
-      route: 'test-route'
-    });
+      success: true,
+      distance: {
+        miles: 10,
+        kilometers: 16.1,
+        text: '10 mi'
+      },
+      duration: {
+        minutes: 20,
+        seconds: 1200,
+        text: '20 mins'
+      },
+      travelFee: 0,
+      isWithinServiceArea: true,
+      serviceArea: {
+        isWithinStandardArea: true,
+        isWithinExtendedArea: true,
+        isWithinMaxArea: true,
+        applicableRadius: SERVICES.STANDARD_NOTARY.includedRadius
+      },
+      warnings: [],
+      recommendations: [],
+      metadata: {
+        calculatedAt: new Date().toISOString(),
+        apiSource: 'cache',
+        requestId: 'mock',
+        serviceType: 'STANDARD_NOTARY',
+        cacheHit: true
+      }
+    } as any);
   });
 
   afterEach(() => {
@@ -133,10 +158,34 @@ describe('PricingEngine - Pure Logic Tests', () => {
   describe('Travel Fee Calculations', () => {
     it('should calculate no travel fee within included radius', async () => {
       mockedCalculateDistance.mockResolvedValue({
-        distance: 10, // Within 15-mile radius for STANDARD_NOTARY
-        duration: 20,
-        route: 'test-route'
-      });
+        success: true,
+        distance: {
+          miles: 10, // Within 15-mile radius for STANDARD_NOTARY
+          kilometers: 16.1,
+          text: '10 mi'
+        },
+        duration: {
+          minutes: 20,
+          seconds: 1200,
+          text: '20 mins'
+        },
+        travelFee: 0,
+        isWithinServiceArea: true,
+        serviceArea: {
+          isWithinStandardArea: true,
+          isWithinExtendedArea: true,
+          isWithinMaxArea: true,
+          applicableRadius: SERVICES.STANDARD_NOTARY.includedRadius
+        },
+        warnings: [],
+        recommendations: [],
+        metadata: {
+          calculatedAt: new Date().toISOString(),
+          apiSource: 'cache',
+          requestId: 'mock',
+          serviceType: 'STANDARD_NOTARY'
+        }
+      } as any);
 
       const params: PricingCalculationParams = {
         serviceType: 'STANDARD_NOTARY',
@@ -159,10 +208,34 @@ describe('PricingEngine - Pure Logic Tests', () => {
 
     it('should calculate travel fee beyond included radius', async () => {
       mockedCalculateDistance.mockResolvedValue({
-        distance: 25, // Beyond 15-mile radius for STANDARD_NOTARY
-        duration: 45,
-        route: 'test-route'
-      });
+        success: true,
+        distance: {
+          miles: 45,
+          kilometers: 72.4,
+          text: '45 mi'
+        },
+        duration: {
+          minutes: 45,
+          seconds: 2700,
+          text: '45 mins'
+        },
+        travelFee: 0,
+        isWithinServiceArea: false,
+        serviceArea: {
+          isWithinStandardArea: false,
+          isWithinExtendedArea: false,
+          isWithinMaxArea: true,
+          applicableRadius: SERVICES.STANDARD_NOTARY.includedRadius
+        },
+        warnings: [],
+        recommendations: [],
+        metadata: {
+          calculatedAt: new Date().toISOString(),
+          apiSource: 'cache',
+          requestId: 'mock',
+          serviceType: 'STANDARD_NOTARY'
+        }
+      } as any);
 
       const params: PricingCalculationParams = {
         serviceType: 'STANDARD_NOTARY',
@@ -179,7 +252,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
 
       const result = await pricingEngine.calculateBookingPrice(params);
       
-      const expectedTravelFee = (25 - SERVICES.STANDARD_NOTARY.includedRadius) * SERVICES.STANDARD_NOTARY.feePerMile;
+      const expectedTravelFee = (45 - SERVICES.STANDARD_NOTARY.includedRadius) * SERVICES.STANDARD_NOTARY.feePerMile;
       expect(result.travelFee).toBe(expectedTravelFee);
       expect(result.breakdown.lineItems).toContainEqual(
         expect.objectContaining({
@@ -191,10 +264,34 @@ describe('PricingEngine - Pure Logic Tests', () => {
 
     it('should handle different travel rates for different services', async () => {
       mockedCalculateDistance.mockResolvedValue({
-        distance: 25,
-        duration: 45,
-        route: 'test-route'
-      });
+        success: true,
+        distance: {
+          miles: 45,
+          kilometers: 72.4,
+          text: '45 mi'
+        },
+        duration: {
+          minutes: 45,
+          seconds: 2700,
+          text: '45 mins'
+        },
+        travelFee: 0,
+        isWithinServiceArea: false,
+        serviceArea: {
+          isWithinStandardArea: false,
+          isWithinExtendedArea: false,
+          isWithinMaxArea: true,
+          applicableRadius: SERVICES.EXTENDED_HOURS.includedRadius
+        },
+        warnings: [],
+        recommendations: [],
+        metadata: {
+          calculatedAt: new Date().toISOString(),
+          apiSource: 'cache',
+          requestId: 'mock',
+          serviceType: 'EXTENDED_HOURS'
+        }
+      } as any);
 
       const params: PricingCalculationParams = {
         serviceType: 'EXTENDED_HOURS',
@@ -209,7 +306,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
 
       const result = await pricingEngine.calculateBookingPrice(params);
       
-      const expectedTravelFee = (25 - SERVICES.EXTENDED_HOURS.includedRadius) * SERVICES.EXTENDED_HOURS.feePerMile;
+      const expectedTravelFee = (45 - SERVICES.EXTENDED_HOURS.includedRadius) * SERVICES.EXTENDED_HOURS.feePerMile;
       expect(result.travelFee).toBe(expectedTravelFee);
     });
 
@@ -258,10 +355,34 @@ describe('PricingEngine - Pure Logic Tests', () => {
 
     it('should apply weather surcharge for travel during weather alerts', async () => {
       mockedCalculateDistance.mockResolvedValue({
-        distance: 20,
-        duration: 30,
-        route: 'test-route'
-      });
+        success: true,
+        distance: {
+          miles: 40,
+          kilometers: 64.4,
+          text: '40 mi'
+        },
+        duration: {
+          minutes: 30,
+          seconds: 1800,
+          text: '30 mins'
+        },
+        travelFee: 0,
+        isWithinServiceArea: false,
+        serviceArea: {
+          isWithinStandardArea: false,
+          isWithinExtendedArea: false,
+          isWithinMaxArea: true,
+          applicableRadius: SERVICES.STANDARD_NOTARY.includedRadius
+        },
+        warnings: [],
+        recommendations: [],
+        metadata: {
+          calculatedAt: new Date().toISOString(),
+          apiSource: 'cache',
+          requestId: 'mock',
+          serviceType: 'STANDARD_NOTARY'
+        }
+      } as any);
 
       const params: PricingCalculationParams = {
         serviceType: 'STANDARD_NOTARY',
@@ -278,8 +399,8 @@ describe('PricingEngine - Pure Logic Tests', () => {
 
       const result = await pricingEngine.calculateBookingPrice(params);
       
-      const baseTravelFee = (20 - SERVICES.STANDARD_NOTARY.includedRadius) * SERVICES.STANDARD_NOTARY.feePerMile;
-      const weatherSurcharge = (20 - SERVICES.STANDARD_NOTARY.includedRadius) * PRICING_CONFIG.surcharges.weather;
+      const baseTravelFee = (40 - SERVICES.STANDARD_NOTARY.includedRadius) * SERVICES.STANDARD_NOTARY.feePerMile;
+      const weatherSurcharge = (40 - SERVICES.STANDARD_NOTARY.includedRadius) * PRICING_CONFIG.surcharges.weather;
       
       expect(result.travelFee).toBe(baseTravelFee);
       expect(result.surcharges).toBe(weatherSurcharge);
@@ -598,10 +719,34 @@ describe('PricingEngine - Pure Logic Tests', () => {
   describe('Total Calculation Accuracy', () => {
     it('should calculate totals correctly with all components', async () => {
       mockedCalculateDistance.mockResolvedValue({
-        distance: 25,
-        duration: 45,
-        route: 'test-route'
-      });
+        success: true,
+        distance: {
+          miles: 45,
+          kilometers: 72.4,
+          text: '45 mi'
+        },
+        duration: {
+          minutes: 45,
+          seconds: 2700,
+          text: '45 mins'
+        },
+        travelFee: 0,
+        isWithinServiceArea: false,
+        serviceArea: {
+          isWithinStandardArea: false,
+          isWithinExtendedArea: false,
+          isWithinMaxArea: true,
+          applicableRadius: SERVICES.STANDARD_NOTARY.includedRadius
+        },
+        warnings: [],
+        recommendations: [],
+        metadata: {
+          calculatedAt: new Date().toISOString(),
+          apiSource: 'cache',
+          requestId: 'mock',
+          serviceType: 'STANDARD_NOTARY'
+        }
+      } as any);
 
       const params: PricingCalculationParams = {
         serviceType: 'STANDARD_NOTARY',
@@ -627,7 +772,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
 
       const result = await pricingEngine.calculateBookingPrice(params);
       
-      const expectedTravelFee = (25 - 15) * 0.50; // 10 miles @ $0.50/mile
+      const expectedTravelFee = (45 - SERVICES.STANDARD_NOTARY.includedRadius) * SERVICES.STANDARD_NOTARY.feePerMile;
       const expectedSurcharges = PRICING_CONFIG.surcharges.weekend + 
                                 PRICING_CONFIG.surcharges.afterHours + 
                                 PRICING_CONFIG.surcharges.priority;
