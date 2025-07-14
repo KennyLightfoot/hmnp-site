@@ -109,32 +109,59 @@ export async function sendChat(
 
   const reader = res.body!.getReader();
   const decoder = new TextDecoder();
-  let full = '';
+  let buffer = '';
+  let assembledText = '';
   let bookingJson: any = null;
 
+  // Vertex streams the response as NDJSON lines prefixed with `data:`. Process each
+  // complete line as soon as it is available so we can build a clean answer.
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
-    const chunk = decoder.decode(value);
-    full += chunk;
-  }
+    buffer += decoder.decode(value, { stream: true });
 
-  try {
-    const parsed = JSON.parse(full);
-    if (parsed.candidates && parsed.candidates[0]) {
-      const parts = parsed.candidates[0].content.parts;
-      if (typeof parts[0]?.text === 'string') {
-        full = parts[0].text;
-      }
-      if (parts[1]?.inlineData) {
-        bookingJson = JSON.parse(Buffer.from(parts[1].inlineData.data, 'base64').toString('utf8'));
+    // Split on newline – the last element may be an incomplete fragment, so keep it in the buffer
+    const lines = buffer.split(/\n/);
+    buffer = lines.pop() || '';
+
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (!line) continue;
+
+      // Remove the SSE "data:" prefix if present
+      const jsonStr = line.startsWith('data:') ? line.slice(5).trim() : line;
+
+      try {
+        const parsed = JSON.parse(jsonStr);
+        const candidate = parsed?.candidates?.[0];
+        const parts = candidate?.content?.parts;
+        if (Array.isArray(parts)) {
+          for (const part of parts) {
+            if (typeof part?.text === 'string') {
+              assembledText += part.text;
+            }
+            // Detect inlineData blob that may contain structured booking info (base64-encoded JSON)
+            if (!bookingJson && part?.inlineData?.data) {
+              try {
+                bookingJson = JSON.parse(Buffer.from(part.inlineData.data, 'base64').toString('utf8'));
+              } catch (_) {
+                /* noop */
+              }
+            }
+          }
+        }
+      } catch (_err) {
+        // Ignore parse errors – may be keep-alive events or partial JSON
       }
     }
-  } catch (e) {
-    // ignore parse errors
   }
 
-  const result = { text: full, bookingJson };
+  // If nothing parsed (e.g. non-streaming endpoint), fall back to buffer contents
+  if (!assembledText && buffer) {
+    assembledText = buffer;
+  }
+
+  const result = { text: assembledText.trim(), bookingJson };
   logVertexResponse(userPrompt, result);
   return result;
 }
