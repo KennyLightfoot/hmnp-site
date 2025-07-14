@@ -49,7 +49,13 @@ export async function sendChat(
     scopes: 'https://www.googleapis.com/auth/cloud-platform' 
   });
   const client = await auth.getClient();
-  const accessToken = await client.getAccessToken();
+  const tokenResponse = await client.getAccessToken();
+  const accessToken = typeof tokenResponse === 'string'
+    ? tokenResponse
+    : tokenResponse?.token;
+  if (!accessToken) {
+    throw new Error('Failed to obtain access token from GoogleAuth');
+  }
 
   // Build the request body
   const body: any = {
