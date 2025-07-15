@@ -1,7 +1,8 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { GoogleMap, useJsApiLoader, Circle, Marker } from '@react-google-maps/api'
+import { GoogleMap, Circle, Marker } from '@react-google-maps/api'
+import { useGoogleMaps } from '@/lib/maps/googleMapsLoader'
 import { MapPin, Loader2, Info } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -57,9 +58,6 @@ const baseCircleOptions = {
   fillOpacity: 0.1,
 }
 
-// Stable reference for libraries to prevent reload issues
-const MAPS_LIBRARIES = ['places'] as const
-
 
 export default function ServiceAreaMap({
   showServiceAreaCircle = true,
@@ -76,11 +74,7 @@ export default function ServiceAreaMap({
   const [selectedLocation, setSelectedLocation] = useState<any>(null)
   const [geocoder, setGeocoder] = useState<google.maps.Geocoder | null>(null)
 
-  const { isLoaded, loadError } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-    libraries: MAPS_LIBRARIES
-  })
+  const { isLoaded, loadError } = useGoogleMaps()
 
   const onLoad = useCallback((map: google.maps.Map) => {
     setMap(map)
