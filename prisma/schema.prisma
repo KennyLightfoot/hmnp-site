@@ -258,6 +258,18 @@ model User {
   feature_flags                  feature_flags[]
   notary_journal                 notary_journal[]
   notary_profiles                notary_profiles?
+  twoFactor                      UserTwoFactor?
+}
+
+model UserTwoFactor {
+  userId      String    @id
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  secret      String
+  backupCodes String
+  isEnabled   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  @@index([isEnabled])
 }
 
 model Account {

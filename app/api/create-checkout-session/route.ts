@@ -14,30 +14,34 @@ import { z } from 'zod';
 
 // Validation schemas
 const CheckoutSessionRequestSchema = z.object({
-  bookingId: z.string().optional(),
-  paymentId: z.string().optional(),
+  bookingId: z.string().trim().optional(),
+  paymentId: z.string().trim().optional(),
   mode: z.enum(['payment', 'subscription', 'setup']).default('payment'),
-  customerId: z.string().optional(),
-  customerEmail: z.string().email(),
-  customerName: z.string().min(1),
-  amount: z.number().min(1),
-  currency: z.string().default('usd'),
-  description: z.string().min(1),
+  customerId: z.string().trim().optional(),
+  customerEmail: z.string().trim().email().max(254),
+  customerName: z.string().trim().min(1).max(100),
+  amount: z.number().positive().max(100000, 'Amount too large'),
+  currency: z.string().trim().default('usd'),
+  description: z.string().trim().min(1).max(255),
   metadata: z.record(z.any()).optional(),
-  successUrl: z.string().url().optional(),
-  cancelUrl: z.string().url().optional(),
+  successUrl: z.string().trim().url().optional(),
+  cancelUrl: z.string().trim().url().optional(),
   allowPromotionCodes: z.boolean().default(true),
   billingAddressCollection: z.enum(['auto', 'required']).default('auto'),
-  paymentMethodTypes: z.array(z.string()).default(['card']),
+  paymentMethodTypes: z.array(z.string().trim()).default(['card']),
   submitType: z.enum(['auto', 'book', 'donate', 'pay']).default('pay'),
-  invoiceCreation: z.object({
-    enabled: z.boolean().default(true),
-    invoiceData: z.object({
-      description: z.string().optional(),
-      metadata: z.record(z.any()).optional(),
-      footer: z.string().optional()
-    }).optional()
-  }).optional()
+  invoiceCreation: z
+    .object({
+      enabled: z.boolean().default(true),
+      invoiceData: z
+        .object({
+          description: z.string().trim().optional(),
+          metadata: z.record(z.any()).optional(),
+          footer: z.string().trim().optional(),
+        })
+        .optional(),
+    })
+    .optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -159,7 +163,8 @@ export async function POST(request: NextRequest) {
     // Update payment record if provided
     if (paymentId) {
       try {
-        await prisma.newPayment.update({
+        // @ts-ignore - newPayment is generated model alias
+        await (prisma as any).newPayment.update({
           where: { id: paymentId },
           data: {
             stripeSessionId: session.id,
@@ -171,7 +176,7 @@ export async function POST(request: NextRequest) {
             }
           }
         });
-      } catch (error) {
+      } catch (error: any) {
         logger.error('Failed to update payment record with session ID', {
           paymentId,
           sessionId: session.id,
@@ -183,7 +188,8 @@ export async function POST(request: NextRequest) {
     // Update booking record if provided
     if (bookingId) {
       try {
-        await prisma.newBooking.update({
+        // @ts-ignore - newBooking model alias
+        await (prisma as any).newBooking.update({
           where: { id: bookingId },
           data: {
             paymentStatus: 'PROCESSING',
@@ -194,7 +200,7 @@ export async function POST(request: NextRequest) {
             }
           }
         });
-      } catch (error) {
+      } catch (error: any) {
         logger.error('Failed to update booking record with session ID', {
           bookingId,
           sessionId: session.id,

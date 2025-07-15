@@ -6,17 +6,22 @@ import { z } from 'zod';
 import bcrypt from 'bcrypt';
 
 // Profile update validation schema
+const PHONE_REGEX = /^\+?1?\d{10,15}$/; // E.164 lite
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_+\-=]{8,128}$/;
+
 const updateProfileSchema = z.object({
-  name: z.string().min(1, 'Name is required').optional(),
-  email: z.string().email('Valid email is required').optional(),
-  phone: z.string().optional(),
-  currentPassword: z.string().optional(),
-  newPassword: z.string().min(8, 'Password must be at least 8 characters').optional(),
-  preferences: z.object({
-    emailNotifications: z.boolean().optional(),
-    smsNotifications: z.boolean().optional(),
-    marketingEmails: z.boolean().optional(),
-  }).optional(),
+  name: z.string().trim().min(1, 'Name is required').max(100).optional(),
+  email: z.string().trim().email('Valid email is required').max(254).optional(),
+  phone: z.string().trim().regex(PHONE_REGEX, 'Valid phone number').optional(),
+  currentPassword: z.string().trim().optional(),
+  newPassword: z.string().trim().regex(PASSWORD_REGEX, 'Password must be at least 8 characters and contain letters and numbers').optional(),
+  preferences: z
+    .object({
+      emailNotifications: z.boolean().optional(),
+      smsNotifications: z.boolean().optional(),
+      marketingEmails: z.boolean().optional(),
+    })
+    .optional(),
 });
 
 /**

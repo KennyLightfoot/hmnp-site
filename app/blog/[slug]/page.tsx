@@ -2,6 +2,7 @@ import { getAllPostIds, getPostData, PostData } from '@/lib/posts'
 import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
 import Link from 'next/link'
+import { sanitizeHtml } from '@/lib/sanitize-html'
 import type { Metadata, ResolvingMetadata } from 'next'
 
 // Define Base URL for metadata
@@ -98,7 +99,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       {/* Add prose class for basic Tailwind typography styles */}
       <div
         className="prose lg:prose-xl max-w-none prose-headings:text-[#002147] prose-a:text-[#A52A2A] hover:prose-a:underline prose-strong:text-[#002147]"
-        dangerouslySetInnerHTML={{ __html: post.contentHtml || '' }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.contentHtml || '') }}
       />
     </article>
   )

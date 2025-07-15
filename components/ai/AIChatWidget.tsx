@@ -38,6 +38,7 @@ import {
   Phone,
   Calendar
 } from 'lucide-react';
+import { sanitizeHtml } from '@/lib/sanitize-html'
 
 interface Message {
   id: string;
@@ -428,10 +429,11 @@ export default function AIChatWidget({
   // Format message content
   const formatMessageContent = (content: string) => {
     // Basic markdown-style formatting
-    return content
+    const formatted = content
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/`(.*?)`/g, '<code>$1</code>');
+    return sanitizeHtml(formatted);
   };
   
   if (!context) return null;

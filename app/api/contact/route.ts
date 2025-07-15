@@ -129,20 +129,70 @@ export async function POST(request: Request) {
   try {
     const rawData = await request.json();
     
-    // Validate input data with Zod
+    // Enhanced validation patterns
+    const PHONE_REGEX = /^\+?1?[2-9]\d{2}[2-9]\d{2}\d{4}$/; // US phone number format
+    const NAME_REGEX = /^[a-zA-Z\s\-'\.]{1,50}$/; // Names with common characters
+    const SUBJECT_REGEX = /^[a-zA-Z0-9\s\-_,.\?!]{1,150}$/; // Subject line allowed chars
+    const MESSAGE_REGEX = /^[\s\S]{1,2000}$/; // Message content (any printable chars)
+    const TIME_REGEX = /^(morning|afternoon|evening|anytime|[0-9]{1,2}:[0-9]{2}\s?(AM|PM|am|pm))$/i;
+
     const contactFormSchema = z.object({
-      firstName: z.string().min(1, 'First name is required'),
-      lastName: z.string().min(1, 'Last name is required'),
-      email: z.string().email('Valid email address is required'),
-      phone: z.string().min(10, 'Valid phone number is required'),
-      subject: z.string().min(1, 'Subject is required'),
-      message: z.string().min(1, 'Message is required'),
+      firstName: z
+        .string()
+        .trim()
+        .min(1, 'First name is required')
+        .max(50, 'First name must be 50 characters or less')
+        .regex(NAME_REGEX, 'First name contains invalid characters'),
+      lastName: z
+        .string()
+        .trim()
+        .min(1, 'Last name is required')
+        .max(50, 'Last name must be 50 characters or less')
+        .regex(NAME_REGEX, 'Last name contains invalid characters'),
+      email: z
+        .string()
+        .trim()
+        .min(1, 'Email address is required')
+        .email('Please enter a valid email address')
+        .max(254, 'Email address is too long')
+        .refine((email) => !email.includes('..'), 'Email address format is invalid')
+        .refine((email) => !email.startsWith('.') && !email.endsWith('.'), 'Email address format is invalid'),
+      phone: z
+        .string()
+        .trim()
+        .min(1, 'Phone number is required')
+        .regex(PHONE_REGEX, 'Please enter a valid US phone number (e.g., 555-123-4567)')
+        .transform((phone) => phone.replace(/\D/g, '')) // Strip non-digits for storage
+        .refine((phone) => phone.length === 10 || phone.length === 11, 'Phone number must be 10 or 11 digits'),
+      subject: z
+        .string()
+        .trim()
+        .min(1, 'Subject is required')
+        .max(150, 'Subject must be 150 characters or less')
+        .regex(SUBJECT_REGEX, 'Subject contains invalid characters'),
+      message: z
+        .string()
+        .trim()
+        .min(10, 'Message must be at least 10 characters')
+        .max(2000, 'Message must be 2000 characters or less')
+        .regex(MESSAGE_REGEX, 'Message contains invalid characters'),
       smsConsent: z.boolean().default(false),
-      preferredCallTime: z.string().optional(),
-      callRequestReason: z.string().optional(),
-      termsAccepted: z.boolean().refine(val => val === true, {
-        message: 'You must accept the terms and conditions'
-      })
+      preferredCallTime: z
+        .string()
+        .trim()
+        .max(100, 'Preferred call time is too long')
+        .regex(TIME_REGEX, 'Please enter a valid time format')
+        .optional()
+        .or(z.literal('')),
+      callRequestReason: z
+        .string()
+        .trim()
+        .max(500, 'Call request reason must be 500 characters or less')
+        .optional()
+        .or(z.literal('')),
+      termsAccepted: z.boolean().refine((val) => val === true, {
+        message: 'You must accept the terms and conditions to proceed',
+      }),
     });
 
     const data = contactFormSchema.parse(rawData);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { RateLimitService } from '@/lib/auth/rate-limit';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -9,13 +10,18 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Password reset request schema
 const resetRequestSchema = z.object({
-  email: z.string().email('Valid email is required'),
+  email: z.string().trim().email('Valid email is required').max(254),
 });
+
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_+\-=]{8,128}$/;
 
 // Password reset confirmation schema
 const resetConfirmSchema = z.object({
-  token: z.string().min(1, 'Reset token is required'),
-  newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+  token: z.string().trim().min(1, 'Reset token is required'),
+  newPassword: z
+    .string()
+    .trim()
+    .regex(PASSWORD_REGEX, 'Password must be at least 8 characters and contain letters and numbers'),
 });
 
 /**
@@ -24,6 +30,24 @@ const resetConfirmSchema = z.object({
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting for password reset requests
+    const clientIP = request.headers.get('x-forwarded-for') || 
+                     request.headers.get('x-real-ip') || 
+                     'unknown';
+    
+    const rateLimitResult = await RateLimitService.checkLimit(
+      clientIP,
+      'passwordReset'
+    );
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json({
+        error: 'Too many password reset attempts',
+        message: 'Please try again later',
+        retryAfter: rateLimitResult.resetTime
+      }, { status: 429 });
+    }
+
     const body = await request.json();
     const { email } = resetRequestSchema.parse(body);
 

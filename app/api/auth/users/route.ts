@@ -7,19 +7,61 @@ import { Role } from '@prisma/client';
 import bcrypt from 'bcrypt';
 
 // User creation schema
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_+\-=]{8,128}$/;
+const NAME_REGEX = /^[a-zA-Z\s\-'\.]{1,100}$/; // Names with common characters
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/; // Stricter email pattern
+
 const createUserSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  email: z.string().email('Valid email is required'),
-  role: z.enum(['ADMIN', 'STAFF', 'NOTARY', 'CLIENT']),
-  password: z.string().min(8, 'Password must be at least 8 characters').optional(),
+  name: z
+    .string()
+    .trim()
+    .min(1, 'Name is required')
+    .max(100, 'Name must be 100 characters or less')
+    .regex(NAME_REGEX, 'Name contains invalid characters'),
+  email: z
+    .string()
+    .trim()
+    .min(1, 'Email address is required')
+    .email('Please enter a valid email address')
+    .max(254, 'Email address is too long')
+    .regex(EMAIL_REGEX, 'Email address format is invalid')
+    .refine((email) => !email.includes('..'), 'Email address format is invalid')
+    .refine((email) => !email.startsWith('.') && !email.endsWith('.'), 'Email address format is invalid'),
+  role: z.enum(['ADMIN', 'STAFF', 'NOTARY', 'CLIENT'], {
+    errorMap: () => ({ message: 'Please select a valid user role' })
+  }),
+  password: z
+    .string()
+    .trim()
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password must be 128 characters or less')
+    .regex(PASSWORD_REGEX, 'Password must contain at least one letter, one number, and only allowed special characters')
+    .optional(),
   sendInvite: z.boolean().default(true),
 });
 
 // User update schema
 const updateUserSchema = z.object({
-  name: z.string().min(1, 'Name is required').optional(),
-  email: z.string().email('Valid email is required').optional(),
-  role: z.enum(['ADMIN', 'STAFF', 'NOTARY', 'CLIENT']).optional(),
+  name: z
+    .string()
+    .trim()
+    .min(1, 'Name is required')
+    .max(100, 'Name must be 100 characters or less')
+    .regex(NAME_REGEX, 'Name contains invalid characters')
+    .optional(),
+  email: z
+    .string()
+    .trim()
+    .min(1, 'Email address is required')
+    .email('Please enter a valid email address')
+    .max(254, 'Email address is too long')
+    .regex(EMAIL_REGEX, 'Email address format is invalid')
+    .refine((email) => !email.includes('..'), 'Email address format is invalid')
+    .refine((email) => !email.startsWith('.') && !email.endsWith('.'), 'Email address format is invalid')
+    .optional(),
+  role: z.enum(['ADMIN', 'STAFF', 'NOTARY', 'CLIENT'], {
+    errorMap: () => ({ message: 'Please select a valid user role' })
+  }).optional(),
 });
 
 /**

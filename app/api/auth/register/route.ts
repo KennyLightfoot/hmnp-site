@@ -1,34 +1,45 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { RateLimitService } from '@/lib/auth/rate-limit';
 import bcrypt from 'bcrypt';
 import { Role } from '@prisma/client';
 import { randomUUID } from 'crypto';
+import { z } from 'zod';
 
 const SALT_ROUNDS = 10;
 
-export async function POST(request: Request) {
+// Enhanced validation schema
+const registerSchema = z.object({
+  email: z.string().trim().email('Valid email is required').max(254),
+  password: z.string().min(8, 'Password must be at least 8 characters long'),
+  role: z.enum(['STAFF', 'NOTARY']),
+  name: z.string().trim().min(1, 'Name is required').max(100).optional(),
+});
+
+export async function POST(request: NextRequest) {
   try {
+    // Rate limiting for registration
+    const clientIP = request.headers.get('x-forwarded-for') || 
+                     request.headers.get('x-real-ip') || 
+                     'unknown';
+    
+    const rateLimitResult = await RateLimitService.checkLimit(
+      clientIP,
+      'register'
+    );
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json({
+        error: 'Too many registration attempts',
+        message: 'Please try again later',
+        retryAfter: rateLimitResult.resetTime
+      }, { status: 429 });
+    }
+
     const body = await request.json();
-    const { email, password, role, name } = body;
+    const { email, password, role, name } = registerSchema.parse(body);
 
-    // 1. Validate input
-    if (!email || !password || !role) {
-      return NextResponse.json({ error: 'Email, password, and role are required' }, { status: 400 });
-    }
-
-    if (password.length < 8) {
-      return NextResponse.json({ error: 'Password must be at least 8 characters long' }, { status: 400 });
-    }
-
-    if (role === Role.ADMIN) {
-        return NextResponse.json({ error: 'Cannot register as ADMIN via this route' }, { status: 403 });
-    }
-
-    if (![Role.STAFF, Role.PARTNER].includes(role)) {
-        return NextResponse.json({ error: 'Invalid role specified' }, { status: 400 });
-    }
-
-    // 2. Check if user already exists
+    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
     });
@@ -37,21 +48,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'User with this email already exists' }, { status: 409 });
     }
 
-    // 3. Hash password
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-    // 4. Create user
+    // Create user
     const user = await prisma.user.create({
       data: {
         id: randomUUID(),
         email: email.toLowerCase(),
         password: hashedPassword,
-        role: role,
-        name: name || null, // Optional name field
-        emailVerified: new Date(), // Mark email as verified immediately
+        role: role as Role,
+        name: name || null,
+        emailVerified: new Date(),
         updatedAt: new Date(),
       },
-      select: { // Only return essential, non-sensitive fields
+      select: {
         id: true,
         email: true,
         role: true,
@@ -60,13 +71,29 @@ export async function POST(request: Request) {
       }
     });
 
-    return NextResponse.json(user, { status: 201 });
+    return NextResponse.json({
+      success: true,
+      message: 'Registration successful',
+      user
+    }, { status: 201 });
+
   } catch (error) {
     console.error('Registration error:', error);
-    // Differentiate between known errors and unexpected ones
-    if (error instanceof SyntaxError) { // Catches errors from request.json() if body is not valid JSON
-        return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({
+        error: 'Validation failed',
+        details: error.errors.map(e => ({
+          field: e.path.join('.'),
+          message: e.message,
+        })),
+      }, { status: 400 });
     }
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+
+    return NextResponse.json({ error: 'Registration failed' }, { status: 500 });
   }
 } 

@@ -12,24 +12,92 @@ import { Prisma } from '@prisma/client';
 // 🎯 VALIDATION SCHEMAS
 // ============================================================================
 
+const CODE_REGEX = /^[A-Z0-9_-]{3,20}$/; // Uppercase alphanumeric with underscores/hyphens
+const NAME_REGEX = /^[a-zA-Z0-9\s\-_'\.]{1,100}$/; // Campaign name with common characters
+const DESCRIPTION_REGEX = /^[\s\S]{0,500}$/; // Description with any printable chars
+const SERVICE_TYPE_REGEX = /^[A-Z_]{1,50}$/; // Service type format (uppercase with underscores)
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i; // UUID format
+
 const CreateCampaignSchema = z.object({
-  code: z.string().min(3).max(20).toUpperCase(),
-  name: z.string().min(1).max(100),
-  description: z.string().optional(),
-  type: z.enum(['percentage', 'fixed_amount', 'first_time', 'referral', 'loyalty', 'seasonal']),
-  value: z.number().min(0),
-  maxDiscount: z.number().min(0).optional(),
-  minOrderValue: z.number().min(0).default(0),
-  maxUses: z.number().min(1).optional(),
-  serviceTypes: z.array(z.string()).default([]),
-  customerTypes: z.array(z.enum(['new', 'returning', 'loyalty'])).default([]),
-  validFrom: z.string().datetime(),
-  validUntil: z.string().datetime(),
+  code: z
+    .string()
+    .trim()
+    .min(3, 'Campaign code must be at least 3 characters')
+    .max(20, 'Campaign code must be 20 characters or less')
+    .regex(CODE_REGEX, 'Campaign code must be uppercase letters, numbers, hyphens, or underscores only')
+    .transform((val) => val.toUpperCase()),
+  name: z
+    .string()
+    .trim()
+    .min(1, 'Campaign name is required')
+    .max(100, 'Campaign name must be 100 characters or less')
+    .regex(NAME_REGEX, 'Campaign name contains invalid characters'),
+  description: z
+    .string()
+    .trim()
+    .max(500, 'Description must be 500 characters or less')
+    .regex(DESCRIPTION_REGEX, 'Description contains invalid characters')
+    .optional(),
+  type: z.enum(['percentage', 'fixed_amount', 'first_time', 'referral', 'loyalty', 'seasonal'], {
+    errorMap: () => ({ message: 'Please select a valid campaign type' })
+  }),
+  value: z
+    .number()
+    .min(0, 'Campaign value must be 0 or greater')
+    .max(10000, 'Campaign value cannot exceed 10,000')
+    .refine((val) => Number.isFinite(val), 'Campaign value must be a valid number'),
+  maxDiscount: z
+    .number()
+    .min(0, 'Maximum discount must be 0 or greater')
+    .max(10000, 'Maximum discount cannot exceed 10,000')
+    .refine((val) => Number.isFinite(val), 'Maximum discount must be a valid number')
+    .optional(),
+  minOrderValue: z
+    .number()
+    .min(0, 'Minimum order value must be 0 or greater')
+    .max(50000, 'Minimum order value cannot exceed 50,000')
+    .refine((val) => Number.isFinite(val), 'Minimum order value must be a valid number')
+    .default(0),
+  maxUses: z
+    .number()
+    .int('Maximum uses must be a whole number')
+    .min(1, 'Maximum uses must be at least 1')
+    .max(999999, 'Maximum uses cannot exceed 999,999')
+    .optional(),
+  serviceTypes: z
+    .array(z.string().trim().regex(SERVICE_TYPE_REGEX, 'Service type format is invalid'))
+    .max(20, 'Cannot specify more than 20 service types')
+    .default([]),
+  customerTypes: z
+    .array(z.enum(['new', 'returning', 'loyalty'], {
+      errorMap: () => ({ message: 'Invalid customer type' })
+    }))
+    .max(3, 'Cannot specify more than 3 customer types')
+    .default([]),
+  validFrom: z
+    .string()
+    .trim()
+    .datetime('Please provide a valid start date and time')
+    .refine((val) => new Date(val) >= new Date(Date.now() - 24 * 60 * 60 * 1000), 'Start date cannot be more than 24 hours in the past'),
+  validUntil: z
+    .string()
+    .trim()
+    .datetime('Please provide a valid end date and time')
+    .refine((val) => {
+      const endDate = new Date(val);
+      const maxDate = new Date();
+      maxDate.setFullYear(maxDate.getFullYear() + 2); // Max 2 years from now
+      return endDate <= maxDate;
+    }, 'End date cannot be more than 2 years in the future'),
   isActive: z.boolean().default(true)
 });
 
 const UpdateCampaignSchema = CreateCampaignSchema.partial().extend({
-  id: z.string().uuid()
+  id: z
+    .string()
+    .trim()
+    .uuid('Please provide a valid campaign ID')
+    .regex(UUID_REGEX, 'Campaign ID format is invalid')
 });
 
 const QuerySchema = z.object({

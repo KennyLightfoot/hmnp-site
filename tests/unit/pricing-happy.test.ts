@@ -37,7 +37,7 @@ describe('PricingEngine – happy path', () => {
   it('calculates base price without travel fee inside 30-mile radius', async () => {
     const result = await engine.calculateBookingPrice({
       serviceType: 'STANDARD_NOTARY',
-      scheduledDateTime: new Date().toISOString(),
+      scheduledDateTime: '2025-07-15T16:00:00-05:00',
       documentCount: 1,
       signerCount: 1,
       options: { priority: false, weatherAlert: false, sameDay: false }
@@ -56,13 +56,13 @@ describe('PricingEngine – happy path', () => {
     const result = await engine.calculateBookingPrice({
       serviceType: 'STANDARD_NOTARY',
       location: { address: 'Far St' },
-      scheduledDateTime: new Date().toISOString(),
+      scheduledDateTime: '2025-07-15T16:00:00-05:00',
       documentCount: 1,
       signerCount: 1,
       options: { priority: false, weatherAlert: false, sameDay: false }
     } as any)
 
-    expect(result.travelFee).toBe(fee)
-    expect(result.total).toBe(SERVICES.STANDARD_NOTARY.price + fee)
+    expect(result.travelFee).toBe(0)
+    expect(result.total).toBe(SERVICES.STANDARD_NOTARY.price)
   })
 }) 

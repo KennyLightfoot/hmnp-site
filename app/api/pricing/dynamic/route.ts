@@ -17,21 +17,84 @@ const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 30; // 30 requests per minute
 
 // Request validation schema
+const ZIP_CODE_REGEX = /^\d{5}$/; // 5-digit ZIP code
+const ADDRESS_REGEX = /^[a-zA-Z0-9\s\-#,.']{1,200}$/; // Address with common characters
+const CUSTOMER_ID_REGEX = /^[a-zA-Z0-9\-_]{1,50}$/; // Customer ID format
+const BOOKING_ID_REGEX = /^[a-zA-Z0-9\-_]{1,50}$/; // Booking ID format
+
 const DynamicPricingRequestSchema = z.object({
-  serviceType: z.enum(['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH']),
-  scheduledDateTime: z.string().datetime(),
-  location: z.object({
-    zipCode: z.string().regex(/^\d{5}$/, 'Must be a valid 5-digit ZIP code'),
-    latitude: z.number().min(-90).max(90).optional(),
-    longitude: z.number().min(-180).max(180).optional(),
-    address: z.string().optional()
+  serviceType: z.enum(['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH'], {
+    errorMap: () => ({ message: 'Please select a valid service type' })
   }),
-  urgency: z.enum(['standard', 'same_day', 'next_hour', 'rush_30min']).default('standard'),
-  documentCount: z.number().min(1).max(50).default(1),
-  signerCount: z.number().min(1).max(10).default(1),
-  estimatedDuration: z.number().min(15).max(300).default(60),
-  customerId: z.string().optional(),
-  bookingId: z.string().optional(),
+  scheduledDateTime: z
+    .string()
+    .trim()
+    .datetime('Please provide a valid ISO datetime')
+    .refine((val) => new Date(val) > new Date(), 'Scheduled time must be in the future')
+    .refine((val) => {
+      const scheduledDate = new Date(val);
+      const maxDate = new Date();
+      maxDate.setFullYear(maxDate.getFullYear() + 1); // Max 1 year ahead
+      return scheduledDate <= maxDate;
+    }, 'Cannot schedule more than 1 year in advance'),
+  location: z.object({
+    zipCode: z
+      .string()
+      .trim()
+      .regex(ZIP_CODE_REGEX, 'Must be a valid 5-digit ZIP code')
+      .length(5, 'ZIP code must be exactly 5 digits'),
+    latitude: z
+      .number()
+      .min(-90, 'Latitude must be between -90 and 90')
+      .max(90, 'Latitude must be between -90 and 90')
+      .refine((val) => Number.isFinite(val), 'Latitude must be a valid number')
+      .optional(),
+    longitude: z
+      .number()
+      .min(-180, 'Longitude must be between -180 and 180')
+      .max(180, 'Longitude must be between -180 and 180')
+      .refine((val) => Number.isFinite(val), 'Longitude must be a valid number')
+      .optional(),
+    address: z
+      .string()
+      .trim()
+      .max(200, 'Address must be 200 characters or less')
+      .regex(ADDRESS_REGEX, 'Address contains invalid characters')
+      .optional()
+  }),
+  urgency: z.enum(['standard', 'same_day', 'next_hour', 'rush_30min'], {
+    errorMap: () => ({ message: 'Please select a valid urgency level' })
+  }).default('standard'),
+  documentCount: z
+    .number()
+    .int('Document count must be a whole number')
+    .min(1, 'Must have at least 1 document')
+    .max(50, 'Cannot exceed 50 documents')
+    .default(1),
+  signerCount: z
+    .number()
+    .int('Signer count must be a whole number')
+    .min(1, 'Must have at least 1 signer')
+    .max(10, 'Cannot exceed 10 signers')
+    .default(1),
+  estimatedDuration: z
+    .number()
+    .int('Estimated duration must be a whole number')
+    .min(15, 'Minimum duration is 15 minutes')
+    .max(300, 'Maximum duration is 300 minutes (5 hours)')
+    .default(60),
+  customerId: z
+    .string()
+    .trim()
+    .max(50, 'Customer ID must be 50 characters or less')
+    .regex(CUSTOMER_ID_REGEX, 'Customer ID contains invalid characters')
+    .optional(),
+  bookingId: z
+    .string()
+    .trim()
+    .max(50, 'Booking ID must be 50 characters or less')
+    .regex(BOOKING_ID_REGEX, 'Booking ID contains invalid characters')
+    .optional(),
   includeBreakdown: z.boolean().default(true),
   includeAlternatives: z.boolean().default(false)
 });

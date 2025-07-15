@@ -1,11 +1,27 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
-interface FeedbackRequestBody {
-  name: string;
-  email?: string;
-  rating: number;
-  comments: string;
-  consentToDisplay: boolean;
+// ---------------------------------------------------------------------------
+// Input validation & minimal sanitization
+// ---------------------------------------------------------------------------
+
+const FeedbackRequestSchema = z.object({
+  name: z.string().min(1).max(100),
+  email: z.string().email().optional(),
+  rating: z.number().int().min(1).max(5),
+  comments: z.string().min(1).max(10_000),
+  consentToDisplay: z.boolean()
+});
+
+// Simple, no-dependency HTML escape to mitigate injection. For richer text we’ll
+// introduce a full DOMPurify pass later.
+function escapeHtml(unsafe: string) {
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 // GHL Custom Fields (from GHL_SETUP_GUIDE.md Section 4.C):
@@ -23,14 +39,27 @@ interface FeedbackRequestBody {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json() as FeedbackRequestBody;
+    const json = await request.json();
+    const parsed = FeedbackRequestSchema.safeParse(json);
 
-    const { name, email, rating, comments, consentToDisplay } = body;
-
-    // Basic validation
-    if (!name || !comments || rating === undefined || rating < 1 || rating > 5) {
-      return NextResponse.json({ message: 'Missing required fields or invalid rating.' }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json(
+        { message: 'Validation failed', errors: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
     }
+
+    // Sanitize free-text field
+    const {
+      name,
+      email,
+      rating,
+      consentToDisplay
+    } = parsed.data;
+
+    const comments = escapeHtml(parsed.data.comments.trim());
+
+    const body = { name, email, rating, comments, consentToDisplay } as const;
 
     console.log('Received feedback submission:', body);
 

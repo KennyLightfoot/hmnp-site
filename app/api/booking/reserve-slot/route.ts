@@ -9,10 +9,29 @@ import { redis } from '@/lib/redis';
 
 // Validation schema for slot reservation
 const SlotReservationSchema = z.object({
-  datetime: z.string().datetime('Valid ISO datetime required'),
-  serviceType: z.enum(['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH']),
-  customerEmail: z.string().email('Valid email required'),
-  estimatedDuration: z.number().min(15).max(480), // 15 minutes to 8 hours
+  datetime: z
+    .string()
+    .trim()
+    .refine((val) => !isNaN(new Date(val).getTime()), 'Valid ISO datetime required'),
+  serviceType: z.enum([
+    'QUICK_STAMP_LOCAL',
+    'STANDARD_NOTARY',
+    'EXTENDED_HOURS',
+    'LOAN_SIGNING',
+    'RON_SERVICES',
+    'BUSINESS_ESSENTIALS',
+    'BUSINESS_GROWTH',
+  ]),
+  customerEmail: z
+    .string()
+    .trim()
+    .email('Valid email required')
+    .max(254, 'Email is too long'),
+  estimatedDuration: z
+    .number()
+    .int()
+    .min(15)
+    .max(480), // 15 minutes to 8 hours
 });
 
 // Reservation expiry time (15 minutes)
@@ -111,7 +130,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Handle Redis connection errors
-    if (error.message.includes('Redis') || error.message.includes('ECONNREFUSED')) {
+    if ((error as any).message?.includes('Redis') || (error as any).message?.includes('ECONNREFUSED')) {
       console.error('Redis connection failed, allowing reservation to proceed');
       
       // If Redis is down, create a temporary reservation without persistence
@@ -122,9 +141,9 @@ export async function POST(request: NextRequest) {
         success: true,
         reservation: {
           id: `tmp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          datetime: request.body?.datetime || new Date().toISOString(),
-          serviceType: request.body?.serviceType || 'STANDARD_NOTARY',
-          estimatedDuration: request.body?.estimatedDuration || 60,
+          datetime: (request as any).body?.datetime || new Date().toISOString(),
+          serviceType: (request as any).body?.serviceType || 'STANDARD_NOTARY',
+          estimatedDuration: (request as any).body?.estimatedDuration || 60,
           reservedAt: reservedAt.toISOString(),
           expiresAt: expiresAt.toISOString(),
           expiresInMinutes: RESERVATION_EXPIRY_MINUTES,
@@ -137,7 +156,7 @@ export async function POST(request: NextRequest) {
       { 
         success: false,
         error: 'Failed to reserve time slot',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+        message: process.env.NODE_ENV === 'development' ? (error as any).message : 'Internal server error'
       },
       { status: 500 }
     );

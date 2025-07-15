@@ -23,56 +23,149 @@ import { validateBusinessRules } from '../../../../lib/business-rules/engine';
 import { TransparentPricingGHLIntegration } from '../../../../lib/ghl/transparent-pricing-integration';
 
 // Validation schema matching schema-v2 structure
+const PHONE_REGEX = /^\+?1?[2-9]\d{2}[2-9]\d{2}\d{4}$/; // US phone number format
+const ZIP_REGEX = /^\d{5}(-\d{4})?$/;
+const NAME_REGEX = /^[a-zA-Z\s\-'\.]{1,100}$/; // Names with common characters
+const ADDRESS_REGEX = /^[a-zA-Z0-9\s\-#,.']{1,120}$/; // Address with common characters
+const CITY_REGEX = /^[a-zA-Z\s\-'\.]{1,100}$/; // City names
+const STATE_REGEX = /^[a-zA-Z\s]{2,100}$/; // State names
+const TIMEZONE_REGEX = /^[A-Za-z]+\/[A-Za-z_]+$/; // Timezone format like America/Chicago
+const NOTES_REGEX = /^[\s\S]{0,1000}$/; // Location notes (any printable chars)
+
 const BookingCreateSchema = z.object({
   // Service selection
-  serviceType: z.enum(['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH']),
-  
+  serviceType: z.enum([
+    'QUICK_STAMP_LOCAL',
+    'STANDARD_NOTARY',
+    'EXTENDED_HOURS',
+    'LOAN_SIGNING',
+    'RON_SERVICES',
+    'BUSINESS_ESSENTIALS',
+    'BUSINESS_GROWTH',
+  ], {
+    errorMap: () => ({ message: 'Please select a valid service type' })
+  }),
+
   // Customer information
-  customerName: z.string().min(1, 'Name is required'),
-  customerEmail: z.string().email('Valid email is required'),
-  customerPhone: z.string().optional(),
-  
-  // Scheduling - now using proper DateTime with flexible validation
-  scheduledDateTime: z.string()
-    .min(1, 'Date and time is required')
+  customerName: z
+    .string()
+    .trim()
+    .min(1, 'Customer name is required')
+    .max(100, 'Customer name must be 100 characters or less')
+    .regex(NAME_REGEX, 'Customer name contains invalid characters'),
+  customerEmail: z
+    .string()
+    .trim()
+    .min(1, 'Email address is required')
+    .email('Please enter a valid email address')
+    .max(254, 'Email address is too long')
+    .refine((email) => !email.includes('..'), 'Email address format is invalid')
+    .refine((email) => !email.startsWith('.') && !email.endsWith('.'), 'Email address format is invalid'),
+  customerPhone: z
+    .string()
+    .trim()
+    .regex(PHONE_REGEX, 'Please enter a valid US phone number')
+    .transform((phone) => phone.replace(/\D/g, '')) // Strip non-digits for storage
+    .refine((phone) => phone.length === 10 || phone.length === 11, 'Phone number must be 10 or 11 digits')
+    .optional(),
+
+  // Scheduling - ISO string enforced
+  scheduledDateTime: z
+    .string()
+    .trim()
+    .min(1, 'Scheduled date and time is required')
+    .refine((val) => !isNaN(new Date(val).getTime()), 'Please provide a valid date and time')
+    .refine((val) => new Date(val) > new Date(), 'Scheduled time must be in the future')
     .refine((val) => {
-      // Try to parse the date - accept various formats
-      const date = new Date(val);
-      return !isNaN(date.getTime());
-    }, 'Valid date/time required')
-    .transform((val) => {
-      // Ensure we return a proper ISO string
-      const date = new Date(val);
-      return date.toISOString();
-    }),
-  timeZone: z.string().default('America/Chicago'),
-  
-  // Location (for mobile services) - mapped to database enum
-  locationType: z.enum(['HOME', 'OFFICE', 'HOSPITAL', 'OTHER']).optional(),
-  addressStreet: z.string().optional(),
-  addressCity: z.string().optional(), 
-  addressState: z.string().optional(),
-  addressZip: z.string().optional(),
-  locationNotes: z.string().optional(),
-  
+      const scheduledDate = new Date(val);
+      const maxDate = new Date();
+      maxDate.setFullYear(maxDate.getFullYear() + 1); // Max 1 year ahead
+      return scheduledDate <= maxDate;
+    }, 'Cannot schedule more than 1 year in advance')
+    .transform((val) => new Date(val).toISOString()),
+  timeZone: z
+    .string()
+    .trim()
+    .regex(TIMEZONE_REGEX, 'Please provide a valid timezone')
+    .default('America/Chicago'),
+
+  // Location (for mobile services)
+  locationType: z.enum(['HOME', 'OFFICE', 'HOSPITAL', 'OTHER'], {
+    errorMap: () => ({ message: 'Please select a valid location type' })
+  }).optional(),
+  addressStreet: z
+    .string()
+    .trim()
+    .max(120, 'Street address must be 120 characters or less')
+    .regex(ADDRESS_REGEX, 'Street address contains invalid characters')
+    .optional(),
+  addressCity: z
+    .string()
+    .trim()
+    .max(100, 'City must be 100 characters or less')
+    .regex(CITY_REGEX, 'City contains invalid characters')
+    .optional(),
+  addressState: z
+    .string()
+    .trim()
+    .max(100, 'State must be 100 characters or less')
+    .regex(STATE_REGEX, 'State contains invalid characters')
+    .optional(),
+  addressZip: z
+    .string()
+    .trim()
+    .regex(ZIP_REGEX, 'Please enter a valid ZIP code (e.g., 12345 or 12345-6789)')
+    .optional(),
+  locationNotes: z
+    .string()
+    .trim()
+    .max(1000, 'Location notes must be 1000 characters or less')
+    .regex(NOTES_REGEX, 'Location notes contain invalid characters')
+    .optional(),
+
   // Pricing (enhanced for transparent pricing)
   pricing: z.object({
-    basePrice: z.number(),
-    travelFee: z.number().default(0),
-    totalPrice: z.number(),
+    basePrice: z
+      .number()
+      .min(0, 'Base price must be 0 or greater')
+      .max(10000, 'Base price cannot exceed $10,000')
+      .refine((val) => Number.isFinite(val), 'Base price must be a valid number'),
+    travelFee: z
+      .number()
+      .min(0, 'Travel fee must be 0 or greater')
+      .max(1000, 'Travel fee cannot exceed $1,000')
+      .default(0)
+      .refine((val) => Number.isFinite(val), 'Travel fee must be a valid number'),
+    totalPrice: z
+      .number()
+      .min(0, 'Total price must be 0 or greater')
+      .max(11000, 'Total price cannot exceed $11,000')
+      .refine((val) => Number.isFinite(val), 'Total price must be a valid number'),
     // Optional transparent pricing data
-    transparentData: z.object({
-      serviceType: z.string(),
-      breakdown: z.any(),
-      transparency: z.any(),
-      businessRules: z.any(),
-      metadata: z.any()
-    }).optional()
+    transparentData: z
+      .object({
+        serviceType: z.string().trim().max(100),
+        breakdown: z.any(),
+        transparency: z.any(),
+        businessRules: z.any(),
+        metadata: z.any(),
+      })
+      .optional(),
   }),
-  
+
   // Documents (for RON)
-  numberOfDocuments: z.number().default(1),
-  numberOfSigners: z.number().default(1)
+  numberOfDocuments: z
+    .number()
+    .int('Number of documents must be a whole number')
+    .min(1, 'Must have at least 1 document')
+    .max(20, 'Cannot exceed 20 documents')
+    .default(1),
+  numberOfSigners: z
+    .number()
+    .int('Number of signers must be a whole number')
+    .min(1, 'Must have at least 1 signer')
+    .max(20, 'Cannot exceed 20 signers')
+    .default(1),
 });
 
 // Map frontend location types to database enum values

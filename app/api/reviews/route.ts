@@ -11,24 +11,81 @@ import { z } from 'zod';
  */
 
 // Validation schemas
+const NAME_REGEX = /^[a-zA-Z\s\-'\.]{1,200}$/; // Names with common characters
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/; // Stricter email pattern
+const REVIEW_TEXT_REGEX = /^[\s\S]{1,5000}$/; // Review text (any printable chars)
+const SERVICE_TYPE_REGEX = /^[a-zA-Z0-9\s\-_]{1,100}$/; // Service type format
+const BOOKING_ID_REGEX = /^[a-zA-Z0-9\-_]{1,50}$/; // Booking ID format
+const GHL_CONTACT_ID_REGEX = /^[a-zA-Z0-9\-_]{1,50}$/; // GHL contact ID format
+const RESPONSE_TEXT_REGEX = /^[\s\S]{1,2000}$/; // Response text (any printable chars)
+
 const CreateReviewSchema = z.object({
-  reviewerName: z.string().min(1, 'Reviewer name is required').max(200),
-  reviewerEmail: z.string().email().optional(),
-  rating: z.number().int().min(1).max(5),
-  reviewText: z.string().min(1, 'Review text is required'),
-  serviceType: z.string().optional(),
-  platform: z.enum(['google', 'internal', 'yelp', 'facebook']).default('internal'),
-  bookingId: z.string().optional(),
-  ghlContactId: z.string().optional(),
+  reviewerName: z
+    .string()
+    .trim()
+    .min(1, 'Reviewer name is required')
+    .max(200, 'Reviewer name must be 200 characters or less')
+    .regex(NAME_REGEX, 'Reviewer name contains invalid characters'),
+  reviewerEmail: z
+    .string()
+    .trim()
+    .email('Please enter a valid email address')
+    .max(254, 'Email address is too long')
+    .regex(EMAIL_REGEX, 'Email address format is invalid')
+    .refine((email) => !email.includes('..'), 'Email address format is invalid')
+    .refine((email) => !email.startsWith('.') && !email.endsWith('.'), 'Email address format is invalid')
+    .optional(),
+  rating: z
+    .number()
+    .int('Rating must be a whole number')
+    .min(1, 'Rating must be at least 1 star')
+    .max(5, 'Rating cannot exceed 5 stars'),
+  reviewText: z
+    .string()
+    .trim()
+    .min(1, 'Review text is required')
+    .max(5000, 'Review text must be 5000 characters or less')
+    .regex(REVIEW_TEXT_REGEX, 'Review text contains invalid characters'),
+  serviceType: z
+    .string()
+    .trim()
+    .max(100, 'Service type must be 100 characters or less')
+    .regex(SERVICE_TYPE_REGEX, 'Service type contains invalid characters')
+    .optional(),
+  platform: z.enum(['google', 'internal', 'yelp', 'facebook'], {
+    errorMap: () => ({ message: 'Please select a valid platform' })
+  }).default('internal'),
+  bookingId: z
+    .string()
+    .trim()
+    .max(50, 'Booking ID must be 50 characters or less')
+    .regex(BOOKING_ID_REGEX, 'Booking ID contains invalid characters')
+    .optional(),
+  ghlContactId: z
+    .string()
+    .trim()
+    .max(50, 'GHL contact ID must be 50 characters or less')
+    .regex(GHL_CONTACT_ID_REGEX, 'GHL contact ID contains invalid characters')
+    .optional(),
   isVerified: z.boolean().default(false),
-  metadata: z.record(z.any()).optional()
+  metadata: z.record(z.string().max(1000, 'Metadata value too long')).optional()
 });
 
 const UpdateReviewSchema = z.object({
   isApproved: z.boolean().optional(),
   isFeatured: z.boolean().optional(),
-  responseText: z.string().optional(),
-  helpfulCount: z.number().int().optional()
+  responseText: z
+    .string()
+    .trim()
+    .max(2000, 'Response text must be 2000 characters or less')
+    .regex(RESPONSE_TEXT_REGEX, 'Response text contains invalid characters')
+    .optional(),
+  helpfulCount: z
+    .number()
+    .int('Helpful count must be a whole number')
+    .min(0, 'Helpful count cannot be negative')
+    .max(999999, 'Helpful count is too large')
+    .optional()
 });
 
 /**

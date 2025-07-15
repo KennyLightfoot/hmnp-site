@@ -16,38 +16,127 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 // Enhanced validation schemas
+const BOOKING_ID_REGEX = /^[a-zA-Z0-9\-_]{1,50}$/; // Alphanumeric with hyphens/underscores
+const CUSTOMER_ID_REGEX = /^[a-zA-Z0-9\-_]{1,50}$/; // Stripe customer ID format
+const NAME_REGEX = /^[a-zA-Z\s\-'\.]{1,100}$/; // Names with common characters
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/; // Stricter email pattern
+const DESCRIPTION_REGEX = /^[\s\S]{1,255}$/; // Description with any printable chars
+const IP_REGEX = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+const URL_REGEX = /^https?:\/\/[^\s/$.?#].[^\s]*$/; // Basic URL validation
+
 const EnhancedPaymentRequestSchema = z.object({
-  bookingId: z.string().min(1),
-  amount: z.number().positive().max(10000, 'Amount too large'),
-  currency: z.literal('usd').default('usd'),
-  paymentMethod: z.enum(['card', 'ach', 'apple_pay', 'google_pay', 'cash', 'check']),
-  paymentMethodId: z.string().optional(),
-  customerId: z.string().optional(),
-  customerEmail: z.string().email(),
-  customerName: z.string().min(1),
-  description: z.string().min(1),
-  metadata: z.record(z.string()).optional(),
-  returnUrl: z.string().url().optional(),
+  bookingId: z
+    .string()
+    .trim()
+    .min(1, 'Booking ID is required')
+    .max(50, 'Booking ID must be 50 characters or less')
+    .regex(BOOKING_ID_REGEX, 'Booking ID contains invalid characters'),
+  amount: z
+    .number()
+    .positive('Amount must be greater than 0')
+    .min(0.50, 'Minimum amount is $0.50')
+    .max(10000, 'Maximum amount is $10,000')
+    .refine((val) => Number.isFinite(val), 'Amount must be a valid number')
+    .refine((val) => Number((val * 100).toFixed(0)) / 100 === val, 'Amount must have at most 2 decimal places'),
+  currency: z.literal('usd', {
+    errorMap: () => ({ message: 'Only USD currency is supported' })
+  }).default('usd'),
+  paymentMethod: z.enum(['card', 'ach', 'apple_pay', 'google_pay', 'cash', 'check'], {
+    errorMap: () => ({ message: 'Please select a valid payment method' })
+  }),
+  paymentMethodId: z
+    .string()
+    .trim()
+    .min(1, 'Payment method ID is required when provided')
+    .max(100, 'Payment method ID is too long')
+    .optional(),
+  customerId: z
+    .string()
+    .trim()
+    .min(1, 'Customer ID is required when provided')
+    .max(50, 'Customer ID must be 50 characters or less')
+    .regex(CUSTOMER_ID_REGEX, 'Customer ID contains invalid characters')
+    .optional(),
+  customerEmail: z
+    .string()
+    .trim()
+    .min(1, 'Customer email is required')
+    .email('Please enter a valid email address')
+    .max(254, 'Email address is too long')
+    .regex(EMAIL_REGEX, 'Email address format is invalid')
+    .refine((email) => !email.includes('..'), 'Email address format is invalid')
+    .refine((email) => !email.startsWith('.') && !email.endsWith('.'), 'Email address format is invalid'),
+  customerName: z
+    .string()
+    .trim()
+    .min(1, 'Customer name is required')
+    .max(100, 'Customer name must be 100 characters or less')
+    .regex(NAME_REGEX, 'Customer name contains invalid characters'),
+  description: z
+    .string()
+    .trim()
+    .min(1, 'Description is required')
+    .max(255, 'Description must be 255 characters or less')
+    .regex(DESCRIPTION_REGEX, 'Description contains invalid characters'),
+  metadata: z.record(z.string().max(500, 'Metadata value too long')).optional(),
+  returnUrl: z
+    .string()
+    .trim()
+    .url('Please enter a valid URL')
+    .max(2048, 'URL is too long')
+    .regex(URL_REGEX, 'URL format is invalid')
+    .optional(),
   savePaymentMethod: z.boolean().default(false),
   
   // ACH specific fields
-  bankAccountToken: z.string().optional(),
-  mandateData: z.object({
-    customerAcceptance: z.object({
-      type: z.literal('online'),
-      online: z.object({
-        ipAddress: z.string(),
-        userAgent: z.string()
-      })
+  bankAccountToken: z
+    .string()
+    .trim()
+    .min(1, 'Bank account token is required when provided')
+    .max(100, 'Bank account token is too long')
+    .optional(),
+  mandateData: z
+    .object({
+      customerAcceptance: z.object({
+        type: z.literal('online', {
+          errorMap: () => ({ message: 'Only online customer acceptance is supported' })
+        }),
+        online: z.object({
+          ipAddress: z
+            .string()
+            .trim()
+            .min(1, 'IP address is required')
+            .regex(IP_REGEX, 'Please enter a valid IP address'),
+          userAgent: z
+            .string()
+            .trim()
+            .min(1, 'User agent is required')
+            .max(500, 'User agent is too long'),
+        }),
+      }),
     })
-  }).optional(),
+    .optional(),
   
   // Wallet specific fields
-  walletToken: z.string().optional(),
+  walletToken: z
+    .string()
+    .trim()
+    .min(1, 'Wallet token is required when provided')
+    .max(100, 'Wallet token is too long')
+    .optional(),
   
   // Payment option
-  paymentOption: z.enum(['full', 'deposit']).default('full'),
-  depositAmount: z.number().optional()
+  paymentOption: z.enum(['full', 'deposit'], {
+    errorMap: () => ({ message: 'Please select either full payment or deposit' })
+  }).default('full'),
+  depositAmount: z
+    .number()
+    .positive('Deposit amount must be greater than 0')
+    .min(0.50, 'Minimum deposit amount is $0.50')
+    .max(5000, 'Maximum deposit amount is $5,000')
+    .refine((val) => Number.isFinite(val), 'Deposit amount must be a valid number')
+    .refine((val) => Number((val * 100).toFixed(0)) / 100 === val, 'Deposit amount must have at most 2 decimal places')
+    .optional(),
 });
 
 const PaymentRecoveryRequestSchema = z.object({
