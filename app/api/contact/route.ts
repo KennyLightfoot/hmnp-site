@@ -134,7 +134,8 @@ export async function POST(request: Request) {
     const NAME_REGEX = /^[a-zA-Z\s\-'\.]{1,50}$/; // Names with common characters
     const SUBJECT_REGEX = /^[a-zA-Z0-9\s\-_,.\?!]{1,150}$/; // Subject line allowed chars
     const MESSAGE_REGEX = /^[\s\S]{1,2000}$/; // Message content (any printable chars)
-    const TIME_REGEX = /^(morning|afternoon|evening|anytime|[0-9]{1,2}:[0-9]{2}\s?(AM|PM|am|pm))$/i;
+    // Accept common phrases ("any time", "anytime") or formatted times like "3:30 PM"
+    const TIME_REGEX = /^(morning|afternoon|evening|any\s?time|[0-9]{1,2}:[0-9]{2}\s?(AM|PM|am|pm))$/i;
 
     const contactFormSchema = z.object({
       firstName: z
