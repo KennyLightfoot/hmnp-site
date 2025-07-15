@@ -5,8 +5,11 @@ import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Resend } from 'resend';
+// Instantiate Resend only if API key is available
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null as unknown as InstanceType<typeof Resend>;
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Password reset request schema
 const resetRequestSchema = z.object({
@@ -97,6 +100,8 @@ export async function POST(request: NextRequest) {
     // Send reset email if Resend is configured
     if (process.env.RESEND_API_KEY) {
       try {
+        if (!resend) throw new Error('Resend not configured');
+
         await resend.emails.send({
           from: process.env.FROM_EMAIL || 'notifications@houstonmobilenotarypros.com',
           to: user.email!,

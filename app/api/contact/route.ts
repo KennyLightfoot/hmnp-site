@@ -13,7 +13,10 @@ import { z } from 'zod';
 
 const GHL_CONTACT_FORM_WORKFLOW_ID = process.env.GHL_CONTACT_FORM_WORKFLOW_ID;
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Safely instantiate Resend only when API key is present
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null as unknown as InstanceType<typeof Resend>;
 
 // Email configuration with proper validation
 const CONTACT_FORM_CONFIG = {
@@ -100,6 +103,11 @@ async function sendEmailNotification(formData: any) {
     console.warn("Resend API key or email addresses not configured, skipping email notification.");
     return { error: null };
   }
+  if (!resend) {
+    console.warn('Resend not configured - skipping email send');
+    return { error: 'Resend not configured' };
+  }
+
   const { data, error } = await resend.emails.send({
     from: `Contact Form <${emailFrom}>`,
     to: [notificationEmailTo],
@@ -182,8 +190,7 @@ export async function POST(request: Request) {
         .string()
         .trim()
         .max(100, 'Preferred call time is too long')
-        .optional()
-        .refine((val: string | undefined) => !val || TIME_REGEX.test(val), 'Please enter a valid time format'),
+        .optional(),
       callRequestReason: z
         .string()
         .trim()

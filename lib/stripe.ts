@@ -8,13 +8,25 @@
 
 import Stripe from 'stripe';
 import { logger } from './logger';
-import { getRequiredCleanEnv, getCleanEnv, detectEnvironmentCorruption } from './env-clean';
+import { getCleanEnv, detectEnvironmentCorruption } from './env-clean';
 
 // Detect environment corruption at startup
 detectEnvironmentCorruption();
 
 // Environment validation with automatic cleaning
-const stripeSecretKey = getRequiredCleanEnv('STRIPE_SECRET_KEY', 'Required for Stripe payment processing');
+let stripeSecretKey = getCleanEnv('STRIPE_SECRET_KEY');
+
+// Provide a harmless placeholder during the *build* phase if no key is set.
+// NEXT_PHASE === 'phase-production-build' is set by Next.js at compile time.
+if (!stripeSecretKey) {
+  const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build';
+  if (!isBuildPhase) {
+    throw new Error('Environment variable STRIPE_SECRET_KEY is required (Required for Stripe payment processing)');
+  }
+  stripeSecretKey = 'sk_test_placeholder';
+  logger.warn('Using placeholder Stripe key for build phase');
+}
+
 const stripePublishableKey = getCleanEnv('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY');
 
 // stripeSecretKey is already validated by getRequiredCleanEnv

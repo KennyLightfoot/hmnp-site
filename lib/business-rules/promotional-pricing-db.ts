@@ -89,7 +89,7 @@ export class DatabasePromotionalPricingEngine {
       const now = new Date();
       const activeCampaigns = await prisma.promotionalCampaign.findMany({
         where: {
-          isActive: true,
+          is_active: true,
           validFrom: { lte: now },
           validUntil: { gte: now }
         },

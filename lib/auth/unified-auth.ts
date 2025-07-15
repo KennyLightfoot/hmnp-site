@@ -22,8 +22,10 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Role } from '@prisma/client';
 
-// Initialize Resend
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend only when API key present to avoid build crashes
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null as unknown as InstanceType<typeof Resend>;
 
 // ===========================================
 // TYPES AND INTERFACES
@@ -93,7 +95,7 @@ export const authOptions: NextAuthOptions = {
         `;
         
         try {
-          if (!process.env.RESEND_API_KEY) {
+          if (!process.env.RESEND_API_KEY || !resend) {
             throw new Error('RESEND_API_KEY is not set');
           }
           

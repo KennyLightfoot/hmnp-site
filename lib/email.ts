@@ -1,6 +1,9 @@
 import { Resend } from "resend"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Only instantiate Resend when an API key is provided to avoid build-time crashes
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null as unknown as InstanceType<typeof Resend>
 
 interface EmailOptions {
   to: string
@@ -18,6 +21,12 @@ export async function sendEmail(options: EmailOptions) {
     text,
     from = process.env.FROM_EMAIL || "notifications@houstonmobilenotarypros.com",
   } = options
+
+  // Skip sending in environments without a configured API key
+  if (!resend) {
+    console.warn("sendEmail skipped – RESEND_API_KEY not set")
+    return { success: false, error: new Error("Resend not configured") }
+  }
 
   try {
     const result = await resend.emails.send({

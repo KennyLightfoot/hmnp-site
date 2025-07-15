@@ -10,11 +10,20 @@
  */
 
 import Stripe from 'stripe';
-import { getRequiredCleanEnv, getCleanEnv } from './env-clean';
+import { getCleanEnv } from './env-clean';
 import { logger } from './logger';
 
 // Environment validation
-const stripeSecretKey = getRequiredCleanEnv('STRIPE_SECRET_KEY', 'Required for Stripe payment processing');
+let stripeSecretKey = getCleanEnv('STRIPE_SECRET_KEY');
+
+if (!stripeSecretKey) {
+  const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build';
+  if (!isBuildPhase) {
+    throw new Error('Environment variable STRIPE_SECRET_KEY is required (Required for Stripe payment processing)');
+  }
+  stripeSecretKey = 'sk_test_placeholder';
+  logger.warn('Using placeholder Stripe key for build phase');
+}
 const stripePublishableKey = getCleanEnv('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY');
 
 if (!stripePublishableKey) {

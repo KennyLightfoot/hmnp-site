@@ -313,23 +313,23 @@ model PromotionalCampaign {
   description          String?
   type                 String                   @db.VarChar(20)
   value                Decimal                  @db.Decimal(10, 2)
-  max_discount         Decimal?                 @db.Decimal(10, 2)
-  min_order_value      Decimal?                 @default(0) @db.Decimal(10, 2)
-  max_uses             Int?
-  current_uses         Int?                     @default(0)
-  service_types        String[]
-  customer_types       String[]
-  valid_from           DateTime
-  valid_until          DateTime
-  is_active            Boolean                  @default(true)
-  created_by           String?                  @db.Uuid
-  created_at           DateTime                 @default(now())
-  updated_at           DateTime                 @default(now())
+  maxDiscount          Decimal?                 @map("max_discount") @db.Decimal(10, 2)
+  minOrderValue        Decimal?                 @map("min_order_value") @default(0) @db.Decimal(10, 2)
+  maxUses              Int?                     @map("max_uses")
+  currentUses          Int?                     @map("current_uses") @default(0)
+  serviceTypes         String[]                 @map("service_types")
+  customerTypes        String[]                 @map("customer_types")
+  validFrom            DateTime                 @map("valid_from")
+  validUntil           DateTime                 @map("valid_until")
+  isActive             Boolean                  @map("is_active") @default(true)
+  createdBy            String?                  @map("created_by") @db.Uuid
+  createdAt            DateTime                 @map("created_at") @default(now())
+  updatedAt            DateTime                 @map("updated_at") @default(now())
   campaign_performance CampaignPerformance[]
   promo_code_usage     PromoCodeUsageTracking[]
 
-  @@index([is_active], map: "promotional_campaigns_active_idx")
-  @@index([valid_from, valid_until], map: "promotional_campaigns_dates_idx")
+  @@index([isActive], map: "promotional_campaigns_active_idx")
+  @@index([validFrom, validUntil], map: "promotional_campaigns_dates_idx")
   @@map("promotional_campaigns")
 }
 
