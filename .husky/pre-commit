@@ -1,5 +1,4 @@
-#!/usr/bin/env sh
-. "$(dirname "$0")/_/husky.sh"
+#!/bin/sh
 
 # Prevent secrets & obvious security issues from entering the repo
 npx --no-install gitleaks protect --staged --verbose
