@@ -34,6 +34,7 @@ import {
 
 import { CreateBooking } from '@/lib/booking-validation';
 import { SchedulingStepProps } from '@/lib/types/booking-interfaces';
+import { getServiceId } from '@/lib/services/serviceIdMap';
 
 interface TimeSlot {
   startTime: string;
@@ -179,18 +180,8 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
     setLoadingDates(prev => new Set(prev).add(date));
 
     try {
-      // Map serviceType to serviceId for the working endpoint (real database IDs)
-      const serviceMapping = {
-        'STANDARD_NOTARY': 'standard-notary-002',
-        'EXTENDED_HOURS': 'extended-hours-003',
-        'LOAN_SIGNING': 'loan-signing-004',
-        'RON_SERVICES': 'ron-services-005'
-      };
-      
-      const serviceId = serviceMapping[watchedServiceType as keyof typeof serviceMapping];
-      if (!serviceId) {
-        throw new Error(`Invalid service type: ${watchedServiceType}`);
-      }
+      // Resolve service ID from central map
+      const serviceId = getServiceId(watchedServiceType);
       
       // Use the WORKING availability endpoint
       const response = await fetch(`/api/availability?serviceId=${serviceId}&date=${date}&timezone=America/Chicago`);

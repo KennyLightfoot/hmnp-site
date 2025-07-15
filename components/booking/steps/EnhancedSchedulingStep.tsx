@@ -43,6 +43,7 @@ import {
 import { CreateBooking } from '@/lib/booking-validation';
 import { SchedulingStepProps } from '@/lib/types/booking-interfaces';
 import EnhancedTimeSlotDisplay, { EnhancedTimeSlot } from '../EnhancedTimeSlotDisplay';
+import { getServiceId } from '@/lib/services/serviceIdMap';
 
 // Urgency levels configuration
 const URGENCY_LEVELS = [
@@ -162,18 +163,7 @@ export default function EnhancedSchedulingStep({
     setAvailabilityError(null);
     
     try {
-      // Map serviceType to serviceId for the working endpoint (real database IDs)
-      const serviceMapping = {
-        'STANDARD_NOTARY': 'standard-notary-002',
-        'EXTENDED_HOURS': 'extended-hours-003',
-        'LOAN_SIGNING': 'loan-signing-004', 
-        'RON_SERVICES': 'ron-services-005'
-      };
-      
-      const serviceId = serviceMapping[watchedServiceType as keyof typeof serviceMapping];
-      if (!serviceId) {
-        throw new Error(`Invalid service type: ${watchedServiceType}`);
-      }
+      const serviceId = getServiceId(watchedServiceType);
       
       // Use the WORKING availability endpoint
       const response = await fetch(

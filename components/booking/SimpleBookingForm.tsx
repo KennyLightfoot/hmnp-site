@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CreditCard } from 'lucide-react';
+import { getServiceId } from '@/lib/services/serviceIdMap';
 
 const SERVICE_PRICES = {
   'QUICK_STAMP_LOCAL': 50,
@@ -109,17 +110,11 @@ export default function SimpleBookingForm() {
     setFormData(prev => ({ ...prev, bookingTime: '' })); // Clear selected time
     
     try {
-      // Get serviceId from serviceType mapping (real database IDs)
-      const serviceMapping = {
-        'STANDARD_NOTARY': 'standard-notary-002',
-        'EXTENDED_HOURS': 'extended-hours-003', 
-        'LOAN_SIGNING': 'loan-signing-004',
-        'RON_SERVICES': 'ron-services-005'
-      };
-      
-      const serviceId = serviceMapping[formData.serviceType as keyof typeof serviceMapping];
-      if (!serviceId) {
-        setError('Invalid service type selected');
+      let serviceId: string;
+      try {
+        serviceId = getServiceId(formData.serviceType);
+      } catch (err) {
+        setError('Invalid or unsupported service type selected');
         return;
       }
       

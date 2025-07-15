@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { getServiceId } from '@/lib/services/serviceIdMap';
 import { createAppointment } from '@/lib/ghl/api';
 import fs from 'fs';
 
@@ -33,18 +34,13 @@ export async function POST(req: NextRequest) {
 
   const iso = new Date(`${data.meetingDate}T${data.meetingTime}`);
 
-  // Map service types to actual service IDs
-  const serviceTypeMap = {
-    'RON': 'ron-services-005',
-    'Mobile': 'standard-notary-002',
-    'LoanSigning': 'loan-signing-004'
-  };
-  
-  const serviceId = serviceTypeMap[data.serviceType as keyof typeof serviceTypeMap];
-  if (!serviceId) {
-    return new Response(JSON.stringify({ 
-      ok: false, 
-      error: `Invalid service type: ${data.serviceType}` 
+  let serviceId: string;
+  try {
+    serviceId = getServiceId(data.serviceType.toUpperCase());
+  } catch {
+    return new Response(JSON.stringify({
+      ok: false,
+      error: `Invalid service type: ${data.serviceType}`
     }), { status: 400 });
   }
 
