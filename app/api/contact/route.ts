@@ -182,9 +182,8 @@ export async function POST(request: Request) {
         .string()
         .trim()
         .max(100, 'Preferred call time is too long')
-        .regex(TIME_REGEX, 'Please enter a valid time format')
         .optional()
-        .or(z.literal('')),
+        .refine((val: string | undefined) => !val || TIME_REGEX.test(val), 'Please enter a valid time format'),
       callRequestReason: z
         .string()
         .trim()
