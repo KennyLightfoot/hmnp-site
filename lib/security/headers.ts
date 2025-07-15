@@ -36,7 +36,7 @@ const DEFAULT_CONFIG: Required<SecurityHeadersConfig> = {
 /**
  * Content Security Policy configuration
  */
-function getCSPHeader(isDevelopment: boolean = false): string {
+export function getCSPHeader(isDevelopment: boolean = false): string {
   const baseCSP = {
     'default-src': ["'self'"],
     'script-src': [
