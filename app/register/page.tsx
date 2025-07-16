@@ -132,6 +132,7 @@ export default function RegisterPage() {
             >
               <option value={Role.PARTNER}>Partner</option>
               <option value={Role.STAFF}>Staff</option>
+              <option value={Role.SIGNER}>Signer</option>
             </select>
           </div>
 

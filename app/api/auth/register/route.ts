@@ -11,8 +11,12 @@ const SALT_ROUNDS = 10;
 // Enhanced validation schema
 const registerSchema = z.object({
   email: z.string().trim().email('Valid email is required').max(254),
-  password: z.string().min(8, 'Password must be at least 8 characters long'),
-  role: z.enum(['STAFF', 'NOTARY']),
+  // At least 8 chars, 1 letter, 1 number
+  password: z
+    .string()
+    .regex(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_+\-=]{8,}$/,
+      'Password must be at least 8 characters and contain letters and numbers'),
+  role: z.enum(['STAFF', 'NOTARY', 'PARTNER', 'SIGNER']),
   name: z.string().trim().min(1, 'Name is required').max(100).optional(),
 });
 

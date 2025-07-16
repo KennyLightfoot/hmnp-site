@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { UserRoleSelect } from "@/components/admin/UserRoleSelect";
 import { InviteUserDialog } from "@/components/admin/InviteUserDialog";
 import { SetPasswordDialog } from "@/components/admin/SetPasswordDialog";
+import ImpersonateButton from "@/components/admin/ImpersonateButton";
+import ResetTwoFactorButton from "@/components/admin/ResetTwoFactorButton";
 
 // Helper function to format dates (can move to utils)
 const formatDateTime = (date: Date | string | null | undefined) => {
@@ -85,11 +87,13 @@ export default async function AdminUsersPage() {
                 </TableCell>
                 <TableCell>{formatDateTime(user.createdAt)}</TableCell>
                 <TableCell className="text-right">
-                  <SetPasswordDialog userId={user.id} userEmail={user.email}>
-                    <Button variant="outline" size="sm">
-                      Set Password
-                    </Button>
-                  </SetPasswordDialog>
+                  <div className="flex gap-2 justify-end">
+                    <SetPasswordDialog userId={user.id} userEmail={user.email}>
+                      <Button variant="outline" size="sm">Set Password</Button>
+                    </SetPasswordDialog>
+                    <ImpersonateButton userId={user.id} userEmail={user.email} />
+                    <ResetTwoFactorButton userId={user.id} userEmail={user.email} />
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

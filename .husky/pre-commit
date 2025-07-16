@@ -8,4 +8,4 @@ else
 fi
 
 # Basic code quality gate (fast)
-pnpm lint -s 
+pnpm lint 

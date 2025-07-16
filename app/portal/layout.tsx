@@ -17,6 +17,9 @@ export default async function PortalLayout({ children }: PortalLayoutProps) {
           <Link href="/portal" className="block px-3 py-2 rounded hover:bg-gray-200">
             Assignments
           </Link>
+          <Link href="/portal/security" className="block px-3 py-2 rounded hover:bg-gray-200">
+            Security
+          </Link>
         </nav>
       </aside>
       <main className="flex-1 p-6">
