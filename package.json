@@ -43,7 +43,9 @@
     "db:seed": "dotenv -e .env.local -- prisma db seed",
     "setup-ghl-oauth": "node scripts/setup-ghl-oauth.js",
     "setup-ghl-calendars": "node scripts/setup-ghl-calendars.js",
-    "verify-ghl-calendars": "node scripts/setup-ghl-calendars.js --verify-only"
+    "verify-ghl-calendars": "node scripts/setup-ghl-calendars.js --verify-only",
+    "booking:audit": "tsx scripts/audit-booking-config.ts",
+    "booking:fix-hours": "tsx scripts/fix-business-hours.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -36,8 +36,16 @@ const DEFAULT_BUSINESS_HOURS: BusinessHours[] = [
   { startTime: '09:00', endTime: '17:00', dayOfWeek: 4 }, // Thursday
   { startTime: '09:00', endTime: '17:00', dayOfWeek: 5 }, // Friday
   { startTime: '10:00', endTime: '15:00', dayOfWeek: 6 }, // Saturday (Limited hours)
-  // Sunday closed by default
+  { startTime: '10:00', endTime: '15:00', dayOfWeek: 0 }, // Sunday (Limited hours)
 ];
+
+// ---------------------------------------------------------------------------
+// ⏰ Service-specific hour overrides (SOP compliant)
+// ---------------------------------------------------------------------------
+const SERVICE_HOUR_OVERRIDES: Record<string, { start: string; end: string }> = {
+  EXTENDED_HOURS: { start: '07:00', end: '21:00' }, // 7 AM – 9 PM daily
+  RON_SERVICES: { start: '00:00', end: '23:59' },  // 24/7 availability
+};
 
 export async function GET(request: NextRequest) {
   console.log('[AVAILABILITY API] Starting request processing:', new Date().toISOString());
@@ -94,17 +102,28 @@ export async function GET(request: NextRequest) {
 
     console.log('[AVAILABILITY API] Service found:', service.name);
 
-    // Get service duration (use override if provided, otherwise service default)
-        const serviceDurationMinutes = validatedParams.duration
-      ? parseInt(validatedParams.duration)
-      : service.durationMinutes;
+    // Defensive duration parsing – fall back to service default or 60 mins
+    const serviceDurationMinutes = intOrDefault(
+      validatedParams.duration,
+      service.durationMinutes || 60
+    );
 
     // Get business hours for the requested day (using business timezone)
     const dayOfWeek = requestedDateInBusinessTz.getDay();
     console.log('[DEBUG] Date:', validatedParams.date, 'Day of week:', dayOfWeek);
     console.log('[DEBUG] Business settings keys:', Object.keys(businessSettings).filter(k => k.includes('hours')));
     
-    const businessHours = await getBusinessHoursForDay(dayOfWeek, businessSettings);
+    let businessHours = await getBusinessHoursForDay(dayOfWeek, businessSettings);
+
+    // Override with service-specific hours if defined
+    const override = SERVICE_HOUR_OVERRIDES[service.serviceType as string];
+    if (override) {
+      businessHours = {
+        startTime: override.start,
+        endTime: override.end,
+        dayOfWeek,
+      };
+    }
     console.log('[DEBUG] Business hours result:', businessHours);
 
     if (!businessHours) {
@@ -269,8 +288,16 @@ async function getExistingBookings(date: Date) {
 
 // Helper function to get lead time
 function getLeadTime(businessSettings: Record<string, string>): number {
-  const leadTimeStr = businessSettings.minimum_lead_time_hours || '2';
-  return parseInt(leadTimeStr);
+  return intOrDefault(businessSettings.minimum_lead_time_hours, 2);
+}
+
+// ---------------------------------------------------------------------------
+// 🛡️ Utility helpers (defensive parsing)
+// ---------------------------------------------------------------------------
+
+function intOrDefault(raw: unknown, fallback: number): number {
+  const n = typeof raw === 'string' ? parseInt(raw, 10) : Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
 // Main function to calculate available slots
@@ -307,10 +334,9 @@ function calculateAvailableSlots({
   dayEnd.setHours(endHour, endMinute, 0, 0);
   
   // Get slot interval (default 30 minutes)
-  const slotIntervalMinutes = parseInt(businessSettings.slot_interval_minutes || '30');
-  
+  const slotIntervalMinutes = intOrDefault(businessSettings.slot_interval_minutes, 30);
   // Get buffer time between appointments (default 15 minutes)
-  const bufferTimeMinutes = parseInt(businessSettings.buffer_time_minutes || '15');
+  const bufferTimeMinutes = intOrDefault(businessSettings.buffer_time_minutes, 15);
   
   // Generate time slots
   const currentSlot = new Date(dayStart);
@@ -332,8 +358,9 @@ function calculateAvailableSlots({
       if (!booking.scheduledDateTime) return false;
       
       const bookingStart = new Date(booking.scheduledDateTime);
+      const durationMins = booking.service?.durationMinutes ?? serviceDurationMinutes;
       const bookingEnd = new Date(bookingStart);
-      bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.service.durationMinutes + bufferTimeMinutes);
+      bookingEnd.setMinutes(bookingEnd.getMinutes() + durationMins + bufferTimeMinutes);
       
       // Check if there's any overlap
       return (currentSlot < bookingEnd && slotEnd > bookingStart);
