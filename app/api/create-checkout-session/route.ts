@@ -47,6 +47,15 @@ const CheckoutSessionRequestSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+
+    // Disallow free bookings before deep validation so we emit clear message
+    if (body?.amount === 0) {
+      return NextResponse.json({
+        success: false,
+        error: 'free bookings not supported'
+      }, { status: 400 });
+    }
+
     const headersList = await headers();
     const origin = headersList.get('origin') || process.env.NEXTAUTH_URL || 'http://localhost:3000';
     

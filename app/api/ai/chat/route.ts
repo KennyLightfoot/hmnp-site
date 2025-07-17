@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { sendChat } from '@/lib/vertex';
 import { ConversationTracker } from '@/lib/conversation-tracker';
 
@@ -112,6 +114,12 @@ const CONTEXT_PROMPTS = {
 
 export async function POST(request: NextRequest) {
   try {
+    // Require an authenticated session
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body: ChatRequest = await request.json();
     const { message, context, locationContext, sessionId, conversationHistory, customerId } = body;
     
@@ -142,7 +150,21 @@ export async function POST(request: NextRequest) {
     const systemPrompt = CONTEXT_PROMPTS[context?.type || 'general'];
     
     // Call Vertex AI via sendChat with system prompt and context
-    const vertexResult = await sendChat(message, systemPrompt, enhancedContext);
+    let vertexResult: any;
+    try {
+      vertexResult = await sendChat(message, systemPrompt, enhancedContext);
+    } catch (vertexErr: any) {
+      console.error('Vertex AI upstream error:', vertexErr);
+      return NextResponse.json({
+        success: false,
+        error: 'Upstream AI service unavailable. Please retry shortly.'
+      }, {
+        status: 502,
+        headers: {
+          'Retry-After': '30'
+        }
+      });
+    }
     const aiResponse = {
       response: vertexResult.text || 'Sorry, I could not process that.',
       confidence: 1,

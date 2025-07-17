@@ -6,9 +6,13 @@
  * Target: 85%+ branch coverage, bulletproof booking conflicts prevention
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { SlotReservationEngine } from '@/lib/slot-reservation';
+import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest';
 import type { SlotReservation, ReservationResult, ReservationStatus } from '@/lib/slot-reservation';
+import { logger } from '@/lib/logger';
+const mockedLogger = vi.mocked(logger);
+
+// Stub the native "ws" module that isn’t needed in unit tests
+vi.mock('ws', () => ({ WebSocketServer: class {} }));
 
 // Mock Redis
 const mockRedis = {
@@ -39,22 +43,14 @@ vi.mock('@/lib/logger', () => ({
   }
 }));
 
-import { logger } from '@/lib/logger';
-const mockedLogger = vi.mocked(logger);
+// After mocks are ready, dynamically import the engine
+let engine: any; // SlotReservationEngine instance assigned in beforeAll
 
 describe('SlotReservationEngine', () => {
-  let engine: SlotReservationEngine;
-  
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    const { SlotReservationEngine } = await import('@/lib/slot-reservation');
     engine = new SlotReservationEngine();
-    
-    // Default mock responses
-    mockRedis.get.mockResolvedValue(null);
-    mockRedis.set.mockResolvedValue('OK');
-    mockRedis.setex.mockResolvedValue('OK');
-    mockRedis.del.mockResolvedValue(1);
-    mockRedis.exists.mockResolvedValue(0);
   });
 
   afterEach(() => {

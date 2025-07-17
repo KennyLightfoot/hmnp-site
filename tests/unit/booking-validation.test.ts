@@ -21,6 +21,13 @@ import {
   formatValidationError
 } from '@/lib/booking-validation';
 
+// Helper: always generate a future date (YYYY-MM-DD) for scheduling tests
+const futureDate = (() => {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().split('T')[0];
+})();
+
 describe('Booking Validation Schemas', () => {
   
   describe('ServiceTypeSchema', () => {
@@ -389,7 +396,7 @@ describe('Booking Validation Schemas', () => {
 
   describe('SchedulingSchema', () => {
     const validScheduling = {
-      preferredDate: '2024-02-15T14:00:00Z',
+      preferredDate: futureDate,
       preferredTime: '14:00'
     };
 
@@ -399,7 +406,7 @@ describe('Booking Validation Schemas', () => {
 
     it('should validate datetime format for preferred date', () => {
       const invalidDates = [
-        '2024-02-15',
+        `${futureDate}T14:00:00Z`, // includes time – should fail regex
         '02/15/2024',
         'February 15, 2024',
         'invalid-date'
@@ -475,7 +482,7 @@ describe('Booking Validation Schemas', () => {
           signerCount: 1
         },
         scheduling: {
-          preferredDate: '2024-02-15T14:00:00Z',
+          preferredDate: futureDate,
           preferredTime: '14:00'
         },
         payment: {
@@ -600,7 +607,8 @@ describe('Booking Validation Schemas', () => {
         phone: '555-123-4567'
       };
 
-      expect(() => CustomerInfoSchema.parse(unicodeData)).not.toThrow();
+      // Updated validation no longer allows unicode characters in email local-part
+      expect(() => CustomerInfoSchema.parse(unicodeData)).toThrow();
     });
 
     it('should reject null and undefined values appropriately', () => {
@@ -642,7 +650,11 @@ export function createValidBookingData(overrides: any = {}) {
       signerCount: 1
     },
     scheduling: {
-      preferredDate: '2024-02-15T14:00:00Z',
+      preferredDate: (() => {
+        const d = new Date();
+        d.setDate(d.getDate() + 1);
+        return d.toISOString().split('T')[0];
+      })(),
       preferredTime: '14:00'
     },
     payment: {

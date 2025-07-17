@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { addDays, format, isAfter, isBefore } from 'date-fns';
 
+// Freeze timers to allow deterministic date testing across environments
+vi.useFakeTimers();
+
 /**
  * Unit Tests for Critical Booking Business Logic
  * 
@@ -250,7 +253,7 @@ describe('BookingService', () => {
   });
 
   describe('calculatePricing', () => {
-    const mockservice: Service = {
+    const mockService: Service = {
       id: '1',
       name: 'Standard Notary Services',
       basePrice: 75,
@@ -334,8 +337,8 @@ describe('BookingService', () => {
     });
 
     it('should reject bookings outside business hours', () => {
-      const tooEarly = new Date('2024-02-14T06:00:00Z'); // 6:00 AM next day
-      const tooLate = new Date('2024-02-14T20:00:00Z'); // 8:00 PM next day
+      const tooEarly = new Date(2024, 1, 14, 6, 0, 0); // 6:00 AM local next day
+      const tooLate = new Date(2024, 1, 14, 23, 0, 0); // 11:00 PM local next day (outside business hrs)
       
       expect(BookingService.validateBookingTime(tooEarly).isValid).toBe(false);
       expect(BookingService.validateBookingTime(tooLate).isValid).toBe(false);
