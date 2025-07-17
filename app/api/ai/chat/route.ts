@@ -6,6 +6,8 @@ import { scrubPII } from '@/lib/security/pii-scrubber';
 import { getCachedChat, setCachedChat } from '@/lib/ai/chat-cache';
 import { getUserTier } from '@/lib/auth/user-tier';
 import { ConversationTracker } from '@/lib/conversation-tracker';
+import { redis } from '@/lib/redis';
+import { alertManager } from '@/lib/monitoring/alert-manager';
 
 // Vertex-based chat helper does not need initialisation
 
@@ -117,35 +119,62 @@ const CONTEXT_PROMPTS = {
 
 export async function POST(request: NextRequest) {
   try {
+    /* -----------------------------------------------------------
+       Parse request body early so we can validate/sanitize before
+       performing heavier operations like rate-limiting or cache checks.
+    -----------------------------------------------------------*/
+    const body: ChatRequest = await request.json();
+    const { message, context, locationContext, sessionId, conversationHistory, customerId } = body;
+
+    if (!message || !message.trim()) {
+      return NextResponse.json({
+        success: false,
+        error: 'Message is required'
+      }, { status: 400 });
+    }
+
     // -------------------------------------------------------------------
-    // 🛡️ Lightweight abuse protection (IP rate limit)
+    // 🛡️ Redis-backed Rate Limiting (tiered + burst)
     // -------------------------------------------------------------------
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
                request.headers.get('x-real-ip') || 'unknown';
 
-    const WINDOW_MS = 300_000; // 5 minutes
-    const MAX_REQ  = 20;       // 20 requests per window per IP
+    const userTier = await getUserTier();
 
-    const storeKey = '_chatRateLimitStore';
-    // Use globalThis to persist across hot reloads in dev and per-runtime in prod
-    const rateLimitStore: Map<string, { count: number; reset: number }> =
-      // @ts-ignore
-      (globalThis[storeKey] ||= new Map());
+    const WINDOW_SEC = 300; // 5 minutes
+    const SHORT_WINDOW_SEC = 10;
 
-    const now = Date.now();
-    const info = rateLimitStore.get(ip) || { count: 0, reset: now + WINDOW_MS };
-    if (now > info.reset) {
-      info.count = 0;
-      info.reset = now + WINDOW_MS;
-    }
-    info.count += 1;
-    rateLimitStore.set(ip, info);
+    const TIER_LIMITS: Record<string, number> = {
+      anon: 20,
+      auth: 50,
+      premium: 100
+    };
+    const tierMax = TIER_LIMITS[userTier] || 20;
+    const BURST_MAX = 4; // 4 per 10 seconds
 
-    if (info.count > MAX_REQ) {
-      return NextResponse.json(
-        { success: false, error: 'Rate limit exceeded. Please wait a few minutes.' },
-        { status: 429, headers: { 'Retry-After': Math.ceil((info.reset - now)/1000).toString() } }
-      );
+    // Keys
+    const longKey = `rl:l:${ip}`;
+    const burstKey = `rl:s:${ip}`;
+
+    // Increment counters only if Redis is available
+    if (redis.isAvailable()) {
+      const longCount = await redis.incr(longKey);
+      if (longCount === 1) await redis.expire(longKey, WINDOW_SEC);
+
+      const burstCount = await redis.incr(burstKey);
+      if (burstCount === 1) await redis.expire(burstKey, SHORT_WINDOW_SEC);
+
+      const burstExceeded = burstCount > BURST_MAX;
+      const tierExceeded = longCount > tierMax;
+
+      if (burstExceeded || tierExceeded) {
+        const ttl = burstExceeded ? await redis.ttl(burstKey) : await redis.ttl(longKey);
+        try { await alertManager.recordMetric('rate_limit.violation', 1, { ip, burstExceeded, tierExceeded, userTier }); } catch (_) {}
+        return NextResponse.json(
+          { success: false, error: 'Rate limit exceeded. Please slow down.' },
+          { status: 429, headers: { 'Retry-After': Math.max(ttl,1).toString() } }
+        );
+      }
     }
 
     // -------------------------------------------------------------------
@@ -159,16 +188,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const body: ChatRequest = await request.json();
-    const { message, context, locationContext, sessionId, conversationHistory, customerId } = body;
-
     // -------------------------------------------------------------------
     // 🫥 PII Scrub – redact sensitive info before any downstream processing
     // -------------------------------------------------------------------
     const cleanPrompt = scrubPII(message);
 
-    // Determine user tier (anon/auth/premium) for future rate-limit tiers
-    const _userTier = await getUserTier();
+    // userTier determined earlier for rate limiting; reuse later if needed
 
     // -------------------------------------------------------------------
     // ⚡ Cache lookup – skip expensive LLM call on duplicate prompts
@@ -185,13 +210,6 @@ export async function POST(request: NextRequest) {
           context: context?.type
         }
       });
-    }
-    
-    if (!message || !message.trim()) {
-      return NextResponse.json({
-        success: false,
-        error: 'Message is required'
-      }, { status: 400 });
     }
     
     // Build enhanced context for AI

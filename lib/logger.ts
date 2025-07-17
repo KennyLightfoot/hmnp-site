@@ -2,6 +2,8 @@
  * Comprehensive Logging System for HMNP Application
  */
 
+import { scrubPII } from '@/lib/security/pii-scrubber';
+
 export enum LogLevel {
   DEBUG = 0,
   INFO = 1,
@@ -109,6 +111,16 @@ class Logger {
   }
 
   private writeLog(entry: LogEntry) {
+    // Redact PII in message and string metadata values (Phase 1 privacy control)
+    entry.message = scrubPII(entry.message);
+    if (entry.metadata) {
+      for (const key of Object.keys(entry.metadata)) {
+        const val = entry.metadata[key];
+        if (typeof val === 'string') {
+          entry.metadata[key] = scrubPII(val);
+        }
+      }
+    }
     const levelName = LogLevel[entry.level];
     const timestamp = entry.timestamp;
     const prefix = `[${timestamp}] [${levelName}] [${entry.service}]`;
