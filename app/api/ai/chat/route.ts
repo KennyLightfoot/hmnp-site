@@ -114,8 +114,20 @@ const CONTEXT_PROMPTS = {
 
 export async function POST(request: NextRequest) {
   try {
-    // Require an authenticated session
-    const session = await getServerSession(authOptions);
+    // -------------------------------------------------------------------
+    // 🔓 Authentication guard
+    // -------------------------------------------------------------------
+    let session = await getServerSession(authOptions);
+
+    // Dev bypass: allow requests that present x-internal-api-key: dev when
+    // running locally so we can curl / automate tests without a full login.
+    if (process.env.NODE_ENV === 'development' && !session?.user) {
+      const apiKey = request.headers.get('x-internal-api-key');
+      if (apiKey === 'dev') {
+        session = { user: { id: 'dev', name: 'Dev User', email: 'dev@localhost' } } as any;
+      }
+    }
+
     if (!session?.user) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
