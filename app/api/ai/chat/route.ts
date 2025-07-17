@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
       });
     }
     // If Vertex returns nothing or malformed data, treat as upstream error so we don't 500.
-    if (!vertexResult || typeof vertexResult.text !== 'string') {
+    if (!vertexResult || typeof vertexResult.text !== 'string' || !vertexResult.text.trim()) {
       return NextResponse.json({
         success: false,
         error: 'Upstream AI service unavailable. Please retry shortly.'

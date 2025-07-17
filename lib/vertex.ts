@@ -17,7 +17,26 @@ interface FunctionResult {
   response: any;
 }
 
+// ---------------------------------------------------------------------------
+// 📝 Vertex response logging
+// ---------------------------------------------------------------------------
+// In production on Vercel the filesystem is read-only (except /tmp). Attempting
+// to write to ./logs causes noisy ENOENT errors that clutter the logs.  We
+// therefore log to a local file only in development.  In production we fallback
+// to a concise console.info to retain visibility without throwing.
+
 function logVertexResponse(prompt: string, response: LLMResponse) {
+  // Production (incl. Vercel) → console only
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+    console.info('[Vertex]', {
+      prompt: prompt.slice(0, 200),
+      text: response.text?.slice(0, 200),
+      hasBookingJson: !!response.bookingJson
+    });
+    return;
+  }
+
+  // Local development → append to ./logs/vertex.log for deeper debugging
   try {
     fs.mkdirSync('logs', { recursive: true });
     const logEntry = {
@@ -28,7 +47,8 @@ function logVertexResponse(prompt: string, response: LLMResponse) {
     };
     fs.appendFileSync('logs/vertex.log', JSON.stringify(logEntry) + '\n');
   } catch (error) {
-    console.error('Failed to write to vertex log:', error);
+    // Don’t crash on logging errors; emit once for visibility.
+    console.error('Local Vertex log write failed:', error);
   }
 }
 
