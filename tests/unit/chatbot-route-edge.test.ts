@@ -39,9 +39,12 @@ describe('/api/ai/chat route – edge cases', () => {
     expect(res.headers.get('Retry-After')).toBe('30')
   })
 
-  it('returns 401 when Authorization/session is missing', async () => {
+  it('allows anonymous access (no session) and returns 200', async () => {
     vi.mocked(getServerSession).mockResolvedValueOnce(null as any)
+    vi.mocked(sendChat).mockResolvedValueOnce({ text: 'Hi from AI' } as any)
     const res = await POST(buildRequest({ message: 'Hi' }) as any)
-    expect(res.status).toBe(401)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.success).toBe(true)
   })
 }) 

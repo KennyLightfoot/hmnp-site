@@ -201,8 +201,19 @@ export async function POST(request: NextRequest) {
         }
       });
     }
+    // If Vertex returns nothing or malformed data, treat as upstream error so we don't 500.
+    if (!vertexResult || typeof vertexResult.text !== 'string') {
+      return NextResponse.json({
+        success: false,
+        error: 'Upstream AI service unavailable. Please retry shortly.'
+      }, {
+        status: 502,
+        headers: { 'Retry-After': '30' }
+      });
+    }
+
     const aiResponse = {
-      response: vertexResult.text || 'Sorry, I could not process that.',
+      response: vertexResult.text,
       confidence: 1,
       intent: 'unknown',
       suggestedActions: [],
