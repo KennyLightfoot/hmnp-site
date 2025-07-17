@@ -231,9 +231,10 @@ export async function sendChat(
   // Function calling loop - may need multiple requests
   let conversationHistory = [...body.contents];
   let finalResponse = { text: '', bookingJson: null };
-  let maxIterations = 3; // Prevent infinite loops
-  
-  for (let iteration = 0; iteration < maxIterations; iteration++) {
+  const MAX_ITERATIONS = 6; // Allow more cycles but still protect against loops
+
+  let lastAssembledText = '';
+  for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
     // Update body with current conversation history
     body.contents = conversationHistory;
 
@@ -320,6 +321,11 @@ export async function sendChat(
       break;
     }
 
+    // Store for fallback in case we exceed MAX_ITERATIONS
+    if (assembledText.trim()) {
+      lastAssembledText = assembledText.trim();
+    }
+
     // Execute function calls
     console.log(`Executing ${functionCalls.length} function calls:`, functionCalls.map(fc => fc.name));
     
@@ -351,6 +357,12 @@ export async function sendChat(
     });
 
     // Continue loop to get final response with function results
+  }
+
+  // Fallback: if loop exited without a clean finalResponse but we did capture
+  // some text, use it so the caller isn’t left empty-handed.
+  if (!finalResponse.text && lastAssembledText) {
+    finalResponse.text = lastAssembledText;
   }
 
   const result = finalResponse;
