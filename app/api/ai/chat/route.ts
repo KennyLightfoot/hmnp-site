@@ -115,21 +115,45 @@ const CONTEXT_PROMPTS = {
 export async function POST(request: NextRequest) {
   try {
     // -------------------------------------------------------------------
-    // 🔓 Authentication guard
+    // 🛡️ Lightweight abuse protection (IP rate limit)
+    // -------------------------------------------------------------------
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+               request.headers.get('x-real-ip') || 'unknown';
+
+    const WINDOW_MS = 300_000; // 5 minutes
+    const MAX_REQ  = 20;       // 20 requests per window per IP
+
+    const storeKey = '_chatRateLimitStore';
+    // Use globalThis to persist across hot reloads in dev and per-runtime in prod
+    const rateLimitStore: Map<string, { count: number; reset: number }> =
+      // @ts-ignore
+      (globalThis[storeKey] ||= new Map());
+
+    const now = Date.now();
+    const info = rateLimitStore.get(ip) || { count: 0, reset: now + WINDOW_MS };
+    if (now > info.reset) {
+      info.count = 0;
+      info.reset = now + WINDOW_MS;
+    }
+    info.count += 1;
+    rateLimitStore.set(ip, info);
+
+    if (info.count > MAX_REQ) {
+      return NextResponse.json(
+        { success: false, error: 'Rate limit exceeded. Please wait a few minutes.' },
+        { status: 429, headers: { 'Retry-After': Math.ceil((info.reset - now)/1000).toString() } }
+      );
+    }
+
+    // -------------------------------------------------------------------
+    // 🔓 Optional Dev bypass session (still useful for local conversation tracking)
     // -------------------------------------------------------------------
     let session = await getServerSession(authOptions);
-
-    // Dev bypass: allow requests that present x-internal-api-key: dev when
-    // running locally so we can curl / automate tests without a full login.
     if (process.env.NODE_ENV === 'development' && !session?.user) {
       const apiKey = request.headers.get('x-internal-api-key');
       if (apiKey === 'dev') {
         session = { user: { id: 'dev', name: 'Dev User', email: 'dev@localhost' } } as any;
       }
-    }
-
-    if (!session?.user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
     const body: ChatRequest = await request.json();
