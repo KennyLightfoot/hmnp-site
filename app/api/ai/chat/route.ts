@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { sendChat } from '@/lib/vertex';
+import { scrubPII } from '@/lib/security/pii-scrubber';
+import { getCachedChat, setCachedChat } from '@/lib/ai/chat-cache';
+import { getUserTier } from '@/lib/auth/user-tier';
 import { ConversationTracker } from '@/lib/conversation-tracker';
 
 // Vertex-based chat helper does not need initialisation
@@ -158,6 +161,31 @@ export async function POST(request: NextRequest) {
 
     const body: ChatRequest = await request.json();
     const { message, context, locationContext, sessionId, conversationHistory, customerId } = body;
+
+    // -------------------------------------------------------------------
+    // 🫥 PII Scrub – redact sensitive info before any downstream processing
+    // -------------------------------------------------------------------
+    const cleanPrompt = scrubPII(message);
+
+    // Determine user tier (anon/auth/premium) for future rate-limit tiers
+    const _userTier = await getUserTier();
+
+    // -------------------------------------------------------------------
+    // ⚡ Cache lookup – skip expensive LLM call on duplicate prompts
+    // -------------------------------------------------------------------
+    const cacheCandidate = await getCachedChat(cleanPrompt, context?.type);
+    if (cacheCandidate) {
+      return NextResponse.json({
+        success: true,
+        response: cacheCandidate,
+        fromCache: true,
+        metadata: {
+          sessionId,
+          timestamp: new Date().toISOString(),
+          context: context?.type
+        }
+      });
+    }
     
     if (!message || !message.trim()) {
       return NextResponse.json({
@@ -188,7 +216,7 @@ export async function POST(request: NextRequest) {
     // Call Vertex AI via sendChat with system prompt and context
     let vertexResult: any;
     try {
-      vertexResult = await sendChat(message, systemPrompt, enhancedContext);
+      vertexResult = await sendChat(cleanPrompt, systemPrompt, enhancedContext);
     } catch (vertexErr: any) {
       console.error('Vertex AI upstream error:', vertexErr);
       return NextResponse.json({
@@ -246,6 +274,13 @@ export async function POST(request: NextRequest) {
     
     // Enhance response with context-specific suggestions
     const enhancedResponse = enhanceResponseWithContext(aiResponse, context);
+
+    // -------------------------------------------------------------------
+    // 🗄️ Store in cache for 1h (skip if function calls present – naive check)
+    // -------------------------------------------------------------------
+    if (!vertexResult?.functionCalls || vertexResult.functionCalls.length === 0) {
+      await setCachedChat(cleanPrompt, context?.type, enhancedResponse.response);
+    }
     
     return NextResponse.json({
       success: true,
