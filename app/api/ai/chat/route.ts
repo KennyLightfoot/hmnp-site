@@ -157,7 +157,8 @@ export async function POST(request: NextRequest) {
     const burstKey = `rl:s:${ip}`;
 
     // Increment counters only if Redis is available
-    if (redis.isAvailable()) {
+    const redisAvailable = typeof (redis as any).isAvailable === 'function' ? (redis as any).isAvailable() : true;
+    if (redisAvailable) {
       const longCount = await redis.incr(longKey);
       if (longCount === 1) await redis.expire(longKey, WINDOW_SEC);
 
