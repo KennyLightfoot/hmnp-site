@@ -1,8 +1,8 @@
-# Main Branch Status - Service Unification Complete  
+# Main Branch Status
 
-## **🎉 PRODUCTION READY - UNIFIED SERVICE SYSTEM**
+**Last Updated: July 2025**
 
-The booking system now features a completely unified service structure with 7 standardized services matching the frontend exactly. All database issues resolved and system is production-ready.
+Service unification is complete and early AI chat features have been added. However, the January 2025 audit identified several unresolved blockers, so the main branch is **not yet production ready**. See [OUTSTANDING_ISSUES_CHECKLIST.md](./OUTSTANDING_ISSUES_CHECKLIST.md) for the current list of open items.
 
 ## **Database Status ✅**
 
@@ -129,4 +129,4 @@ curl -s "http://localhost:3000/api/availability-compatible?date=2025-07-12&servi
 
 ---
 
-*Updated: January 2025 - Service unification complete, GHL calendar configuration pending* 
+*Updated: July 2025 – audit issues pending resolution* 

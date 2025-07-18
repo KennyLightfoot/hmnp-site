@@ -6,6 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { redis } from '@/lib/redis';
+import { prisma } from '@/lib/prisma';
+import { logger } from '@/lib/logger';
 
 // Validation schema for slot reservation
 const SlotReservationSchema = z.object({
@@ -38,11 +40,12 @@ const SlotReservationSchema = z.object({
 const RESERVATION_EXPIRY_MINUTES = 15;
 
 export async function POST(request: NextRequest) {
+  let requestData: any = null;
   try {
-    const data = await request.json();
-    
+    requestData = await request.json();
+
     // Validate input data
-    const validatedData = SlotReservationSchema.parse(data);
+    const validatedData = SlotReservationSchema.parse(requestData);
     
     console.log(`🔒 Attempting to reserve slot: ${validatedData.datetime} for ${validatedData.customerEmail}`);
     
@@ -131,29 +134,40 @@ export async function POST(request: NextRequest) {
     
     // Handle Redis connection errors
     if ((error as any).message?.includes('Redis') || (error as any).message?.includes('ECONNREFUSED')) {
-      console.error('Redis connection failed, allowing reservation to proceed');
-      
-      // If Redis is down, create a temporary reservation without persistence
+      logger.warn('Redis unavailable - using database fallback for reservation');
+
       const reservedAt = new Date();
       const expiresAt = new Date(reservedAt.getTime() + (RESERVATION_EXPIRY_MINUTES * 60 * 1000));
-      
+
+      const record = await prisma.slotReservationFallback.create({
+        data: {
+          datetime: new Date(requestData?.datetime || new Date()),
+          serviceType: requestData?.serviceType || 'STANDARD_NOTARY',
+          customerEmail: requestData?.customerEmail || 'unknown',
+          estimatedDuration: requestData?.estimatedDuration || 60,
+          reservedAt,
+          expiresAt,
+        }
+      });
+
       return NextResponse.json({
         success: true,
         reservation: {
-          id: `tmp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          datetime: (request as any).body?.datetime || new Date().toISOString(),
-          serviceType: (request as any).body?.serviceType || 'STANDARD_NOTARY',
-          estimatedDuration: (request as any).body?.estimatedDuration || 60,
-          reservedAt: reservedAt.toISOString(),
-          expiresAt: expiresAt.toISOString(),
+          id: record.id,
+          datetime: record.datetime.toISOString(),
+          serviceType: record.serviceType,
+          estimatedDuration: record.estimatedDuration,
+          reservedAt: record.reservedAt.toISOString(),
+          expiresAt: record.expiresAt.toISOString(),
           expiresInMinutes: RESERVATION_EXPIRY_MINUTES,
         },
-        warning: 'Reservation created without persistence due to system unavailability'
+        warning: 'Reservation stored in database due to Redis outage'
       });
     }
     
+    logger.error('Slot reservation failed', error as Error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: 'Failed to reserve time slot',
         message: process.env.NODE_ENV === 'development' ? (error as any).message : 'Internal server error'
@@ -176,20 +190,39 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    const reservation = await redis.get(`reservation:${reservationId}`);
-    
-    if (!reservation) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Reservation not found or expired',
-          expired: true
-        },
-        { status: 404 }
-      );
+    let reservationData: any = null;
+    try {
+      const reservation = await redis.get(`reservation:${reservationId}`);
+      if (reservation) {
+        reservationData = JSON.parse(reservation);
+      }
+    } catch (err) {
+      logger.warn('Redis unavailable while checking reservation', err as Error);
+    }
+
+    if (!reservationData) {
+      const record = await prisma.slotReservationFallback.findUnique({ where: { id: reservationId } });
+      if (!record || record.expiresAt < new Date()) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Reservation not found or expired',
+            expired: true
+          },
+          { status: 404 }
+        );
+      }
+      reservationData = {
+        id: record.id,
+        datetime: record.datetime.toISOString(),
+        serviceType: record.serviceType,
+        estimatedDuration: record.estimatedDuration,
+        reservedAt: record.reservedAt.toISOString(),
+        expiresAt: record.expiresAt.toISOString()
+      };
+      logger.info('Returned reservation from fallback database', { id: reservationId });
     }
     
-    const reservationData = JSON.parse(reservation);
     const now = new Date();
     const expiresAt = new Date(reservationData.expiresAt);
     
@@ -201,7 +234,7 @@ export async function GET(request: NextRequest) {
     });
     
   } catch (error) {
-    console.error('Error checking reservation:', error);
+    logger.error('Error checking reservation', error as Error);
     return NextResponse.json(
       { error: 'Failed to check reservation' },
       { status: 500 }

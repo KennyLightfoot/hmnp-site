@@ -250,10 +250,11 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
   useEffect(() => {
     const visibleDays = availableDays.slice(currentWeek * 7, (currentWeek + 1) * 7);
     
+    // Always attempt to fetch availability for the visible days.
+    // fetchAvailability itself is idempotent and will early-return if we already have data
+    // or if a request is in-flight, so we don't need any additional guards here.
     visibleDays.forEach(day => {
-      if (day.available) {
-        fetchAvailability(day.date);
-      }
+      fetchAvailability(day.date);
     });
   }, [availableDays, currentWeek, fetchAvailability]);
 
