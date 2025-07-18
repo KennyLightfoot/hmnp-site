@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server'
 import { getResponse } from '@/lib/ai/chat-provider'
 import { alertManager } from '@/lib/monitoring/alert-manager'
 
-export const runtime = 'edge'
-
 export async function GET() {
   try {
     const res = await getResponse('ping', undefined, { type: 'canary' })
