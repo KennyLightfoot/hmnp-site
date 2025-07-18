@@ -70,6 +70,15 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Require address for mobile services (RON can omit)
+    if (serviceType !== 'RON_SERVICES' && !address) {
+      return NextResponse.json({
+        error: 'Address is required for distance-based pricing',
+        code: 'MISSING_ADDRESS',
+        timestamp: new Date().toISOString()
+      }, { status: 400 });
+    }
+
     // Calculate transparent pricing using unified engine
     const pricingResult = await UnifiedPricingEngine.calculateTransparentPricing({
       serviceType,

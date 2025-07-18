@@ -51,11 +51,22 @@ export class ConversationTracker {
     tags?: string[];
   }): Promise<ConversationEntry> {
     try {
-      // Create or update customer support history
+      // Ensure a parent SupportTicket exists to satisfy FK constraint
+      const ticket = await prisma.supportTicket.create({
+        data: {
+          customerEmail: data.customerEmail,
+          customerName: data.customerName,
+          issueType: 'general_inquiry',
+          priority: 'low',
+          description: data.subject ?? data.message.substring(0, 100),
+          status: 'open'
+        }
+      });
+
       const historyEntry = await prisma.customerSupportHistory.create({
         data: {
           customerEmail: data.customerEmail,
-          ticketId: `interaction-${Date.now()}`, // Temporary ID for non-ticket interactions
+          ticketId: ticket.id,
           interactionType: data.interactionType,
           description: data.message,
           metadata: {
