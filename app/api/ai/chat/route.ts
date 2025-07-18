@@ -158,7 +158,8 @@ export async function POST(request: NextRequest) {
 
     // Increment counters only if Redis is available
     const redisAvailable = typeof (redis as any).isAvailable === 'function' ? (redis as any).isAvailable() : true;
-    if (redisAvailable) {
+    const canRateLimit = redisAvailable && typeof (redis as any).incr === 'function' && typeof (redis as any).expire === 'function';
+    if (canRateLimit) {
       const longCount = await redis.incr(longKey);
       if (longCount === 1) await redis.expire(longKey, WINDOW_SEC);
 
