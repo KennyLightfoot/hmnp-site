@@ -2,13 +2,16 @@
 
 ## Availability Endpoints - Consolidation Required
 
-### Current Status
-We have **4 different availability endpoints** that serve overlapping purposes:
+All legacy availability endpoints now delegate to the **single unified** endpoint:
 
-1. **`/api/availability`** - Main availability endpoint
-2. **`/api/availability-compatible`** - Compatibility layer (DEPRECATED)
-3. **`/api/ghl/availability`** - GHL-specific availability (DEPRECATED)
-4. **`/api/booking/availability`** - Booking context availability (DEPRECATED)
+**`/api/v2/availability`** – canonical availability API (former logic from `/api/availability`).
+
+Deprecated shims:
+* `/api/availability` → re-exports canonical handler
+* `/api/availability-compatible` → re-exports canonical handler
+* `/api/booking/availability` → re-exports canonical handler
+
+`/api/ghl/availability` was already removed.
 
 ### Recommendation
 - **Keep:** `/api/availability` as the canonical endpoint

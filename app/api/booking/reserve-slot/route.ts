@@ -5,7 +5,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { redis } from '@/lib/redis';
 import { reserveSlot as engineReserveSlot, getReservationStatus } from '@/lib/slot-reservation';
 
 // Validation schema for slot reservation

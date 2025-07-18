@@ -31,7 +31,7 @@ The booking system now features a completely unified service structure with 7 st
 ## **API Status ✅**
 
 ### **Availability Endpoint Working**
-- **Endpoint**: `/api/availability-compatible`
+- **Endpoint**: `/api/v2/availability`
 - **Test**: `GET /api/availability-compatible?date=2025-07-12&serviceId=cmb8ovso10000ve9xwvtf0my0`
 - **Response**: 8 time slots with 6 available
 - **Features**: 
@@ -88,45 +88,5 @@ npx prisma generate
 npx prisma db seed
 
 # Test availability API
-curl -s "http://localhost:3000/api/availability-compatible?date=2025-07-12&serviceId=cmb8ovso10000ve9xwvtf0my0"
+curl -s "http://localhost:3000/api/v2/availability?date=2025-07-12&serviceId=cmb8ovso10000ve9xwvtf0my0"
 ```
-
-## **Ready for Production**
-
-- ✅ Database fully configured
-- ✅ API endpoints working
-- ✅ Time slot generation functional
-- ✅ Business rules applied
-- ✅ All migrations successful
-
-**The booking system is ready for production use on the main branch.**
-
----
-
-## **🚀 RECENT ACCOMPLISHMENTS**
-
-### **✅ Service Unification Complete (Latest Update)**
-- **Fixed Prisma enum error**: `PENDING` → `PAYMENT_PENDING` 
-- **Unified service structure**: Frontend and database now match exactly
-- **7 services standardized**: From database to API to frontend
-- **Single source of truth**: `UNIFIED_SERVICE_SCHEMA.md` documents all services
-- **Database migrations**: Successfully applied schema changes
-- **API endpoints**: All support the complete 7-service structure
-
-### **🔧 GHL Integration Status**
-- **Environment variables**: All properly loaded and configured
-- **Calendar mapping**: Correctly maps each service to GHL calendar
-- **Known issue**: GHL calendar needs availability blocks configured
-- **Root cause identified**: Calendar `w3sjmTzBfuahySgQvKoV` has no availability blocks
-- **Next step**: Configure availability in GHL dashboard
-
-### **📊 System Health**
-- **Database**: ✅ Fully operational with 7 services
-- **APIs**: ✅ All endpoints working (0 slots due to GHL config)
-- **Frontend**: ✅ ServiceSelector shows all 7 services  
-- **Pricing**: ✅ Working for all service types
-- **Business rules**: ✅ Configured and operational
-
----
-
-*Updated: January 2025 - Service unification complete, GHL calendar configuration pending* 

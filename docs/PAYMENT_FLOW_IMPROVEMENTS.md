@@ -89,48 +89,11 @@ Enhanced the payment system with multiple payment methods, better security indic
 
 ---
 
-## 🔧 Enhanced APIs
+## �� Enhanced APIs
 
-### 1. Enhanced Stripe Configuration
-**Location**: `lib/stripe-enhanced.ts`
+### Deprecated: Legacy “Enhanced” Payment Flow
 
-**Features**:
-- Multiple payment method support
-- Enhanced error handling
-- Payment method detection
-- Security and compliance features
-
-**Key Classes**:
-- `EnhancedStripeService`: Main service class
-- `PAYMENT_METHOD_TYPES`: Payment method constants
-- `ENHANCED_STRIPE_CONFIG`: Configuration object
-
-**Key Methods**:
-- `createEnhancedPaymentIntent()`: Create payment intent
-- `createACHPaymentIntent()`: ACH payment processing
-- `createApplePayPaymentIntent()`: Apple Pay processing
-- `createGooglePayPaymentIntent()`: Google Pay processing
-- `handlePaymentRecovery()`: Payment recovery
-- `getPaymentMethodDetails()`: Payment method info
-
-### 2. Enhanced Payment API
-**Location**: `app/api/payments/enhanced/route.ts`
-
-**Features**:
-- Multiple payment method support
-- Enhanced error handling and recovery
-- Payment method detection and optimization
-- Security and compliance features
-
-**Endpoints**:
-- `POST`: Create enhanced payment
-- `PUT`: Handle payment recovery
-- `PATCH`: Attach payment methods
-
-**Validation Schemas**:
-- `EnhancedPaymentRequestSchema`: Payment request validation
-- `PaymentRecoveryRequestSchema`: Recovery request validation
-- `PaymentMethodAttachSchema`: Method attachment validation
+The `lib/stripe-enhanced.ts` helper and `/api/payments/enhanced` endpoint were removed in favor of a single unified `StripeService` defined in `lib/stripe.ts`. All payment logic now relies on this canonical helper.
 
 ---
 

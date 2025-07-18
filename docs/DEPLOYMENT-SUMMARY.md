@@ -35,8 +35,9 @@ We've successfully rebuilt the entire booking system from a 1,527-line nightmare
 
 ```bash
 # SERVICES API
-GET /api/v2/services                 ✅ LIVE
-GET /api/v2/services/pricing         ✅ LIVE
+
+# AVAILABILITY API
+GET /api/v2/availability             ✅ LIVE
 
 # BOOKINGS API  
 POST /api/v2/bookings                ✅ LIVE
@@ -44,14 +45,6 @@ GET  /api/v2/bookings                ✅ LIVE
 GET  /api/v2/bookings/[id]           ✅ LIVE
 PUT  /api/v2/bookings/[id]           ✅ LIVE
 DELETE /api/v2/bookings/[id]         ✅ LIVE
-
-# PAYMENTS API
-POST /api/v2/payments/intent         ✅ LIVE
-POST /api/v2/payments/confirm        ✅ LIVE
-GET  /api/v2/payments/intent         ✅ LIVE
-
-# WEBHOOKS
-POST /api/v2/webhooks/stripe         ✅ LIVE
 ```
 
 ---
