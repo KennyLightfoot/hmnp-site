@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { sendChat } from '@/lib/vertex';
+import { getResponse } from '@/lib/ai/chat-provider';
 import { scrubPII } from '@/lib/security/pii-scrubber';
 import { getCachedChat, setCachedChat } from '@/lib/ai/chat-cache';
 import { getUserTier } from '@/lib/auth/user-tier';
@@ -234,7 +234,7 @@ export async function POST(request: NextRequest) {
     // Call Vertex AI via sendChat with system prompt and context
     let vertexResult: any;
     try {
-      vertexResult = await sendChat(cleanPrompt, systemPrompt, enhancedContext);
+      vertexResult = await getResponse(cleanPrompt, systemPrompt, enhancedContext);
     } catch (vertexErr: any) {
       console.error('Vertex AI upstream error:', vertexErr);
       return NextResponse.json({

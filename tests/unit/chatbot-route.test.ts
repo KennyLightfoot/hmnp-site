@@ -5,8 +5,16 @@ vi.mock('next-auth', () => ({ getServerSession: vi.fn() }))
 vi.mock('@/lib/auth', () => ({ authOptions: {} }))
 
 // Mock other dependencies
-vi.mock('@/lib/vertex', () => ({ sendChat: vi.fn(async () => ({ text: 'Hello there!' })) }))
+vi.mock('@/lib/ai/chat-provider', () => ({ getResponse: vi.fn(async () => ({ text: 'Hello there!' })) }))
 vi.mock('@/lib/conversation-tracker', () => ({ ConversationTracker: { trackInteraction: vi.fn() } }))
+vi.mock('@/lib/redis', () => ({
+  redis: {
+    isAvailable: () => false,
+    incr: vi.fn(),
+    expire: vi.fn(),
+    ttl: vi.fn()
+  }
+}))
 
 import { POST } from '@/app/api/ai/chat/route'
 import { getServerSession } from 'next-auth'
