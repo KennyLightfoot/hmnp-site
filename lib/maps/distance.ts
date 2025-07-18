@@ -8,7 +8,7 @@
 
 import { redis } from '@/lib/redis';
 import { logger } from '@/lib/logger';
-import { SERVICE_AREA_CONFIG, calculateTravelFee } from '@/lib/config/maps';
+import { SERVICE_AREA_CONFIG, calculateTravelFee, getCleanApiKey } from '@/lib/config/maps';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -195,7 +195,7 @@ export class DistanceHelper {
     destination: string,
     serviceType: string
   ): Promise<Omit<CachedDistanceResult, 'source' | 'cacheHit'>> {
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    const apiKey = getCleanApiKey('server');
     if (!apiKey) {
       throw new Error('Google Maps API key not configured');
     }

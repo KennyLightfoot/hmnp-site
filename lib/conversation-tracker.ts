@@ -51,11 +51,41 @@ export class ConversationTracker {
     tags?: string[];
   }): Promise<ConversationEntry> {
     try {
-      // Create or update customer support history
+      // Resolve or create a support ticket to satisfy FK constraint
+      let ticketIdToUse: string | undefined = data.metadata?.ticketId as string | undefined;
+
+      if (!ticketIdToUse) {
+        // Try to find an existing open ticket for this customer
+        const existingTicket = await prisma.supportTicket.findFirst({
+          where: {
+            customerEmail: data.customerEmail,
+            status: { in: ['open', 'in_progress', 'waiting_customer'] }
+          },
+          orderBy: { createdAt: 'asc' }
+        });
+
+        if (existingTicket) {
+          ticketIdToUse = existingTicket.id;
+        } else {
+          // Create a lightweight ticket to house this interaction history
+          const newTicket = await prisma.supportTicket.create({
+            data: {
+              customerEmail: data.customerEmail,
+              customerName: data.customerName,
+              issueType: 'general_inquiry',
+              priority: 'low',
+              description: data.subject || data.message.substring(0, 100) || 'General inquiry',
+              status: 'open'
+            }
+          });
+          ticketIdToUse = newTicket.id;
+        }
+      }
+
       const historyEntry = await prisma.customerSupportHistory.create({
         data: {
           customerEmail: data.customerEmail,
-          ticketId: `interaction-${Date.now()}`, // Temporary ID for non-ticket interactions
+          ticketId: ticketIdToUse!,
           interactionType: data.interactionType,
           description: data.message,
           metadata: {

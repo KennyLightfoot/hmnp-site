@@ -3,6 +3,8 @@
  * Validates service availability within defined geographic boundaries
  */
 
+import { getCleanApiKey } from '@/lib/config/maps';
+
 export interface ServiceAreaResult {
   isWithinArea: boolean;
   distance: number;
@@ -94,7 +96,8 @@ async function calculateDistance(
 ): Promise<number> {
   try {
     // Try Google Maps Distance Matrix API first
-    if (process.env.GOOGLE_MAPS_API_KEY) {
+    const cleanedApiKey = getCleanApiKey('server');
+    if (cleanedApiKey) {
       return await calculateDistanceWithGoogleMaps(baseCoords, location);
     }
     
@@ -120,7 +123,8 @@ async function calculateDistanceWithGoogleMaps(
     ? `${location.address}, ${location.city}, ${location.state} ${location.zipCode}`
     : location.zipCode;
 
-  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&units=imperial&key=${process.env.GOOGLE_MAPS_API_KEY}`;
+  const apiKey = getCleanApiKey('server');
+  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&units=imperial&key=${apiKey}`;
 
   const response = await fetch(url);
   const data = await response.json();

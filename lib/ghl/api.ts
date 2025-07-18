@@ -1,11 +1,12 @@
 // lib/ghl/api.ts
 import { ghlApiRequest } from './error-handler';
+import { getCleanEnv } from '../env-clean';
 
 // GHL Private Integration API configuration from environment variables
 const GHL_API_BASE_URL = process.env.GHL_API_BASE_URL || "https://services.leadconnectorhq.com";
-const GHL_PRIVATE_INTEGRATION_TOKEN = process.env.GHL_PRIVATE_INTEGRATION_TOKEN;
+const GHL_PRIVATE_INTEGRATION_TOKEN = getCleanEnv('GHL_PRIVATE_INTEGRATION_TOKEN');
 const GHL_API_VERSION = "2021-07-28"; // Standardized to latest stable version
-const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
+const GHL_LOCATION_ID = getCleanEnv('GHL_LOCATION_ID');
 
 // Validation helper for Private Integration setup
 function validateGHLConfig() {

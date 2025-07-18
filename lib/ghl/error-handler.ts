@@ -4,6 +4,7 @@
  */
 
 import { logger, logGHLRequest, logGHLResponse } from '../logger';
+import { getCleanEnv } from '../env-clean';
 
 interface RetryConfig {
   maxRetries: number;
@@ -331,7 +332,7 @@ export async function validateGHLResponse<T = any>(response: Response): Promise<
  */
 export function createGHLHeaders(includeContentType = true): Record<string, string> {
   const headers: Record<string, string> = {
-    'Authorization': `Bearer ${process.env.GHL_PRIVATE_INTEGRATION_TOKEN}`,
+    'Authorization': `Bearer ${getCleanEnv('GHL_PRIVATE_INTEGRATION_TOKEN')}`,
     'Version': '2021-07-28',
     'User-Agent': 'HMNP-Integration/1.0'
   };
