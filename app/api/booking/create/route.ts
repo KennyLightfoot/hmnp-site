@@ -393,9 +393,22 @@ export async function POST(request: NextRequest) {
         }
       }
       
-    } catch (ghlError) {
-      console.error('⚠️  GHL integration failed (booking will continue):', ghlError.message);
-      // Continue with booking creation even if GHL fails
+    } catch (ghlError: any) {
+      const msg = String(ghlError?.message || '');
+      // Detect the specific 400 error when the slot is already taken
+      if (msg.includes('400') && msg.toLowerCase().includes('no longer available')) {
+        console.warn('⛔ Selected slot was already taken – aborting booking');
+        return NextResponse.json(
+          {
+            error: 'TIME_SLOT_TAKEN',
+            message: 'The selected time slot is no longer available. Please choose another.',
+          },
+          { status: 409 },
+        );
+      }
+
+      console.error('⚠️  GHL integration failed (booking will continue):', msg);
+      // Continue with booking creation even if other GHL errors occur
     }
 
     // Save booking to database with CORRECT schema-v2 structure
