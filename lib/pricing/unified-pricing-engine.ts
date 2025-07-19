@@ -15,6 +15,7 @@ import { UnifiedDistanceService } from '../maps/unified-distance-service';
 import { validateBusinessRules } from '../business-rules/engine';
 import { BUSINESS_RULES_CONFIG } from '../business-rules/config';
 import { PricingCacheService, withPricingCache } from './pricing-cache';
+import { isAddressMissing } from '@/lib/validation/address';
 
 // ============================================================================
 // 🎯 UNIFIED PRICING CONFIGURATION
@@ -116,13 +117,21 @@ export const TransparentPricingRequestSchema = z.object({
   serviceType: z.enum(['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH']),
   documentCount: z.number().min(1).default(1),
   signerCount: z.number().min(1).default(1),
-  address: z.string().optional(),
+  address: z.string().trim().nullable().optional(),
   scheduledDateTime: z.string().datetime().optional(),
   customerType: z.enum(['new', 'returning', 'loyalty']).default('new'),
   customerEmail: z.string().email().optional(),
   referralCode: z.string().optional(),
   promoCode: z.string().optional(),
   requestId: z.string().optional()
+}).superRefine((data, ctx) => {
+  if (data.serviceType !== 'RON_SERVICES' && isAddressMissing(data.address)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Address is required for in-person services.',
+      path: ['address']
+    });
+  }
 });
 
 export const PricingBreakdownComponentSchema = z.object({

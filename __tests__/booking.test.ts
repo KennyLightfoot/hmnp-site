@@ -41,10 +41,7 @@ describe('BookingSchema – address edge cases', () => {
       addressZip: '77001'
     });
 
-    // Parsing itself should not throw because addressStreet gets normalised to undefined.
-    const parsed = BookingSchema.parse(payload);
-    // Address should be stripped out
-    expect(parsed.addressStreet).toBeUndefined();
+    expect(() => BookingSchema.parse(payload)).toThrow();
   });
 
   it('allows booking when a proper address is supplied', () => {
@@ -53,6 +50,18 @@ describe('BookingSchema – address edge cases', () => {
       addressCity: 'Houston',
       addressState: 'TX',
       addressZip: '77002'
+    });
+
+    expect(() => BookingSchema.parse(payload)).not.toThrow();
+  });
+
+  it('allows RON booking without address', () => {
+    const payload = buildBasePayload({
+      serviceType: 'RON_SERVICES',
+      addressStreet: undefined,
+      addressCity: undefined,
+      addressState: undefined,
+      addressZip: undefined
     });
 
     expect(() => BookingSchema.parse(payload)).not.toThrow();

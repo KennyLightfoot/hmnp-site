@@ -13,7 +13,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
 import { z } from 'zod';
-import { normalizeAddress, isAddressMissing } from '@/lib/utils/address';
+import { normalizeAddress } from '@/lib/utils/address';
+import { isAddressMissing } from '@/lib/validation/address';
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
 import { createContact, createAppointment, addContactToWorkflow } from '@/lib/ghl/management';
 
@@ -169,6 +170,14 @@ const BookingCreateSchema = z.object({
     .min(1, 'Must have at least 1 signer')
     .max(20, 'Cannot exceed 20 signers')
     .default(1),
+}).superRefine((data, ctx) => {
+  if (data.serviceType !== 'RON_SERVICES' && isAddressMissing(data.addressStreet)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'A valid street address is required for mobile services.',
+      path: ['addressStreet']
+    });
+  }
 });
 
 // Map frontend location types to database enum values
@@ -210,14 +219,8 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Validate mobile service has address (RON_SERVICES doesn't need address)
-    if (service.serviceType !== 'RON_SERVICES' && isAddressMissing(validatedData.addressStreet)) {
-      return NextResponse.json(
-        { code: 'MISSING_ADDRESS', message: 'A valid street address is required for mobile services.' },
-        { status: 400 }
-      );
-    }
-
+    // Address presence now enforced by BookingCreateSchema.superRefine – no runtime check necessary
+    
     // 🔥 NEW: Business Rules Validation
     console.log('🔍 Validating business rules for booking...');
     let businessRulesResult = null;
@@ -661,3 +664,13 @@ async function sendEnhancedConfirmationEmail(booking: any, customerName: string,
 
 // Re-export schema for unit tests and external validation
 export { BookingCreateSchema as BookingSchema };
+
+// --- Auxiliary handlers ----------------------------------------------------
+
+export async function GET() {
+  return NextResponse.json({ status: 'ok' });
+}
+
+export async function HEAD() {
+  return NextResponse.json({ status: 'ok' });
+}
