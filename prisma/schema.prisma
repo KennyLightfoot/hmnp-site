@@ -96,6 +96,7 @@ model Booking {
   supportTickets              SupportTicket[]
   notary_journal              notary_journal[]
   reviews                     Review[]
+  stripeSessionId             String?                @unique // AC-5
 
   @@index([scheduledDateTime])
   @@index([status])

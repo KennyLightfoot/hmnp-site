@@ -170,6 +170,9 @@ const BookingCreateSchema = z.object({
     .min(1, 'Must have at least 1 signer')
     .max(20, 'Cannot exceed 20 signers')
     .default(1),
+
+  // Stripe session to prevent duplicates
+  stripeSessionId: z.string().trim().optional(),
 }).superRefine((data, ctx) => {
   if (data.serviceType !== 'RON_SERVICES' && isAddressMissing(data.addressStreet)) {
     ctx.addIssue({
@@ -204,6 +207,14 @@ export async function POST(request: NextRequest) {
     // Validate input data
     const validatedData = BookingCreateSchema.parse(data);
     
+    // Prevent duplicate Stripe session bookings
+    if (validatedData.stripeSessionId) {
+      const dup = await (prisma.booking as any).findFirst({ where: { stripeSessionId: validatedData.stripeSessionId } });
+      if (dup) {
+        return NextResponse.json({ error: 'DUPLICATE_PAYMENT', message: 'This payment session has already been processed.' }, { status: 409 });
+      }
+    }
+
     // Get service by type (match the exact serviceType from enum)
     const service = await prisma.service.findFirst({
       where: { 
@@ -426,11 +437,11 @@ export async function POST(request: NextRequest) {
         
         // Location fields (proper structure) - mapped to database enum
         locationType: mapLocationTypeToDb(validatedData.locationType),
-        addressStreet: validatedData.addressStreet || null,
-        addressCity: validatedData.addressCity || null,
-        addressState: validatedData.addressState || null,
-        addressZip: validatedData.addressZip || null,
-        locationNotes: validatedData.locationNotes || null,
+        addressStreet: validatedData.addressStreet ?? undefined,
+        addressCity: validatedData.addressCity ?? undefined,
+        addressState: validatedData.addressState ?? undefined,
+        addressZip: validatedData.addressZip ?? undefined,
+        locationNotes: validatedData.locationNotes ?? undefined,
         
         // Pricing - using correct schema fields
         priceAtBooking: validatedData.pricing.totalPrice,
@@ -447,7 +458,8 @@ export async function POST(request: NextRequest) {
         // Note: ghlAppointmentId stored in notes field for now
         
         // Status
-        status: 'CONFIRMED'
+        status: 'CONFIRMED',
+        stripeSessionId: validatedData.stripeSessionId ?? undefined,
       },
       include: {
         service: true

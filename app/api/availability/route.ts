@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { format, toZonedTime, getTimezoneOffset } from 'date-fns-tz';
-import { addMinutes, isBefore, isAfter, isSameDay } from 'date-fns';
+import { DateTime } from 'luxon';
 import { prisma } from '@/lib/prisma';
+import { generateAvailableSlots } from '@/lib/availability/generateSlots';
+import { redis } from '@/lib/redis';
 
 // Input validation schema
 const availabilityQuerySchema = z.object({
@@ -48,8 +49,22 @@ const SERVICE_HOUR_OVERRIDES: Record<string, { start: string; end: string }> = {
 };
 
 export async function GET(request: NextRequest) {
-  console.log('[AVAILABILITY API] Starting request processing:', new Date().toISOString());
-  
+  const { searchParams } = new URL(request.url);
+  const date = searchParams.get('date');
+  const serviceId = searchParams.get('serviceId');
+  const clientTimezone = searchParams.get('timezone') || 'America/Chicago';
+
+  if (!date || !serviceId) {
+    return NextResponse.json({ error: 'Date and serviceId are required' }, { status: 400 });
+  }
+
+  const cacheKey = `availability:${serviceId}:${date}`;
+  const cachedSlots = await redis.get(cacheKey);
+
+  if (cachedSlots) {
+    return NextResponse.json(JSON.parse(cachedSlots));
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const queryParams = {
@@ -67,19 +82,16 @@ export async function GET(request: NextRequest) {
     // Get business timezone from settings (default to America/Chicago)
     const businessSettings = await getBusinessSettings();
     const businessTimezone = businessSettings.business_timezone || 'America/Chicago';
-    const clientTimezone = validatedParams.timezone;
+    const requestedDate = DateTime.fromISO(date, { zone: businessTimezone });
     
     console.log('[AVAILABILITY API] Business timezone:', businessTimezone);
     
     // Convert requested date to business timezone for proper availability calculations
-    const requestedDateInClientTz = new Date(`${validatedParams.date}T00:00:00`);
-    const requestedDateInBusinessTz = toZonedTime(requestedDateInClientTz, businessTimezone);
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = DateTime.now().setZone(businessTimezone);
+    today.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
 
     // Don't allow booking for past dates (compare in business timezone)
-    if (requestedDateInBusinessTz < today) {
+    if (requestedDate < today) {
       return NextResponse.json(
         { error: 'Cannot book appointments for past dates' },
         { status: 400 }
@@ -109,7 +121,7 @@ export async function GET(request: NextRequest) {
     );
 
     // Get business hours for the requested day (using business timezone)
-    const dayOfWeek = requestedDateInBusinessTz.getDay();
+    const dayOfWeek = requestedDate.weekday;
     console.log('[DEBUG] Date:', validatedParams.date, 'Day of week:', dayOfWeek);
     console.log('[DEBUG] Business settings keys:', Object.keys(businessSettings).filter(k => k.includes('hours')));
     
@@ -136,7 +148,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check for blackout dates (holidays, etc.) - check using business timezone
-    const isBlackoutDate = await checkBlackoutDate(requestedDateInBusinessTz, businessSettings);
+    const isBlackoutDate = await checkBlackoutDate(requestedDate.toJSDate(), businessSettings);
     if (isBlackoutDate) {
       return NextResponse.json({
         date: validatedParams.date,
@@ -146,21 +158,19 @@ export async function GET(request: NextRequest) {
     }
 
     // Get existing bookings for the date (using business timezone)
-    const existingBookings = await getExistingBookings(requestedDateInBusinessTz);
+    const existingBookings = await getExistingBookings(requestedDate.toJSDate());
 
     // Calculate lead time (minimum hours before booking)
     const leadTimeHours = getLeadTime(businessSettings);
-    const minimumBookingTime = new Date();
-    minimumBookingTime.setHours(minimumBookingTime.getHours() + leadTimeHours);
+    const minimumBookingTime = DateTime.now().setZone(businessTimezone).plus({ hours: leadTimeHours });
 
     // Calculate available slots (with timezone support)
-    const availableSlots = calculateAvailableSlots({
+    const availableSlots = await generateAvailableSlots({
       businessHours,
-      requestedDate: requestedDateInBusinessTz,
-      serviceDurationMinutes,
+      requestedDate,
+      serviceId: validatedParams.serviceId,
       existingBookings,
       minimumBookingTime,
-      businessSettings,
       businessTimezone,
       clientTimezone,
     });
@@ -168,7 +178,7 @@ export async function GET(request: NextRequest) {
     console.log('[AVAILABILITY API] Calculated', availableSlots.length, 'time slots');
 
     // Include timezone information in the response
-    return NextResponse.json({
+    const response = {
       date: validatedParams.date,
       availableSlots,
       serviceInfo: {
@@ -185,7 +195,10 @@ export async function GET(request: NextRequest) {
         clientTimezone,
         timezoneSupported: true,
       },
-    });
+    };
+    await redis.set(cacheKey, JSON.stringify(response), 60); // AC-4
+
+    return NextResponse.json(response);
 
   } catch (error) {
     console.error('[AVAILABILITY API] Error occurred:', error);
@@ -227,7 +240,7 @@ async function getBusinessSettings() {
 // Helper function to get business hours for a specific day
 async function getBusinessHoursForDay(dayOfWeek: number, businessSettings: Record<string, string>): Promise<BusinessHours | null> {
   const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  const dayName = dayNames[dayOfWeek];
+  const dayName = dayNames[dayOfWeek - 1]; // Luxon weekday is 1-7, array is 0-6
   
   const startTimeKey = `business_hours_${dayName}_start`;
   const endTimeKey = `business_hours_${dayName}_end`;
@@ -255,7 +268,7 @@ async function checkBlackoutDate(date: Date, businessSettings: Record<string, st
   
   try {
     const blackoutDates = JSON.parse(blackoutDatesStr);
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = DateTime.fromJSDate(date).toISODate();
     return blackoutDates.includes(dateStr);
   } catch {
     return false;
@@ -264,11 +277,9 @@ async function checkBlackoutDate(date: Date, businessSettings: Record<string, st
 
 // Helper function to get existing bookings for a date
 async function getExistingBookings(date: Date) {
-  const startOfDay = new Date(date);
-  startOfDay.setHours(0, 0, 0, 0);
+  const startOfDay = DateTime.fromJSDate(date).startOf('day').toJSDate();
   
-  const endOfDay = new Date(date);
-  endOfDay.setHours(23, 59, 59, 999);
+  const endOfDay = DateTime.fromJSDate(date).endOf('day').toJSDate();
 
   return await prisma.booking.findMany({
     where: {
@@ -298,116 +309,4 @@ function getLeadTime(businessSettings: Record<string, string>): number {
 function intOrDefault(raw: unknown, fallback: number): number {
   const n = typeof raw === 'string' ? parseInt(raw, 10) : Number(raw);
   return Number.isFinite(n) && n > 0 ? n : fallback;
-}
-
-// Main function to calculate available slots
-function calculateAvailableSlots({
-  businessHours,
-  requestedDate,
-  serviceDurationMinutes,
-  existingBookings,
-  minimumBookingTime,
-  businessSettings,
-  businessTimezone = 'America/Chicago',
-  clientTimezone,
-}: {
-  businessHours: BusinessHours;
-  requestedDate: Date;
-  serviceDurationMinutes: number;
-  existingBookings: any[];
-  minimumBookingTime: Date;
-  businessSettings: Record<string, string>;
-  businessTimezone?: string;
-  clientTimezone?: string;
-}): TimeSlot[] {
-  const slots: TimeSlot[] = [];
-  
-  // Parse business hours
-  const [startHour, startMinute] = businessHours.startTime.split(':').map(Number);
-  const [endHour, endMinute] = businessHours.endTime.split(':').map(Number);
-  
-  // Create start and end times for the day
-  const dayStart = new Date(requestedDate);
-  dayStart.setHours(startHour, startMinute, 0, 0);
-  
-  const dayEnd = new Date(requestedDate);
-  dayEnd.setHours(endHour, endMinute, 0, 0);
-  
-  // Get slot interval (default 30 minutes)
-  const slotIntervalMinutes = intOrDefault(businessSettings.slot_interval_minutes, 30);
-  // Get buffer time between appointments (default 15 minutes)
-  const bufferTimeMinutes = intOrDefault(businessSettings.buffer_time_minutes, 15);
-  
-  // Generate time slots
-  const currentSlot = new Date(dayStart);
-  
-  while (currentSlot < dayEnd) {
-    const slotEnd = new Date(currentSlot);
-    slotEnd.setMinutes(slotEnd.getMinutes() + serviceDurationMinutes);
-    
-    // Check if slot would exceed business hours
-    if (slotEnd > dayEnd) {
-      break;
-    }
-    
-    // Check if slot is after minimum booking time
-    const isAfterMinimumTime = currentSlot >= minimumBookingTime;
-    
-    // Check for conflicts with existing bookings
-    const hasConflict = existingBookings.some(booking => {
-      if (!booking.scheduledDateTime) return false;
-      
-      const bookingStart = new Date(booking.scheduledDateTime);
-      const durationMins = booking.service?.durationMinutes ?? serviceDurationMinutes;
-      const bookingEnd = new Date(bookingStart);
-      bookingEnd.setMinutes(bookingEnd.getMinutes() + durationMins + bufferTimeMinutes);
-      
-      // Check if there's any overlap
-      return (currentSlot < bookingEnd && slotEnd > bookingStart);
-    });
-    
-    const available = isAfterMinimumTime && !hasConflict;
-    
-    // Format times in proper timezone for client
-    const slotStartTime = format(currentSlot, 'HH:mm', {
-      timeZone: businessTimezone
-    });
-    
-    const slotEndTime = format(slotEnd, 'HH:mm', {
-      timeZone: businessTimezone
-    });
-    
-    // If client timezone is different, include offset information
-    let clientStartTime, clientEndTime;
-    if (clientTimezone && clientTimezone !== businessTimezone) {
-      // Convert time to client's timezone
-      const clientSlotStart = toZonedTime(currentSlot, clientTimezone);
-      const clientSlotEnd = toZonedTime(slotEnd, clientTimezone);
-      
-      clientStartTime = format(clientSlotStart, 'HH:mm', {
-        timeZone: clientTimezone
-      });
-      
-      clientEndTime = format(clientSlotEnd, 'HH:mm', {
-        timeZone: clientTimezone
-      });
-    }
-    
-    slots.push({
-      startTime: slotStartTime,
-      endTime: slotEndTime,
-      available,
-      ...(clientTimezone && clientTimezone !== businessTimezone ? {
-        clientStartTime,
-        clientEndTime,
-        clientTimezone,
-        businessTimezone
-      } : {})
-    });
-    
-    // Move to next slot
-    currentSlot.setMinutes(currentSlot.getMinutes() + slotIntervalMinutes);
-  }
-  
-  return slots;
 }
