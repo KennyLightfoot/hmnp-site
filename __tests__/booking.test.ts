@@ -1,25 +1,60 @@
 import { describe, it, expect } from 'vitest';
+import { isAddressMissing } from '@/lib/utils/address';
 import { BookingSchema } from '../app/api/booking/route';
 
-describe('Booking validation', () => {
-  it('valid payload passes', () => {
-    const data = {
-      serviceType: 'RON',
-      meetingDate: '2025-07-14',
-      meetingTime: '10:00',
-      clientName: 'Test User',
-      phone: '555-1234'
-    };
-    expect(() => BookingSchema.parse(data)).not.toThrow();
+// Helper to build minimal valid booking payload
+function buildBasePayload(overrides: Partial<any> = {}) {
+  return {
+    serviceType: 'QUICK_STAMP_LOCAL',
+    customerName: 'Test User',
+    customerEmail: 'test@example.com',
+    scheduledDateTime: new Date(Date.now() + 86_400_000).toISOString(), // +1 day
+    timeZone: 'America/Chicago',
+    pricing: {
+      basePrice: 50,
+      travelFee: 0,
+      totalPrice: 50
+    },
+    numberOfDocuments: 1,
+    numberOfSigners: 1,
+    ...overrides
+  } as const;
+}
+
+describe('Address validation helper', () => {
+  it('treats "N/A" as missing', () => {
+    expect(isAddressMissing('N/A')).toBe(true);
+    expect(isAddressMissing('n/a')).toBe(true);
   });
 
-  it('missing phone fails', () => {
-    const data: any = {
-      serviceType: 'RON',
-      meetingDate: '2025-07-14',
-      meetingTime: '10:00',
-      clientName: 'Test User'
-    };
-    expect(() => BookingSchema.parse(data)).toThrow();
+  it('accepts a real street address', () => {
+    expect(isAddressMissing('123 Main St')).toBe(false);
+  });
+});
+
+describe('BookingSchema – address edge cases', () => {
+  it('rejects placeholder address for non-RON service', () => {
+    const payload = buildBasePayload({
+      addressStreet: 'N/A',
+      addressCity: 'Houston',
+      addressState: 'TX',
+      addressZip: '77001'
+    });
+
+    // Parsing itself should not throw because addressStreet gets normalised to undefined.
+    const parsed = BookingSchema.parse(payload);
+    // Address should be stripped out
+    expect(parsed.addressStreet).toBeUndefined();
+  });
+
+  it('allows booking when a proper address is supplied', () => {
+    const payload = buildBasePayload({
+      addressStreet: '123 Main St',
+      addressCity: 'Houston',
+      addressState: 'TX',
+      addressZip: '77002'
+    });
+
+    expect(() => BookingSchema.parse(payload)).not.toThrow();
   });
 });

@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
 import { z } from 'zod';
+import { normalizeAddress, isAddressMissing } from '@/lib/utils/address';
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
 import { createContact, createAppointment, addContactToWorkflow } from '@/lib/ghl/management';
 
@@ -93,12 +94,14 @@ const BookingCreateSchema = z.object({
   locationType: z.enum(['HOME', 'OFFICE', 'HOSPITAL', 'OTHER'], {
     errorMap: () => ({ message: 'Please select a valid location type' })
   }).optional(),
-  addressStreet: z
-    .string()
-    .trim()
-    .max(120, 'Street address must be 120 characters or less')
-    .regex(ADDRESS_REGEX, 'Street address contains invalid characters')
-    .optional(),
+  addressStreet: z.preprocess(
+    (val) => normalizeAddress(val),
+    z
+      .string()
+      .max(120, 'Street address must be 120 characters or less')
+      .regex(ADDRESS_REGEX, 'Street address contains invalid characters')
+      .optional()
+  ),
   addressCity: z
     .string()
     .trim()
@@ -208,9 +211,9 @@ export async function POST(request: NextRequest) {
     }
     
     // Validate mobile service has address (RON_SERVICES doesn't need address)
-    if (service.serviceType !== 'RON_SERVICES' && !validatedData.addressStreet) {
+    if (service.serviceType !== 'RON_SERVICES' && isAddressMissing(validatedData.addressStreet)) {
       return NextResponse.json(
-        { error: 'Address is required for mobile services' },
+        { code: 'MISSING_ADDRESS', message: 'A valid street address is required for mobile services.' },
         { status: 400 }
       );
     }
@@ -655,3 +658,6 @@ async function sendEnhancedConfirmationEmail(booking: any, customerName: string,
     console.error('Failed to send enhanced confirmation email:', error);
   }
 }
+
+// Re-export schema for unit tests and external validation
+export { BookingCreateSchema as BookingSchema };

@@ -12,7 +12,7 @@ export default defineConfig({
     globals: true, // Optional: Use Vitest globals (describe, it, expect) without importing
     setupFiles: ['./tests/setupEnv.ts'], // Add the setup file here
     // Run all unit tests; we rely on directory naming to scope
-    include: ['tests/unit/**/*.test.ts'],
+    include: ['tests/unit/**/*.test.ts', '__tests__/**/*.test.ts'],
     // Exclude quarantined legacy tests until they are refactored
     exclude: ['**/*.legacy.test.ts'],
     coverage: {

@@ -4,3 +4,4 @@
  * TODO: Remove after all consumers migrate.
  */
 export { POST } from './create/route';
+export { BookingSchema } from './create/route';
