@@ -180,10 +180,32 @@ export default function SimpleBookingForm() {
 
     setIsSubmitting(true);
     try {
-      // Construct ISO string with timezone offset (America/Chicago)
-      const scheduledDateTimeISO = DateTime.fromISO(formData.bookingTime, { zone: 'America/Chicago' }).toISO();
+      // 🛡️ Safe date parsing – protect against invalid values
+      let scheduledDateTimeISO: string;
+      try {
+        if (!formData.bookingTime) {
+          throw new Error('No booking time selected');
+        }
 
-      console.log('📤 [BOOKING] Final payload scheduledDateTime:', scheduledDateTimeISO);
+        const dt = DateTime.fromISO(formData.bookingTime, { zone: 'America/Chicago' });
+
+        if (!dt.isValid) {
+          console.error('❌ Invalid ISO received for bookingTime', {
+            bookingTime: formData.bookingTime,
+            explain: dt.invalidExplanation,
+            reason: dt.invalidReason,
+          });
+          throw new Error('Invalid date selected');
+        }
+
+        scheduledDateTimeISO = dt.toISO();
+      } catch (dateErr: any) {
+        console.error('Date conversion error:', dateErr);
+        setError('Invalid date selected. Please choose another time.');
+        return;
+      }
+
+      console.log('📤 Preparing booking payload with datetime:', scheduledDateTimeISO);
 
       const bookingData: any = {
         serviceType: formData.serviceType,
