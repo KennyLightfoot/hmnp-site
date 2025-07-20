@@ -34,4 +34,27 @@ export function debugApiResponse(endpoint: string, response: Response, data: any
     // eslint-disable-next-line no-console
     console.error('debugApiResponse error:', err);
   }
+}
+
+export function withDebug(handler: (req: Request) => Promise<Response>) {
+  return async (req: Request): Promise<Response> => {
+    console.log(`📥 ${req.method} ${req.url}`);
+    try {
+      const res = await handler(req);
+      console.log(`📤 Response status: ${res.status}`);
+      return res;
+    } catch (error: any) {
+      console.error('💥 Handler error:', error);
+      // Lazy import to avoid bringing NextResponse into global scope when not running in Next
+      const { NextResponse } = await import('next/server');
+      return NextResponse.json(
+        {
+          success: false,
+          error: error?.message ?? 'Internal Server Error',
+          stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined,
+        },
+        { status: 500 },
+      );
+    }
+  };
 } 
