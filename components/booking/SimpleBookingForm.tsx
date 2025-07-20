@@ -185,36 +185,39 @@ export default function SimpleBookingForm() {
 
       console.log('📤 [BOOKING] Final payload scheduledDateTime:', scheduledDateTimeISO);
 
-      const bookingData = {
+      const bookingData: any = {
         serviceType: formData.serviceType,
         customerName: formData.customerName,
         customerEmail: formData.customerEmail,
-        customerPhone: formData.customerPhone,
-        
         scheduledDateTime: scheduledDateTimeISO,
         timeZone: 'America/Chicago',
-        
-        // Parse address for mobile services
-        ...(formData.serviceType !== 'RON_SERVICES' && formData.locationAddress ? {
-          locationType: 'OTHER',
-          addressStreet: formData.locationAddress, // Simple mapping for now
-          addressCity: 'Houston', // Default for now
-          addressState: 'TX',
-          addressZip: '77001' // Default for now
-        } : {}),
-        
+       
         // Enhanced pricing with transparent data
         pricing: {
           basePrice: pricing.basePrice,
           travelFee: pricing.travelFee,
           totalPrice: pricing.totalPrice,
-          // Include transparent pricing data if available
-          transparentData: pricing.transparentData
+          transparentData: pricing.transparentData ?? undefined
         },
-        
         numberOfDocuments: 1,
         numberOfSigners: 1
       };
+
+      // Optional phone
+      if (formData.customerPhone) {
+        bookingData.customerPhone = formData.customerPhone;
+      }
+
+      // Address only for mobile services and when provided
+      if (formData.serviceType !== 'RON_SERVICES' && formData.locationAddress) {
+        Object.assign(bookingData, {
+          locationType: 'OTHER',
+          addressStreet: formData.locationAddress,
+          addressCity: 'Houston',
+          addressState: 'TX',
+          addressZip: '77001'
+        });
+      }
 
       const response = await fetch('/api/booking/create', {
         method: 'POST',
