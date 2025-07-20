@@ -67,4 +67,6 @@ export class GHLClient {
   }
 }
 
-export const ghlClient = new GHLClient(); 
+export const ghlClient = process.env.GHL_PRIVATE_INTEGRATION_TOKEN
+  ? new GHLClient()
+  : (null as unknown as GHLClient); // Allow optional usage in test environments without token 

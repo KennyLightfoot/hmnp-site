@@ -6,6 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { debugApiResponse } from '@/lib/api-debug';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -78,6 +79,9 @@ export default function SimpleBookingForm() {
       
       if (response.ok) {
         const result = await response.json();
+
+        // 🔍 Verbose API debugging
+        debugApiResponse('/api/pricing/transparent', response, result);
         if (result.success) {
           // Transform transparent pricing to simple format for backward compatibility
           setPricing({
@@ -125,6 +129,9 @@ export default function SimpleBookingForm() {
       
       if (response.ok) {
         const result = await response.json();
+
+        // 🔍 Verbose API debugging
+        debugApiResponse('/api/availability', response, result);
         if (result.availableSlots) {
           // Transform the response to match expected format
           const transformedSlots = result.availableSlots.map((slot: any) => ({
@@ -342,11 +349,15 @@ export default function SimpleBookingForm() {
                         className="w-full p-2 border rounded"
                       >
                         <option value="">Select a time</option>
-                        {availableSlots.map((slot, index) => (
-                          <option key={index} value={slot.startTime}>
-                            {slot.displayTime} ({slot.duration} min)
-                          </option>
-                        ))}
+                        {availableSlots.map((slot, index) => {
+                          // 🎨 UI render log
+                          console.log(`🕐 [FRONTEND] Rendering slot ${index}`, slot);
+                          return (
+                            <option key={index} value={slot.startTime}>
+                              {slot.displayTime} ({slot.duration} min)
+                            </option>
+                          );
+                        })}
                       </select>
                     ) : (
                       <div className="p-3 text-center text-gray-500 border rounded">

@@ -35,6 +35,7 @@ import {
 import { CreateBooking } from '@/lib/booking-validation';
 import { SchedulingStepProps } from '@/lib/types/booking-interfaces';
 import { getServiceId } from '@/lib/services/serviceIdMap';
+import { debugApiResponse } from '@/lib/api-debug';
 
 interface TimeSlot {
   startTime: string;
@@ -186,6 +187,9 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
       // Use the WORKING availability endpoint
       const response = await fetch(`/api/availability?serviceId=${serviceId}&date=${date}&timezone=America/Chicago`);
       const result = await response.json();
+
+      // Verbose API debug logging
+      debugApiResponse('/api/availability', response, result);
       
       console.log(`✅ Availability for ${date}:`, result);
       

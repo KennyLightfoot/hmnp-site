@@ -17,6 +17,9 @@ export interface RedisConfig {
   connectTimeout?: number;
   commandTimeout?: number;
   lazyConnect?: boolean;
+  enableOfflineQueue?: boolean;
+  keepAlive?: number;
+  noDelay?: boolean;
 }
 
 class RedisClient {
@@ -35,8 +38,11 @@ class RedisClient {
       const redisConfig: RedisConfig = {
         maxRetriesPerRequest: 3,
         retryDelayOnFailover: 100,
-        connectTimeout: 10000,
+        connectTimeout: 5000,
         commandTimeout: 5000,
+        enableOfflineQueue: false,
+        keepAlive: 1000,
+        noDelay: true,
         lazyConnect: true,
         ...this.config
       };

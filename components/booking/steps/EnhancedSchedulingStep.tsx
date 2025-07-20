@@ -44,6 +44,7 @@ import { CreateBooking } from '@/lib/booking-validation';
 import { SchedulingStepProps } from '@/lib/types/booking-interfaces';
 import EnhancedTimeSlotDisplay, { EnhancedTimeSlot } from '../EnhancedTimeSlotDisplay';
 import { getServiceId } from '@/lib/services/serviceIdMap';
+import { debugApiResponse } from '@/lib/api-debug';
 
 // Urgency levels configuration
 const URGENCY_LEVELS = [
@@ -175,6 +176,9 @@ export default function EnhancedSchedulingStep({
       }
       
       const result = await response.json();
+
+      // Verbose API debug logging
+      debugApiResponse('/api/availability', response, result);
       
       if (result.availableSlots) {
         // Transform to enhanced format

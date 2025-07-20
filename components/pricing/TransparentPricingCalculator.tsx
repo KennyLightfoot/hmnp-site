@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { debugApiResponse } from '@/lib/api-debug';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -120,6 +121,9 @@ export function TransparentPricingCalculator() {
 
       if (response.ok) {
         const result = await response.json();
+
+        // 🔍 Verbose API debugging
+        debugApiResponse('/api/pricing/transparent', response, result);
         if (result.success) {
           setPricingResult(result);
         } else {

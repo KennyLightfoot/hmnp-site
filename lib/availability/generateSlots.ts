@@ -61,6 +61,7 @@ export async function generateAvailableSlots(params: SlotGenerationParams) {
       slots.push({
         startTime: currentTime.toISO(),
         endTime: slotEnd.toISO(),
+        available: true,
       });
     }
 
