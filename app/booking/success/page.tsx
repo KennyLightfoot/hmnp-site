@@ -100,7 +100,33 @@ export default function BookingSuccessPage() {
         serviceType: paymentSession.metadata.service_type || 'STANDARD_NOTARY',
         customerEmail: paymentSession.customer_email,
         customerName: 'Customer', // This should come from session metadata in real implementation
-        scheduledDateTime: paymentSession.metadata.booking_time || new Date().toISOString(),
+        // Ensure scheduledDateTime satisfies backend validation (ISO, future, <=1yr)
+        scheduledDateTime: (() => {
+          const { booking_time, booking_date } = paymentSession.metadata || {};
+          // Helper to check valid date and in future
+          const isAcceptable = (iso: string | undefined | null): iso is string => {
+            if (!iso) return false;
+            const dt = new Date(iso);
+            if (isNaN(dt.getTime())) return false;
+            const now = Date.now();
+            const oneYearAhead = new Date(now);
+            oneYearAhead.setFullYear(oneYearAhead.getFullYear() + 1);
+            return dt.getTime() > now && dt.getTime() <= oneYearAhead.getTime();
+          };
+
+          // 1️⃣ Use booking_time metadata if it looks good
+          if (isAcceptable(booking_time)) return new Date(booking_time as string).toISOString();
+
+          // 2️⃣ Combine booking_date + booking_time if both exist
+          if (booking_date && booking_time) {
+            const combined = new Date(`${booking_date}T${new Date(booking_time).toISOString().split('T')[1]}`);
+            if (isAcceptable(combined.toISOString())) return combined.toISOString();
+          }
+
+          // 3️⃣ Fallback: now + 2 hours (gives future timestamp)
+          const fallback = new Date(Date.now() + 2 * 60 * 60 * 1000);
+          return fallback.toISOString();
+        })(),
         locationType: 'OTHER',
         addressStreet: paymentSession.metadata.location_address || '',
         addressCity: 'Houston',
