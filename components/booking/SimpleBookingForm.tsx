@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { debugApiResponse } from '@/lib/api-debug';
+import { DateTime } from 'luxon';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -179,15 +180,18 @@ export default function SimpleBookingForm() {
 
     setIsSubmitting(true);
     try {
-      // Transform data to match schema-v2 structure
+      // Construct ISO string with timezone offset (America/Chicago)
+      const scheduledDateTimeISO = DateTime.fromISO(formData.bookingTime, { zone: 'America/Chicago' }).toISO();
+
+      console.log('📤 [BOOKING] Final payload scheduledDateTime:', scheduledDateTimeISO);
+
       const bookingData = {
         serviceType: formData.serviceType,
         customerName: formData.customerName,
         customerEmail: formData.customerEmail,
         customerPhone: formData.customerPhone,
         
-        // Use the exact datetime from the selected slot
-        scheduledDateTime: formData.bookingTime, // This is already an ISO string from available slots
+        scheduledDateTime: scheduledDateTimeISO,
         timeZone: 'America/Chicago',
         
         // Parse address for mobile services
