@@ -38,9 +38,9 @@ class RedisClient {
       const redisConfig: RedisConfig = {
         maxRetriesPerRequest: 3,
         retryDelayOnFailover: 100,
-        connectTimeout: 5000,
+        connectTimeout: 10000,
         commandTimeout: 5000,
-        enableOfflineQueue: false,
+        enableOfflineQueue: true,
         keepAlive: 1000,
         noDelay: true,
         lazyConnect: true,

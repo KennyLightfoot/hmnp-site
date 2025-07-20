@@ -202,10 +202,24 @@ function mapLocationTypeToDb(frontendType: string | undefined): 'CLIENT_SPECIFIE
 
 export async function POST(request: NextRequest) {
   try {
-    const data = await request.json();
-    
-    // Validate input data
-    const validatedData = BookingCreateSchema.parse(data);
+    // 🛠️  PREPROCESS DATE/TIME
+    // Ensure scheduledDateTime is present and valid before schema validation
+    const rawBody = await request.json();
+
+    const hasValidIso = (val: any): boolean => {
+      if (!val || typeof val !== 'string') return false;
+      return !isNaN(Date.parse(val));
+    };
+
+    if (!hasValidIso(rawBody.scheduledDateTime) && rawBody.bookingDate && rawBody.bookingTime) {
+      const combined = new Date(`${rawBody.bookingDate}T${rawBody.bookingTime}`);
+      if (!isNaN(combined.getTime())) {
+        rawBody.scheduledDateTime = combined.toISOString();
+      }
+    }
+
+    // Validate with Zod after preprocessing
+    const validatedData = BookingCreateSchema.parse(rawBody);
     
     // Prevent duplicate Stripe session bookings
     if (validatedData.stripeSessionId) {
