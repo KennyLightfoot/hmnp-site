@@ -693,9 +693,9 @@ export { BookingCreateSchema as BookingSchema };
 // --- Auxiliary handlers ----------------------------------------------------
 
 export async function GET() {
-  return NextResponse.json({ status: 'ok' });
+  return NextResponse.json({ success: true });
 }
 
 export async function HEAD() {
-  return NextResponse.json({ status: 'ok' });
+  return NextResponse.json({ success: true });
 }
