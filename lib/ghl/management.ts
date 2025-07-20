@@ -3,6 +3,8 @@
  * Provides functions to create and manage all GHL entities via API
  */
 
+import { ghlClient } from './client';
+
 interface GHLApiConfig {
   baseUrl: string;
   privateIntegrationToken: string;
@@ -30,30 +32,10 @@ const getGHLConfig = (): GHLApiConfig => {
 };
 
 async function makeGHLRequest(endpoint: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE', body?: any) {
-  const config = getGHLConfig();
-  const url = `${config.baseUrl}${endpoint}`;
-
-  const response = await fetch(url, {
+  return await ghlClient.request(endpoint, {
     method,
-    headers: {
-      'Authorization': `Bearer ${config.privateIntegrationToken}`,
-      'Content-Type': 'application/json',
-      'Version': config.version,
-      'User-Agent': 'HMNP-BookingSystem/1.0', // Added proper User-Agent
-    },
-    body: body ? JSON.stringify(body) : undefined,
+    body: body ? JSON.stringify(body) : undefined
   });
-
-  if (!response.ok) {
-    const errorData = await response.text();
-    throw new Error(`GHL API request failed (${response.status}): ${errorData}`);
-  }
-
-  if (response.status === 204) {
-    return null;
-  }
-
-  return await response.json();
 }
 
 // ===== CUSTOM FIELDS MANAGEMENT =====

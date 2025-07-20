@@ -61,7 +61,7 @@ export async function sendSms({ to, body }: SmsArgs): Promise<GhlSmsApiResponse>
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GHL_API_KEY}`,
+        'Authorization': GHL_API_KEY as string,
         'Version': GHL_API_VERSION,
       },
       body: JSON.stringify(payload),

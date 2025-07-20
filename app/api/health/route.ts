@@ -273,7 +273,7 @@ async function checkGHL(): Promise<HealthStatus | undefined> {
     // Simple GHL API call to verify connectivity
     const response = await fetch(`${process.env.GHL_API_BASE_URL || 'https://services.leadconnectorhq.com'}/locations/${process.env.GHL_LOCATION_ID}`, {
       headers: {
-        'Authorization': `Bearer ${process.env.GHL_API_KEY}`,
+        'Authorization': process.env.GHL_API_KEY as string,
         'Version': '2021-07-28',
       },
     });

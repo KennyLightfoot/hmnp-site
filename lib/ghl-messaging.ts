@@ -50,7 +50,7 @@ export async function sendGHLMessage(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.GHL_API_KEY}`,
+        'Authorization': process.env.GHL_API_KEY as string,
         'Version': '2021-07-28',
       },
       body: JSON.stringify(payload),

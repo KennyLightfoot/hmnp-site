@@ -95,7 +95,7 @@ async function callGhlApi<T = any>(endpoint: string, method: 'GET' | 'POST' | 'P
 
   // Updated authentication based on latest GHL API v2 requirements
   const headers: HeadersInit = {
-    'Authorization': `Bearer ${apiKey}`,
+    'Authorization': apiKey,
     'Version': '2021-07-28',
     'Accept': 'application/json',
   };

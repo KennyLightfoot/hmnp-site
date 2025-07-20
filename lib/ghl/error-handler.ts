@@ -239,7 +239,7 @@ export async function ghlApiRequest<T = any>(
   const requestOptions: RequestInit = {
     ...options,
     headers: {
-      'Authorization': `Bearer ${process.env.GHL_PRIVATE_INTEGRATION_TOKEN}`,
+      'Authorization': getCleanEnv('GHL_PRIVATE_INTEGRATION_TOKEN') as string,
       'Version': '2021-07-28',
       'Content-Type': 'application/json',
       'User-Agent': 'HMNP-Integration/1.0',
@@ -332,7 +332,7 @@ export async function validateGHLResponse<T = any>(response: Response): Promise<
  */
 export function createGHLHeaders(includeContentType = true): Record<string, string> {
   const headers: Record<string, string> = {
-    'Authorization': `Bearer ${getCleanEnv('GHL_PRIVATE_INTEGRATION_TOKEN')}`,
+    'Authorization': getCleanEnv('GHL_PRIVATE_INTEGRATION_TOKEN') as string,
     'Version': '2021-07-28',
     'User-Agent': 'HMNP-Integration/1.0'
   };
