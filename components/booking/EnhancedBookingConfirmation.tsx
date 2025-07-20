@@ -29,6 +29,7 @@ import {
 import { format } from 'date-fns';
 import { sendRealTimeStatusUpdate, getBookingStatus } from '@/lib/notifications/real-time-status';
 import { createSupportTicket } from '@/lib/customer-support/support-integration';
+import { SafeDate } from '@/lib/utils/safe-date';
 
 interface BookingConfirmationProps {
   booking: {
@@ -147,8 +148,9 @@ export default function EnhancedBookingConfirmation({
       title: `Notary Appointment - ${booking.serviceName}`,
       description: `Notary service appointment with ${booking.notaryName || 'Houston Mobile Notary Pros'}`,
       location: booking.address,
-      startTime: new Date(booking.scheduledDateTime).toISOString(),
-      endTime: new Date(new Date(booking.scheduledDateTime).getTime() + 60 * 60 * 1000).toISOString()
+      // Use SafeDate wrapper to avoid RangeError
+      startTime: SafeDate.toISOString(booking.scheduledDateTime) ?? '',
+      endTime: SafeDate.toISOString(new Date(new Date(booking.scheduledDateTime).getTime() + 60 * 60 * 1000)) ?? ''
     };
 
     const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}&dates=${event.startTime.replace(/[-:]/g, '').replace(/\.\d{3}/, '')}/${event.endTime.replace(/[-:]/g, '').replace(/\.\d{3}/, '')}`;
