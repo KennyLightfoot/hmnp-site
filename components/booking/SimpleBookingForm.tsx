@@ -103,7 +103,8 @@ export default function SimpleBookingForm() {
           const transformedSlots = result.availableSlots.map((slot: any) => ({
             startTime: `${formData.bookingDate}T${slot.startTime}:00-05:00`,
             endTime: `${formData.bookingDate}T${slot.endTime}:00-05:00`,
-            displayTime: slot.startTime,
+            // Convert 24-hour time ("HH:mm") to human-friendly format like "9:00 AM"
+            displayTime: DateTime.fromFormat(slot.startTime, 'HH:mm').toFormat('h:mm a'),
             duration: 60,
             available: slot.available
           })).filter((slot: any) => slot.available);
@@ -328,7 +329,7 @@ export default function SimpleBookingForm() {
                           console.log(`🕐 [FRONTEND] Rendering slot ${index}`, slot);
                           return (
                             <option key={index} value={slot.startTime}>
-                              {slot.displayTime} ({slot.duration} min)
+                              {slot.displayTime}
                             </option>
                           );
                         })}
@@ -458,7 +459,8 @@ export default function SimpleBookingForm() {
               
               <Button
                 type="button"
-                disabled={!formData.serviceType || isSubmitting}
+                // Require a selected time before continuing to payment
+                disabled={!formData.serviceType || !formData.bookingTime || isSubmitting}
                 onClick={() => {
                   // Redirect to full booking form with payment collection
                   const params = new URLSearchParams({

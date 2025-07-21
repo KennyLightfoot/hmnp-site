@@ -119,8 +119,26 @@ export default function BookingSuccessPage() {
 
           // 2️⃣ Combine booking_date + booking_time if both exist
           if (booking_date && booking_time) {
-            const combined = new Date(`${booking_date}T${new Date(booking_time).toISOString().split('T')[1]}`);
-            if (isAcceptable(combined.toISOString())) return combined.toISOString();
+            try {
+              const timePart = (() => {
+                const bt = booking_time as string; // cast – safe inside this block
+                // Attempt to extract time portion safely without relying on Date parsing
+                if (bt.includes('T')) {
+                  return bt.split('T')[1];
+                }
+                // If booking_time is already like "14:00" or "14:00:00-05:00"
+                return bt;
+              })();
+
+              const combinedIsoString = `${booking_date}T${timePart}`;
+              const combined = new Date(combinedIsoString);
+
+              if (!isNaN(combined.getTime()) && isAcceptable(combined.toISOString())) {
+                return combined.toISOString();
+              }
+            } catch (err) {
+              // swallow – we'll fall back below
+            }
           }
 
           // 3️⃣ Fallback: now + 2 hours (gives future timestamp)
