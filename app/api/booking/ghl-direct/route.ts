@@ -1,0 +1,124 @@
+import { NextResponse } from 'next/server';
+import {
+  findContactByEmail,
+  createContact,
+  createOpportunity,
+  createAppointment,
+  getServiceValue,
+} from '@/lib/ghl/api';
+import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
+
+/**
+ * POST /api/booking/ghl-direct
+ *
+ * Lightweight booking endpoint that:
+ * 1. Finds (or creates) the contact in GHL
+ * 2. Creates an appointment on the appropriate GHL calendar if possible
+ *    – falls back to creating an Opportunity when calendar configuration is missing
+ *
+ * Required fields in JSON body:
+ *   - serviceType          (e.g. "STANDARD_NOTARY")
+ *   - customerName         (full name)
+ *   - customerEmail
+ *   - scheduledDateTime    (ISO string, America/Chicago timezone preferred)
+ *
+ * Optional fields:
+ *   - customerPhone
+ *   - numberOfSigners      (defaults to 1 – for getServiceValue)
+ */
+export async function POST(request: Request) {
+  try {
+    const data = await request.json();
+
+    const {
+      serviceType,
+      customerName,
+      customerEmail,
+      customerPhone,
+      scheduledDateTime,
+      numberOfSigners = 1,
+    } = data;
+
+    // Basic validation – keep it simple
+    if (!serviceType || !customerName || !customerEmail || !scheduledDateTime) {
+      return NextResponse.json(
+        { success: false, message: 'Missing required booking fields' },
+        { status: 400 },
+      );
+    }
+
+    // Split name into first / last (very naive but fine for our use-case)
+    const nameParts = String(customerName).trim().split(' ');
+    const firstName = nameParts.shift() || customerName;
+    const lastName = nameParts.join(' ') || '-';
+
+    /* -----------------------------------------------------------
+     * 1) Find (or create) the contact in GHL
+     * ---------------------------------------------------------*/
+    let contact: any = null;
+    try {
+      contact = await findContactByEmail(customerEmail);
+    } catch (err) {
+      // swallow – fall through to createContact
+    }
+
+    if (!contact) {
+      contact = await createContact({
+        firstName,
+        lastName,
+        email: customerEmail,
+        phone: customerPhone,
+        source: 'Website Booking',
+      });
+    }
+
+    /* -----------------------------------------------------------
+     * 2) Create an appointment on the relevant calendar (preferred)
+     * ---------------------------------------------------------*/
+    let appointment: any = null;
+    try {
+      const calendarId = getCalendarIdForService(serviceType);
+      const startIso = new Date(scheduledDateTime).toISOString();
+      const endIso = new Date(new Date(scheduledDateTime).getTime() + 60 * 60 * 1000).toISOString();
+
+      appointment = await createAppointment({
+        calendarId,
+        contactId: contact.id,
+        title: `${serviceType.replace(/_/g, ' ')} – ${customerName}`,
+        startTime: startIso,
+        endTime: endIso,
+      });
+    } catch (err) {
+      console.warn('📆 Appointment creation failed, falling back to Opportunity:', err);
+    }
+
+    /* -----------------------------------------------------------
+     * 3) Fallback: create an Opportunity so workflows still fire
+     * ---------------------------------------------------------*/
+    let opportunity: any = null;
+    if (!appointment) {
+      opportunity = await createOpportunity(contact.id, {
+        name: `${serviceType} – ${customerName}`,
+        status: 'open',
+        source: 'Website Booking',
+        monetaryValue: getServiceValue(serviceType, numberOfSigners),
+      });
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        contactId: contact.id,
+        appointmentId: appointment?.id ?? null,
+        opportunityId: opportunity?.id ?? null,
+      },
+      { status: 201 },
+    );
+  } catch (error: any) {
+    console.error('❌ GHL-direct booking error:', error);
+    return NextResponse.json(
+      { success: false, message: error?.message ?? 'Internal server error' },
+      { status: 500 },
+    );
+  }
+} 

@@ -241,7 +241,7 @@ export default function SimpleBookingForm() {
         });
       }
 
-      const response = await fetch('/api/booking/simple-create', {
+      const response = await fetch('/api/booking/ghl-direct', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bookingData)
