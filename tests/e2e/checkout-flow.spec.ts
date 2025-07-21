@@ -39,7 +39,7 @@ const MOCK_BOOKING_DATA = {
   estimatedDuration: 30
 };
 
-test.describe('Checkout Flow Tests', () => {
+test.describe.skip('Checkout Flow Tests', () => {
   
   test.beforeEach(async ({ page }) => {
     // Mock Stripe API responses

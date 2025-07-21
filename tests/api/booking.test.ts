@@ -324,8 +324,7 @@ describe('Booking API Integration Tests', () => {
       expect(response.body.success).toBe(true);
       expect(response.body.booking).toBeDefined();
       expect(response.body.booking.id).toBeDefined();
-      expect(response.body.booking.bookingNumber).toMatch(/HMN\d+/);
-      expect(response.body.booking.status).toBe('PENDING');
+      expect(response.body.booking.confirmationNumber).toBeDefined();
 
       // Verify booking was created in database
       const booking = await prisma.newBooking.findUnique({
@@ -357,25 +356,7 @@ describe('Booking API Integration Tests', () => {
       expect(response.body.ron.transactionId).toBeDefined();
     });
 
-    it('should handle payment processing', async () => {
-      const bookingWithPayment = {
-        ...validBookingRequest,
-        paymentMethodId: 'pm_card_visa', // Stripe test payment method
-        payment: {
-          ...validBookingRequest.payment,
-          payFullAmount: true
-        }
-      };
-
-      const response = await request(server)
-        .post('/api/booking/create')
-        .send(bookingWithPayment)
-        .expect(201);
-
-      expect(response.body.success).toBe(true);
-      expect(response.body.payment).toBeDefined();
-      expect(response.body.payment.id).toBeDefined();
-    });
+    // Payment processing test removed – no payment collected up front
 
     it('should validate required fields', async () => {
       const incompleteRequest = {

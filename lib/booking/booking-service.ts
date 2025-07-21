@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { stripe } from '@/lib/stripe';
+// Stripe removed – payment will be handled later
 import { DateTime } from 'luxon';
 
 interface CreateBookingParams {
@@ -53,32 +53,14 @@ export class BookingService {
         serviceId,
         customerEmail,
         scheduledDateTime: appointmentTime.toJSDate(),
-        status: 'PENDING_PAYMENT',
+        status: 'PAYMENT_PENDING',
         priceAtBooking: basePrice,
         notes: `confirmationCode:${confirmationCode}`,
         depositStatus: 'PENDING',
       },
     });
 
-    // 5. Create Stripe payment intent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(basePrice * 100),
-      currency: 'usd',
-      metadata: {
-        bookingId: booking.id,
-        customerEmail,
-        serviceId,
-      },
-    });
-
-    // 6. Update booking with paymentIntentId (we store it inside notes for simplicity)
-    await prisma.booking.update({
-      where: { id: booking.id },
-      data: {
-        notes: `${booking.notes || ''}\npaymentIntent:${paymentIntent.id}`,
-      },
-    });
-
+    // 5. Return booking – no payment intent
     return {
       booking: {
         id: booking.id,
@@ -87,7 +69,7 @@ export class BookingService {
         amount: basePrice,
         status: booking.status,
       },
-      paymentClientSecret: paymentIntent.client_secret,
+      paymentClientSecret: null, // No client secret
     };
   }
 
@@ -97,7 +79,7 @@ export class BookingService {
         serviceId,
         scheduledDateTime: appointmentTime.toJSDate(),
         status: {
-          in: ['CONFIRMED', 'PENDING_PAYMENT'],
+          in: ['CONFIRMED', 'PAYMENT_PENDING'],
         },
       },
     });
@@ -122,7 +104,7 @@ export class BookingService {
       where: { id: booking.id },
       data: {
         status: 'CONFIRMED',
-        depositStatus: 'PAID',
+        depositStatus: 'COMPLETED',
       },
     });
   }

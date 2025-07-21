@@ -14,9 +14,6 @@ async function handler(request: Request) {
       {
         success: true,
         booking: result.booking,
-        payment: {
-          clientSecret: result.paymentClientSecret,
-        },
       },
       { status: 201 },
     );

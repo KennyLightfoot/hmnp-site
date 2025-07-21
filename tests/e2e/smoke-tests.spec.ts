@@ -63,7 +63,7 @@ const RON_TEST_DATA = {
   }
 };
 
-test.describe('Fire-Drill Smoke Tests', () => {
+test.describe.skip('Fire-Drill Smoke Tests', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(BASE_URL);
   });

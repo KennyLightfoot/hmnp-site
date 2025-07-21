@@ -11,7 +11,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { stripe } from '@/lib/stripe';
+// Stripe removed – no upfront payment collection
 import { z } from 'zod';
 import { normalizeAddress } from '@/lib/utils/address';
 import { isAddressMissing } from '@/lib/validation/address';
@@ -279,19 +279,7 @@ export async function POST(request: NextRequest) {
       // Continue with booking creation even if business rules fail
     }
     
-    // Create Stripe payment intent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(validatedData.pricing.totalPrice * 100), // Convert to cents
-      currency: 'usd',
-      automatic_payment_methods: {
-        enabled: true,
-      },
-      metadata: {
-        service_type: validatedData.serviceType,
-        customer_email: validatedData.customerEmail,
-        scheduled_date: validatedData.scheduledDateTime
-      }
-    });
+    // 🚫  No card required – skip creating PaymentIntent and take payment later
     
     // Create GHL contact and appointment BEFORE saving to database
     let ghlContactId: string | null = null;
@@ -392,7 +380,7 @@ export async function POST(request: NextRequest) {
       
       const ghlAppointment = await createAppointment({
         calendarId,
-        contactId: ghlContactId,
+        contactId: ghlContactId!,
         startTime: validatedData.scheduledDateTime,
         endTime: endDateTime.toISOString(),
         title: `${service.name} - ${validatedData.customerName}`,
@@ -411,7 +399,7 @@ export async function POST(request: NextRequest) {
       const workflowId = process.env.GHL_NEW_CONTACT_WORKFLOW_ID;
       if (workflowId) {
         try {
-          await addContactToWorkflow(ghlContactId, workflowId);
+          await addContactToWorkflow(ghlContactId!, workflowId);
           console.log(`✅ Contact added to booking workflow`);
         } catch (workflowError) {
           console.warn('⚠️  Workflow addition failed (non-critical):', workflowError.message);
@@ -463,9 +451,9 @@ export async function POST(request: NextRequest) {
         
         // Note: numberOfDocuments and numberOfSigners stored in metadata or separate fields if needed
         
-        // Payment - using depositStatus field instead of paymentStatus
+        // Payment – mark as PENDING; we'll chase later via invoice / phone
         depositStatus: 'PENDING',
-        notes: `Stripe Payment Intent: ${paymentIntent.id}`,
+        notes: validatedData.locationNotes ?? undefined,
         
         // GHL Integration IDs
         ghlContactId,
@@ -547,10 +535,10 @@ export async function POST(request: NextRequest) {
         paymentStatus: booking.depositStatus,
         bookingManagementLink: `${process.env.NEXT_PUBLIC_APP_URL}/booking/${booking.id}`,
         metadata: {
-          stripePaymentIntentId: paymentIntent.id,
-          proofTransactionId: proofTransaction?.id,
-          ghlContactId,
-          ghlAppointmentId
+          // No Stripe payment collected yet
+          ...(proofTransaction?.id && { proofTransactionId: proofTransaction.id }),
+          ...(ghlContactId ? { ghlContactId: ghlContactId as string } : {}),
+          ...(ghlAppointmentId ? { ghlAppointmentId: ghlAppointmentId as string } : {})
         }
       });
 
@@ -580,7 +568,7 @@ export async function POST(request: NextRequest) {
       booking: {
         id: booking.id,
         confirmationNumber: booking.id,
-        clientSecret: paymentIntent.client_secret,
+        clientSecret: null, // No client secret for no-card flow
         scheduledDateTime: booking.scheduledDateTime,
         totalAmount: booking.priceAtBooking,
         service: {
