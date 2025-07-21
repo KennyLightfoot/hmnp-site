@@ -51,8 +51,18 @@ export default function SimpleBookingForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  // Whenever the service type changes (or address for future enhancements),
+  // set a simple flat price from the SERVICE_PRICES map.  No async fetch – keeps
+  // booking flow bullet-proof while we stabilise GHL integration.
   useEffect(() => {
-    if (formData.serviceType) calculatePrice();
+    if (!formData.serviceType) return;
+
+    setPricing({
+      basePrice: SERVICE_PRICES[formData.serviceType as keyof typeof SERVICE_PRICES] || 75,
+      travelFee: 0,
+      totalPrice: SERVICE_PRICES[formData.serviceType as keyof typeof SERVICE_PRICES] || 75,
+      transparentData: null,
+    });
   }, [formData.serviceType, formData.locationAddress]);
 
   useEffect(() => {
@@ -61,53 +71,8 @@ export default function SimpleBookingForm() {
     }
   }, [formData.serviceType, formData.bookingDate]);
 
-  const calculatePrice = async () => {
-    try {
-      // Use new transparent pricing API
-      const response = await fetch('/api/pricing/transparent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          serviceType: formData.serviceType,
-          address: formData.serviceType !== 'RON_SERVICES' ? formData.locationAddress : null,
-          documentCount: 1,
-          signerCount: 1,
-          customerType: 'new',
-          scheduledDateTime: formData.bookingDate && formData.bookingTime ? 
-            `${formData.bookingDate}T${formData.bookingTime.split('T')[1] || '10:00:00'}` : undefined
-        })
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-
-        // 🔍 Verbose API debugging
-        debugApiResponse('/api/pricing/transparent', response, result);
-        if (result.success) {
-          // Transform transparent pricing to simple format for backward compatibility
-          setPricing({
-            basePrice: result.basePrice,
-            travelFee: result.breakdown.travelFee?.amount || 0,
-            totalPrice: result.totalPrice,
-            // Store full transparent data for enhanced display
-            transparentData: result
-          });
-        } else {
-          throw new Error(result.error);
-        }
-      } else {
-        throw new Error('Pricing calculation failed');
-      }
-    } catch (error) {
-      console.warn('Falling back to basic pricing:', error);
-      setPricing({
-        basePrice: SERVICE_PRICES[formData.serviceType as keyof typeof SERVICE_PRICES] || 75,
-        travelFee: 0,
-        totalPrice: SERVICE_PRICES[formData.serviceType as keyof typeof SERVICE_PRICES] || 75,
-        transparentData: null
-      });
-    }
-  };
+  // Removed external pricing fetch – simple flat pricing already set in the effect above.
+  const calculatePrice = () => {};
 
   const fetchAvailableSlots = async () => {
     setIsLoadingSlots(true);
