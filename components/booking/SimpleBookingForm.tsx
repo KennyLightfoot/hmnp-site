@@ -29,6 +29,9 @@ const SERVICE_PRICES = {
   'BUSINESS_GROWTH': 349
 };
 
+// Flag to toggle upfront card collection
+const REQUIRE_CARD = process.env.NEXT_PUBLIC_REQUIRE_CARD === 'true';
+
 export default function SimpleBookingForm() {
   const [formData, setFormData] = useState({
     serviceType: '',
@@ -459,9 +462,9 @@ export default function SimpleBookingForm() {
               </Alert>
             )}
 
-            {/* CRITICAL: PAYMENT REQUIRED BEFORE BOOKING */}
-            <div className="border-t pt-4 mt-4">
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+            {/* Payment banner hidden when card not required */}
+            {REQUIRE_CARD && (
+              <div className="mt-4 rounded-md bg-yellow-100 p-4">
                 <div className="flex items-center space-x-2">
                   <CreditCard className="h-5 w-5 text-yellow-600" />
                   <span className="font-semibold text-yellow-800">Payment Required</span>
@@ -470,30 +473,30 @@ export default function SimpleBookingForm() {
                   Complete payment to secure your booking. You'll receive instant confirmation.
                 </p>
               </div>
-              
-              <Button
-                type="button"
-                // Require a selected time before continuing to payment
-                disabled={!formData.serviceType || !formData.bookingTime || isSubmitting}
-                onClick={() => {
-                  // Redirect to full booking form with payment collection
-                  const params = new URLSearchParams({
-                    serviceType: formData.serviceType,
-                    customerName: formData.customerName,
-                    customerEmail: formData.customerEmail,
-                    customerPhone: formData.customerPhone || '',
-                    bookingDate: formData.bookingDate,
-                    bookingTime: formData.bookingTime,
-                    locationAddress: formData.locationAddress || '',
-                    totalPrice: pricing.totalPrice.toString()
-                  });
-                  window.location.href = `/booking/checkout?${params.toString()}`;
-                }}
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
-              >
-                Continue to Payment - $${pricing.totalPrice}
-              </Button>
-            </div>
+            )}
+            
+            <Button
+              type="button"
+              // Require a selected time before continuing to payment
+              disabled={!formData.serviceType || !formData.bookingTime || isSubmitting}
+              onClick={() => {
+                // Redirect to full booking form with payment collection
+                const params = new URLSearchParams({
+                  serviceType: formData.serviceType,
+                  customerName: formData.customerName,
+                  customerEmail: formData.customerEmail,
+                  customerPhone: formData.customerPhone || '',
+                  bookingDate: formData.bookingDate,
+                  bookingTime: formData.bookingTime,
+                  locationAddress: formData.locationAddress || '',
+                  totalPrice: pricing.totalPrice.toString()
+                });
+                window.location.href = `/booking/checkout?${params.toString()}`;
+              }}
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
+            >
+              {REQUIRE_CARD ? `Continue to Payment - $${pricing.totalPrice}` : `Confirm Booking - $${pricing.totalPrice}`}
+            </Button>
           </form>
         </CardContent>
       </Card>

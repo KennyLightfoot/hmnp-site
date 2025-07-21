@@ -44,7 +44,8 @@ import PaymentSecurityIndicator from '@/components/payments/PaymentSecurityIndic
 import PaymentRecoveryForm from '@/components/payments/PaymentRecoveryForm';
 import { ReviewStepProps, PaymentOptionChangeHandler, PricingLineItem } from '@/lib/types/booking-interfaces';
 
-// Enhanced payment methods are now handled by EnhancedPaymentForm component
+// Determine if we still require card info (default false)
+const REQUIRE_CARD = process.env.NEXT_PUBLIC_REQUIRE_CARD === 'true';
 
 const GUARANTEES = [
   {
@@ -82,11 +83,12 @@ export default function ReviewStep({
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
+  // Payment flow only active when card is required
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [showPaymentRecovery, setShowPaymentRecovery] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<any>(null);
   const [selectedPaymentOption, setSelectedPaymentOption] = useState<any>(null);
-  
+
   const watchedPayment = watch('payment') || {};
   const watchedServiceType = watch('serviceType');
   const watchedCustomer = watch('customer') || {};
@@ -94,7 +96,7 @@ export default function ReviewStep({
   const watchedScheduling = watch('scheduling') || {};
 
   useEffect(() => {
-    // Auto-select credit card as default
+    if (!REQUIRE_CARD) return;
     if (!watchedPayment.paymentMethod) {
       setValue('payment.paymentMethod', 'credit-card');
       onUpdate({ payment: { ...watchedPayment, paymentMethod: 'credit-card' } });
@@ -380,38 +382,41 @@ export default function ReviewStep({
         </CardContent>
       </Card>
 
-      {/* Enhanced Payment Form */}
-      <EnhancedPaymentForm
-        totalAmount={pricing.totalPrice}
-        depositAmount={Math.min(50, pricing.totalPrice * 0.25)}
-        onPaymentMethodSelect={setSelectedPaymentMethod}
-        onPaymentOptionSelect={setSelectedPaymentOption}
-        onPaymentSubmit={async (paymentData) => {
-          try {
-            setPaymentError(null);
-            // Handle payment submission
-            console.log('Payment submitted:', paymentData);
-          } catch (error) {
-            setPaymentError(error instanceof Error ? error.message : 'Payment failed');
-            setShowPaymentRecovery(true);
-          }
-        }}
-        selectedMethod={selectedPaymentMethod}
-        selectedOption={selectedPaymentOption}
-        isLoading={isSubmitting}
-        error={paymentError}
-        serviceType={watchedServiceType}
-        isMobile={false}
-      />
+      {/* Enhanced Payment Form – show only when card required */}
+      {REQUIRE_CARD && (
+        <EnhancedPaymentForm
+          totalAmount={pricing.totalPrice}
+          depositAmount={Math.min(50, pricing.totalPrice * 0.25)}
+          onPaymentMethodSelect={setSelectedPaymentMethod}
+          onPaymentOptionSelect={setSelectedPaymentOption}
+          onPaymentSubmit={async (paymentData) => {
+            try {
+              setPaymentError(null);
+              console.log('Payment submitted:', paymentData);
+            } catch (error) {
+              setPaymentError(error instanceof Error ? error.message : 'Payment failed');
+              setShowPaymentRecovery(true);
+            }
+          }}
+          selectedMethod={selectedPaymentMethod}
+          selectedOption={selectedPaymentOption}
+          isLoading={isSubmitting}
+          error={paymentError}
+          serviceType={watchedServiceType}
+          isMobile={false}
+        />
+      )}
 
-      {/* Payment Security Indicator */}
-      <PaymentSecurityIndicator
-        showDetails={false}
-        isMobile={false}
-      />
+      {/* Payment Security Indicator – only when card step present */}
+      {REQUIRE_CARD && (
+        <PaymentSecurityIndicator
+          showDetails={false}
+          isMobile={false}
+        />
+      )}
 
-      {/* Payment Recovery Form */}
-      {showPaymentRecovery && paymentError && (
+      {/* Payment Recovery Form – only if payment required */}
+      {REQUIRE_CARD && showPaymentRecovery && paymentError && (
         <PaymentRecoveryForm
           failure={{
             id: 'recovery-1',
