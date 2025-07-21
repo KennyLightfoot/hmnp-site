@@ -100,14 +100,28 @@ export default function SimpleBookingForm() {
         debugApiResponse('/api/availability', response, result);
         if (result.availableSlots) {
           // Transform the response to match expected format
-          const transformedSlots = result.availableSlots.map((slot: any) => ({
-            startTime: `${formData.bookingDate}T${slot.startTime}:00-05:00`,
-            endTime: `${formData.bookingDate}T${slot.endTime}:00-05:00`,
-            // Convert 24-hour time ("HH:mm") to human-friendly format like "9:00 AM"
-            displayTime: DateTime.fromFormat(slot.startTime, 'HH:mm').toFormat('h:mm a'),
-            duration: 60,
-            available: slot.available
-          })).filter((slot: any) => slot.available);
+          const transformedSlots = result.availableSlots.map((slot: any) => {
+            // If backend already provides ISO strings, use them as-is.
+            const isIso = typeof slot.startTime === 'string' && slot.startTime.includes('T');
+            const startIso = isIso ? slot.startTime : `${formData.bookingDate}T${slot.startTime}:00-05:00`;
+            const endIso   = isIso ? slot.endTime   : `${formData.bookingDate}T${slot.endTime}:00-05:00`;
+
+            return {
+              startTime: startIso,
+              endTime: endIso,
+              // startTime can be ISO ("2025-07-21T14:00:00-05:00") or plain "HH:mm"
+              displayTime: (() => {
+                const isoTry = DateTime.fromISO(slot.startTime);
+                if (isoTry.isValid) {
+                  return isoTry.toFormat('h:mm a');
+                }
+                const fmtTry = DateTime.fromFormat(slot.startTime, 'HH:mm');
+                return fmtTry.isValid ? fmtTry.toFormat('h:mm a') : slot.startTime;
+              })(),
+              duration: 60,
+              available: slot.available
+            };
+          }).filter((slot: any) => slot.available);
           
           setAvailableSlots(transformedSlots);
         } else {
