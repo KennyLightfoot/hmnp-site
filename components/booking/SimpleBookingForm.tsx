@@ -474,29 +474,62 @@ export default function SimpleBookingForm() {
                 </p>
               </div>
             )}
-            
-            <Button
-              type="button"
-              // Require a selected time before continuing to payment
-              disabled={!formData.serviceType || !formData.bookingTime || isSubmitting}
-              onClick={() => {
-                // Redirect to full booking form with payment collection
-                const params = new URLSearchParams({
-                  serviceType: formData.serviceType,
-                  customerName: formData.customerName,
-                  customerEmail: formData.customerEmail,
-                  customerPhone: formData.customerPhone || '',
-                  bookingDate: formData.bookingDate,
-                  bookingTime: formData.bookingTime,
-                  locationAddress: formData.locationAddress || '',
-                  totalPrice: pricing.totalPrice.toString()
-                });
-                window.location.href = `/booking/checkout?${params.toString()}`;
-              }}
-              className="w-full bg-green-600 hover:bg-green-700 text-white"
-            >
+              
+              <Button
+                type="button"
+                // Require a selected time before continuing to payment
+                disabled={!formData.serviceType || !formData.bookingTime || isSubmitting}
+                onClick={async () => {
+                  if (REQUIRE_CARD) {
+                    // Redirect to checkout with card collection
+                    const params = new URLSearchParams({
+                      serviceType: formData.serviceType,
+                      customerName: formData.customerName,
+                      customerEmail: formData.customerEmail,
+                      customerPhone: formData.customerPhone || '',
+                      bookingDate: formData.bookingDate,
+                      bookingTime: formData.bookingTime,
+                      locationAddress: formData.locationAddress || '',
+                      totalPrice: pricing.totalPrice.toString()
+                    });
+                    window.location.href = `/booking/checkout?${params.toString()}`;
+                  } else {
+                    // Directly create booking
+                    try {
+                      setIsSubmitting(true);
+                      const response = await fetch('/api/booking/create', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          serviceType: formData.serviceType,
+                          customerName: formData.customerName,
+                          customerEmail: formData.customerEmail,
+                          customerPhone: formData.customerPhone,
+                          bookingDate: formData.bookingDate,
+                          bookingTime: formData.bookingTime,
+                          locationAddress: formData.locationAddress,
+                          pricing: {
+                            basePrice: pricing.basePrice,
+                            travelFee: pricing.travelFee,
+                            totalPrice: pricing.totalPrice,
+                          },
+                          agreedToTerms: true
+                        })
+                      });
+                      if (!response.ok) throw new Error('Booking failed');
+                      const result = await response.json();
+                      window.location.href = `/booking/success?bookingId=${result.booking.id}`;
+                    } catch (err) {
+                      setError('Booking creation failed - please try again.');
+                    } finally {
+                      setIsSubmitting(false);
+                    }
+                  }
+                }}
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+              >
               {REQUIRE_CARD ? `Continue to Payment - $${pricing.totalPrice}` : `Confirm Booking - $${pricing.totalPrice}`}
-            </Button>
+              </Button>
           </form>
         </CardContent>
       </Card>
