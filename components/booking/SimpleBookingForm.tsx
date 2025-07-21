@@ -106,8 +106,8 @@ export default function SimpleBookingForm() {
           const transformedSlots = result.availableSlots.map((slot: any) => {
             // If backend already provides ISO strings, use them as-is.
             const isIso = typeof slot.startTime === 'string' && slot.startTime.includes('T');
-            const startIso = isIso ? slot.startTime : `${formData.bookingDate}T${slot.startTime}:00-05:00`;
-            const endIso   = isIso ? slot.endTime   : `${formData.bookingDate}T${slot.endTime}:00-05:00`;
+            const startIso = isIso ? slot.startTime : `${formData.bookingDate}T${slot.startTime}:00`;
+            const endIso   = isIso ? slot.endTime   : `${formData.bookingDate}T${slot.endTime}:00`;
 
             return {
               startTime: startIso,

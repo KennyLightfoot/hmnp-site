@@ -115,7 +115,7 @@ export default function BookingSuccessPage() {
           };
 
           // 1️⃣ Use booking_time metadata if it looks good
-          if (isAcceptable(booking_time)) return new Date(booking_time as string).toISOString();
+          if (isAcceptable(booking_time)) return new Date(sanitizeIso(booking_time as string)).toISOString();
 
           // 2️⃣ Combine booking_date + booking_time if both exist
           if (booking_date && booking_time) {
@@ -177,6 +177,13 @@ export default function BookingSuccessPage() {
       console.error('Booking creation failed:', error);
       // Don't set error state here - payment was successful even if booking creation failed
     }
+  };
+
+  // 🔒 Helper to clean malformed ISO strings like 2025-07-23T14:00:00-05:00-05:00
+  const sanitizeIso = (iso: string): string => {
+    if (!iso) return iso;
+    // Replace duplicate identical offsets (e.g., -05:00-05:00 → -05:00)
+    return iso.replace(/([+-]\d{2}:\d{2})(\1)$/u, '$1');
   };
 
   const getServiceDisplayName = (serviceType: string) => {
