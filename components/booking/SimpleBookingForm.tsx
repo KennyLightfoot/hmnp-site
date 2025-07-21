@@ -101,8 +101,8 @@ export default function SimpleBookingForm() {
         if (result.availableSlots) {
           // Transform the response to match expected format
           const transformedSlots = result.availableSlots.map((slot: any) => ({
-            startTime: `${formData.bookingDate}T${slot.startTime}:00`,
-            endTime: `${formData.bookingDate}T${slot.endTime}:00`,
+            startTime: `${formData.bookingDate}T${slot.startTime}:00-05:00`,
+            endTime: `${formData.bookingDate}T${slot.endTime}:00-05:00`,
             displayTime: slot.startTime,
             duration: 60,
             available: slot.available
@@ -145,38 +145,18 @@ export default function SimpleBookingForm() {
 
     setIsSubmitting(true);
     try {
-      // 🛡️ Safe date parsing – protect against invalid values
-      let scheduledDateTimeISO: string;
-      try {
-        if (!formData.bookingTime) {
-          throw new Error('No booking time selected');
-        }
-
-        const dt = DateTime.fromISO(formData.bookingTime, { zone: 'America/Chicago' });
-
-        if (!dt.isValid) {
-          console.error('❌ Invalid ISO received for bookingTime', {
-            bookingTime: formData.bookingTime,
-            explain: dt.invalidExplanation,
-            reason: dt.invalidReason,
-          });
-          throw new Error('Invalid date selected');
-        }
-
-        scheduledDateTimeISO = dt.toISO();
-      } catch (dateErr: any) {
-        console.error('Date conversion error:', dateErr);
-        setError('Invalid date selected. Please choose another time.');
+      if (!formData.bookingTime) {
+        setError('Please select a time before submitting');
         return;
       }
 
-      console.log('📤 Preparing booking payload with datetime:', scheduledDateTimeISO);
+      console.log('📤 Preparing booking payload with datetime:', formData.bookingTime);
 
       const bookingData: any = {
         serviceType: formData.serviceType,
         customerName: formData.customerName,
         customerEmail: formData.customerEmail,
-        scheduledDateTime: scheduledDateTimeISO,
+        scheduledDateTime: formData.bookingTime,
         timeZone: 'America/Chicago',
        
         // Enhanced pricing with transparent data
