@@ -506,7 +506,13 @@ export default function SimpleBookingForm() {
                           customerEmail: formData.customerEmail,
                           customerPhone: formData.customerPhone,
                           scheduledDateTime: formData.bookingTime, // ISO string
-                          locationAddress: formData.locationAddress,
+                          ...(formData.serviceType !== 'RON_SERVICES' && formData.locationAddress ? {
+                            locationType: 'OTHER',
+                            addressStreet: formData.locationAddress,
+                            addressCity: 'Houston',
+                            addressState: 'TX',
+                            addressZip: '77001'
+                          } : {}),
                           pricing: {
                             basePrice: pricing.basePrice,
                             travelFee: pricing.travelFee,
