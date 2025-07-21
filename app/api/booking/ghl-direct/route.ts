@@ -47,6 +47,48 @@ export async function POST(request: Request) {
       );
     }
 
+    // Debug logging to see what we're getting
+    console.log('⏰ scheduledDateTime raw:', scheduledDateTime);
+    console.log('⏰ Date.parse result:', Date.parse(scheduledDateTime));
+
+    // Robust datetime parsing and validation
+    let parsedDateTime: Date;
+    try {
+      if (typeof scheduledDateTime !== 'string') {
+        throw new Error('scheduledDateTime must be a string');
+      }
+
+      // Try parsing as ISO first
+      const isoParse = Date.parse(scheduledDateTime);
+      if (isNaN(isoParse)) {
+        throw new Error('Invalid ISO datetime format');
+      }
+
+      parsedDateTime = new Date(isoParse);
+      
+      // Validate the parsed date is reasonable
+      if (parsedDateTime.getTime() <= Date.now()) {
+        throw new Error('Scheduled time must be in the future');
+      }
+
+      // Check for reasonable future limit (1 year)
+      const maxDate = new Date();
+      maxDate.setFullYear(maxDate.getFullYear() + 1);
+      if (parsedDateTime > maxDate) {
+        throw new Error('Cannot schedule more than 1 year in advance');
+      }
+
+    } catch (dateError: any) {
+      console.error('❌ DateTime parsing failed:', dateError.message);
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: `Invalid scheduled date/time: ${dateError.message}. Please select a valid future date and time.` 
+        },
+        { status: 400 },
+      );
+    }
+
     // Split name into first / last (very naive but fine for our use-case)
     const nameParts = String(customerName).trim().split(' ');
     const firstName = nameParts.shift() || customerName;
@@ -78,8 +120,8 @@ export async function POST(request: Request) {
     let appointment: any = null;
     try {
       const calendarId = getCalendarIdForService(serviceType);
-      const startIso = new Date(scheduledDateTime).toISOString();
-      const endIso = new Date(new Date(scheduledDateTime).getTime() + 60 * 60 * 1000).toISOString();
+      const startIso = parsedDateTime.toISOString();
+      const endIso = new Date(parsedDateTime.getTime() + 60 * 60 * 1000).toISOString();
 
       appointment = await createAppointment({
         calendarId,
