@@ -174,7 +174,7 @@ export default function SimpleBookingForm() {
         serviceType: formData.serviceType,
         customerName: formData.customerName,
         customerEmail: formData.customerEmail,
-        scheduledDateTime: formData.bookingTime,
+        scheduledDateTime: formData.bookingTime, // ISO string
         timeZone: 'America/Chicago',
        
         // Enhanced pricing with transparent data
@@ -505,8 +505,7 @@ export default function SimpleBookingForm() {
                           customerName: formData.customerName,
                           customerEmail: formData.customerEmail,
                           customerPhone: formData.customerPhone,
-                          bookingDate: formData.bookingDate,
-                          bookingTime: formData.bookingTime,
+                          scheduledDateTime: formData.bookingTime, // ISO string
                           locationAddress: formData.locationAddress,
                           pricing: {
                             basePrice: pricing.basePrice,
