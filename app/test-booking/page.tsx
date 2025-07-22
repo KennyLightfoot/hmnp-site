@@ -12,16 +12,6 @@ export const metadata: Metadata = {
 };
 
 export default function TestBookingPage() {
-  const handleComplete = (booking: any) => {
-    console.log('Booking completed:', booking);
-    alert('Booking completed! Check console for details.');
-  };
-
-  const handleError = (error: any) => {
-    console.error('Booking error:', error);
-    alert('Booking error: ' + error.message);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
@@ -48,11 +38,9 @@ export default function TestBookingPage() {
         </div>
 
         {/* Fixed BookingForm */}
-        <BookingForm 
-          onComplete={handleComplete}
-          onError={handleError}
+        <BookingForm
           initialData={{
-            serviceType: 'STANDARD_NOTARY'
+            serviceType: 'STANDARD_NOTARY',
           }}
         />
         

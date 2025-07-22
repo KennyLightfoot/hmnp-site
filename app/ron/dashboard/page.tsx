@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = "force-dynamic";
+
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -30,7 +32,9 @@ interface RonBooking {
 }
 
 export default function RONDashboard() {
-  const { data: session, status } = useSession();
+  const sessionData = useSession();
+  const session = sessionData?.data;
+  const status = sessionData?.status ?? "unauthenticated";
   const [ronBookings, setRonBookings] = useState<RonBooking[]>([]);
   const [newlyCreatedBooking, setNewlyCreatedBooking] = useState<RonBooking | null>(null);
   const [loading, setLoading] = useState(false);
@@ -199,7 +203,7 @@ export default function RONDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium">Service</p>
-                    <p className="text-sm text-gray-600">{booking.Service?.name || 'Remote Online Notarization'}</p>
+                    <p className="text-sm text-gray-600">{booking.service?.name || 'Remote Online Notarization'}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium">Price</p>

@@ -101,8 +101,8 @@ async function testGHLIntegration() {
       // Test calendar access by fetching slots for tomorrow
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const startDate = tomorrow.toISOString().split('T')[0] + 'T00:00:00.000Z';
-      const endDate = tomorrow.toISOString().split('T')[0] + 'T23:59:59.999Z';
+      const startDate = Math.floor(new Date(`${tomorrow.toISOString().split('T')[0]}T00:00:00Z`).getTime() / 1000);
+      const endDate = Math.floor(new Date(`${tomorrow.toISOString().split('T')[0]}T23:59:59Z`).getTime() / 1000);
 
       const slotsUrl = `${GHL_API_BASE_URL}/calendars/${calendar.id}/free-slots?startDate=${startDate}&endDate=${endDate}&timezone=America/Chicago`;
       
