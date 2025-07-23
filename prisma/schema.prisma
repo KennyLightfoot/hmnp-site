@@ -64,6 +64,7 @@ model Booking {
   promoCodeId                 String?
   campaignName                String?
   customerEmail               String?
+  customerName                String?
   ghlContactId                String?
   leadSource                  String?
   stripePaymentUrl            String?

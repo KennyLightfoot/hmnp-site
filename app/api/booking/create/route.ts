@@ -447,9 +447,9 @@ export async function POST(request: NextRequest) {
         // Proper service relation
         serviceId: service.id,
         
-        // Customer information - only customerEmail exists in Booking schema
+        // Customer information
         customerEmail: validatedData.customerEmail,
-        // Note: customerName and customerPhone stored in GHL, not database
+        customerName: validatedData.customerName,
         
         // Scheduling - single DateTime field
         scheduledDateTime: new Date(validatedData.scheduledDateTime),

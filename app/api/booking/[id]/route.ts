@@ -29,6 +29,7 @@ export async function GET(
       select: {
         id: true,
         customerEmail: true,
+        customerName: true,
         scheduledDateTime: true,
         addressStreet: true,
         addressCity: true,
@@ -50,7 +51,6 @@ export async function GET(
     const booking = {
       ...rawBooking,
       serviceType: (rawBooking as any).service?.serviceType || 'UNKNOWN',
-      customerName: (rawBooking as any).customerName ?? 'Valued Customer',
     } as any;
 
     log.info(`[API] Successfully retrieved booking: ${id}`);
