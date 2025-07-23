@@ -87,11 +87,11 @@ export class GoogleCalendarService {
         },
         // Add attendees
         attendees: [
-          {
-            email: booking.User_Booking_signerIdToUser?.email || booking.customerEmail,
-            displayName: customerName,
-            responseStatus: 'accepted'
-          },
+          // {
+          //   email: booking.User_Booking_signerIdToUser?.email || booking.customerEmail,
+          //   displayName: customerName,
+          //   responseStatus: 'accepted'
+          // },
           ...(notaryInfo?.email ? [{
             email: notaryInfo.email,
             displayName: notaryInfo.name || 'Houston Mobile Notary',

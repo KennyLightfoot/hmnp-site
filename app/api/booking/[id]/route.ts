@@ -17,6 +17,11 @@ export async function GET(
   // Validate the booking ID from the URL
   const validation = paramsSchema.safeParse(params);
   if (!validation.success) {
+    // Detailed logging for validation failure
+    log.error('[API] Booking ID validation failed', {
+      error: validation.error.errors,
+      bookingId: params.id,
+    });
     return NextResponse.json(
       { error: validation.error.errors[0].message },
       { status: 400 }
