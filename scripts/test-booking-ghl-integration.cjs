@@ -17,7 +17,7 @@ async function testBookingGHLIntegration() {
       serviceType: 'STANDARD_NOTARY',
       customerName: 'John Test Customer',
       customerEmail: `test.booking.${Date.now()}@example.com`,
-      customerPhone: '+15551234567',
+      customerPhone: '7135050517',
       scheduledDateTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
       timeZone: 'America/Chicago',
       locationType: 'HOME',

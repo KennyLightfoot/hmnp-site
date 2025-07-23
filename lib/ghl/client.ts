@@ -20,9 +20,11 @@ export class GHLClient {
     }
 
     this.headers = {
-      'Authorization': process.env.GHL_PRIVATE_INTEGRATION_TOKEN,
+      'Authorization': `Bearer ${process.env.GHL_PRIVATE_INTEGRATION_TOKEN}`,
       'Version': '2021-07-28',
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      // Specify the location so calendar/event endpoints authenticate correctly
+      'LocationId': process.env.GHL_LOCATION_ID ?? ''
     };
   }
 

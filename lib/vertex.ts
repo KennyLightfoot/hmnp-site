@@ -173,7 +173,13 @@ export async function sendChat(
     throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON environment variable is required');
   }
   
-  const credentials = JSON.parse(serviceAccountJson);
+  // Remove outer quotes if they exist (common in environment variables)
+  let jsonStr = serviceAccountJson;
+  if (jsonStr.startsWith('"') && jsonStr.endsWith('"')) {
+    jsonStr = jsonStr.slice(1, -1);
+  }
+  
+  const credentials = JSON.parse(jsonStr);
   // Explicitly format the private key to replace escaped newlines
   credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
 

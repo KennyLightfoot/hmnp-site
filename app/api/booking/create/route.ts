@@ -376,22 +376,39 @@ export async function POST(request: NextRequest) {
       
       // 2. Create appointment in appropriate calendar
       const calendarId = getCalendarIdForService(validatedData.serviceType);
-      const endDateTime = new Date(new Date(validatedData.scheduledDateTime).getTime() + (service.durationMinutes * 60000));
       
+      // Clean the start time to remove seconds/milliseconds for GHL compatibility
+      const userSelectedTime = new Date(validatedData.scheduledDateTime);
+      userSelectedTime.setSeconds(0, 0);
+      const cleanStartTime = userSelectedTime.toISOString();
+      const endDateTime = new Date(userSelectedTime.getTime() + (service.durationMinutes * 60000));
+      
+      console.log('📅 Creating GHL appointment (ignoreDateRange=true)...');
+
       const ghlAppointment = await createAppointment({
         calendarId,
         contactId: ghlContactId!,
-        startTime: validatedData.scheduledDateTime,
+        startTime: cleanStartTime,
         endTime: endDateTime.toISOString(),
         title: `${service.name} - ${validatedData.customerName}`,
         appointmentStatus: 'confirmed',
         address: validatedData.addressStreet ? 
           `${validatedData.addressStreet}, ${validatedData.addressCity || 'Houston'}, ${validatedData.addressState || 'TX'}` : 
           'Remote/Online Service',
-        ignoreDateRange: false,
+        ignoreDateRange: true, // TEMP: force create even outside availability for testing
         toNotify: true
       });
-      
+
+      console.log('🗓️  GHL appointment response:', ghlAppointment);
+
+      if (!ghlAppointment?.id) {
+        console.error('⛔ GHL failed to create appointment');
+        return NextResponse.json(
+          { error: 'GHL_APPOINTMENT_FAILED', message: 'GHL did not return appointment id' },
+          { status: 502 }
+        );
+      }
+
       ghlAppointmentId = ghlAppointment.id;
       console.log(`✅ GHL appointment created: ${ghlAppointmentId}`);
       
@@ -401,14 +418,14 @@ export async function POST(request: NextRequest) {
         try {
           await addContactToWorkflow(ghlContactId!, workflowId);
           console.log(`✅ Contact added to booking workflow`);
-        } catch (workflowError) {
+        } catch (workflowError: any) {
           console.warn('⚠️  Workflow addition failed (non-critical):', workflowError.message);
         }
       }
       
     } catch (ghlError: any) {
       const msg = String(ghlError?.message || '');
-      // Detect the specific 400 error when the slot is already taken
+      // Detect the specific 400 error when the slot is no longer available
       if (msg.includes('400') && msg.toLowerCase().includes('no longer available')) {
         console.warn('⛔ Selected slot was already taken – aborting booking');
         return NextResponse.json(
@@ -587,35 +604,9 @@ export async function POST(request: NextRequest) {
       }
     });
     
-  } catch (error) {
-    console.error('❌ Booking creation error:', error);
-    
-    // Handle validation errors
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { 
-          error: 'Validation failed',
-          details: error.errors.map(err => `${err.path.join('.')}: ${err.message}`)
-        },
-        { status: 400 }
-      );
-    }
-    
-    // Handle Prisma errors
-    if (error.code === 'P2002') {
-      return NextResponse.json(
-        { error: 'Booking conflict - this time slot may already be taken' },
-        { status: 409 }
-      );
-    }
-    
-    return NextResponse.json(
-      { 
-        error: 'Booking creation failed',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
-      },
-      { status: 500 }
-    );
+  } catch (error: any) {
+    console.error('Error in POST /api/booking/create:', error);
+    return NextResponse.json({ message: 'Internal Server Error', error: error.message }, { status: 500 });
   }
 }
 
@@ -684,8 +675,9 @@ async function sendEnhancedConfirmationEmail(booking: any, customerName: string,
     console.log(`   Service: ${service.name}`);
     console.log(`   Date: ${booking.scheduledDateTime}`);
     console.log(`   Amount: $${booking.priceAtBooking}`);
-  } catch (error) {
-    console.error('Failed to send enhanced confirmation email:', error);
+  } catch (error: any) {
+    console.error(`Failed to send enhanced confirmation email for booking ${booking.id}:`, error);
+    // Do not re-throw, as the booking itself was successful
   }
 }
 

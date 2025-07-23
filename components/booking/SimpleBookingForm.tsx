@@ -253,7 +253,7 @@ export default function SimpleBookingForm() {
                   ['BUSINESS_ESSENTIALS', 'Business Subscription Essentials - $125/month'],
                   ['BUSINESS_GROWTH', 'Business Subscription Growth - $349/month']
                 ].map(([key, label]) => (
-                  <label key={key} className="flex items-center space-x-2 p-2 border rounded cursor-pointer hover:bg-gray-50">
+                  <label key={key} className="flex items-center space-x-2 p-2 border rounded cursor-pointer hover:bg-gray-50" data-testid="service-option">
                     <input
                       type="radio"
                       name="serviceType"

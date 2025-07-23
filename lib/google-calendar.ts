@@ -11,11 +11,20 @@ export class GoogleCalendarService {
     // Check if we have JSON content as environment variable (production)
     if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
       try {
-        const jsonString = process.env.GOOGLE_SERVICE_ACCOUNT_JSON.trim();
+        let jsonString = process.env.GOOGLE_SERVICE_ACCOUNT_JSON.trim();
         if (!jsonString) {
           throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON is empty');
         }
+        
+        // Remove outer quotes if they exist (common in environment variables)
+        if (jsonString.startsWith('"') && jsonString.endsWith('"')) {
+          jsonString = jsonString.slice(1, -1);
+        }
+        
         const credentials = JSON.parse(jsonString);
+        // Fix private key newlines
+        credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
+        
         auth = new google.auth.GoogleAuth({
           credentials,
           scopes: ['https://www.googleapis.com/auth/calendar'],

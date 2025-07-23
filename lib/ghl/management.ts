@@ -191,10 +191,13 @@ export async function createAppointment(appointmentData: AppointmentData) {
   
   const payload = {
     ...appointmentData,
-    locationId: config.locationId
+    locationId: process.env.GHL_LOCATION_ID
   };
-  
-  return await makeGHLRequest(endpoint, 'POST', payload);
+
+  // Call GHL and log raw response for diagnostics
+  const response = await makeGHLRequest(endpoint, 'POST', payload);
+  console.log('🗓️  GHL createAppointment response:', JSON.stringify(response).slice(0, 500));
+  return response;
 }
 
 export async function getCalendarSlots(calendarId: string, startDate: string, endDate: string) {

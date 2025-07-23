@@ -584,6 +584,7 @@ export default function ServiceSelector({
             <div key={service.id} className="relative">
               <Label
                 htmlFor={service.id}
+                data-testid="service-option"
                 className="cursor-pointer"
                 onMouseEnter={() => setHoveredService(service.id)}
                 onMouseLeave={() => setHoveredService(null)}
