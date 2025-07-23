@@ -3,7 +3,7 @@
 /**
  * Booking Checkout/Confirmation Page
  * Houston Mobile Notary Pros
- *
+ * 
  * This page now serves as a confirmation step that creates the booking
  * directly, bypassing the previous Stripe payment flow for debugging and
  * simplified booking.
@@ -16,14 +16,14 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import {
-  CreditCard,
-  Shield,
-  Lock,
-  CheckCircle,
-  Clock,
-  MapPin,
-  User,
+import { 
+  CreditCard, 
+  Shield, 
+  Lock, 
+  CheckCircle, 
+  Clock, 
+  MapPin, 
+  User, 
   Mail,
   Phone,
   Calendar,
@@ -82,13 +82,13 @@ export default function BookingCheckoutPage() {
 
   const formatDateTime = (isoString: string) => {
     if (!isoString) return 'TBD';
-
+    
     try {
       const dateTime = new Date(isoString);
-      return dateTime.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
+      return dateTime.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
         day: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
@@ -203,7 +203,7 @@ export default function BookingCheckoutPage() {
                   </div>
                 )}
               </div>
-
+              
               <div className="space-y-3">
                 <div className="flex items-center space-x-2">
                   <Calendar className="h-4 w-4 text-gray-500" />
@@ -217,9 +217,9 @@ export default function BookingCheckoutPage() {
                 )}
               </div>
             </div>
-
+            
             <Separator />
-
+            
             <div className="flex justify-between items-center">
               <div>
                 <div className="font-medium">{getServiceDisplayName(bookingData.serviceType)}</div>
@@ -273,9 +273,9 @@ export default function BookingCheckoutPage() {
             <div className="text-center">
               <p className="text-sm text-gray-600 mb-2">Need to make a change?</p>
               <Button variant="outline" size="sm" onClick={() => window.history.back()}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Form
-              </Button>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Form
+                </Button>
             </div>
           </CardContent>
         </Card>

@@ -1,18 +1,17 @@
 'use client';
 
 /**
- * Booking Success Page - Payment Completion
+ * Booking Success Page - Confirmation
  * Houston Mobile Notary Pros
  * 
- * Handles successful Stripe payments and completes booking creation
+ * Displays confirmation details for a successfully created booking.
  */
 
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { 
   CheckCircle, 
   Clock, 
@@ -21,169 +20,60 @@ import {
   Mail,
   Phone,
   Calendar,
-  CreditCard,
-  Download,
-  Star,
   Home,
-  Loader2
+  Loader2,
+  FileText
 } from 'lucide-react';
 
-interface PaymentSession {
+interface BookingDetails {
   id: string;
-  status: string;
-  payment_status: string;
-  customer_email: string;
-  amount_total: number;
-  currency: string;
-  metadata: {
-    service_type?: string;
-    booking_date?: string;
-    booking_time?: string;
-    location_address?: string;
-  };
+  serviceType: string;
+  customerName: string;
+  customerEmail: string;
+  scheduledDateTime: string;
+  addressStreet: string;
+  addressCity: string;
+  addressState: string;
+  addressZip: string;
 }
 
 export default function BookingSuccessPage() {
   const searchParams = useSearchParams();
-  const [session, setSession] = useState<PaymentSession | null>(null);
-  const [booking, setBooking] = useState<any>(null);
+  const router = useRouter();
+  const [booking, setBooking] = useState<BookingDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const sessionId = searchParams.get('session_id');
+    const bookingId = searchParams.get('bookingId');
     
-    if (!sessionId) {
-      setError('Missing payment session information');
+    if (!bookingId) {
+      setError('Missing booking information');
       setIsLoading(false);
       return;
     }
 
-    // Fetch payment session details and create booking
-    handlePaymentSuccess(sessionId);
+    fetchBookingDetails(bookingId);
   }, [searchParams]);
 
-  const handlePaymentSuccess = async (sessionId: string) => {
+  const fetchBookingDetails = async (bookingId: string) => {
     try {
-      // Step 1: Get payment session details
-      const sessionResponse = await fetch(`/api/create-checkout-session?session_id=${sessionId}`);
+      const response = await fetch(`/api/booking/${bookingId}`);
       
-      if (!sessionResponse.ok) {
-        throw new Error('Failed to retrieve payment session');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to retrieve booking details');
       }
 
-      const sessionData = await sessionResponse.json();
-      
-      if (!sessionData.success) {
-        throw new Error(sessionData.error || 'Invalid payment session');
-      }
-
-      setSession(sessionData.session);
-
-      // Step 2: Create booking with confirmed payment
-      if (sessionData.session.payment_status === 'paid') {
-        await createBookingFromPayment(sessionData.session);
-      }
+      const result = await response.json();
+      setBooking(result.booking);
 
     } catch (error) {
-      console.error('Payment success handling failed:', error);
-      setError(error instanceof Error ? error.message : 'Failed to process payment success');
+      console.error('Failed to fetch booking details:', error);
+      setError(error instanceof Error ? error.message : 'An unknown error occurred');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const createBookingFromPayment = async (paymentSession: PaymentSession) => {
-    try {
-      // Extract booking data from payment metadata
-      const bookingData = {
-        serviceType: paymentSession.metadata.service_type || 'STANDARD_NOTARY',
-        customerEmail: paymentSession.customer_email,
-        customerName: 'Customer', // This should come from session metadata in real implementation
-        // Ensure scheduledDateTime satisfies backend validation (ISO, future, <=1yr)
-        scheduledDateTime: (() => {
-          const { booking_time, booking_date } = paymentSession.metadata || {};
-          // Helper to check valid date and in future
-          const isAcceptable = (iso: string | undefined | null): iso is string => {
-            if (!iso) return false;
-            const dt = new Date(iso);
-            if (isNaN(dt.getTime())) return false;
-            const now = Date.now();
-            const oneYearAhead = new Date(now);
-            oneYearAhead.setFullYear(oneYearAhead.getFullYear() + 1);
-            return dt.getTime() > now && dt.getTime() <= oneYearAhead.getTime();
-          };
-
-          // 1️⃣ Use booking_time metadata if it looks good
-          if (isAcceptable(booking_time)) return new Date(sanitizeIso(booking_time as string)).toISOString();
-
-          // 2️⃣ Combine booking_date + booking_time if both exist
-          if (booking_date && booking_time) {
-            try {
-              const timePart = (() => {
-                const bt = booking_time as string; // cast – safe inside this block
-                // Attempt to extract time portion safely without relying on Date parsing
-                if (bt.includes('T')) {
-                  return bt.split('T')[1];
-                }
-                // If booking_time is already like "14:00" or "14:00:00-05:00"
-                return bt;
-              })();
-
-              const combinedIsoString = `${booking_date}T${timePart}`;
-              const combined = new Date(combinedIsoString);
-
-              if (!isNaN(combined.getTime()) && isAcceptable(combined.toISOString())) {
-                return combined.toISOString();
-              }
-            } catch (err) {
-              // swallow – we'll fall back below
-            }
-          }
-
-          // 3️⃣ Fallback: now + 2 hours (gives future timestamp)
-          const fallback = new Date(Date.now() + 2 * 60 * 60 * 1000);
-          return fallback.toISOString();
-        })(),
-        locationType: 'OTHER',
-        addressStreet: paymentSession.metadata.location_address || '',
-        addressCity: 'Houston',
-        addressState: 'TX',
-        addressZip: '77001',
-        pricing: {
-          basePrice: (paymentSession.amount_total || 0) / 100,
-          travelFee: 0,
-          totalPrice: (paymentSession.amount_total || 0) / 100
-        },
-        numberOfDocuments: 1,
-        numberOfSigners: 1,
-        stripeSessionId: paymentSession.id
-      };
-
-      const bookingResponse = await fetch('/api/booking/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bookingData)
-      });
-
-      if (bookingResponse.ok) {
-        const bookingResult = await bookingResponse.json();
-        setBooking(bookingResult.booking);
-      } else {
-        console.warn('Booking creation failed, but payment was successful');
-      }
-
-    } catch (error) {
-      console.error('Booking creation failed:', error);
-      // Don't set error state here - payment was successful even if booking creation failed
-    }
-  };
-
-  // 🔒 Helper to clean malformed ISO strings like 2025-07-23T14:00:00-05:00-05:00
-  const sanitizeIso = (iso: string): string => {
-    if (!iso) return iso;
-    // Replace duplicate identical offsets (e.g., -05:00-05:00 → -05:00)
-    return iso.replace(/([+-]\d{2}:\d{2})(\1)$/u, '$1');
   };
 
   const getServiceDisplayName = (serviceType: string) => {
@@ -193,7 +83,7 @@ export default function BookingSuccessPage() {
       'LOAN_SIGNING': 'Loan Signing Service',
       'RON_SERVICES': 'Remote Online Notarization'
     };
-    return serviceNames[serviceType as keyof typeof serviceNames] || serviceType;
+    return serviceNames[serviceType as keyof typeof serviceNames] || serviceType.replace(/_/g, ' ');
   };
 
   const formatDateTime = (dateTime: string) => {
@@ -218,10 +108,10 @@ export default function BookingSuccessPage() {
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Processing Your Payment...
+            Loading Your Booking Confirmation...
           </h2>
           <p className="text-gray-600">
-            Please wait while we confirm your booking
+            Please wait a moment.
           </p>
         </div>
       </div>
@@ -237,7 +127,7 @@ export default function BookingSuccessPage() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
             <Button 
-              onClick={() => window.location.href = '/booking'}
+              onClick={() => router.push('/booking')}
               className="w-full"
             >
               <Home className="h-4 w-4 mr-2" />
@@ -249,14 +139,14 @@ export default function BookingSuccessPage() {
     );
   }
 
-  if (!session) {
+  if (!booking) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardContent className="p-6 text-center">
-            <p className="text-gray-600 mb-4">No payment session found</p>
+            <p className="text-gray-600 mb-4">Could not find booking details.</p>
             <Button 
-              onClick={() => window.location.href = '/booking'}
+              onClick={() => router.push('/booking')}
               className="w-full"
             >
               <Home className="h-4 w-4 mr-2" />
@@ -271,87 +161,54 @@ export default function BookingSuccessPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-2xl mx-auto px-4">
-        {/* Success Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="h-8 w-8 text-green-600" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Payment Successful!
+            Booking Confirmed!
           </h1>
           <p className="text-gray-600">
-            Your booking has been confirmed and we'll be in touch shortly
+            Your appointment has been scheduled. We'll be in touch shortly.
           </p>
         </div>
 
-        {/* Payment Details */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <CreditCard className="h-5 w-5 text-green-600" />
-              <span>Payment Confirmation</span>
+              <Calendar className="h-5 w-5 text-blue-600" />
+              <span>Booking Details</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Payment Status:</span>
-              <Badge className="bg-green-100 text-green-800">
-                {session.payment_status === 'paid' ? 'Paid' : session.payment_status}
-              </Badge>
+          <CardContent className="space-y-4 pt-4">
+             <div className="flex justify-between items-center">
+              <span className="text-gray-600 flex items-center"><FileText className="h-4 w-4 mr-2" />Service Type:</span>
+              <span>{getServiceDisplayName(booking.serviceType)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Amount Paid:</span>
-              <span className="font-semibold text-lg">
-                ${((session.amount_total || 0) / 100).toFixed(2)}
-              </span>
+              <span className="text-gray-600 flex items-center"><Clock className="h-4 w-4 mr-2" />Date & Time:</span>
+              <span className="text-right">{formatDateTime(booking.scheduledDateTime)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Service:</span>
-              <span>{getServiceDisplayName(session.metadata.service_type || '')}</span>
+              <span className="text-gray-600 flex items-center"><MapPin className="h-4 w-4 mr-2" />Location:</span>
+              <span className="text-right">{`${booking.addressStreet}, ${booking.addressCity}, ${booking.addressState} ${booking.addressZip}`}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Customer Email:</span>
-              <span>{session.customer_email}</span>
+              <span className="text-gray-600 flex items-center"><User className="h-4 w-4 mr-2" />Name:</span>
+              <span>{booking.customerName}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 flex items-center"><Mail className="h-4 w-4 mr-2" />Email:</span>
+              <span>{booking.customerEmail}</span>
             </div>
           </CardContent>
         </Card>
 
-        {/* Booking Details */}
-        {booking && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Calendar className="h-5 w-5 text-blue-600" />
-                <span>Booking Details</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <User className="h-4 w-4 text-gray-500" />
-                <span>Booking ID: {booking.id}</span>
-              </div>
-              {session.metadata.booking_time && (
-                <div className="flex items-center space-x-2">
-                  <Clock className="h-4 w-4 text-gray-500" />
-                  <span>{formatDateTime(session.metadata.booking_time)}</span>
-                </div>
-              )}
-              {session.metadata.location_address && (
-                <div className="flex items-center space-x-2">
-                  <MapPin className="h-4 w-4 text-gray-500" />
-                  <span>{session.metadata.location_address}</span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Next Steps */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>What Happens Next?</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-4">
             <div className="flex items-start space-x-3">
               <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
                 <span className="text-xs font-bold text-blue-600">1</span>
@@ -359,7 +216,7 @@ export default function BookingSuccessPage() {
               <div>
                 <h4 className="font-medium">Confirmation Email Sent</h4>
                 <p className="text-sm text-gray-600">
-                  Check your email for booking details and instructions
+                  Check your email for booking details and instructions.
                 </p>
               </div>
             </div>
@@ -370,7 +227,7 @@ export default function BookingSuccessPage() {
               <div>
                 <h4 className="font-medium">Notary Assignment</h4>
                 <p className="text-sm text-gray-600">
-                  We'll assign a certified notary and confirm your appointment
+                  We'll assign a certified notary and confirm your appointment.
                 </p>
               </div>
             </div>
@@ -381,33 +238,31 @@ export default function BookingSuccessPage() {
               <div>
                 <h4 className="font-medium">Service Delivery</h4>
                 <p className="text-sm text-gray-600">
-                  Your notary will arrive on time for professional service
+                  Your notary will arrive on time for professional service.
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4">
           <Button 
             variant="outline" 
             className="flex-1"
-            onClick={() => window.location.href = '/'}
+            onClick={() => router.push('/')}
           >
             <Home className="h-4 w-4 mr-2" />
             Return Home
           </Button>
           <Button 
             className="flex-1"
-            onClick={() => window.location.href = '/contact'}
+            onClick={() => router.push('/contact')}
           >
             <Phone className="h-4 w-4 mr-2" />
             Contact Support
           </Button>
         </div>
 
-        {/* Footer */}
         <div className="text-center mt-8">
           <p className="text-sm text-gray-600 mb-2">
             Need immediate assistance?
