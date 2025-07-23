@@ -379,7 +379,13 @@ export async function POST(request: NextRequest) {
       
       // Clean the start time to remove seconds/milliseconds for GHL compatibility
       const userSelectedTime = new Date(validatedData.scheduledDateTime);
+      
+      // 🔥 FIX: Round down to the nearest 30-minute block for GHL
+      const minutes = userSelectedTime.getMinutes();
+      const roundedMinutes = minutes < 30 ? 0 : 30;
+      userSelectedTime.setMinutes(roundedMinutes);
       userSelectedTime.setSeconds(0, 0);
+
       const cleanStartTime = userSelectedTime.toISOString();
       const endDateTime = new Date(userSelectedTime.getTime() + (service.durationMinutes * 60000));
       
@@ -511,7 +517,7 @@ export async function POST(request: NextRequest) {
           await prisma.booking.update({
             where: { id: booking.id },
             data: {
-              dailyRoomUrl: proofTransaction.sessionUrl, // Repurpose for Proof.com URL
+              proofSessionUrl: proofTransaction.sessionUrl, // ✅ FIX: Use correct schema field
               kbaStatus: `proof_transaction:${proofTransaction.id}`, // Store transaction ID
               idVerificationStatus: proofTransaction.status,
               notes: `${booking.notes || ''}\n\nProof.com RON Session: ${proofTransaction.id}`

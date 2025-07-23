@@ -21,13 +21,7 @@ function verifyGHLWebhookSignature(payload: string, signature: string, secret: s
     
     // Ensure both signatures are the same length before comparison
     if (cleanSignature.length !== expectedSignature.length) {
-      console.warn('Signature length mismatch:', {
-        received: cleanSignature.length,
-        expected: expectedSignature.length,
-        receivedStart: cleanSignature.substring(0, 10),
-        expectedStart: expectedSignature.substring(0, 10)
-      });
-      return false;
+      // For base64, the length can vary, so we'll decode first and then compare buffers
     }
     
     // Convert to buffers with proper error handling
@@ -35,7 +29,7 @@ function verifyGHLWebhookSignature(payload: string, signature: string, secret: s
     let expectedBuffer: Buffer;
     
     try {
-      receivedBuffer = Buffer.from(cleanSignature, 'hex');
+      receivedBuffer = Buffer.from(cleanSignature, 'base64'); // <-- Changed to base64
       expectedBuffer = Buffer.from(expectedSignature, 'hex');
     } catch (bufferError) {
       console.error('Buffer conversion error:', bufferError);
