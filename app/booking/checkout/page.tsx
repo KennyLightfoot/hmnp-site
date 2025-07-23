@@ -1,33 +1,34 @@
 'use client';
 
 /**
- * Booking Checkout Page - Payment Collection
+ * Booking Checkout/Confirmation Page
  * Houston Mobile Notary Pros
- * 
- * CRITICAL: This page ensures payment is collected before booking creation
- * Fixes the missing payment flow in SimpleBookingForm
+ *
+ * This page now serves as a confirmation step that creates the booking
+ * directly, bypassing the previous Stripe payment flow for debugging and
+ * simplified booking.
  */
 
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { 
-  CreditCard, 
-  Shield, 
-  Lock, 
-  CheckCircle, 
-  Clock, 
-  MapPin, 
-  User, 
+import {
+  CreditCard,
+  Shield,
+  Lock,
+  CheckCircle,
+  Clock,
+  MapPin,
+  User,
   Mail,
   Phone,
   Calendar,
   ArrowLeft,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 
 interface BookingData {
@@ -35,33 +36,33 @@ interface BookingData {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
-  bookingDate: string;
-  bookingTime: string;
+  scheduledDateTime: string; // Combined date and time
   locationAddress: string;
   totalPrice: string;
 }
 
 export default function BookingCheckoutPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('stripe-checkout');
 
   useEffect(() => {
-    // Extract booking data from URL parameters
+    // A single, combined ISO 8601 datetime string is now expected
+    const scheduledDateTime = searchParams.get('scheduledDateTime') || '';
+
     const data: BookingData = {
       serviceType: searchParams.get('serviceType') || '',
       customerName: searchParams.get('customerName') || '',
       customerEmail: searchParams.get('customerEmail') || '',
       customerPhone: searchParams.get('customerPhone') || '',
-      bookingDate: searchParams.get('bookingDate') || '',
-      bookingTime: searchParams.get('bookingTime') || '',
+      scheduledDateTime: scheduledDateTime,
       locationAddress: searchParams.get('locationAddress') || '',
-      totalPrice: searchParams.get('totalPrice') || '0'
+      totalPrice: searchParams.get('totalPrice') || '0',
     };
 
-    if (!data.serviceType || !data.customerEmail || !data.bookingTime) {
+    if (!data.serviceType || !data.customerEmail || !data.scheduledDateTime) {
       setError('Missing required booking information. Please go back and complete the form.');
       return;
     }
@@ -71,93 +72,73 @@ export default function BookingCheckoutPage() {
 
   const getServiceDisplayName = (serviceType: string) => {
     const serviceNames = {
-      'STANDARD_NOTARY': 'Standard Notary Service',
-      'EXTENDED_HOURS': 'Extended Hours Service', 
-      'LOAN_SIGNING': 'Loan Signing Service',
-      'RON_SERVICES': 'Remote Online Notarization'
+      STANDARD_NOTARY: 'Standard Notary Service',
+      EXTENDED_HOURS: 'Extended Hours Service',
+      LOAN_SIGNING: 'Loan Signing Service',
+      RON_SERVICES: 'Remote Online Notarization',
     };
     return serviceNames[serviceType as keyof typeof serviceNames] || serviceType;
   };
 
-  const formatDateTime = (date: string, time: string) => {
-    if (!date || !time) return 'TBD';
-    
+  const formatDateTime = (isoString: string) => {
+    if (!isoString) return 'TBD';
+
     try {
-      const dateTime = new Date(time);
-      return dateTime.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
+      const dateTime = new Date(isoString);
+      return dateTime.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
         day: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
-        hour12: true
+        hour12: true,
       });
     } catch (error) {
-      return `${date} at ${time}`;
+      return 'Invalid Date';
     }
   };
 
-  const handlePayment = async () => {
+  const handleConfirmBooking = async () => {
     if (!bookingData) return;
 
     setIsProcessing(true);
     setError('');
 
     try {
-      // Step 1: Create Stripe Checkout Session
-      const paymentResponse = await fetch('/api/create-checkout-session', {
+      // Directly call the booking creation API
+      const response = await fetch('/api/booking/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          // Required top-level fields
-          customerEmail: bookingData.customerEmail,
+          serviceType: bookingData.serviceType,
           customerName: bookingData.customerName,
-          description: `${getServiceDisplayName(bookingData.serviceType)} - ${bookingData.customerName}`,
-          amount: parseFloat(bookingData.totalPrice),
-          currency: 'usd',
-          metadata: {
-            service_type: bookingData.serviceType,
-            booking_date: bookingData.bookingDate,
-            booking_time: bookingData.bookingTime,
-            location_address: bookingData.locationAddress || 'N/A'
-          }
-        })
+          customerEmail: bookingData.customerEmail,
+          customerPhone: bookingData.customerPhone,
+          scheduledDateTime: bookingData.scheduledDateTime,
+          addressStreet: bookingData.locationAddress,
+          // Other fields the API might expect
+          totalPrice: parseFloat(bookingData.totalPrice),
+          // Ensure all required fields from your booking schema are present
+        }),
       });
 
-      if (!paymentResponse.ok) {
-        const errorData = await paymentResponse.json().catch(() => ({}));
-        throw new Error(errorData.message || errorData.error || 'Failed to create payment session');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || errorData.error || 'Failed to create booking.');
       }
 
-      const responseData = await paymentResponse.json();
-      
-      if (!responseData.success || !responseData.sessionId) {
-        throw new Error(responseData.error || 'Invalid payment session response');
-      }
+      const responseData = await response.json();
 
-      const { sessionId } = responseData;
-
-      // Step 2: Redirect to Stripe Checkout
-      const stripe = (window as any).Stripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
-      const { error: stripeError } = await stripe.redirectToCheckout({
-        sessionId: sessionId
-      });
-
-      if (stripeError) {
-        throw new Error(stripeError.message);
-      }
+      // Redirect to a success page with booking details
+      router.push(`/booking/success?bookingId=${responseData.bookingId}`);
 
     } catch (error) {
-      console.error('Payment failed:', error);
-      setError(error instanceof Error ? error.message : 'Payment processing failed');
+      console.error('Booking creation failed:', error);
+      setError(error instanceof Error ? error.message : 'Booking creation failed');
     } finally {
       setIsProcessing(false);
     }
-  };
-
-  const handleBookWithoutPayment = async () => {
-    setError('⚠️ Payment is required to secure your booking. We cannot process bookings without payment.');
   };
 
   if (error && !bookingData) {
@@ -168,10 +149,7 @@ export default function BookingCheckoutPage() {
             <Alert variant="destructive" className="mb-4">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
-            <Button 
-              onClick={() => window.history.back()}
-              className="w-full"
-            >
+            <Button onClick={() => window.history.back()} className="w-full">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Go Back to Booking Form
             </Button>
@@ -186,7 +164,7 @@ export default function BookingCheckoutPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex items-center space-x-2">
           <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Loading checkout...</span>
+          <span>Loading confirmation...</span>
         </div>
       </div>
     );
@@ -195,17 +173,11 @@ export default function BookingCheckoutPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-2xl mx-auto px-4">
-        {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Complete Your Booking
-          </h1>
-          <p className="text-gray-600">
-            Secure payment required to confirm your notary service
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Confirm Your Booking</h1>
+          <p className="text-gray-600">Please review the details below and confirm your appointment.</p>
         </div>
 
-        {/* Booking Summary */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -231,11 +203,11 @@ export default function BookingCheckoutPage() {
                   </div>
                 )}
               </div>
-              
+
               <div className="space-y-3">
                 <div className="flex items-center space-x-2">
                   <Calendar className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm">{formatDateTime(bookingData.bookingDate, bookingData.bookingTime)}</span>
+                  <span className="text-sm">{formatDateTime(bookingData.scheduledDateTime)}</span>
                 </div>
                 {bookingData.locationAddress && (
                   <div className="flex items-center space-x-2">
@@ -245,9 +217,9 @@ export default function BookingCheckoutPage() {
                 )}
               </div>
             </div>
-            
+
             <Separator />
-            
+
             <div className="flex justify-between items-center">
               <div>
                 <div className="font-medium">{getServiceDisplayName(bookingData.serviceType)}</div>
@@ -256,149 +228,64 @@ export default function BookingCheckoutPage() {
                 </Badge>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-green-600">
-                  ${bookingData.totalPrice}
-                </div>
+                <div className="text-2xl font-bold text-green-600">${bookingData.totalPrice}</div>
                 <div className="text-sm text-gray-500">Total Amount</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Payment Section */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <CreditCard className="h-5 w-5 text-blue-600" />
-              <span>Secure Payment</span>
+              <CheckCircle className="h-5 w-5 text-blue-600" />
+              <span>Confirmation</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Security Badges */}
-            <div className="flex flex-wrap justify-center gap-2 mb-4">
-              <Badge variant="secondary" className="text-xs">
-                <Shield className="h-3 w-3 mr-1" />
-                SSL Encrypted
-              </Badge>
-              <Badge variant="secondary" className="text-xs">
-                <Lock className="h-3 w-3 mr-1" />
-                Secure Processing
-              </Badge>
-              <Badge variant="secondary" className="text-xs">
-                <CheckCircle className="h-3 w-3 mr-1" />
-                Instant Confirmation
-              </Badge>
-            </div>
-
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
-            {/* Payment Method Selection */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  id="stripe-checkout"
-                  name="payment-method"
-                  value="stripe-checkout"
-                  checked={paymentMethod === 'stripe-checkout'}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="w-4 h-4"
-                />
-                <label htmlFor="stripe-checkout" className="text-sm font-medium">
-                  Credit/Debit Card (Recommended)
-                </label>
-              </div>
-            </div>
-
-            {/* Test Cards Info (Development) */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="text-sm font-medium text-yellow-800 mb-2">
-                  🧪 Test Mode - Use These Test Cards:
-                </div>
-                <div className="text-xs text-yellow-700 space-y-1">
-                  <div><strong>Success:</strong> 4242 4242 4242 4242</div>
-                  <div><strong>Decline:</strong> 4000 0000 0000 0002</div>
-                  <div><strong>3D Secure:</strong> 4000 0000 0000 3220</div>
-                  <div><strong>Insufficient Funds:</strong> 4000 0000 0000 9995</div>
-                  <div className="mt-1 text-yellow-600">
-                    Use any future date for expiry, any 3-digit CVC, any US ZIP
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Payment Button */}
             <div className="space-y-4">
               <Button
-                onClick={handlePayment}
+                onClick={handleConfirmBooking}
                 disabled={isProcessing}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-6"
               >
                 {isProcessing ? (
                   <div className="flex items-center space-x-2">
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    <span>Processing Payment...</span>
+                    <span>Confirming Booking...</span>
                   </div>
                 ) : (
                   <div className="flex items-center space-x-2">
-                    <CreditCard className="h-5 w-5" />
-                    <span>Pay ${bookingData.totalPrice} & Confirm Booking</span>
+                    <CheckCircle className="h-5 w-5" />
+                    <span>Confirm Booking</span>
                   </div>
                 )}
               </Button>
-
-              <div className="text-center">
-                <p className="text-sm text-gray-600 mb-2">
-                  Your payment is processed securely through Stripe
-                </p>
-                <div className="flex justify-center items-center space-x-4 text-xs text-gray-500">
-                  <span>• No hidden fees</span>
-                  <span>• Instant confirmation</span>
-                  <span>• 100% secure</span>
-                </div>
-              </div>
             </div>
 
-            {/* Alternative Options */}
             <Separator />
             <div className="text-center">
-              <p className="text-sm text-gray-600 mb-2">
-                Need help or have questions?
-              </p>
-              <div className="flex justify-center space-x-4">
-                <Button variant="outline" size="sm">
-                  <Phone className="h-4 w-4 mr-2" />
-                  Call (832) 617-4285
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => window.history.back()}
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Form
-                </Button>
-              </div>
+              <p className="text-sm text-gray-600 mb-2">Need to make a change?</p>
+              <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Form
+              </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Footer Note */}
         <div className="text-center mt-6">
           <p className="text-xs text-gray-500">
-            By completing this payment, you agree to our Terms of Service and Privacy Policy.
-            You will receive confirmation via email and SMS.
+            By confirming, you agree to our Terms of Service. You will receive an email confirmation.
           </p>
         </div>
       </div>
-
-      {/* Stripe Script */}
-      <script src="https://js.stripe.com/v3/" async />
     </div>
   );
 } 
