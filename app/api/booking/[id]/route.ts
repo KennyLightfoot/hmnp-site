@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { logger as log } from '@/lib/logger';
 
 const paramsSchema = z.object({
-  id: z.string().cuid({ message: 'A valid booking ID is required' }),
+  id: z.string().min(1, { message: 'A valid booking ID is required' }),
 });
 
 export async function GET(
