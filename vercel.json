@@ -1,4 +1,7 @@
 {
+  "build": {
+    "command": "pnpm vercel-build"
+  },
   "crons": [
     {
       "path": "/api/cron/synthetic-monitor?type=health",
