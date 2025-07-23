@@ -11,16 +11,17 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { id } = params;
-  log.info(`[API] Received request for booking details: ${id}`);
+  const id = request.nextUrl.pathname.split('/').pop();
+
+  log.info(`[API] Received request for booking details for id: ${id}`);
 
   // Validate the booking ID from the URL
-  const validation = paramsSchema.safeParse(params);
+  const validation = paramsSchema.safeParse({ id });
   if (!validation.success) {
     // Detailed logging for validation failure
     log.error('[API] Booking ID validation failed', {
       error: validation.error.errors,
-      bookingId: params.id,
+      bookingId: id,
     });
     return NextResponse.json(
       { error: validation.error.errors[0].message },
