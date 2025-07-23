@@ -24,7 +24,7 @@ export async function GET(
   }
 
   try {
-    const booking = await prisma.booking.findUnique({
+    const rawBooking = await prisma.booking.findUnique({
       where: { id: validation.data.id },
       select: {
         id: true,
@@ -42,10 +42,16 @@ export async function GET(
       },
     });
 
-    if (!booking) {
+    if (!rawBooking) {
       log.warn(`[API] Booking not found: ${id}`);
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }
+
+    const booking = {
+      ...rawBooking,
+      serviceType: (rawBooking as any).service?.serviceType || 'UNKNOWN',
+      customerName: (rawBooking as any).customerName ?? 'Valued Customer',
+    } as any;
 
     log.info(`[API] Successfully retrieved booking: ${id}`);
     return NextResponse.json({ booking });
