@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { businessRulesEngine } from '@/lib/business-rules';
+import { validateBusinessRules } from '@/lib/business-rules/engine';
 import { pricingEngine } from '@/lib/pricing';
-import { slotReservation } from '@/lib/slot-reservation';
+import { convertToBooking } from '@/lib/slot-reservation';
 import { BookingCreateRequestSchema } from '@/lib/validation/booking';
 import { processBookingJob } from '@/lib/bullmq/booking-processor';
 
@@ -36,15 +36,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Price calculation failed', errors: pricingResult.errors }, { status: 400 });
     }
 
-    const businessRulesResult = await businessRulesEngine.validate({
+    const { isValid, violations } = await validateBusinessRules({
       serviceType: service.serviceType,
       documentCount: validatedData.numberOfDocuments,
-      signerCount: validatedData.numberOfSigners,
       scheduledDateTime: validatedData.scheduledDateTime,
     });
 
-    if (!businessRulesResult.isValid) {
-      return NextResponse.json({ message: 'Business rule validation failed', errors: businessRulesResult.violations }, { status: 400 });
+    if (!isValid) {
+      return NextResponse.json({ message: 'Business rule validation failed', errors: violations }, { status: 400 });
     }
 
     const booking = await prisma.booking.create({
@@ -52,7 +51,6 @@ export async function POST(request: NextRequest) {
         serviceId: validatedData.serviceId,
         customerName: validatedData.customerName,
         customerEmail: validatedData.customerEmail,
-        customerPhone: validatedData.customerPhone || undefined,
         scheduledDateTime: validatedData.scheduledDateTime,
         addressStreet: validatedData.addressStreet || undefined,
         addressCity: validatedData.addressCity || undefined,
@@ -64,7 +62,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    await slotReservation.confirmReservation(validatedData.reservationId);
+    if (validatedData.reservationId) {
+      await convertToBooking(validatedData.reservationId, booking.id);
+    }
 
     await processBookingJob(booking.id);
 

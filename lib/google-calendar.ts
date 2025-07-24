@@ -98,6 +98,14 @@ export class GoogleCalendarService {
             responseStatus: 'accepted'
           }] : [])
         ],
+        // For RON services, only include the notary as an attendee to prevent sending invites to the client.
+        ...(booking.Service.serviceType === 'RON_SERVICES' && {
+          attendees: notaryInfo?.email ? [{
+            email: notaryInfo.email,
+            displayName: notaryInfo.name || 'Houston Mobile Notary',
+            responseStatus: 'accepted'
+          }] : [],
+        }),
         // Conditionally add conference data for RON services, but only if a valid session URL exists.
         ...(booking.Service.serviceType === 'RON_SERVICES' && booking.proofSessionUrl && {
           conferenceData: {

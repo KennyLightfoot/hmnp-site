@@ -172,13 +172,19 @@ export class ProofAPIClient {
         signerEmail: request.signers[0]?.email?.replace(/(.{2}).*(@.*)/, '$1***$2')
       });
 
+      // The transaction is created. Now, explicitly tell Proof.com to send the invite.
+      await this.request('POST', `/transactions/${transaction.id}/send_invite`);
+      logger.info('Proof.com invite request sent', { transactionId: transaction.id });
+
       // It can take a moment for the session URL to be generated.
       // We'll add a short delay and a retry mechanism to fetch the complete transaction details.
       await new Promise(resolve => setTimeout(resolve, 1500)); // Wait 1.5 seconds
 
       const completeTransaction = await this.getTransaction(transaction.id);
 
-      if (!completeTransaction || !completeTransaction.sessionUrl) {
+      if (completeTransaction && completeTransaction.sessionUrl) {
+        logger.info('✅ Proof session URL retrieved successfully', { transactionId: transaction.id });
+      } else {
         logger.warn('⚠️ Proof session URL not available after retry', {
           transactionId: transaction.id,
         });
