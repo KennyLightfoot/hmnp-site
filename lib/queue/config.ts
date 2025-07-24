@@ -15,10 +15,16 @@ export const createQueues = () => {
   }
 
   try {
-    // Create Redis instance for queues
+    // Create Redis instance for queues, ensuring no localhost fallback in prod
+    if (!UPSTASH_REDIS_REST_URL) {
+      throw new Error('UPSTASH_REDIS_REST_URL is not set.');
+    }
+    if (!UPSTASH_REDIS_REST_TOKEN) {
+      throw new Error('UPSTASH_REDIS_REST_TOKEN is not set.');
+    }
     const redis = new Redis({
-      url: UPSTASH_REDIS_REST_URL || 'redis://localhost:6379',
-      token: UPSTASH_REDIS_REST_TOKEN || 'dev-token',
+      url: UPSTASH_REDIS_REST_URL,
+      token: UPSTASH_REDIS_REST_TOKEN,
     });
 
     // Create queues for different job types
