@@ -29,7 +29,7 @@ function verifyGHLWebhookSignature(payload: string, signature: string, secret: s
     let expectedBuffer: Buffer;
     
     try {
-      receivedBuffer = Buffer.from(cleanSignature, 'base64'); // <-- Changed to base64
+      receivedBuffer = Buffer.from(cleanSignature, 'hex');
       expectedBuffer = Buffer.from(expectedSignature, 'hex');
     } catch (bufferError) {
       console.error('Buffer conversion error:', bufferError);
