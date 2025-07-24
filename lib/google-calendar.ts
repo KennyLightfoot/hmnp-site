@@ -98,15 +98,20 @@ export class GoogleCalendarService {
             responseStatus: 'accepted'
           }] : [])
         ],
-        // Add conference data for RON services
-        ...(booking.Service.serviceType === 'RON_SERVICES' && {
+        // Conditionally add conference data for RON services, but only if a valid session URL exists.
+        ...(booking.Service.serviceType === 'RON_SERVICES' && booking.proofSessionUrl && {
           conferenceData: {
             createRequest: {
               requestId: `ron-${booking.id}`,
               conferenceSolutionKey: {
-                type: 'hangoutsMeet'
-              }
-            }
+                type: 'addOn'
+              },
+            },
+            entryPoints: [{
+              entryPointType: 'video',
+              uri: booking.proofSessionUrl,
+              label: 'Join RON Session'
+            }]
           }
         })
       };
@@ -131,6 +136,13 @@ export class GoogleCalendarService {
   private formatEventDescription(booking: any, conversationHistory?: any, notaryInfo?: any): string {
     const serviceType = booking.Service.serviceType || booking.serviceType;
     
+    // Add Proof.com URL to description for RON services
+    const ronDetails = serviceType === 'RON_SERVICES' && booking.proofSessionUrl ? `
+🔗 RON SESSION LINK
+===================
+Join your secure session: ${booking.proofSessionUrl}
+` : '';
+
     // Get service-specific preparation instructions
     const preparationInstructions = this.getServicePreparationInstructions(serviceType);
     const documentRequirements = this.getDocumentRequirements(serviceType);
@@ -138,7 +150,7 @@ export class GoogleCalendarService {
 
     let description = `
 📋 APPOINTMENT DETAILS
-===================
+===================${ronDetails}
 Service: ${booking.Service.name}
 Service Type: ${serviceType}
 Booking ID: ${booking.id}

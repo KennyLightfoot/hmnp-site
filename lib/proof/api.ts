@@ -175,13 +175,25 @@ export class ProofAPIClient {
         signerEmail: request.signers[0]?.email?.replace(/(.{2}).*(@.*)/, '$1***$2')
       });
 
-      return {
+      // It can take a moment for the session URL to be generated.
+      // We'll add a short delay and a retry mechanism to fetch the complete transaction details.
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Wait 1.5 seconds
+
+      const completeTransaction = await this.getTransaction(transaction.id);
+
+      if (!completeTransaction || !completeTransaction.sessionUrl) {
+        logger.warn('⚠️ Proof session URL not available after retry', {
+          transactionId: transaction.id,
+        });
+      }
+
+      return completeTransaction || {
         id: transaction.id,
         status: transaction.status || 'draft',
         title: request.title,
         signers: request.signers,
-        documents: [], // Empty initially - draft transactions
-        sessionUrl: transaction.signer_info?.transaction_access_link || null,
+        documents: [],
+        sessionUrl: null, // Explicitly set to null if not found
         createdAt: transaction.date_created || new Date().toISOString(),
         updatedAt: transaction.date_updated || new Date().toISOString(),
         metadata: request.metadata
