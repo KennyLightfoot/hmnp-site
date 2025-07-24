@@ -113,6 +113,7 @@
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
     "bull": "^4.16.5",
+    "bullmq": "^5.8.2",
     "chalk": "^5.4.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",

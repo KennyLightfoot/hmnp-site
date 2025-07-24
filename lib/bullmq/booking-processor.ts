@@ -1,10 +1,10 @@
 import { Job, Worker } from 'bullmq';
-import { prisma } from '@/lib/db';
-import { logger } from '@/lib/logger';
-import { ghl } from '@/lib/ghl';
-import { RONService } from '@/lib/proof/api';
-import { EnhancedBookingService } from '@/lib/enhanced-booking-service';
-import { redis } from '@/lib/redis';
+import { prisma } from '../db';
+import { logger } from '../logger';
+import { ghl } from '../ghl';
+import { RONService } from '../proof/api';
+import { EnhancedBookingService } from '../enhanced-booking-service';
+import { redis } from '../redis';
 
 const QUEUE_NAME = 'booking-processing';
 

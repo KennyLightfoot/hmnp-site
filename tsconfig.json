@@ -23,11 +23,7 @@
     "paths": {
       "@/*": ["./*"],
       "@/lib/auth": ["./lib/auth/index.ts"],
-      "@/lib/db": ["./lib/db.ts"],
-      "@/lib/business-rules": ["lib/business-rules/engine.ts"],
-      "@/lib/pricing": ["lib/pricing/index.ts"],
-      "@/lib/slot-reservation": ["lib/slot-reservation.ts"],
-      "@/lib/validation/booking": ["lib/validation/booking.ts"]
+      "@/lib/db": ["./lib/db.ts"]
     },
     "baseUrl": "."
   },
