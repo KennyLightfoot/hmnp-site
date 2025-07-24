@@ -1,4 +1,5 @@
 import Bull from 'bull';
+import { logger } from '../logger';
 
 // Default job options for all queues
 const defaultJobOptions = {
@@ -18,10 +19,39 @@ export enum QueueName {
   PAYMENT_PROCESSING = 'payment-processing',
 }
 
+// Get Redis connection options for Bull
+const getRedisOptions = () => {
+  if (process.env.REDIS_URL) {
+    return {
+      url: process.env.REDIS_URL,
+      maxRetriesPerRequest: null,
+      enableReadyCheck: false,
+    } as const;
+  } else if (process.env.UPSTASH_REDIS_REST_URL) {
+    // Convert rediss:// to redis:// for Bull compatibility
+    const url = process.env.UPSTASH_REDIS_REST_URL.replace('rediss://', 'redis://');
+    return {
+      url,
+      password: process.env.UPSTASH_REDIS_REST_TOKEN,
+      maxRetriesPerRequest: null,
+      enableReadyCheck: false,
+    } as const;
+  }
+
+  // Local fallback (should only be used in dev/test)
+  return {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: parseInt(process.env.REDIS_PORT || '6379'),
+    password: process.env.REDIS_PASSWORD,
+    db: parseInt(process.env.REDIS_DB || '0'),
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+  } as const;
+};
 // Queue configuration with connection info
 const createQueue = (name: string) => {
   try {
-    const redisOptions = { url: process.env.REDIS_URL || "redis://localhost:6379", maxRetriesPerRequest: null, enableReadyCheck: false };
+    const redisOptions = getRedisOptions();
     return new Bull(name, {
       redis: redisOptions,
       defaultJobOptions,
