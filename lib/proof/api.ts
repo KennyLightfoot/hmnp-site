@@ -22,16 +22,13 @@ if (!PROOF_API_KEY) {
 
 // TypeScript interfaces for Proof API
 export interface CreateTransactionRequest {
-  signers: ProofSigner[];
-  documents: ProofDocument[];
-  notaryId?: string;
   title: string;
   description?: string;
+  signers: ProofSigner[];
+  documents: ProofDocument[];
+  draft?: boolean; // Add draft property
+  suppress_email?: boolean;
   metadata?: Record<string, any>;
-  webhookUrl?: string;
-  expiresAt?: string;
-  requiresIdentityVerification?: boolean;
-  requiresKnowledgeBasedAuth?: boolean;
 }
 
 export interface ProofSigner {
@@ -188,12 +185,11 @@ export class ProofAPIClient {
       }
 
       return completeTransaction || {
-        id: transaction.id,
-        status: transaction.status || 'draft',
+        ...transaction,
         title: request.title,
         signers: request.signers,
         documents: [],
-        sessionUrl: null, // Explicitly set to null if not found
+        sessionUrl: undefined, // Ensure type compatibility
         createdAt: transaction.date_created || new Date().toISOString(),
         updatedAt: transaction.date_updated || new Date().toISOString(),
         metadata: request.metadata
@@ -578,6 +574,7 @@ export class RONService {
         description: `Remote notarization for booking #${booking.id}`,
         signers,
         documents: [], // Always start empty
+        draft: false, // CRITICAL FIX: Must be false to activate the transaction and send invites.
         suppress_email: false, // Ensure Proof.com sends the invitation
         metadata: {
           bookingId: booking.id,
