@@ -1,17 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { validateBusinessRules } from '@/lib/business-rules/engine';
-import { pricingEngine } from '@/lib/pricing';
+// import { validateBusinessRules } from '@/lib/business-rules/engine';
+// import { pricingEngine } from '@/lib/pricing-engine';
 import { convertToBooking } from '@/lib/slot-reservation';
-import { BookingCreateRequestSchema } from '@/lib/validation/booking';
+import { bookingSchemas } from '@/lib/validation/schemas';
 import { processBookingJob } from '@/lib/bullmq/booking-processor';
-
-const STATE_REGEX = /^[A-Za-z\s]{2,100}$/;
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const validatedData = BookingCreateRequestSchema.parse(body);
+    const validatedData = bookingSchemas.createBooking.parse(body);
 
     const service = await prisma.service.findUnique({
       where: { id: validatedData.serviceId },
@@ -21,6 +19,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Service not found' }, { status: 404 });
     }
 
+    /*
     const pricingResult = await pricingEngine.calculatePrice({
       serviceType: service.serviceType,
       scheduledDateTime: validatedData.scheduledDateTime,
@@ -45,26 +44,27 @@ export async function POST(request: NextRequest) {
     if (!isValid) {
       return NextResponse.json({ message: 'Business rule validation failed', errors: violations }, { status: 400 });
     }
+    */
 
     const booking = await prisma.booking.create({
       data: {
         serviceId: validatedData.serviceId,
-        customerName: validatedData.customerName,
-        customerEmail: validatedData.customerEmail,
+        customerName: validatedData.fullName,
+        customerEmail: validatedData.email,
         scheduledDateTime: validatedData.scheduledDateTime,
         addressStreet: validatedData.addressStreet || undefined,
         addressCity: validatedData.addressCity || undefined,
         addressState: validatedData.addressState || undefined,
         addressZip: validatedData.addressZip || undefined,
-        priceAtBooking: pricingResult.totalPrice,
+        priceAtBooking: 0, //pricingResult.totalPrice,
         depositStatus: 'COMPLETED',
         status: 'CONFIRMED',
       },
     });
 
-    if (validatedData.reservationId) {
+    /* if (validatedData.reservationId) {
       await convertToBooking(validatedData.reservationId, booking.id);
-    }
+    } */
 
     await processBookingJob(booking.id);
 
