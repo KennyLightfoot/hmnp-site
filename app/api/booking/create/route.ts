@@ -5,14 +5,16 @@ import { prisma } from '@/lib/db';
 import { convertToBooking } from '@/lib/slot-reservation';
 import { bookingSchemas } from '@/lib/validation/schemas';
 import { processBookingJob } from '@/lib/bullmq/booking-processor';
+import { ServiceType } from '@prisma/client';
+import { z } from 'zod';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const validatedData = bookingSchemas.createBookingMinimal.parse(body);
+    const validatedData = bookingSchemas.createBookingFromForm.parse(body);
 
-    const service = await prisma.service.findUnique({
-      where: { id: validatedData.serviceId },
+    const service = await prisma.service.findFirst({
+      where: { serviceType: validatedData.serviceType },
     });
 
     if (!service) {
@@ -48,14 +50,11 @@ export async function POST(request: NextRequest) {
 
     const booking = await prisma.booking.create({
       data: {
-        serviceId: validatedData.serviceId,
-        customerName: validatedData.fullName,
-        customerEmail: validatedData.email,
-        scheduledDateTime: validatedData.scheduledDateTime,
-        addressStreet: validatedData.addressStreet || undefined,
-        addressCity: validatedData.addressCity || undefined,
-        addressState: validatedData.addressState || undefined,
-        addressZip: validatedData.addressZip || undefined,
+        serviceId: service.id,
+        customerName: validatedData.customerName,
+        customerEmail: validatedData.customerEmail,
+        scheduledDateTime: new Date(validatedData.scheduledDateTime),
+        addressStreet: validatedData.locationAddress || undefined,
         priceAtBooking: 0, //pricingResult.totalPrice,
         depositStatus: 'COMPLETED',
         status: 'CONFIRMED',

@@ -73,25 +73,24 @@ export const commonSchemas = {
 // ============================================================================
 
 export const bookingSchemas = {
-  // Simplified schema for initial booking creation from the main form
-  createBookingMinimal: z.object({
-    serviceId: z.string(),
-    numberOfSigners: z.number().int().min(1),
-    email: commonSchemas.email,
-    fullName: commonSchemas.name,
+  // Schema for the simple booking form
+  createBookingFromForm: z.object({
+    serviceType: z.nativeEnum(ServiceType),
+    customerName: commonSchemas.name,
+    customerEmail: commonSchemas.email,
+    customerPhone: commonSchemas.phone.optional(),
     scheduledDateTime: z.string(),
-    locationType: z.nativeEnum(LocationType),
-    // Address fields are optional for RON or if provided later
-    addressStreet: z.string().optional(),
-    addressCity: z.string().optional(),
-    addressState: z.string().optional(),
-    addressZip: z.string().optional(),
+    locationAddress: z.string().optional(),
+    locationType: z.string().optional(),
+    pricing: z.any().optional(),
+    agreedToTerms: z.boolean().optional(),
   }),
 
   // Create booking request
   createBooking: z.object({
     // Service details
     serviceId: commonSchemas.uuid,
+    serviceType: z.nativeEnum(ServiceType),
     numberOfSigners: z.number().int().min(1).max(10),
     
     // Customer information
