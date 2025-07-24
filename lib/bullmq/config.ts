@@ -1,10 +1,6 @@
 import Bull from 'bull';
-import Redis, { RedisOptions } from 'ioredis';
+import { createRedisClient } from '../redis';
 import { logger } from '../logger';
-
-// Redis connection configuration
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
-const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 
 // Default job options for all queues
 const defaultJobOptions = {
@@ -17,27 +13,6 @@ const defaultJobOptions = {
   removeOnFail: 200,          // Keep last 200 failed jobs for debugging
 };
 
-// Redis client options
-const redisOptions: RedisOptions = {
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false,
-};
-
-// Add password if specified
-if (REDIS_PASSWORD) {
-  redisOptions.password = REDIS_PASSWORD;
-}
-
-// Create Redis instance for Bull
-export const createRedisClient = () => {
-  try {
-    return new Redis(REDIS_URL, redisOptions);
-  } catch (error) {
-    logger.error('Failed to create Redis client', 'BULLMQ_CONFIG', error as Error);
-    throw error;
-  }
-};
-
 // Queue names
 export enum QueueName {
   NOTIFICATIONS = 'notifications',
@@ -48,8 +23,9 @@ export enum QueueName {
 // Queue configuration with connection info
 const createQueue = (name: string) => {
   try {
+    const redisClient = createRedisClient();
     return new Bull(name, {
-      redis: REDIS_URL,
+      redis: redisClient,
       defaultJobOptions,
     });
   } catch (error) {

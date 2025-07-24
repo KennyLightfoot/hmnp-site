@@ -375,4 +375,32 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Export types and utilities
-export default redis; 
+export default redis;
+
+// Export function to create Redis client for BullMQ
+export const createRedisClient = () => {
+  if (process.env.REDIS_URL) {
+    return new Redis(process.env.REDIS_URL, {
+      maxRetriesPerRequest: null,
+      enableReadyCheck: false,
+    });
+  } else if (process.env.UPSTASH_REDIS_REST_URL) {
+    // For Upstash Redis, we need to handle the rediss:// URL properly
+    const url = process.env.UPSTASH_REDIS_REST_URL.replace('rediss://', 'redis://');
+    return new Redis(url, {
+      maxRetriesPerRequest: null,
+      enableReadyCheck: false,
+      password: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+  } else {
+    // Local Redis fallback
+    return new Redis({
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT || '6379'),
+      password: process.env.REDIS_PASSWORD,
+      db: parseInt(process.env.REDIS_DB || '0'),
+      maxRetriesPerRequest: null,
+      enableReadyCheck: false,
+    });
+  }
+}; 
