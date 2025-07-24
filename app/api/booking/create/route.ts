@@ -30,7 +30,7 @@ const ZIP_REGEX = /^\d{5}(-\d{4})?$/;
 const NAME_REGEX = /^[a-zA-Z\s\-'\.]{1,100}$/; // Names with common characters
 const ADDRESS_REGEX = /^[a-zA-Z0-9\s\-#,.']{1,120}$/; // Address with common characters
 const CITY_REGEX = /^[a-zA-Z\s\-'\.]{1,100}$/; // City names
-const STATE_REGEX = /^[a-zA-Z\s]{2,100}$/; // State names
+const STATE_REGEX = /^[A-Za-Z\s]{2,100}$/; // State names
 const TIMEZONE_REGEX = /^[A-Za-z]+\/[A-Za-z_]+$/; // Timezone format like America/Chicago
 const NOTES_REGEX = /^[\s\S]{0,1000}$/; // Location notes (any printable chars)
 
@@ -202,25 +202,9 @@ function mapLocationTypeToDb(frontendType: string | undefined): 'CLIENT_SPECIFIE
 
 export async function POST(request: NextRequest) {
   try {
-    // 🛠️  PREPROCESS DATE/TIME
-    // Ensure scheduledDateTime is present and valid before schema validation
-    const rawBody = await request.json();
+    const body = await request.json();
+    const validatedData = BookingCreateSchema.parse(body);
 
-    const hasValidIso = (val: any): boolean => {
-      if (!val || typeof val !== 'string') return false;
-      return !isNaN(Date.parse(val));
-    };
-
-    if (!hasValidIso(rawBody.scheduledDateTime) && rawBody.bookingDate && rawBody.bookingTime) {
-      const combined = new Date(`${rawBody.bookingDate}T${rawBody.bookingTime}`);
-      if (!isNaN(combined.getTime())) {
-        rawBody.scheduledDateTime = combined.toISOString();
-      }
-    }
-
-    // Validate with Zod after preprocessing
-    const validatedData = BookingCreateSchema.parse(rawBody);
-    
     // Prevent duplicate Stripe session bookings
     if (validatedData.stripeSessionId) {
       const dup = await (prisma.booking as any).findFirst({ where: { stripeSessionId: validatedData.stripeSessionId } });
@@ -612,6 +596,9 @@ export async function POST(request: NextRequest) {
     
   } catch (error: any) {
     console.error('Error in POST /api/booking/create:', error);
+    if (error.name === 'ZodError') {
+      return NextResponse.json({ message: 'Validation failed', errors: error.errors }, { status: 400 });
+    }
     return NextResponse.json({ message: 'Internal Server Error', error: error.message }, { status: 500 });
   }
 }
