@@ -92,7 +92,6 @@ export const bookingSchemas = {
   createBooking: z.object({
     // Service details
     serviceId: commonSchemas.uuid,
-    serviceType: z.nativeEnum(ServiceType),
     numberOfSigners: z.number().int().min(1).max(10),
     
     // Customer information

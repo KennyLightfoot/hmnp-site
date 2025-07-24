@@ -204,7 +204,7 @@ export default function SimpleBookingForm() {
         });
       }
 
-      const response = await fetch('/api/booking/ghl-direct', {
+      const response = await fetch('/api/booking/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bookingData)
@@ -501,24 +501,16 @@ export default function SimpleBookingForm() {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                          serviceType: formData.serviceType,
-                          customerName: formData.customerName,
-                          customerEmail: formData.customerEmail,
-                          customerPhone: formData.customerPhone,
-                          scheduledDateTime: formData.bookingTime, // ISO string
-                          ...(formData.serviceType !== 'RON_SERVICES' && formData.locationAddress ? {
-                            locationType: 'OTHER',
-                            addressStreet: formData.locationAddress,
-                            addressCity: 'Houston',
-                            addressState: 'TX',
-                            addressZip: '77001'
-                          } : {}),
-                          pricing: {
-                            basePrice: pricing.basePrice,
-                            travelFee: pricing.travelFee,
-                            totalPrice: pricing.totalPrice,
-                          },
-                          agreedToTerms: true
+                          serviceId: formData.serviceType,
+                          numberOfSigners: 1,
+                          email: formData.customerEmail,
+                          fullName: formData.customerName,
+                          scheduledDateTime: formData.bookingTime,
+                          locationType: formData.serviceType === 'RON_SERVICES' ? 'REMOTE_ONLINE_NOTARIZATION' : 'CLIENT_SPECIFIED_ADDRESS',
+                          addressStreet: formData.locationAddress,
+                          addressCity: 'Houston',
+                          addressState: 'TX',
+                          addressZip: '77001'
                         })
                       });
                       if (!response.ok) throw new Error('Booking failed');
