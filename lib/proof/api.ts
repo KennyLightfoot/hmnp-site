@@ -372,7 +372,7 @@ export class ProofAPIClient {
     }
 
     try {
-      const response = await this.makeRequest('GET', `/transactions/${transactionId}`);
+      const response = await this.request('GET', `/transactions/${transactionId}`);
 
       if (!response.ok) {
         const error = await response.json();
@@ -532,6 +532,74 @@ export class ProofAPIClient {
     }
 
     return sanitized;
+  }
+
+  private async request(method: 'GET' | 'POST' | 'PUT' | 'DELETE', endpoint: string, body?: any): Promise<any> {
+    if (!this.apiKey) {
+      throw new Error('Proof API key is not configured.');
+    }
+
+    const url = `${this.baseUrl}/${endpoint}`;
+    const headers = {
+      'Authorization': `Bearer ${this.apiKey}`,
+      'Content-Type': 'application/json'
+    };
+
+    // Implement retry logic with exponential backoff for rate limiting
+    let attempt = 0;
+    const maxAttempts = 5;
+    const baseDelay = 250; // ms
+
+    while (attempt < maxAttempts) {
+      try {
+        const response = await fetch(url, {
+          method,
+          headers,
+          body: body ? JSON.stringify(body) : null
+        });
+
+        if (response.status === 429 && attempt < maxAttempts - 1) {
+          const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 100;
+          logger.warn(`Proof API rate limit hit. Retrying in ${delay.toFixed(0)}ms...`, { attempt: attempt + 1, url });
+          await new Promise(res => setTimeout(res, delay));
+          attempt++;
+          continue; // Retry the request
+        }
+
+        if (!response.ok) {
+          const errorBody = await response.text();
+          logger.error('Proof API request failed', {
+            status: response.status,
+            statusText: response.statusText,
+            url,
+            errorBody
+          });
+          throw new Error(`Proof API request failed with status ${response.status}: ${errorBody}`);
+        }
+
+        // Handle empty response body for methods like DELETE
+        if (response.status === 204) {
+          return null;
+        }
+
+        return await response.json();
+      } catch (error) {
+        logger.error('Error making Proof API request', {
+          url,
+          error: error instanceof Error ? error.message : String(error)
+        });
+        // On the last attempt, re-throw the final error
+        if (attempt >= maxAttempts - 1) {
+          throw error;
+        }
+        // For other attempts, we've already logged it and will retry after a delay.
+        const delay = baseDelay * Math.pow(2, attempt);
+        await new Promise(res => setTimeout(res, delay));
+        attempt++;
+      }
+    }
+    // This part should be unreachable if logic is correct, but as a fallback:
+    throw new Error('Proof API request failed after multiple retries.');
   }
 }
 
