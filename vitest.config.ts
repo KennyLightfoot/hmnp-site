@@ -15,6 +15,13 @@ export default defineConfig({
     include: ['tests/unit/**/*.test.ts', '__tests__/**/*.test.ts'],
     // Exclude quarantined legacy tests until they are refactored
     exclude: ['**/*.legacy.test.ts'],
+    deps: {
+      optimizer: {
+        web: {
+          include: ['bullmq'],
+        },
+      },
+    },
     coverage: {
       provider: 'v8', // Use V8 for coverage
       reporter: ['text', 'json', 'html', 'lcov'], // Add lcov for CI
