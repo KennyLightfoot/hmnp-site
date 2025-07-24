@@ -32,15 +32,15 @@ describe('PricingEngine – surcharges & travel edge cases', () => {
 
     const expectedSurcharges = 30 + 40 // afterHours + weekend = 70
     expect(result.surcharges).toBe(expectedSurcharges)
-    expect(result.travelFee).toBe(0) // within 30-mile radius
+    expect(result.travelFee).toBe(0) // within 20-mile radius
     expect(result.total).toBe(result.basePrice + 70)
   })
 
-  it('charges no travel fee when exactly at included radius (30 mi)', async () => {
+  it('charges no travel fee when exactly at included radius (20 mi)', async () => {
     vi.mocked(UnifiedDistanceService.calculateDistance).mockResolvedValue({
       success: true,
-      distance: { miles: 30, kilometers: 48, text: '30 mi' },
-      duration: { minutes: 35 },
+      distance: { miles: 20, kilometers: 32, text: '20 mi' },
+      duration: { minutes: 25 },
     } as any)
 
     const result = await engine.calculateBookingPrice({
