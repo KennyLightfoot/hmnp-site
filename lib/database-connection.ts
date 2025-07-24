@@ -31,11 +31,6 @@ class UnifiedDatabaseConnection {
       UnifiedDatabaseConnection.instance = global.__prisma || new PrismaClient({
         log: UnifiedDatabaseConnection.getLogLevel(),
         errorFormat: 'pretty',
-        datasources: {
-          db: {
-            url: process.env.DATABASE_URL,
-          },
-        },
       });
 
       // Store in global for hot reload in development
