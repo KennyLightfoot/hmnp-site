@@ -578,6 +578,7 @@ export class RONService {
         description: `Remote notarization for booking #${booking.id}`,
         signers,
         documents: [], // Always start empty
+        suppress_email: false, // Ensure Proof.com sends the invitation
         metadata: {
           bookingId: booking.id,
           service: 'RON_SERVICES'

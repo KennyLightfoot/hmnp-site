@@ -113,6 +113,13 @@ export class GoogleCalendarService {
               label: 'Join RON Session'
             }]
           }
+        }),
+        // For RON services, do not create a Google Meet link.
+        // Instead, add a note to the description that the invite comes from Proof.com.
+        ...(!booking.proofSessionUrl && booking.Service.serviceType === 'RON_SERVICES' && {
+          conferenceData: {
+            notes: "The client will receive a separate meeting invitation from Proof.com. This calendar event is for scheduling purposes only."
+          }
         })
       };
       
@@ -123,7 +130,7 @@ export class GoogleCalendarService {
       const response = await this.calendar.events.insert({
         calendarId: process.env.GOOGLE_CALENDAR_ID,
         requestBody: event,
-        conferenceDataVersion: 1, // Enable conference data
+        conferenceDataVersion: 1, // This must be set to 1 to process conference data
       });
       
       return response.data;
@@ -429,26 +436,32 @@ Website: https://houstonmobilenotarypros.com
           timeZone: 'America/Chicago',
         },
         colorId: this.getEventColor(booking.status),
-        // Update attendees
+        // Update attendees, ensuring not to send them notifications if it's just a placeholder
         attendees: [
-          {
-            email: booking.User_Booking_signerIdToUser?.email || booking.customerEmail,
-            displayName: customerName,
-            responseStatus: 'accepted'
-          },
+          // {
+          //   email: booking.User_Booking_signerIdToUser?.email || booking.customerEmail,
+          //   displayName: customerName,
+          //   responseStatus: 'needsAction' // Don't auto-accept for client
+          // },
           ...(notaryInfo?.email ? [{
             email: notaryInfo.email,
             displayName: notaryInfo.name || 'Houston Mobile Notary',
             responseStatus: 'accepted'
           }] : [])
         ],
+        // Clear out conference data for RON to avoid conflicts, add note instead
+        ...(booking.Service.serviceType === 'RON_SERVICES' && {
+          conferenceData: {
+            notes: "The client has been invited separately via Proof.com. This calendar event is for scheduling purposes."
+          }
+        })
       };
       
       const response = await this.calendar.events.update({
         calendarId: process.env.GOOGLE_CALENDAR_ID,
         eventId: googleEventId,
         requestBody: updatedEvent,
-        conferenceDataVersion: 1, // Enable conference data
+        conferenceDataVersion: 1, // Required for conference data changes
       });
       
       return response.data;

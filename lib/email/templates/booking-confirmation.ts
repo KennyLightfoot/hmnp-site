@@ -66,6 +66,16 @@ export function bookingConfirmationEmail(
   // ID requirements
   const idRequirements = getIdRequirements(booking.serviceType);
 
+  // Special section for RON services
+  const ronInstructions = booking.serviceType === 'RON_SERVICES' ? `
+    <div class="important-info">
+      <h3>❗ Important RON (Remote Online Notarization) Instructions</h3>
+      <p>Your session will be conducted on the secure Proof.com platform.</p>
+      <p><strong>You will receive a separate email invitation directly from Proof.com with a unique link to join your session.</strong> Please check your spam/junk folder if you don't see it within 15 minutes of this confirmation.</p>
+      <p>This link is required to meet your notary and complete the notarization.</p>
+    </div>
+  ` : '';
+
   const html = `
 <!DOCTYPE html>
 <html>
@@ -108,9 +118,12 @@ export function bookingConfirmationEmail(
 
     <!-- Content -->
     <div class="content">
-      <p>Hi ${client.firstName},</p>
+      <p>Hi ${client.firstName || 'Valued Customer'},</p>
       
       <p>Great news! Your booking has been confirmed and we're excited to help you with your notarization needs.</p>
+
+      <!-- RON Instructions -->
+      ${ronInstructions}
 
       <!-- Booking Details -->
       <div class="booking-details">
