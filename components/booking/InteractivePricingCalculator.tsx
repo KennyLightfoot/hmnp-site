@@ -71,16 +71,37 @@ interface InteractivePricingCalculatorProps {
   isMobile?: boolean;
 }
 
+// Base service prices
+const BASE_PRICES = {
+  'QUICK_STAMP_LOCAL': 50,
+  'STANDARD_NOTARY': 75,
+  'EXTENDED_HOURS': 100,
+  'LOAN_SIGNING': 150,
+  'ESTATE_PLANNING': 250,
+  'SPECIALTY_NOTARY': 150,
+  'BUSINESS_SOLUTIONS': 250,
+  'RON_SERVICES': 25,
+  'BUSINESS_ESSENTIALS': 125,
+  'BUSINESS_GROWTH': 349
+};
+
 // Service Add-Ons Configuration
 const SERVICE_ADD_ONS: ServiceAddOn[] = [
   // Document Add-ons
   {
     id: 'extra_document',
     name: 'Additional Document',
-    price: 15,
+    price: 10,
     description: 'Each additional document beyond the included limit',
     category: 'document',
     popular: true
+  },
+  {
+    id: 'extra_stamp',
+    name: 'Additional Stamp',
+    price: 5,
+    description: 'Each additional stamp (Quick-Stamp service)',
+    category: 'document'
   },
   {
     id: 'document_scan',
@@ -109,7 +130,7 @@ const SERVICE_ADD_ONS: ServiceAddOn[] = [
   {
     id: 'weekend_booking',
     name: 'Weekend Appointment',
-    price: 20,
+    price: 40,
     description: 'Saturday or Sunday appointment',
     category: 'time'
   },
@@ -118,6 +139,13 @@ const SERVICE_ADD_ONS: ServiceAddOn[] = [
     name: 'Evening Hours (6-9 PM)',
     price: 15,
     description: 'After-hours appointment scheduling',
+    category: 'time'
+  },
+  {
+    id: 'night_service',
+    name: 'Night Service (9 PM-7 AM)',
+    price: 50,
+    description: 'Late night or early morning service',
     category: 'time'
   },
   
@@ -144,20 +172,6 @@ const SERVICE_ADD_ONS: ServiceAddOn[] = [
     category: 'service'
   }
 ];
-
-// Base service prices
-const BASE_PRICES = {
-  'QUICK_STAMP_LOCAL': 50,
-  'STANDARD_NOTARY': 75,
-  'EXTENDED_HOURS': 100,
-  'LOAN_SIGNING': 150,
-  'ESTATE_PLANNING': 250,
-  'SPECIALTY_NOTARY': 150,
-  'BUSINESS_SOLUTIONS': 250,
-  'RON_SERVICES': 35,
-  'BUSINESS_ESSENTIALS': 125,
-  'BUSINESS_GROWTH': 349
-};
 
 export default function InteractivePricingCalculator({
   serviceType,

@@ -27,67 +27,145 @@
 
 ## 📱 Core Mobile Notary Services
 
-### 📦 Essential Mobile Package
-- **Base Service**: $75 (Meets TX minimum)
-  - 1 signer
-  - 2 documents
-  - 15-mile radius
-- **Add-ons**:
-  - ➕ Additional signer: $25
-  - ➕ Extra document: $15
-  - ➕ Weekend service: +$50
+### 🚀 Quick-Stamp Local
+**Base Service: $50**
+- **What's Included:**
+  - ✅ ≤1 document notarization
+  - ✅ ≤2 stamps
+  - ✅ 1 signer included
+  - ✅ ≤10 miles travel included
+  - ✅ 9am-5pm weekdays
+  - ✅ Perfect for simple documents
 
-- **2 Signers**: $85
-  - Includes up to 3 documents notarized per signer
+**Add-ons:**
+- ➕ Extra stamp: $5 each
+- ➕ Extra signer: $10 each
+- ➕ Extended travel: $0.50/mile beyond 10 miles
 
-- **3 Signers**: $95
-  - Includes up to 3 documents notarized per signer
+**Best For:**
+- Single acknowledgments
+- Simple affidavits
+- Local Houston metro clients
+- Basic document notarization
 
-- **4+ Signers**: Custom Quote
-  - Contact us for a tailored package
+---
 
-**Additional Details**
-- **Extra Documents**: $15 each (beyond 2)
-- **Extended Travel**: $0.50/mile beyond 20-mile radius
-- **Service Hours**: Monday-Friday, 9am-5pm
+### 📝 Standard Mobile Notary
+**Base Service: $75**
+- **What's Included:**
+  - ✅ ≤4 documents included
+  - ✅ ≤2 signers included
+  - ✅ ≤20 miles travel included
+  - ✅ 9am-5pm weekdays
+  - ✅ Professional notary service
 
-### 🚨 Priority Service Package
-**Base Rate: $100**
-- Documents: Up to 5
-- Signers: 2
-- Service Area: 35-mile extended radius (+$0.50/mile beyond 20 miles)
-- Service Hours: 7am-9pm daily
+**Add-ons:**
+- ➕ Extra document: $10 each
+- ➕ Extra signer: $5 each
+- ➕ Extended travel: $0.50/mile beyond 20 miles
+- ➕ Weekend service: +$40
 
-**Includes:**
-- ✅ 2-hour response time
-- ✅ Priority Service Hours (7am-9pm)
-- ✅ Certified mail preparation
-- ✅ SMS status tracking
+**Best For:**
+- Real estate documents
+- Power of attorney
+- Loan modifications
+- Business agreements
 
-**Additional Fees:**
-- ➕ Extra signers: $10/each
+---
 
-## 🏡 Loan Signing Specialties
+### ⚡ Extended Hours Mobile
+**Base Service: $100**
+- **What's Included:**
+  - ✅ ≤4 documents included
+  - ✅ ≤2 signers included
+  - ✅ ≤30 miles travel included
+  - ✅ 7am-9pm daily
+  - ✅ Flexible scheduling & same-day service
 
-### Standard Loan Closing
-**Base Rate: $150**
+**Add-ons:**
+- ➕ Same-day service: +$25 (after 3pm)
+- ➕ Night service (9pm-7am): +$50
+- ➕ Extra document: $10 each
+- ➕ Extra signer: $5 each
+- ➕ Extended travel: $0.50/mile beyond 30 miles
 
-**Package Includes:**
-- ✅ Unlimited documents
-- ✅ Up to 4 signers
-- ✅ Color printing service
-- ✅ Professional closing binder
-- ✅ Title company shipping
-- ✅ 90-minute signing session
-- ➕ Overnight document handling: +$35
+**Best For:**
+- Urgent documents
+- After-hours needs
+- Weekend signings
+- Business clients
 
-### Reverse Mortgage/HELOC
-**Base Rate: $150**
+---
 
-**Package Includes:**
-- ✅ 4-hour response window
-- ✅ Certified mail return
-- ✅ Dual agent coordination
+### 🏡 Loan Signing Specialist
+**Flat Fee: $150**
+- **What's Included:**
+  - ✅ Single package (unlimited documents within session)
+  - ✅ ≤4 signers included
+  - ✅ Print 2 sets included
+  - ✅ ≤2 hours table time
+  - ✅ FedEx drop included
+  - ✅ Expert real estate closings
+
+**Add-ons:**
+- ➕ Rush print: +$20
+- ➕ Scan-back: +$15
+- ➕ Extended travel: $0.50/mile beyond 30 miles
+
+**Best For:**
+- Mortgage closings
+- Refinancing
+- HELOC documents
+- Reverse mortgages
+
+---
+
+## 🌐 Remote Online Notarization (RON)
+
+### **RON Service Structure**
+**Session Fee: $25 + Seal Fee: $5 per seal**
+
+**What's Included:**
+- ✅ Credential Analysis included
+- ✅ KBA verification included
+- ✅ Audio-video recording
+- ✅ Texas statewide service
+- ✅ 24/7 availability
+- ✅ Secure online notarization
+
+**Add-ons:**
+- ➕ Extra signer: $10 each
+
+**Example Pricing:**
+- 1 signer, 1 seal: $25 + $5 = $30
+- 1 signer, 2 seals: $25 + $10 = $35
+- 2 signers, 2 seals: $25 + $10 + $10 = $45
+
+---
+
+## 💼 Business Subscription Plans
+
+### **Essentials Plan - $125/month**
+**What's Included:**
+- ✅ Up to 10 RON seals/month
+- ✅ 10% off mobile rates
+- ✅ Priority scheduling
+- ✅ Business support
+
+**Overage:**
+- ➕ Additional seals: $5 each
+
+### **Growth Plan - $349/month**
+**What's Included:**
+- ✅ Up to 40 RON seals/month
+- ✅ 10% off mobile rates
+- ✅ 1 free loan signing
+- ✅ Premium business support
+
+**Overage:**
+- ➕ Additional seals: $4 each
+
+---
 
 ## 🌟 Specialized Services
 
@@ -101,20 +179,39 @@
 - Wedding Certificate Expediting: $75
 - **Medallion Signature**: $150 (High-Risk Handling Fee)
 
+### ⚖️ Estate Planning Package
+**Base Rate: $250**
+- **What's Included:**
+  - ✅ Up to 10 documents
+  - ✅ Up to 4 signers
+  - ✅ 90-minute appointment
+  - ✅ Mobile service (30-mile radius)
+  - ✅ Itemized receipt
+
+**Add-ons:**
+- ➕ Additional documents: $10 each
+- ➕ Witness sourcing: $50 per witness
+- ➕ Extended travel: $0.50/mile beyond 30 miles
+- ➕ Weekend & holiday service: +$40
+
+---
+
 ## 📦 Additional Services
 
 ### Document Services
-- Printing:
+- **Printing:**
   - Black & White: $0.30/page
   - Color: $1.00/page
-- Secure Cloud Storage: $15/month
-- Basic Fax/Scan: $15
-- Secure Email Delivery: $10
-- USPS Certified Mail: $20
+- **Secure Cloud Storage**: $15/month
+- **Basic Fax/Scan**: $15
+- **Secure Email Delivery**: $10
+- **USPS Certified Mail**: $20
 
 ### Premium Time Slots
-- 📅 Sunday & Federal Holidays: +$40
-- 🌎 Bilingual Services (Spanish/English): +$20
+- **Sunday & Federal Holidays**: +$40
+- **Bilingual Services (Spanish/English)**: +$20
+
+---
 
 ## 🚨 Policies
 
@@ -125,9 +222,22 @@
 - Signing refusal: $75 documentation fee
 
 ### Travel Policy
-- Free within 20-mile radius
-- Beyond 20 miles: $0.50/mile
-- Toll fees: Reimbursed at cost
+- **Quick-Stamp Local**: Free within 10-mile radius
+- **Standard Mobile**: Free within 20-mile radius
+- **Extended Hours**: Free within 30-mile radius
+- **Loan Signing**: Free within 30-mile radius
+- **Beyond included radius**: $0.50/mile
+- **Toll fees**: Reimbursed at cost
+
+### Payment Security Deposit
+| Service Type | Hold Amount | Conditions |
+|--------------|-------------|------------|
+| Quick-Stamp Local | $25 | All appointments |
+| Standard Mobile | $50 | All appointments |
+| Extended Hours | $75 | After 5pm or >15 miles |
+| Weekend/Holiday | $100 | Applies to all bookings |
+
+---
 
 ## 💡 Client Benefits
 
@@ -139,6 +249,8 @@
 - Digital document archiving: Free for 1 year
 - Real-time SMS updates during service hours: Included
 - Mobile tracking: Included
+
+---
 
 ## 📋 Fee Disclosure Requirements
 In compliance with Texas Government Code:
@@ -189,24 +301,6 @@ In compliance with Texas Government Code:
 - Staff training sessions
 - Emergency response (within 90 minutes)
 
-### ⚖️ Estate Planning Package
-**Base Rate: $250**
-
-**A comprehensive package designed for individuals and families preparing their essential estate documents.**
-
-**Package Includes:**
-- ✅ **Up to 10 Documents:** Notarization for any combination of Wills, POAs, Trusts, or other estate-related documents.
-- ✅ **Up to 4 Signers:** Perfect for couples or individuals with multiple designated agents.
-- ✅ **90-Minute Appointment:** A dedicated, unhurried session to ensure all documents are handled correctly.
-- ✅ **Mobile Service:** Includes travel within our standard 20-mile radius.
-- ✅ **Itemized Receipt:** A clear, detailed receipt for your records or legal counsel.
-
-**Common Add-ons:**
-- ➕ **Additional Documents:** $10 each (discounted from $15)
-- ➕ **Witness Sourcing:** $50 per witness provided by us.
-- ➕ **Extended Travel:** Standard mileage rates apply beyond 20 miles.
-- ➕ **Weekend & Holiday Service:** +$40
-
 ### 📚 Education Institution Package
 **Base Rate: $150/month**
 - Student ID verification services
@@ -226,14 +320,9 @@ In compliance with Texas Government Code:
 - Project-based billing
 - Emergency weekend service
 
-**Service Hours**: Follow Priority Service Hours (7am-9pm daily)
+**Service Hours**: Follow Extended Hours schedule (7am-9pm daily)
 
-### Payment Security Deposit
-| Service Type        | Hold Amount | Conditions               |
-|----------------------|-------------|--------------------------|
-| Essential Weekday    | $50         | All appointments         |
-| Priority Service     | $75         | After 5pm or >15 miles   |
-| Weekend/Holiday      | $100        | Applies to all bookings  |
+---
 
 **Texas Notary Fee Compliance**  
 | Notarial Act | Your Cost | Our Fee | Total | State Max |
@@ -241,59 +330,6 @@ In compliance with Texas Government Code:
 | First Signature | $6 | $69 | $75 | $10 |
 | Oath (Loan Closing) | $8 | $142 | $150 | $10 |
 
-## 🌐 Remote Online Notarization (RON) - Texas Compliant
+---
 
-### **RON Fee Structure (Texas Gov't Code §406.111 & §406.024)**
-
-**Statutory Fee Caps:**
-| Service Component | Texas Maximum | Our Fee |
-|-------------------|---------------|---------|
-| RON Service Fee (per notarization) | $25.00 | $25.00 |
-| Acknowledgment - First Signature | $10.00 | $10.00 |
-| Acknowledgment - Each Additional | $1.00 | $1.00 |
-| Oath/Affirmation | $10.00 | $10.00 |
-| Other Notarial Acts | $10.00 | $10.00 |
-
-### **RON Service Packages**
-
-#### 📋 Standard RON Acknowledgment
-**Base Rate: $35.00**
-- RON Service Fee: $25.00
-- First Signature: $10.00
-- **Additional Signers**: +$1.00 each
-
-#### 🤝 RON Oath/Affirmation
-**Base Rate: $35.00**
-- RON Service Fee: $25.00
-- Oath Fee: $10.00
-
-#### 🏢 RON Business Documents
-**Starting at: $35.00**
-- Multiple documents may require separate notarizations
-- Each notarization: $25.00 RON + applicable notarial fees
-
-### **RON Compliance Features**
-✅ Identity Verification (Credential Analysis)  
-✅ Knowledge-Based Authentication (KBA)  
-✅ Secure Audio-Video Recording  
-✅ Electronic Seal & Signature  
-✅ 5-Year Record Retention  
-✅ Permanent Fee Book Documentation  
-
-### **What's Included - No Extra Charges**
-- Document upload/download
-- Session recording
-- Electronic seal application
-- Digital certificate verification
-- Secure document delivery
-
-### **RON Restrictions per Texas Law**
-❌ No technology surcharges beyond $25 RON fee  
-❌ No travel fees (remote service)  
-❌ No platform or convenience fees  
-❌ No document handling fees  
-
-### 🏡 Loan Signing Services
-**$150 Fee Breakdown**:
-- Notarial Fees: $14 (2 signatures @ $6+$1×8)
-- Service Fees: $136 (Document prep, travel, etc)
+*Last updated: January 2024. Pricing subject to change. All notary services performed in compliance with Texas Government Code.*

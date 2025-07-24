@@ -26,22 +26,43 @@ const CONFIG = {
 const SERVICE_GROUPS = {
   MOBILE_SERVICES: {
     name: 'Mobile Notary Services',
-    description: 'Professional mobile notary services at your location',
-    category: 'primary',
+    description: 'Professional mobile notary services throughout Houston metro',
+    category: 'mobile',
     services: [
+      {
+        id: 'QUICK_STAMP_LOCAL',
+        name: 'Quick-Stamp Local',
+        description: 'Fast & simple local signings for routine documents',
+        price: 50.00,
+        duration: 30,
+        features: [
+          '≤1 document notarization',
+          '≤2 stamps included',
+          '1 signer included',
+          '10-mile travel radius',
+          '9am-5pm weekdays',
+          'Perfect for simple documents'
+        ],
+        calendarId: process.env.GHL_STANDARD_NOTARY_CALENDAR_ID,
+        tags: ['Service:Quick_Stamp_Local', 'service:quick_stamp_local'],
+        workflows: {
+          booking: process.env.GHL_BOOKING_CONFIRMATION_WORKFLOW_ID,
+          reminder: process.env.GHL_24HR_REMINDER_WORKFLOW_ID
+        }
+      },
       {
         id: 'STANDARD_NOTARY',
         name: 'Standard Mobile Notary',
-        description: '9am-5pm Mon-Fri, up to 2 documents, 1-2 signers, 15-mile travel included',
+        description: 'Professional notary service for routine documents during business hours',
         price: 75.00,
         duration: 60,
         features: [
-          'Business hours availability',
-          'Up to 2 documents',
-          '1-2 signers included',
-          '15-mile travel radius',
-          'Same-day available (before 3pm)',
-          'Professional notary seal'
+          '≤4 documents included',
+          '≤2 signers included',
+          '20-mile travel radius',
+          '9am-5pm weekdays',
+          'Professional notary service',
+          'Same-day available (before 3pm)'
         ],
         calendarId: process.env.GHL_STANDARD_NOTARY_CALENDAR_ID,
         tags: ['Service:Standard_Mobile_Notary', 'service:standard_mobile_notary'],
@@ -52,19 +73,19 @@ const SERVICE_GROUPS = {
       },
       {
         id: 'EXTENDED_HOURS',
-        name: 'Extended Hours Notary',
-        description: '7am-9pm Daily, up to 5 documents, 2 signers, 20-mile travel included',
+        name: 'Extended Hours Mobile',
+        description: 'Flexible scheduling & same-day service for urgent needs',
         price: 100.00,
         duration: 90,
         features: [
-          'Extended 7am-9pm availability',
-          'Daily including weekends',
-          'Up to 5 documents',
-          '2 signers included',
-          '20-mile travel radius',
-          'Same-day guarantee',
+          '≤4 documents included',
+          '≤2 signers included',
+          '30-mile travel radius',
+          '7am-9pm daily',
+          'Flexible scheduling',
+          'Same-day service available',
           'Evening appointments',
-          'Urgent service available'
+          'Weekend availability'
         ],
         calendarId: process.env.GHL_EXTENDED_HOURS_CALENDAR_ID,
         tags: ['Service:Extended_Hours_Notary', 'service:extended_hours_notary'],
@@ -77,17 +98,17 @@ const SERVICE_GROUPS = {
       {
         id: 'LOAN_SIGNING',
         name: 'Loan Signing Specialist',
-        description: 'Flat fee service - unlimited documents for single session, up to 4 signers, 90-minute session',
+        description: 'Expert real estate closings with comprehensive package',
         price: 150.00,
         duration: 120,
         features: [
-          'Loan document expertise',
-          'Unlimited documents per session',
-          'Up to 4 signers',
-          '90-minute session',
-          'Title company coordination',
-          '20-mile travel radius',
-          'Real estate experience',
+          'Single package (unlimited documents within session)',
+          '≤4 signers included',
+          'Print 2 sets included',
+          '≤2 hours table time',
+          'FedEx drop included',
+          'Expert real estate closings',
+          '30-mile travel radius',
           'By appointment scheduling'
         ],
         calendarId: process.env.GHL_LOAN_SIGNING_SPECIALIST_CALENDAR_ID,
@@ -108,8 +129,8 @@ const SERVICE_GROUPS = {
       {
         id: 'RON_SERVICES',
         name: 'Remote Online Notarization',
-        description: 'Secure remote notarization from anywhere, available 24/7',
-        price: 35.00,
+        description: 'Secure online notarization from anywhere, available 24/7',
+        price: 25.00,
         duration: 45,
         features: [
           '24/7 availability',
@@ -119,7 +140,7 @@ const SERVICE_GROUPS = {
           'Secure digital process',
           'Immediate availability',
           'Proof.com platform',
-          'Texas-compliant ($25 RON + $10 notarial)'
+          'Texas-compliant ($25 session + $5 per seal)'
         ],
         calendarId: process.env.GHL_BOOKING_CALENDAR_ID,
         tags: ['Service:RON', 'service:ron'],
@@ -130,51 +151,50 @@ const SERVICE_GROUPS = {
       }
     ]
   },
-  
-  SPECIALTY_SERVICES: {
-    name: 'Specialty & Business Services',
-    description: 'Specialized notary services and business solutions',
-    category: 'specialty',
+
+  BUSINESS_SERVICES: {
+    name: 'Business Subscription Plans',
+    description: 'Monthly business solutions for ongoing notary needs',
+    category: 'business',
     services: [
       {
-        id: 'BUSINESS_SOLUTIONS',
-        name: 'Business Subscription Services',
-        description: 'Monthly business subscriptions with RON seals and mobile discounts',
+        id: 'BUSINESS_ESSENTIALS',
+        name: 'Business Essentials Plan',
+        description: 'Monthly business subscription with RON services',
         price: 125.00,
         duration: 0, // Subscription service
         features: [
-          'Monthly subscription model',
-          'Up to 10 RON seals included',
+          'Up to 10 RON seals/month',
           '10% off mobile rates',
-          'Priority support',
-          'Business-focused service',
-          'Dedicated account management'
+          'Priority scheduling',
+          'Business support',
+          'Monthly billing',
+          'Overage: $5 per additional seal'
         ],
-        calendarId: null, // No calendar for subscriptions
-        tags: ['Service:Business_Solutions', 'service:business_client'],
+        calendarId: process.env.GHL_BOOKING_CALENDAR_ID,
+        tags: ['Service:Business_Essentials', 'service:business_essentials'],
         workflows: {
-          booking: process.env.GHL_NEW_CONTACT_WORKFLOW_ID
+          booking: process.env.GHL_BOOKING_CONFIRMATION_WORKFLOW_ID
         }
       },
       {
-        id: 'EMERGENCY_SERVICE',
-        name: 'Emergency/Rush Service',
-        description: 'Same-day emergency notary services with expedited processing',
-        price: 125.00,
-        duration: 60,
+        id: 'BUSINESS_GROWTH',
+        name: 'Business Growth Plan',
+        description: 'Premium monthly business subscription',
+        price: 349.00,
+        duration: 0, // Subscription service
         features: [
-          'Same-day emergency service',
-          'Rush processing available',
-          'Immediate response',
-          'After-hours availability',
-          'Priority scheduling',
-          'Urgent document handling'
+          'Up to 40 RON seals/month',
+          '10% off mobile rates',
+          '1 free loan signing',
+          'Premium business support',
+          'Monthly billing',
+          'Overage: $4 per additional seal'
         ],
-        calendarId: process.env.GHL_EXTENDED_HOURS_CALENDAR_ID,
-        tags: ['Service:Emergency', 'service:emergency', 'extended-hours-notary:same_day'],
+        calendarId: process.env.GHL_BOOKING_CALENDAR_ID,
+        tags: ['Service:Business_Growth', 'service:business_growth'],
         workflows: {
-          booking: process.env.GHL_EMERGENCY_SERVICE_WORKFLOW_ID,
-          reminder: process.env.GHL_24HR_REMINDER_WORKFLOW_ID
+          booking: process.env.GHL_BOOKING_CONFIRMATION_WORKFLOW_ID
         }
       }
     ]

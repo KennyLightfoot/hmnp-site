@@ -25,26 +25,27 @@ export const UNIFIED_SERVICE_CONFIG = {
   QUICK_STAMP_LOCAL: {
     basePrice: 50,
     maxDocuments: 1,
+    maxStamps: 2,
     includedRadius: 10,
     feePerMile: 0.50,
     description: "Fast & simple local signings",
-    features: ["Quick service", "1 document", "10-mile radius"]
+    features: ["Quick service", "1 document", "2 stamps", "10-mile radius"]
   },
   STANDARD_NOTARY: {
     basePrice: 75,
-    maxDocuments: 2,
-    includedRadius: 30,
+    maxDocuments: 4,
+    includedRadius: 20,
     feePerMile: 0.50,
     description: "Professional notary service for routine documents",
-    features: ["Up to 2 documents", "1-2 signers", "30-mile radius"]
+    features: ["Up to 4 documents", "1-2 signers", "20-mile radius"]
   },
   EXTENDED_HOURS: {
     basePrice: 100,
-    maxDocuments: 5,
+    maxDocuments: 4,
     includedRadius: 30,
     feePerMile: 0.50,
     description: "Extended availability for urgent and after-hours needs",
-    features: ["Up to 5 documents", "2 signers", "7am-9pm daily", "30-mile radius"]
+    features: ["Up to 4 documents", "1-2 signers", "7am-9pm daily", "30-mile radius"]
   },
   LOAN_SIGNING: {
     basePrice: 150,
@@ -52,15 +53,16 @@ export const UNIFIED_SERVICE_CONFIG = {
     includedRadius: 30,
     feePerMile: 0.50,
     description: "Specialized loan document signing with expertise",
-    features: ["Unlimited documents", "Up to 4 signers", "Loan expertise", "30-mile radius"]
+    features: ["Single package", "Up to 4 signers", "Loan expertise", "30-mile radius", "2 hours table time"]
   },
   RON_SERVICES: {
-    basePrice: 35,
+    basePrice: 25,
+    sealPrice: 5,
     maxDocuments: 10,
     includedRadius: 0, // No travel for RON
     feePerMile: 0,
     description: "24/7 Remote Online Notarization services",
-    features: ["24/7 availability", "Up to 10 documents", "No travel required", "Texas-compliant"]
+    features: ["24/7 availability", "Up to 10 documents", "No travel required", "Texas-compliant", "$25 session + $5 per seal"]
   },
   BUSINESS_ESSENTIALS: {
     basePrice: 125,
@@ -99,9 +101,9 @@ export const PRICING_MULTIPLIERS = {
     loyalty: { amount: 0, percentage: 0.2, label: "Loyalty customer", description: "Discount for repeat customers (5+ bookings)" }
   },
   extraDocumentFees: {
-    QUICK_STAMP_LOCAL: 10,
-    STANDARD_NOTARY: 5,
-    EXTENDED_HOURS: 7,
+    QUICK_STAMP_LOCAL: 5, // Extra stamp fee
+    STANDARD_NOTARY: 10,
+    EXTENDED_HOURS: 10,
     LOAN_SIGNING: 0, // Unlimited
     RON_SERVICES: 5,
     BUSINESS_ESSENTIALS: 3,

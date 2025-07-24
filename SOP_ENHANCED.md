@@ -24,17 +24,20 @@
 ### 1.1 Required Information
 - ☑️ Full legal name(s) of signer(s) and verifying government-issued ID
 - ☑️ Document type(s) and count
-- ☑️ Service type (Standard Notary, Extended Hours Notary, Loan Signing Specialist, RON Services, Specialty Notary Services)
+- ☑️ Service type (Quick-Stamp Local, Standard Mobile Notary, Extended Hours Mobile, Loan Signing Specialist, RON Services, Business Subscription)
 - ☑️ Physical address of signing location (or Remote for RON)
 - ☑️ **Available appointment windows**:
-  - Standard Notary: 9am-5pm Mon-Fri (Base: up to 2 documents, 1-2 signers, 20-mile travel included)
-  - Extended Hours Notary: 7am-9pm Daily (Base: up to 5 documents, 2 signers, 30-mile travel included). Also for urgent/same-day needs during standard hours.
-  - Loan Signing Specialist: By appointment (Flat fee service)
-  - **RON Services: 24/7 availability** (Remote Online Notarization - no travel required)
+  - **Quick-Stamp Local**: 9am-5pm Mon-Fri (Base: ≤1 document, ≤2 stamps, 1 signer, 10-mile travel included)
+  - **Standard Mobile Notary**: 9am-5pm Mon-Fri (Base: ≤4 documents, ≤2 signers, 20-mile travel included)
+  - **Extended Hours Mobile**: 7am-9pm Daily (Base: ≤4 documents, ≤2 signers, 30-mile travel included). Also for urgent/same-day needs during standard hours.
+  - **Loan Signing Specialist**: By appointment (Flat fee service - single package, ≤4 signers, 2 hours table time)
+  - **RON Services**: 24/7 availability (Remote Online Notarization - $25/session + $5/seal)
 
 ### 1.2 Service Area & Verification
-- **Primary Service Area (Standard Notary)**: 20-mile radius from ZIP code 77591
-- **Primary Service Area (Extended Hours Notary)**: 30-mile radius from ZIP code 77591
+- **Quick-Stamp Local**: 10-mile radius from ZIP code 77591
+- **Standard Mobile Notary**: 20-mile radius from ZIP code 77591
+- **Extended Hours Mobile**: 30-mile radius from ZIP code 77591
+- **Loan Signing Specialist**: 30-mile radius from ZIP code 77591
 - **Extended Travel Fee**: Beyond primary service area, $0.50/mile fee applies.
 - **Automated Distance Calculation**: System automatically calculates travel distance using Google Maps API
 - **Real-time Pricing Updates**: Live quote updates based on location, urgency, and service selections
@@ -49,7 +52,7 @@
 - **Mobile-first Design**: PWA-ready responsive interface
 
 ### 1.3 Appointment Requirements
-- Same-day Standard Notary services (if capacity allows, otherwise guide to Extended Hours):
+- Same-day Standard Mobile Notary services (if capacity allows, otherwise guide to Extended Hours):
   - Cutoff time: 3pm for 5pm appointments (subject to availability)
   - Requires credit card guarantee
 - **Automated Booking Confirmations**: Email/SMS confirmations sent immediately
@@ -71,17 +74,17 @@ During each appointment, conduct a "Quick Overview" (formerly "5-Minute Walkthro
 9. Business cards and marketing materials  
 
 ### 2.2 Loan Signing Protocols
-- Loan Signing Specialist Fee: $150 Flat Fee (includes unlimited documents for a single signing session, up to 4 signers, 90-minute session).
+- **Loan Signing Specialist Fee**: $150 Flat Fee (includes single package, ≤4 signers, 2 hours table time, print 2 sets, FedEx drop)
 - Strictly prohibited from explaining loan terms
 - Require title company contact verification
 - Maintain $100k E&O insurance
 
 ### 2.3 Remote Online Notarization (RON) Protocols ✅ FULLY OPERATIONAL
 **Texas-Compliant RON Services:**
-- **RON Standard Acknowledgment**: $35 ($25 RON fee + $10 acknowledgment per TX Gov't Code §406.111 & §406.024)
-- **RON Oath/Affirmation**: $35 ($25 RON fee + $10 oath fee)
-- **RON Business Documents**: Starting at $35 (pricing per notarization)
-- **Additional Signers**: +$1 each (Texas maximum compliance)
+- **RON Session Fee**: $25 per session
+- **RON Seal Fee**: $5 per seal
+- **Additional Signers**: +$10 each
+- **Total Example**: 1 signer, 2 seals = $25 + $10 = $35
 
 **RON Platform Features:**
 - Proof.com integration for secure sessions
@@ -115,7 +118,7 @@ Texas Maximums for Notarial Acts (these are for individual acts, distinct from o
 | Acknowledgments | $10    |
 | Jurats       | $10    |
 | Oaths        | $10    |
-*Our service package fees (e.g., Standard Notary, Loan Signing Specialist) bundle these with travel, convenience, and other operational costs. The $150 Loan Signing Specialist fee is a flat package rate.*
+*Our service package fees (e.g., Standard Mobile Notary, Loan Signing Specialist) bundle these with travel, convenience, and other operational costs. The $150 Loan Signing Specialist fee is a flat package rate.*
 *Extended Travel Fee listed separately if applicable.*
 
 ### 3.4 Record Retention
@@ -169,9 +172,10 @@ Texas Maximums for Notarial Acts (these are for individual acts, distinct from o
 ## 8. Business Operations
 
 ### 8.1 Service Hours
-- **Standard Notary:** 9am-5pm (Mon-Fri)
-- **Extended Hours Notary:** 7am-9pm (Daily)
-- **After-Hours Approval (Outside Extended Hours Window):** Requires 24-hour notice and $30 surcharge
+- **Quick-Stamp Local**: 9am-5pm (Mon-Fri)
+- **Standard Mobile Notary**: 9am-5pm (Mon-Fri)
+- **Extended Hours Mobile**: 7am-9pm (Daily)
+- **After-Hours Approval (Outside Extended Hours Window)**: Requires 24-hour notice and $30 surcharge
 
 ### 8.2 Booking & Communication Automation
 - Automatic email/SMS confirmations sent immediately after booking
@@ -185,7 +189,7 @@ Texas Maximums for Notarial Acts (these are for individual acts, distinct from o
 ### 8.4 Transparent Pricing
 - All fees clearly listed on website and booking form
 - Instant fee calculator available for clients
-- Standard Notary starts at $75; Extended Hours Notary is $100 flat; Loan Signing Specialist is $150 flat
+- Quick-Stamp Local starts at $50; Standard Mobile Notary is $75; Extended Hours Mobile is $100; Loan Signing Specialist is $150 flat
 
 ### 8.5 Service Area Enforcement
 - Distance from ZIP code 77591 automatically calculated

@@ -13,26 +13,26 @@ import { z } from 'zod';
 // ============================================================================
 
 export const BUSINESS_RULES_CONFIG = {
-  
   // Service Area Rules (Based on business decisions)
   serviceArea: {
-    maxDistance: 60, // "absolute maximum you'll travel? like 60 miles"
-    zonePricing: false, // "Do you want different rates? no"
-    extendedServiceAvailable: true, // "Do you offer service beyond normal areas for extra fees? yes"
-    weatherCancellations: 'manual', // "i will manually cancel and reach out on extreme weather"
-    notaryLocationImpact: false, // "How does notary location affect service area? it doesnt"
-    
-    // Zone definitions for GHL tagging
-    zones: {
-      houston_metro: { min: 0, max: 30, tag: 'service_area:houston_metro' },
-      extended_range: { min: 30, max: 50, tag: 'service_area:extended_range' },
-      maximum_range: { min: 50, max: 60, tag: 'service_area:maximum_range' }
-    }
+    baseLocation: '77591', // "Pearland, TX"
+    maxServiceRadius: 60, // "60 miles max"
+    travelFeeRate: 0.50, // "$0.50 per mile"
+    freeRadiusByService: {
+      QUICK_STAMP_LOCAL: 10,
+      STANDARD_NOTARY: 20,
+      EXTENDED_HOURS: 30,
+      LOAN_SIGNING: 30,
+      RON_SERVICES: 0
+    },
+    weatherSurcharge: 0.65, // "$0.65 per mile during severe weather"
+    tollReimbursement: true, // "we reimburse tolls"
+    emergencyRadiusOverride: true // "suspend radius limits during emergencies"
   },
 
   // Document Limits Rules (Based on business decisions)
   documentLimits: {
-    extraDocumentFee: 7, // "we should have additional pricing for docs over the alloted amount in the tier, like $5-10"
+    extraDocumentFee: 10, // "we should have additional pricing for docs over the alloted amount in the tier, like $5-10"
     restrictedDocuments: ['HELOC'] as string[], // "HELOC, I dont have an office space for it"
     exceptionHandling: 'manual_contact', // "will be to have them reach out to me"
     communicationStyle: 'clear_upfront', // "we should use clear language and be upfront"
@@ -40,9 +40,9 @@ export const BUSINESS_RULES_CONFIG = {
     
     // Service-specific limits (from existing system)
     serviceLimits: {
-      QUICK_STAMP_LOCAL: { base: 1, extraFee: 5 },
-      STANDARD_NOTARY: { base: 2, extraFee: 7 },
-      EXTENDED_HOURS: { base: 5, extraFee: 7 },
+      QUICK_STAMP_LOCAL: { base: 1, extraFee: 5, maxStamps: 2 },
+      STANDARD_NOTARY: { base: 4, extraFee: 10 },
+      EXTENDED_HOURS: { base: 4, extraFee: 10 },
       LOAN_SIGNING: { base: 999, extraFee: 0 }, // unlimited
       RON_SERVICES: { base: 10, extraFee: 5 }
     }
@@ -210,7 +210,7 @@ export const GHL_INTEGRATION_MAPPING = {
 // ============================================================================
 
 export const ServiceAreaValidationSchema = z.object({
-  distance: z.number().min(0).max(BUSINESS_RULES_CONFIG.serviceArea.maxDistance),
+  distance: z.number().min(0).max(BUSINESS_RULES_CONFIG.serviceArea.maxServiceRadius),
   address: z.string().min(1),
   serviceType: z.string(),
   coordinates: z.object({

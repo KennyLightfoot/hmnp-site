@@ -16,10 +16,11 @@ export const SERVICES = {
   QUICK_STAMP_LOCAL: {
     price: 50,
     hours: "9am-5pm Mon-Fri",
-    included: "≤ 1 doc, 1 signer, 10-mile travel",
+    included: "≤1 doc, ≤2 stamps, 1 signer, 10-mile travel",
     sameDayCutoff: "15:00", // 3pm
     description: "Fast & simple local signings",
     maxDocuments: 1,
+    maxStamps: 2,
     includedRadius: 10, // Short radius for quick local service
     feePerMile: 0.50
   },
@@ -27,38 +28,39 @@ export const SERVICES = {
   STANDARD_NOTARY: {
     price: 75,
     hours: "9am-5pm Mon-Fri",
-    included: "Up to 2 docs, 1-2 signers, 30-mile travel",
+    included: "≤4 docs, ≤2 signers, 20-mile travel",
     sameDayCutoff: "15:00", // 3pm
     description: "Professional notary service for routine documents",
-    maxDocuments: 2,
-    includedRadius: 30, // UNIVERSAL 30-MILE FREE RADIUS
+    maxDocuments: 4,
+    includedRadius: 20, // Standard 20-mile radius
     feePerMile: 0.50
   },
   
   EXTENDED_HOURS: {
     price: 100,
     hours: "7am-9pm Daily", 
-    included: "Up to 5 docs, 2 signers, 30-mile travel",
+    included: "≤4 docs, ≤2 signers, 30-mile travel",
     features: ["urgent", "same-day", "evening"],
     description: "Extended availability for urgent and after-hours needs",
-    maxDocuments: 5,
-    includedRadius: 30, // UNIVERSAL 30-MILE FREE RADIUS
+    maxDocuments: 4,
+    includedRadius: 30, // Extended 30-mile radius
     feePerMile: 0.50
   },
   
   LOAN_SIGNING: {
     price: 150,
     hours: "By appointment",
-    included: "Unlimited docs, up to 4 signers, 30-mile travel",
+    included: "Single package, ≤4 signers, 30-mile travel, 2 hours table time",
     requirements: ["title company verification"],
     description: "Specialized loan document signing with expertise",
-    maxDocuments: 999,
-    includedRadius: 30, // UNIVERSAL 30-MILE FREE RADIUS  
+    maxDocuments: 999, // Unlimited within session
+    includedRadius: 30, // Standard 30-mile radius
     feePerMile: 0.50
   },
   
   RON_SERVICES: {
-    price: 35, // $25 RON + $10 notarial (Texas compliance)
+    price: 25, // Session fee only
+    sealPrice: 5, // Per seal fee
     hours: "24/7 availability",
     included: "Remote service, no travel required",
     platform: "Proof.com integration",

@@ -289,20 +289,23 @@ export async function updateContact(contactData: { id: string, [key: string]: an
 // SOP COMPLIANT: Get monetary value for service types
 export function getServiceValue(serviceType: string, numberOfSigners: number): number {
   switch (serviceType) {
+    case "quick-stamp-local":
+      // SOP: $50 base, 10-mile radius, 9am-5pm Mon-Fri
+      return 50 + (numberOfSigners > 1 ? (numberOfSigners - 1) * 10 : 0);
     case "standard-notary":
-      // SOP: $75 base, 15-mile radius, 9am-5pm Mon-Fri
+      // SOP: $75 base, 20-mile radius, 9am-5pm Mon-Fri
       if (numberOfSigners === 1) return 75;
-      if (numberOfSigners === 2) return 85;
-      if (numberOfSigners === 3) return 95;
-      return 100; // 4+ signers
+      if (numberOfSigners === 2) return 80;
+      return 85; // 3+ signers
     case "extended-hours-notary":
-      // SOP: $100 flat fee, 20-mile radius, 7am-9pm Daily
-      return 100 + (numberOfSigners > 2 ? (numberOfSigners - 2) * 10 : 0);
+      // SOP: $100 flat fee, 30-mile radius, 7am-9pm Daily
+      return 100 + (numberOfSigners > 2 ? (numberOfSigners - 2) * 5 : 0);
     case "loan-signing-specialist":
-      // SOP: $150 flat fee, unlimited docs, up to 4 signers
+      // SOP: $150 flat fee, single package, up to 4 signers
       return 150;
-    case "specialty-notary-service":
-      return 75;
+    case "ron-services":
+      // SOP: $25 session + $5 per seal
+      return 25;
     case "business-solutions":
       return 125;
     case "support-service":

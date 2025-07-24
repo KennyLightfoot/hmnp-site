@@ -50,12 +50,13 @@ Looking for transparent pricing on mobile notary services in Houston? You've com
 
 ## Standard Service Packages
 
-### 🏠 **Quick-Stamp Local - $50**
+### 🚀 **Quick-Stamp Local - $50**
 *Perfect for simple, local documents*
 
 **What's Included:**
-- ✅ 1 document notarization
-- ✅ 1 signer
+- ✅ ≤1 document notarization
+- ✅ ≤2 stamps
+- ✅ 1 signer included
 - ✅ Travel within 10 miles of 77591
 - ✅ Monday-Friday, 9am-5pm
 - ✅ Standard scheduling (48-hour notice)
@@ -67,7 +68,8 @@ Looking for transparent pricing on mobile notary services in Houston? You've com
 - Basic document notarization
 
 **Additional Costs:**
-- Extra documents: $10 each
+- Extra stamps: $5 each
+- Extra signers: $10 each
 - Beyond 10 miles: $0.50/mile
 
 ---
@@ -76,9 +78,9 @@ Looking for transparent pricing on mobile notary services in Houston? You've com
 *Our most popular service for routine notarizations*
 
 **What's Included:**
-- ✅ Up to 2 documents
-- ✅ 1-2 signers
-- ✅ Travel within 30 miles of 77591
+- ✅ ≤4 documents included
+- ✅ ≤2 signers included
+- ✅ Travel within 20 miles of 77591
 - ✅ Monday-Friday, 9am-5pm
 - ✅ Professional service binder
 
@@ -89,8 +91,8 @@ Looking for transparent pricing on mobile notary services in Houston? You've com
 - Business agreements
 
 **Additional Costs:**
-- Extra documents: $5 each
-- Additional signers: $10 each
+- Extra documents: $10 each
+- Additional signers: $5 each
 - Weekend service: +$40
 
 ---
@@ -99,12 +101,11 @@ Looking for transparent pricing on mobile notary services in Houston? You've com
 *For urgent needs and flexible scheduling*
 
 **What's Included:**
-- ✅ Up to 5 documents
-- ✅ 2 signers included
+- ✅ ≤4 documents included
+- ✅ ≤2 signers included
 - ✅ Travel within 30 miles of 77591
 - ✅ 7am-9pm daily availability
-- ✅ 2-hour response time
-- ✅ Priority scheduling
+- ✅ Flexible scheduling & same-day service
 
 **Best For:**
 - Urgent documents
@@ -113,8 +114,10 @@ Looking for transparent pricing on mobile notary services in Houston? You've com
 - Business clients
 
 **Additional Costs:**
-- Extra signers: $10 each
-- Same-day service: +$25
+- Same-day service: +$25 (after 3pm)
+- Night service (9pm-7am): +$50
+- Extra documents: $10 each
+- Extra signers: $5 each
 
 ---
 
@@ -122,13 +125,12 @@ Looking for transparent pricing on mobile notary services in Houston? You've com
 *Comprehensive loan document expertise*
 
 **What's Included:**
-- ✅ Unlimited loan documents
-- ✅ Up to 4 signers
-- ✅ Travel within 30 miles of 77591
-- ✅ 90-minute appointment window
-- ✅ Professional closing binder
-- ✅ Document prep and organization
-- ✅ Title company coordination
+- ✅ Single package (unlimited documents within session)
+- ✅ ≤4 signers included
+- ✅ Print 2 sets included
+- ✅ ≤2 hours table time
+- ✅ FedEx drop included
+- ✅ Expert real estate closings
 
 **Best For:**
 - Mortgage closings
@@ -137,8 +139,35 @@ Looking for transparent pricing on mobile notary services in Houston? You've com
 - Reverse mortgages
 
 **Additional Costs:**
-- Express return shipping: $35
+- Rush print: +$20
+- Scan-back: +$15
 - Extended travel (30+ miles): $0.50/mile
+
+---
+
+### 🌐 **Remote Online Notarization (RON) - $25/session + $5/seal**
+*Secure online notarization from anywhere*
+
+**What's Included:**
+- ✅ Credential Analysis included
+- ✅ KBA verification included
+- ✅ Audio-video recording
+- ✅ Texas statewide service
+- ✅ 24/7 availability
+
+**Best For:**
+- Remote clients
+- Urgent notarizations
+- Business documents
+- After-hours needs
+
+**Additional Costs:**
+- Extra signers: $10 each
+
+**Example Pricing:**
+- 1 signer, 1 seal: $25 + $5 = $30
+- 1 signer, 2 seals: $25 + $10 = $35
+- 2 signers, 2 seals: $25 + $10 + $10 = $45
 
 ---
 
@@ -148,7 +177,9 @@ Understanding travel fees is crucial for calculating your total cost. Here's exa
 
 ### **Free Travel Zones**
 - **Quick-Stamp Local:** 10 miles from 77591 (Pearland)
-- **All Other Services:** 30 miles from 77591 (Pearland)
+- **Standard Mobile Notary:** 20 miles from 77591 (Pearland)
+- **Extended Hours Mobile:** 30 miles from 77591 (Pearland)
+- **Loan Signing Specialist:** 30 miles from 77591 (Pearland)
 
 ### **Travel Fee Calculation**
 **Rate:** $0.50 per mile (one-way) beyond free zone
@@ -156,15 +187,15 @@ Understanding travel fees is crucial for calculating your total cost. Here's exa
 **Example Calculations:**
 
 **Houston Downtown (20 miles from 77591):**
-- Standard Mobile Notary: $75 (no travel fee - within 30 miles)
-- Quick-Stamp Local: $75 + $5 travel fee = $80 total
+- Standard Mobile Notary: $75 (no travel fee - within 20 miles)
+- Quick-Stamp Local: $50 + $5 travel fee = $55 total
 
 **Sugar Land (15 miles from 77591):**
 - All services: No travel fee (within all free zones)
 
 **Galveston (35 miles from 77591):**
-- Standard Mobile Notary: $75 + $2.50 travel fee = $77.50 total
-- (35 miles - 30 mile free zone = 5 miles × $0.50 = $2.50)
+- Standard Mobile Notary: $75 + $7.50 travel fee = $82.50 total
+- (35 miles - 20 mile free zone = 15 miles × $0.50 = $7.50)
 
 **Katy (40 miles from 77591):**
 - Extended Hours Mobile: $100 + $5 travel fee = $105 total
@@ -175,13 +206,14 @@ Understanding travel fees is crucial for calculating your total cost. Here's exa
 ## Additional Fees Explained
 
 ### **Time-Based Fees**
-- **Same-Day Service:** +$25 (requests made day-of)
+- **Same-Day Service:** +$25 (requests made after 3pm)
 - **Weekend Service:** +$40 (Saturday/Sunday)
 - **Holiday Service:** +$50 (Federal holidays)
-- **After-Hours Premium:** +$30 (before 7am or after 9pm)
+- **Night Service:** +$50 (9pm-7am)
 
 ### **Document Fees**
-- **Extra Documents:** $5-$10 each (varies by service)
+- **Extra Documents:** $10 each (varies by service)
+- **Extra Stamps:** $5 each (Quick-Stamp service)
 - **Color Printing:** $1.00 per page
 - **Certified Copies:** $10 per document
 - **Faxing/Scanning:** $5 per document
@@ -226,7 +258,7 @@ Understanding travel fees is crucial for calculating your total cost. Here's exa
 - You want the most affordable option
 
 ### **Choose Standard Mobile ($75) If:**
-- You have 1-2 documents
+- You have 1-4 documents
 - You need flexible scheduling
 - You want professional service
 - You're anywhere in Houston metro
@@ -243,6 +275,12 @@ Understanding travel fees is crucial for calculating your total cost. Here's exa
 - You need loan signing expertise
 - You want comprehensive service
 
+### **Choose RON ($25+$5) If:**
+- You need remote service
+- You have urgent timeline
+- You're outside our travel area
+- You prefer online convenience
+
 ---
 
 ## How We Calculate Your Total Cost
@@ -254,7 +292,7 @@ Select the package that best fits your needs
 Distance from 77591 minus free travel zone × $0.50
 
 ### **Step 3: Add Time-Based Fees**
-Same-day (+$25), weekend (+$40), etc.
+Same-day (+$25), weekend (+$40), night (+$50), etc.
 
 ### **Step 4: Count Extra Services**
 Additional documents, signers, printing, etc.
@@ -262,20 +300,26 @@ Additional documents, signers, printing, etc.
 ### **Step 5: Apply Discounts**
 First-time customer (10% off), referral discount, etc.
 
-### **Real Example Calculation:**
+### **Real Example Calculations:**
 
 **Client in Sugar Land needs 3 documents signed on Saturday:**
 - Base Service (Standard Mobile): $75
 - Travel Fee: $0 (Sugar Land is 15 miles - within free zone)
-- Extra Document: $5 (3rd document)
+- Extra Document: $10 (3rd document)
 - Weekend Fee: $40
-- **Total: $120**
+- **Total: $125**
 
 **Client in Downtown Houston needs urgent loan signing:**
 - Base Service (Loan Signing): $150
 - Travel Fee: $0 (20 miles - within free zone)
 - Same-Day Fee: $25
 - **Total: $175**
+
+**Client needs RON service with 2 signers, 2 seals:**
+- Session Fee: $25
+- Seal Fees: $10 (2 seals)
+- Extra Signer: $10
+- **Total: $45**
 
 ---
 
@@ -298,6 +342,12 @@ First-time customer (10% off), referral discount, etc.
 
 ### **Q: Can I get a quote before booking?**
 **A:** Absolutely! Call us at **(832) 617-4285** or use our online booking system for an instant quote.
+
+### **Q: What's the difference between Quick-Stamp and Standard service?**
+**A:** Quick-Stamp is for simple, single documents within 10 miles. Standard service covers more documents, more signers, and a larger travel area.
+
+### **Q: How does RON pricing work?**
+**A:** RON is $25 per session plus $5 per seal. So 1 signer with 2 seals = $35 total. Additional signers are $10 each.
 
 ---
 
