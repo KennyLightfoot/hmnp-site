@@ -1,6 +1,4 @@
 import Bull from 'bull';
-import { createRedisClient } from '../redis';
-import { logger } from '../logger';
 
 // Default job options for all queues
 const defaultJobOptions = {
@@ -23,9 +21,9 @@ export enum QueueName {
 // Queue configuration with connection info
 const createQueue = (name: string) => {
   try {
-    const redisClient = createRedisClient();
+    const redisOptions = { url: process.env.REDIS_URL || "redis://localhost:6379", maxRetriesPerRequest: null, enableReadyCheck: false };
     return new Bull(name, {
-      redis: redisClient,
+      redis: redisOptions,
       defaultJobOptions,
     });
   } catch (error) {
