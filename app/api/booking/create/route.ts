@@ -9,7 +9,7 @@ import { processBookingJob } from '@/lib/bullmq/booking-processor';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const validatedData = bookingSchemas.createBooking.parse(body);
+    const validatedData = bookingSchemas.createBookingMinimal.parse(body);
 
     const service = await prisma.service.findUnique({
       where: { id: validatedData.serviceId },
