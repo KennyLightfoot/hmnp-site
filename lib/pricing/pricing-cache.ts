@@ -66,8 +66,11 @@ export class PricingCacheService {
    */
   static async initialize(): Promise<boolean> {
     try {
-      if (process.env.REDIS_URL) {
-        this.redis = new Redis(process.env.REDIS_URL);
+      const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
+      if (redisUrl) {
+        this.redis = new Redis(redisUrl, {
+          password: process.env.UPSTASH_REDIS_REST_TOKEN || undefined,
+        });
         await this.redis.ping();
         console.log('✅ Pricing cache initialized with Redis');
         return true;
