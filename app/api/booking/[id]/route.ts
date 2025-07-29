@@ -9,9 +9,9 @@ const paramsSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = request.nextUrl.pathname.split('/').pop();
+  const { id } = await params;
 
   log.info(`[API] Received request for booking details for id: ${id}`);
 

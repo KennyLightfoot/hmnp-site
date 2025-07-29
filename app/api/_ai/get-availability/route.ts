@@ -54,11 +54,23 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // At this point calendarId is guaranteed to be defined since getCalendarIdForService 
+    // either returns a string or throws an error (which we handle above)
+
     // Get the date for the requested datetime
     const requestedDate = requestedDateTime.toISOString().split('T')[0]; // YYYY-MM-DD
 
+    // Validate requestedDate is properly extracted
+    if (!requestedDate) {
+      return NextResponse.json({
+        error: 'Failed to extract date from requested datetime',
+        requestedDateTime: requestedDateTime.toISOString()
+      }, { status: 500 });
+    }
+
     // Fetch available slots from GHL for that day
-    const ghlResponse = await getCalendarSlots(calendarId, requestedDate, requestedDate);
+    // Both calendarId and requestedDate are now guaranteed to be defined
+    const ghlResponse = await getCalendarSlots(calendarId!, requestedDate, requestedDate);
 
     // Extract slots from response
     let slots = [];

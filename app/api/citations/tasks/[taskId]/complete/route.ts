@@ -3,10 +3,10 @@ import { citationTracker } from '@/lib/citations/citation-tracker';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { taskId: string } }
+  { params }: { params: Promise<{ taskId: string }> }
 ) {
   try {
-    const { taskId } = params;
+    const { taskId } = await params;
     
     if (!taskId) {
       return NextResponse.json(

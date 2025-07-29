@@ -8,6 +8,8 @@ import { processBookingJob } from '@/lib/bullmq/booking-processor';
 import { ServiceType } from '@prisma/client';
 import { z } from 'zod';
 
+export const BookingSchema = bookingSchemas.createBookingFromForm;
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

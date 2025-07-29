@@ -841,3 +841,27 @@ export async function updateContactCustomFields(contactId: string, customFields:
     throw error;
   }
 }
+
+// Export the ghl object with commonly used methods
+export const ghl = {
+  createContact: async (contactData: any) => {
+    return await upsertContact(contactData);
+  },
+  createAppointment: async (appointmentData: any) => {
+    // Basic appointment creation using GHL API
+    if (!appointmentData.locationId) {
+      appointmentData.locationId = getCleanLocationId();
+    }
+    
+    console.log('Creating GHL appointment:', appointmentData);
+    
+    try {
+      const response = await callGhlApi('/calendars/events/appointments', 'POST', appointmentData);
+      console.log('GHL appointment created successfully:', response?.id);
+      return response;
+    } catch (error: any) {
+      console.error('Error creating GHL appointment:', error);
+      throw new Error(`Failed to create appointment: ${error.message}`);
+    }
+  }
+};

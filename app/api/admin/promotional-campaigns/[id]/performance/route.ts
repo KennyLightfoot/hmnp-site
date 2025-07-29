@@ -26,10 +26,10 @@ const PerformanceQuerySchema = z.object({
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params; // Note: await is now required
     const { searchParams } = new URL(request.url);
     const query = PerformanceQuerySchema.parse(Object.fromEntries(searchParams));
 

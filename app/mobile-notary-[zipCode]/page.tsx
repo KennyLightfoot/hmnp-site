@@ -21,9 +21,9 @@ import {
 } from '@/lib/local-seo-data';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     zipCode: string;
-  };
+  }>;
 }
 
 // Generate static params for all ZIP codes
@@ -35,7 +35,8 @@ export async function generateStaticParams() {
 
 // Generate metadata for each ZIP code page
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const location = getLocationByZipCode(params.zipCode);
+  const { zipCode } = await params;
+  const location = getLocationByZipCode(zipCode);
   
   if (!location) {
     return {
@@ -80,8 +81,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default function ZipCodeLandingPage({ params }: PageProps) {
-  const location = getLocationByZipCode(params.zipCode);
+export default async function ZipCodeLandingPage({ params }: PageProps) {
+  const { zipCode } = await params;
+  const location = getLocationByZipCode(zipCode);
   
   if (!location) {
     notFound();

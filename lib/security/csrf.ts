@@ -265,3 +265,35 @@ export async function getCSRFToken(request: NextRequest): Promise<NextResponse> 
   const { token, response } = await getCSRFTokenForClient(request);
   return response;
 }
+
+import crypto from 'crypto';
+
+export function validateCSRFToken(token: string, userAgent: string, forwarded: string): boolean {
+  try {
+    if (!token) return false;
+    
+    const parts = token.split(':');
+    if (parts.length !== 3) return false;
+    
+    const [tokenValue, timestampStr, signature] = parts;
+    const timestamp = parseInt(timestampStr);
+    
+    // Check if token is expired (15 minutes)
+    if (Date.now() - timestamp > 15 * 60 * 1000) {
+      return false;
+    }
+    
+    // Verify signature
+    const payload = `${tokenValue}:${timestamp}`;
+    const expectedSignature = crypto
+      .createHmac('sha256', process.env.CSRF_SECRET || 'fallback-secret')
+      .update(`${payload}:${userAgent}:${forwarded}`)
+      .digest('hex');
+    
+    return signature === expectedSignature;
+    
+  } catch (error) {
+    console.error('[CSRF] Token validation failed:', error);
+    return false;
+  }
+}

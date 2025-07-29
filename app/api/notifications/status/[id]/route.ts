@@ -11,10 +11,11 @@ import { logger } from '@/lib/logger';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const notificationId = params.id;
+    const { id } = await params;
+    const notificationId = id;
 
     if (!notificationId) {
       return NextResponse.json({
@@ -138,7 +139,7 @@ export async function GET(
 
   } catch (error: any) {
     logger.error('Failed to get notification status', {
-      notificationId: params.id,
+      notificationId: id,
       error: error.message
     });
 
@@ -154,10 +155,11 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const notificationId = params.id;
+    const { id } = await params;
+    const notificationId = id;
     const body = await request.json();
     
     const { status, errorMessage, deliveryMetadata } = body;
@@ -200,7 +202,7 @@ export async function PUT(
 
   } catch (error: any) {
     logger.error('Failed to update notification status', {
-      notificationId: params.id,
+      notificationId: id,
       error: error.message
     });
 
