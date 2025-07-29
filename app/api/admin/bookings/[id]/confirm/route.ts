@@ -27,7 +27,7 @@ export async function POST(
       where: { id: bookingId },
       include: {
         User_Booking_signerIdToUser: true,
-        Service: true,
+        service: true,
       }
     });
 
@@ -58,7 +58,7 @@ export async function POST(
         clientId: booking.User_Booking_signerIdToUser?.id,
         recipientEmail: booking.User_Booking_signerIdToUser?.email,
         recipientName: booking.User_Booking_signerIdToUser?.name,
-        serviceName: booking.Service?.name,
+        serviceName: booking.service?.name,
         scheduledAt: booking.scheduledDateTime,
       });
     }
