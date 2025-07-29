@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
         signerId: (session.user as any).id
       },
       include: {
-        Service: true,
+        service: true,
         User_Booking_signerIdToUser: true,
       }
     });
