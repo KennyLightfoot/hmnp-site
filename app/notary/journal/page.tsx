@@ -41,7 +41,7 @@ interface JournalEntry {
   booking?: {
     id: string;
     signerName: string;
-    Service: {
+    service: {
       name: string;
     };
   };

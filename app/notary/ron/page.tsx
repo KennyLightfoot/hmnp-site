@@ -26,7 +26,7 @@ interface RONBooking {
   signerEmail: string;
   scheduledDateTime?: string;
   status: BookingStatus;
-  Service: {
+  service: {
     name: string;
     duration: number;
   };

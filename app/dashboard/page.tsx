@@ -39,7 +39,7 @@ export default async function CustomerDashboard() {
         }
       },
       include: {
-        Service: true,
+        service: true,
         ProofTransaction: true
       },
       orderBy: {
@@ -54,7 +54,7 @@ export default async function CustomerDashboard() {
         }
       },
       include: {
-        Service: true,
+        service: true,
         ProofTransaction: true
       },
       orderBy: {

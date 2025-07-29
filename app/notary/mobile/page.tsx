@@ -31,7 +31,7 @@ interface MobileBooking {
   addressZip?: string;
   scheduledDateTime?: string;
   status: BookingStatus;
-  Service: {
+  service: {
     name: string;
     duration: number;
   };
