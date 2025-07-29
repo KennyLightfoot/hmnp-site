@@ -410,19 +410,56 @@ export default function BookingForm({
     try {
       console.log('Submitting booking data:', data);
       
-      // Simulate API call with realistic timing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setSuccessMessage('Booking created successfully! Redirecting to payment...');
-      
-      // Delay before calling onComplete
-      setTimeout(() => {
-        onComplete?.(data);
-      }, 1000);
+      // Prepare booking payload for API
+      const bookingData: any = {
+        serviceType: data.serviceType,
+        customerName: data.customer.name,
+        customerEmail: data.customer.email,
+        scheduledDateTime: data.scheduling.preferredTime, // ISO string
+        timeZone: 'America/Chicago',
+        numberOfDocuments: data.serviceDetails?.documentCount || 1,
+        numberOfSigners: data.serviceDetails?.signerCount || 1
+      };
+
+      // Optional phone
+      if (data.customer.phone) {
+        bookingData.customerPhone = data.customer.phone;
+      }
+
+      // Address only for mobile services and when provided
+      if (data.serviceType !== 'RON_SERVICES' && data.location?.address) {
+        Object.assign(bookingData, {
+          locationType: 'OTHER',
+          addressStreet: data.location.address,
+          addressCity: data.location.city || 'Houston',
+          addressState: data.location.state || 'TX',
+          addressZip: data.location.zipCode || '77001'
+        });
+      }
+
+      // Use the same API endpoint as the simple form for consistency
+      const response = await fetch('/api/booking/ghl-direct', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bookingData)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setSuccessMessage('Booking created successfully! Redirecting to confirmation...');
+        
+        // Redirect to success page
+        setTimeout(() => {
+          window.location.href = `/booking/success?bookingId=${result.booking.id}`;
+        }, 1500);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Booking failed. Please try again.');
+      }
       
     } catch (error) {
       console.error('Booking submission failed:', error);
-      setErrorMessage('Booking failed. Please check your information and try again.');
+      setErrorMessage(error instanceof Error ? error.message : 'Booking failed. Please check your information and try again.');
       onError?.(error);
     } finally {
       setIsSubmitting(false);

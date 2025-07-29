@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true
-  },
+  // Remove TypeScript ignore - enable proper type checking
+  // typescript: {
+  //   ignoreBuildErrors: true
+  // },
   eslint: {
     ignoreDuringBuilds: true
   },
@@ -35,6 +36,12 @@ const nextConfig = {
       'date-fns',
       'zustand'
     ],
+    
+    // Modern Next.js 15 features
+    serverComponentsExternalPackages: ['@prisma/client'],
+    serverActions: {
+      bodySizeLimit: '2mb'
+    },
     
     // Keep only stable features
     reactCompiler: false,
@@ -141,7 +148,7 @@ const nextConfig = {
     return config;
   },
   
-  // Headers for performance
+  // Headers for performance and security
   async headers() {
     return [
       {
@@ -158,6 +165,14 @@ const nextConfig = {
           {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
           },
         ],
       },
@@ -176,6 +191,15 @@ const nextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/api/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate',
           },
         ],
       },

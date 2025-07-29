@@ -103,24 +103,24 @@
   ],
   "shortcuts": [
     {
-      "name": "Enhanced Booking",
-      "short_name": "Book Enhanced",
-      "description": "Advanced booking with real-time pricing",
-      "url": "/booking/enhanced",
+      "name": "Book Appointment",
+      "short_name": "Book Now",
+      "description": "Quick book notary appointment",
+      "url": "/booking",
       "icons": [{ "src": "/icons/shortcut-book.svg", "sizes": "96x96" }]
     },
     {
       "name": "Standard Notary",
       "short_name": "Standard",
       "description": "Quick book standard notary service",
-      "url": "/booking/enhanced?service=standard-notary",
+      "url": "/booking?service=standard-notary",
       "icons": [{ "src": "/icons/shortcut-book.svg", "sizes": "96x96" }]
     },
     {
       "name": "Loan Signing",
       "short_name": "Loan Docs",
       "description": "Quick book loan signing specialist",
-      "url": "/booking/enhanced?service=loan-signing",
+      "url": "/booking?service=loan-signing",
       "icons": [{ "src": "/icons/shortcut-bookings.svg", "sizes": "96x96" }]
     },
     {
@@ -132,7 +132,7 @@
     }
   ],
   "share_target": {
-    "action": "/booking/enhanced",
+    "action": "/booking",
     "method": "GET",
     "params": {
       "title": "service",

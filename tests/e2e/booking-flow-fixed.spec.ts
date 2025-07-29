@@ -49,8 +49,8 @@ test.describe('Booking Flow Integration', () => {
   });
 
   test('enhanced booking flow should work', async ({ page }) => {
-    // Navigate to enhanced booking
-    await page.goto('/booking/enhanced');
+    // Navigate to main booking page
+    await page.goto('/booking');
     
     // Wait for services to load
     await page.waitForSelector('.cursor-pointer', { timeout: 10000 });

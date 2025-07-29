@@ -1,10 +1,10 @@
 /**
- * Simple Booking Page - Houston Mobile Notary Pros
- * Back to basics: Clear, functional booking form
+ * Enhanced Booking Page - Houston Mobile Notary Pros
+ * Advanced booking form with enhanced features and better UX
  */
 
 import { Metadata } from 'next';
-import SimpleBookingForm from '@/components/booking/SimpleBookingForm';
+import BookingForm from '@/components/booking/BookingForm';
 
 export const metadata: Metadata = {
   title: 'Book Your Notary Appointment | Houston Mobile Notary Pros',
@@ -14,55 +14,77 @@ export const metadata: Metadata = {
 
 export default function BookingPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       <div className="container mx-auto px-4 py-8">
-        {/* Page Header */}
+        {/* Enhanced Page Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Book Your Notary Appointment
           </h1>
-          <p className="text-lg text-gray-600 mb-4">
-            Professional mobile notary services in Houston
+          <p className="text-xl text-gray-600 mb-6 max-w-2xl mx-auto">
+            Professional mobile notary services in Houston with AI assistance, real-time pricing, 
+            and intelligent scheduling recommendations.
           </p>
           
-          {/* Key Benefits */}
-          <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-700 mb-6">
-            <div className="flex items-center space-x-1">
-              <span className="text-green-600">✓</span>
-              <span>$100K Insured</span>
+          {/* Enhanced Benefits */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+              <div className="text-blue-600 text-2xl mb-2">🤖</div>
+              <h3 className="font-semibold text-gray-800 mb-2">AI Assistant</h3>
+              <p className="text-sm text-gray-600">Get intelligent recommendations and instant answers</p>
             </div>
-            <div className="flex items-center space-x-1">
-              <span className="text-green-600">✓</span>
-              <span>4.9/5 Rating</span>
+            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+              <div className="text-green-600 text-2xl mb-2">💰</div>
+              <h3 className="font-semibold text-gray-800 mb-2">Real-time Pricing</h3>
+              <p className="text-sm text-gray-600">See exact costs with no hidden fees</p>
             </div>
-            <div className="flex items-center space-x-1">
-              <span className="text-green-600">✓</span>
-              <span>Same-Day Available</span>
+            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+              <div className="text-purple-600 text-2xl mb-2">⚡</div>
+              <h3 className="font-semibold text-gray-800 mb-2">Smart Scheduling</h3>
+              <p className="text-sm text-gray-600">AI-powered availability recommendations</p>
             </div>
           </div>
         </div>
 
-        {/* Simple Booking Form */}
-        <SimpleBookingForm />
+        {/* Enhanced Booking Form */}
+        <div className="max-w-4xl mx-auto">
+          <BookingForm />
+        </div>
         
-        {/* Trust Footer */}
-        <div className="mt-12 text-center">
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">
+        {/* Enhanced Trust Footer */}
+        <div className="mt-16 text-center">
+          <div className="bg-white rounded-xl p-8 shadow-lg border border-gray-200">
+            <h3 className="text-2xl font-bold text-gray-800 mb-6">
               Why Choose Houston Mobile Notary Pros?
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-              <div>
-                <strong className="text-gray-800">Licensed & Insured</strong><br />
-                Texas-licensed notary with $100,000 E&O insurance
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-blue-600 text-xl">🔒</span>
+                </div>
+                <strong className="text-gray-800 block mb-1">Licensed & Insured</strong>
+                <span className="text-gray-600">Texas-licensed with $100K E&O insurance</span>
               </div>
-              <div>
-                <strong className="text-gray-800">Proven Experience</strong><br />
-                Over 2,000 successful appointments with 4.9/5 rating
+              <div className="text-center">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-green-600 text-xl">⭐</span>
+                </div>
+                <strong className="text-gray-800 block mb-1">Proven Experience</strong>
+                <span className="text-gray-600">4.9/5 rating with 2,000+ appointments</span>
               </div>
-              <div>
-                <strong className="text-gray-800">Secure & Reliable</strong><br />
-                SSL encrypted booking with satisfaction guarantee
+              <div className="text-center">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-purple-600 text-xl">⚡</span>
+                </div>
+                <strong className="text-gray-800 block mb-1">Same-Day Available</strong>
+                <span className="text-gray-600">Quick response times and flexible scheduling</span>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-orange-600 text-xl">📱</span>
+                </div>
+                <strong className="text-gray-800 block mb-1">Mobile Optimized</strong>
+                <span className="text-gray-600">Perfect experience on any device</span>
               </div>
             </div>
           </div>

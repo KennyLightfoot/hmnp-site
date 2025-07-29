@@ -8,8 +8,8 @@ import { test, expect } from '@playwright/test';
 test.describe('Phase 1: Enhanced Booking Flows', () => {
   
   test.beforeEach(async ({ page }) => {
-    // Navigate to enhanced booking page
-    await page.goto('/booking/enhanced');
+    // Navigate to main booking page
+    await page.goto('/booking');
     
     // Wait for page to load
     await page.waitForLoadState('networkidle');
@@ -202,52 +202,71 @@ test.describe('Phase 1: Enhanced Booking Flows', () => {
     });
   });
 
-  test.describe('RON (Remote Online Notarization) Flow', () => {
+  test.describe('RON Booking Flow', () => {
     
-    test('should show "Coming Soon" for RON service', async ({ page }) => {
-      // Verify RON option is visible but disabled
-      await expect(page.locator('[data-testid="ron-service-card"]')).toBeVisible();
-      await expect(page.locator('text=Coming Soon')).toBeVisible();
-      await expect(page.locator('text=Remote Online Notarization')).toBeVisible();
+    test('should complete full RON booking flow', async ({ page }) => {
+      // Navigate to main booking page
+      await page.goto('/booking');
       
-      // Verify RON card is disabled (opacity reduced)
-      await expect(page.locator('[data-testid="ron-service-card"]')).toHaveClass(/opacity-60/);
+      // Wait for page to load
+      await page.waitForLoadState('networkidle');
       
-      // Verify RON features are listed
-      await expect(page.locator('text=No travel required')).toBeVisible();
-      await expect(page.locator('text=Flexible scheduling 24/7')).toBeVisible();
-      await expect(page.locator('text=Digital document handling')).toBeVisible();
+      // Step 1: Service Type Selection
+      await expect(page.locator('h1')).toContainText('Book Your Notary Appointment');
       
-      // Verify coming soon message
-      await expect(page.locator('text=RON services will be available in Phase 2')).toBeVisible();
-    });
-
-    test('should not allow RON selection when coming soon', async ({ page }) => {
-      // Try to click RON service card
-      await page.click('[data-testid="ron-service-card"]');
+      // Select RON service
+      const ronCard = page.locator('[data-testid="ron-service-card"]').first();
+      await expect(ronCard).toBeVisible();
+      await ronCard.click();
       
-      // Verify mobile service remains selected
-      await expect(page.locator('[data-testid="mobile-service-card"]')).toHaveClass(/border-\[#A52A2A\]/);
-      await expect(page.locator('[data-testid="ron-service-card"]')).not.toHaveClass(/border-\[#A52A2A\]/);
+      // Continue to next step
+      await page.click('button:has-text("Continue to Service Selection")');
       
-      // Verify selection indicator still shows mobile
-      await expect(page.locator('text=Mobile Notary selected')).toBeVisible();
-    });
-
-    test('should complete RON booking when feature flag enabled', async ({ page }) => {
-      // This test would run when RON is actually enabled in Phase 2
-      // For now, we'll skip it but keep the structure for future use
-      test.skip(!process.env.ENABLE_RON_TESTING, 'RON not yet available');
+      // Step 2: Service Selection
+      await expect(page.locator('text=Service Selection')).toBeVisible();
       
-      // Future test implementation:
-      // 1. Select RON service type
-      // 2. Choose RON-compatible service
-      // 3. Fill contact information
-      // 4. Skip location details (not needed for RON)
-      // 5. Upload documents
-      // 6. Schedule video session
-      // 7. Complete payment (no travel fees)
-      // 8. Verify RON session created
+      // Select RON Services
+      await page.click('[data-testid="service-ron-services"]');
+      await expect(page.locator('[data-testid="service-ron-services"]')).toHaveClass(/border-\[#A52A2A\]/);
+      
+      // Verify real-time pricing appears
+      await expect(page.locator('[data-testid="live-quote"]')).toBeVisible();
+      await expect(page.locator('text=Live Quote')).toBeVisible();
+      
+      await page.click('button:has-text("Next")');
+      
+      // Step 3: Contact Information
+      await page.fill('[data-testid="firstName"]', 'Jane');
+      await page.fill('[data-testid="lastName"]', 'Smith');
+      await page.fill('[data-testid="email"]', 'jane.smith@example.com');
+      await page.fill('[data-testid="phone"]', '555-987-6543');
+      
+      await page.click('button:has-text("Next")');
+      
+      // Step 4: Scheduling (RON - no location needed)
+      await expect(page.locator('text=Scheduling')).toBeVisible();
+      
+      // Select date and time
+      await page.click('[data-testid="date-picker"]');
+      await page.click('[data-testid="date-option"]');
+      
+      await page.click('[data-testid="time-slot"]');
+      
+      await page.click('button:has-text("Next")');
+      
+      // Step 5: Review & Confirm
+      await expect(page.locator('text=Review & Confirm')).toBeVisible();
+      
+      // Verify booking details
+      await expect(page.locator('text=RON Services')).toBeVisible();
+      await expect(page.locator('text=Jane Smith')).toBeVisible();
+      await expect(page.locator('text=jane.smith@example.com')).toBeVisible();
+      
+      // Submit booking
+      await page.click('button:has-text("Confirm Booking")');
+      
+      // Verify success
+      await expect(page.locator('text=Booking created successfully')).toBeVisible();
     });
   });
 
@@ -322,7 +341,7 @@ test.describe('Phase 1: Enhanced Booking Flows', () => {
     test('should load quickly and be responsive', async ({ page }) => {
       const startTime = Date.now();
       
-      await page.goto('/booking/enhanced');
+      await page.goto('/booking');
       await page.waitForLoadState('networkidle');
       
       const loadTime = Date.now() - startTime;
@@ -340,7 +359,7 @@ test.describe('Feature Flag Integration', () => {
   
   test('should respect LaunchDarkly feature flags', async ({ page }) => {
     // Test with RON disabled (default state)
-    await page.goto('/booking/enhanced');
+    await page.goto('/booking');
     await expect(page.locator('text=Coming Soon')).toBeVisible();
     
     // Future: Test with RON enabled via feature flag
@@ -351,7 +370,7 @@ test.describe('Feature Flag Integration', () => {
     // Mock network failure for feature flags
     await page.route('**/launchdarkly/**', route => route.abort());
     
-    await page.goto('/booking/enhanced');
+    await page.goto('/booking');
     
     // Should still work with default fallback values
     await expect(page.locator('[data-testid="mobile-service-card"]')).toBeVisible();

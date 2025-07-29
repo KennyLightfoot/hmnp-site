@@ -12,7 +12,7 @@
 The business rules engine needs to be integrated into **8 key areas** of your web app to provide comprehensive business logic enforcement and GHL automation.
 
 ### **Current System Analysis**
-- ✅ **Booking Forms**: `BookingForm.tsx` (multi-step) + `SimpleBookingForm.tsx` (single-page)
+- ✅ **Booking Forms**: `BookingForm.tsx` (enhanced multi-step)
 - ✅ **API Endpoints**: 10+ booking/pricing endpoints identified
 - ✅ **GHL Integration**: Existing contact/appointment creation
 - ✅ **Database Schema**: Prisma schema ready for business rules data
@@ -272,7 +272,7 @@ export async function POST(request: NextRequest) {
 ```
 🌐 USER INTERACTION
     ↓
-📱 BOOKING FORMS (BookingForm.tsx / SimpleBookingForm.tsx)
+📱 BOOKING FORMS (BookingForm.tsx)
     ↓ [Real-time validation]
 🔍 BUSINESS RULES ENGINE
     ↓ [Service area, document limits, pricing validation]
