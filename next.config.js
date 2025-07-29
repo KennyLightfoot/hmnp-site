@@ -25,6 +25,9 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   
+  // Modern Next.js 15 features - moved from experimental
+  serverExternalPackages: ['@prisma/client'],
+  
   experimental: {
     // Simplified experimental features to prevent conflicts
     webpackMemoryOptimizations: false, // Disable to prevent optimization conflicts
@@ -38,7 +41,6 @@ const nextConfig = {
     ],
     
     // Modern Next.js 15 features
-    serverComponentsExternalPackages: ['@prisma/client'],
     serverActions: {
       bodySizeLimit: '2mb'
     },
