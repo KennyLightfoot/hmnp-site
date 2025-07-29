@@ -22,32 +22,41 @@ export async function POST(
 
   try {
     // Try auto-completion first (this handles all the automation)
-    const autoResult = await BookingAutomationService.autoCompleteService(bookingId);
+    const autoCompleted = await BookingAutomationService.autoCompleteService({
+      bookingId: bookingId,
+      trigger: 'payment_complete', // Using payment_complete as general completion trigger for admin
+      metadata: {
+        completedBy: 'admin',
+        manual: true,
+        adminUserId: session.user.id
+      }
+    });
     
-    if (autoResult.success && autoResult.completed) {
+    if (autoCompleted) {
       return NextResponse.json({ 
         success: true, 
-        message: `Service auto-completed: ${autoResult.reason}`,
+        message: 'Service auto-completed successfully',
         method: 'automatic'
       });
     }
 
     // If auto-completion didn't work, use manual completion
-    const manualResult = await BookingAutomationService.manualCompleteService(
-      bookingId, 
-      session.user.name || 'Admin'
-    );
+    const manualCompleted = await BookingAutomationService.manualCompleteService({
+      bookingId: bookingId,
+      completedById: session.user.id || 'admin',
+      manualNotes: 'Manually completed by admin'
+    });
 
-    if (manualResult.success) {
+    if (manualCompleted) {
       return NextResponse.json({ 
         success: true, 
-        message: manualResult.message,
+        message: 'Booking completed manually',
         method: 'manual'
       });
     } else {
       return NextResponse.json({ 
         success: false, 
-        error: manualResult.message 
+        error: 'Failed to complete booking' 
       }, { status: 400 });
     }
     
