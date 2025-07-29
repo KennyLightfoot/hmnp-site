@@ -198,9 +198,9 @@ export default async function CustomerDashboard() {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      {getServiceIcon(booking.Service?.name || '')}
+                      {getServiceIcon(booking.service?.name || '')}
                       <div>
-                        <CardTitle className="text-lg">{booking.Service?.name || 'Notary Service'}</CardTitle>
+                        <CardTitle className="text-lg">{booking.service?.name || 'Notary Service'}</CardTitle>
                         <CardDescription className="flex items-center gap-2 mt-1">
                           <Clock className="h-3 w-3" />
                           {formatDateTime(booking.scheduledDateTime)}
@@ -214,7 +214,7 @@ export default async function CustomerDashboard() {
                   <div className="space-y-3">
                     {/* Location/Service Type */}
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      {booking.Service?.name?.toLowerCase().includes('ron') ? (
+                      {booking.service?.name?.toLowerCase().includes('ron') ? (
                         <>
                           <Smartphone className="h-3 w-3" />
                           Remote Online Notarization
@@ -252,7 +252,7 @@ export default async function CustomerDashboard() {
                             </Link>
                           </Button>
                         )}
-                        {booking.status === 'READY_FOR_SERVICE' && booking.Service?.name?.toLowerCase().includes('ron') && (
+                        {booking.status === 'READY_FOR_SERVICE' && booking.service?.name?.toLowerCase().includes('ron') && (
                           <Button size="sm" asChild>
                             <Link href={`/ron/session/${booking.id}`}>
                               <Smartphone className="h-3 w-3 mr-1" />
@@ -287,9 +287,9 @@ export default async function CustomerDashboard() {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      {getServiceIcon(booking.Service?.name || '')}
+                      {getServiceIcon(booking.service?.name || '')}
                       <div>
-                        <CardTitle className="text-lg">{booking.Service?.name || 'Notary Service'}</CardTitle>
+                        <CardTitle className="text-lg">{booking.service?.name || 'Notary Service'}</CardTitle>
                         <CardDescription className="flex items-center gap-2 mt-1">
                           <Clock className="h-3 w-3" />
                           {formatDateTime(booking.scheduledDateTime)}
@@ -303,7 +303,7 @@ export default async function CustomerDashboard() {
                   <div className="space-y-3">
                     {/* Location/Service Type */}
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      {booking.Service?.name?.toLowerCase().includes('ron') ? (
+                      {booking.service?.name?.toLowerCase().includes('ron') ? (
                         <>
                           <Smartphone className="h-3 w-3" />
                           Remote Online Notarization

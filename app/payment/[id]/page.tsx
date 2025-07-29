@@ -133,18 +133,18 @@ export default function PaymentPage() {
       return booking.depositAmount;
     }
     
-    if (booking.Service?.depositAmount) {
-      if (typeof booking.Service.depositAmount === 'number') {
-        return booking.Service.depositAmount;
+    if (booking.service?.depositAmount) {
+      if (typeof booking.service.depositAmount === 'number') {
+        return booking.service.depositAmount;
       }
-      if (booking.Service.depositAmount.toNumber) {
-        return booking.Service.depositAmount.toNumber();
+      if (booking.service.depositAmount.toNumber) {
+        return booking.service.depositAmount.toNumber();
       }
     }
     
     if (booking.finalPrice && typeof booking.finalPrice === 'number') {
       // If requires deposit, take 50% of final price
-      if (booking.Service?.requiresDeposit) {
+      if (booking.service?.requiresDeposit) {
         return Math.round(booking.finalPrice * 0.5);
       }
       return booking.finalPrice;
@@ -217,7 +217,7 @@ export default function PaymentPage() {
   }
 
   const paymentAmount = calculatePaymentAmount(booking);
-  const serviceName = booking.Service?.name || booking.service?.name || 'Notary Service';
+  const serviceName = booking.service?.name || 'Notary Service';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -264,7 +264,7 @@ export default function PaymentPage() {
                     ${paymentAmount.toFixed(2)}
                   </span>
                 </div>
-                {booking.Service?.requiresDeposit && (
+                {booking.service?.requiresDeposit && (
                   <p className="text-sm text-gray-600 mt-2">
                     This is a deposit payment. The remaining balance will be due at the time of service.
                   </p>

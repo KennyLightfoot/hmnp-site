@@ -457,7 +457,7 @@ export default function JournalAuditTrail() {
                 
                 {entry.booking && (
                   <div className="text-xs text-gray-500 pt-2 border-t">
-                    Linked to booking: {entry.booking.id.slice(-8)} - {entry.booking.Service.name}
+                    Linked to booking: {entry.booking.id.slice(-8)} - {entry.booking.service.name}
                   </div>
                 )}
               </CardContent>

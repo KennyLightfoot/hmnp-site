@@ -343,7 +343,7 @@ async function getRecentActivity() {
     recentBookings: recentBookings.map(booking => ({
       id: booking.id,
       customerName: booking.User_Booking_signerIdToUser?.name || 'Guest',
-      serviceName: booking.Service?.name || 'Unknown',
+      serviceName: booking.service?.name || 'Unknown',
       status: booking.status,
       amount: booking.priceAtBooking?.toNumber() || 0,
       createdAt: booking.createdAt
