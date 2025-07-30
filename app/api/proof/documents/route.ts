@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    logger.error('Failed to upload document to Proof:', error);
+    logger.error('Failed to upload document to Proof:', error instanceof Error ? error : new Error(String(error)));
     
     return NextResponse.json(
       { 
@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    logger.error('Failed to get Proof documents:', error);
+    logger.error('Failed to get Proof documents:', error instanceof Error ? error : new Error(String(error)));
     
     return NextResponse.json(
       { 

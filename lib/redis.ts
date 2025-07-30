@@ -130,7 +130,7 @@ class RedisClient {
     });
 
     this.client.on('error', (error) => {
-      logger.error('Redis connection error', error);
+      logger.error('Redis connection error', error instanceof Error ? error : new Error(String(error)));
       this.isConnected = false;
       this.scheduleReconnect();
     });

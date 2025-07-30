@@ -281,7 +281,7 @@ export class BullQueueWorker {
       
       return { success: true, booking: updatedBooking };
     } catch (error: any) {
-      logger.error(`Error confirming booking ${booking.id}:`, error);
+      logger.error(`Error confirming booking ${booking.id}:`, error instanceof Error ? error : new Error(String(error)));
       throw error;
     }
   }
@@ -322,7 +322,7 @@ export class BullQueueWorker {
       
       return { success: true, booking: updatedBooking };
     } catch (error: any) {
-      logger.error(`Error cancelling booking ${booking.id}:`, error);
+      logger.error(`Error cancelling booking ${booking.id}:`, error instanceof Error ? error : new Error(String(error)));
       throw error;
     }
   }
@@ -359,7 +359,7 @@ export class BullQueueWorker {
       
       return { success: true, booking: updatedBooking };
     } catch (error: any) {
-      logger.error(`Error rescheduling booking ${booking.id}:`, error);
+      logger.error(`Error rescheduling booking ${booking.id}:`, error instanceof Error ? error : new Error(String(error)));
       throw error;
     }
   }
@@ -842,7 +842,7 @@ export class BullQueueWorker {
       // Set up global event handlers for all queues
       [notificationsQueue, bookingProcessingQueue, paymentProcessingQueue].forEach(queue => {
         queue.on('error', (error) => {
-          logger.error(`Queue error in ${queue.name}:`, error);
+          logger.error(`Queue error in ${queue.name}:`, error instanceof Error ? error : new Error(String(error)));
         });
         
         queue.on('failed', (job, error) => {

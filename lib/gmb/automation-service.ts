@@ -120,7 +120,7 @@ export class GMBAutomationService {
       });
 
     } catch (error) {
-      logger.error('Failed to create service completion GMB post:', error);
+      logger.error('Failed to create service completion GMB post:', error instanceof Error ? error : new Error(String(error)));
       // Don't throw - we don't want to break the main workflow
     }
   }
@@ -176,7 +176,7 @@ export class GMBAutomationService {
       });
 
     } catch (error) {
-      logger.error('Failed to create review thank you GMB post:', error);
+      logger.error('Failed to create review thank you GMB post:', error instanceof Error ? error : new Error(String(error)));
       // Don't throw - we don't want to break the review workflow
     }
   }

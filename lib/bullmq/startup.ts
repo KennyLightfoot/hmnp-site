@@ -21,7 +21,7 @@ export async function initializeBullQueues(): Promise<boolean> {
     logger.info('Bull queue system initialized successfully');
     return true;
   } catch (error) {
-    logger.error('Failed to initialize Bull queue system:', error);
+    logger.error('Failed to initialize Bull queue system:', error instanceof Error ? error : new Error(String(error)));
     return false;
   }
 }
@@ -44,6 +44,6 @@ export async function shutdownBullQueues(): Promise<void> {
     
     logger.info('Bull queue system shutdown successfully');
   } catch (error) {
-    logger.error('Error during Bull queue system shutdown:', error);
+    logger.error('Error during Bull queue system shutdown:', error instanceof Error ? error : new Error(String(error)));
   }
 }

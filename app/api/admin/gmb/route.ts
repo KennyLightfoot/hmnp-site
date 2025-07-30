@@ -180,7 +180,7 @@ export async function POST(request: NextRequest) {
         }, { status: 400 });
     }
   } catch (error) {
-    logger.error('GMB admin POST error:', error);
+    logger.error('GMB admin POST error:', error instanceof Error ? error : new Error(String(error)));
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
@@ -218,7 +218,7 @@ export async function PUT(request: NextRequest) {
         }, { status: 400 });
     }
   } catch (error) {
-    logger.error('GMB admin PUT error:', error);
+    logger.error('GMB admin PUT error:', error instanceof Error ? error : new Error(String(error)));
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
@@ -253,7 +253,7 @@ export async function DELETE(request: NextRequest) {
       message: 'Post deletion recorded (GMB API does not support actual deletion)'
     });
   } catch (error) {
-    logger.error('GMB admin DELETE error:', error);
+    logger.error('GMB admin DELETE error:', error instanceof Error ? error : new Error(String(error)));
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'

@@ -153,7 +153,7 @@ Houston Mobile Notary Pros Team
     });
 
   } catch (error) {
-    logger.error('Failed to create Proof transaction:', error);
+    logger.error('Failed to create Proof transaction:', error instanceof Error ? error : new Error(String(error)));
     
     return NextResponse.json(
       { 
@@ -233,7 +233,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    logger.error('Failed to get Proof transaction:', error);
+    logger.error('Failed to get Proof transaction:', error instanceof Error ? error : new Error(String(error)));
     
     return NextResponse.json(
       { 
