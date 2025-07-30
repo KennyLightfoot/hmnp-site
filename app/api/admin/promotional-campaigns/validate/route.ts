@@ -246,7 +246,7 @@ export async function GET(request: NextRequest) {
         currentUses: 'desc'
       },
       include: {
-        usage: {
+        promo_code_usage: {
           where: {
             usedAt: {
               gte: startDate,
@@ -266,8 +266,8 @@ export async function GET(request: NextRequest) {
       name: campaign.name,
       currentUses: campaign.currentUses,
       maxUses: campaign.maxUses,
-      recentUsage: campaign.usage.length,
-      recentDiscount: campaign.usage.reduce((sum, usage) => sum + Number(usage.discountAmount), 0)
+      recentUsage: campaign.promo_code_usage.length,
+      recentDiscount: campaign.promo_code_usage.reduce((sum, usage) => sum + Number(usage.discountAmount), 0)
     }));
 
     return NextResponse.json({

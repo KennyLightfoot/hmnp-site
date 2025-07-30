@@ -37,7 +37,7 @@ export async function GET(
     const campaign = await prisma.promotionalCampaign.findUnique({
       where: { id },
       include: {
-        usage: {
+        promo_code_usage: {
           orderBy: { usedAt: 'desc' }
         }
       }
