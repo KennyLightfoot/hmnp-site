@@ -97,7 +97,7 @@ export async function GET(
 
     // Calculate conversion metrics
     const conversionRate = campaign.maxUses 
-      ? ((campaign.currentUses / campaign.maxUses) * 100).toFixed(2)
+      ? (((campaign.currentUses ?? 0) / campaign.maxUses) * 100).toFixed(2)
       : 'N/A';
 
     // Get recent usage details
@@ -128,10 +128,10 @@ export async function GET(
           uniqueCustomers,
           conversionRate,
           usageRate: campaign.maxUses 
-            ? `${campaign.currentUses}/${campaign.maxUses}`
-            : `${campaign.currentUses}/∞`,
+            ? `${campaign.currentUses ?? 0}/${campaign.maxUses}`
+            : `${campaign.currentUses ?? 0}/∞`,
           remainingUses: campaign.maxUses 
-            ? campaign.maxUses - campaign.currentUses 
+            ? campaign.maxUses - (campaign.currentUses ?? 0)
             : 'Unlimited'
         },
         timeSeriesData,
