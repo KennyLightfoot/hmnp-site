@@ -38,7 +38,7 @@ export async function GET(
       where: { id },
       include: {
         promo_code_usage: {
-          orderBy: { usedAt: 'desc' }
+          orderBy: { used_at: 'desc' }
         }
       }
     });
@@ -77,20 +77,20 @@ export async function GET(
     // Get usage data for the time range
     const usageData = await prisma.promoCodeUsageTracking.findMany({
       where: {
-        campaignId: id,
-        usedAt: {
+        campaign_id: id,
+        used_at: {
           gte: startDate,
           lte: now
         }
       },
-      orderBy: { usedAt: 'asc' }
+      orderBy: { used_at: 'asc' }
     });
 
     // Calculate overall metrics
     const totalUsage = usageData.length;
-    const totalDiscount = usageData.reduce((sum, usage) => sum + Number(usage.discountAmount), 0);
+    const totalDiscount = usageData.reduce((sum, usage) => sum + Number(usage.discount_amount), 0);
     const averageDiscount = totalUsage > 0 ? totalDiscount / totalUsage : 0;
-    const uniqueCustomers = new Set(usageData.map(u => u.customerEmail)).size;
+    const uniqueCustomers = new Set(usageData.map(u => u.customer_email)).size;
 
     // Group usage by time period
     const timeSeriesData = groupUsageByTime(usageData, query.granularity);
@@ -137,9 +137,9 @@ export async function GET(
         timeSeriesData,
         trends,
         recentUsage: recentUsage.map(usage => ({
-          customerEmail: usage.customerEmail,
-          discountAmount: usage.discountAmount,
-          usedAt: usage.usedAt
+          customerEmail: usage.customer_email,
+          discountAmount: usage.discount_amount,
+          usedAt: usage.used_at
         })),
         timeRange: query.timeRange,
         granularity: query.granularity
@@ -163,7 +163,7 @@ function groupUsageByTime(usageData: any[], granularity: string) {
   const grouped: { [key: string]: { count: number; discount: number } } = {};
 
   usageData.forEach(usage => {
-    const date = new Date(usage.usedAt);
+    const date = new Date(usage.used_at);
     let key: string;
 
     switch (granularity) {
@@ -187,7 +187,7 @@ function groupUsageByTime(usageData: any[], granularity: string) {
     }
 
     grouped[key].count++;
-    grouped[key].discount += Number(usage.discountAmount);
+    grouped[key].discount += Number(usage.discount_amount);
   });
 
   return Object.entries(grouped)
