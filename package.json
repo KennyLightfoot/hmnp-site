@@ -15,6 +15,7 @@
     "build:fast": "cross-env NODE_OPTIONS='--max-old-space-size=8192' SKIP_TYPE_CHECK=true prisma generate && cross-env NODE_OPTIONS='--max-old-space-size=8192' next build && next-sitemap",
     "vercel-build": "pnpm db:migrate && pnpm build",
     "type-check": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsc --noEmit",
+    "type-check:watch": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsc --noEmit --watch",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "security-audit": "pnpm audit && pnpm audit --audit-level moderate",

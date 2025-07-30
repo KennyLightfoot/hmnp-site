@@ -13,6 +13,9 @@ async function authenticate(request: NextRequest): Promise<boolean> {
   
   // Expected format: "Bearer [token]"
   const [type, token] = authHeader.split(' ');
+  if (!type || !token) {
+    return NextResponse.json({ error: 'Invalid authorization header' }, { status: 401 });
+  }
   
   if (type !== 'Bearer') {
     return false;

@@ -67,7 +67,7 @@ function calculateUrgency(date: string, time: string, serviceType: string): bool
 }
 
 function isPopularTime(time: string): boolean {
-  const hour = parseInt(time.split(':')[0]);
+  const hour = parseInt(time.split(':')[0]!);
   // Popular times: 9-11 AM, 1-3 PM
   return (hour >= 9 && hour <= 11) || (hour >= 13 && hour <= 15);
 }

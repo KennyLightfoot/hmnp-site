@@ -90,6 +90,9 @@ export async function authMiddleware(
     const authHeader = request.headers.get('authorization');
     if (authHeader?.startsWith('Bearer ')) {
       const token = authHeader.split(' ')[1];
+    if (!token) {
+      throw new Error('No token provided');
+    }
       
       try {
         if (!process.env.JWT_SECRET) {
