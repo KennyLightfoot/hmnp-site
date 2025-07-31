@@ -77,15 +77,6 @@ export const BUSINESS_RULES_CONFIG = {
         houston_metro: { multiplier: 1.0, freeRadius: 30 },
         extended_range: { multiplier: 1.2, freeRadius: 30 },
         maximum_range: { multiplier: 1.5, freeRadius: 30 }
-      },
-      promotionalPricing: {
-        stackingAllowed: false, // Only best discount applies
-        maxDiscountPercentage: 0.25, // 25% maximum discount
-        autoApplyBestDiscount: true,
-        customerTypeDiscounts: {
-          new: { percentage: 0.1, maxValue: 25 },
-          loyalty: { percentage: 0.2, maxValue: 50 }
-        }
       }
     }
   },

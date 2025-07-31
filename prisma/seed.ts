@@ -165,9 +165,7 @@ async function main() {
       console.log(`✅ Upserted business setting: ${setting.key}`);
     }
 
-    // Create promotional campaigns using Phase 3 structure
-    // console.log('🎫 Seeding Promotional Campaigns...');
-    // TODO: Fix promotional campaigns schema mapping later
+
 
     console.log(`🌱 Database seeding completed successfully!`);
     

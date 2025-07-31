@@ -43,13 +43,7 @@ const TIME_BASED_MULTIPLIERS = {
   holiday: { multiplier: 1.4, label: 'Holiday service', condition: 'holiday' }
 } as const;
 
-const PROMOTIONAL_DISCOUNTS = {
-  first_time_customer: { discount: 0.1, label: '10% First-Time Customer Discount' },
-  referral_discount: { discount: 0.15, label: '15% Referral Discount' },
-  bulk_booking: { discount: 0.05, label: '5% Bulk Booking Discount' },
-  loyalty_discount: { discount: 0.2, label: '20% Loyalty Customer Discount' },
-  promo_code: { discount: 0.0, label: 'Promo Code Discount' } // Variable based on code
-} as const;
+
 
 // ============================================================================
 // 📊 PRICING SCHEMAS
@@ -254,19 +248,11 @@ export class EnhancedPricingEngine {
         }
       }
 
-      // 5. Calculate Promotional Discounts
-      const promotionalResult = await this.calculatePromotionalPricing(
-        validatedRequest.customerType,
-        validatedRequest.referralCode,
-        validatedRequest.promoCode,
-        basePrice + travelFee + extraDocumentFees + urgencyFee,
-        validatedRequest.serviceType,
-        requestId
-      );
-      
-      discountAmount = promotionalResult.discountAmount;
-      breakdown.discounts = promotionalResult.discounts;
-      businessRules.discountsApplied = promotionalResult.discountsApplied;
+      // 5. Promotional Discounts (disabled)
+      // Promotional campaigns have been removed from the system
+      discountAmount = 0;
+      breakdown.discounts = [];
+      businessRules.discountsApplied = [];
       
       if (discountAmount > 0) {
         ghlActions.customFields.cf_discount_amount = discountAmount;
@@ -406,49 +392,7 @@ export class EnhancedPricingEngine {
     return fees;
   }
 
-  /**
-   * Calculate promotional pricing and discounts using the database-driven promotional pricing engine
-   */
-  private static async calculatePromotionalPricing(
-    customerType: 'new' | 'returning' | 'loyalty',
-    referralCode?: string,
-    promoCode?: string,
-    subtotal?: number,
-    serviceType?: string,
-    requestId?: string
-  ): Promise<{
-    discountAmount: number;
-    discounts: Array<{ amount: number; label: string; type?: string }>;
-    discountsApplied: string[];
-  }> {
-    // Use the database-driven promotional pricing engine
-    const { DatabasePromotionalPricingEngine } = await import('./promotional-pricing-db');
-    
-         const promotionalResult = await DatabasePromotionalPricingEngine.calculatePromotionalPricing({
-       serviceType: serviceType || 'STANDARD_NOTARY',
-       subtotal: subtotal || 0,
-       customer: {
-         customerType,
-         customerEmail: 'customer@example.com', // Placeholder email for pricing calculation
-         referralCode: referralCode || undefined,
-         previousBookingCount: customerType === 'loyalty' ? 5 : 0,
-         totalSpent: customerType === 'loyalty' ? 500 : 0,
-         lastBookingDate: customerType === 'returning' || customerType === 'loyalty' ? new Date() : undefined
-       },
-       promoCode,
-       requestId: requestId || `promo_${Date.now()}`
-     });
-    
-    return {
-      discountAmount: promotionalResult.totalDiscount,
-      discounts: promotionalResult.discounts.map(d => ({
-        amount: d.amount,
-        label: d.label,
-        type: d.type
-      })),
-      discountsApplied: promotionalResult.discounts.map(d => d.type)
-    };
-  }
+  
 }
 
 export default EnhancedPricingEngine; 

@@ -631,7 +631,7 @@ export class PricingEngine {
           ? 'After-hours, weekend, or priority service fees' 
           : undefined,
         discountSource: discounts > 0 
-          ? 'Customer loyalty and promotional discounts applied' 
+          ? 'Customer loyalty discounts applied' 
           : undefined
       }
     };

@@ -309,47 +309,9 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model PromotionalCampaign {
-  id                   String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code                 String                   @unique @db.VarChar(20)
-  name                 String                   @db.VarChar(100)
-  description          String?
-  type                 String                   @db.VarChar(20)
-  value                Decimal                  @db.Decimal(10, 2)
-  maxDiscount          Decimal?                 @map("max_discount") @db.Decimal(10, 2)
-  minOrderValue        Decimal?                 @map("min_order_value") @default(0) @db.Decimal(10, 2)
-  maxUses              Int?                     @map("max_uses")
-  currentUses          Int?                     @map("current_uses") @default(0)
-  serviceTypes         String[]                 @map("service_types")
-  customerTypes        String[]                 @map("customer_types")
-  validFrom            DateTime                 @map("valid_from")
-  validUntil           DateTime                 @map("valid_until")
-  isActive             Boolean                  @map("is_active") @default(true)
-  createdBy            String?                  @map("created_by") @db.Uuid
-  createdAt            DateTime                 @map("created_at") @default(now())
-  updatedAt            DateTime                 @map("updated_at") @default(now())
-  campaign_performance CampaignPerformance[]
-  promo_code_usage     PromoCodeUsageTracking[]
 
-  @@index([isActive], map: "promotional_campaigns_active_idx")
-  @@index([validFrom, validUntil], map: "promotional_campaigns_dates_idx")
-  @@map("promotional_campaigns")
-}
 
-model CampaignPerformance {
-  id                    String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  campaign_id           String              @db.Uuid
-  date                  DateTime            @db.Date
-  uses_count            Int?                @default(0)
-  total_discount        Decimal?            @default(0) @db.Decimal(10, 2)
-  revenue_generated     Decimal?            @default(0) @db.Decimal(10, 2)
-  bookings_count        Int?                @default(0)
-  created_at            DateTime            @default(now())
-  promotional_campaigns PromotionalCampaign @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
 
-  @@index([campaign_id, date], map: "campaign_performance_campaign_date_idx")
-  @@map("campaign_performance")
-}
 
 model BusinessRulesConfig {
   id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -379,19 +341,7 @@ model RuleChangeLog {
   @@map("rule_change_log")
 }
 
-model PromoCodeUsageTracking {
-  id                    String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  campaign_id           String              @db.Uuid
-  booking_id            String?             @db.Uuid
-  customer_email        String?             @db.VarChar(255)
-  discount_amount       Decimal             @db.Decimal(10, 2)
-  used_at               DateTime            @default(now())
-  promotional_campaigns PromotionalCampaign @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
 
-  @@index([booking_id], map: "promo_code_usage_booking_idx")
-  @@index([campaign_id], map: "promo_code_usage_campaign_idx")
-  @@map("promo_code_usage")
-}
 
 model BusinessSettings {
   id          String   @id @default(cuid())
