@@ -79,16 +79,16 @@ export async function processNotificationJob(job: NotificationJob): Promise<JobR
     }
   } catch (error) {
     logger.error(`Error processing notification job ${job.id || 'unknown'}:`, { 
-      error: error.message,
+      error: error instanceof Error ? error.message : String(error),
       jobDetails: job,
-      stack: error.stack
+      stack: error instanceof Error ? error.stack : undefined
     });
     
     return {
       success: false,
       jobId: job.id || `notification-${Date.now()}`,
       processedAt: new Date(),
-      error: error.message
+      error: error instanceof Error ? error.message : String(error)
     };
   }
 }

@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     // either returns a string or throws an error (which we handle above)
 
     // Get the date for the requested datetime
-    const requestedDate = requestedDateTime.toISOString().split('T')[0]; // YYYY-MM-DD
+    const requestedDate = requestedDateTime.toISOString().split('T')[0]!; // YYYY-MM-DD
 
     // Validate requestedDate is properly extracted
     if (!requestedDate) {

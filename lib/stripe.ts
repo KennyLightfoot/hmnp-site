@@ -37,7 +37,7 @@ if (!stripePublishableKey) {
 
 // Initialize Stripe with proper configuration
 export const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: '2025-05-28.basil', // Latest stable API version
+  apiVersion: '2025-06-30.basil', // Latest stable API version
   typescript: true,
   telemetry: false, // Disable telemetry for privacy
   maxNetworkRetries: 3,
@@ -102,7 +102,7 @@ export class StripeService {
         confirmation_method: params.confirmationMethod || STRIPE_CONFIG.confirmationMethod,
         capture_method: params.captureMethod || STRIPE_CONFIG.captureMethod,
         setup_future_usage: params.setupFutureUsage,
-        payment_method_types: STRIPE_CONFIG.paymentMethodTypes,
+        payment_method_types: [...STRIPE_CONFIG.paymentMethodTypes],
         automatic_payment_methods: {
           enabled: true,
           allow_redirects: 'never'
@@ -139,10 +139,10 @@ export class StripeService {
 
       if (existingCustomers.data.length > 0) {
         logger.info('Existing Stripe customer found', {
-          customerId: existingCustomers.data[0].id,
+          customerId: existingCustomers.data[0]?.id,
           email: params.email
         });
-        return existingCustomers.data[0];
+        return existingCustomers.data[0]!;
       }
 
       // Create new customer
@@ -299,7 +299,7 @@ export class StripeService {
     try {
       const setupIntent = await stripe.setupIntents.create({
         customer: customerId,
-        payment_method_types: STRIPE_CONFIG.paymentMethodTypes,
+        payment_method_types: [...STRIPE_CONFIG.paymentMethodTypes],
         usage: 'off_session'
       });
 
@@ -349,7 +349,7 @@ export const STRIPE_ERROR_TYPES = {
 } as const;
 
 // Helper to check if error is a Stripe error
-export const isStripeError = (error: any): error is Stripe.StripeError => {
+export const isStripeError = (error: any): error is Stripe.StripeRawError => {
   return error?.type?.startsWith?.('Stripe') || error?.code;
 };
 

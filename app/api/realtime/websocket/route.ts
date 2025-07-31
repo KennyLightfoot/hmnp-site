@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     return new Response('WebSocket upgrade initiated', { status: 200 });
     
   } catch (error) {
-    logger.error('WebSocket route error', { error: error.message });
+    logger.error('WebSocket route error', { error: error instanceof Error ? error.message : String(error) });
     return new Response('WebSocket error', { status: 500 });
   }
 }

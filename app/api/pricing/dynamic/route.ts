@@ -206,7 +206,7 @@ export async function POST(request: NextRequest) {
     logger.error('Dynamic pricing calculation failed', {
       error: error.message,
       stack: error.stack,
-      requestBody: body ? JSON.stringify(body).substring(0, 500) : 'No body'
+      requestBody: request.body ? JSON.stringify(request.body).substring(0, 500) : 'No body'
     });
 
     if (error instanceof z.ZodError) {
@@ -255,7 +255,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Return general pricing info for service type
-    const generalPricing = await getGeneralPricingInfo(serviceType!, zipCode);
+    const generalPricing = await getGeneralPricingInfo(serviceType!, zipCode || undefined);
     
     return NextResponse.json({
       success: true,

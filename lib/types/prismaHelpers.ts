@@ -8,7 +8,7 @@ import { Prisma } from '@prisma/client';
 
 export type BookingWithService = Prisma.BookingGetPayload<{
   include: {
-    Service: true;
+    service: true;
   };
 }>;
 
@@ -21,7 +21,7 @@ export type BookingWithUserAndService = Prisma.BookingGetPayload<{
 
 export type PaymentWithBooking = Prisma.PaymentGetPayload<{
   include: {
-    Booking: true;
+    booking: true;
   };
 }>;
 

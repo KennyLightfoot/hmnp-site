@@ -392,7 +392,7 @@ export class UnifiedScheduler {
         }
       },
       include: {
-        Booking: true
+        booking: true
       }
     });
     

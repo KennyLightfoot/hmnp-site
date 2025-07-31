@@ -33,7 +33,7 @@ export async function processPaymentJob(job: PaymentProcessingJob): Promise<JobR
         // Get booking to verify it exists
         const booking = await prisma.booking.findUnique({
           where: { id: job.bookingId },
-          include: { User_Booking_signerIdToUser: true, Service: true }
+          include: { User_Booking_signerIdToUser: true, service: true }
         });
         
         if (!booking) {
@@ -92,7 +92,7 @@ export async function processPaymentJob(job: PaymentProcessingJob): Promise<JobR
         // Get payment to verify it exists and is in valid state
         const payment = await prisma.payment.findUnique({
           where: { id: job.paymentId },
-          include: { Booking: true }
+          include: { booking: true }
         });
         
         if (!payment) {
@@ -374,16 +374,16 @@ export async function processPaymentJob(job: PaymentProcessingJob): Promise<JobR
     }
   } catch (error) {
     logger.error(`Error processing payment job ${job.id || 'unknown'}:`, { 
-      error: error.message,
+      error: error instanceof Error ? error.message : String(error),
       jobDetails: job,
-      stack: error.stack
+      stack: error instanceof Error ? error.stack : undefined
     });
     
     return {
       success: false,
       jobId: job.id || `payment-${Date.now()}`,
       processedAt: new Date(),
-      error: error.message
+      error: error instanceof Error ? error.message : String(error)
     };
   }
 }

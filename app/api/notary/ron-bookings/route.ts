@@ -45,8 +45,8 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             name: true,
-            duration: true,
-            price: true,
+            durationMinutes: true,
+            basePrice: true,
           },
         },
         User_Booking_signerIdToUser: {
@@ -54,7 +54,6 @@ export async function GET(request: NextRequest) {
             id: true,
             name: true,
             email: true,
-            phone: true,
           },
         },
         notary: {
@@ -76,17 +75,17 @@ export async function GET(request: NextRequest) {
       id: booking.id,
       signerName: booking.User_Booking_signerIdToUser?.name || 'Unknown',
       signerEmail: booking.User_Booking_signerIdToUser?.email || '',
-      signerPhone: booking.User_Booking_signerIdToUser?.phone,
+      signerPhone: null, // Phone field doesn't exist on User model,
       scheduledDateTime: booking.scheduledDateTime?.toISOString(),
       status: booking.status,
       service: {
-        name: booking.service.name,
-        duration: booking.service.duration,
+        name: booking.service?.name || 'Unknown Service',
+        duration: booking.service?.durationMinutes || 0,
       },
-      finalPrice: Number(booking.priceAtBooking || booking.service.price),
-      proofTransactionId: booking.proofTransactionId,
-      proofAccessLink: booking.proofAccessLink,
-      proofStatus: booking.proofStatus,
+      finalPrice: Number(booking.priceAtBooking || booking.service?.basePrice || 0),
+      proofTransactionId: null, // This property doesn't exist on booking model
+      proofAccessLink: null, // This property doesn't exist on booking model
+      proofStatus: null, // This property doesn't exist on booking model,
       notes: booking.notes,
       createdAt: booking.createdAt.toISOString(),
     }));

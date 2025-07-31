@@ -167,7 +167,7 @@ async function testPrismaRelationships(): Promise<TestResult> {
     const bookings = await prisma.booking.findMany({
       take: 1,
       include: {
-        Service: {
+        service: {
           select: { name: true }
         },
         User_Booking_signerIdToUser: {

@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     // 3. Find or create a RON service
     let ronService = await prisma.service.findFirst({
       where: { 
-        serviceType: 'SPECIALTY_NOTARY_SERVICE',
+        serviceType: 'SPECIALTY_NOTARY',
         name: { contains: 'Remote Online Notarization' }
       }
     });
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       ronService = await prisma.service.create({
         data: {
           name: 'Remote Online Notarization',
-          serviceType: 'SPECIALTY_NOTARY_SERVICE',
+          serviceType: 'SPECIALTY_NOTARY',
           durationMinutes: 60,
           basePrice: 50.00,
           isActive: true,
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
         serviceId: serviceId || ronService.id,
         status: BookingStatus.REQUESTED, // Maps from PENDING_CONFIRMATION
         locationType: LocationType.REMOTE_ONLINE_NOTARIZATION,
-        priceAtBooking: ronService.price,
+        priceAtBooking: ronService.basePrice,
         depositAmount: ronService.depositAmount,
         notes: notes || 'Remote Online Notarization session',
         // RON sessions don't have a specific scheduled time initially

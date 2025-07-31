@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
         status: 200,
         headers: {
           'Content-Type': 'text/csv',
-          'Content-Disposition': `attachment; filename="analytics-${period}-${startDate.toISOString().split('T')[0]}-to-${endDate.toISOString().split('T')[0]}.csv"`
+          'Content-Disposition': `attachment; filename="analytics-${period}-${startDate.toISOString().split('T')[0]!}-to-${endDate.toISOString().split('T')[0]!}.csv"`
         }
       });
     }

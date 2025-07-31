@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       console.log('Creating new contact for reviewer:', payload.reviewer_name);
       
       const newContactData = {
-        firstName: payload.reviewer_name.split(' ')[0]! || payload.reviewer_name,
+        firstName: payload.reviewer_name.split(' ')[0] || payload.reviewer_name,
         lastName: payload.reviewer_name.split(' ').slice(1).join(' ') || '',
         email: payload.reviewer_email || `${payload.review_id}@reviews.placeholder`,
         source: `Review_${payload.platform}`,

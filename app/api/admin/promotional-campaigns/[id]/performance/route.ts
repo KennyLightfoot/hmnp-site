@@ -179,7 +179,7 @@ function groupUsageByTime(usageData: any[], granularity: string) {
         key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         break;
       default:
-        key = date.toISOString().split('T')[0]!
+        key = date.toISOString().split('T')[0]!;
     }
 
     if (!grouped[key]) {

@@ -31,8 +31,8 @@ export async function GET(
             name: true,
             description: true,
             basePrice: true,
-            duration: true,
-            depositRequired: true,
+            durationMinutes: true,
+            requiresDeposit: true,
             depositAmount: true,
           },
         },
@@ -50,7 +50,7 @@ export async function GET(
             id: true,
             amount: true,
             status: true,
-            stripePaymentIntentId: true,
+            paymentIntentId: true,
             paidAt: true,
           },
         },
@@ -68,7 +68,7 @@ export async function GET(
     const formattedBooking = {
       id: booking.id,
       status: booking.status,
-      userId: booking.userId,
+      userId: booking.signerId, // Using signerId as closest equivalent to userId
       serviceId: booking.serviceId,
       locationType: booking.locationType,
       createdAt: booking.createdAt.toISOString(),
@@ -76,15 +76,15 @@ export async function GET(
       scheduledDateTime: booking.scheduledDateTime?.toISOString(),
       
       // Payment-related fields (what payment page expects)
-      totalAmount: booking.finalPrice ? Number(booking.finalPrice) : null,
-      finalPrice: booking.finalPrice ? Number(booking.finalPrice) : null,
-      basePrice: booking.basePrice ? Number(booking.basePrice) : null,
+      totalAmount: booking.priceAtBooking ? Number(booking.priceAtBooking) : null,
+      finalPrice: booking.priceAtBooking ? Number(booking.priceAtBooking) : null,
+      basePrice: booking.service?.basePrice ? Number(booking.service.basePrice) : null,
       depositAmount: booking.depositAmount ? Number(booking.depositAmount) : null,
       
       // Customer information
       customerName: booking.customerName,
       customerEmail: booking.customerEmail,
-      customerPhone: booking.customerPhone,
+      customerPhone: null, // customerPhone field doesn't exist on booking model,
       
       // Location information
       addressStreet: booking.addressStreet,
@@ -99,8 +99,8 @@ export async function GET(
         name: booking.service.name,
         description: booking.service.description,
         price: booking.service.basePrice ? Number(booking.service.basePrice) : null,
-        duration: booking.service.duration,
-        requiresDeposit: booking.service.depositRequired,
+        duration: booking.service.durationMinutes,
+        requiresDeposit: booking.service.requiresDeposit,
         depositAmount: booking.service.depositAmount ? Number(booking.service.depositAmount) : null,
       } : null,
       
@@ -110,8 +110,8 @@ export async function GET(
         name: booking.service.name,
         description: booking.service.description,
         price: booking.service.basePrice ? Number(booking.service.basePrice) : null,
-        duration: booking.service.duration,
-        requiresDeposit: booking.service.depositRequired,
+        duration: booking.service.durationMinutes,
+        requiresDeposit: booking.service.requiresDeposit,
         depositAmount: booking.service.depositAmount ? Number(booking.service.depositAmount) : null,
       } : null,
       
