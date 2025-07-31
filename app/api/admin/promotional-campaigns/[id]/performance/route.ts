@@ -220,22 +220,22 @@ function calculateTrends(usageData: any[], granularity: string) {
   const recent = timeSeriesData.slice(-2);
   const [previous, current] = recent;
 
-  // Calculate usage trend
-  const usageTrend = previous.count === 0 
-    ? (current.count > 0 ? 'up' : 'stable')
+  // Calculate usage trend - handle cases where previous might be undefined
+  const usageTrend = !previous || previous.count === 0 
+    ? (current?.count > 0 ? 'up' : 'stable')
     : current.count > previous.count ? 'up' : current.count < previous.count ? 'down' : 'stable';
   
-  const usagePercentage = previous.count === 0 
-    ? (current.count > 0 ? 100 : 0)
+  const usagePercentage = !previous || previous.count === 0 
+    ? (current?.count > 0 ? 100 : 0)
     : ((current.count - previous.count) / previous.count) * 100;
 
-  // Calculate discount trend
-  const discountTrend = previous.discount === 0 
-    ? (current.discount > 0 ? 'up' : 'stable')
+  // Calculate discount trend - handle cases where previous might be undefined
+  const discountTrend = !previous || previous.discount === 0 
+    ? (current?.discount > 0 ? 'up' : 'stable')
     : current.discount > previous.discount ? 'up' : current.discount < previous.discount ? 'down' : 'stable';
   
-  const discountPercentage = previous.discount === 0 
-    ? (current.discount > 0 ? 100 : 0)
+  const discountPercentage = !previous || previous.discount === 0 
+    ? (current?.discount > 0 ? 100 : 0)
     : ((current.discount - previous.discount) / previous.discount) * 100;
 
   return {
