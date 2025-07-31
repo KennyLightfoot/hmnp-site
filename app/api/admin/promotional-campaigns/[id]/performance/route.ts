@@ -223,20 +223,20 @@ function calculateTrends(usageData: any[], granularity: string) {
   // Calculate usage trend - handle cases where previous might be undefined
   const usageTrend = !previous || previous.count === 0 
     ? (current?.count > 0 ? 'up' : 'stable')
-    : current.count > previous.count ? 'up' : current.count < previous.count ? 'down' : 'stable';
+    : (current?.count || 0) > previous.count ? 'up' : (current?.count || 0) < previous.count ? 'down' : 'stable';
   
   const usagePercentage = !previous || previous.count === 0 
     ? (current?.count > 0 ? 100 : 0)
-    : ((current.count - previous.count) / previous.count) * 100;
+    : (((current?.count || 0) - previous.count) / previous.count) * 100;
 
   // Calculate discount trend - handle cases where previous might be undefined
   const discountTrend = !previous || previous.discount === 0 
     ? (current?.discount > 0 ? 'up' : 'stable')
-    : current.discount > previous.discount ? 'up' : current.discount < previous.discount ? 'down' : 'stable';
+    : (current?.discount || 0) > previous.discount ? 'up' : (current?.discount || 0) < previous.discount ? 'down' : 'stable';
   
   const discountPercentage = !previous || previous.discount === 0 
     ? (current?.discount > 0 ? 100 : 0)
-    : ((current.discount - previous.discount) / previous.discount) * 100;
+    : (((current?.discount || 0) - previous.discount) / previous.discount) * 100;
 
   return {
     usage: { trend: usageTrend, percentage: Math.round(usagePercentage) },
