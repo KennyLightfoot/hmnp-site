@@ -22,7 +22,7 @@ export async function GET() {
       { name: 'duration', query: `SELECT "duration" FROM "Service" LIMIT 1` },
     ];
     
-    const results = {};
+    const results: Record<string, string> = {};
     
     for (const test of testQueries) {
       try {
