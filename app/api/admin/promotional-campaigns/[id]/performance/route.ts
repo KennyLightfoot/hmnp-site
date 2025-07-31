@@ -186,8 +186,9 @@ function groupUsageByTime(usageData: any[], granularity: string) {
       grouped[key] = { count: 0, discount: 0 };
     }
 
-    grouped[key].count++;
-    grouped[key].discount += Number(usage.discount_amount);
+    const group = grouped[key]!;
+    group.count++;
+    group.discount += Number(usage.discount_amount);
   });
 
   return Object.entries(grouped)
