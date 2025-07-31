@@ -52,7 +52,7 @@ export async function GET() {
           isActive: true 
         }
       });
-      serviceTypeCheck[type] = {
+      serviceTypeCheck[type as keyof typeof serviceTypeCheck] = {
         count,
         status: count > 0 ? 'PASS' : 'FAIL'
       };

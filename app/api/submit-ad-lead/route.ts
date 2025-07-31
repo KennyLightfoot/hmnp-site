@@ -73,8 +73,8 @@ export async function POST(request: NextRequest) {
     // Process customFieldsFromProps
     if (customFieldsFromProps) {
       for (const key in customFieldsFromProps) {
-        if (GHL_CUSTOM_FIELDS[key]) {
-          ghlCustomFields.push({ id: GHL_CUSTOM_FIELDS[key], value: customFieldsFromProps[key] });
+        if (GHL_CUSTOM_FIELDS[key as keyof typeof GHL_CUSTOM_FIELDS]) {
+          ghlCustomFields.push({ id: GHL_CUSTOM_FIELDS[key as keyof typeof GHL_CUSTOM_FIELDS], value: customFieldsFromProps[key] });
         } else {
           console.warn(`No GHL Custom Field ID mapping found for prop: ${key}`);
         }

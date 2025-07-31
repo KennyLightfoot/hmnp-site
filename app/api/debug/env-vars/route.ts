@@ -16,21 +16,21 @@ export async function GET(request: NextRequest) {
       'QUICK_STAMP_LOCAL',
       'BUSINESS_ESSENTIALS',
       'BUSINESS_GROWTH'
-    ];
+    ] as const;
     
     const results: Record<string, any> = {};
     
     for (const serviceType of serviceTypes) {
       try {
         const calendarId = getCalendarIdForService(serviceType);
-        results[serviceType] = {
+        results[serviceType as keyof typeof results] = {
           success: true,
           calendarId: calendarId,
           length: calendarId?.length || 0,
           valid: calendarId && calendarId.length > 10
         };
       } catch (error) {
-        results[serviceType] = {
+        results[serviceType as keyof typeof results] = {
           success: false,
           error: error instanceof Error ? error.message : String(error),
           calendarId: null

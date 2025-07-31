@@ -358,7 +358,7 @@ function enhanceResponseWithContext(aiResponse: any, context?: any) {
     }
   };
   
-  const enhancement = contextEnhancements[context?.type || 'general'];
+  const enhancement = contextEnhancements[context?.type || 'general' as keyof typeof contextEnhancements];
   
   if (enhancement) {
     // Add context-specific suggestions if not already provided

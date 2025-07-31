@@ -174,7 +174,7 @@ async function getBookingStatistics() {
 
   return {
     statusDistribution: statusCounts.reduce((acc, item) => {
-      acc[item.status] = item._count.status;
+      acc[item.status as keyof typeof acc] = item._count.status;
       return acc;
     }, {} as Record<string, number>),
     timeStats: {

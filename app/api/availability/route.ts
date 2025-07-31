@@ -231,7 +231,7 @@ async function getBusinessSettings() {
   });
 
   return settings.reduce((acc: Record<string, string>, setting: any) => {
-    acc[setting.key] = setting.value;
+    acc[setting.key as keyof typeof acc] = setting.value;
     return acc;
   }, {} as Record<string, string>);
 }

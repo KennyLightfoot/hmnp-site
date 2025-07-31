@@ -168,7 +168,7 @@ export async function GET(request: NextRequest) {
         minRating: aggregations._min.rating || 0,
         maxRating: aggregations._max.rating || 0,
         ratingDistribution: ratingDistribution.reduce((acc, curr) => {
-          acc[curr.rating] = curr._count.rating;
+          acc[curr.rating as keyof typeof acc] = curr._count.rating;
           return acc;
         }, {} as Record<number, number>)
       };

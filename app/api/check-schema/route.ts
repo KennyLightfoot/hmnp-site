@@ -28,9 +28,9 @@ export async function GET() {
       try {
         await prisma.$queryRaw`SELECT 1 FROM "Service" LIMIT 1`;
         const result = await prisma.$executeRaw`${test.query}`;
-        results[test.name] = 'EXISTS';
+        results[test.name as keyof typeof results] = 'EXISTS';
       } catch (error) {
-        results[test.name] = error instanceof Error ? error.message : 'FAILED';
+        results[test.name as keyof typeof results] = error instanceof Error ? error.message : 'FAILED';
       }
     }
     
