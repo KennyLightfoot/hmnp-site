@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
       });
 
       if (existingCustomer.data.length > 0) {
-        customer = existingCustomer.data[0].id;
+        customer = existingCustomer.data[0]!.id;
       } else {
         const newCustomer = await stripe.customers.create({
           email: customerEmail,

@@ -172,7 +172,6 @@ export async function GET(request: NextRequest) {
       existingBookings,
       minimumBookingTime,
       businessTimezone,
-      clientTimezone,
     });
 
     console.log('[AVAILABILITY API] Calculated', availableSlots.length, 'time slots');

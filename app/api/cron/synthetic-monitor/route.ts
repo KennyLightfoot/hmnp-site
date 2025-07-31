@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
   
   try {
     // Verify this is a legitimate cron request
-    const headersList = headers();
+    const headersList = await headers();
     const authHeader = headersList.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
     
@@ -123,9 +123,9 @@ export async function GET(request: NextRequest) {
     const duration = Date.now() - startTime;
     
     logger.error('Synthetic monitoring failed', {
-      error: error.message,
+      error: error instanceof Error ? error.message : String(error),
       duration,
-      stack: error.stack
+      stack: error instanceof Error ? error.stack : undefined
     });
 
     // Send critical alert
@@ -242,9 +242,9 @@ async function runBookingFlow(): Promise<MonitoringResult> {
       name: 'Booking Flow',
       status: 'fail',
       duration: Date.now() - startTime,
-      message: `Booking flow error: ${error.message}`
+      message: `Booking flow error: ${error instanceof Error ? error.message : String(error)}`
     });
-    errors.push(`Booking flow failed: ${error.message}`);
+    errors.push(`Booking flow failed: ${error instanceof Error ? error.message : String(error)}`);
   }
 
   const failedChecks = checks.filter(c => c.status === 'fail');
@@ -340,8 +340,8 @@ async function checkEndpoint(
       name,
       status: 'fail',
       duration: Date.now() - startTime,
-      message: `Request failed: ${error.message}`,
-      details: { error: error.message }
+      message: `Request failed: ${error instanceof Error ? error.message : String(error)}`,
+      details: { error: error instanceof Error ? error.message : String(error) }
     };
   }
 }

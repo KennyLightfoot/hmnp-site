@@ -24,7 +24,7 @@ export async function GET(
       bookingId: id,
     });
     return NextResponse.json(
-      { error: validation.error.errors[0].message },
+      { error: validation.error.errors[0]?.message || 'Invalid booking ID' },
       { status: 400 }
     );
   }
