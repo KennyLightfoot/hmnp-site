@@ -18,10 +18,7 @@ const execAsync = promisify(exec);
 process.env.S3_BUCKET_NAME = 'mock-bucket';
 process.env.AWS_REGION = 'mock-region';
 // Set test environment
-Object.defineProperty(process.env, 'NODE_ENV', {
-  value: 'test',
-  writable: true
-});
+process.env.NODE_ENV = 'test';
 
 // Load test environment variables
 dotenv.config({ path: path.join(__dirname, '.env.test') });
