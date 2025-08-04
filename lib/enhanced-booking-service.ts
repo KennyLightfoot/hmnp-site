@@ -4,6 +4,7 @@
  */
 
 import { ConversationTracker } from './conversation-tracker';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { bookingConfirmationEmail } from './email/templates/booking-confirmation';
 import { getGoogleCalendar } from './google-calendar';
 import { NotificationService } from './notifications';
@@ -76,8 +77,8 @@ export class EnhancedBookingService {
       // 4. Send enhanced confirmation email
       try {
         const client = {
-          firstName: bookingData.customerName.split(' ')[0],
-          lastName: bookingData.customerName.split(' ').slice(1).join(' '),
+          firstName: bookingData.customerName.split(' ')[0] || '',
+          lastName: bookingData.customerName.split(' ').slice(1).join(' ') || '',
           email: bookingData.customerEmail
         };
 
@@ -129,7 +130,7 @@ export class EnhancedBookingService {
           customerEmail: bookingData.customerEmail
         });
       } catch (emailError) {
-        const errorMessage = emailError instanceof Error ? emailError.message : 'Unknown error';
+        const errorMessage = emailError instanceof Error ? getErrorMessage(emailError) : 'Unknown error';
         errors.push(`Email sending failed: ${errorMessage}`);
         logger.error('Enhanced booking email failed', 'ENHANCED_BOOKING', emailError as Error);
       }
@@ -181,7 +182,7 @@ export class EnhancedBookingService {
           eventId: calendarEvent.id
         });
       } catch (calendarError) {
-        const errorMessage = calendarError instanceof Error ? calendarError.message : 'Unknown error';
+        const errorMessage = calendarError instanceof Error ? getErrorMessage(calendarError) : 'Unknown error';
         errors.push(`Calendar event creation failed: ${errorMessage}`);
         logger.error('Enhanced calendar event failed', 'ENHANCED_BOOKING', calendarError as Error);
       }
@@ -198,7 +199,7 @@ export class EnhancedBookingService {
         emailSent,
         calendarEventCreated,
         conversationTracked,
-        errors: [...errors, `Processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`]
+        errors: [...errors, `Processing failed: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`]
       };
     }
   }
@@ -281,7 +282,7 @@ export class EnhancedBookingService {
           });
         }
               } catch (calendarError) {
-          const errorMessage = calendarError instanceof Error ? calendarError.message : 'Unknown error';
+          const errorMessage = calendarError instanceof Error ? getErrorMessage(calendarError) : 'Unknown error';
           errors.push(`Calendar update failed: ${errorMessage}`);
           logger.error('Calendar update failed', 'ENHANCED_BOOKING', calendarError as Error);
         }
@@ -306,7 +307,7 @@ export class EnhancedBookingService {
               customerEmail: bookingData.customerEmail
             });
           } catch (emailError) {
-            const errorMessage = emailError instanceof Error ? emailError.message : 'Unknown error';
+            const errorMessage = emailError instanceof Error ? getErrorMessage(emailError) : 'Unknown error';
             errors.push(`Update email failed: ${errorMessage}`);
             logger.error('Update email failed', 'ENHANCED_BOOKING', emailError as Error);
           }
@@ -324,7 +325,7 @@ export class EnhancedBookingService {
           emailSent,
           calendarEventUpdated,
           conversationTracked,
-          errors: [...errors, `Update failed: ${error instanceof Error ? error.message : 'Unknown error'}`]
+          errors: [...errors, `Update failed: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`]
         };
       }
   }
@@ -394,11 +395,13 @@ export class EnhancedBookingService {
 
       if (booking?.User_Booking_notaryIdToUser) {
         const notary = booking.User_Booking_notaryIdToUser;
+        const phoneValue = (notary.customer_preferences as any)?.phone;
+        const phone = phoneValue && typeof phoneValue === 'string' ? phoneValue : null;
         return {
           name: notary.name,
           email: notary.email,
-          phone: typeof notary.customer_preferences?.phone === 'string' ? notary.customer_preferences.phone : null,
-          commissionNumber: notary.notary_profiles?.commission_number,
+          phone: phone as string | null,
+          commission_number: notary.notary_profiles?.commission_number,
           estimatedArrival: null // Would be calculated based on travel time
         };
       }
@@ -434,7 +437,7 @@ export class EnhancedBookingService {
     if (!notes) return null;
     
     const match = notes.match(/Google Calendar Event ID: ([a-zA-Z0-9_-]+)/);
-    return match ? match[1] : null;
+    return match && match[1] ? match[1] : null;
   }
 
   /**

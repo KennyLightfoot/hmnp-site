@@ -47,7 +47,7 @@ export function withValidation<TBody = any, TQuery = any, TParams = any>(
                 errors: queryResult.error.errors.map(err => ({
                   field: err.path.join('.'),
                   message: err.message,
-                  value: err.input,
+                  value: (err as any).input,
                 })),
               }
             );
@@ -64,6 +64,10 @@ export function withValidation<TBody = any, TQuery = any, TParams = any>(
             throw new ValidationError('Invalid JSON in request body');
           }
 
+          if (body === null || body === undefined) {
+            throw new ValidationError('Request body is required');
+          }
+
           const bodyResult = config.body.safeParse(body);
           if (!bodyResult.success) {
             throw new ValidationError(
@@ -72,7 +76,7 @@ export function withValidation<TBody = any, TQuery = any, TParams = any>(
                 errors: bodyResult.error.errors.map(err => ({
                   field: err.path.join('.'),
                   message: err.message,
-                  value: err.input,
+                  value: (err as any).input,
                 })),
               }
             );
@@ -90,7 +94,7 @@ export function withValidation<TBody = any, TQuery = any, TParams = any>(
                 errors: paramsResult.error.errors.map(err => ({
                   field: err.path.join('.'),
                   message: err.message,
-                  value: err.input,
+                  value: (err as any).input,
                 })),
               }
             );
@@ -261,7 +265,7 @@ export function validateFile(
   }
 
   // Check file extension
-  const extension = '.' + file.name.split('.').pop()?.toLowerCase();
+  const extension = '.' + ((file?.name || '').split('.').pop()?.toLowerCase() || '');
   if (!allowedExtensions.includes(extension)) {
     return {
       valid: false,
@@ -288,8 +292,8 @@ export function getClientIP(request: NextRequest): string {
   const realIP = request.headers.get('x-real-ip');
   const remoteAddr = request.headers.get('x-vercel-forwarded-for');
   
-  if (forwarded) {
-    return forwarded.split(',')[0].trim();
+  if (forwarded && forwarded !== 'null') {
+    return forwarded?.split(',')[0]?.trim() || 'unknown';
   }
   
   return realIP || remoteAddr || 'unknown';

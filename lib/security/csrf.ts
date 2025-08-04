@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { randomBytes, createHash } from 'crypto';
+import * as crypto from 'crypto';
 
 const CSRF_TOKEN_LENGTH = 32;
 const CSRF_COOKIE_NAME = '__csrf-token';
@@ -15,14 +15,14 @@ const CSRF_HEADER_NAME = 'x-csrf-token';
  * Generate a cryptographically secure CSRF token
  */
 export function generateCSRFToken(): string {
-  return randomBytes(CSRF_TOKEN_LENGTH).toString('hex');
+  return crypto.randomBytes(CSRF_TOKEN_LENGTH).toString('hex');
 }
 
 /**
  * Hash a CSRF token for secure storage
  */
 function hashToken(token: string): string {
-  return createHash('sha256').update(token).digest('hex');
+  return crypto.createHash('sha256').update(token).digest('hex');
 }
 
 /**
@@ -266,9 +266,7 @@ export async function getCSRFToken(request: NextRequest): Promise<NextResponse> 
   return response;
 }
 
-import crypto from 'crypto';
-
-export function validateCSRFToken(token: string, userAgent: string, forwarded: string): boolean {
+export function validateCSRFToken(token: string, userAgent: string | undefined, forwarded: string | undefined): boolean {
   try {
     if (!token) return false;
     
@@ -276,6 +274,8 @@ export function validateCSRFToken(token: string, userAgent: string, forwarded: s
     if (parts.length !== 3) return false;
     
     const [tokenValue, timestampStr, signature] = parts;
+    if (!timestampStr) return false;
+    
     const timestamp = parseInt(timestampStr);
     
     // Check if token is expired (15 minutes)
@@ -285,9 +285,12 @@ export function validateCSRFToken(token: string, userAgent: string, forwarded: s
     
     // Verify signature
     const payload = `${tokenValue}:${timestamp}`;
+    const userAgentStr = userAgent || '';
+    const forwardedStr = forwarded || '';
+    const secret = String(process.env.CSRF_SECRET || 'fallback-secret');
     const expectedSignature = crypto
-      .createHmac('sha256', process.env.CSRF_SECRET || 'fallback-secret')
-      .update(`${payload}:${userAgent}:${forwarded}`)
+      .createHmac('sha256', secret)
+      .update(`${payload}:${userAgentStr}:${forwardedStr}`)
       .digest('hex');
     
     return signature === expectedSignature;

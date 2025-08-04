@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/database-connection';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { sendEmail } from '@/lib/email';
 import { sendSms, checkSmsConsent } from '@/lib/sms';
 import * as ghl from '@/lib/ghl';
@@ -284,6 +285,7 @@ export class NotificationService {
         // Log the notification attempt
         const notificationLog = await prisma.notificationLog.create({
           data: {
+            id: `notification_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             bookingId,
             notificationType: normalizedType,
             method,
@@ -308,11 +310,11 @@ export class NotificationService {
         await this.updateBookingNotificationTimestamp(bookingId, normalizedType);
 
       } catch (error: any) {
-        console.error(`Error sending ${method} notification for booking ${bookingId}:`, error);
+        console.error(`Error sending ${method} notification for booking ${bookingId}:`, getErrorMessage(error));
         results.push({
           method,
           success: false,
-          error: error.message
+          error: getErrorMessage(error)
         });
       }
     }
@@ -405,15 +407,15 @@ export class NotificationService {
           maxRetries: 3,
           retryDelay: 2000,
           onRetry: (error, attempt) => {
-            logger.warn(`Email delivery retry attempt ${attempt} for ${to}: ${error.message}`);
+            logger.warn(`Email delivery retry attempt ${attempt} for ${to}: ${getErrorMessage(error)}`);
           },
           isRetryable: (error) => {
             // Determine if this error is worth retrying
             // Don't retry invalid email addresses
-            if (error.message && (
-                error.message.includes('invalid email') ||
-                error.message.includes('invalid recipient') ||
-                error.message.includes('rejected')
+            if (getErrorMessage(error) && (
+                getErrorMessage(error).includes('invalid email') ||
+                getErrorMessage(error).includes('invalid recipient') ||
+                getErrorMessage(error).includes('rejected')
               )) {
               return false;
             }
@@ -424,7 +426,7 @@ export class NotificationService {
       return { success: true };
     } catch (error) {
       logger.error(`Failed to send email to ${to} after retries`, { error });
-      return { success: false, error: error.message };
+      return { success: false, error: getErrorMessage(error) };
     }
   }
 
@@ -451,14 +453,14 @@ export class NotificationService {
           maxRetries: 3,
           retryDelay: 2000,
           onRetry: (error, attempt) => {
-            logger.warn(`SMS delivery retry attempt ${attempt} for ${to}: ${error.message}`);
+            logger.warn(`SMS delivery retry attempt ${attempt} for ${to}: ${getErrorMessage(error)}`);
           },
           isRetryable: (error) => {
             // Don't retry invalid phone numbers
-            if (error.message && (
-                error.message.includes('invalid phone') ||
-                error.message.includes('invalid number') ||
-                error.message.includes('not a valid')
+            if (getErrorMessage(error) && (
+                getErrorMessage(error).includes('invalid phone') ||
+                getErrorMessage(error).includes('invalid number') ||
+                getErrorMessage(error).includes('not a valid')
               )) {
               return false;
             }
@@ -474,7 +476,7 @@ export class NotificationService {
       };
     } catch (error) {
       logger.error(`Failed to send SMS to ${to} after retries`, { error });
-      return { success: false, error: error.message };
+      return { success: false, error: getErrorMessage(error) };
     }
   }
 
@@ -561,8 +563,7 @@ export class NotificationService {
 
       const recipient: NotificationRecipient = {
         email: booking.customerEmail || booking.User_Booking_signerIdToUser?.email,
-        firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0],
-        lastName: booking.User_Booking_signerIdToUser?.name?.split(' ').slice(1).join(' ')
+        firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0]
       };
 
       // Default to email if no method specified
@@ -586,7 +587,7 @@ export class NotificationService {
         error: result.success ? undefined : (result.results[0]?.error || 'Failed to send notification')
       };
     } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+      return { success: false, error: error instanceof Error ? getErrorMessage(error) : 'Unknown error' };
     }
   }
 
@@ -892,7 +893,7 @@ export const sendBookingConfirmation = async (bookingId: string) => {
     try {
       const ghlContact = await ghl.getContactByEmail(recipient.email);
       if (ghlContact?.phone) {
-        recipient.phone = ghlContact.phone ?? recipient.phone;
+        (recipient as any).phone = ghlContact.phone;
       }
     } catch (error) {
       console.warn('Could not fetch phone from GHL:', error);
@@ -901,10 +902,10 @@ export const sendBookingConfirmation = async (bookingId: string) => {
 
   const content = {
     subject: 'Booking Confirmation - Houston Mobile Notary Pros',
-    message: `Hi ${recipient.firstName}, your booking for ${booking.Service.name} has been confirmed. Details will be sent via email.`,
+    message: `Hi ${recipient.firstName}, your booking for ${booking.service.name} has been confirmed. Details will be sent via email.`,
     metadata: {
       serviceId: booking.serviceId,
-      serviceName: booking.Service.name
+      serviceName: booking.service.name
     }
   };
 
@@ -937,9 +938,8 @@ export const sendAppointmentReminder = async (
     '1hr': NotificationType.APPOINTMENT_REMINDER_1HR
   };
 
-  const recipient = {
+  const recipient: NotificationRecipient = {
     email: booking.User_Booking_signerIdToUser?.email,
-    phone: undefined,
     firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0]
   };
 
@@ -948,7 +948,7 @@ export const sendAppointmentReminder = async (
     try {
       const ghlContact = await ghl.getContactByEmail(recipient.email);
       if (ghlContact?.phone) {
-        recipient.phone = ghlContact.phone ?? recipient.phone;
+        recipient.phone = ghlContact.phone;
       }
     } catch (error) {
       console.warn('Could not fetch phone from GHL:', error);
@@ -959,7 +959,7 @@ export const sendAppointmentReminder = async (
   const { appointmentReminderSms } = await import('@/lib/sms/templates');
   
   const bookingDetails = {
-    serviceName: booking.Service.name,
+    serviceName: booking.service.name,
     date: booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'TBD',
     time: booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase() : 'TBD',
     addressShort: booking.addressCity || 'TBD'
@@ -987,7 +987,7 @@ export const sendAppointmentReminder = async (
       
       <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
         <h3>Appointment Details:</h3>
-        <p><strong>Service:</strong> ${booking.Service.name}</p>
+        <p><strong>Service:</strong> ${booking.service.name}</p>
         <p><strong>Date:</strong> ${booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'TBD'}</p>
         <p><strong>Time:</strong> ${booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'TBD'}</p>
         <p><strong>Location:</strong> ${booking.addressStreet && booking.addressCity && booking.addressState && booking.addressZip ? 
