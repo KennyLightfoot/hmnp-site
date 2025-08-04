@@ -6,32 +6,35 @@
  * Used by Vitest for integration tests
  */
 
-import { vi, beforeAll, afterAll, beforeEach } from 'vitest';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import dotenv from 'dotenv';
-import path from 'path';
+// Only run test setup in test environment
+if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
+  import { vi, beforeAll, afterAll, beforeEach } from 'vitest';
+  import { exec } from 'child_process';
+  import { promisify } from 'util';
+  import dotenv from 'dotenv';
+  import path from 'path';
 
-const execAsync = promisify(exec);
+  const execAsync = promisify(exec);
 
-// Set environment variables required by modules during import
-process.env.S3_BUCKET_NAME = 'mock-bucket';
-process.env.AWS_REGION = 'mock-region';
-// Set test environment
-process.env.NODE_ENV = 'test';
+// Only run test setup in test environment
+if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
+  // Set environment variables required by modules during import
+  process.env.S3_BUCKET_NAME = 'mock-bucket';
+  process.env.AWS_REGION = 'mock-region';
 
-// Load test environment variables
-dotenv.config({ path: path.join(__dirname, '.env.test') });
+  // Load test environment variables
+  dotenv.config({ path: path.join(__dirname, '.env.test') });
 
-// Test database configuration
-const TEST_DB_URL = process.env.TEST_DATABASE_URL || 
-  'postgresql://hmnp_test:test_password_2024@localhost:5433/hmnp_test_db';
-const TEST_REDIS_URL = process.env.TEST_REDIS_URL || 
-  'redis://localhost:6380';
+  // Test database configuration
+  const TEST_DB_URL = process.env.TEST_DATABASE_URL || 
+    'postgresql://hmnp_test:test_password_2024@localhost:5433/hmnp_test_db';
+  const TEST_REDIS_URL = process.env.TEST_REDIS_URL || 
+    'redis://localhost:6380';
 
-// Set test environment URLs
-process.env.DATABASE_URL = TEST_DB_URL;
-process.env.REDIS_URL = TEST_REDIS_URL;
+  // Set test environment URLs
+  process.env.DATABASE_URL = TEST_DB_URL;
+  process.env.REDIS_URL = TEST_REDIS_URL;
+}
 
 /**
  * Check if Docker is available and running
@@ -282,3 +285,4 @@ export const testUtils = {
 };
 
 console.log('📋 Test environment setup loaded');
+}

@@ -60,6 +60,21 @@ const nextConfig = {
   
   // Webpack optimization for production builds
   webpack: (config, { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }) => {
+    // Exclude test files from production builds
+    if (!dev) {
+      config.module.rules.push({
+        test: /\.(test|spec)\.(js|ts|tsx)$/,
+        loader: 'ignore-loader'
+      });
+      
+      // Also exclude the tests directory
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '^tests/': false,
+        '^.*/tests/': false
+      };
+    }
+    
     // Bundle analyzer (enable when needed)
     if (process.env.ANALYZE === 'true') {
       const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
