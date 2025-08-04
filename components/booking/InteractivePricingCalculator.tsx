@@ -273,10 +273,13 @@ export default function InteractivePricingCalculator({
     }
   }, [address, serviceType]);
 
-  // Effect to notify parent of pricing changes
+  // Effect to notify parent of pricing changes - optimized to prevent excessive updates
   useEffect(() => {
-    onPricingChange?.(pricingBreakdown);
-  }, [pricingBreakdown, onPricingChange]);
+    // Only call onPricingChange if it's actually a function and we have meaningful data
+    if (typeof onPricingChange === 'function' && pricingBreakdown.total > 0) {
+      onPricingChange(pricingBreakdown);
+    }
+  }, [pricingBreakdown.total, pricingBreakdown.serviceBase, pricingBreakdown.travelFee, onPricingChange]);
 
   return (
     <div className={`space-y-4 ${className}`}>

@@ -49,7 +49,17 @@ class RedisClient {
 
       // Use Redis URL if provided, otherwise use individual config
       if (process.env.REDIS_URL) {
-        this.client = new Redis(process.env.REDIS_URL, redisConfig);
+        // Handle Redis Cloud SSL connections properly
+        const redisUrl = process.env.REDIS_URL;
+        const isSSL = redisUrl.startsWith('rediss://');
+        
+        this.client = new Redis(redisUrl, {
+          ...redisConfig,
+          tls: isSSL ? {} : undefined,
+          retryDelayOnFailover: 100,
+          maxRetriesPerRequest: 3,
+          lazyConnect: true,
+        });
       } else if (process.env.UPSTASH_REDIS_REST_URL) {
         // Upstash Redis (for Vercel deployment)
         const { Redis: UpstashRedis } = await import('@upstash/redis');
@@ -380,9 +390,14 @@ export default redis;
 // Export function to create Redis client for BullMQ
 export const createRedisClient = () => {
   if (process.env.REDIS_URL) {
-    return new Redis(process.env.REDIS_URL, {
+    const redisUrl = process.env.REDIS_URL;
+    const isSSL = redisUrl.startsWith('rediss://');
+    
+    return new Redis(redisUrl, {
       maxRetriesPerRequest: null,
       enableReadyCheck: false,
+      tls: isSSL ? {} : undefined,
+      retryDelayOnFailover: 100,
     });
   } else if (process.env.UPSTASH_REDIS_REST_URL) {
     // For Upstash Redis, we need to handle the rediss:// URL properly

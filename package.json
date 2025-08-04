@@ -50,7 +50,9 @@
     "setup-ghl-calendars": "node scripts/setup-ghl-calendars.js",
     "verify-ghl-calendars": "node scripts/setup-ghl-calendars.js --verify-only",
     "booking:audit": "tsx scripts/audit-booking-config.ts",
-    "booking:fix-hours": "tsx scripts/fix-business-hours.ts"
+    "booking:fix-hours": "tsx scripts/fix-business-hours.ts",
+    "test:booking": "tsx scripts/test-booking-system.ts",
+    "test:booking:quick": "pnpm test:unit --run tests/unit/booking-system.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

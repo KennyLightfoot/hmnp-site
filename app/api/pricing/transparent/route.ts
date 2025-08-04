@@ -72,18 +72,61 @@ export async function POST(request: NextRequest) {
     }
     
     // Calculate transparent pricing using unified engine
-    const pricingResult = await UnifiedPricingEngine.calculateTransparentPricing({
-      serviceType,
-      documentCount,
-      signerCount,
-      address,
-      scheduledDateTime,
-      customerType,
-      customerEmail,
-      referralCode,
-      promoCode,
-      requestId
-    });
+    let pricingResult;
+    try {
+      pricingResult = await UnifiedPricingEngine.calculateTransparentPricing({
+        serviceType,
+        documentCount,
+        signerCount,
+        address,
+        scheduledDateTime,
+        customerType,
+        customerEmail,
+        referralCode,
+        promoCode,
+        requestId
+      });
+    } catch (pricingError) {
+      console.error(`[${requestId}] Pricing calculation error:`, pricingError);
+      
+      // Return a fallback pricing response instead of failing completely
+      pricingResult = {
+        serviceType,
+        basePrice: 75, // Default base price
+        totalPrice: 75,
+        breakdown: {
+          serviceBase: { amount: 75, label: 'Standard Notary Service' },
+          travelFee: { amount: 0, label: 'Travel Fee' },
+          extraDocuments: { amount: 0, label: 'Additional Documents' },
+          timeBasedFees: [],
+          serviceAreaFee: { amount: 0, label: 'Service Area' },
+          discounts: []
+        },
+        transparency: {
+          whyThisPrice: 'Standard pricing applied due to calculation error',
+          feeExplanations: {},
+          priceFactors: ['Base service fee'],
+          alternatives: []
+        },
+        businessRules: {
+          isValid: true,
+          serviceAreaZone: 'houston_metro',
+          isWithinServiceArea: true,
+          documentLimitsExceeded: false,
+          dynamicPricingActive: false,
+          discountsApplied: [],
+          violations: [],
+          recommendations: ['Please contact us for accurate pricing']
+        },
+        ghlActions: { tags: ['pricing:fallback'] },
+        metadata: {
+          calculatedAt: new Date().toISOString(),
+          version: '1.0.0',
+          calculationTime: 0,
+          requestId
+        }
+      };
+    }
     
     const processingTime = Date.now() - startTime;
     
