@@ -168,6 +168,9 @@ export default function BookingForm({
   className = ''
 }: BookingFormProps) {
   
+  // Memoize initialData to prevent form recreation
+  const memoizedInitialData = useMemo(() => initialData, [JSON.stringify(initialData)]);
+  
   // Form state
   const form = useForm<CreateBooking>({
     resolver: zodResolver(CreateBookingSchema),
@@ -188,7 +191,7 @@ export default function BookingForm({
         preferredDate: '',
         preferredTime: '',
       },
-      ...initialData
+      ...memoizedInitialData
     },
     mode: 'onChange'
   });
@@ -220,6 +223,24 @@ export default function BookingForm({
   const watchedValues = form.watch();
   const formErrors = form.formState.errors;
   
+  // Memoize pricing parameters to prevent hook violations
+  const pricingParams = useMemo(() => ({
+    serviceType: watchedValues.serviceType,
+    documentCount: 1, // Could be enhanced to get from form
+    address: watchedValues.location?.address,
+    scheduledDateTime: watchedValues.scheduling?.preferredDate ? 
+      `${watchedValues.scheduling.preferredDate} ${watchedValues.scheduling.preferredTime || ''}` : 
+      undefined,
+    customerType: 'new' as const, // Could be enhanced based on user auth
+    customerEmail: watchedValues.customer?.email
+  }), [
+    watchedValues.serviceType,
+    watchedValues.location?.address,
+    watchedValues.scheduling?.preferredDate,
+    watchedValues.scheduling?.preferredTime,
+    watchedValues.customer?.email
+  ]);
+
   // Enhanced transparent pricing integration
   const {
     pricing: transparentPricing,
@@ -229,16 +250,7 @@ export default function BookingForm({
     hasDiscounts,
     dynamicPricingActive,
     alternatives
-  } = useBookingPricing({
-    serviceType: watchedValues.serviceType,
-    documentCount: 1, // Could be enhanced to get from form
-    address: watchedValues.location?.address,
-    scheduledDateTime: watchedValues.scheduling?.preferredDate ? 
-      `${watchedValues.scheduling.preferredDate} ${watchedValues.scheduling.preferredTime || ''}` : 
-      undefined,
-    customerType: 'new', // Could be enhanced based on user auth
-    customerEmail: watchedValues.customer?.email
-  }, {
+  } = useBookingPricing(pricingParams, {
     onPricingChange: (pricing) => {
       console.log('💰 Pricing updated:', pricing?.totalPrice);
     }
