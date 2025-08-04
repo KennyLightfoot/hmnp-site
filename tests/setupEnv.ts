@@ -6,18 +6,16 @@
  * Used by Vitest for integration tests
  */
 
-// Only run test setup in test environment
-if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
-  import { vi, beforeAll, afterAll, beforeEach } from 'vitest';
-  import { exec } from 'child_process';
-  import { promisify } from 'util';
-  import dotenv from 'dotenv';
-  import path from 'path';
+import { vi, beforeAll, afterAll, beforeEach } from 'vitest';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import dotenv from 'dotenv';
+import path from 'path';
 
-  const execAsync = promisify(exec);
+const execAsync = promisify(exec);
 
-// Only run test setup in test environment
-if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
+// Only set environment variables in test/development environments
+if (process.env.NODE_ENV !== 'production') {
   // Set environment variables required by modules during import
   process.env.S3_BUCKET_NAME = 'mock-bucket';
   process.env.AWS_REGION = 'mock-region';
@@ -136,55 +134,30 @@ if (process.env.TEST_TYPE === 'integration') {
   }, 30000); // 30 second timeout for teardown
 }
 
-// Mock external services for unit tests
+// Global setup for all tests
 beforeEach(() => {
-  // Mock Stripe
-  vi.mock('stripe', () => ({
-    default: vi.fn(() => ({
-      paymentIntents: {
-        create: vi.fn().mockResolvedValue({
-          id: 'pi_test_123',
-          status: 'succeeded',
-          amount: 7500,
-          client_secret: 'pi_test_123_secret_test'
-        })
-      }
-    }))
-  }));
-
-  // Mock Google Maps
-  vi.mock('@react-google-maps/api', () => ({
-    useLoadScript: vi.fn(() => ({ isLoaded: true })),
-    GoogleMap: vi.fn(),
-    Marker: vi.fn()
-  }));
-
-  // Mock AWS S3
-  vi.mock('@aws-sdk/client-s3', () => ({
-    S3Client: vi.fn(() => ({
-      send: vi.fn().mockResolvedValue({ Location: 'https://mock-s3-url.com/file.pdf' })
-    })),
-    PutObjectCommand: vi.fn(),
-    GetObjectCommand: vi.fn()
-  }));
-
-  // Mock Prisma for unit tests (integration tests use real DB)
+  // Reset all mocks before each test
+  vi.clearAllMocks();
+  
+  // Mock Prisma for unit tests
   if (process.env.TEST_TYPE !== 'integration') {
     vi.mock('@/lib/prisma', () => ({
       prisma: {
-        newBooking: {
-          create: vi.fn().mockResolvedValue({
-            id: 'test-booking-id',
-            bookingNumber: 'HMN12345678',
-            status: 'PENDING'
-          }),
+        booking: {
+          create: vi.fn(),
           findUnique: vi.fn(),
           findMany: vi.fn(),
           update: vi.fn(),
           delete: vi.fn()
         },
-        newPayment: {
+        payment: {
           create: vi.fn(),
+          findUnique: vi.fn(),
+          findMany: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn()
+        },
+        service: {
           findUnique: vi.fn(),
           findMany: vi.fn()
         },
@@ -285,4 +258,3 @@ export const testUtils = {
 };
 
 console.log('📋 Test environment setup loaded');
-}
