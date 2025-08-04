@@ -13,7 +13,6 @@ export interface RedisConfig {
   password?: string;
   db?: number;
   maxRetriesPerRequest?: number;
-  retryDelayOnFailover?: number;
   connectTimeout?: number;
   commandTimeout?: number;
   lazyConnect?: boolean;
@@ -56,7 +55,6 @@ class RedisClient {
         this.client = new Redis(redisUrl, {
           ...redisConfig,
           tls: isSSL ? {} : undefined,
-          retryDelayOnFailover: 100,
           maxRetriesPerRequest: 3,
           lazyConnect: true,
         });
@@ -397,7 +395,6 @@ export const createRedisClient = () => {
       maxRetriesPerRequest: null,
       enableReadyCheck: false,
       tls: isSSL ? {} : undefined,
-      retryDelayOnFailover: 100,
     });
   } else if (process.env.UPSTASH_REDIS_REST_URL) {
     // For Upstash Redis, we need to handle the rediss:// URL properly
