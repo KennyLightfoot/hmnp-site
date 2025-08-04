@@ -7,7 +7,7 @@ import { prisma } from './prisma';
 import { BookingStatus } from '@prisma/client';
 import { logger, logBookingEvent } from './logger';
 import * as ghl from './ghl/api';
-import { updateBookingStatus } from './booking-sync';
+import { updateBookingStatus } from './integration-example';
 
 export interface FollowUpRule {
   id: string;
@@ -412,8 +412,7 @@ async function executeFollowUpAction(followUp: ScheduledFollowUp): Promise<void>
     case 'STATUS_UPDATE':
       await updateBookingStatus(
         booking.id, 
-        followUp.action.data.status, 
-        followUp.action.data.reason
+        followUp.action.data.status
       );
       break;
       

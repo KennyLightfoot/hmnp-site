@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '@/lib/database-connection';
 
 export async function GET() {
@@ -18,7 +19,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const diagnostics = {
+  const diagnostics: any = {
     timestamp: new Date().toISOString(),
     checks: [],
     fixes: [],
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
       diagnostics.checks.push({
         name: 'Database Connectivity',
         status: 'FAIL',
-        details: error instanceof Error ? error.message : 'Connection failed'
+        details: error instanceof Error ? getErrorMessage(error) : 'Connection failed'
       });
       throw error;
     }
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
       diagnostics.checks.push({
         name: 'Service Table isActive Column',
         status: 'FAIL',
-        details: error instanceof Error ? error.message : 'Column access failed'
+        details: error instanceof Error ? getErrorMessage(error) : 'Column access failed'
       });
 
       // Try to add the missing column
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
         diagnostics.fixes.push({
           name: 'Add isActive Column',
           status: 'FAILED',
-          details: fixError instanceof Error ? fixError.message : 'Fix failed'
+          details: fixError instanceof Error ? getErrorMessage(fixError) : 'Fix failed'
         });
       }
     }
@@ -102,7 +103,7 @@ export async function POST(request: NextRequest) {
       diagnostics.checks.push({
         name: 'Service Data Access',
         status: 'FAIL',
-        details: error instanceof Error ? error.message : 'Data access failed'
+        details: error instanceof Error ? getErrorMessage(error) : 'Data access failed'
       });
     }
 
@@ -126,13 +127,13 @@ export async function POST(request: NextRequest) {
       diagnostics.checks.push({
         name: 'Schema Sync Check',
         status: 'FAIL',
-        details: error instanceof Error ? error.message : 'Schema check failed'
+        details: error instanceof Error ? getErrorMessage(error) : 'Schema check failed'
       });
     }
 
     // Determine overall status
-    const failedChecks = diagnostics.checks.filter(c => c.status === 'FAIL').length;
-    const successfulFixes = diagnostics.fixes.filter(f => f.status === 'APPLIED').length;
+    const failedChecks = diagnostics.checks.filter((c: any) => c.status === 'FAIL').length;
+    const successfulFixes = diagnostics.fixes.filter((f: any) => f.status === 'APPLIED').length;
 
     if (failedChecks === 0) {
       diagnostics.status = 'HEALTHY';
@@ -151,13 +152,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(diagnostics);
 
   } catch (error) {
-    console.error('🔧 Database diagnostics failed:', error);
+    console.error('🔧 Database diagnostics failed:', getErrorMessage(error));
     
     diagnostics.status = 'ERROR';
     diagnostics.checks.push({
       name: 'Diagnostic Process',
       status: 'FAIL',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
     });
 
     return NextResponse.json(diagnostics, { status: 500 });

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import {
   upsertContact,
   GhlContact,
@@ -146,7 +147,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error processing ad lead submission:', error);
-    const message = error instanceof Error ? error.message : 'Internal server error';
+    const message = error instanceof Error ? getErrorMessage(error) : 'Internal server error';
     return NextResponse.json(
       { success: false, message },
       { status: 500 }

@@ -1,3 +1,4 @@
+import React from 'react';
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, CalendarDays, FileTextIcon, BadgeCent, MapPinIcon, PhoneCall, UserCheck, Briefcase, ScanSearch, ClipboardEdit, PenTool, BookUser, MessageSquare, FileCheck2, Smile, ShieldCheck, ArrowRight } from "lucide-react";
@@ -40,7 +41,7 @@ export const metadata = {
 interface StepProps {
   icon: React.ElementType;
   title: string;
-  description: string | JSX.Element;
+  description: string | React.ReactElement;
 }
 
 const StepCard: React.FC<StepProps> = ({ icon: Icon, title, description }) => (

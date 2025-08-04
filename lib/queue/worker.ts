@@ -1,4 +1,5 @@
 import { NotificationType, NotificationMethod, BookingStatus } from '@prisma/client';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { NotificationService } from '../notifications';
 import { getQueues } from './config';
 import { QueueJob, NotificationJob, BookingProcessingJob, PaymentProcessingJob } from './types';
@@ -104,13 +105,13 @@ export class QueueWorker {
       
       logger.info(`Successfully processed notification job ${job.id}`, 'QUEUE_WORKER');
     } catch (error) {
-      logger.error(`Error processing notification job: ${error instanceof Error ? error.message : 'Unknown error'}`, 'QUEUE_WORKER', { error, jobId: job.id });
+      logger.error(`Error processing notification job: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`, 'QUEUE_WORKER', { error, jobId: job.id });
       
       // Re-throw to trigger retry mechanism
       throw {
-        message: error instanceof Error ? error.message : 'Unknown error during notification processing',
+        message: error instanceof Error ? getErrorMessage(error) : 'Unknown error during notification processing',
         jobId: job.id,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
       };
     }
   }
@@ -158,12 +159,12 @@ export class QueueWorker {
       
       logger.info(`Successfully processed booking job ${job.id}`, 'QUEUE_WORKER');
     } catch (error) {
-      logger.error(`Error processing booking job: ${error instanceof Error ? error.message : 'Unknown error'}`, 'QUEUE_WORKER', { error, jobId: job.id });
+      logger.error(`Error processing booking job: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`, 'QUEUE_WORKER', { error, jobId: job.id });
       
       throw {
-        message: error instanceof Error ? error.message : 'Unknown error during booking processing',
+        message: error instanceof Error ? getErrorMessage(error) : 'Unknown error during booking processing',
         jobId: job.id,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
       };
     }
   }
@@ -274,12 +275,12 @@ export class QueueWorker {
       
       logger.info(`Successfully processed payment job ${job.id}`, 'QUEUE_WORKER');
     } catch (error) {
-      logger.error(`Error processing payment job: ${error instanceof Error ? error.message : 'Unknown error'}`, 'QUEUE_WORKER', { error, jobId: job.id });
+      logger.error(`Error processing payment job: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`, 'QUEUE_WORKER', { error, jobId: job.id });
       
       throw {
-        message: error instanceof Error ? error.message : 'Unknown error during payment processing',
+        message: error instanceof Error ? getErrorMessage(error) : 'Unknown error during payment processing',
         jobId: job.id,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
       };
     }
   }
@@ -355,7 +356,7 @@ export class QueueWorker {
           continue;
         }
         
-        const job = message.body;
+        const job = message.body as QueueJob;
         const jobId = message.streamId;
         
         try {
@@ -384,12 +385,12 @@ export class QueueWorker {
           logger.info(`Successfully processed and verified job ${jobId}`, 'QUEUE_WORKER');
           
         } catch (error) {
-          logger.error(`Error processing job: ${error instanceof Error ? error.message : 'Unknown error'}`, 'QUEUE_WORKER', { error, jobId });
+          logger.error(`Error processing job: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`, 'QUEUE_WORKER', { error, jobId });
           
           // Handle retry logic here if needed
           throw {
             jobId,
-            error: error instanceof Error ? error.message : 'Unknown error during job processing',
+            error: error instanceof Error ? getErrorMessage(error) : 'Unknown error during job processing',
           };
         }
         
@@ -403,7 +404,7 @@ export class QueueWorker {
     }
     
     if (!this.isRunning) {
-      logger.error('Error starting queue processing:', 'QUEUE_WORKER', error as Error);
+      logger.error('Queue processing stopped', 'QUEUE_WORKER');
     }
   }
 
@@ -492,7 +493,7 @@ export class QueueWorker {
           await this.processPaymentJob(job as PaymentProcessingJob);
           break;
         default:
-          throw new Error(`Unknown job type: ${job.type}`);
+          throw new Error(`Unknown job type: ${(job as any).type}`);
       }
       
       logger.info(`Successfully processed single job ${jobId}`, 'QUEUE_WORKER');
@@ -500,11 +501,11 @@ export class QueueWorker {
         success: true,
         jobId,
         processedAt,
-        result: { jobType: job.type, processed: true }
+        result: { jobType: (job as any).type, processed: true }
       };
       
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error during single job processing';
+      const errorMessage = error instanceof Error ? getErrorMessage(error) : 'Unknown error during single job processing';
       logger.error(`Error processing single job ${jobId}: ${errorMessage}`, 'QUEUE_WORKER', { error, jobId });
       
       return {
@@ -537,7 +538,7 @@ export class QueueWorker {
           break;
         }
         
-        const job = message.body;
+        const job = message.body as QueueJob;
         const jobId = message.streamId;
         
         try {
@@ -552,7 +553,7 @@ export class QueueWorker {
           
         } catch (error) {
           errors++;
-          logger.error(`Error processing ${queueType} job ${jobId}: ${error instanceof Error ? error.message : 'Unknown error'}`, 'QUEUE_WORKER', { error, jobId });
+          logger.error(`Error processing ${queueType} job ${jobId}: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`, 'QUEUE_WORKER', { error, jobId });
         }
       }
     } catch (error) {
@@ -577,8 +578,8 @@ export class QueueWorker {
       case 'payment-processing':
         await this.processPaymentJob(job as PaymentProcessingJob);
         break;
-      default:
-        throw new Error(`Unknown job type: ${job.type}`);
+              default:
+          throw new Error(`Unknown job type: ${(job as any).type}`);
     }
   }
 }

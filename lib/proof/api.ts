@@ -7,6 +7,7 @@
  */
 
 import { logger } from '../logger';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 
 // Environment validation
 const PROOF_API_KEY = process.env.PROOF_API_KEY;
@@ -109,7 +110,7 @@ export class ProofAPIClient {
       return response.ok;
     } catch (error) {
       logger.error('Proof API connection test failed', { 
-        error: error instanceof Error ? error.message : String(error) 
+        error: error instanceof Error ? getErrorMessage(error) : String(error) 
       });
       return false;
     }
@@ -161,7 +162,7 @@ export class ProofAPIClient {
           error: error,
           sentPayload: payload
         });
-        throw new Error(`Proof API error: ${error.message || response.statusText}`);
+        throw new Error(`Proof API error: ${getErrorMessage(error) || response.statusText}`);
       }
 
       const transaction = await response.json();
@@ -203,7 +204,7 @@ export class ProofAPIClient {
 
     } catch (error) {
       logger.error('❌ Failed to create Proof transaction', {
-        error: error instanceof Error ? error.message : String(error),
+        error: error instanceof Error ? getErrorMessage(error) : String(error),
         signerEmail: request.signers[0]?.email?.replace(/(.{2}).*(@.*)/, '$1***$2')
       });
       return null;
@@ -246,7 +247,7 @@ export class ProofAPIClient {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(`Proof upload error: ${error.message || response.statusText}`);
+        throw new Error(`Proof upload error: ${getErrorMessage(error) || response.statusText}`);
       }
 
       const uploadResponse = await response.json();
@@ -263,7 +264,7 @@ export class ProofAPIClient {
       logger.error('Failed to upload document to Proof', {
         transactionId,
         documentName: document.name,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? getErrorMessage(error) : String(error)
       });
       return null;
     }
@@ -309,7 +310,7 @@ export class ProofAPIClient {
           statusText: response.statusText,
           error: error
         });
-        throw new Error(`Proof API error: ${error.message || response.statusText}`);
+        throw new Error(`Proof API error: ${getErrorMessage(error) || response.statusText}`);
       }
 
       const result = await response.json();
@@ -327,7 +328,7 @@ export class ProofAPIClient {
       logger.error('Failed to add document to Proof transaction', {
         transactionId,
         documentName: document.name,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? getErrorMessage(error) : String(error)
       });
       return false;
     }
@@ -347,7 +348,7 @@ export class ProofAPIClient {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(`Proof API error: ${error.message || response.statusText}`);
+        throw new Error(`Proof API error: ${getErrorMessage(error) || response.statusText}`);
       }
 
       const documents = await response.json();
@@ -362,7 +363,7 @@ export class ProofAPIClient {
     } catch (error: any) {
       logger.error('Failed to list Proof documents', {
         transactionId,
-        error: error.message
+        error: getErrorMessage(error)
       });
       return null;
     }
@@ -382,7 +383,7 @@ export class ProofAPIClient {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(`Proof API error: ${error.message || response.statusText}`);
+        throw new Error(`Proof API error: ${getErrorMessage(error) || response.statusText}`);
       }
 
       const transaction = await response.json();
@@ -398,7 +399,7 @@ export class ProofAPIClient {
     } catch (error: any) {
       logger.error('Failed to get Proof transaction', {
         transactionId,
-        error: error.message
+        error: getErrorMessage(error)
       });
       return null;
     }
@@ -420,7 +421,7 @@ export class ProofAPIClient {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(`Proof API error: ${error.message || response.statusText}`);
+        throw new Error(`Proof API error: ${getErrorMessage(error) || response.statusText}`);
       }
 
       logger.info('Proof transaction cancelled', {
@@ -433,7 +434,7 @@ export class ProofAPIClient {
     } catch (error: any) {
       logger.error('Failed to cancel Proof transaction', {
         transactionId,
-        error: error.message
+        error: getErrorMessage(error)
       });
       return false;
     }
@@ -453,7 +454,7 @@ export class ProofAPIClient {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(`Proof download error: ${error.message || response.statusText}`);
+        throw new Error(`Proof download error: ${getErrorMessage(error) || response.statusText}`);
       }
 
       const arrayBuffer = await response.arrayBuffer();
@@ -469,7 +470,7 @@ export class ProofAPIClient {
     } catch (error: any) {
       logger.error('Failed to download Proof documents', {
         transactionId,
-        error: error.message
+        error: getErrorMessage(error)
       });
       return null;
     }
@@ -488,7 +489,7 @@ export class ProofAPIClient {
       // This is a placeholder - actual implementation depends on Proof's webhook security
       return true;
     } catch (error: any) {
-      logger.error('Webhook validation failed', { error: error.message });
+      logger.error('Webhook validation failed', { error: getErrorMessage(error) });
       return false;
     }
   }
@@ -592,7 +593,7 @@ export class ProofAPIClient {
       } catch (error) {
         logger.error('Error making Proof API request', {
           url,
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? getErrorMessage(error) : String(error)
         });
         // On the last attempt, re-throw the final error
         if (attempt >= maxAttempts - 1) {
@@ -676,7 +677,7 @@ export class RONService {
       logger.error('❌ RON session creation failed', {
         bookingId: booking.id,
         customerEmail: booking.customerEmail.replace(/(.{2}).*(@.*)/, '$1***$2'),
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? getErrorMessage(error) : String(error)
       });
       return null;
     }

@@ -7,6 +7,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { DEFAULT_PRICING_OPTIONS, createPricingOptions } from '@/tests/helpers/pricing-defaults';
 import { PricingEngine, SERVICES, PRICING_CONFIG, PricingCalculationError } from '@/lib/pricing-engine';
 import type { PricingCalculationParams } from '@/lib/pricing-engine';
 
@@ -51,7 +52,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
     
     // Default mock responses
     mockedRedis.get.mockResolvedValue(null);
-    mockedRedis.set.mockResolvedValue('OK');
+    mockedRedis.set.mockResolvedValue(true);
     mockedCalculateDistance.mockResolvedValue({
       success: true,
       distance: {
@@ -95,7 +96,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T14:00:00Z').toISOString(),
         documentCount: 1,
         signerCount: 1,
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -116,7 +117,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T20:00:00Z').toISOString(),
         documentCount: 3,
         signerCount: 2,
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -131,7 +132,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T14:00:00Z').toISOString(),
         documentCount: 15,
         signerCount: 3,
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -145,7 +146,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T14:00:00Z').toISOString(),
         documentCount: 1,
         signerCount: 1,
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -197,7 +198,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T14:00:00Z').toISOString(),
         documentCount: 1,
         signerCount: 1,
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -247,7 +248,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T14:00:00Z').toISOString(),
         documentCount: 1,
         signerCount: 1,
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -301,7 +302,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T14:00:00Z').toISOString(),
         documentCount: 1,
         signerCount: 1,
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -319,7 +320,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T14:00:00Z').toISOString(),
         documentCount: 1,
         signerCount: 1,
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -336,9 +337,9 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T14:00:00Z').toISOString(),
         documentCount: 1,
         signerCount: 1,
-        options: {
+        options: createPricingOptions({
           priority: true
-        }
+        })
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -392,9 +393,9 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T14:00:00Z').toISOString(),
         documentCount: 1,
         signerCount: 1,
-        options: {
+        options: createPricingOptions({
           weatherAlert: true
-        }
+        })
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -412,7 +413,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-17T14:00:00Z').toISOString(), // Saturday
         documentCount: 1,
         signerCount: 1,
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -426,7 +427,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T22:00:00Z').toISOString(), // 10 PM
         documentCount: 1,
         signerCount: 1,
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -440,9 +441,9 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-17T22:00:00Z').toISOString(), // Saturday 10 PM
         documentCount: 1,
         signerCount: 1,
-        options: {
+        options: createPricingOptions({
           priority: true
-        }
+        })
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -462,7 +463,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         documentCount: 1,
         signerCount: 1,
         customerEmail: 'newcustomer@example.com',
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       // Mock Redis to return null (new customer)
@@ -487,7 +488,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         documentCount: 1,
         signerCount: 1,
         referralCode: 'FRIEND123',
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -501,7 +502,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T14:00:00Z').toISOString(),
         documentCount: 5, // Multiple documents
         signerCount: 1,
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -518,7 +519,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         signerCount: 1,
         customerEmail: 'newcustomer@example.com',
         referralCode: 'FRIEND123',
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       mockedRedis.get.mockResolvedValue(null);
@@ -538,7 +539,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         documentCount: 1,
         signerCount: 1,
         promoCode: 'SAVE10',
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       // Mock valid promo code
@@ -569,7 +570,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         documentCount: 1,
         signerCount: 1,
         promoCode: 'SAVE20PCT',
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       mockedRedis.get.mockResolvedValue(JSON.stringify({
@@ -593,7 +594,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         documentCount: 1,
         signerCount: 1,
         promoCode: 'INVALID',
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       mockedRedis.get.mockResolvedValue(null);
@@ -611,7 +612,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         documentCount: 1,
         signerCount: 1,
         promoCode: 'EXPIRED',
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       mockedRedis.get.mockResolvedValue(JSON.stringify({
@@ -635,7 +636,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T14:00:00Z').toISOString(),
         documentCount: 1,
         signerCount: 1,
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       await expect(pricingEngine.calculateBookingPrice(params))
@@ -653,7 +654,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T14:00:00Z').toISOString(),
         documentCount: 1,
         signerCount: 1,
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -677,7 +678,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         signerCount: 1,
         customerEmail: 'test@example.com',
         promoCode: 'SAVE10',
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -693,7 +694,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T14:00:00Z').toISOString(),
         documentCount: 999,
         signerCount: 100,
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -708,7 +709,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T14:00:00Z').toISOString(),
         documentCount: 0, // Invalid
         signerCount: -1, // Invalid
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       await expect(pricingEngine.calculateBookingPrice(params))
@@ -757,9 +758,9 @@ describe('PricingEngine - Pure Logic Tests', () => {
         documentCount: 1,
         signerCount: 1,
         promoCode: 'SAVE10',
-        options: {
+        options: createPricingOptions({
           priority: true
-        }
+        })
       };
 
       mockedRedis.get.mockResolvedValue(JSON.stringify({
@@ -795,7 +796,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         documentCount: 1,
         signerCount: 1,
         promoCode: 'HUGE_DISCOUNT',
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       mockedRedis.get.mockResolvedValue(JSON.stringify({
@@ -819,7 +820,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T14:00:00Z').toISOString(),
         documentCount: 1,
         signerCount: 1,
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -839,7 +840,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T14:00:00Z').toISOString(),
         documentCount: 1,
         signerCount: 1,
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -854,7 +855,7 @@ describe('PricingEngine - Pure Logic Tests', () => {
         scheduledDateTime: new Date('2024-02-15T14:00:00Z').toISOString(),
         documentCount: 1,
         signerCount: 1,
-        options: {}
+        options: DEFAULT_PRICING_OPTIONS
       };
 
       const result = await pricingEngine.calculateBookingPrice(params);
@@ -874,7 +875,7 @@ export function createMockPricingParams(overrides: Partial<PricingCalculationPar
     scheduledDateTime: new Date('2024-02-15T14:00:00Z').toISOString(),
     documentCount: 1,
     signerCount: 1,
-    options: {},
+    options: DEFAULT_PRICING_OPTIONS,
     ...overrides
   };
 }

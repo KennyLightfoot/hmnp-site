@@ -97,7 +97,7 @@ export default function RequestStormMonitor() {
       let requestsLastMinute = 0
 
       for (const [endpoint, tracker] of requestTracker.entries()) {
-        if (tracker.calls.length === 0) continue
+        if (!tracker || tracker.calls.length === 0) continue
 
         const recentCalls = tracker.calls.filter(call => call > oneMinuteAgo)
         const allCallsLastMinute = tracker.calls.filter(call => call > oneMinuteAgo).length
@@ -108,7 +108,11 @@ export default function RequestStormMonitor() {
         if (tracker.calls.length > 0) {
           const intervals = []
           for (let i = 1; i < tracker.calls.length; i++) {
-            intervals.push(tracker.calls[i].getTime() - tracker.calls[i-1].getTime())
+            const current = tracker.calls[i];
+            const previous = tracker.calls[i-1];
+            if (current && previous) {
+              intervals.push(current.getTime() - previous.getTime())
+            }
           }
           const averageInterval = intervals.length > 0 
             ? intervals.reduce((a, b) => a + b, 0) / intervals.length 
@@ -120,15 +124,18 @@ export default function RequestStormMonitor() {
           else if (recentCalls.length > 10) status = 'warning'  // > 10 calls/minute
           else if (averageInterval < 1000 && tracker.calls.length > 5) status = 'warning'  // < 1 second apart
 
-          requestStats.push({
-            endpoint,
-            count: tracker.calls.length,
-            lastCall: tracker.calls[tracker.calls.length - 1],
-            averageInterval,
-            status,
-            errorCount: tracker.errors,
-            successCount: tracker.successes
-          })
+          const lastCall = tracker.calls[tracker.calls.length - 1]
+          if (lastCall) {
+            requestStats.push({
+              endpoint,
+              count: tracker.calls.length,
+              lastCall,
+              averageInterval,
+              status,
+              errorCount: tracker.errors,
+              successCount: tracker.successes
+            })
+          }
         }
       }
 
@@ -139,7 +146,7 @@ export default function RequestStormMonitor() {
 
       // Update global stats
       const criticalCount = requestStats.filter(s => s.status === 'critical').length
-      const topEndpoint = requestStats.length > 0 ? requestStats[0].endpoint : ''
+      const topEndpoint = requestStats.length > 0 && requestStats[0] ? requestStats[0].endpoint : ''
 
       setGlobalStats({
         totalRequests,

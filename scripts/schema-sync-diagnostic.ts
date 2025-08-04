@@ -1,15 +1,38 @@
 import { PrismaClient } from '@prisma/client';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { execSync } from 'child_process';
 import fs from 'fs';
 
 const prisma = new PrismaClient();
 
+interface DiagnosticReport {
+  timestamp: Date;
+  environment?: string;
+  database: {
+    connection: string;
+    version: string;
+    url?: string;
+    error?: string;
+  };
+  migrations: {
+    status: string;
+    applied?: number;
+    error?: string;
+  };
+  schema: {
+    local: any;
+    production: any;
+    differences: any[];
+  };
+  recommendations: string[];
+}
+
 async function diagnoseSchemaSync() {
   console.log('🔍 PRISMA SCHEMA SYNCHRONIZATION DIAGNOSTIC');
   console.log('=' .repeat(60));
   
-  const report = {
-    timestamp: new Date().toISOString(),
+  const report: DiagnosticReport = {
+    timestamp: new Date(),
     environment: process.env.NODE_ENV || 'development',
     database: {
       url: process.env.DATABASE_URL ? 'Set' : 'Missing',
@@ -22,8 +45,6 @@ async function diagnoseSchemaSync() {
       differences: []
     },
     migrations: {
-      applied: [],
-      pending: [],
       status: 'Unknown'
     },
     recommendations: []
@@ -34,7 +55,7 @@ async function diagnoseSchemaSync() {
     console.log('\n📡 Testing database connection...');
     const dbVersion = await prisma.$queryRaw`SELECT version() as version`;
     report.database.connection = 'Success';
-    report.database.version = dbVersion[0]?.version || 'Unknown';
+    report.database.version = (dbVersion as any)[0]?.version || 'Unknown';
     console.log('✅ Database connection successful');
     console.log(`📋 PostgreSQL Version: ${report.database.version}`);
 
@@ -53,15 +74,15 @@ async function diagnoseSchemaSync() {
         report.migrations.status = 'Up to date';
       } else if (migrationStatus.includes('pending')) {
         report.migrations.status = 'Pending migrations';
-        report.recommendations.push('Run: npx prisma migrate deploy');
+        report.recommendations.push('Run: npx prisma migrate deploy' as any);
       } else {
         report.migrations.status = 'Unknown state';
-        report.recommendations.push('Manual migration review needed');
+        report.recommendations.push('Manual migration review needed' as any);
       }
     } catch (migrationError) {
-      console.log('⚠️ Migration status check failed:', migrationError.message);
+      console.log('⚠️ Migration status check failed:', getErrorMessage(migrationError));
       report.migrations.status = 'Error';
-      report.recommendations.push('Fix migration issues before proceeding');
+      report.recommendations.push('Fix migration issues before proceeding' as any);
     }
 
     // Test 3: Schema Introspection vs Current Schema
@@ -76,14 +97,14 @@ async function diagnoseSchemaSync() {
       });
       console.log('✅ Database introspection completed');
     } catch (pullError) {
-      console.log('❌ Database pull failed:', pullError.message);
-      report.recommendations.push('Fix database connection or permissions');
+      console.log('❌ Database pull failed:', getErrorMessage(pullError));
+      report.recommendations.push('Fix database connection or permissions' as any);
     }
 
     // Test 4: Check for Schema Drift
     console.log('\n📊 Analyzing schema differences...');
     const schemaDiff = await analyzeSchemaFile();
-    report.schema = schemaDiff;
+    report.schema = schemaDiff as any;
 
     // Test 5: Verify Critical Tables Exist
     console.log('\n🔍 Verifying critical tables...');
@@ -102,14 +123,14 @@ async function diagnoseSchemaSync() {
           ) as exists
         `;
         
-        const exists = tableExists[0]?.exists;
+        const exists = (tableExists as any)[0]?.exists;
         console.log(`${exists ? '✅' : '❌'} Table ${table}: ${exists ? 'EXISTS' : 'MISSING'}`);
         
         if (!exists) {
-          report.recommendations.push(`Critical table ${table} is missing - schema out of sync`);
+          report.recommendations.push(`Critical table ${table} is missing - schema out of sync` as any);
         }
       } catch (error) {
-        console.log(`❌ Error checking table ${table}:`, error.message);
+        console.log(`❌ Error checking table ${table}:`, error instanceof Error ? getErrorMessage(error) : String(error));
       }
     }
 
@@ -123,18 +144,18 @@ async function diagnoseSchemaSync() {
       console.log(`📋 Active services: ${activeServiceCount}`);
       
       if (serviceCount === 0) {
-        report.recommendations.push('Database needs seeding: npx ts-node prisma/seed.ts');
+        report.recommendations.push('Database needs seeding: npx ts-node prisma/seed.ts' as any);
       } else if (activeServiceCount < 3) {
-        report.recommendations.push('Missing required services - check service data');
+        report.recommendations.push('Missing required services - check service data' as any);
       }
     } catch (serviceError) {
-      console.log('❌ Service table check failed:', serviceError.message);
-      report.recommendations.push('Service table may not exist or be accessible');
+      console.log('❌ Service table check failed:', getErrorMessage(serviceError));
+      report.recommendations.push('Service table may not exist or be accessible' as any);
     }
 
   } catch (error) {
-    console.error('💥 Diagnostic failed:', error);
-    report.recommendations.push('Critical: Database connection or permissions issue');
+    console.error('💥 Diagnostic failed:', getErrorMessage(error));
+    report.recommendations.push('Critical: Database connection or permissions issue' as any);
   } finally {
     await prisma.$disconnect();
   }
@@ -178,8 +199,8 @@ async function analyzeSchemaFile() {
       lastModified: fs.statSync('prisma/schema.prisma').mtime
     };
   } catch (error) {
-    console.log('❌ Error analyzing schema file:', error.message);
-    return { error: error.message };
+    console.log('❌ Error analyzing schema file:', error instanceof Error ? getErrorMessage(error) : String(error));
+    return { error: getErrorMessage(error) };
   }
 }
 
@@ -195,6 +216,6 @@ diagnoseSchemaSync()
     }
   })
   .catch((error) => {
-    console.error('💥 Diagnostic failed:', error);
+    console.error('💥 Diagnostic failed:', getErrorMessage(error));
     process.exit(1);
   });

@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -80,9 +81,9 @@ export function PartnerReferralForm() {
       setSubmitStatus({ success: true, message: "Referral submitted successfully! Thank you for helping us grow." });
       form.reset(); // Reset form fields
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred. Please try again.";
+      const errorMessage = error instanceof Error ? getErrorMessage(error) : "An unexpected error occurred. Please try again.";
       setSubmitStatus({ success: false, message: errorMessage });
-      console.error("Partner referral submission error:", error);
+      console.error("Partner referral submission error:", getErrorMessage(error));
     }
     setIsLoading(false);
   }

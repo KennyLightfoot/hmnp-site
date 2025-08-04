@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { z } from 'zod';
 import { DateTime } from 'luxon';
 import { prisma } from '@/lib/prisma';
@@ -23,14 +24,14 @@ interface TimeSlot {
   businessTimezone?: string;
 }
 
-interface BusinessHours {
+interface Business_hours {
   startTime: string;
   endTime: string;
   dayOfWeek: number; // 0 = Sunday, 1 = Monday, etc.
 }
 
 // Default business hours if not configured in BusinessSettings
-const DEFAULT_BUSINESS_HOURS: BusinessHours[] = [
+const DEFAULT_BUSINESS_HOURS: Business_hours[] = [
   { startTime: '09:00', endTime: '17:00', dayOfWeek: 1 }, // Monday
   { startTime: '09:00', endTime: '17:00', dayOfWeek: 2 }, // Tuesday
   { startTime: '09:00', endTime: '17:00', dayOfWeek: 3 }, // Wednesday
@@ -125,20 +126,20 @@ export async function GET(request: NextRequest) {
     console.log('[DEBUG] Date:', validatedParams.date, 'Day of week:', dayOfWeek);
     console.log('[DEBUG] Business settings keys:', Object.keys(businessSettings).filter(k => k.includes('hours')));
     
-    let businessHours = await getBusinessHoursForDay(dayOfWeek, businessSettings);
+    let business_hours = await getBusinessHoursForDay(dayOfWeek, businessSettings);
 
     // Override with service-specific hours if defined
     const override = SERVICE_HOUR_OVERRIDES[service.serviceType as string];
     if (override) {
-      businessHours = {
+      business_hours = {
         startTime: override.start,
         endTime: override.end,
         dayOfWeek,
       };
     }
-    console.log('[DEBUG] Business hours result:', businessHours);
+    console.log('[DEBUG] Business hours result:', business_hours);
 
-    if (!businessHours) {
+    if (!business_hours) {
       console.log('[DEBUG] No business hours found for day', dayOfWeek);
       return NextResponse.json({
         date: validatedParams.date,
@@ -166,7 +167,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate available slots (with timezone support)
     const availableSlots = await generateAvailableSlots({
-      businessHours,
+              businessHours: business_hours,
       requestedDate,
       serviceId: validatedParams.serviceId,
       existingBookings,
@@ -185,9 +186,9 @@ export async function GET(request: NextRequest) {
         duration: serviceDurationMinutes,
         price: service.basePrice,
       },
-      businessHours: {
-        startTime: businessHours.startTime,
-        endTime: businessHours.endTime,
+      business_hours: {
+        startTime: business_hours.startTime,
+        endTime: business_hours.endTime,
       },
       timezoneInfo: {
         businessTimezone,
@@ -214,7 +215,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       { 
         error: 'Internal server error',
-        details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined,
+        details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? getErrorMessage(error) : String(error)) : undefined,
         timestamp: new Date().toISOString()
       },
       { status: 500 }
@@ -237,7 +238,7 @@ async function getBusinessSettings() {
 }
 
 // Helper function to get business hours for a specific day
-async function getBusinessHoursForDay(dayOfWeek: number, businessSettings: Record<string, string>): Promise<BusinessHours | null> {
+async function getBusinessHoursForDay(dayOfWeek: number, businessSettings: Record<string, string>): Promise<Business_hours | null> {
   const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const dayName = dayNames[dayOfWeek - 1]; // Luxon weekday is 1-7, array is 0-6
   

@@ -15,10 +15,11 @@ import { logger } from './logger';
 export async function enhancedBookingAPI(request: NextRequest) {
   const startTime = Date.now();
   const clientIP = request.headers.get('x-forwarded-for') || 'unknown';
+  let rateLimitResult: any = null;
   
   try {
     // 1. RATE LIMITING
-    const rateLimitResult = await rateLimiters.booking.checkRateLimit(
+    rateLimitResult = await rateLimiters.booking.checkRateLimit(
       `booking:${clientIP}`,
       rateLimitConfigs.booking
     );
@@ -209,6 +210,7 @@ export async function comprehensiveHealthCheck() {
     services: {} as any,
     performance: {} as any,
     cache: {} as any,
+    rateLimit: {} as any,
   };
   
   try {

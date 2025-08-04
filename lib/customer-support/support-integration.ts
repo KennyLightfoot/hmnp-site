@@ -1,10 +1,10 @@
-// lib/customer-support/support-integration.ts
+// lib/customer-support/support-integration?.ts
 
 import { prisma } from '@/lib/db';
 import { NotificationService } from '@/lib/notifications';
 import { NotificationType, NotificationMethod } from '@prisma/client';
 import { supportRequestEmail } from '@/lib/email/templates';
-import { logger } from '@/lib/monitoring';
+import { logger } from '@/lib/logger';
 
 export interface SupportTicket {
   id: string;
@@ -79,49 +79,49 @@ export class CustomerSupportService {
   async createSupportTicket(request: SupportRequest): Promise<SupportTicket> {
     try {
       // Determine priority based on issue type and booking status
-      const priority = this.determinePriority(request);
+      const priority = this?.determinePriority(request);
       
       // Check for existing open tickets
-      const existingTicket = await this.findExistingTicket(request.customerEmail, request.issueType);
+      const existingTicket = await this?.findExistingTicket(request?.customerEmail, request?.issueType);
       
       if (existingTicket) {
         // Update existing ticket instead of creating new one
-        return await this.updateExistingTicket(existingTicket.id, request);
+        return await this?.updateExistingTicket(existingTicket?.id, request);
       }
 
       // Create new ticket
-      const ticket = await prisma.supportTicket.create({
+      const ticket = await prisma?.supportTicket?.create({
         data: {
-          bookingId: request.bookingId,
-          customerEmail: request.customerEmail,
-          customerName: request.customerName,
-          issueType: request.issueType,
+          bookingId: request?.bookingId,
+          customerEmail: request?.customerEmail,
+          customerName: request?.customerName,
+          issueType: request?.issueType,
           priority,
-          description: request.description,
+          description: request?.description,
           status: 'open',
-          tags: this.generateTags(request),
+          tags: this?.generateTags(request),
           metadata: {
-            contactMethod: request.contactMethod,
-            preferredContactTime: request.preferredContactTime,
-            attachments: request.attachments
+            contactMethod: request?.contactMethod,
+            preferredContactTime: request?.preferredContactTime,
+            attachments: request?.attachments
           }
         }
       });
 
       // Send confirmation to customer
-      await this.sendSupportConfirmation(ticket);
+      await this?.sendSupportConfirmation(ticket as SupportTicket);
 
       // Auto-assign based on issue type
-      await this.autoAssignTicket(ticket.id, request.issueType);
+      await this?.autoAssignTicket(ticket?.id, request?.issueType);
 
       // Send notification to support team
-      await this.notifySupportTeam(ticket);
+      await this?.notifySupportTeam(ticket as SupportTicket);
 
-      logger.info(`Support ticket created: ${ticket.id}`, 'CUSTOMER_SUPPORT');
+      logger?.info(`Support ticket created: ${ticket?.id}`, 'CUSTOMER_SUPPORT');
 
-      return ticket;
+      return ticket as SupportTicket;
     } catch (error) {
-      logger.error('Failed to create support ticket', 'CUSTOMER_SUPPORT', { error, request });
+      logger?.error('Failed to create support ticket', 'CUSTOMER_SUPPORT', { error, request });
       throw error;
     }
   }
@@ -133,16 +133,16 @@ export class CustomerSupportService {
     const urgentIssues: SupportIssueType[] = ['payment_issue', 'service_issue', 'complaint'];
     const highPriorityIssues: SupportIssueType[] = ['reschedule_request', 'cancellation_request', 'billing_inquiry'];
     
-    if (urgentIssues.includes(request.issueType)) {
+    if (urgentIssues?.includes(request?.issueType)) {
       return 'urgent';
     }
     
-    if (highPriorityIssues.includes(request.issueType)) {
+    if (highPriorityIssues?.includes(request?.issueType)) {
       return 'high';
     }
     
-    if (request.priority) {
-      return request.priority;
+    if (request?.priority) {
+      return request?.priority;
     }
     
     return 'medium';
@@ -152,7 +152,7 @@ export class CustomerSupportService {
    * Find existing open ticket for same customer and issue type
    */
   private async findExistingTicket(customerEmail: string, issueType: SupportIssueType): Promise<SupportTicket | null> {
-    const ticket = await prisma.supportTicket.findFirst({
+    const ticket = await prisma?.supportTicket?.findFirst({
       where: {
         customerEmail,
         issueType,
@@ -160,7 +160,7 @@ export class CustomerSupportService {
           in: ['open', 'in_progress', 'waiting_customer']
         },
         createdAt: {
-          gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Within last 24 hours
+          gte: new Date(Date?.now() - 24 * 60 * 60 * 1000) // Within last 24 hours
         }
       },
       orderBy: {
@@ -168,17 +168,17 @@ export class CustomerSupportService {
       }
     });
 
-    return ticket;
+    return ticket as SupportTicket | null;
   }
 
   /**
    * Update existing ticket with new information
    */
   private async updateExistingTicket(ticketId: string, request: SupportRequest): Promise<SupportTicket> {
-    const updatedTicket = await prisma.supportTicket.update({
+    const updatedTicket = await prisma?.supportTicket?.update({
       where: { id: ticketId },
       data: {
-        description: `${request.description}\n\n--- Additional Information ---\n${new Date().toISOString()}`,
+        description: `${request?.description}\n\n--- Additional Information ---\n${new Date().toISOString()}`,
         updatedAt: new Date(),
         metadata: {
           additionalRequests: true,
@@ -187,22 +187,22 @@ export class CustomerSupportService {
       }
     });
 
-    logger.info(`Updated existing support ticket: ${ticketId}`, 'CUSTOMER_SUPPORT');
-    return updatedTicket;
+    logger?.info(`Updated existing support ticket: ${ticketId}`, 'CUSTOMER_SUPPORT');
+    return updatedTicket as SupportTicket;
   }
 
   /**
    * Generate tags for the ticket
    */
   private generateTags(request: SupportRequest): string[] {
-    const tags = [request.issueType];
+    const tags: string[] = [request?.issueType];
     
-    if (request.bookingId) {
+    if (request?.bookingId) {
       tags.push('has_booking');
     }
     
-    if (request.contactMethod) {
-      tags.push(`contact_${request.contactMethod}`);
+    if (request?.contactMethod) {
+      tags.push(`contact_${request?.contactMethod}`);
     }
     
     return tags;
@@ -214,34 +214,34 @@ export class CustomerSupportService {
   private async sendSupportConfirmation(ticket: SupportTicket): Promise<void> {
     try {
       const client = {
-        firstName: ticket.customerName.split(' ')[0],
-        lastName: ticket.customerName.split(' ').slice(1).join(' '),
-        email: ticket.customerEmail
+        firstName: ticket?.customerName?.split(' ')[0] || '',
+        lastName: ticket?.customerName?.split(' ').slice(1).join(' ') || '',
+        email: ticket?.customerEmail
       };
 
       const supportDetails = {
-        issueType: this.formatIssueType(ticket.issueType),
-        description: ticket.description,
-        priority: ticket.priority,
-        bookingId: ticket.bookingId
+        issueType: this?.formatIssueType(ticket?.issueType),
+        description: ticket?.description,
+        priority: ticket?.priority,
+        bookingId: ticket?.bookingId
       };
 
       const emailContent = supportRequestEmail(client, supportDetails);
 
-      await NotificationService.sendNotification({
-        bookingId: ticket.bookingId || 'support',
-        type: NotificationType.BOOKING_CONFIRMATION, // Using existing type for now
-        recipient: { email: ticket.customerEmail },
+      await NotificationService?.sendNotification({
+        bookingId: ticket?.bookingId || 'support',
+        type: NotificationType?.BOOKING_CONFIRMATION, // Using existing type for now
+        recipient: { email: ticket?.customerEmail },
         content: {
-          subject: emailContent.subject,
-          message: emailContent.html
+          subject: emailContent?.subject,
+          message: emailContent?.html
         },
-        methods: [NotificationMethod.EMAIL]
+        methods: [NotificationMethod?.EMAIL]
       });
 
-      logger.info(`Support confirmation sent for ticket: ${ticket.id}`, 'CUSTOMER_SUPPORT');
+      logger?.info(`Support confirmation sent for ticket: ${ticket?.id}`, 'CUSTOMER_SUPPORT');
     } catch (error) {
-      logger.error(`Failed to send support confirmation for ticket: ${ticket.id}`, 'CUSTOMER_SUPPORT', { error });
+      logger?.error(`Failed to send support confirmation for ticket: ${ticket?.id}`, 'CUSTOMER_SUPPORT', { error });
     }
   }
 
@@ -271,7 +271,7 @@ export class CustomerSupportService {
   private async autoAssignTicket(ticketId: string, issueType: SupportIssueType): Promise<void> {
     // This would integrate with your team management system
     // For now, we'll just log the assignment logic
-    const assignmentMap = {
+    const assignmentMap: Partial<Record<SupportIssueType, string>> = {
       payment_issue: 'billing_team',
       service_issue: 'operations_team',
       technical_support: 'tech_team',
@@ -280,7 +280,7 @@ export class CustomerSupportService {
 
     const assignedTeam = assignmentMap[issueType] || 'general_support';
     
-    await prisma.supportTicket.update({
+    await prisma?.supportTicket?.update({
       where: { id: ticketId },
       data: {
         assignedTo: assignedTeam,
@@ -291,7 +291,7 @@ export class CustomerSupportService {
       }
     });
 
-    logger.info(`Ticket ${ticketId} auto-assigned to ${assignedTeam}`, 'CUSTOMER_SUPPORT');
+    logger?.info(`Ticket ${ticketId} auto-assigned to ${assignedTeam}`, 'CUSTOMER_SUPPORT');
   }
 
   /**
@@ -300,11 +300,11 @@ export class CustomerSupportService {
   private async notifySupportTeam(ticket: SupportTicket): Promise<void> {
     // This would integrate with your team notification system
     // For now, we'll just log the notification
-    logger.info(`Support team notified of new ticket: ${ticket.id}`, 'CUSTOMER_SUPPORT', {
-      ticketId: ticket.id,
-      priority: ticket.priority,
-      issueType: ticket.issueType,
-      customerEmail: ticket.customerEmail
+    logger?.info(`Support team notified of new ticket: ${ticket?.id}`, 'CUSTOMER_SUPPORT', {
+      ticketId: ticket?.id,
+      priority: ticket?.priority,
+      issueType: ticket?.issueType,
+      customerEmail: ticket?.customerEmail
     });
   }
 
@@ -312,7 +312,11 @@ export class CustomerSupportService {
    * Get automated response for common issues
    */
   async getAutomatedResponse(ticket: SupportTicket): Promise<SupportResponse | null> {
-    const automatedResponses = {
+    const automatedResponses: Partial<Record<SupportIssueType, {
+      message: string;
+      nextSteps: string[];
+      escalationNeeded: boolean;
+    }>> = {
       booking_question: {
         message: `Thank you for your booking question! Our team will review your inquiry and respond within 24 hours. In the meantime, you can check our FAQ section for common questions.`,
         nextSteps: ['Review FAQ section', 'Check booking status', 'Wait for team response'],
@@ -335,16 +339,16 @@ export class CustomerSupportService {
       }
     };
 
-    const response = automatedResponses[ticket.issueType];
+    const response = automatedResponses[ticket?.issueType];
     if (!response) return null;
 
     return {
-      ticketId: ticket.id,
-      message: response.message,
+      ticketId: ticket?.id,
+      message: response?.message,
       isAutomated: true,
       responseTime: 5, // 5 minutes
-      nextSteps: response.nextSteps,
-      escalationNeeded: response.escalationNeeded
+      nextSteps: response?.nextSteps,
+      escalationNeeded: response?.escalationNeeded
     };
   }
 
@@ -365,24 +369,24 @@ export class CustomerSupportService {
       updateData.description = `${updateData.description || ''}\n\n--- Status Update ---\n${notes}\n${new Date().toISOString()}`;
     }
 
-    const ticket = await prisma.supportTicket.update({
+    const ticket = await prisma?.supportTicket?.update({
       where: { id: ticketId },
       data: updateData
     });
 
     // Send status update to customer
-    await this.sendStatusUpdate(ticket, status, notes);
+    await this?.sendStatusUpdate(ticket as SupportTicket, status, notes);
 
-    logger.info(`Ticket status updated: ${ticketId} -> ${status}`, 'CUSTOMER_SUPPORT');
+    logger?.info(`Ticket status updated: ${ticketId} -> ${status}`, 'CUSTOMER_SUPPORT');
 
-    return ticket;
+    return ticket as SupportTicket;
   }
 
   /**
    * Send status update to customer
    */
   private async sendStatusUpdate(ticket: SupportTicket, status: SupportStatus, notes?: string): Promise<void> {
-    const statusMessages = {
+    const statusMessages: Partial<Record<SupportStatus, string>> = {
       in_progress: 'We are currently working on your request.',
       waiting_customer: 'We need additional information from you to proceed.',
       resolved: 'Your request has been resolved. Please let us know if you need anything else.',
@@ -392,15 +396,15 @@ export class CustomerSupportService {
     const message = statusMessages[status] || 'Your ticket status has been updated.';
     const fullMessage = notes ? `${message}\n\nAdditional notes: ${notes}` : message;
 
-    await NotificationService.sendNotification({
-      bookingId: ticket.bookingId || 'support',
-      type: NotificationType.BOOKING_CONFIRMATION,
-      recipient: { email: ticket.customerEmail },
+    await NotificationService?.sendNotification({
+      bookingId: ticket?.bookingId || 'support',
+      type: NotificationType?.BOOKING_CONFIRMATION,
+      recipient: { email: ticket?.customerEmail },
       content: {
-        subject: `Support Ticket Update - ${ticket.id}`,
+        subject: `Support Ticket Update - ${ticket?.id}`,
         message: fullMessage
       },
-      methods: [NotificationMethod.EMAIL]
+      methods: [NotificationMethod?.EMAIL]
     });
   }
 
@@ -408,11 +412,11 @@ export class CustomerSupportService {
    * Get customer support history
    */
   async getCustomerSupportHistory(customerEmail: string): Promise<SupportTicket[]> {
-    return await prisma.supportTicket.findMany({
+    return await prisma?.supportTicket?.findMany({
       where: { customerEmail },
       orderBy: { createdAt: 'desc' },
       take: 10
-    });
+    }) as SupportTicket[];
   }
 
   /**
@@ -432,18 +436,18 @@ export class CustomerSupportService {
       ticketsByPriority,
       ticketsByType,
       satisfactionData
-    ] = await Promise.all([
-      prisma.supportTicket.count(),
-      prisma.supportTicket.count({ where: { status: { in: ['open', 'in_progress'] } } }),
-      prisma.supportTicket.groupBy({
+    ] = await Promise?.all([
+      prisma?.supportTicket?.count(),
+      prisma?.supportTicket?.count({ where: { status: { in: ['open', 'in_progress'] } } }),
+      prisma?.supportTicket?.groupBy({
         by: ['priority'],
         _count: { priority: true }
       }),
-      prisma.supportTicket.groupBy({
+      prisma?.supportTicket?.groupBy({
         by: ['issueType'],
         _count: { issueType: true }
       }),
-      prisma.supportTicket.aggregate({
+      prisma?.supportTicket?.aggregate({
         _avg: { customerSatisfaction: true }
       })
     ]);
@@ -452,13 +456,13 @@ export class CustomerSupportService {
       totalTickets,
       openTickets,
       averageResponseTime: 0, // Would calculate from actual response times
-      customerSatisfaction: satisfactionData._avg.customerSatisfaction || 0,
-      ticketsByPriority: ticketsByPriority.reduce((acc, item) => {
-        acc[item.priority] = item._count.priority;
+      customerSatisfaction: satisfactionData?._avg?.customerSatisfaction || 0,
+      ticketsByPriority: ticketsByPriority?.reduce((acc, item) => {
+        acc[item?.priority] = item?._count?.priority;
         return acc;
       }, {} as Record<SupportPriority, number>),
-      ticketsByType: ticketsByType.reduce((acc, item) => {
-        acc[item.issueType] = item._count.issueType;
+      ticketsByType: ticketsByType?.reduce((acc, item) => {
+        acc[item?.issueType] = item?._count?.issueType;
         return acc;
       }, {} as Record<SupportIssueType, number>)
     };
@@ -467,21 +471,21 @@ export class CustomerSupportService {
 
 // Export convenience functions
 export const createSupportTicket = async (request: SupportRequest): Promise<SupportTicket> => {
-  const service = CustomerSupportService.getInstance();
-  return await service.createSupportTicket(request);
+  const service = CustomerSupportService?.getInstance();
+  return await service?.createSupportTicket(request);
 };
 
 export const updateTicketStatus = async (ticketId: string, status: SupportStatus, notes?: string): Promise<SupportTicket> => {
-  const service = CustomerSupportService.getInstance();
-  return await service.updateTicketStatus(ticketId, status, notes);
+  const service = CustomerSupportService?.getInstance();
+  return await service?.updateTicketStatus(ticketId, status, notes);
 };
 
 export const getCustomerSupportHistory = async (customerEmail: string): Promise<SupportTicket[]> => {
-  const service = CustomerSupportService.getInstance();
-  return await service.getCustomerSupportHistory(customerEmail);
+  const service = CustomerSupportService?.getInstance();
+  return await service?.getCustomerSupportHistory(customerEmail);
 };
 
 export const getSupportMetrics = async () => {
-  const service = CustomerSupportService.getInstance();
-  return await service.getSupportMetrics();
+  const service = CustomerSupportService?.getInstance();
+  return await service?.getSupportMetrics();
 }; 

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { citationTracker } from '@/lib/citations/citation-tracker';
 
 export async function POST(
@@ -45,7 +46,7 @@ export async function POST(
     return NextResponse.json(
       { 
         error: 'Failed to resolve alert',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
       },
       { status: 500 }
     );

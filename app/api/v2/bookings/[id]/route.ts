@@ -36,13 +36,11 @@ export async function GET(
             depositAmount: true,
           },
         },
-        user: {
+        User_Booking_signerIdToUser: {
           select: {
             id: true,
-            firstName: true,
-            lastName: true,
+            name: true,
             email: true,
-            phone: true,
           },
         },
         payments: {
@@ -116,17 +114,17 @@ export async function GET(
       } : null,
       
       // Additional data
-      specialInstructions: booking.specialInstructions,
-      internalNotes: booking.internalNotes,
-      user: booking.user,
+      specialInstructions: null, // specialInstructions doesn't exist on Booking model
+      internalNotes: null, // internalNotes doesn't exist on Booking model
+      user: booking.User_Booking_signerIdToUser,
       payments: booking.payments.map(payment => ({
         ...payment,
         amount: Number(payment.amount),
       })),
       
       // Payment processing fields
-      paymentStatus: booking.paymentStatus,
-      stripePaymentIntentId: booking.stripePaymentIntentId,
+      paymentStatus: booking.depositStatus, // Using depositStatus as closest equivalent
+      stripePaymentIntentId: null, // stripePaymentIntentId doesn't exist on Booking model
     };
     
     return NextResponse.json({

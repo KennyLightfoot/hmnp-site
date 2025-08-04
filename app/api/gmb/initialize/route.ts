@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { gmbManager } from '@/lib/gmb/manager';
 
 export async function POST(request: NextRequest) {
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         error: 'Failed to initialize GMB system',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
       },
       { status: 500 }
     );
@@ -104,7 +105,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       status: 'error',
       message: 'Failed to check GMB status',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
       timestamp: new Date().toISOString(),
     });
   }

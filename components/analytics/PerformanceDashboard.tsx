@@ -60,6 +60,9 @@ export function PerformanceDashboard() {
 
       return () => clearInterval(interval);
     }
+    
+    // Add return for the case when neither dev nor admin
+    return undefined;
   }, [getPerformanceSummary]);
 
   if (!isVisible || !performanceData) {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { proofAPI, RONService } from '@/lib/proof/api';
 
 export async function GET(request: NextRequest) {
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
       transaction = await proofAPI.createTransaction(testPayload);
       console.log('✅ Transaction creation result:', transaction);
     } catch (error) {
-      transactionError = error instanceof Error ? error.message : String(error);
+      transactionError = error instanceof Error ? getErrorMessage(error) : String(error);
       console.error('❌ Transaction creation error:', transactionError);
     }
 
@@ -66,7 +67,7 @@ export async function GET(request: NextRequest) {
       });
       console.log('✅ RON Service result:', ronSession);
     } catch (error) {
-      ronError = error instanceof Error ? error.message : String(error);
+      ronError = error instanceof Error ? getErrorMessage(error) : String(error);
       console.error('❌ RON Service error:', ronError);
     }
 
@@ -102,7 +103,7 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined
     }, { status: 500 });
   }

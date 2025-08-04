@@ -436,36 +436,36 @@ export function ErrorBoundaryFallback({
 export function getErrorInfo(error: any): ErrorInfo {
   // Handle known error types
   if (error?.code && ERROR_MESSAGES[error.code]) {
-    return ERROR_MESSAGES[error.code];
+    return ERROR_MESSAGES[error.code]!;
   }
 
   // Handle network errors
   if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
-    return ERROR_MESSAGES['NETWORK_TIMEOUT'];
+    return ERROR_MESSAGES['NETWORK_TIMEOUT']!;
   }
 
   // Handle validation errors
   if (error?.message?.includes('validation') || error?.message?.includes('required')) {
-    return ERROR_MESSAGES['VALIDATION_REQUIRED_FIELD'];
+    return ERROR_MESSAGES['VALIDATION_REQUIRED_FIELD']!;
   }
 
   // Handle payment errors
   if (error?.message?.includes('payment') || error?.message?.includes('card')) {
-    return ERROR_MESSAGES['PAYMENT_DECLINED'];
+    return ERROR_MESSAGES['PAYMENT_DECLINED']!;
   }
 
   // Default to unknown error
-  return ERROR_MESSAGES['UNKNOWN_ERROR'];
+  return ERROR_MESSAGES['UNKNOWN_ERROR']!;
 }
 
 export function isRetryableError(error: any): boolean {
   const errorInfo = getErrorInfo(error);
-  return errorInfo.retryable;
+  return errorInfo?.retryable || false;
 }
 
 export function shouldContactSupport(error: any): boolean {
   const errorInfo = getErrorInfo(error);
-  return errorInfo.contactSupport || errorInfo.severity === 'critical';
+  return errorInfo?.contactSupport || errorInfo?.severity === 'critical' || false;
 }
 
 // ============================================================================

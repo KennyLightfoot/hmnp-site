@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '@/lib/database-connection';
 import { BookingStatus } from '@prisma/client';
 import { cache, cacheTTL } from '@/lib/cache';
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: false,
       error: 'Failed to fetch dashboard data',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      message: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
     }, { status: 500 });
   }
 }

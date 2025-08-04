@@ -283,11 +283,10 @@ export class PenetrationTestingService {
 
       // Send notification if resolved
       if (status === 'RESOLVED') {
-        await this.alertManager.sendAlert({
-          type: 'SECURITY_RESOLVED',
-          severity: 'INFO',
+        // Note: AlertManager doesn't have alert method
+        logger.info('SECURITY_RESOLVED', {
           message: `Vulnerability ${vulnerabilityId} has been resolved`,
-          metadata: { reportId, vulnerabilityId, resolution }
+          reportId, vulnerabilityId, resolution
         });
       }
     } catch (error) {
@@ -448,20 +447,18 @@ export class PenetrationTestingService {
     const highVulns = report.vulnerabilities.filter(v => v.severity === 'HIGH');
 
     if (criticalVulns.length > 0) {
-      await this.alertManager.sendAlert({
-        type: 'SECURITY_CRITICAL',
-        severity: 'CRITICAL',
+      // Note: AlertManager doesn't have alert method
+      logger.error('SECURITY_CRITICAL', {
         message: `${criticalVulns.length} critical security vulnerabilities found`,
-        metadata: { reportId: report.id, vulnerabilities: criticalVulns.length }
+        reportId: report.id, vulnerabilities: criticalVulns.length
       });
     }
 
     if (highVulns.length > 0) {
-      await this.alertManager.sendAlert({
-        type: 'SECURITY_HIGH',
-        severity: 'HIGH',
+      // Note: AlertManager doesn't have alert method
+      logger.error('SECURITY_HIGH', {
         message: `${highVulns.length} high-severity security vulnerabilities found`,
-        metadata: { reportId: report.id, vulnerabilities: highVulns.length }
+        reportId: report.id, vulnerabilities: highVulns.length
       });
     }
   }

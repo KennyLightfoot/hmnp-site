@@ -38,7 +38,7 @@ async function diagnoseGHLCalendar() {
       // Team Members Analysis
       console.log('👥 TEAM MEMBERS:');
       if (calendar.teamMembers && calendar.teamMembers.length > 0) {
-        calendar.teamMembers.forEach((member, index) => {
+        calendar.teamMembers.forEach((member: any, index: any) => {
           console.log(`  ${index + 1}. User ID: ${member.userId}`);
           console.log(`     Priority: ${member.priority}`);
           console.log(`     Selected: ${member.selected ? '✅' : '❌'}`);
@@ -53,9 +53,9 @@ async function diagnoseGHLCalendar() {
       console.log('🕐 OPEN HOURS:');
       if (calendar.openHours && calendar.openHours.length > 0) {
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        calendar.openHours.forEach((schedule, index) => {
-          const dayNames = schedule.daysOfTheWeek.map(day => days[day]).join(', ');
-          schedule.hours.forEach(hour => {
+        calendar.openHours.forEach((schedule: any, index: any) => {
+          const dayNames = schedule.daysOfTheWeek.map((day: any) => days[day]).join(', ');
+          schedule.hours.forEach((hour: any) => {
             const start = `${hour.openHour.toString().padStart(2, '0')}:${hour.openMinute.toString().padStart(2, '0')}`;
             const end = `${hour.closeHour.toString().padStart(2, '0')}:${hour.closeMinute.toString().padStart(2, '0')}`;
             console.log(`  ${dayNames}: ${start} - ${end}`);
@@ -69,7 +69,7 @@ async function diagnoseGHLCalendar() {
       console.log('\n🚨 AVAILABILITY BLOCKS (CRITICAL):');
       if (calendar.availabilities && calendar.availabilities.length > 0) {
         console.log(`  ✅ Found ${calendar.availabilities.length} availability blocks`);
-        calendar.availabilities.forEach((availability, index) => {
+        calendar.availabilities.forEach((availability: any, index: any) => {
           console.log(`  ${index + 1}. ${JSON.stringify(availability, null, 4)}`);
         });
       } else {

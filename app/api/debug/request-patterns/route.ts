@@ -7,9 +7,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 
 export async function GET() {
-  const analysis = {
+  const analysis: any = {
     timestamp: new Date().toISOString(),
     instructions: {
       manual_testing: [
@@ -184,14 +185,14 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return NextResponse.json({
       error: 'Invalid request body',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
     }, { status: 400 });
   }
 }
 
 async function analyzeRequests(requestData: any) {
   // Analyze provided request data for patterns
-  const analysis = {
+  const analysis: any = {
     timestamp: new Date().toISOString(),
     request_pattern_analysis: 'Analysis would be performed on provided request data',
     note: 'This is a mock analysis - provide request timing data for real analysis'
@@ -254,7 +255,7 @@ async function checkEndpoints() {
         status: 'ERROR',
         timing_ms: 0,
         accessible: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
       });
     }
   }

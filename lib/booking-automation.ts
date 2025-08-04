@@ -7,6 +7,7 @@
  */
 
 import { prisma } from './prisma';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { logger } from './logger';
 import { redis } from './redis';
 
@@ -50,12 +51,12 @@ export class BookingAutomationService {
       });
 
       // Get booking details
-      const booking = await prisma.newBooking.findUnique({
+      const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
           payments: true,
-          notifications: true,
-          documents: true
+          NotificationLog: true,
+          NotarizationDocument: true
         }
       });
 
@@ -96,8 +97,8 @@ export class BookingAutomationService {
     } catch (error) {
       logger.error('Auto-completion failed', {
         bookingId: trigger.bookingId,
-        error: error.message,
-        stack: error.stack
+        error: getErrorMessage(error),
+        stack: error instanceof Error ? error.stack : undefined
       });
       return false;
     }
@@ -117,11 +118,11 @@ export class BookingAutomationService {
       });
 
       // Get booking details
-      const booking = await prisma.newBooking.findUnique({
+      const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
           payments: true,
-          notifications: true
+          NotificationLog: true
         }
       });
 
@@ -140,36 +141,41 @@ export class BookingAutomationService {
       }
 
       // Update booking status and details
-      const updatedBooking = await prisma.newBooking.update({
+      const updatedBooking = await prisma.booking.update({
         where: { id: bookingId },
         data: {
           status: 'COMPLETED',
-          actualStartTime: data.actualStartTime || new Date(),
-          actualEndTime: data.actualEndTime || new Date(),
-          internalNotes: manualNotes,
-          notaryUserId: data.notaryId || booking.notaryUserId,
+          actualEndDateTime: data.actualEndTime || new Date(),
+          notes: manualNotes,
+          notaryId: data.notaryId || booking.notaryId,
           updatedAt: new Date()
         }
       });
 
-      // Create audit log entry
-      await prisma.newBookingAuditLog.create({
+      // Create audit log entry (using SystemLog instead of bookingAuditLog)
+      await prisma.systemLog.create({
         data: {
-          bookingId,
-          action: 'MANUAL_COMPLETION',
-          oldValues: {
-            status: booking.status,
-            actualEndTime: booking.actualEndTime
+          id: `system_log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          component: 'BOOKING_AUTOMATION',
+          level: 'INFO',
+          message: `Manual completion of booking ${bookingId}`,
+          metadata: {
+            bookingId,
+            action: 'MANUAL_COMPLETION',
+            oldValues: {
+              status: booking.status,
+              actualEndDateTime: booking.actualEndDateTime
+            },
+            newValues: {
+              status: 'COMPLETED',
+              actualEndDateTime: data.actualEndTime || new Date(),
+              completedBy: completedById,
+              manualNotes,
+              overrideReason: data.overrideReason
+            },
+            userId: completedById
           },
-          newValues: {
-            status: 'COMPLETED',
-            actualEndTime: data.actualEndTime || new Date(),
-            completedBy: completedById,
-            manualNotes,
-            overrideReason: data.overrideReason
-          },
-          userId: completedById,
-          timestamp: new Date()
+          userId: completedById
         }
       });
 
@@ -188,8 +194,8 @@ export class BookingAutomationService {
       logger.error('Manual completion failed', {
         bookingId: data.bookingId,
         completedById: data.completedById,
-        error: error.message,
-        stack: error.stack
+        error: getErrorMessage(error),
+        stack: error instanceof Error ? error.stack : undefined
       });
       return false;
     }
@@ -233,12 +239,12 @@ export class BookingAutomationService {
     logger.info('Auto-completing by scheduled time', { bookingId: booking.id });
 
     // Update booking to completed
-    await prisma.newBooking.update({
+    await prisma.booking.update({
       where: { id: booking.id },
       data: {
         status: 'COMPLETED',
-        actualEndTime: new Date(),
-        internalNotes: 'Auto-completed based on scheduled time'
+        actualEndDateTime: new Date(),
+        notes: 'Auto-completed based on scheduled time'
       }
     });
 
@@ -252,14 +258,13 @@ export class BookingAutomationService {
   private static async completeByNotaryCheckin(booking: any, metadata: any): Promise<boolean> {
     logger.info('Auto-completing by notary check-in', { bookingId: booking.id });
 
-    await prisma.newBooking.update({
+    await prisma.booking.update({
       where: { id: booking.id },
       data: {
         status: 'COMPLETED',
-        actualStartTime: metadata?.checkinTime || new Date(),
-        actualEndTime: new Date(),
-        notaryUserId: metadata?.notaryId || booking.notaryUserId,
-        internalNotes: 'Auto-completed based on notary check-in'
+        actualEndDateTime: new Date(),
+        notaryId: metadata?.notaryId || booking.notaryId,
+        notes: 'Auto-completed based on notary check-in'
       }
     });
 
@@ -273,12 +278,12 @@ export class BookingAutomationService {
   private static async completeByDocumentUpload(booking: any, metadata: any): Promise<boolean> {
     logger.info('Auto-completing by document upload', { bookingId: booking.id });
 
-    await prisma.newBooking.update({
+    await prisma.booking.update({
       where: { id: booking.id },
       data: {
         status: 'COMPLETED',
-        actualEndTime: new Date(),
-        internalNotes: 'Auto-completed based on document upload completion'
+        actualEndDateTime: new Date(),
+        notes: 'Auto-completed based on document upload completion'
       }
     });
 
@@ -294,12 +299,12 @@ export class BookingAutomationService {
 
     // Only auto-complete if it's a prepaid service
     if (booking.paymentStatus === 'COMPLETED' && booking.balanceDue <= 0) {
-      await prisma.newBooking.update({
+      await prisma.booking.update({
         where: { id: booking.id },
         data: {
           status: 'COMPLETED',
-          actualEndTime: new Date(),
-          internalNotes: 'Auto-completed based on full payment received'
+          actualEndDateTime: new Date(),
+          notes: 'Auto-completed based on full payment received'
         }
       });
 
@@ -330,7 +335,7 @@ export class BookingAutomationService {
 
       return false;
     } catch (error) {
-      logger.error('Permission validation failed', { userId, error: error.message });
+      logger.error('Permission validation failed', { userId, error: getErrorMessage(error) });
       return false;
     }
   }
@@ -344,14 +349,14 @@ export class BookingAutomationService {
       const workflowKey = `completion_workflows:${booking.id}`;
       
       // Prevent duplicate workflow execution
-      const workflowLock = await redis.setnx(workflowKey, completionType);
-      if (!workflowLock) {
+      const existingLock = await redis.get(workflowKey);
+      if (existingLock) {
         logger.info('Post-completion workflows already triggered', { bookingId: booking.id });
         return;
       }
 
-      // Set expiration on workflow lock (1 hour)
-      await redis.expire(workflowKey, 3600);
+      // Set workflow lock with expiration (1 hour)
+      await redis.setex(workflowKey, 3600, completionType);
 
       // Schedule post-completion tasks
       const workflows = [
@@ -387,7 +392,7 @@ export class BookingAutomationService {
       logger.error('Failed to trigger post-completion workflows', {
         bookingId: booking.id,
         completionType,
-        error: error.message
+        error: getErrorMessage(error)
       });
     }
   }
@@ -400,10 +405,11 @@ export class BookingAutomationService {
     const followUpTime = new Date();
     followUpTime.setHours(followUpTime.getHours() + 24);
 
-    await prisma.newNotification.create({
+    await prisma.notificationLog.create({
       data: {
+        id: `followup_${booking.id}_${Date.now()}`,
         bookingId: booking.id,
-        notificationType: 'FOLLOWUP',
+        notificationType: 'POST_SERVICE_FOLLOWUP',
         method: 'EMAIL',
         recipientEmail: booking.customerEmail,
         subject: 'How was your notary experience?',
@@ -432,10 +438,11 @@ export class BookingAutomationService {
     const reviewTime = new Date();
     reviewTime.setHours(reviewTime.getHours() + 48);
 
-    await prisma.newNotification.create({
+    await prisma.notificationLog.create({
       data: {
+        id: `review_${booking.id}_${Date.now()}`,
         bookingId: booking.id,
-        notificationType: 'FOLLOWUP',
+        notificationType: 'POST_SERVICE_FOLLOWUP',
         method: 'EMAIL',
         recipientEmail: booking.customerEmail,
         subject: 'Please share your experience',
@@ -473,7 +480,7 @@ export class BookingAutomationService {
       const cutoffTime = new Date();
       cutoffTime.setMinutes(cutoffTime.getMinutes() - 30); // 30 minutes past scheduled end
 
-      const eligibleBookings = await prisma.newBooking.findMany({
+      const eligibleBookings = await prisma.booking.findMany({
         where: {
           status: 'IN_PROGRESS',
           scheduledDateTime: {
@@ -503,8 +510,8 @@ export class BookingAutomationService {
 
     } catch (error) {
       logger.error('Bulk auto-completion failed', {
-        error: error.message,
-        stack: error.stack
+        error: getErrorMessage(error),
+        stack: error instanceof Error ? error.stack : undefined
       });
       return 0;
     }

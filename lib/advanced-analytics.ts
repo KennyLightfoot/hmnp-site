@@ -120,12 +120,12 @@ class AdvancedAnalytics {
     try {
       const cacheKey = `analytics:report:${timeframe}`;
       
-      const cached = await cache.get<AnalyticsReport>(cacheKey);
+      const cached = await cache?.get<AnalyticsReport>(cacheKey);
       if (cached) {
         return cached;
       }
 
-      logger.info('Generating advanced analytics report', 'ANALYTICS', { timeframe });
+      logger?.info('Generating advanced analytics report', 'ANALYTICS', { timeframe });
 
       // Parallel data collection for performance
       const [
@@ -134,12 +134,12 @@ class AdvancedAnalytics {
         predictiveMetrics,
         businessIntelligence,
         performanceMetrics
-      ] = await Promise.all([
-        this.generateCustomerSegmentation(timeframe),
-        this.generateCohortAnalysis(timeframe),
-        this.generatePredictiveMetrics(timeframe),
-        this.generateBusinessIntelligence(timeframe),
-        this.generatePerformanceMetrics(timeframe)
+      ] = await Promise?.all([
+        this?.generateCustomerSegmentation(timeframe),
+        this?.generateCohortAnalysis(timeframe),
+        this?.generatePredictiveMetrics(timeframe),
+        this?.generateBusinessIntelligence(timeframe),
+        this?.generatePerformanceMetrics(timeframe)
       ]);
 
       const report: AnalyticsReport = {
@@ -151,14 +151,14 @@ class AdvancedAnalytics {
       };
 
       // Cache for 6 hours
-      await cache.set(cacheKey, report, { 
-        ttl: cacheTTL.long * 6,
+      await cache?.set(cacheKey, report, { 
+        ttl: cacheTTL?.long * 6,
         tags: ['analytics', 'business-intelligence']
       });
 
       return report;
     } catch (error) {
-      logger.error('Analytics report generation error', 'ANALYTICS', error as Error);
+      logger?.error('Analytics report generation error', 'ANALYTICS', error as Error);
       throw error;
     }
   }
@@ -169,10 +169,10 @@ class AdvancedAnalytics {
   private async generateCustomerSegmentation(timeframe: string): Promise<CustomerSegment[]> {
     try {
       const endDate = new Date();
-      const startDate = this.getStartDate(endDate, timeframe);
+      const startDate = this?.getStartDate(endDate, timeframe);
 
       // Get customer data with booking history
-      const customers = await prisma.user.findMany({
+      const customers = await prisma?.user.findMany({
         where: {
           Booking_Booking_signerIdToUser: {
             some: {
@@ -186,25 +186,25 @@ class AdvancedAnalytics {
         include: {
           Booking_Booking_signerIdToUser: {
             include: {
-              Service: true
+              service: true
             }
           }
         }
       });
 
       // Segment customers by behavior and value
-      const segments = this.segmentCustomers(customers);
+      const segments = this?.segmentCustomers(customers);
 
-      return Object.entries(segments).map(([segmentName, customers]) => ({
+      return Object?.entries(segments).map(([segmentName, customers]) => ({
         segment: segmentName,
-        count: customers.length,
-        averageValue: this.calculateAverageValue(customers),
-        retentionRate: this.calculateRetentionRate(customers),
-        growthRate: this.calculateGrowthRate(customers, timeframe),
-        characteristics: this.getSegmentCharacteristics(segmentName, customers)
+        count: customers?.length,
+        averageValue: this?.calculateAverageValue(customers),
+        retentionRate: this?.calculateRetentionRate(customers),
+        growthRate: this?.calculateGrowthRate(customers, timeframe),
+        characteristics: this?.getSegmentCharacteristics(segmentName, customers)
       }));
     } catch (error) {
-      logger.error('Customer segmentation error', 'ANALYTICS', error as Error);
+      logger?.error('Customer segmentation error', 'ANALYTICS', error as Error);
       return [];
     }
   }
@@ -214,17 +214,17 @@ class AdvancedAnalytics {
    */
   private async generateCohortAnalysis(timeframe: string): Promise<CohortData[]> {
     try {
-      const cohorts = await this.buildCohorts(timeframe);
+      const cohorts = await this?.buildCohorts(timeframe);
       
-      return cohorts.map(cohort => ({
-        cohortMonth: cohort.month,
-        customersAcquired: cohort.customers.length,
-        retentionByMonth: this.calculateCohortRetention(cohort),
-        revenueByMonth: this.calculateCohortRevenue(cohort),
-        lifetimeValue: this.calculateCohortLTV(cohort)
+      return cohorts?.map(cohort => ({
+        cohortMonth: cohort?.month,
+        customersAcquired: cohort?.customers.length,
+        retentionByMonth: this?.calculateCohortRetention(cohort),
+        revenueByMonth: this?.calculateCohortRevenue(cohort),
+        lifetimeValue: this?.calculateCohortLTV(cohort)
       }));
     } catch (error) {
-      logger.error('Cohort analysis error', 'ANALYTICS', error as Error);
+      logger?.error('Cohort analysis error', 'ANALYTICS', error as Error);
       return [];
     }
   }
@@ -234,10 +234,10 @@ class AdvancedAnalytics {
    */
   private async generatePredictiveMetrics(timeframe: string): Promise<PredictiveMetrics> {
     try {
-      const [churnPrediction, demandForecast, revenueProjection] = await Promise.all([
-        this.predictCustomerChurn(),
-        this.forecastDemand(timeframe),
-        this.projectRevenue(timeframe)
+      const [churnPrediction, demandForecast, revenueProjection] = await Promise?.all([
+        this?.predictCustomerChurn(),
+        this?.forecastDemand(timeframe),
+        this?.projectRevenue(timeframe)
       ]);
 
       return {
@@ -246,7 +246,7 @@ class AdvancedAnalytics {
         revenueProjection
       };
     } catch (error) {
-      logger.error('Predictive metrics error', 'ANALYTICS', error as Error);
+      logger?.error('Predictive metrics error', 'ANALYTICS', error as Error);
       return {
         churnPrediction: [],
         demandForecast: [],
@@ -265,11 +265,11 @@ class AdvancedAnalytics {
    */
   private async generateBusinessIntelligence(timeframe: string): Promise<BusinessIntelligence> {
     try {
-      const [marketInsights, competitiveAnalysis, operationalEfficiency, customerJourney] = await Promise.all([
-        this.generateMarketInsights(),
-        this.generateCompetitiveAnalysis(),
-        this.generateOperationalEfficiency(),
-        this.generateCustomerJourney()
+      const [marketInsights, competitiveAnalysis, operationalEfficiency, customerJourney] = await Promise?.all([
+        this?.generateMarketInsights(),
+        this?.generateCompetitiveAnalysis(),
+        this?.generateOperationalEfficiency(),
+        this?.generateCustomerJourney()
       ]);
 
       return {
@@ -279,7 +279,7 @@ class AdvancedAnalytics {
         customerJourney
       };
     } catch (error) {
-      logger.error('Business intelligence error', 'ANALYTICS', error as Error);
+      logger?.error('Business intelligence error', 'ANALYTICS', error as Error);
       return {
         marketInsights: [],
         competitiveAnalysis: [],
@@ -295,10 +295,10 @@ class AdvancedAnalytics {
   private async generatePerformanceMetrics(timeframe: string): Promise<PerformanceMetrics> {
     try {
       const endDate = new Date();
-      const startDate = this.getStartDate(endDate, timeframe);
+      const startDate = this?.getStartDate(endDate, timeframe);
 
       // Get booking data
-      const bookings = await prisma.booking.findMany({
+      const bookings = await prisma?.booking.findMany({
         where: {
           createdAt: {
             gte: startDate,
@@ -306,25 +306,25 @@ class AdvancedAnalytics {
           }
         },
         include: {
-          Service: true
+          service: true
         }
       });
 
       // Calculate KPIs
       const kpis = {
-        totalBookings: bookings.length,
-        totalRevenue: bookings.reduce((sum: number, b: any) => {
+        totalBookings: bookings?.length,
+        totalRevenue: bookings?.reduce((sum: number, b: any) => {
           const amt = (b as any).totalAmount ?? 0;
           return sum + amt;
         }, 0),
-        averageBookingValue: bookings.length > 0 ? bookings.reduce((sum: number, b: any) => {
+        averageBookingValue: bookings?.length > 0 ? bookings?.reduce((sum: number, b: any) => {
           const amt = (b as any).totalAmount ?? 0;
           return sum + amt;
-        }, 0) / bookings.length : 0,
-        conversionRate: this.calculateConversionRate(bookings),
+        }, 0) / bookings?.length : 0,
+        conversionRate: this?.calculateConversionRate(bookings),
         customerSatisfaction: 4.5, // Mock data
         netPromoterScore: 67, // Mock data
-        customerLifetimeValue: this.calculateAverageLTV(bookings)
+        customerLifetimeValue: this?.calculateAverageLTV(bookings)
       };
 
       // Calculate trends (mock data for now)
@@ -339,21 +339,21 @@ class AdvancedAnalytics {
       const benchmarks: BenchmarksMap = {
         conversionRate: {
           value: 0.15,
-          status: kpis.conversionRate >= 0.15 ? 'MEETING' : 'BELOW',
+          status: kpis?.conversionRate >= 0.15 ? 'MEETING' : 'BELOW',
         },
         customerSatisfaction: {
           value: 4.0,
-          status: kpis.customerSatisfaction >= 4.0 ? 'ABOVE' : 'BELOW',
+          status: kpis?.customerSatisfaction >= 4.0 ? 'ABOVE' : 'BELOW',
         },
         averageBookingValue: {
           value: 150,
-          status: kpis.averageBookingValue >= 150 ? 'MEETING' : 'BELOW',
+          status: kpis?.averageBookingValue >= 150 ? 'MEETING' : 'BELOW',
         },
       };
 
       return { kpis, trends, benchmarks };
     } catch (error) {
-      logger.error('Performance metrics error', 'ANALYTICS', error as Error);
+      logger?.error('Performance metrics error', 'ANALYTICS', error as Error);
       return {
         kpis: {},
         trends: {},
@@ -369,13 +369,13 @@ class AdvancedAnalytics {
     const start = new Date(endDate);
     switch (timeframe) {
       case 'month':
-        start.setMonth(start.getMonth() - 1);
+        start?.setMonth(start?.getMonth() - 1);
         break;
       case 'quarter':
-        start.setMonth(start.getMonth() - 3);
+        start?.setMonth(start?.getMonth() - 3);
         break;
       case 'year':
-        start.setFullYear(start.getFullYear() - 1);
+        start?.setFullYear(start?.getFullYear() - 1);
         break;
     }
     return start;
@@ -389,21 +389,26 @@ class AdvancedAnalytics {
       'New': [],
     };
 
-    customers.forEach(customer => {
-      const bookings = customer.Booking_Booking_signerIdToUser || [];
-      const totalSpent = bookings.reduce((sum: number, b: any) => sum + ((b as any).totalAmount || 0), 0);
-      const bookingCount = bookings.length;
+    customers?.forEach(customer => {
+      const bookings = customer?.Booking_Booking_signerIdToUser || [];
+      const totalSpent = bookings?.reduce((sum: number, b: any) => sum + ((b as any).totalAmount || 0), 0);
+      const bookingCount = bookings?.length;
 
       if (totalSpent > 500 && bookingCount > 3) {
-        segments['High Value'].push(customer);
+        segments['High Value']!.push(customer);
       } else if (bookingCount > 1) {
-        segments['Regular'].push(customer);
+        segments['Regular']!.push(customer);
       } else if (bookingCount === 1) {
-        const bookingAge = Date.now() - new Date(bookings[0].createdAt).getTime();
-        if (bookingAge < 30 * 24 * 60 * 60 * 1000) { // 30 days
-          segments['New'].push(customer);
+        const firstBooking = bookings[0];
+        if (firstBooking && firstBooking.createdAt) {
+          const bookingAge = Date.now() - new Date(firstBooking.createdAt).getTime();
+          if (bookingAge < 30 * 24 * 60 * 60 * 1000) { // 30 days
+            segments['New']!.push(customer);
+          } else {
+            segments['Occasional']!.push(customer);
+          }
         } else {
-          segments['Occasional'].push(customer);
+          segments['Occasional']!.push(customer);
         }
       }
     });
@@ -413,7 +418,7 @@ class AdvancedAnalytics {
 
   private calculateAverageValue(customers: any[]): number {
     const totalValue = customers.reduce((sum: number, customer: any) => {
-      const bookings = customer.Booking_Booking_signerIdToUser || [];
+      const bookings = customer?.Booking_Booking_signerIdToUser || [];
       return sum + bookings.reduce((bookingSum: number, booking: any) => bookingSum + ((booking as any).totalAmount || 0), 0);
     }, 0);
 
@@ -423,7 +428,7 @@ class AdvancedAnalytics {
   private calculateRetentionRate(customers: any[]): number {
     // Simplified retention calculation
     const retainedCustomers = customers.filter(customer => {
-      const bookings = customer.Booking_Booking_signerIdToUser || [];
+      const bookings = customer?.Booking_Booking_signerIdToUser || [];
       return bookings.length > 1;
     });
 
@@ -487,15 +492,15 @@ class AdvancedAnalytics {
 
   private async predictCustomerChurn(): Promise<any[]> {
     // Simplified churn prediction
-    const customers = await prisma.user.findMany({
+    const customers = await prisma?.user.findMany({
       include: {
         Booking_Booking_signerIdToUser: true
       }
     });
 
-    return customers.slice(0, 10).map(customer => ({
-      customerId: customer.id,
-      churnProbability: Math.random() * 0.8, // 0-80% churn probability
+    return customers?.slice(0, 10).map(customer => ({
+      customerId: customer?.id,
+      churnProbability: Math?.random() * 0.8, // 0-80% churn probability
       riskFactors: ['Decreased usage', 'No recent bookings', 'Price sensitivity'],
       recommendedActions: ['Retention campaign', 'Personalized offer', 'Customer success outreach']
     }));
@@ -506,12 +511,12 @@ class AdvancedAnalytics {
     const forecast = [];
     for (let i = 1; i <= 30; i++) {
       const date = new Date();
-      date.setDate(date.getDate() + i);
+      date?.setDate(date?.getDate() + i);
       
-      forecast.push({
-        date: date.toISOString().split('T')[0],
-        predictedBookings: Math.floor(Math.random() * 20) + 5, // 5-25 bookings
-        confidence: 0.7 + Math.random() * 0.2, // 70-90% confidence
+      forecast?.push({
+        date: date?.toISOString().split('T')[0],
+        predictedBookings: Math?.floor(Math?.random() * 20) + 5, // 5-25 bookings
+        confidence: 0.7 + Math?.random() * 0.2, // 70-90% confidence
         seasonalFactors: ['weekday_pattern', 'monthly_trend']
       });
     }
@@ -620,7 +625,7 @@ class AdvancedAnalytics {
 
   private calculateAverageLTV(bookings: any[]): number {
     // Simplified LTV calculation
-    return bookings.reduce((sum, booking) => sum + ((booking as any).totalAmount || 0), 0) * 2.5; // Multiply by estimated lifetime multiplier
+    return bookings?.reduce((sum, booking) => sum + ((booking as any).totalAmount || 0), 0) * 2.5; // Multiply by estimated lifetime multiplier
   }
 }
 

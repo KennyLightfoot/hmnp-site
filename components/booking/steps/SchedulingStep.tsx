@@ -147,8 +147,10 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
       }
       
       // Get real availability data for this date
-      const dayAvailability = availabilityData[dateString];
+      const dayAvailability = dateString ? availabilityData[dateString] : undefined;
       const slots = dayAvailability?.availableSlots || [];
+      
+      if (!dateString) continue;
       
       days.push({
         date: dateString,
@@ -290,12 +292,10 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
 
   const handleTimeSelect = (slot: TimeSlot) => {
     setValue('scheduling.preferredTime', slot.displayTime);
-    setValue('scheduling.preferredTimeSlot', slot.startTime);
     onUpdate({ 
       scheduling: { 
         ...watchedScheduling, 
-        preferredTime: slot.displayTime,
-        preferredTimeSlot: slot.startTime
+        preferredTime: slot.displayTime
       } 
     });
   };
@@ -554,7 +554,7 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
                           onClick={() => handleTimeSelect(slot)}
                           className={`
                             p-3 rounded-lg border text-center transition-all duration-200
-                            ${watchedScheduling.preferredTimeSlot === slot.startTime
+                            ${watchedScheduling.preferredTime === slot.displayTime
                               ? 'bg-green-600 text-white border-green-600 shadow-md'
                               : `hover:shadow-md ${getDemandColor(slot.demand || 'low')}`
                             }
@@ -650,9 +650,10 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
                   id="flexible-timing"
                   checked={watchedScheduling.flexibleTiming || false}
                   onCheckedChange={(checked) => {
-                    setValue('scheduling.flexibleTiming', checked);
+                    const boolValue = checked as boolean;
+                    setValue('scheduling.flexibleTiming', boolValue);
                     onUpdate({ 
-                      scheduling: { ...watchedScheduling, flexibleTiming: checked } 
+                      scheduling: { ...watchedScheduling, flexibleTiming: boolValue } 
                     });
                   }}
                 />

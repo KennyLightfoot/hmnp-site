@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { preloadLazyComponents, useIntelligentPreloading } from '@/components/lazy/LazyComponents';
+import { preloadLazyComponents } from '@/components/lazy/LazyComponents';
 
 interface OptimizedLayoutProps {
   children: React.ReactNode;
@@ -17,7 +17,6 @@ interface OptimizedLayoutProps {
  */
 export function OptimizedLayout({ children }: OptimizedLayoutProps) {
   const pathname = usePathname();
-  const { preloadOnHover } = useIntelligentPreloading();
   const [isClient, setIsClient] = useState(false);
 
   // Hydration check
@@ -30,23 +29,20 @@ export function OptimizedLayout({ children }: OptimizedLayoutProps) {
     if (!isClient) return;
 
     // Preload components based on current page
-    if (pathname.includes('/booking')) {
-      preloadLazyComponents.booking();
-    } else if (pathname.includes('/faq')) {
+    if (pathname.includes('/faq')) {
       preloadLazyComponents.faq();
-    } else if (pathname.includes('/admin')) {
-      preloadLazyComponents.admin();
+    } else if (pathname.includes('/maps')) {
+      preloadLazyComponents.maps();
     }
 
     // Preload likely next pages based on user journey
     const timer = setTimeout(() => {
       if (pathname === '/') {
-        // Home page users likely go to booking or FAQ
-        preloadLazyComponents.booking();
+        // Home page users likely go to FAQ
         preloadLazyComponents.faq();
       } else if (pathname.includes('/services')) {
-        // Services page users likely go to booking
-        preloadLazyComponents.booking();
+        // Services page users likely go to maps
+        preloadLazyComponents.maps();
       }
     }, 2000); // Delay to not interfere with initial page load
 
@@ -84,21 +80,19 @@ export function OptimizedLayout({ children }: OptimizedLayoutProps) {
                 <a
                   href="/services"
                   className="text-gray-700 hover:text-[#002147] transition-colors"
-                  {...preloadOnHover('booking')}
                 >
                   Services
                 </a>
                 <a
                   href="/booking"
                   className="text-gray-700 hover:text-[#002147] transition-colors"
-                  {...preloadOnHover('booking')}
                 >
                   Book Now
                 </a>
                 <a
                   href="/faq"
                   className="text-gray-700 hover:text-[#002147] transition-colors"
-                  {...preloadOnHover('faq')}
+
                 >
                   FAQ
                 </a>
@@ -115,26 +109,7 @@ export function OptimizedLayout({ children }: OptimizedLayoutProps) {
 
         {/* Main content with error boundary */}
         <main>
-          <ErrorBoundary
-            fallback={
-              <div className="min-h-96 flex items-center justify-center">
-                <div className="text-center">
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                    Something went wrong
-                  </h2>
-                  <p className="text-gray-600 mb-6">
-                    We're sorry for the inconvenience. Please try refreshing the page.
-                  </p>
-                  <button
-                    onClick={() => window.location.reload()}
-                    className="bg-[#002147] text-white px-6 py-2 rounded-lg hover:bg-[#003366] transition-colors"
-                  >
-                    Refresh Page
-                  </button>
-                </div>
-              </div>
-            }
-          >
+          <ErrorBoundary>
             <Suspense 
               fallback={
                 <div className="min-h-96 flex items-center justify-center">
@@ -171,14 +146,14 @@ export function OptimizedLayout({ children }: OptimizedLayoutProps) {
                   <a 
                     href="/booking" 
                     className="block text-gray-600 hover:text-[#002147]"
-                    {...preloadOnHover('booking')}
+  
                   >
                     Book Appointment
                   </a>
                   <a 
                     href="/faq" 
                     className="block text-gray-600 hover:text-[#002147]"
-                    {...preloadOnHover('faq')}
+  
                   >
                     FAQ
                   </a>

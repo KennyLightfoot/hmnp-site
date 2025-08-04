@@ -87,7 +87,7 @@ test.describe('Comprehensive Booking Flow Tests', () => {
       tomorrow.setDate(tomorrow.getDate() + 1);
       const dateString = tomorrow.toISOString().split('T')[0];
       
-      await page.fill('[data-testid="preferred-date"]', dateString);
+      await page.fill('[data-testid="preferred-date"]', dateString || "");
       await page.selectOption('[data-testid="preferred-time"]', '14:00');
       
       await page.click('[data-testid="continue-scheduling"]');
@@ -148,7 +148,7 @@ test.describe('Comprehensive Booking Flow Tests', () => {
       tomorrow.setDate(tomorrow.getDate() + 1);
       const dateString = tomorrow.toISOString().split('T')[0];
       
-      await page.fill('[data-testid="preferred-date"]', dateString);
+      await page.fill('[data-testid="preferred-date"]', dateString || "");
       await page.selectOption('[data-testid="preferred-time"]', '10:00');
       
       await page.click('[data-testid="continue-scheduling"]');
@@ -309,7 +309,7 @@ test.describe('Comprehensive Booking Flow Tests', () => {
       tomorrow.setDate(tomorrow.getDate() + 1);
       const dateString = tomorrow.toISOString().split('T')[0];
       
-      await page.fill('[data-testid="preferred-date"]', dateString);
+      await page.fill('[data-testid="preferred-date"]', dateString || "");
       await page.selectOption('[data-testid="preferred-time"]', '14:00');
       await page.click('[data-testid="continue-scheduling"]');
       
@@ -459,7 +459,7 @@ test.describe('Comprehensive Booking Flow Tests', () => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const dateString = tomorrow.toISOString().split('T')[0];
     
-    await page.fill('[data-testid="preferred-date"]', dateString);
+    await page.fill('[data-testid="preferred-date"]', dateString || "");
     await page.selectOption('[data-testid="preferred-time"]', '14:00');
     await page.click('[data-testid="continue-scheduling"]');
   }

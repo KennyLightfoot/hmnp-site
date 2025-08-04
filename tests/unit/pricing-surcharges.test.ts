@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
+import { DEFAULT_PRICING_OPTIONS } from '@/tests/helpers/pricing-defaults';
 import { PricingEngine, SERVICES } from '@/lib/pricing-engine'
 import { UnifiedDistanceService } from '@/lib/maps/unified-distance-service'
 
@@ -27,7 +28,7 @@ describe('PricingEngine – surcharges & travel edge cases', () => {
       scheduledDateTime: scheduled,
       documentCount: 1,
       signerCount: 1,
-      options: {}
+      options: DEFAULT_PRICING_OPTIONS
     } as any)
 
     const expectedSurcharges = 30 + 40 // afterHours + weekend = 70
@@ -49,7 +50,7 @@ describe('PricingEngine – surcharges & travel edge cases', () => {
       scheduledDateTime: '2030-01-02T12:00:00Z',
       documentCount: 1,
       signerCount: 1,
-      options: {}
+      options: DEFAULT_PRICING_OPTIONS
     } as any)
 
     expect(result.travelFee).toBe(0)

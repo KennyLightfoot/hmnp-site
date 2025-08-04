@@ -176,7 +176,7 @@ class AIAssistant {
     
     return {
       content: template.content,
-      subject: template.subject
+      subject: template.subject || undefined
     };
   }
 
@@ -223,7 +223,7 @@ class AIAssistant {
   }
 
   private async generateResponse(
-    intent: string,
+    intent: string | undefined,
     message: string,
     context: any
   ): Promise<string> {
@@ -239,7 +239,8 @@ class AIAssistant {
       general_inquiry: "Thank you for contacting Houston Mobile Notary Pros! I'm here to help. Could you please provide more details about what you need assistance with?"
     };
     
-    return responses[intent] || responses.general_inquiry;
+    const responseKey = intent || 'general_inquiry';
+    return responses[responseKey] || responses.general_inquiry || 'Thank you for contacting us. How can I help you today?';
   }
 
   private getPreferredServices(bookings: any[]): string[] {
@@ -247,13 +248,18 @@ class AIAssistant {
     
     bookings.forEach(booking => {
       const serviceName = booking.Service?.name || 'Unknown';
-      serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
+      if (serviceName) {
+        serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
+      }
     });
     
-    return Object.entries(serviceCounts)
+    const sortedServices = Object.entries(serviceCounts)
       .sort(([,a], [,b]) => (b as number) - (a as number))
       .slice(0, 3)
-      .map(([service]) => service);
+      .map(([service]) => service || 'Unknown')
+      .filter(service => service !== undefined && service !== null && service !== 'Unknown');
+    
+    return sortedServices as string[];
   }
 
   private calculateRiskScore(bookings: any[]): number {

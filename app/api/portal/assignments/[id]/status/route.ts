@@ -40,6 +40,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     // Add history record if status or note provided
     await prisma.statusHistory.create({
       data: {
+        id: `${id}-${Date.now()}`, // Generate a unique ID
         assignmentId: id,
         status: status || assignment.status,
         note,

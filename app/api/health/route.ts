@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { PrismaClient } from '@prisma/client';
 import { logger, generateRequestId } from '@/lib/logger';
 
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest) {
   try {
     logger.info('Health check initiated', 'health-check', {
       userAgent: request.headers.get('user-agent'),
-      ip: request.headers.get('x-forwarded-for') || request.ip
+      ip: request.headers.get('x-forwarded-for') || request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
     });
 
     // Check database connectivity
@@ -76,7 +77,7 @@ export async function GET(request: NextRequest) {
         redisResponseTime = Date.now() - redisStartTime;
       } catch (error) {
         redisStatus = 'error';
-        logger.warn('Redis health check failed', 'health-check', { error: error.message });
+        logger.warn('Redis health check failed', 'health-check', { error: getErrorMessage(error) });
       }
     }
 
@@ -136,7 +137,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     const totalResponseTime = Date.now() - startTime;
     
-    logger.error('Health check failed', 'health-check', error, {
+    logger.error('Health check failed', 'health-check', getErrorMessage(error), {
       responseTime: totalResponseTime
     });
 
@@ -145,7 +146,7 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString(),
       requestId,
       responseTime: totalResponseTime,
-      error: process.env.NODE_ENV === 'production' ? 'Internal server error' : error.message,
+      error: process.env.NODE_ENV === 'production' ? 'Internal server error' : getErrorMessage(error),
       services: {
         database: { status: 'error' },
         redis: { status: 'error' }
@@ -178,7 +179,7 @@ async function checkDatabase(): Promise<HealthStatus> {
     return {
       status: 'fail',
       responseTime: Date.now() - startTime,
-      message: `Database connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      message: `Database connection failed: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`,
       lastChecked: new Date().toISOString(),
     };
   }
@@ -229,7 +230,7 @@ async function checkRedis(): Promise<HealthStatus | undefined> {
     return {
       status: 'warn', // Redis failure is not critical
       responseTime: Date.now() - startTime,
-      message: `Redis connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      message: `Redis connection failed: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`,
       lastChecked: new Date().toISOString(),
     };
   }
@@ -257,7 +258,7 @@ async function checkStripe(): Promise<HealthStatus | undefined> {
     return {
       status: 'warn', // Stripe failure affects payments but isn't critical for basic operation
       responseTime: Date.now() - startTime,
-      message: `Stripe API connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      message: `Stripe API connection failed: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`,
       lastChecked: new Date().toISOString(),
     };
   }
@@ -292,7 +293,7 @@ async function checkGHL(): Promise<HealthStatus | undefined> {
     return {
       status: 'warn', // GHL failure affects automation but isn't critical
       responseTime: Date.now() - startTime,
-      message: `GHL API connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      message: `GHL API connection failed: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`,
       lastChecked: new Date().toISOString(),
     };
   }

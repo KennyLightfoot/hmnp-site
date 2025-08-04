@@ -6,6 +6,8 @@
  * custom metrics, and real-time monitoring
  */
 
+import React, { useEffect } from 'react';
+
 interface PerformanceMetric {
   name: string;
   value: number;
@@ -54,15 +56,17 @@ class PerformanceMonitor {
       const lcpObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1];
-        this.recordMetric('LCP', lastEntry.startTime, 'ms');
+        if (lastEntry) {
+          this.recordMetric('LCP', lastEntry.startTime, 'ms');
+        }
       });
       lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
 
       // FID (First Input Delay)
       const fidObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        entries.forEach((entry) => {
-          this.recordMetric('FID', entry.processingStart - entry.startTime, 'ms');
+        entries.forEach((entry: any) => {
+          this.recordMetric('FID', (entry.processingStart || entry.startTime) - entry.startTime, 'ms');
         });
       });
       fidObserver.observe({ entryTypes: ['first-input'] });
@@ -107,9 +111,11 @@ class PerformanceMonitor {
       // FCP (First Contentful Paint)
       if ('PerformanceObserver' in window) {
         const fcpObserver = new PerformanceObserver((list) => {
-          const entries = list.getEntries();
-          const firstEntry = entries[0];
+                  const entries = list.getEntries();
+        const firstEntry = entries[0];
+        if (firstEntry) {
           this.recordMetric('FCP', firstEntry.startTime, 'ms');
+        }
         });
         fcpObserver.observe({ entryTypes: ['paint'] });
         this.observers.push(fcpObserver);
@@ -214,9 +220,11 @@ export function withPerformanceTracking<P extends object>(
   const WrappedComponent = (props: P) => {
     const { startTimer } = usePerformanceMonitoring();
     
-    React.useEffect(() => {
+    useEffect(() => {
       const endTimer = startTimer(`${componentName}_Mount`);
-      return () => endTimer();
+      return () => {
+        endTimer();
+      };
     }, []);
 
     return <Component {...props} />;

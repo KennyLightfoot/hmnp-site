@@ -78,7 +78,6 @@ export class TwoFactorService {
     const isValid = authenticator.verify({
       token,
       secret: twoFactor.secret,
-      window: 2, // Allow 2 time windows for clock drift
     });
     
     if (isValid) {
@@ -108,7 +107,6 @@ export class TwoFactorService {
     const totpValid = authenticator.verify({
       token,
       secret: twoFactor.secret,
-      window: 2,
     });
     
     if (totpValid) {

@@ -276,17 +276,13 @@ export default function BookingLocationMap({
             position={businessCenter}
             title="Houston Mobile Notary Pros - Texas City, TX 77591"
             icon={businessMarkerIcon}
-            className="map-marker"
           />
           
           {/* Service Area Circle */}
           <Circle
             center={businessCenter}
             radius={32186.9} // 20 miles in meters
-            options={{
-              ...serviceAreaOptions,
-              className: 'service-area-circle'
-            }}
+            options={serviceAreaOptions}
           />
 
           {/* Customer Location Marker */}
@@ -298,7 +294,6 @@ export default function BookingLocationMap({
               }}
               title="Your Location"
               icon={customerMarkerIcon}
-              className="map-marker"
             />
           )}
         </GoogleMap>

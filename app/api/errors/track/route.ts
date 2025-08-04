@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { headers } from 'next/headers';
 
 interface ErrorInfo {
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
       // Log to console (in production, this would go to a logging service)
       console.error('[ERROR_TRACKING]', {
         timestamp: error.timestamp,
-        message: error.message,
+        message: getErrorMessage(error),
         component: error.context.component,
         userId: error.context.userId,
         sessionId: error.context.sessionId,
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
       try {
         await prisma.errorLog.create({
           data: {
-            message: error.message,
+            message: getErrorMessage(error),
             stack: error.stack,
             name: error.name,
             timestamp: new Date(error.timestamp),
@@ -96,7 +97,7 @@ export async function POST(request: NextRequest) {
       if (isCritical) {
         // In production, send alert to monitoring service
         console.error('[CRITICAL_ERROR]', {
-          message: error.message,
+          message: getErrorMessage(error),
           component: error.context.component,
           userId: error.context.userId,
           timestamp: error.timestamp,
@@ -106,7 +107,7 @@ export async function POST(request: NextRequest) {
         /*
         await sendToMonitoringService({
           level: 'critical',
-          message: error.message,
+          message: getErrorMessage(error),
           context: error.context,
           stack: error.stack,
         });
@@ -121,7 +122,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('[ERROR_TRACKING_API] Failed to process errors:', error);
+    console.error('[ERROR_TRACKING_API] Failed to process errors:', getErrorMessage(error));
     
     return NextResponse.json({
       success: false,
@@ -141,7 +142,7 @@ function isCriticalError(error: ErrorInfo): boolean {
     /unhandled.*rejection/i,
   ];
 
-  const message = error.message;
+  const message = getErrorMessage(error);
   const component = error.context.component || '';
   const action = error.context.action || '';
 

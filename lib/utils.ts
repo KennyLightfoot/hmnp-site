@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from "clsx"
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -138,11 +139,11 @@ export async function safeFormSubmit<T = any>(
       if (error.name === 'AbortError') {
         errorMessage = `Request timeout after ${timeout}ms`;
       } else {
-        errorMessage = error.message;
+        errorMessage = getErrorMessage(error);
       }
     }
     
-    console.error('Form submission error:', error);
+    console.error('Form submission error:', getErrorMessage(error));
     return {
       success: false,
       message: errorMessage

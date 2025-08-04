@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useRef } from 'react';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { logger } from '@/lib/logger';
 
 interface PerformanceMetric {
@@ -61,11 +62,11 @@ export function usePerformanceMonitoring(
           metrics: metrics
         })
       }).catch(error => {
-        logger.warn('Failed to send performance metrics', 'PERFORMANCE_MONITORING', { error: error instanceof Error ? error.message : String(error) });
+        logger.warn('Failed to send performance metrics', 'PERFORMANCE_MONITORING', { error: error instanceof Error ? getErrorMessage(error) : String(error) });
       });
 
     } catch (error) {
-      logger.warn('Failed to track performance metrics', 'PERFORMANCE_MONITORING', { error: error instanceof Error ? error.message : String(error) });
+      logger.warn('Failed to track performance metrics', 'PERFORMANCE_MONITORING', { error: error instanceof Error ? getErrorMessage(error) : String(error) });
     }
   }, [componentName]);
 
@@ -295,7 +296,7 @@ export function useAsyncPerformance(operationName: string) {
           operation_name: operationName,
           duration: Math.round(duration),
           status: 'error',
-          error_message: error instanceof Error ? error.message : 'Unknown error',
+          error_message: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
           ...context
         });
       }

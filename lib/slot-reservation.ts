@@ -7,6 +7,7 @@
  */
 
 import { redis } from './redis';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { logger } from './logger';
 import { z } from 'zod';
 import { webSocketManager } from './realtime/websocket-manager';
@@ -140,23 +141,23 @@ export class SlotReservationEngine {
       const pipeline = redis.pipeline();
       
       // Reserve the slot
-      pipeline.setex(slotKey, RESERVATION_CONFIG.defaultHoldDuration, userId || customerEmail || reservationId);
+      pipeline?.setex(slotKey, RESERVATION_CONFIG.defaultHoldDuration, userId || customerEmail || reservationId);
       
       // Store reservation details
-      pipeline.setex(reservationKey, RESERVATION_CONFIG.defaultHoldDuration, JSON.stringify(reservation));
+      pipeline?.setex(reservationKey, RESERVATION_CONFIG.defaultHoldDuration, JSON.stringify(reservation));
       
       // Track user's current reservation
       if (userKey) {
-        pipeline.setex(userKey, RESERVATION_CONFIG.defaultHoldDuration, reservationId);
+        pipeline?.setex(userKey, RESERVATION_CONFIG.defaultHoldDuration, reservationId);
       }
       
       // Track by email if provided
       if (customerEmail) {
         const emailKey = this.getEmailKey(customerEmail);
-        pipeline.setex(emailKey, RESERVATION_CONFIG.defaultHoldDuration, reservationId);
+        pipeline?.setex(emailKey, RESERVATION_CONFIG.defaultHoldDuration, reservationId);
       }
       
-      await pipeline.exec();
+      await pipeline?.exec();
       
       // Broadcast real-time slot update
       await this.broadcastSlotUpdate(datetime, serviceType, false, reservationId);
@@ -179,7 +180,7 @@ export class SlotReservationEngine {
     } catch (error) {
       logger.error('Slot reservation failed', { 
         request: this.sanitizeRequest(request), 
-        error: error.message 
+        error: getErrorMessage(error) 
       });
       
       return {
@@ -244,21 +245,21 @@ export class SlotReservationEngine {
       const reservationKey = this.getReservationKey(reservationId);
       
       const pipeline = redis.pipeline();
-      pipeline.setex(slotKey, RESERVATION_CONFIG.extensionDuration, reservation.userId || reservation.customerEmail || reservationId);
-      pipeline.setex(reservationKey, RESERVATION_CONFIG.extensionDuration, JSON.stringify(updatedReservation));
+      pipeline?.setex(slotKey, RESERVATION_CONFIG.extensionDuration, reservation.userId || reservation.customerEmail || reservationId);
+      pipeline?.setex(reservationKey, RESERVATION_CONFIG.extensionDuration, JSON.stringify(updatedReservation));
       
       // Update user tracking
       if (reservation.userId) {
         const userKey = this.getUserKey(reservation.userId);
-        pipeline.setex(userKey, RESERVATION_CONFIG.extensionDuration, reservationId);
+        pipeline?.setex(userKey, RESERVATION_CONFIG.extensionDuration, reservationId);
       }
       
       if (reservation.customerEmail) {
         const emailKey = this.getEmailKey(reservation.customerEmail);
-        pipeline.setex(emailKey, RESERVATION_CONFIG.extensionDuration, reservationId);
+        pipeline?.setex(emailKey, RESERVATION_CONFIG.extensionDuration, reservationId);
       }
       
-      await pipeline.exec();
+      await pipeline?.exec();
       
       logger.info('Reservation extended', {
         reservationId,
@@ -277,7 +278,7 @@ export class SlotReservationEngine {
     } catch (error) {
       logger.error('Reservation extension failed', { 
         request: this.sanitizeExtensionRequest(request), 
-        error: error.message 
+        error: getErrorMessage(error) 
       });
       
       return {
@@ -320,7 +321,7 @@ export class SlotReservationEngine {
       };
       
     } catch (error) {
-      logger.error('Failed to get reservation status', { reservationId, error: error.message });
+      logger.error('Failed to get reservation status', { reservationId, error: getErrorMessage(error) });
       
       return {
         active: false,
@@ -367,7 +368,7 @@ export class SlotReservationEngine {
       logger.error('Failed to convert reservation to booking', { 
         reservationId, 
         bookingId, 
-        error: error.message 
+        error: getErrorMessage(error) 
       });
       return false;
     }
@@ -397,7 +398,10 @@ export class SlotReservationEngine {
         keysToDelete.push(this.getEmailKey(reservation.customerEmail));
       }
       
-      await redis.del(...keysToDelete);
+      // Delete all related keys
+      for (const key of keysToDelete) {
+        await redis.del(key);
+      }
       
       // Broadcast real-time slot update
       await this.broadcastSlotUpdate(reservation.datetime, reservation.serviceType, true);
@@ -406,7 +410,7 @@ export class SlotReservationEngine {
       return true;
       
     } catch (error) {
-      logger.error('Failed to release reservation', { reservationId, error: error.message });
+      logger.error('Failed to release reservation', { reservationId, error: getErrorMessage(error) });
       return false;
     }
   }
@@ -420,7 +424,7 @@ export class SlotReservationEngine {
       const reservation = await redis.get(slotKey);
       return !reservation;
     } catch (error) {
-      logger.error('Failed to check slot availability', { datetime, serviceType, error: error.message });
+      logger.error('Failed to check slot availability', { datetime, serviceType, error: getErrorMessage(error) });
       return false; // Assume not available on error
     }
   }
@@ -439,7 +443,7 @@ export class SlotReservationEngine {
       
       return await this.getReservation(reservationId);
     } catch (error) {
-      logger.error('Failed to get user current reservation', { userId, error: error.message });
+      logger.error('Failed to get user current reservation', { userId, error: getErrorMessage(error) });
       return null;
     }
   }
@@ -458,7 +462,7 @@ export class SlotReservationEngine {
       
       return await this.getReservation(reservationId);
     } catch (error) {
-      logger.error('Failed to get reservation by email', { email: this.maskEmail(email), error: error.message });
+      logger.error('Failed to get reservation by email', { email: this.maskEmail(email), error: getErrorMessage(error) });
       return null;
     }
   }
@@ -487,7 +491,7 @@ export class SlotReservationEngine {
       
       return cleanedCount;
     } catch (error) {
-      logger.error('Failed to cleanup expired reservations', { error: error.message });
+      logger.error('Failed to cleanup expired reservations', { error: getErrorMessage(error) });
       return 0;
     }
   }
@@ -504,7 +508,7 @@ export class SlotReservationEngine {
       
       return JSON.parse(data);
     } catch (error) {
-      logger.error('Failed to get reservation', { reservationId, error: error.message });
+      logger.error('Failed to get reservation', { reservationId, error: getErrorMessage(error) });
       return null;
     }
   }
@@ -542,7 +546,7 @@ export class SlotReservationEngine {
 
   private maskEmail(email: string): string {
     const [local, domain] = email.split('@');
-    return `${local.slice(0, 2)}***@${domain}`;
+    return `${local?.slice(0, 2) || '**'}***@${domain || '***'}`;
   }
 
   private sanitizeRequest(request: any): any {
@@ -590,7 +594,7 @@ export class SlotReservationEngine {
         datetime, 
         serviceType, 
         available, 
-        error: error.message 
+        error: getErrorMessage(error) 
       });
     }
   }

@@ -190,7 +190,7 @@ export function useTransparentPricing(
   }, [onPricingChange, onError]);
 
   // Debounced calculation
-  const debouncedCalculatePricing = useCallback((request: TransparentPricingRequest) => {
+  const debouncedCalculatePricing = useCallback(async (request: TransparentPricingRequest) => {
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
     }
@@ -236,12 +236,12 @@ export function useTransparentPricing(
   const totalPrice = useMemo(() => pricing?.totalPrice || 0, [pricing]);
   
   const hasDiscounts = useMemo(() => 
-    pricing?.breakdown.discounts.length > 0 || false, 
+    (pricing?.breakdown.discounts?.length || 0) > 0, 
     [pricing]
   );
   
   const hasSurcharges = useMemo(() => 
-    pricing?.breakdown.timeBasedSurcharges.length > 0 || false, 
+    (pricing?.breakdown.timeBasedSurcharges?.length || 0) > 0, 
     [pricing]
   );
   

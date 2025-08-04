@@ -1,5 +1,7 @@
 // /lib/ghl.ts
 
+import { getErrorMessage } from '@/lib/utils/error-utils';
+
 // Cache for custom fields
 interface CustomFieldsCacheEntry {
   timestamp: number;
@@ -206,7 +208,7 @@ export async function getContactByEmail(email: string): Promise<GhlContact | nul
     return foundContact;
 
   } catch (error: any) {
-    const errorMessage = error.message || String(error);
+    const errorMessage = getErrorMessage(error) || String(error);
     
     // Enhanced 403 error handling with updated guidance
     if (errorMessage.includes('403') || errorMessage.includes('does not have access to this location')) {
@@ -281,7 +283,7 @@ export async function upsertContact(contactData: GhlContact): Promise<any> {
     const response = await callGhlApi('/contacts/upsert', 'POST', payload);
     return response.contact || response; 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorMessage = error instanceof Error ? getErrorMessage(error) : String(error);
     
     // Enhanced error handling for common issues
     if (errorMessage.includes('customFields must be an array')) {
@@ -358,7 +360,7 @@ export async function getContactById(contactId: string): Promise<GhlContact | nu
     console.log(`GHL API: No contact found for ID ${contactId}`);
     return null;
   } catch (error: any) {
-    const errorMessage = error.message || String(error);
+    const errorMessage = getErrorMessage(error) || String(error);
     
     if (error.response?.status === 404 || errorMessage.includes('404')) {
       console.log(`GHL API: Contact with ID ${contactId} not found (received 404).`);
@@ -751,7 +753,7 @@ export async function testGhlConnection(locationId: string): Promise<any> {
     console.error('❌ GHL Connection Test Failed:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : String(error),
+      error: error instanceof Error ? getErrorMessage(error) : String(error),
       message: 'GHL API connection failed'
     };
   }
@@ -861,7 +863,7 @@ export const ghl = {
       return response;
     } catch (error: any) {
       console.error('Error creating GHL appointment:', error);
-      throw new Error(`Failed to create appointment: ${error.message}`);
+      throw new Error(`Failed to create appointment: ${getErrorMessage(error)}`);
     }
   }
 };

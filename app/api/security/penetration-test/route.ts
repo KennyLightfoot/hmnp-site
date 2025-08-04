@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { penetrationTestingService } from '@/lib/security/penetration-testing';
 import { withAdminSecurity } from '@/lib/security/comprehensive-security';
 
@@ -100,7 +101,7 @@ export const GET = withAdminSecurity(async (request: NextRequest) => {
     return NextResponse.json({
       success: false,
       error: 'Security testing failed',
-      message: error instanceof Error ? error.message : String(error)
+      message: error instanceof Error ? getErrorMessage(error) : String(error)
     }, { status: 500 });
   }
 });
@@ -145,7 +146,7 @@ export const POST = withAdminSecurity(async (request: NextRequest) => {
     return NextResponse.json({
       success: false,
       error: 'Failed to update vulnerability status',
-      message: error instanceof Error ? error.message : String(error)
+      message: error instanceof Error ? getErrorMessage(error) : String(error)
     }, { status: 500 });
   }
 }); 

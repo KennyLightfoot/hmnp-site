@@ -81,21 +81,25 @@ function usePerformanceMonitoring() {
       new PerformanceObserver((list) => {
         const entries = list.getEntries();
         const fcp = entries[entries.length - 1];
-        setMetrics(prev => prev ? { ...prev, firstContentfulPaint: fcp.startTime } : null);
+        if (fcp) {
+          setMetrics(prev => prev ? { ...prev, firstContentfulPaint: fcp.startTime } : null);
+        }
       }).observe({ entryTypes: ['paint'] });
 
       // Largest Contentful Paint
       new PerformanceObserver((list) => {
         const entries = list.getEntries();
         const lcp = entries[entries.length - 1];
-        setMetrics(prev => prev ? { ...prev, largestContentfulPaint: lcp.startTime } : null);
+        if (lcp) {
+          setMetrics(prev => prev ? { ...prev, largestContentfulPaint: lcp.startTime } : null);
+        }
       }).observe({ entryTypes: ['largest-contentful-paint'] });
 
       // Cumulative Layout Shift
       new PerformanceObserver((list) => {
         let cls = 0;
         for (const entry of list.getEntries()) {
-          if (!entry.hadRecentInput) {
+          if (!(entry as any).hadRecentInput) {
             cls += (entry as any).value;
           }
         }
@@ -105,7 +109,7 @@ function usePerformanceMonitoring() {
       // First Input Delay
       new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          setMetrics(prev => prev ? { ...prev, firstInputDelay: entry.processingStart - entry.startTime } : null);
+          setMetrics(prev => prev ? { ...prev, firstInputDelay: (entry as any).processingStart - entry.startTime } : null);
           break;
         }
       }).observe({ entryTypes: ['first-input'] });

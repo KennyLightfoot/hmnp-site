@@ -8,6 +8,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -70,7 +71,7 @@ export default function BookingSuccessPage() {
 
     } catch (error) {
       console.error('Failed to fetch booking details:', error);
-      setError(error instanceof Error ? error.message : 'An unknown error occurred');
+      setError(error instanceof Error ? getErrorMessage(error) : 'An unknown error occurred');
     } finally {
       setIsLoading(false);
     }

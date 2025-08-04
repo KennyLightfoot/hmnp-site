@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -123,7 +124,7 @@ export default function EventRegistrationForm({ eventName, eventId }: EventRegis
       });
     } catch (error: any) {
       setSubmissionStatus('error');
-      setServerError(error.message || 'Failed to register for the event. Please try again.');
+      setServerError(getErrorMessage(error) || 'Failed to register for the event. Please try again.');
     }
   };
 

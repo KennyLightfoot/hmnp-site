@@ -4,6 +4,7 @@
  */
 
 import { logger } from '@/lib/logger';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 
 export interface RetryOptions {
   /** Maximum number of retry attempts */
@@ -27,7 +28,7 @@ const defaultOptions: Required<RetryOptions> = {
   useExponentialBackoff: true,
   isRetryable: () => true, // By default, retry all errors
   onRetry: (error, attemptNumber) => {
-    logger.warn(`Retry attempt ${attemptNumber} after error: ${error instanceof Error ? error.message : String(error)}`, 'RETRY');
+    logger.warn(`Retry attempt ${attemptNumber} after error: ${error instanceof Error ? getErrorMessage(error) : String(error)}`, 'RETRY');
   },
 };
 
@@ -55,7 +56,7 @@ export async function withRetry<T>(
       const isRetryable = config.isRetryable(error);
       
       if (isLastAttempt || !isRetryable) {
-        logger.error(`Operation failed after ${attempt} attempts: ${error instanceof Error ? error.message : String(error)}`, 'RETRY', error instanceof Error ? error : new Error(String(error)));
+        logger.error(`Operation failed after ${attempt} attempts: ${error instanceof Error ? getErrorMessage(error) : String(error)}`, 'RETRY', error instanceof Error ? error : new Error(String(error)));
         throw error;
       }
       

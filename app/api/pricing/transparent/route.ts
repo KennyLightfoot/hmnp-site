@@ -7,6 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { UnifiedPricingEngine } from '../../../../lib/pricing/unified-pricing-engine';
 
 export async function POST(request: NextRequest) {
@@ -147,7 +148,7 @@ export async function POST(request: NextRequest) {
         success: false,
         error: 'Pricing calculation failed',
         code: 'CALCULATION_FAILED',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        details: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
         metadata: {
           timestamp: new Date().toISOString(),
           processingTime
@@ -235,7 +236,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to retrieve pricing information',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        details: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
         timestamp: new Date().toISOString()
       },
       { status: 500 }

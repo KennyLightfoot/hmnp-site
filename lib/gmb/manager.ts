@@ -4,6 +4,7 @@
  */
 
 import { gmbProfileOptimizer } from './profile-optimizer';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { gmbAutomationSystem } from './automation-system';
 import { gmbApiClient } from './api-client';
 import type { GMBPost, ReviewResponse, QAItem } from './automation-system';
@@ -235,7 +236,7 @@ export class GMBManager {
       task.status = 'COMPLETED';
       console.log(`✅ Task ${task.id} completed successfully`);
     } catch (error) {
-      task.error = error instanceof Error ? error.message : 'Unknown error';
+      task.error = error instanceof Error ? getErrorMessage(error) : 'Unknown error';
       task.retryCount++;
       
       if (task.retryCount < task.maxRetries) {
@@ -404,11 +405,11 @@ export class GMBManager {
       let responseTemplate: string;
       
       if (rating >= 4) {
-        responseTemplate = responses.positive[Math.floor(Math.random() * responses.positive.length)];
+        responseTemplate = responses?.positive?.[Math.floor(Math.random() * (responses?.positive?.length || 1))] || 'Thank you for your positive review!';
       } else if (rating >= 3) {
-        responseTemplate = responses.neutral[Math.floor(Math.random() * responses.neutral.length)];
+        responseTemplate = responses?.neutral?.[Math.floor(Math.random() * (responses?.neutral?.length || 1))] || 'Thank you for your feedback!';
       } else {
-        responseTemplate = responses.negative[Math.floor(Math.random() * responses.negative.length)];
+        responseTemplate = responses?.negative?.[Math.floor(Math.random() * (responses?.negative?.length || 1))] || 'We appreciate your feedback and will work to improve.';
       }
       
       this.addTask({

@@ -212,14 +212,14 @@ export default function ProactiveEngagementEngine({
   // Initialize A/B test variant
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedVariant = localStorage.getItem('ai_engagement_variant') as 'A' | 'B' | 'C';
-      if (savedVariant) {
-        setAbTestVariant(savedVariant);
+      const savedVariant = localStorage.getItem('ai_engagement_variant');
+      if (savedVariant && (savedVariant === 'A' || savedVariant === 'B' || savedVariant === 'C')) {
+        setAbTestVariant(savedVariant as 'A' | 'B' | 'C');
       } else {
         const variants: ('A' | 'B' | 'C')[] = ['A', 'B', 'C'];
-        const randomVariant = variants[Math.floor(Math.random() * variants.length)];
+        const randomVariant = variants[Math.floor(Math.random() * variants.length)] as 'A' | 'B' | 'C';
         setAbTestVariant(randomVariant);
-        localStorage.setItem('ai_engagement_variant', randomVariant);
+        localStorage.setItem('ai_engagement_variant', randomVariant.toString());
       }
     }
   }, []);

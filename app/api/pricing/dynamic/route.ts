@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { headers } from 'next/headers';
 import { dynamicPricingEngine } from '@/lib/pricing/dynamic-pricing-engine';
 import { logger } from '@/lib/logger';
@@ -204,7 +205,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     logger.error('Dynamic pricing calculation failed', {
-      error: error.message,
+      error: getErrorMessage(error),
       stack: error.stack,
       requestBody: request.body ? JSON.stringify(request.body).substring(0, 500) : 'No body'
     });
@@ -264,7 +265,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error: any) {
     logger.error('Failed to retrieve pricing quote', {
-      error: error.message
+      error: getErrorMessage(error)
     });
 
     return NextResponse.json({

@@ -1,5 +1,6 @@
 // lib/ghl/api.ts
 import { ghlApiRequest } from './error-handler';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getCleanEnv } from '../env-clean';
 
 // GHL Private Integration API configuration from environment variables
@@ -53,8 +54,8 @@ export async function findContactByEmail(email: string, locationId?: string): Pr
       return null;
     }
     
-    console.error(`❌ Error searching for contact by email (${email}):`, error.message);
-    throw new Error(`Failed to search contact: ${error.message}`);
+    console.error(`❌ Error searching for contact by email (${email}):`, error instanceof Error ? getErrorMessage(error) : String(error));
+    throw new Error(`Failed to search contact: ${getErrorMessage(error)}`);
   }
 }
 
@@ -85,7 +86,7 @@ export async function createContact(contactData: any, locationId?: string): Prom
     
   } catch (error: any) {
     // Handle duplicate contact error
-    if (error.ghlError?.statusCode === 400 && error.message?.includes('duplicate')) {
+    if (error.ghlError?.statusCode === 400 && getErrorMessage(error)?.includes('duplicate')) {
       console.warn(`⚠️ Duplicate contact detected for ${contactData.email}, attempting to find existing...`);
       try {
         const existingContact = await findContactByEmail(contactData.email, locationId);
@@ -98,8 +99,8 @@ export async function createContact(contactData: any, locationId?: string): Prom
       }
     }
     
-    console.error(`❌ Error creating contact:`, error.message);
-    throw new Error(`Failed to create contact: ${error.message}`);
+    console.error(`❌ Error creating contact:`, error instanceof Error ? getErrorMessage(error) : String(error));
+    throw new Error(`Failed to create contact: ${getErrorMessage(error)}`);
   }
 }
 
@@ -130,8 +131,8 @@ export async function createOpportunity(contactId: string, opportunityData: any,
     return response;
     
   } catch (error: any) {
-    console.error(`❌ Error creating opportunity:`, error.message);
-    throw new Error(`Failed to create opportunity: ${error.message}`);
+    console.error(`❌ Error creating opportunity:`, error instanceof Error ? getErrorMessage(error) : String(error));
+    throw new Error(`Failed to create opportunity: ${getErrorMessage(error)}`);
   }
 }
 
@@ -154,8 +155,8 @@ export async function updateContactCustomFields(contactId: string, customFields:
     return response;
     
   } catch (error: any) {
-    console.error(`❌ Error updating contact custom fields:`, error.message);
-    throw new Error(`Failed to update contact custom fields: ${error.message}`);
+    console.error(`❌ Error updating contact custom fields:`, error instanceof Error ? getErrorMessage(error) : String(error));
+    throw new Error(`Failed to update contact custom fields: ${getErrorMessage(error)}`);
   }
 }
 
@@ -178,8 +179,8 @@ export async function updateOpportunityCustomFields(opportunityId: string, custo
     return response;
     
   } catch (error: any) {
-    console.error(`❌ Error updating opportunity custom fields:`, error.message);
-    throw new Error(`Failed to update opportunity custom fields: ${error.message}`);
+    console.error(`❌ Error updating opportunity custom fields:`, error instanceof Error ? getErrorMessage(error) : String(error));
+    throw new Error(`Failed to update opportunity custom fields: ${getErrorMessage(error)}`);
   }
 }
 
@@ -211,8 +212,8 @@ export async function createAppointment(appointmentData: any, locationId?: strin
     return response;
     
   } catch (error: any) {
-    console.error(`❌ Error creating appointment:`, error.message);
-    throw new Error(`Failed to create appointment: ${error.message}`);
+    console.error(`❌ Error creating appointment:`, error instanceof Error ? getErrorMessage(error) : String(error));
+    throw new Error(`Failed to create appointment: ${getErrorMessage(error)}`);
   }
 }
 
@@ -235,8 +236,8 @@ export async function addTagsToContact(contactId: string, tags: string[]): Promi
     return response;
     
   } catch (error: any) {
-    console.error(`❌ Error adding tags to contact:`, error.message);
-    throw new Error(`Failed to add tags to contact: ${error.message}`);
+    console.error(`❌ Error adding tags to contact:`, error instanceof Error ? getErrorMessage(error) : String(error));
+    throw new Error(`Failed to add tags to contact: ${getErrorMessage(error)}`);
   }
 }
 
@@ -259,8 +260,8 @@ export async function removeTagsFromContact(contactId: string, tags: string[]): 
     return { success: true };
     
   } catch (error: any) {
-    console.error(`❌ Error removing tags from contact:`, error.message);
-    throw new Error(`Failed to remove tags from contact: ${error.message}`);
+    console.error(`❌ Error removing tags from contact:`, error instanceof Error ? getErrorMessage(error) : String(error));
+    throw new Error(`Failed to remove tags from contact: ${getErrorMessage(error)}`);
   }
 }
 
@@ -281,8 +282,8 @@ export async function updateContact(contactData: { id: string, [key: string]: an
     return response;
     
   } catch (error: any) {
-    console.error(`❌ Error updating contact:`, error.message);
-    throw new Error(`Failed to update contact: ${error.message}`);
+    console.error(`❌ Error updating contact:`, error instanceof Error ? getErrorMessage(error) : String(error));
+    throw new Error(`Failed to update contact: ${getErrorMessage(error)}`);
   }
 }
 

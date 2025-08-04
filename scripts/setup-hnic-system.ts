@@ -112,10 +112,8 @@ async function setupHNICAccount() {
         where: { id: existingUser.id },
         data: {
           password: hashedPassword,
-          firstName: HNIC_CONFIG.firstName,
-          lastName: HNIC_CONFIG.lastName,
+          name: `${HNIC_CONFIG.firstName} ${HNIC_CONFIG.lastName}`,
           role: HNIC_CONFIG.role,
-          isActive: true,
           updatedAt: new Date()
         }
       });
@@ -132,10 +130,8 @@ async function setupHNICAccount() {
         data: {
           email: HNIC_CONFIG.email,
           password: hashedPassword,
-          firstName: HNIC_CONFIG.firstName,
-          lastName: HNIC_CONFIG.lastName,
+          name: `${HNIC_CONFIG.firstName} ${HNIC_CONFIG.lastName}`,
           role: HNIC_CONFIG.role,
-          isActive: true,
           emailVerified: new Date(), // Auto-verify HNIC account
         }
       });
@@ -175,21 +171,10 @@ async function setupHNICRole() {
     'payments:manage', 'promo-codes:manage', 'billing:manage'
   ];
   
-  // Ensure ADMIN role exists with full permissions
-  await prisma.role.upsert({
-    where: { name: 'ADMIN' },
-    update: {
-      description: 'HNIC - Full system access and management',
-      permissions: hnicPermissions
-    },
-    create: {
-      name: 'ADMIN',
-      description: 'HNIC - Full system access and management',
-      permissions: hnicPermissions
-    }
-  });
-  
-  console.log('✅ HNIC role configured with full permissions');
+  // Note: Role is an enum in Prisma, not a model. 
+  // User.role directly uses the Role enum (ADMIN, PARTNER, etc.)
+  // No need to create role records as they're defined in the schema
+  console.log('✅ Using Role enum from schema - no role table needed');
 }
 
 async function updateBusinessSettings() {
@@ -321,21 +306,17 @@ async function updateServiceAreaConfig() {
   console.log('🗺️ Updating service area configuration...');
   
   // Update or create service area record
-  await prisma.serviceArea.upsert({
+  await prisma.service_areas.upsert({
     where: { name: 'Primary Service Area' },
     update: {
-      zipCode: BUSINESS_CONFIG.BASE_LOCATION,
-      radiusMiles: BUSINESS_CONFIG.FREE_SERVICE_RADIUS,
-      isActive: true,
-      coordinates: null, // Will be calculated dynamically
-      updatedAt: new Date()
+      description: 'Primary service area for HNIC operations',
+      active: true,
+      updated_at: new Date()
     },
     create: {
       name: 'Primary Service Area',
-      zipCode: BUSINESS_CONFIG.BASE_LOCATION,
-      radiusMiles: BUSINESS_CONFIG.FREE_SERVICE_RADIUS,
-      isActive: true,
-      description: `Primary service area - ${BUSINESS_CONFIG.FREE_SERVICE_RADIUS}-mile radius from ${BUSINESS_CONFIG.BASE_LOCATION_FULL}`,
+      description: 'Primary service area for HNIC operations',
+      active: true,
     }
   });
   
@@ -361,8 +342,8 @@ async function verifySystemSetup() {
   }
   
   // Verify service area
-  const serviceArea = await prisma.serviceArea.findFirst({
-    where: { zipCode: BUSINESS_CONFIG.BASE_LOCATION }
+  const serviceArea = await prisma.service_areas.findFirst({
+    where: { name: 'Primary Service Area' }
   });
   
   if (!serviceArea) {

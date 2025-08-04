@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { sendChat } from '@/lib/vertex';
 
 /**
@@ -24,7 +25,7 @@ export async function GET() {
     return NextResponse.json({
       success: false,
       error: 'AI integration test failed',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
     }, { status: 500 });
   }
 }
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: false,
       error: 'AI request failed',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
     }, { status: 500 });
   }
 } 

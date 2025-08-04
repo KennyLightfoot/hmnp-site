@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { withAuth, AuthConfig, validateAuthEnvironment } from '@/lib/auth/unified-middleware';
 import { prisma } from '@/lib/db';
 
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         status: 'ERROR',
         message: 'Auth system test failed',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
         timestamp: new Date().toISOString(),
       }, { status: 500 });
     }
@@ -134,7 +135,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         status: 'ERROR',
         message: 'Auth test failed',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
       }, { status: 500 });
     }
   }, AuthConfig.authenticated());

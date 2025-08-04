@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { trackError } from '@/lib/utils/errorTracking';
 import { Prisma } from '@prisma/client';
 
@@ -67,7 +68,7 @@ export function categorizeError(error: unknown): {
     return {
       status: error.status,
       code: error.code,
-      message: error.message,
+      message: getErrorMessage(error),
       details: error.details,
     };
   }
@@ -99,7 +100,7 @@ export function categorizeError(error: unknown): {
           status: 500,
           code: 'DATABASE_ERROR',
           message: 'Database operation failed',
-          details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+          details: process.env.NODE_ENV === 'development' ? getErrorMessage(error) : undefined,
         };
     }
   }
@@ -110,7 +111,7 @@ export function categorizeError(error: unknown): {
       status: 400,
       code: 'VALIDATION_ERROR',
       message: 'Invalid data provided',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      details: process.env.NODE_ENV === 'development' ? getErrorMessage(error) : undefined,
     };
   }
 
@@ -127,15 +128,15 @@ export function categorizeError(error: unknown): {
   // Handle standard errors
   if (error instanceof Error) {
     // Check for specific error patterns
-    if (error.message.includes('Time slot conflict')) {
+    if (getErrorMessage(error).includes('Time slot conflict')) {
       return {
         status: 409,
         code: 'BOOKING_CONFLICT',
-        message: error.message,
+        message: getErrorMessage(error),
       };
     }
 
-    if (error.message.includes('authentication') || error.message.includes('unauthorized')) {
+    if (getErrorMessage(error).includes('authentication') || getErrorMessage(error).includes('unauthorized')) {
       return {
         status: 401,
         code: 'AUTHENTICATION_REQUIRED',
@@ -143,7 +144,7 @@ export function categorizeError(error: unknown): {
       };
     }
 
-    if (error.message.includes('permission') || error.message.includes('forbidden')) {
+    if (getErrorMessage(error).includes('permission') || getErrorMessage(error).includes('forbidden')) {
       return {
         status: 403,
         code: 'FORBIDDEN',
@@ -154,7 +155,7 @@ export function categorizeError(error: unknown): {
     return {
       status: 500,
       code: 'INTERNAL_ERROR',
-      message: process.env.NODE_ENV === 'development' ? error.message : 'An internal error occurred',
+      message: process.env.NODE_ENV === 'development' ? getErrorMessage(error) : 'An internal error occurred',
     };
   }
 

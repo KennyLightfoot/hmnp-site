@@ -8,13 +8,12 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    // Check if user is authenticated and has notary role
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userRole = (session.user as any).role;
-    if (userRole !== Role.NOTARY && userRole !== Role.ADMIN) {
+    const userWithRole = session.user as { id: string; role: Role };
+    if (userWithRole.role !== Role.NOTARY && userWithRole.role !== Role.ADMIN) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
@@ -23,26 +22,22 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const date = searchParams.get('date');
 
-    // Build where clause
     const whereClause: any = {
       locationType: locationType || LocationType.CLIENT_SPECIFIED_ADDRESS,
     };
 
-    // Add notary filter for non-admin users
-    if (userRole === Role.NOTARY) {
-      whereClause.notaryId = (session.user as any).id;
+    if (userWithRole.role === Role.NOTARY) {
+      whereClause.notaryId = userWithRole.id;
     }
 
-    // Add status filter
     if (status && status !== 'all') {
       whereClause.status = status as BookingStatus;
     }
 
-    // Add date filter
     if (date && date !== 'all') {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       switch (date) {
         case 'today':
           whereClause.scheduledDateTime = {
@@ -67,7 +62,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Fetch mobile bookings
     const bookings = await prisma.booking.findMany({
       where: whereClause,
       include: {
@@ -75,8 +69,8 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             name: true,
-            duration: true,
-            price: true,
+            durationMinutes: true,
+            basePrice: true,
           },
         },
         User_Booking_signerIdToUser: {
@@ -84,10 +78,9 @@ export async function GET(request: NextRequest) {
             id: true,
             name: true,
             email: true,
-            phone: true,
           },
         },
-        notary: {
+        User_Booking_notaryIdToUser: {
           select: {
             id: true,
             name: true,
@@ -100,12 +93,10 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Format bookings for mobile route board
     const formattedBookings = bookings.map(booking => ({
       id: booking.id,
       signerName: booking.User_Booking_signerIdToUser?.name || 'Unknown',
       signerEmail: booking.User_Booking_signerIdToUser?.email || '',
-      signerPhone: booking.User_Booking_signerIdToUser?.phone,
       addressStreet: booking.addressStreet,
       addressCity: booking.addressCity,
       addressState: booking.addressState,
@@ -114,13 +105,13 @@ export async function GET(request: NextRequest) {
       status: booking.status,
       service: {
         name: booking.service.name,
-        duration: booking.service.duration,
+        duration: booking.service.durationMinutes,
       },
-      finalPrice: Number(booking.priceAtBooking || booking.service.price),
+      finalPrice: Number(booking.priceAtBooking || booking.service.basePrice),
       notes: booking.notes,
-      mileageMiles: booking.mileageMiles,
-      estimatedCompletionTime: booking.estimatedCompletionTime?.toISOString(),
-      notaryTravelTimeMinutes: booking.notaryTravelTimeMinutes,
+      mileageMiles: booking.mileage_miles,
+      estimatedCompletionTime: booking.estimated_completion_time?.toISOString(),
+      notaryTravelTimeMinutes: booking.notary_travel_time_minutes,
       locationNotes: booking.locationNotes,
     }));
 
@@ -137,4 +128,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

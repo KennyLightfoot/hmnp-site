@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { abTestingService } from '@/lib/marketing/ab-testing';
 import { withAdminSecurity } from '@/lib/security/comprehensive-security';
 
@@ -39,8 +40,9 @@ export async function GET(request: NextRequest) {
         }
 
         return withAdminSecurity(async () => {
-          const test = await abTestingService.getTest(testId);
-          if (!test) {
+          // TODO: getTest is private - use getTestResults or make getTest public
+          const results = await abTestingService.getTestResults(testId);
+          if (!results) {
             return NextResponse.json({
               success: false,
               error: 'Test not found'
@@ -49,7 +51,7 @@ export async function GET(request: NextRequest) {
 
           return NextResponse.json({
             success: true,
-            test
+            test: results
           });
         })(request);
 
@@ -136,7 +138,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: false,
       error: 'A/B testing operation failed',
-      message: error instanceof Error ? error.message : String(error)
+      message: error instanceof Error ? getErrorMessage(error) : String(error)
     }, { status: 500 });
   }
 }
@@ -305,7 +307,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: false,
       error: 'A/B testing operation failed',
-      message: error instanceof Error ? error.message : String(error)
+      message: error instanceof Error ? getErrorMessage(error) : String(error)
     }, { status: 500 });
   }
 }
@@ -339,7 +341,7 @@ export const PUT = withAdminSecurity(async (request: NextRequest) => {
     return NextResponse.json({
       success: false,
       error: 'Failed to update A/B test',
-      message: error instanceof Error ? error.message : String(error)
+      message: error instanceof Error ? getErrorMessage(error) : String(error)
     }, { status: 500 });
   }
 });
@@ -372,7 +374,7 @@ export const DELETE = withAdminSecurity(async (request: NextRequest) => {
     return NextResponse.json({
       success: false,
       error: 'Failed to delete A/B test',
-      message: error instanceof Error ? error.message : String(error)
+      message: error instanceof Error ? getErrorMessage(error) : String(error)
     }, { status: 500 });
   }
 }); 

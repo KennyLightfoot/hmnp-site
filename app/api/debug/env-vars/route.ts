@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
 
 export async function GET(request: NextRequest) {
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
       } catch (error) {
         results[serviceType as keyof typeof results] = {
           success: false,
-          error: error instanceof Error ? error.message : String(error),
+          error: error instanceof Error ? getErrorMessage(error) : String(error),
           calendarId: null
         };
       }
@@ -61,7 +62,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     return NextResponse.json({
       error: 'Debug endpoint error',
-      message: error instanceof Error ? error.message : String(error)
+      message: error instanceof Error ? getErrorMessage(error) : String(error)
     }, { status: 500 });
   }
 } 

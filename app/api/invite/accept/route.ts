@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '@/lib/db';
 import bcrypt from 'bcrypt';
 
@@ -61,8 +62,8 @@ export async function POST(request: Request) {
 
   } catch (error) {
     console.error('Error accepting invitation:', error);
-    if (error instanceof Error && error.message.includes('Password must be at least 8 characters long')) {
-        return NextResponse.json({ error: error.message }, { status: 400 });
+    if (error instanceof Error && getErrorMessage(error).includes('Password must be at least 8 characters long')) {
+        return NextResponse.json({ error: getErrorMessage(error) }, { status: 400 });
     }
     return NextResponse.json({ error: 'An internal server error occurred' }, { status: 500 });
   }

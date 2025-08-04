@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { proofAPI } from '@/lib/proof/api';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     logger.error('Proof.com webhook processing failed', {
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? getErrorMessage(error) : String(error)
     });
     
     return NextResponse.json(
@@ -144,7 +145,7 @@ async function updateBookingFromProofEvent(transactionId: string, updates: any) 
   } catch (error) {
     logger.error('Failed to update booking from Proof event', {
       transactionId,
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? getErrorMessage(error) : String(error)
     });
   }
 } 

@@ -94,7 +94,7 @@ export default function ServiceSchema({
 
   // Add pricing information
   if (price) {
-    schemaData["offers"] = {
+    (schemaData as any)["offers"] = {
       "@type": "Offer",
       "price": price.replace(/[^0-9.]/g, ''),
       "priceCurrency": "USD",
@@ -102,7 +102,7 @@ export default function ServiceSchema({
       "availability": "https://schema.org/InStock"
     };
   } else if (priceRange) {
-    schemaData["offers"] = {
+    (schemaData as any)["offers"] = {
       "@type": "Offer",
       "priceRange": priceRange,
       "priceCurrency": "USD",
@@ -113,7 +113,7 @@ export default function ServiceSchema({
 
   // Add hours of availability
   if (hoursAvailable) {
-    schemaData["hoursAvailable"] = {
+    (schemaData as any)["hoursAvailable"] = {
       "@type": "OpeningHoursSpecification",
       "dayOfWeek": hoursAvailable.dayOfWeek,
       "opens": hoursAvailable.opens,
@@ -125,7 +125,7 @@ export default function ServiceSchema({
 
   // Add service features
   if (features.length > 0) {
-    schemaData["additionalProperty"] = features.map(feature => ({
+    (schemaData as any)["additionalProperty"] = features.map(feature => ({
       "@type": "PropertyValue",
       "name": "Service Feature",
       "value": feature
@@ -134,16 +134,16 @@ export default function ServiceSchema({
 
   // Add additional service properties
   if (additionalInfo.isEmergencyService) {
-    schemaData["serviceOutput"] = "Emergency Notary Service Available 24/7";
+    (schemaData as any)["serviceOutput"] = "Emergency Notary Service Available 24/7";
   }
 
   if (additionalInfo.isOnlineService) {
-    schemaData["serviceType"] = "Online Service";
-    schemaData["availableChannel"]["serviceLocation"] = "Online";
+    (schemaData as any)["serviceType"] = "Online Service";
+    (schemaData as any)["availableChannel"]["serviceLocation"] = "Online";
   }
 
   if (additionalInfo.certificationsRequired) {
-    schemaData["termsOfService"] = "Licensed and insured notary public required";
+    (schemaData as any)["termsOfService"] = "Licensed and insured notary public required";
   }
 
   return (

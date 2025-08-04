@@ -24,12 +24,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Remove the subscription from the database
-    await prisma.pushSubscription.deleteMany({
-      where: {
-        userId: session.user.id,
-        endpoint: endpoint
-      }
-    })
+    // TODO: Implement push subscription removal when model is added
+    // await prisma.pushSubscription.deleteMany({
+    //   where: {
+    //     userId: session.user.id,
+    //     endpoint: endpoint
+    //   }
+    // })
 
     return NextResponse.json({ 
       success: true,

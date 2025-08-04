@@ -7,6 +7,7 @@
  */
 
 import { ghlApiRequest } from './error-handler';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { TransparentPricingFieldManager, TRANSPARENT_PRICING_WORKFLOWS } from './transparent-pricing-fields';
 import { createContact, findContactByEmail, updateContact, addTagsToContact } from './api';
 
@@ -97,7 +98,8 @@ export class TransparentPricingGHLIntegration {
       const customFields = TransparentPricingFieldManager.transformPricingResultToCustomFields(request.pricingResult);
       
       try {
-        await updateContact(contactId, {
+        await updateContact({
+          id: contactId,
           customFields: customFields.map(field => ({
             id: field.key,
             field_value: field.value
@@ -109,7 +111,7 @@ export class TransparentPricingGHLIntegration {
         
       } catch (error) {
         console.warn(`⚠️ [${requestId}] Custom fields update warning:`, error);
-        warnings.push(`Custom fields update partially failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        warnings.push(`Custom fields update partially failed: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`);
       }
 
       // Step 3: Apply pricing-related tags
@@ -124,7 +126,7 @@ export class TransparentPricingGHLIntegration {
         
       } catch (error) {
         console.warn(`⚠️ [${requestId}] Tags application warning:`, error);
-        warnings.push(`Tag application partially failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        warnings.push(`Tag application partially failed: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`);
       }
 
       // Step 4: Trigger appropriate workflows
@@ -171,7 +173,7 @@ export class TransparentPricingGHLIntegration {
     } catch (error) {
       const processingTime = Date.now() - startTime;
       
-      console.error(`❌ [${requestId}] GHL integration failed:`, error);
+      console.error(`❌ [${requestId}] GHL integration failed:`, getErrorMessage(error));
       
       return {
         success: false,
@@ -179,7 +181,7 @@ export class TransparentPricingGHLIntegration {
         customFieldsUpdated,
         tagsApplied,
         workflowsTriggered,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
         warnings,
         metadata: {
           processingTime,
@@ -293,7 +295,7 @@ export class TransparentPricingGHLIntegration {
 
     } catch (error) {
       console.warn(`⚠️ [${requestId}] Workflow triggering warning:`, error);
-      warnings.push(`Workflow triggering failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      warnings.push(`Workflow triggering failed: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`);
     }
 
     return { triggered, warnings };
@@ -503,7 +505,7 @@ export class TransparentPricingGHLIntegration {
       };
       
     } catch (error) {
-      errors.push(error instanceof Error ? error.message : 'Unknown error');
+      errors.push(error instanceof Error ? getErrorMessage(error) : 'Unknown error');
       
       return {
         success: false,

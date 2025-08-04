@@ -176,17 +176,17 @@ test.describe.skip('Checkout Flow Tests', () => {
       
       // Test invalid card number
       await page.fill('[data-testid="card-number"]', '1234567890123456');
-      await page.blur('[data-testid="card-number"]');
+      await page.locator('[data-testid="card-number"]').blur();
       await expect(page.locator('[data-testid="card-number-error"]')).toContainText('Invalid card number');
       
       // Test invalid expiry date
       await page.fill('[data-testid="card-expiry"]', '13/25');
-      await page.blur('[data-testid="card-expiry"]');
+      await page.locator('[data-testid="card-expiry"]').blur();
       await expect(page.locator('[data-expiry-error"]')).toContainText('Invalid expiry date');
       
       // Test invalid CVC
       await page.fill('[data-testid="card-cvc"]', '12');
-      await page.blur('[data-testid="card-cvc"]');
+      await page.locator('[data-testid="card-cvc"]').blur();
       await expect(page.locator('[data-testid="card-cvc-error"]')).toContainText('Invalid CVC');
       
       // Test valid form enables submit
@@ -580,7 +580,7 @@ test.describe.skip('Checkout Flow Tests', () => {
       await page.click('[data-testid="submit-payment"]');
       
       // Check that payment is submitted over HTTPS
-      const requests = [];
+      const requests: any[] = [];
       page.on('request', request => {
         if (request.url().includes('/api/payments/')) {
           requests.push(request);
@@ -625,7 +625,7 @@ test.describe.skip('Checkout Flow Tests', () => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const dateString = tomorrow.toISOString().split('T')[0];
     
-    await page.fill('[data-testid="preferred-date"]', dateString);
+    await page.fill('[data-testid="preferred-date"]', dateString || "");
     await page.selectOption('[data-testid="preferred-time"]', '14:00');
     await page.click('[data-testid="continue-scheduling"]');
     

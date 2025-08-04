@@ -535,7 +535,7 @@ export class AdvancedCaching {
     if ('serviceWorker' in navigator && 'sync' in ServiceWorkerRegistration.prototype) {
       navigator.serviceWorker.ready.then(registration => {
         // Register background sync
-        return registration.sync.register('background-sync');
+        return (registration as any).sync.register('background-sync');
       });
     }
   }
@@ -577,8 +577,8 @@ export class PerformanceMonitor {
         const navEntry = entry as PerformanceNavigationTiming;
         
         this.metrics.set('ttfb', navEntry.responseStart - navEntry.requestStart);
-        this.metrics.set('dom-content-loaded', navEntry.domContentLoadedEventEnd - navEntry.navigationStart);
-        this.metrics.set('load-complete', navEntry.loadEventEnd - navEntry.navigationStart);
+        this.metrics.set('dom-content-loaded', navEntry.domContentLoadedEventEnd - (navEntry.activationStart || 0));
+        this.metrics.set('load-complete', navEntry.loadEventEnd - (navEntry.activationStart || 0));
         
         console.log('📊 Navigation metrics updated');
       });

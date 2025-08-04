@@ -75,7 +75,7 @@ async function seedRequiredServices() {
       id: 'extended-hours-001',
       name: 'Extended Hours Notary',
       description: '7am-9pm Daily, up to 5 documents, 2 signers, 20-mile travel included',
-      serviceType: ServiceType.EXTENDED_HOURS_NOTARY,
+      serviceType: ServiceType.EXTENDED_HOURS,
       durationMinutes: 90,
       basePrice: 100.00,
       requiresDeposit: false,
@@ -89,7 +89,7 @@ async function seedRequiredServices() {
       id: 'loan-signing-001',
       name: 'Loan Signing Specialist',
       description: 'Flat fee service - unlimited documents for single session, up to 4 signers, 90-minute session',
-      serviceType: ServiceType.LOAN_SIGNING_SPECIALIST,
+      serviceType: ServiceType.LOAN_SIGNING,
       durationMinutes: 120,
       basePrice: 150.00,
       requiresDeposit: true,
@@ -128,8 +128,8 @@ async function validateAndFixServices() {
   // Check for required service types
   const requiredTypes = [
     ServiceType.STANDARD_NOTARY,
-    ServiceType.EXTENDED_HOURS_NOTARY,
-    ServiceType.LOAN_SIGNING_SPECIALIST
+    ServiceType.EXTENDED_HOURS,
+    ServiceType.LOAN_SIGNING
   ];
   
   for (const type of requiredTypes) {
@@ -160,7 +160,7 @@ async function createMissingService(serviceType: ServiceType) {
       requiresDeposit: false,
       depositAmount: 0.00,
     },
-    [ServiceType.EXTENDED_HOURS_NOTARY]: {
+    [ServiceType.EXTENDED_HOURS]: {
       name: 'Extended Hours Notary',
       description: '7am-9pm Daily, up to 5 documents, 2 signers, 20-mile travel included',
       durationMinutes: 90,
@@ -168,7 +168,7 @@ async function createMissingService(serviceType: ServiceType) {
       requiresDeposit: false,
       depositAmount: 0.00,
     },
-    [ServiceType.LOAN_SIGNING_SPECIALIST]: {
+    [ServiceType.LOAN_SIGNING]: {
       name: 'Loan Signing Specialist',
       description: 'Flat fee service - unlimited documents for single session, up to 4 signers, 90-minute session',
       durationMinutes: 120,
@@ -178,7 +178,7 @@ async function createMissingService(serviceType: ServiceType) {
     }
   };
   
-  const config = serviceConfigs[serviceType];
+  const config = serviceConfigs[serviceType as keyof typeof serviceConfigs];
   if (!config) {
     console.log(`❌ No configuration found for service type: ${serviceType}`);
     return;

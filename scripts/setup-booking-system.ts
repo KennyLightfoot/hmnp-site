@@ -6,34 +6,40 @@ async function setupBookingSystem() {
   console.log('🔧 Setting up booking system database records...')
   
   // Create default BusinessSettings if missing
-  const businessSettings = await prisma.businessSettings.upsert({
-    where: { id: process.env.BUSINESS_SETTINGS_ID || 'default' },
-    update: {},
-    create: {
-      id: process.env.BUSINESS_SETTINGS_ID || 'default',
-      businessName: 'Healthcare Mobile Nurse Practitioner',
-      timezone: process.env.DEFAULT_TIMEZONE || 'America/Chicago',
-      serviceAreaRadius: parseInt(process.env.SERVICE_AREA_RADIUS || '50'),
-      businessHours: {
-        monday: { open: '08:00', close: '17:00', isOpen: true },
-        tuesday: { open: '08:00', close: '17:00', isOpen: true },
-        wednesday: { open: '08:00', close: '17:00', isOpen: true },
-        thursday: { open: '08:00', close: '17:00', isOpen: true },
-        friday: { open: '08:00', close: '17:00', isOpen: true },
-        saturday: { open: '09:00', close: '15:00', isOpen: true },
-        sunday: { open: '10:00', close: '14:00', isOpen: false }
-      },
-      defaultBookingDuration: 60,
-      bufferTimeBetweenBookings: 15,
-      advanceBookingDays: 30,
-      cancellationPolicy: '24 hours notice required',
-      acceptsInsurance: true,
-      requiresDeposit: true,
-      depositAmount: 50.00
+  // Note: BusinessSettings model uses key-value structure, not direct fields
+  const businessSettingsData = [
+    {
+      key: 'business_name',
+      value: 'Healthcare Mobile Nurse Practitioner',
+      dataType: 'string',
+      category: 'business',
+      description: 'Business name'
+    },
+    {
+      key: 'timezone',
+      value: process.env.DEFAULT_TIMEZONE || 'America/Chicago',
+      dataType: 'string',
+      category: 'business',
+      description: 'Default timezone'
+    },
+    {
+      key: 'service_area_radius',
+      value: process.env.SERVICE_AREA_RADIUS || '50',
+      dataType: 'number',
+      category: 'business',
+      description: 'Service area radius in miles'
     }
-  })
+  ]
   
-  console.log('✅ BusinessSettings configured:', businessSettings.id)
+  for (const setting of businessSettingsData) {
+    await prisma.businessSettings.upsert({
+      where: { key: setting.key },
+      update: { value: setting.value },
+      create: setting
+    })
+  }
+  
+  console.log('✅ BusinessSettings configured')
   
   // Ensure required services exist
   const essentialServices = [
@@ -62,8 +68,16 @@ async function setupBookingSystem() {
   for (const service of essentialServices) {
     await prisma.service.upsert({
       where: { id: service.id },
-      update: service,
-      create: service
+      update: {
+        ...service,
+        serviceType: service.serviceType as any,
+        durationMinutes: service.duration,
+      },
+      create: {
+        ...service,
+        serviceType: service.serviceType as any,
+        durationMinutes: service.duration,
+      }
     })
     console.log(`✅ Service configured: ${service.name}`)
   }

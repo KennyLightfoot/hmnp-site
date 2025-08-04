@@ -47,8 +47,8 @@ export interface QAItem {
 
 export class GMBAutomationSystem {
   private readonly businessPhone = '832-617-4285';
-  private readonly businessWebsite = 'https://houstonmobilenotarypros.com';
-  private readonly bookingUrl = 'https://houstonmobilenotarypros.com/booking';
+  private readonly businessWebsite = 'https://houstonmobilenotarypros?.com';
+  private readonly bookingUrl = 'https://houstonmobilenotarypros?.com/booking';
 
   /**
    * Generate 3x weekly posting schedule
@@ -67,26 +67,26 @@ export class GMBAutomationSystem {
     // Generate posts for next 4 weeks (Mon/Wed/Fri schedule)
     for (let week = 0; week < 4; week++) {
       const weekStart = new Date(startDate);
-      weekStart.setDate(startDate.getDate() + (week * 7));
+      weekStart?.setDate(startDate?.getDate() + (week * 7));
 
       // Monday post
-      posts.push(this.generatePost(
-        this.getMondayDate(weekStart),
-        contentTypes[week % contentTypes.length],
+      posts?.push(this?.generatePost(
+        this?.getMondayDate(weekStart),
+        contentTypes[week % contentTypes?.length] || 'service-highlight',
         week
       ));
 
       // Wednesday post
-      posts.push(this.generatePost(
-        this.getWednesdayDate(weekStart),
-        contentTypes[(week + 1) % contentTypes.length],
+      posts?.push(this?.generatePost(
+        this?.getWednesdayDate(weekStart),
+        contentTypes[(week + 1) % contentTypes?.length] || 'customer-testimonial',
         week
       ));
 
       // Friday post
-      posts.push(this.generatePost(
-        this.getFridayDate(weekStart),
-        contentTypes[(week + 2) % contentTypes.length],
+      posts?.push(this?.generatePost(
+        this?.getFridayDate(weekStart),
+        contentTypes[(week + 2) % contentTypes?.length] || 'tips-and-education',
         week
       ));
     }
@@ -98,24 +98,24 @@ export class GMBAutomationSystem {
    * Generate individual post based on type and location
    */
   private generatePost(date: Date, type: string, weekIndex: number): GMBPost {
-    const location = LOCAL_SEO_ZIP_CODES[weekIndex % LOCAL_SEO_ZIP_CODES.length];
-    const keywords = generateLocationKeywords(location.zipCode).primary.slice(0, 5);
+    const location = LOCAL_SEO_ZIP_CODES[weekIndex % LOCAL_SEO_ZIP_CODES?.length];
+    const keywords = generateLocationKeywords(location?.zipCode || '77001').primary?.slice(0, 5);
 
     switch (type) {
       case 'service-highlight':
-        return this.generateServiceHighlightPost(date, location, keywords);
+        return this?.generateServiceHighlightPost(date, location, keywords);
       case 'customer-testimonial':
-        return this.generateTestimonialPost(date, location, keywords);
+        return this?.generateTestimonialPost(date, location, keywords);
       case 'local-event':
-        return this.generateLocalEventPost(date, location, keywords);
+        return this?.generateLocalEventPost(date, location, keywords);
       case 'tips-and-education':
-        return this.generateEducationalPost(date, location, keywords);
+        return this?.generateEducationalPost(date, location, keywords);
       case 'seasonal-promotion':
-        return this.generatePromotionalPost(date, location, keywords);
+        return this?.generatePromotionalPost(date, location, keywords);
       case 'behind-the-scenes':
-        return this.generateBehindScenesPost(date, location, keywords);
+        return this?.generateBehindScenesPost(date, location, keywords);
       default:
-        return this.generateServiceHighlightPost(date, location, keywords);
+        return this?.generateServiceHighlightPost(date, location, keywords);
     }
   }
 
@@ -131,24 +131,24 @@ export class GMBAutomationSystem {
       { name: 'Emergency Services', price: '$50-$100', description: '24/7 urgent notarization' }
     ];
 
-    const service = services[Math.floor(Math.random() * services.length)];
+    const service = services[Math?.floor(Math?.random() * services?.length)];
     
     return {
-      id: `service-${date.toISOString()}`,
+      id: `service-${date?.toISOString()}`,
       type: 'STANDARD',
-      content: `📋 ${service.name} in ${location.city}!\n\n${service.description}. Starting at ${service.price}.\n\nServing ${location.landmarks.slice(0, 2).join(' and ')} and surrounding areas. Same-day appointments available!\n\n#${location.city}Notary #MobileNotary #Houston`,
+      content: `📋 ${service?.name} in ${location?.city}!\n\n${service?.description}. Starting at ${service?.price}.\n\nServing ${location?.landmarks.slice(0, 2).join(' and ')} and surrounding areas. Same-day appointments available!\n\n#${location?.city}Notary #MobileNotary #Houston`,
       callToAction: {
         type: 'BOOK',
-        url: this.bookingUrl
+        url: this?.bookingUrl
       },
       media: {
         type: 'IMAGE',
-        url: `/images/gmb-${service.name.toLowerCase().replace(/\s+/g, '-')}.jpg`,
-        altText: `${service.name} services in ${location.city}`
+        url: `/images/gmb-${service?.name.toLowerCase().replace(/\s+/g, '-')}.jpg`,
+        altText: `${service?.name} services in ${location?.city}`
       },
       scheduledDate: date,
       keywords,
-      location: location.city,
+      location: location?.city,
       status: 'DRAFT'
     };
   }
@@ -165,24 +165,24 @@ export class GMBAutomationSystem {
       { text: 'Professional and reliable service!', author: 'Maria G.', service: 'Estate Planning' }
     ];
 
-    const testimonial = testimonials[Math.floor(Math.random() * testimonials.length)];
+    const testimonial = testimonials[Math?.floor(Math?.random() * testimonials?.length)];
     
     return {
-      id: `testimonial-${date.toISOString()}`,
+      id: `testimonial-${date?.toISOString()}`,
       type: 'STANDARD',
-      content: `⭐⭐⭐⭐⭐ "${testimonial.text}" - ${testimonial.author}\n\nThank you for choosing Houston Mobile Notary Pros for your ${testimonial.service} needs in ${location.city}!\n\nWe're proud to serve the ${location.city} community with reliable, professional notary services.\n\n#CustomerReview #${location.city} #MobileNotary #Houston`,
+      content: `⭐⭐⭐⭐⭐ "${testimonial?.text}" - ${testimonial?.author}\n\nThank you for choosing Houston Mobile Notary Pros for your ${testimonial?.service} needs in ${location?.city}!\n\nWe're proud to serve the ${location?.city} community with reliable, professional notary services.\n\n#CustomerReview #${location?.city} #MobileNotary #Houston`,
       callToAction: {
         type: 'BOOK',
-        url: this.bookingUrl
+        url: this?.bookingUrl
       },
       media: {
         type: 'IMAGE',
-        url: `/images/gmb-testimonial-${location.city.toLowerCase().replace(/\s+/g, '-')}.jpg`,
-        altText: `Customer testimonial from ${location.city}`
+        url: `/images/gmb-testimonial-${location?.city.toLowerCase().replace(/\s+/g, '-')}.jpg`,
+        altText: `Customer testimonial from ${location?.city}`
       },
       scheduledDate: date,
       keywords,
-      location: location.city,
+      location: location?.city,
       status: 'DRAFT'
     };
   }
@@ -199,24 +199,24 @@ export class GMBAutomationSystem {
       'Real estate investor meetup'
     ];
 
-    const event = events[Math.floor(Math.random() * events.length)];
+    const event = events[Math?.floor(Math?.random() * events?.length)];
     
     return {
-      id: `event-${date.toISOString()}`,
+      id: `event-${date?.toISOString()}`,
       type: 'EVENT',
-      content: `🏢 Attending the ${event} in ${location.city}!\n\nCome meet our team and learn about our mobile notary services. We'll be available to answer questions about notarization, loan signing, and Remote Online Notarization.\n\nLocation: ${location.landmarks[0]}\n\n#${location.city}Events #MobileNotary #CommunitySupport`,
+      content: `🏢 Attending the ${event} in ${location?.city}!\n\nCome meet our team and learn about our mobile notary services. We'll be available to answer questions about notarization, loan signing, and Remote Online Notarization.\n\nLocation: ${location?.landmarks[0]}\n\n#${location?.city}Events #MobileNotary #CommunitySupport`,
       callToAction: {
         type: 'LEARN_MORE',
-        url: `${this.businessWebsite}/services`
+        url: `${this?.businessWebsite}/services`
       },
       media: {
         type: 'IMAGE',
-        url: `/images/gmb-event-${location.city.toLowerCase().replace(/\s+/g, '-')}.jpg`,
-        altText: `Community event in ${location.city}`
+        url: `/images/gmb-event-${location?.city.toLowerCase().replace(/\s+/g, '-')}.jpg`,
+        altText: `Community event in ${location?.city}`
       },
       scheduledDate: date,
       keywords,
-      location: location.city,
+      location: location?.city,
       status: 'DRAFT'
     };
   }
@@ -233,24 +233,24 @@ export class GMBAutomationSystem {
       { title: 'Mobile Notary vs Office Visit', content: 'The convenience and benefits of having a notary come to your location.' }
     ];
 
-    const topic = topics[Math.floor(Math.random() * topics.length)];
+    const topic = topics[Math?.floor(Math?.random() * topics?.length)];
     
     return {
-      id: `education-${date.toISOString()}`,
+      id: `education-${date?.toISOString()}`,
       type: 'STANDARD',
-      content: `📚 ${topic.title}\n\n${topic.content}\n\nServing ${location.city} and surrounding areas with professional notary education and services. Questions? Give us a call!\n\n#NotaryEducation #${location.city} #MobileNotary #Houston`,
+      content: `📚 ${topic?.title}\n\n${topic?.content}\n\nServing ${location?.city} and surrounding areas with professional notary education and services. Questions? Give us a call!\n\n#NotaryEducation #${location?.city} #MobileNotary #Houston`,
       callToAction: {
         type: 'CALL',
-        phone: this.businessPhone
+        phone: this?.businessPhone
       },
       media: {
         type: 'IMAGE',
-        url: `/images/gmb-education-${topic.title.toLowerCase().replace(/\s+/g, '-')}.jpg`,
-        altText: `Educational content: ${topic.title}`
+        url: `/images/gmb-education-${topic?.title.toLowerCase().replace(/\s+/g, '-')}.jpg`,
+        altText: `Educational content: ${topic?.title}`
       },
       scheduledDate: date,
       keywords,
-      location: location.city,
+      location: location?.city,
       status: 'DRAFT'
     };
   }
@@ -267,24 +267,24 @@ export class GMBAutomationSystem {
       { title: 'RON Special', offer: '$10 off Remote Online Notarization', code: 'RON10' }
     ];
 
-    const promotion = promotions[Math.floor(Math.random() * promotions.length)];
+    const promotion = promotions[Math?.floor(Math?.random() * promotions?.length)];
     
     return {
-      id: `promotion-${date.toISOString()}`,
+      id: `promotion-${date?.toISOString()}`,
       type: 'OFFER',
-      content: `🎉 ${promotion.title}!\n\n${promotion.offer} for ${location.city} residents!\n\nUse code: ${promotion.code}\n\nValid for all mobile notary services including loan signing and RON. Book today!\n\n#Special #${location.city} #MobileNotary #Houston`,
+      content: `🎉 ${promotion?.title}!\n\n${promotion?.offer} for ${location?.city} residents!\n\nUse code: ${promotion?.code}\n\nValid for all mobile notary services including loan signing and RON. Book today!\n\n#Special #${location?.city} #MobileNotary #Houston`,
       callToAction: {
         type: 'BOOK',
-        url: `${this.bookingUrl}?promo=${promotion.code}`
+        url: `${this?.bookingUrl}?promo=${promotion?.code}`
       },
       media: {
         type: 'IMAGE',
-        url: `/images/gmb-promotion-${promotion.title.toLowerCase().replace(/\s+/g, '-')}.jpg`,
-        altText: `${promotion.title} for ${location.city}`
+        url: `/images/gmb-promotion-${promotion?.title.toLowerCase().replace(/\s+/g, '-')}.jpg`,
+        altText: `${promotion?.title} for ${location?.city}`
       },
       scheduledDate: date,
       keywords,
-      location: location.city,
+      location: location?.city,
       status: 'DRAFT'
     };
   }
@@ -301,24 +301,24 @@ export class GMBAutomationSystem {
       { title: 'Service Preparation', content: 'How we prepare for each type of notarization service.' }
     ];
 
-    const scene = scenes[Math.floor(Math.random() * scenes.length)];
+    const scene = scenes[Math?.floor(Math?.random() * scenes?.length)];
     
     return {
-      id: `behind-scenes-${date.toISOString()}`,
+      id: `behind-scenes-${date?.toISOString()}`,
       type: 'STANDARD',
-      content: `🎬 Behind the Scenes: ${scene.title}\n\n${scene.content}\n\nTransparency and professionalism are key to our service in ${location.city} and throughout the Houston area.\n\n#BehindTheScenes #${location.city} #MobileNotary #Houston`,
+      content: `🎬 Behind the Scenes: ${scene?.title}\n\n${scene?.content}\n\nTransparency and professionalism are key to our service in ${location?.city} and throughout the Houston area.\n\n#BehindTheScenes #${location?.city} #MobileNotary #Houston`,
       callToAction: {
         type: 'LEARN_MORE',
-        url: `${this.businessWebsite}/what-to-expect`
+        url: `${this?.businessWebsite}/what-to-expect`
       },
       media: {
         type: 'IMAGE',
-        url: `/images/gmb-behind-scenes-${scene.title.toLowerCase().replace(/\s+/g, '-')}.jpg`,
-        altText: `Behind the scenes: ${scene.title}`
+        url: `/images/gmb-behind-scenes-${scene?.title.toLowerCase().replace(/\s+/g, '-')}.jpg`,
+        altText: `Behind the scenes: ${scene?.title}`
       },
       scheduledDate: date,
       keywords,
-      location: location.city,
+      location: location?.city,
       status: 'DRAFT'
     };
   }
@@ -355,11 +355,11 @@ export class GMBAutomationSystem {
    * Generate Q&A items with local optimization
    */
   generateQAItems(): QAItem[] {
-    return gmbProfileOptimizer.generateQAResponses().map(qa => ({
-      question: qa.question,
-      answer: qa.answer,
-      keywords: qa.keywords,
-      category: this.categorizeQuestion(qa.question),
+    return gmbProfileOptimizer?.generateQAResponses().map(qa => ({
+      question: qa?.question,
+      answer: qa?.answer,
+      keywords: qa?.keywords,
+      category: this?.categorizeQuestion(qa?.question),
       lastUpdated: new Date()
     }));
   }
@@ -368,13 +368,13 @@ export class GMBAutomationSystem {
    * Categorize Q&A questions
    */
   private categorizeQuestion(question: string): 'SERVICES' | 'PRICING' | 'LOCATION' | 'HOURS' | 'BOOKING' | 'GENERAL' {
-    const lowerQ = question.toLowerCase();
+    const lowerQ = question?.toLowerCase();
     
-    if (lowerQ.includes('cost') || lowerQ.includes('price') || lowerQ.includes('fee')) return 'PRICING';
-    if (lowerQ.includes('area') || lowerQ.includes('serve') || lowerQ.includes('location')) return 'LOCATION';
-    if (lowerQ.includes('hours') || lowerQ.includes('open') || lowerQ.includes('available')) return 'HOURS';
-    if (lowerQ.includes('book') || lowerQ.includes('appointment') || lowerQ.includes('schedule')) return 'BOOKING';
-    if (lowerQ.includes('service') || lowerQ.includes('notarize') || lowerQ.includes('document')) return 'SERVICES';
+    if (lowerQ?.includes('cost') || lowerQ?.includes('price') || lowerQ?.includes('fee')) return 'PRICING';
+    if (lowerQ?.includes('area') || lowerQ?.includes('serve') || lowerQ?.includes('location')) return 'LOCATION';
+    if (lowerQ?.includes('hours') || lowerQ?.includes('open') || lowerQ?.includes('available')) return 'HOURS';
+    if (lowerQ?.includes('book') || lowerQ?.includes('appointment') || lowerQ?.includes('schedule')) return 'BOOKING';
+    if (lowerQ?.includes('service') || lowerQ?.includes('notarize') || lowerQ?.includes('document')) return 'SERVICES';
     
     return 'GENERAL';
   }
@@ -384,24 +384,24 @@ export class GMBAutomationSystem {
    */
   private getMondayDate(weekStart: Date): Date {
     const monday = new Date(weekStart);
-    const day = monday.getDay();
-    const diff = monday.getDate() - day + (day === 0 ? -6 : 1);
-    monday.setDate(diff);
-    monday.setHours(9, 0, 0, 0);
+    const day = monday?.getDay();
+    const diff = monday?.getDate() - day + (day === 0 ? -6 : 1);
+    monday?.setDate(diff);
+    monday?.setHours(9, 0, 0, 0);
     return monday;
   }
 
   private getWednesdayDate(weekStart: Date): Date {
-    const wednesday = this.getMondayDate(weekStart);
-    wednesday.setDate(wednesday.getDate() + 2);
-    wednesday.setHours(12, 0, 0, 0);
+    const wednesday = this?.getMondayDate(weekStart);
+    wednesday?.setDate(wednesday?.getDate() + 2);
+    wednesday?.setHours(12, 0, 0, 0);
     return wednesday;
   }
 
   private getFridayDate(weekStart: Date): Date {
-    const friday = this.getMondayDate(weekStart);
-    friday.setDate(friday.getDate() + 4);
-    friday.setHours(15, 0, 0, 0);
+    const friday = this?.getMondayDate(weekStart);
+    friday?.setDate(friday?.getDate() + 4);
+    friday?.setHours(15, 0, 0, 0);
     return friday;
   }
 }

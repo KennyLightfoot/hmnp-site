@@ -342,7 +342,7 @@ export default function UnifiedTestimonials({
   if (variant === 'card') {
     return (
       <div className={className}>
-        <TestimonialCard testimonial={testimonials[0]} />
+        {testimonials[0] && <TestimonialCard testimonial={testimonials[0]} />}
       </div>
     );
   }

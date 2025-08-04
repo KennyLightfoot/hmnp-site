@@ -1,6 +1,7 @@
 'use server'
 
 import { getServerSession } from "next-auth";
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Role, AssignmentStatus, Assignment } from "@prisma/client";
@@ -55,6 +56,7 @@ export async function updateAssignmentStatus(
       // 2. Create a status history record
       await tx.statusHistory.create({
         data: {
+          id: crypto.randomUUID(),
           assignmentId: assignmentId,
           status: newStatus,
           note: note || null,
@@ -74,7 +76,7 @@ export async function updateAssignmentStatus(
     logger.error(`Failed to update status for assignment ${assignmentId}`, 'ASSIGNMENTS', error instanceof Error ? error : new Error(String(error)));
     let errorMessage = "Failed to update status.";
     if (error instanceof Error) {
-        errorMessage = error.message;
+        errorMessage = getErrorMessage(error);
     }
     return { error: errorMessage };
   }

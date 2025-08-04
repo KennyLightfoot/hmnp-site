@@ -229,7 +229,7 @@ export function generateZipCodeLocalBusinessSchema(zipCode: string): LocalBusine
         postalCode: location.zipCode,
         addressCountry: 'US'
       }
-    });
+    } as any);
   });
 
   return {
@@ -289,12 +289,14 @@ export function generateCityLocalBusinessSchema(citySlug: string): LocalBusiness
   // Add all ZIP codes for this city
   contentCluster.allZipCodes.forEach(zipCode => {
     areaServed.push({
-      '@type': 'PostalAddress',
-      postalCode: zipCode,
-      addressLocality: contentCluster.city,
-      addressRegion: 'TX',
-      addressCountry: 'US'
-    });
+      '@type': 'Place',
+      name: `${contentCluster.city} - ${zipCode}`,
+      geo: {
+        '@type': 'GeoCoordinates',
+        latitude: '29.4052',
+        longitude: '-94.9355'
+      }
+    } as any);
   });
 
   return {
@@ -337,7 +339,7 @@ export function generateCityLocalBusinessSchema(citySlug: string): LocalBusiness
  * Generate Landmark-specific Service Schema
  */
 export function generateLandmarkServiceSchema(landmark: string, city: string, zipCode: string): LandmarkSchema {
-  const coordinates = LANDMARK_COORDINATES[landmark];
+  const coordinates = (LANDMARK_COORDINATES as any)[landmark];
   
   return {
     '@context': 'https://schema.org',

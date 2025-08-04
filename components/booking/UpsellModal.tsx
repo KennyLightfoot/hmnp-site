@@ -127,13 +127,16 @@ export default function UpsellModal({
       
       return () => clearInterval(interval);
     }
+    
+    // Add return for the case when urgencyTimer is not set
+    return undefined;
   }, [urgencyTimer]);
 
   // Auto-select first high-confidence suggestion
   useEffect(() => {
     if (suggestions.length > 0 && !selectedSuggestion) {
       const highConfidenceSuggestion = suggestions.find(s => s.confidence === 'high') || suggestions[0];
-      setSelectedSuggestion(highConfidenceSuggestion);
+      setSelectedSuggestion(highConfidenceSuggestion || null);
     }
   }, [suggestions, selectedSuggestion]);
 

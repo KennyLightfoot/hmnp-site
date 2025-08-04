@@ -4,6 +4,7 @@
  */
 
 import { logger } from '@/lib/logger';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 
 export interface BookingKPI {
   bookingId: string;
@@ -29,11 +30,11 @@ export interface BookingKPI {
 
 export interface DailyKPIs {
   date: string;
-  totalBookings: number;
+  total_bookings: number;
   totalRevenue: number;
   averageBookingValue: number;
   conversionRate: number;
-  newCustomers: number;
+  new_customers: number;
   returningCustomers: number;
   totalDistance: number;
   totalTravelFees: number;
@@ -66,8 +67,8 @@ export interface BusinessMetrics {
   revenueGrowthRate: number;
   
   // Operational Metrics
-  totalBookings: number;
-  completedBookings: number;
+  total_bookings: number;
+  completed_bookings: number;
   cancellationRate: number;
   averageBookingTime: number; // minutes
   
@@ -141,7 +142,7 @@ export class KPITracker {
     } catch (error) {
       logger.error('[KPI] Failed to track booking', {
         bookingId: booking.bookingId,
-        error: error instanceof Error ? error.message : error
+        error: error instanceof Error ? getErrorMessage(error) : error
       });
     }
   }
@@ -175,7 +176,7 @@ export class KPITracker {
       logger.error('[KPI] Failed to update booking status', {
         bookingId,
         status,
-        error: error instanceof Error ? error.message : error
+        error: error instanceof Error ? getErrorMessage(error) : error
       });
     }
   }
@@ -227,8 +228,8 @@ export class KPITracker {
         revenueGrowthRate: 0, // Would calculate from previous period
         
         // Operational Metrics
-        totalBookings: bookingsInPeriod.length,
-        completedBookings: completedBookings.length,
+        total_bookings: bookingsInPeriod.length,
+        completed_bookings: completedBookings.length,
         cancellationRate: (cancelledBookings.length / bookingsInPeriod.length) * 100,
         averageBookingTime: this.calculateAverageBookingTime(completedBookings),
         
@@ -257,7 +258,7 @@ export class KPITracker {
       };
 
       logger.info('[KPI] Business metrics generated successfully', {
-        totalBookings: metrics.totalBookings,
+        totalBookings: metrics.total_bookings,
         totalRevenue: metrics.totalRevenue,
         conversionRate: 100 - metrics.cancellationRate
       });
@@ -267,7 +268,7 @@ export class KPITracker {
     } catch (error) {
       logger.error('[KPI] Failed to generate business metrics', {
         period,
-        error: error instanceof Error ? error.message : error
+        error: error instanceof Error ? getErrorMessage(error) : error
       });
       throw error;
     }
@@ -300,7 +301,7 @@ export class KPITracker {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         format,
-        error: error instanceof Error ? error.message : error
+        error: error instanceof Error ? getErrorMessage(error) : error
       });
       throw error;
     }
@@ -309,11 +310,11 @@ export class KPITracker {
   // Private helper methods
 
   private async updateDailyMetrics(booking: BookingKPI): Promise<void> {
-    const dateKey = booking.bookingDate.toISOString().split('T')[0];
+    const dateKey = booking.bookingDate.toISOString().split('T')[0] || '';
     const existing = this.dailyMetrics.get(dateKey) || this.createEmptyDailyKPIs(dateKey);
 
     // Update metrics based on booking
-    existing.totalBookings++;
+    existing.total_bookings++;
     if (booking.status === 'completed') {
       existing.totalRevenue += booking.totalValue;
       existing.totalDistance += booking.distance;
@@ -324,13 +325,14 @@ export class KPITracker {
     if (!existing.serviceBreakdown[booking.serviceType]) {
       existing.serviceBreakdown[booking.serviceType] = { count: 0, revenue: 0 };
     }
-    existing.serviceBreakdown[booking.serviceType].count++;
+    const serviceBreakdown = existing.serviceBreakdown[booking.serviceType]!;
+    serviceBreakdown.count++;
     if (booking.status === 'completed') {
-      existing.serviceBreakdown[booking.serviceType].revenue += booking.totalValue;
+      serviceBreakdown.revenue += booking.totalValue;
     }
 
     // Update location breakdown
-    const city = booking.location.city;
+    const city = booking.location.city || "unknown";
     if (!existing.locationBreakdown[city]) {
       existing.locationBreakdown[city] = { count: 0, averageDistance: 0, totalTravelFees: 0 };
     }
@@ -338,7 +340,7 @@ export class KPITracker {
     existing.locationBreakdown[city].totalTravelFees += booking.travelFee;
 
     // Update other metrics
-    existing.averageBookingValue = existing.totalRevenue / Math.max(existing.totalBookings, 1);
+    existing.averageBookingValue = existing.totalRevenue / Math.max(existing.total_bookings, 1);
     
     this.dailyMetrics.set(dateKey, existing);
   }
@@ -346,11 +348,11 @@ export class KPITracker {
   private createEmptyDailyKPIs(date: string): DailyKPIs {
     return {
       date,
-      totalBookings: 0,
+      total_bookings: 0,
       totalRevenue: 0,
       averageBookingValue: 0,
       conversionRate: 0,
-      newCustomers: 0,
+      new_customers: 0,
       returningCustomers: 0,
       totalDistance: 0,
       totalTravelFees: 0,
@@ -365,8 +367,8 @@ export class KPITracker {
       if (!breakdown[booking.serviceType]) {
         breakdown[booking.serviceType] = { count: 0, revenue: 0 };
       }
-      breakdown[booking.serviceType].count++;
-      breakdown[booking.serviceType].revenue += booking.totalValue;
+      breakdown[booking.serviceType]!.count++;
+      breakdown[booking.serviceType]!.revenue += booking.totalValue;
       return breakdown;
     }, {} as { [key: string]: { count: number; revenue: number } });
   }
@@ -375,7 +377,7 @@ export class KPITracker {
     const breakdown: { [key: string]: { count: number; totalDistance: number; totalTravelFees: number } } = {};
     
     bookings.forEach(booking => {
-      const city = booking.location.city;
+      const city = booking.location.city || "unknown";
       if (!breakdown[city]) {
         breakdown[city] = { count: 0, totalDistance: 0, totalTravelFees: 0 };
       }
@@ -386,7 +388,7 @@ export class KPITracker {
 
     // Convert to final format with average distance
     return Object.entries(breakdown).reduce((result, [city, data]) => {
-      result[city] = {
+      result[city || "unknown"] = {
         count: data.count,
         averageDistance: data.totalDistance / data.count,
         totalTravelFees: data.totalTravelFees
@@ -412,13 +414,39 @@ export class KPITracker {
   }
 
   private getMostPopularService(breakdown: { [key: string]: { count: number; revenue: number } }): string {
-    return Object.entries(breakdown).reduce((max, [service, data]) => 
-      data.count > (breakdown[max]?.count || 0) ? service : max, '');
+    const keys = Object.keys(breakdown);
+    if (keys.length === 0) return '';
+    
+    let maxService = keys[0] || '';
+    let maxCount = breakdown[maxService]?.count || 0;
+    
+    for (const service of keys) {
+      const data = breakdown[service];
+      if (data && data.count > maxCount) {
+        maxService = service;
+        maxCount = data.count;
+      }
+    }
+    
+    return maxService;
   }
 
   private getLeastPopularService(breakdown: { [key: string]: { count: number; revenue: number } }): string {
-    return Object.entries(breakdown).reduce((min, [service, data]) => 
-      data.count < (breakdown[min]?.count || Infinity) ? service : min, '');
+    const keys = Object.keys(breakdown);
+    if (keys.length === 0) return '';
+    
+    let minService = keys[0] || '';
+    let minCount = breakdown[minService]?.count || Infinity;
+    
+    for (const service of keys) {
+      const data = breakdown[service];
+      if (data && data.count < minCount) {
+        minService = service;
+        minCount = data.count;
+      }
+    }
+    
+    return minService;
   }
 
   private calculateAverageDistance(bookings: BookingKPI[]): number {
@@ -463,7 +491,7 @@ export class KPITracker {
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const dayBreakdown = bookings.reduce((breakdown, booking) => {
       const dayOfWeek = booking.bookingDate.getDay();
-      const dayName = dayNames[dayOfWeek];
+      const dayName = dayNames[dayOfWeek] || 'Unknown';
       breakdown[dayName] = (breakdown[dayName] || 0) + 1;
       return breakdown;
     }, {} as { [key: string]: number });

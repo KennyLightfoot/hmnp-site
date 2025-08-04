@@ -61,11 +61,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if booking is in a state that can be started
-    const validStatuses = [
-      'READY_FOR_SERVICE',
-      'CONFIRMED', 
-      'SCHEDULED',
-    ] as const;
+    const validStatuses: BookingStatus[] = [
+      BookingStatus.READY_FOR_SERVICE,
+      BookingStatus.CONFIRMED, 
+      BookingStatus.SCHEDULED,
+    ];
 
     if (!validStatuses.includes(booking.status)) {
       return NextResponse.json(

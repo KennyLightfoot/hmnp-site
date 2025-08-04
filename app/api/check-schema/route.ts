@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '@/lib/database-connection';
 
 export async function GET() {
@@ -30,7 +31,7 @@ export async function GET() {
         const result = await prisma.$executeRaw`${test.query}`;
         results[test.name as keyof typeof results] = 'EXISTS';
       } catch (error) {
-        results[test.name as keyof typeof results] = error instanceof Error ? error.message : 'FAILED';
+        results[test.name as keyof typeof results] = error instanceof Error ? getErrorMessage(error) : 'FAILED';
       }
     }
     
@@ -58,7 +59,7 @@ export async function GET() {
       success: false,
       error: 'Schema check failed',
       details: {
-        message: error instanceof Error ? error.message : String(error),
+        message: error instanceof Error ? getErrorMessage(error) : String(error),
         type: error?.constructor?.name || 'UnknownError',
         timestamp: new Date().toISOString(),
       }

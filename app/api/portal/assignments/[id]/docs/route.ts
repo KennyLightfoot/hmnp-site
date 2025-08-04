@@ -20,6 +20,7 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
 
   await prisma.assignmentDocument.create({
     data: {
+      id: `${params.id}-${Date.now()}`, // Generate a unique ID
       assignmentId: params.id,
       key,
       filename,

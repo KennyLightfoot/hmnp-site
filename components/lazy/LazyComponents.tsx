@@ -4,6 +4,7 @@
  * Centralized lazy loading for remaining heavy components.
  */
 
+import React from 'react';
 import dynamic from 'next/dynamic';
 import { Loader2, FileText, Map } from 'lucide-react';
 
@@ -42,7 +43,6 @@ export const LazyFAQClientPage = dynamic(
 export const LazyServiceAreaMap = dynamic(
   () => import('@/components/maps/ServiceAreaMap'),
   {
-    loading: MapLoader,
     ssr: false,
   }
 );
@@ -63,7 +63,7 @@ export function withLazyLoading<P extends object>(
   const { loading, ssr = true, name = 'component' } = options;
   
   return dynamic(importFn, {
-    loading: loading || (() => <ComponentLoader name={name} />),
+    loading: loading ? () => React.createElement(loading) : () => <ComponentLoader name={name} />,
     ssr,
   });
 }

@@ -794,7 +794,7 @@ export default function ServicesPage() {
       <div className="mb-16">
         <h2 className="text-2xl font-bold text-[#002147] mb-8 text-center">Explore Our Services</h2>
 
-        <Tabs defaultValue={services[0].slug} className="w-full">
+        <Tabs defaultValue={services[0]?.slug || 'standard-notary'} className="w-full">
           <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 mb-8">
             {services.map(service => (
               <TabsTrigger key={service.slug} value={service.slug} className="data-[state=active]:bg-[#002147] data-[state=active]:text-white">

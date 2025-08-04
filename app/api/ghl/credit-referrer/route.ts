@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import * as ghl from '@/lib/ghl'; // Assuming ghl.ts is in lib, adjust path if needed
 import type { GhlContact, GhlCustomField } from '@/lib/ghl';
 
@@ -58,7 +59,7 @@ export async function POST(request: Request) {
     }
 
     // 3. Extract the referrer's email/name from the referred client's custom field
-    let referrerIdentifier: string | undefined;
+    let referrerIdentifier: string | undefined = "";
     // Ensure newlyReferredClient.customFields is an array before trying to find
     const customFieldsArray = newlyReferredClient.customFields || newlyReferredClient.custom_fields;
     if (Array.isArray(customFieldsArray)) {
@@ -137,8 +138,8 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error('Error processing referral credit:', error);
     let errorMessage = 'Failed to process referral credit.';
-    if (error.message) {
-        errorMessage += ` ${error.message}`;
+    if (getErrorMessage(error)) {
+        errorMessage += ` ${getErrorMessage(error)}`;
     }
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }

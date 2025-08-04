@@ -6,8 +6,9 @@
  */
 
 import { logger } from '../logger';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '../prisma';
-import { notificationService } from '../notifications';
+import { NotificationService } from '../notifications';
 import { addJob } from '../queue/queue-config';
 import { z } from 'zod';
 
@@ -83,6 +84,10 @@ export class AutomatedNotificationScheduler {
         type: 'BOOKING_CONFIRMATION',
         method: 'EMAIL',
         priority: 'high'
+      },
+      frequency: {
+        maxCount: 1,
+        onlyBusinessHours: false
       }
     },
     {
@@ -98,6 +103,10 @@ export class AutomatedNotificationScheduler {
         type: 'PAYMENT_CONFIRMATION',
         method: 'EMAIL',
         priority: 'high'
+      },
+      frequency: {
+        maxCount: 1,
+        onlyBusinessHours: false
       }
     },
     {
@@ -134,7 +143,8 @@ export class AutomatedNotificationScheduler {
         priority: 'high'
       },
       frequency: {
-        maxCount: 1
+        maxCount: 1,
+        onlyBusinessHours: false
       }
     },
     {
@@ -152,7 +162,8 @@ export class AutomatedNotificationScheduler {
         priority: 'urgent'
       },
       frequency: {
-        maxCount: 1
+        maxCount: 1,
+        onlyBusinessHours: false
       }
     },
     {
@@ -178,7 +189,8 @@ export class AutomatedNotificationScheduler {
         priority: 'high'
       },
       frequency: {
-        maxCount: 1
+        maxCount: 1,
+        onlyBusinessHours: false
       }
     },
     {
@@ -216,7 +228,8 @@ export class AutomatedNotificationScheduler {
       },
       frequency: {
         maxCount: 3,
-        cooldown: 240 // 4 hours between attempts
+        cooldown: 240, // 4 hours between attempts
+        onlyBusinessHours: false
       }
     }
   ];
@@ -236,7 +249,7 @@ export class AutomatedNotificationScheduler {
       });
     } catch (error: any) {
       logger.error('Failed to initialize notification scheduler', {
-        error: error.message
+        error: getErrorMessage(error)
       });
       throw error;
     }
@@ -255,7 +268,7 @@ export class AutomatedNotificationScheduler {
       const { event, bookingId, eventData = {}, triggeredAt = new Date() } = params;
       
       // Get booking details
-      const booking = await prisma.newBooking.findUnique({
+      const booking = await prisma.booking.findUnique({
         where: { id: bookingId }
       });
 
@@ -271,7 +284,7 @@ export class AutomatedNotificationScheduler {
         event,
         bookingId,
         rulesCount: rules.length,
-        serviceType: booking.serviceType,
+        serviceId: booking.serviceId,
         status: booking.status
       });
 
@@ -292,7 +305,7 @@ export class AutomatedNotificationScheduler {
           const scheduledAt = this.calculateScheduledTime(
             rule.trigger.timing,
             triggeredAt,
-            booking.scheduledDateTime
+            booking.scheduledDateTime || new Date()
           );
 
           // Schedule the notification
@@ -306,7 +319,7 @@ export class AutomatedNotificationScheduler {
               ruleId: rule.id,
               eventData,
               booking: {
-                serviceType: booking.serviceType,
+                serviceId: booking.serviceId,
                 status: booking.status,
                 customerEmail: booking.customerEmail
               }
@@ -317,7 +330,7 @@ export class AutomatedNotificationScheduler {
           logger.error('Failed to process scheduling rule', {
             ruleId: rule.id,
             bookingId,
-            error: error.message
+            error: getErrorMessage(error)
           });
         }
       }
@@ -326,7 +339,7 @@ export class AutomatedNotificationScheduler {
       logger.error('Failed to process booking event', {
         event: params.event,
         bookingId: params.bookingId,
-        error: error.message
+        error: getErrorMessage(error)
       });
     }
   }
@@ -345,19 +358,23 @@ export class AutomatedNotificationScheduler {
       const { bookingId, ruleId, scheduledAt, notification, metadata } = params;
       
       // Create scheduled notification record
-      const scheduled = await prisma.scheduledNotification.create({
+      const scheduled = await prisma.notificationLog.create({
         data: {
+          id: `scheduled_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           bookingId,
-          ruleId,
-          scheduledAt,
           notificationType: notification.type,
+          status: 'PENDING',
           method: notification.method,
-          priority: notification.priority,
-          template: notification.template,
-          customMessage: notification.customMessage,
-          status: 'scheduled',
-          attempts: 0,
-          metadata: metadata || {}
+          message: notification.customMessage || notification.template,
+          metadata: {
+            ...metadata,
+            ruleId,
+            scheduledAt,
+            notificationType: notification.type,
+            priority: notification.priority,
+            template: notification.template
+          },
+          sentAt: scheduledAt
         }
       });
 
@@ -390,7 +407,7 @@ export class AutomatedNotificationScheduler {
       logger.error('Failed to schedule notification', {
         bookingId: params.bookingId,
         ruleId: params.ruleId,
-        error: error.message
+        error: getErrorMessage(error)
       });
       throw error;
     }
@@ -402,18 +419,18 @@ export class AutomatedNotificationScheduler {
   async processScheduledNotifications(): Promise<void> {
     try {
       // Get due notifications
-      const dueNotifications = await prisma.scheduledNotification.findMany({
+      const dueNotifications = await prisma.notificationLog.findMany({
         where: {
-          status: 'scheduled',
-          scheduledAt: {
+          status: 'PENDING',
+          sentAt: {
             lte: new Date()
           }
         },
         include: {
-          booking: true
+          Booking: true
         },
         orderBy: {
-          scheduledAt: 'asc'
+          sentAt: 'asc'
         },
         take: 50 // Process in batches
       });
@@ -434,14 +451,14 @@ export class AutomatedNotificationScheduler {
           logger.error('Failed to send scheduled notification', {
             scheduledId: scheduled.id,
             bookingId: scheduled.bookingId,
-            error: error.message
+            error: getErrorMessage(error)
           });
         }
       }
 
     } catch (error: any) {
       logger.error('Failed to process scheduled notifications', {
-        error: error.message
+        error: getErrorMessage(error)
       });
     }
   }
@@ -452,36 +469,43 @@ export class AutomatedNotificationScheduler {
   private async sendScheduledNotification(scheduled: any): Promise<void> {
     try {
       // Update attempt count
-      await prisma.scheduledNotification.update({
+      await prisma.notificationLog.update({
         where: { id: scheduled.id },
         data: {
-          attempts: scheduled.attempts + 1,
-          lastAttemptAt: new Date()
+          metadata: {
+            ...scheduled.metadata,
+            attempts: (scheduled.metadata?.attempts || 0) + 1,
+            lastAttemptAt: new Date().toISOString()
+          }
         }
       });
 
       // Send the notification
-      const result = await notificationService.sendNotification(
-        scheduled.bookingId,
-        scheduled.notificationType,
-        scheduled.method,
-        scheduled.customMessage,
-        {
-          ...scheduled.metadata,
-          scheduledId: scheduled.id,
-          ruleId: scheduled.ruleId,
-          template: scheduled.template
-        }
-      );
+      const result = await NotificationService.sendNotification({
+        bookingId: scheduled.bookingId,
+        type: scheduled.notificationType,
+        recipient: {
+          email: scheduled.Booking?.User_Booking_signerIdToUser?.email,
+          firstName: scheduled.Booking?.User_Booking_signerIdToUser?.name?.split(' ')[0]
+        },
+        content: {
+          message: scheduled.message,
+          metadata: scheduled.metadata
+        },
+        methods: [scheduled.method]
+      });
 
       if (result.success) {
         // Mark as sent
-        await prisma.scheduledNotification.update({
+        await prisma.notificationLog.update({
           where: { id: scheduled.id },
           data: {
-            status: 'sent',
+            status: 'SENT',
             sentAt: new Date(),
-            notificationId: result.notificationId
+            metadata: {
+              ...scheduled.metadata,
+              notificationId: result.results[0]?.notificationId
+            }
           }
         });
 
@@ -489,20 +513,23 @@ export class AutomatedNotificationScheduler {
           scheduledId: scheduled.id,
           bookingId: scheduled.bookingId,
           type: scheduled.notificationType,
-          notificationId: result.notificationId
+          notificationId: result.results[0]?.notificationId
         });
       } else {
         // Mark as failed or retry
         const shouldRetry = scheduled.attempts < 3;
         
-        await prisma.scheduledNotification.update({
+        await prisma.notificationLog.update({
           where: { id: scheduled.id },
           data: {
-            status: shouldRetry ? 'scheduled' : 'failed',
-            scheduledAt: shouldRetry ? 
-              new Date(Date.now() + (scheduled.attempts * 30 * 60 * 1000)) : // Exponential backoff
-              scheduled.scheduledAt,
-            errorMessage: result.error
+            status: shouldRetry ? 'PENDING' : 'FAILED',
+            sentAt: shouldRetry ? 
+              new Date(Date.now() + (scheduled.metadata?.attempts * 30 * 60 * 1000)) : // Exponential backoff
+              scheduled.sentAt,
+            metadata: {
+              ...scheduled.metadata,
+              errorMessage: result.results[0]?.error
+            }
           }
         });
 
@@ -511,14 +538,14 @@ export class AutomatedNotificationScheduler {
           bookingId: scheduled.bookingId,
           attempts: scheduled.attempts,
           willRetry: shouldRetry,
-          error: result.error
+          error: result.results[0]?.error
         });
       }
 
     } catch (error: any) {
       logger.error('Error processing scheduled notification', {
         scheduledId: scheduled.id,
-        error: error.message
+        error: getErrorMessage(error)
       });
     }
   }
@@ -569,11 +596,14 @@ export class AutomatedNotificationScheduler {
   private async checkFrequencyLimits(rule: any, bookingId: string): Promise<boolean> {
     if (!rule.frequency) return true;
 
-    const sentCount = await prisma.scheduledNotification.count({
+    const sentCount = await prisma.notificationLog.count({
       where: {
         bookingId,
-        ruleId: rule.id,
-        status: 'sent'
+        status: 'SENT',
+        metadata: {
+          path: ['ruleId'],
+          equals: rule.id
+        }
       }
     });
 
@@ -582,11 +612,14 @@ export class AutomatedNotificationScheduler {
     }
 
     if (rule.frequency.cooldown) {
-      const lastSent = await prisma.scheduledNotification.findFirst({
+      const lastSent = await prisma.notificationLog.findFirst({
         where: {
           bookingId,
-          ruleId: rule.id,
-          status: 'sent'
+          status: 'SENT',
+          metadata: {
+            path: ['ruleId'],
+            equals: rule.id
+          }
         },
         orderBy: { sentAt: 'desc' }
       });

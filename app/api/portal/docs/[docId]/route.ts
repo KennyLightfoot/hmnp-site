@@ -18,10 +18,10 @@ export async function GET(req: NextRequest, context: { params: Promise<{ docId: 
   
   const doc = await prisma.assignmentDocument.findUnique({
     where: { id: params.docId },
-    include: { assignment: { select: { partnerAssignedToId: true } } },
+    include: { Assignment: { select: { partnerAssignedToId: true } } },
   })
   if (!doc) return NextResponse.json({ error: "Not found" }, { status: 404 })
-  if (doc.assignment.partnerAssignedToId !== userId)
+  if (doc.Assignment.partnerAssignedToId !== userId)
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
   const cmd = new GetObjectCommand({
@@ -35,6 +35,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ docId: 
   try {
     await prisma.downloadLog.create({
       data: {
+        id: `${doc.id}-${Date.now()}`, // Generate a unique ID
         documentId: doc.id,
         userId,
       },

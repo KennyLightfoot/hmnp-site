@@ -10,6 +10,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { safeGet } from '@/lib/utils/error-utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -259,8 +260,8 @@ export default function LocationStep({
     handleLocationChange('city', suggestion.city);
     handleLocationChange('state', suggestion.state);
     handleLocationChange('zipCode', suggestion.zipCode);
-    if (suggestion.latitude) handleLocationChange('latitude', suggestion.latitude);
-    if (suggestion.longitude) handleLocationChange('longitude', suggestion.longitude);
+    if (suggestion.latitude) handleLocationChange('latitude', suggestion.latitude.toString());
+    if (suggestion.longitude) handleLocationChange('longitude', suggestion.longitude.toString());
     setShowSuggestions(false);
   };
 
@@ -433,7 +434,7 @@ export default function LocationStep({
                   value={watchedLocation.address || ''}
                   onChange={(e) => handleAddressInput(e.target.value)}
                   className={`h-12 md:h-10 ${
-                    errors?.location?.address || formErrors?.location?.address ? 'border-red-500' : ''
+                    safeGet(errors, 'location.address', null) || safeGet(formErrors, 'location.address', null) ? 'border-red-500' : ''
                   }`}
                 />
                 {showSuggestions && addressSuggestions.length > 0 && (

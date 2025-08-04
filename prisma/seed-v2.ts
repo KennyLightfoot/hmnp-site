@@ -29,7 +29,7 @@ async function main() {
       {
         id: 'mobile-standard-001',
         name: 'Standard Mobile Notary',
-        type: ServiceType.MOBILE,
+        type: ServiceType.STANDARD_NOTARY,
         description: 'General notary services at your location. Includes travel within 20-mile radius.',
         basePrice: 75.00,
         depositRequired: true,
@@ -45,7 +45,7 @@ async function main() {
       {
         id: 'mobile-extended-001', 
         name: 'Extended Hours Mobile Notary',
-        type: ServiceType.MOBILE,
+        type: ServiceType.STANDARD_NOTARY,
         description: 'Mobile notary services during extended hours (evenings/weekends).',
         basePrice: 100.00,
         depositRequired: true,
@@ -61,7 +61,7 @@ async function main() {
       {
         id: 'mobile-loan-001',
         name: 'Loan Signing Specialist',
-        type: ServiceType.MOBILE,
+        type: ServiceType.STANDARD_NOTARY,
         description: 'Professional loan document signing services for mortgages and refinances.',
         basePrice: 150.00,
         depositRequired: true,
@@ -82,7 +82,7 @@ async function main() {
       {
         id: 'ron-standard-001',
         name: 'RON Standard Acknowledgment',
-        type: ServiceType.RON,
+        type: ServiceType.STANDARD_NOTARY,
         description: 'Remote Online Notarization for standard acknowledgments.',
         basePrice: 35.00,
         depositRequired: false,
@@ -105,34 +105,22 @@ async function main() {
         where: { id: service.id },
         update: {
           name: service.name,
-          type: service.type, // Fixed: use 'type' not 'serviceType'
+          serviceType: service.type, // Fixed: use 'type' not 'serviceType'
           description: service.description,
           basePrice: service.basePrice,
-          depositRequired: service.depositRequired,
-          depositAmount: service.depositAmount,
-          duration: service.duration,
-          maxSigners: service.maxSigners,
-          maxDocuments: service.maxDocuments,
+          depositAmount: service.depositAmount || undefined,
+          durationMinutes: service.duration,
           isActive: service.isActive,
-          serviceRadius: service.serviceRadius,
-          extendedRadius: service.extendedRadius,
-          travelFeeRate: service.travelFeeRate
         },
         create: {
           id: service.id,
           name: service.name,
-          type: service.type, // Fixed: use 'type' not 'serviceType'
+          serviceType: service.type, // Fixed: use 'type' not 'serviceType'
           description: service.description,
           basePrice: service.basePrice,
-          depositRequired: service.depositRequired,
-          depositAmount: service.depositAmount,
-          duration: service.duration,
-          maxSigners: service.maxSigners,
-          maxDocuments: service.maxDocuments,
+          depositAmount: service.depositAmount || undefined,
+          durationMinutes: service.duration,
           isActive: service.isActive,
-          serviceRadius: service.serviceRadius,
-          extendedRadius: service.extendedRadius,
-          travelFeeRate: service.travelFeeRate
         }
       });
       
@@ -147,12 +135,12 @@ async function main() {
     
     // Show service summary
     const services = await prisma.service.findMany({
-      select: { id: true, name: true, type: true, basePrice: true, isActive: true }
+      select: { id: true, name: true, serviceType: true, basePrice: true, isActive: true }
     });
     
     console.log('\n📋 Service Summary:');
     services.forEach(service => {
-      console.log(`   ${service.type}: ${service.name} - $${service.basePrice} (${service.isActive ? 'Active' : 'Inactive'})`);
+      console.log(`   ${service.serviceType}: ${service.name} - $${service.basePrice} (${service.isActive ? 'Active' : 'Inactive'})`);
     });
 
   } catch (error) {

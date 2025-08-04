@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -159,7 +160,7 @@ export default function LeadForm({
       trackLead(trackingData);
 
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+      const errorMessage = error instanceof Error ? getErrorMessage(error) : "An unknown error occurred.";
       setSubmissionError(errorMessage);
       if (onError) {
         onError(new Error(errorMessage));

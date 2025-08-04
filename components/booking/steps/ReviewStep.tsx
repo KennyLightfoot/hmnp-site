@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useFormContext } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -130,12 +131,15 @@ export default function ReviewStep({
     }
   };
 
-  const formatTime = (time: string) => {
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours);
+  const formatTime = (time: string | undefined = "") => {
+    if (!time || typeof time !== 'string') return '';
+    const parts = time.split(':');
+    if (parts.length < 2) return '';
+    const [hours, minutes] = parts;
+    const hour = parseInt(hours || '0');
     const period = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    return `${displayHour}:${minutes} ${period}`;
+    return `${displayHour}:${minutes || '00'} ${period}`;
   };
 
   const formatDate = (dateString: string) => {
@@ -162,7 +166,7 @@ export default function ReviewStep({
             </p>
             <div className="bg-white rounded-lg p-4 mb-4">
               <div className="text-lg font-bold text-gray-900">
-                Booking #{completedBooking.bookingNumber}
+                Booking #{completedBooking.confirmationNumber}
               </div>
               <div className="text-gray-600">
                 Confirmation sent to {watchedCustomer.email}
@@ -267,7 +271,7 @@ export default function ReviewStep({
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Time:</span>
                       <span className="font-medium">
-                        {formatTime(watchedScheduling.preferredTime)}
+                        {formatTime(watchedScheduling.preferredTime!)}
                       </span>
                     </div>
                   )}
@@ -336,13 +340,7 @@ export default function ReviewStep({
                 </span>
               </div>
               
-              {pricing.confidence?.competitiveAdvantage && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                  <div className="text-sm text-green-800 font-medium">
-                    💰 {pricing.confidence.competitiveAdvantage}
-                  </div>
-                </div>
-              )}
+
             </div>
           </CardContent>
         </Card>
@@ -385,8 +383,8 @@ export default function ReviewStep({
       {/* Enhanced Payment Form – show only when card required */}
       {REQUIRE_CARD && (
         <EnhancedPaymentForm
-          totalAmount={pricing.totalPrice}
-          depositAmount={Math.min(50, pricing.totalPrice * 0.25)}
+                      totalAmount={pricing?.total || 0}
+            depositAmount={Math.min(50, (pricing?.total || 0) * 0.25)}
           onPaymentMethodSelect={setSelectedPaymentMethod}
           onPaymentOptionSelect={setSelectedPaymentOption}
           onPaymentSubmit={async (paymentData) => {
@@ -394,7 +392,7 @@ export default function ReviewStep({
               setPaymentError(null);
               console.log('Payment submitted:', paymentData);
             } catch (error) {
-              setPaymentError(error instanceof Error ? error.message : 'Payment failed');
+              setPaymentError(error instanceof Error ? getErrorMessage(error) : 'Payment failed');
               setShowPaymentRecovery(true);
             }
           }}
@@ -421,7 +419,7 @@ export default function ReviewStep({
           failure={{
             id: 'recovery-1',
             bookingId: 'temp',
-            amount: pricing.totalPrice,
+            amount: pricing?.total || 0,
             originalMethod: selectedPaymentMethod?.id || 'unknown',
             failureReason: paymentError,
             customerMessage: paymentError,
@@ -473,7 +471,7 @@ export default function ReviewStep({
               <Checkbox
                 id="terms-accepted"
                 checked={termsAccepted}
-                onCheckedChange={setTermsAccepted}
+                onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
                 className="mt-1"
               />
               <Label htmlFor="terms-accepted" className="text-sm leading-relaxed">
@@ -494,8 +492,9 @@ export default function ReviewStep({
                 id="marketing-consent"
                 checked={watchedCustomer.marketingConsent || false}
                 onCheckedChange={(checked) => {
-                  setValue('customer.marketingConsent', checked);
-                  onUpdate({ customer: { ...watchedCustomer, marketingConsent: checked } });
+                  const boolValue = checked as boolean;
+                  setValue('customer.marketingConsent', boolValue);
+                  onUpdate({ customer: { ...watchedCustomer, marketingConsent: boolValue } });
                 }}
                 className="mt-1"
               />

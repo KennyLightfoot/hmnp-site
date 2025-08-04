@@ -602,15 +602,15 @@ export class EnhancedSchemaMarkup {
           '@context': 'https://schema.org',
           '@type': 'Service',
           '@id': `https://houstonmobilenotarypros.com/services/${serviceKey}#service`,
-          name: serviceData.name,
-          description: serviceData.description,
-          category: serviceData.category,
+          name: serviceData?.name,
+          description: serviceData?.description,
+          category: serviceData?.category,
           provider: {
             '@type': 'LocalBusiness',
-            name: serviceData.provider,
+            name: serviceData?.provider,
             '@id': 'https://houstonmobilenotarypros.com/#business'
           },
-          areaServed: serviceData.areaServed.map(area => ({
+          areaServed: serviceData?.areaServed.map(area => ({
             '@type': 'City',
             name: area,
             addressRegion: 'TX',
@@ -618,8 +618,8 @@ export class EnhancedSchemaMarkup {
           })),
           hasOfferCatalog: {
             '@type': 'OfferCatalog',
-            name: `${serviceData.name} Pricing`,
-            itemListElement: serviceData.offers.map((offer, index) => ({
+            name: `${serviceData?.name} Pricing`,
+            itemListElement: serviceData?.offers.map((offer, index) => ({
               '@type': 'OfferCatalog',
               name: offer.description,
               itemListElement: [{

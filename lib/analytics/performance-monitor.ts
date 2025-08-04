@@ -1,3 +1,5 @@
+import React from 'react';
+
 /**
  * Advanced Performance Monitoring and Analytics
  * 
@@ -84,12 +86,14 @@ export class PerformanceMonitor {
       new PerformanceObserver((list) => {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1];
-        this.recordMetric({
-          name: 'LCP',
-          value: lastEntry.startTime,
-          timestamp: Date.now(),
-          metadata: { element: lastEntry.element?.tagName }
-        });
+        if (lastEntry) {
+          this.recordMetric({
+            name: 'LCP',
+            value: lastEntry.startTime,
+            timestamp: Date.now(),
+            metadata: { element: (lastEntry as any).element?.tagName }
+          });
+        }
       }).observe({ entryTypes: ['largest-contentful-paint'] });
 
       // First Input Delay (FID)

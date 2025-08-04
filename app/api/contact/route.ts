@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import {
@@ -127,7 +128,7 @@ async function sendEmailNotification(formData: any) {
       `,
   });
   if (error) {
-    console.error("Error sending email notification:", error);
+    console.error("Error sending email notification:", getErrorMessage(error));
     return { error };
   }
   return { data };
@@ -211,7 +212,7 @@ export async function POST(request: Request) {
     try {
       allCustomFields = await getLocationCustomFields(getCleanLocationId()) || [];
     } catch (error) {
-      console.error("Failed to fetch GHL custom fields:", error);
+      console.error("Failed to fetch GHL custom fields:", getErrorMessage(error));
     }
 
     const findCustomFieldId = (keyToSearch: string) => {
@@ -346,7 +347,7 @@ export async function POST(request: Request) {
     });
 
   } catch (error) {
-    console.error("Contact form API error:", error);
+    console.error("Contact form API error:", getErrorMessage(error));
     
     // Handle Zod validation errors
     if (error instanceof z.ZodError) {
@@ -363,7 +364,7 @@ export async function POST(request: Request) {
       );
     }
     
-    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    const errorMessage = error instanceof Error ? getErrorMessage(error) : "An unknown error occurred";
     return NextResponse.json(
       { success: false, message: errorMessage },
       { status: error instanceof SyntaxError ? 400 : 500 }

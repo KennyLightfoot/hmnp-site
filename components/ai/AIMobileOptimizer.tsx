@@ -27,8 +27,7 @@ import {
   Smartphone,
   Zap,
   Star,
-  ArrowUp,
-  TouchIcon
+  ArrowUp
 } from 'lucide-react';
 
 interface AIMobileOptimizerProps {
@@ -124,9 +123,9 @@ export default function AIMobileOptimizer({
   const [deviceMotion, setDeviceMotion] = useState({ x: 0, y: 0, z: 0 });
   
   // Refs for mobile interactions
-  const touchTimeoutRef = useRef<NodeJS.Timeout>();
-  const scrollTimeoutRef = useRef<NodeJS.Timeout>();
-  const shakeTimeoutRef = useRef<NodeJS.Timeout>();
+  const touchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const shakeTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Only render on mobile devices
   if (!isMobile) return null;
@@ -235,8 +234,8 @@ export default function AIMobileOptimizer({
       const acceleration = event.accelerationIncludingGravity;
       if (!acceleration) return;
 
-      const { x = 0, y = 0, z = 0 } = acceleration;
-      const totalAcceleration = Math.sqrt(x * x + y * y + z * z);
+      const { x = 0, y = 0, z = 0 } = acceleration || {};
+      const totalAcceleration = Math.sqrt((x || 0) * (x || 0) + (y || 0) * (y || 0) + (z || 0) * (z || 0));
 
       if (totalAcceleration > MOBILE_TRIGGERS.PHONE_SHAKE.threshold && !shakeDetected) {
         setShakeDetected(true);

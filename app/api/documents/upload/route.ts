@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
@@ -174,7 +175,7 @@ export async function POST(request: Request) {
 
     uploadLogger.error('Document upload failed', {
       userId,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
     });
 
@@ -227,25 +228,17 @@ export async function GET(request: Request) {
         },
       },
     }); */
-    const document = null; // Placeholder until Document model is added
+    // TODO: Document model not yet implemented in Prisma schema
+    return NextResponse.json({ 
+      error: 'Document model not yet implemented',
+      message: 'This endpoint requires Document model to be added to Prisma schema'
+    }, { status: 501 }); // 501 Not Implemented
 
-    if (!document) {
-      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
-    }
-
-    const userId = (session.user as any).id;
+    /* TODO: Implement when Document model is added to schema
     
-    // Check if user has access to this document
-    if (document.uploadedById !== userId && !(session.user as any).role?.includes('ADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    // Check virus scan status
-    const virusScanResult = await FileUploadSecurity.checkVirusScanStatus(document.s3Key);
-
     // Update scan status in database if changed
-    // TODO: Add Document model to Prisma schema
-    /* if (virusScanResult.scanStatus !== document.scanStatus) {
+    const virusScanResult = await FileUploadSecurity.checkVirusScanStatus(document.s3Key);
+    if (virusScanResult.scanStatus !== document.scanStatus) {
       await prisma.document.update({
         where: { id: documentId },
         data: { 
@@ -254,7 +247,7 @@ export async function GET(request: Request) {
           updatedAt: new Date(),
         },
       });
-    } */
+    }
 
     return NextResponse.json({
       success: true,
@@ -273,11 +266,12 @@ export async function GET(request: Request) {
         uploadedBy: document.uploadedBy,
       },
     });
+    */
 
   } catch (error) {
     uploadLogger.error('Failed to get document status', {
       documentId,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
     });
 
     return NextResponse.json({

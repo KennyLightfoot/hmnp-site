@@ -1,4 +1,5 @@
 import Bull from 'bull';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { PrismaClient, BookingStatus, NotificationType, NotificationMethod, PaymentStatus, PaymentProvider } from '@prisma/client';
 import { NotificationJob, BookingProcessingJob, PaymentProcessingJob, JobResult } from '../queue/types';
 import { getQueues } from './config';
@@ -112,7 +113,7 @@ export class BullQueueWorker {
         success: false,
         jobId: job.id?.toString() || 'unknown',
         processedAt: new Date(),
-        error: error.message || 'Unknown error'
+        error: getErrorMessage(error) || 'Unknown error'
       };
     }
   }
@@ -130,8 +131,8 @@ export class BullQueueWorker {
         where: { id: bookingId },
         include: {
           User_Booking_signerIdToUser: true,
-          Service: true,
-          Payment: true
+          service: true,
+          payments: true
         }
       });
       
@@ -250,7 +251,7 @@ export class BullQueueWorker {
         success: false,
         jobId: job.id?.toString() || 'unknown',
         processedAt: new Date(),
-        error: error.message || 'Unknown error',
+        error: getErrorMessage(error) || 'Unknown error',
       };
     }
   }
@@ -439,7 +440,7 @@ export class BullQueueWorker {
     } catch (error: any) {
       logger.error(`Error syncing booking ${booking.id} to GHL:`, error);
       // Don't throw here - GHL sync failure shouldn't fail the whole job
-      return { success: false, error: error.message };
+      return { success: false, error: getErrorMessage(error) };
     }
   }
   
@@ -549,7 +550,7 @@ export class BullQueueWorker {
         success: false,
         jobId: job.id?.toString() || 'unknown',
         processedAt: new Date(),
-        error: error.message || 'Unknown error'
+        error: getErrorMessage(error) || 'Unknown error'
       };
     }
   }
@@ -560,7 +561,7 @@ export class BullQueueWorker {
       // Get booking details first
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
-        include: { Service: true }
+        include: { service: true }
       });
       
       if (!booking) {
@@ -568,7 +569,7 @@ export class BullQueueWorker {
       }
       
       // Use service price if amount not specified
-      const paymentAmount = amount || Number(booking.Service?.price || 0);
+      const paymentAmount = amount || Number(booking.service?.basePrice || 0);
       const paymentCurrency = currency || 'USD';
       
       if (paymentAmount <= 0) {
@@ -583,7 +584,7 @@ export class BullQueueWorker {
           provider: PaymentProvider.STRIPE,
           status: PaymentStatus.PENDING,
           notes: metadata?.notes || null,
-          paymentIntentId: metadata?.paymentIntentId || null
+          paymentIntentId: metadata?.newPaymentIntentId || null
         }
       });
       
@@ -803,7 +804,7 @@ export class BullQueueWorker {
     } catch (error: any) {
       logger.error(`Error updating GHL payment status for booking ${booking.id}:`, error);
       // Don't throw here - GHL sync failure shouldn't fail the whole job
-      return { success: false, error: error.message };
+      return { success: false, error: getErrorMessage(error) };
     }
   }
 
@@ -847,7 +848,7 @@ export class BullQueueWorker {
         
         queue.on('failed', (job, error) => {
           logger.error(`Job ${job.id} failed in ${queue.name} queue:`, { 
-            error: error.message, 
+            error: getErrorMessage(error), 
             jobData: job.data,
             attemptsMade: job.attemptsMade
           });

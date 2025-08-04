@@ -126,7 +126,7 @@ async function seedBusinessSettings() {
       for (const setting of businessSettings) {
         await prisma.businessSettings.create({
           data: {
-            id: uuidv4(),
+            id: randomUUID(),
             ...setting
           }
         });

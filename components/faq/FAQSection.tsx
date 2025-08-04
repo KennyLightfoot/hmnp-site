@@ -49,10 +49,11 @@ export function FAQSection({ faqs, filters }: FAQSectionProps) {
     const groups: Record<string, FAQ[]> = {};
     
     filteredFAQs.forEach(faq => {
-      if (!groups[faq.category]) {
-        groups[faq.category] = [];
+      const category = faq.category || 'General';
+      if (!groups[category]) {
+        groups[category] = [];
       }
-      groups[faq.category].push(faq);
+      groups[category].push(faq);
     });
 
     return groups;

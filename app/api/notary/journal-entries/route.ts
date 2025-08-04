@@ -2,19 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { Role } from '@prisma/client';
+import { Role, Prisma } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    // Check if user is authenticated and has notary role
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userRole = (session.user as any).role;
-    if (userRole !== Role.NOTARY && userRole !== Role.ADMIN) {
+    const userWithRole = session.user as { id: string; role: Role };
+    if (userWithRole.role !== Role.NOTARY && userWithRole.role !== Role.ADMIN) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
@@ -22,42 +21,37 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const month = searchParams.get('month');
 
-    // Build where clause
-    const whereClause: any = {};
+    const whereClause: Prisma.notary_journalWhereInput = {};
 
-    // Add notary filter for non-admin users
-    if (userRole === Role.NOTARY) {
-      whereClause.notaryId = (session.user as any).id;
+    if (userWithRole.role === Role.NOTARY) {
+      whereClause.notary_id = userWithRole.id;
     }
 
-    // Add search filter
     if (search) {
       whereClause.OR = [
-        { signerName: { contains: search, mode: 'insensitive' } },
-        { documentType: { contains: search, mode: 'insensitive' } },
-        { notarialActType: { contains: search, mode: 'insensitive' } },
+        { signer_name: { contains: search, mode: 'insensitive' } },
+        { document_type: { contains: search, mode: 'insensitive' } },
+        { notarial_act_type: { contains: search, mode: 'insensitive' } },
         { location: { contains: search, mode: 'insensitive' } },
       ];
     }
 
-    // Add month filter
     if (month && month !== 'all') {
       const currentYear = new Date().getFullYear();
       const monthNum = parseInt(month);
       const startDate = new Date(currentYear, monthNum - 1, 1);
       const endDate = new Date(currentYear, monthNum, 0);
-      
-      whereClause.entryDate = {
+
+      whereClause.entry_date = {
         gte: startDate,
         lte: endDate,
       };
     }
 
-    // Fetch journal entries
-    const entries = await prisma.notaryJournal.findMany({
+    const entries = await prisma.notary_journal.findMany({
       where: whereClause,
       include: {
-        booking: {
+        Booking: {
           select: {
             id: true,
             User_Booking_signerIdToUser: {
@@ -72,7 +66,7 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        notary: {
+        User: {
           select: {
             id: true,
             name: true,
@@ -80,33 +74,33 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: {
-        entryDate: 'desc',
+        entry_date: 'desc',
       },
     });
 
-    // Format entries for frontend
-    const formattedEntries = entries.map(entry => ({
+    const formattedEntries = entries.map((entry: any) => ({
       id: entry.id,
-      bookingId: entry.bookingId,
-      notaryId: entry.notaryId,
-      entryDate: entry.entryDate.toISOString(),
-      journalNumber: entry.journalNumber,
-      documentType: entry.documentType,
-      signerName: entry.signerName,
-      signerIdType: entry.signerIdType,
-      signerIdState: entry.signerIdState,
-      notarialActType: entry.notarialActType,
-      feeCharged: entry.feeCharged ? Number(entry.feeCharged) : null,
+      booking_id: entry.booking_id,
+      notary_id: entry.notary_id,
+      entry_date: entry.entry_date.toISOString(),
+      journal_number: entry.journal_number,
+      document_type: entry.document_type,
+      signer_name: entry.signer_name,
+      signer_id_type: entry.signer_id_type,
+      signer_id_state: entry.signer_id_state,
+      notarial_act_type: entry.notarial_act_type,
+      fee_charged: entry.fee_charged ? Number(entry.fee_charged) : null,
       location: entry.location,
-      additionalNotes: entry.additionalNotes,
-      createdAt: entry.createdAt.toISOString(),
-      booking: entry.booking ? {
-        id: entry.booking.id,
-        signerName: entry.booking.User_Booking_signerIdToUser?.name,
+      additional_notes: entry.additional_notes,
+      created_at: entry.created_at.toISOString(),
+      booking: entry.Booking ? {
+        id: entry.Booking.id,
+        signer_name: entry.Booking.User_Booking_signerIdToUser?.name,
         service: {
-          name: entry.booking.service.name,
+          name: entry.Booking.service.name,
         },
       } : null,
+      notary_name: entry.User?.name,
     }));
 
     return NextResponse.json({
@@ -128,62 +122,58 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    // Check if user is authenticated and has notary role
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userRole = (session.user as any).role;
-    if (userRole !== Role.NOTARY && userRole !== Role.ADMIN) {
+    const userWithRole = session.user as { id: string; role: Role };
+    if (userWithRole.role !== Role.NOTARY && userWithRole.role !== Role.ADMIN) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
     const body = await request.json();
     const {
-      bookingId,
-      documentType,
-      signerName,
-      signerIdType,
-      signerIdState,
-      notarialActType,
-      feeCharged,
+      booking_id,
+      document_type,
+      signer_name,
+      signer_id_type,
+      signer_id_state,
+      notarial_act_type,
+      fee_charged,
       location,
-      additionalNotes,
+      additional_notes,
     } = body;
 
-    // Validate required fields
-    if (!documentType || !signerName || !signerIdType || !notarialActType) {
+    if (!document_type || !signer_name || !signer_id_type || !notarial_act_type) {
       return NextResponse.json(
-        { error: 'Required fields: documentType, signerName, signerIdType, notarialActType' },
+        { error: 'Required fields: document_type, signer_name, signer_id_type, notarial_act_type' },
         { status: 400 }
       );
     }
 
-    const notaryId = (session.user as any).id;
+    const notary_id = userWithRole.id;
 
-    // Get the next journal number for this notary
-    const lastEntry = await prisma.notaryJournal.findFirst({
-      where: { notaryId },
-      orderBy: { journalNumber: 'desc' },
+    const lastEntry = await prisma.notary_journal.findFirst({
+      where: { notary_id },
+      orderBy: { journal_number: 'desc' },
     });
 
-    const nextJournalNumber = (lastEntry?.journalNumber || 0) + 1;
+    const nextJournalNumber = (lastEntry?.journal_number || 0) + 1;
 
-    // Create the journal entry
-    const journalEntry = await prisma.notaryJournal.create({
+    const journalEntry = await prisma.notary_journal.create({
       data: {
-        bookingId: bookingId || undefined,
-        notaryId,
-        entryDate: new Date(),
-        journalNumber: nextJournalNumber,
-        documentType,
-        signerName,
-        signerIdType,
-        signerIdState: signerIdState || 'TX',
-        notarialActType,
-        feeCharged: feeCharged ? parseFloat(feeCharged.toString()) : null,
+        booking_id: booking_id || undefined,
+        notary_id,
+        entry_date: new Date(),
+        journal_number: nextJournalNumber,
+        document_type,
+        signer_name,
+        signer_id_type,
+        signer_id_state: signer_id_state || 'TX',
+        notarial_act_type,
+        fee_charged: fee_charged ? parseFloat(fee_charged.toString()) : null,
         location: location || 'Houston, TX',
-        additionalNotes,
+        additional_notes,
       },
     });
 
@@ -192,8 +182,8 @@ export async function POST(request: NextRequest) {
       message: 'Journal entry created successfully',
       entry: {
         id: journalEntry.id,
-        journalNumber: journalEntry.journalNumber,
-        entryDate: journalEntry.entryDate.toISOString(),
+        journal_number: journalEntry.journal_number,
+        entry_date: journalEntry.entry_date.toISOString(),
       },
     });
 
@@ -204,4 +194,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

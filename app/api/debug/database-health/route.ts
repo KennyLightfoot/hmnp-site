@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '@/lib/database-connection';
 
 export async function GET() {
-  const healthCheck = {
+  const healthCheck: any = {
     timestamp: new Date().toISOString(),
     status: 'unknown',
     checks: {},
@@ -43,7 +44,7 @@ export async function GET() {
     // Test 3: Check required service types
     console.log('🔍 Checking required service types...');
     const requiredTypes = ['STANDARD_NOTARY', 'EXTENDED_HOURS_NOTARY', 'LOAN_SIGNING_SPECIALIST'];
-    const serviceTypeCheck = {};
+    const serviceTypeCheck: any = {};
     
     for (const type of requiredTypes) {
       const count = await prisma.service.count({
@@ -113,7 +114,7 @@ export async function GET() {
         };
       } catch (error) {
         healthCheck.database.sampleData = {
-          error: error instanceof Error ? error.message : String(error),
+          error: error instanceof Error ? getErrorMessage(error) : String(error),
           status: 'FAIL'
         };
         healthCheck.recommendations.push('Sample data retrieval failed - check database schema');
@@ -139,7 +140,7 @@ export async function GET() {
     
     healthCheck.status = 'ERROR';
     healthCheck.error = {
-      message: error instanceof Error ? error.message : String(error),
+      message: error instanceof Error ? getErrorMessage(error) : String(error),
       type: error?.constructor?.name || 'UnknownError'
     };
     healthCheck.recommendations.push('Database connection failed - check DATABASE_URL environment variable');

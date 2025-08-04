@@ -80,8 +80,8 @@ interface PromotionalCampaign {
   value: number;
   maxValue?: number;
   minOrderValue: number;
-  currentUses: number;
-  maxUses?: number;
+  usageCount: number;
+  usageLimit?: number;
   validFrom: string;
   validUntil: string;
   isActive: boolean;
@@ -134,7 +134,7 @@ export default function PricingManagementDashboard() {
     value: 0,
     maxValue: undefined as number | undefined,
     minOrderValue: 0,
-    maxUses: undefined as number | undefined,
+    usageLimit: undefined as number | undefined,
     validFrom: '',
     validUntil: '',
     isActive: true,
@@ -193,7 +193,7 @@ export default function PricingManagementDashboard() {
       const createdCampaign: PromotionalCampaign = {
         id: `campaign_${Date.now()}`,
         ...newCampaign,
-        currentUses: 0
+        usageCount: 0
       };
 
       setPromotionalCampaigns(prev => [...prev, createdCampaign]);
@@ -205,7 +205,7 @@ export default function PricingManagementDashboard() {
         value: 0,
         maxValue: undefined,
         minOrderValue: 0,
-        maxUses: undefined,
+        usageLimit: undefined,
         validFrom: '',
         validUntil: '',
         isActive: true,
@@ -488,7 +488,7 @@ export default function PricingManagementDashboard() {
                     
                     <div className="flex justify-between text-sm">
                       <span>Usage:</span>
-                      <span>{campaign.currentUses}{campaign.maxUses ? `/${campaign.maxUses}` : ''}</span>
+                      <span>{campaign.usageCount}{campaign.usageLimit ? `/${campaign.usageLimit}` : ''}</span>
                     </div>
                     
                     <div className="flex justify-between text-sm">
@@ -803,8 +803,8 @@ const mockPromotionalCampaigns: PromotionalCampaign[] = [
     value: 0.1,
     maxValue: 25,
     minOrderValue: 0,
-    currentUses: 47,
-    maxUses: undefined,
+    usageCount: 47,
+    usageLimit: undefined,
     validFrom: '2025-01-01',
     validUntil: '2025-12-31',
     isActive: true,
@@ -818,8 +818,8 @@ const mockPromotionalCampaigns: PromotionalCampaign[] = [
     type: 'fixed_amount',
     value: 25,
     minOrderValue: 75,
-    currentUses: 23,
-    maxUses: 100,
+    usageCount: 23,
+    usageLimit: 100,
     validFrom: '2025-01-01',
     validUntil: '2025-03-31',
     isActive: true,
@@ -834,8 +834,8 @@ const mockPromotionalCampaigns: PromotionalCampaign[] = [
     value: 0.2,
     maxValue: 50,
     minOrderValue: 0,
-    currentUses: 12,
-    maxUses: undefined,
+    usageCount: 12,
+    usageLimit: undefined,
     validFrom: '2025-01-01',
     validUntil: '2025-12-31',
     isActive: true,
@@ -845,7 +845,7 @@ const mockPromotionalCampaigns: PromotionalCampaign[] = [
 ];
 
 const mockPricingAnalytics: PricingAnalytics = {
-  totalRevenue: 45230,
+      totalRevenue: 45230,
   averageOrderValue: 127,
   discountUsage: 18.5,
   conversionRate: 23.8,

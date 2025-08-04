@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -134,7 +135,7 @@ export default function ProofRONSessionCard({ booking, onRefresh }: ProofRONSess
       
     } catch (error) {
       console.error('Error creating Proof transaction:', error);
-      setError(error instanceof Error ? error.message : 'Failed to create session');
+      setError(error instanceof Error ? getErrorMessage(error) : 'Failed to create session');
     } finally {
       setLoading(null);
     }
@@ -244,7 +245,7 @@ export default function ProofRONSessionCard({ booking, onRefresh }: ProofRONSess
           <div>
             <p className="text-sm font-medium">Service</p>
             <p className="text-sm text-gray-600">
-              {booking.Service?.name || 'Remote Online Notarization'}
+              {booking.service?.name || 'Remote Online Notarization'}
             </p>
           </div>
           <div>

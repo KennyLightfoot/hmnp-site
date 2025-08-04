@@ -1,4 +1,5 @@
 import { BookingProcessingJob, JobResult } from '../types';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { PrismaClient, BookingStatus, PaymentStatus } from '@prisma/client';
 import { NotificationService } from '@/lib/notifications';
 import { logger } from '@/lib/logger';
@@ -21,8 +22,8 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
       where: { id: job.bookingId },
       include: {
         User_Booking_signerIdToUser: true,
-        Service: true,
-        Payment: true,
+        service: true,
+        payments: true,
       }
     }), { maxRetries: 3 });
     
@@ -123,12 +124,12 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
             data: { 
               scheduledDateTime: newDateTime,
               status: 'CONFIRMED', // Reset to confirmed if it was pending
-              notes: `${booking.notes || ''}\n[RESCHEDULED] From ${oldDateTime.toISOString()} to ${newDateTime.toISOString()}`.trim()
+              notes: `${booking.notes || ''}\n[RESCHEDULED] From ${oldDateTime?.toISOString() || 'unknown'} to ${newDateTime.toISOString()}`.trim()
             }
           });
           
           // Send reschedule notification
-          await notificationService.sendBookingReschedule(job.bookingId, oldDateTime ?? new Date());
+          await notificationService.sendBookingReschedule(job.bookingId, oldDateTime || new Date());
           
           return result;
         }, { maxRetries: 3 });
@@ -140,7 +141,7 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
           result: { 
             updated: true, 
             bookingId: job.bookingId,
-            oldDateTime: (oldDateTime ?? new Date()).toISOString(),
+            oldDateTime: oldDateTime ? oldDateTime.toISOString() : new Date().toISOString(),
             newDateTime: (updatedBooking.scheduledDateTime ?? new Date()).toISOString()
           }
         };
@@ -244,16 +245,16 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
     }
   } catch (error) {
     logger.error(`Error processing booking job ${job.id || 'unknown'}:`, { 
-      error: error.message,
+      error: getErrorMessage(error),
       jobDetails: job,
-      stack: error.stack
+      stack: error instanceof Error ? error.stack : undefined
     });
     
     return {
       success: false,
       jobId: job.id || `booking-${Date.now()}`,
       processedAt: new Date(),
-      error: error.message
+      error: getErrorMessage(error)
     };
   }
 }

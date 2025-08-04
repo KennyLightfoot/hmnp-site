@@ -15,6 +15,7 @@
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useFormContext } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -132,6 +133,8 @@ export default function EnhancedSchedulingStep({
       const dayNumber = date.getDate();
       const dateString = date.toISOString().split('T')[0];
       
+      if (!dateString) continue;
+      
       days.push({
         date: dateString,
         dayName,
@@ -164,6 +167,9 @@ export default function EnhancedSchedulingStep({
     setAvailabilityError(null);
     
     try {
+      if (!watchedServiceType) {
+        throw new Error('Service type is required');
+      }
       const serviceId = getServiceId(watchedServiceType);
       
       // Use the WORKING availability endpoint
@@ -214,8 +220,8 @@ export default function EnhancedSchedulingStep({
         throw new Error(result.message || 'Failed to fetch availability');
       }
     } catch (error) {
-      console.error('Availability fetch error:', error);
-      setAvailabilityError(error instanceof Error ? error.message : 'Failed to load availability');
+      console.error('Availability fetch error:', getErrorMessage(error));
+      setAvailabilityError(error instanceof Error ? getErrorMessage(error) : 'Failed to load availability');
       
       // Update the day with error
       setAvailableDays(prev => prev.map(day => {
@@ -223,7 +229,7 @@ export default function EnhancedSchedulingStep({
           return {
             ...day,
             loading: false,
-            error: error instanceof Error ? error.message : 'Failed to load availability'
+            error: error instanceof Error ? getErrorMessage(error) : 'Failed to load availability'
           };
         }
         return day;
@@ -267,13 +273,11 @@ export default function EnhancedSchedulingStep({
     
     // Clear previous time selection
     setValue('scheduling.preferredTime', '');
-    setValue('scheduling.preferredTimeSlot', '');
     onUpdate({ 
       scheduling: { 
         ...watchedScheduling, 
         preferredDate: date,
-        preferredTime: '',
-        preferredTimeSlot: ''
+        preferredTime: ''
       } 
     });
   };
@@ -281,13 +285,11 @@ export default function EnhancedSchedulingStep({
   // Handle time slot selection
   const handleTimeSelect = (slot: EnhancedTimeSlot) => {
     setValue('scheduling.preferredTime', slot.displayTime);
-    setValue('scheduling.preferredTimeSlot', slot.startTime);
     setValue('scheduling.estimatedDuration', slot.duration);
     onUpdate({ 
       scheduling: { 
         ...watchedScheduling, 
         preferredTime: slot.displayTime,
-        preferredTimeSlot: slot.startTime,
         estimatedDuration: slot.duration
       } 
     });
@@ -512,7 +514,7 @@ export default function EnhancedSchedulingStep({
             ) : (
               <EnhancedTimeSlotDisplay
                 slots={selectedDay.slots}
-                selectedSlot={selectedDay.slots.find(s => s.startTime === watchedScheduling.preferredTimeSlot)}
+                selectedSlot={selectedDay.slots.find(s => s.displayTime === watchedScheduling.preferredTime)}
                 onSlotSelect={handleTimeSelect}
                 showDemand={true}
                 showUrgency={true}

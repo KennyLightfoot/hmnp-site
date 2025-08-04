@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { redis } from '@/lib/redis';
 
 export async function GET() {
@@ -32,8 +33,8 @@ export async function GET() {
     // Test pipeline
     const pipeline = redis.pipeline();
     if (pipeline) {
-      pipeline.setex(testKey + '_pipeline', 60, testValue);
-      const pipelineResult = await pipeline.exec();
+      pipeline?.setex(testKey + '_pipeline', 60, testValue);
+      const pipelineResult = await pipeline?.exec();
       console.log('Redis pipeline result:', pipelineResult);
     } else {
       console.log('Redis pipeline is null');
@@ -67,7 +68,7 @@ export async function GET() {
     
     return NextResponse.json({
       success: false,
-      error: error.message,
+      error: getErrorMessage(error),
       stack: error.stack,
       details: {
         redisAvailable: redis.isAvailable(),

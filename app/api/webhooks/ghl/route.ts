@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { logger } from '@/lib/logger';
 import { headers } from 'next/headers';
 import crypto from 'crypto';
@@ -50,7 +51,7 @@ function verifyGHLWebhookSignature(payload: string, signature: string, secret: s
        new Uint8Array(expectedBuffer)
      );
   } catch (error) {
-    console.error('Signature verification error:', error);
+    console.error('Signature verification error:', getErrorMessage(error));
     return false;
   }
 }
@@ -304,12 +305,12 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('GHL Webhook error:', error);
+    console.error('GHL Webhook error:', getErrorMessage(error));
     
     // Log error details for debugging
     if (error instanceof Error) {
       console.error('Error details:', {
-        message: error.message,
+        message: getErrorMessage(error),
         stack: error.stack,
         name: error.name
       });
@@ -319,7 +320,7 @@ export async function POST(request: NextRequest) {
       { 
         success: false, 
         error: 'Webhook processing failed',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
       },
       { status: 500 }
     );

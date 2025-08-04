@@ -4,6 +4,7 @@
  */
 
 import { redis } from './redis';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { logger } from './logger';
 import { monitoring } from './monitoring';
 
@@ -60,7 +61,7 @@ class RateLimiter {
 
     try {
       // Use Redis pipeline for atomic operations
-      const pipeline = redis.client?.pipeline();
+      const pipeline = (redis as any).client?.pipeline();
       if (!pipeline) {
         // Fallback when Redis is not available
         return this.fallbackRateLimit(identifier, finalConfig);
@@ -87,7 +88,11 @@ class RateLimiter {
       monitoring.trackPerformance({
         metric: 'rate_limit_check',
         value: allowed ? 1 : 0,
-        tags: { identifier, allowed: allowed.toString() },
+        unit: 'count',
+        tags: { 
+          identifier: identifier, 
+          allowed: allowed.toString() 
+        } as any,
       });
 
       if (!allowed) {
@@ -116,7 +121,7 @@ class RateLimiter {
       // SECURITY FIX: Use secure fallback instead of failing open
       logger.warn('Falling back to memory-based rate limiting due to Redis error', 'RATE_LIMIT', {
         identifier,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
       });
       
       return this.fallbackRateLimit(identifier, finalConfig);
@@ -174,7 +179,7 @@ class RateLimiter {
 
       // Calculate weighted average
       const weights = [0.3, 0.3, 0.25, 0.15]; // CPU, Memory, DB, Redis
-      const weightedSum = metrics.reduce((sum, metric, index) => sum + metric * weights[index], 0);
+      const weightedSum = metrics.reduce((sum, metric, index) => sum + metric * (weights[index] || 0), 0);
       
       return Math.min(1, Math.max(0, weightedSum));
       
@@ -281,6 +286,7 @@ class RateLimiter {
         if (parts.length < 2) continue;
         
         const identifier = parts[1];
+        if (!identifier) continue;
         const requests = await redis.get(key);
         
         if (!statsMap.has(identifier)) {
@@ -293,17 +299,23 @@ class RateLimiter {
         }
         
         const stats = statsMap.get(identifier);
-        stats.totalRequests += parseInt(requests || '0');
+        if (stats) {
+          stats.totalRequests += parseInt(requests || '0');
+        }
       }
 
       // Get blocked request counts
       const blockedKeys = await redis.keys('blocked:*');
       for (const key of blockedKeys) {
         const identifier = key.replace('blocked:', '');
+        if (!identifier) continue;
         const blocked = await redis.get(key);
         
         if (statsMap.has(identifier)) {
-          statsMap.get(identifier).blockedRequests = parseInt(blocked || '0');
+          const stats = statsMap.get(identifier);
+          if (stats) {
+            stats.blockedRequests = parseInt(blocked || '0');
+          }
         }
       }
 
@@ -363,7 +375,8 @@ class RateLimiter {
       monitoring.trackPerformance({
         metric: 'fallback_rate_limit_exceeded',
         value: 1,
-        tags: { identifier, severity: 'critical' }
+        unit: 'count',
+        tags: { identifier, severity: 'critical' } as any,
       });
     }
     

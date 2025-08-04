@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { stripe, StripeService } from '@/lib/stripe';
@@ -13,6 +14,7 @@ import { webhookProcessor } from '@/lib/webhook-processor';
 import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import { addJob } from '@/lib/queue/queue-config';
+import { BookingStatus } from '@prisma/client';
 
 // Stripe webhook event types we handle
 const HANDLED_EVENTS = [
@@ -27,9 +29,9 @@ const HANDLED_EVENTS = [
   'invoice.finalized',
   'invoice.payment_succeeded',
   'invoice.payment_failed',
-  'subscription.created',
-  'subscription.updated',
-  'subscription.deleted',
+  'customer.subscription.created',
+  'customer.subscription.updated',
+  'customer.subscription.deleted',
   'checkout.session.completed',
   'checkout.session.expired'
 ] as const;
@@ -54,7 +56,7 @@ export async function POST(request: NextRequest) {
         process.env.STRIPE_WEBHOOK_SECRET!
       );
     } catch (error: any) {
-      logger.error('Stripe webhook signature verification failed', { error: error.message });
+      logger.error('Stripe webhook signature verification failed', { error: getErrorMessage(error) });
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
     }
 
@@ -97,7 +99,7 @@ export async function POST(request: NextRequest) {
     }, { status: 200 });
 
   } catch (error: any) {
-    logger.error('Stripe webhook endpoint error', { error: error.message });
+    logger.error('Stripe webhook endpoint error', { error: getErrorMessage(error) });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -140,12 +142,15 @@ async function processStripeEvent(event: Stripe.Event): Promise<any> {
     case 'invoice.payment_failed':
       return await handleInvoicePaymentFailed(data.object as Stripe.Invoice);
       
-    case 'subscription.created':
-    case 'subscription.updated':
-      return await handleSubscriptionUpdated(data.object as Stripe.Subscription);
-      
-    case 'subscription.deleted':
-      return await handleSubscriptionDeleted(data.object as Stripe.Subscription);
+    case 'customer.subscription.created':
+    case 'customer.subscription.updated':
+      const subscription = event.data.object as Stripe.Subscription;
+      // Handle subscription events
+      break;
+    case 'customer.subscription.deleted':
+      const deletedSubscription = event.data.object as Stripe.Subscription;
+      // Handle subscription deletion
+      break;
       
     case 'checkout.session.completed':
       return await handleCheckoutSessionCompleted(data.object as Stripe.Checkout.Session);
@@ -165,30 +170,25 @@ async function processStripeEvent(event: Stripe.Event): Promise<any> {
 async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent): Promise<any> {
   try {
     // Update payment record in database
-    const payment = await prisma.newPayment.findFirst({
-      where: { stripePaymentIntentId: paymentIntent.id }
+    const payment = await prisma.payment.findFirst({
+      where: { paymentIntentId: paymentIntent.id }
     });
 
     if (payment) {
-      await prisma.newPayment.update({
+      await prisma.payment.update({
         where: { id: payment.id },
         data: {
           status: 'COMPLETED',
-          paidAt: new Date(),
-          metadata: {
-            ...payment.metadata as any,
-            stripePaymentIntent: paymentIntent
-          }
+          transactionId: paymentIntent.latest_charge as string
         }
       });
 
       // Update associated booking status
       if (payment.bookingId) {
-        await prisma.newBooking.update({
+        await prisma.booking.update({
           where: { id: payment.bookingId },
           data: { 
-            status: 'CONFIRMED',
-            paymentStatus: 'COMPLETED'
+            status: 'CONFIRMED'
           }
         });
 
@@ -218,7 +218,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
   } catch (error: any) {
     logger.error('Error handling payment intent succeeded', { 
       paymentIntentId: paymentIntent.id, 
-      error: error.message 
+      error: getErrorMessage(error) 
     });
     throw error;
   }
@@ -230,30 +230,25 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
 async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent): Promise<any> {
   try {
     // Update payment record
-    const payment = await prisma.newPayment.findFirst({
-      where: { stripePaymentIntentId: paymentIntent.id }
+    const payment = await prisma.payment.findFirst({
+      where: { paymentIntentId: paymentIntent.id }
     });
 
     if (payment) {
-      await prisma.newPayment.update({
+      await prisma.payment.update({
         where: { id: payment.id },
         data: {
           status: 'FAILED',
-          metadata: {
-            ...payment.metadata as any,
-            failureReason: paymentIntent.last_payment_error?.message,
-            stripePaymentIntent: paymentIntent
-          }
+          transactionId: paymentIntent.latest_charge as string
         }
       });
 
       // Update booking status
       if (payment.bookingId) {
-        await prisma.newBooking.update({
+        await prisma.booking.update({
           where: { id: payment.bookingId },
           data: { 
-            status: 'CANCELLED',
-            paymentStatus: 'FAILED'
+            status: BookingStatus.CANCELLED_BY_CLIENT
           }
         });
 
@@ -287,7 +282,7 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent): P
   } catch (error: any) {
     logger.error('Error handling payment intent failed', { 
       paymentIntentId: paymentIntent.id, 
-      error: error.message 
+      error: getErrorMessage(error) 
     });
     throw error;
   }
@@ -299,20 +294,15 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent): P
 async function handlePaymentIntentRequiresAction(paymentIntent: Stripe.PaymentIntent): Promise<any> {
   try {
     // Update payment status to require action
-    const payment = await prisma.newPayment.findFirst({
-      where: { stripePaymentIntentId: paymentIntent.id }
+    const payment = await prisma.payment.findFirst({
+      where: { paymentIntentId: paymentIntent.id }
     });
 
     if (payment) {
-      await prisma.newPayment.update({
+      await prisma.payment.update({
         where: { id: payment.id },
         data: {
-          status: 'PENDING',
-          metadata: {
-            ...payment.metadata as any,
-            nextAction: paymentIntent.next_action,
-            stripePaymentIntent: paymentIntent
-          }
+          status: 'PENDING'
         }
       });
 
@@ -329,7 +319,7 @@ async function handlePaymentIntentRequiresAction(paymentIntent: Stripe.PaymentIn
   } catch (error: any) {
     logger.error('Error handling payment intent requires action', { 
       paymentIntentId: paymentIntent.id, 
-      error: error.message 
+      error: getErrorMessage(error) 
     });
     throw error;
   }
@@ -340,22 +330,21 @@ async function handlePaymentIntentRequiresAction(paymentIntent: Stripe.PaymentIn
  */
 async function handlePaymentIntentCanceled(paymentIntent: Stripe.PaymentIntent): Promise<any> {
   try {
-    const payment = await prisma.newPayment.findFirst({
-      where: { stripePaymentIntentId: paymentIntent.id }
+    const payment = await prisma.payment.findFirst({
+      where: { paymentIntentId: paymentIntent.id }
     });
 
     if (payment) {
-      await prisma.newPayment.update({
+      await prisma.payment.update({
         where: { id: payment.id },
         data: { status: 'FAILED' }
       });
 
       if (payment.bookingId) {
-        await prisma.newBooking.update({
+        await prisma.booking.update({
           where: { id: payment.bookingId },
           data: { 
-            status: 'CANCELLED',
-            paymentStatus: 'FAILED'
+            status: BookingStatus.CANCELLED_BY_CLIENT
           }
         });
       }
@@ -366,7 +355,7 @@ async function handlePaymentIntentCanceled(paymentIntent: Stripe.PaymentIntent):
   } catch (error: any) {
     logger.error('Error handling payment intent canceled', { 
       paymentIntentId: paymentIntent.id, 
-      error: error.message 
+      error: getErrorMessage(error) 
     });
     throw error;
   }
@@ -391,7 +380,7 @@ async function handlePaymentMethodAttached(paymentMethod: Stripe.PaymentMethod):
   } catch (error: any) {
     logger.error('Error handling payment method attached', { 
       paymentMethodId: paymentMethod.id, 
-      error: error.message 
+      error: getErrorMessage(error) 
     });
     throw error;
   }
@@ -410,7 +399,7 @@ async function handleCustomerUpdated(customer: Stripe.Customer): Promise<any> {
   } catch (error: any) {
     logger.error('Error handling customer updated', { 
       customerId: customer.id, 
-      error: error.message 
+      error: getErrorMessage(error) 
     });
     throw error;
   }
@@ -429,7 +418,7 @@ async function handleInvoiceCreated(invoice: Stripe.Invoice): Promise<any> {
   } catch (error: any) {
     logger.error('Error handling invoice created', { 
       invoiceId: invoice.id, 
-      error: error.message 
+      error: getErrorMessage(error) 
     });
     throw error;
   }
@@ -451,7 +440,7 @@ async function handleInvoiceFinalized(invoice: Stripe.Invoice): Promise<any> {
   } catch (error: any) {
     logger.error('Error handling invoice finalized', { 
       invoiceId: invoice.id, 
-      error: error.message 
+      error: getErrorMessage(error) 
     });
     throw error;
   }
@@ -469,7 +458,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<a
   } catch (error: any) {
     logger.error('Error handling invoice payment succeeded', { 
       invoiceId: invoice.id, 
-      error: error.message 
+      error: getErrorMessage(error) 
     });
     throw error;
   }
@@ -492,7 +481,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<any>
   } catch (error: any) {
     logger.error('Error handling invoice payment failed', { 
       invoiceId: invoice.id, 
-      error: error.message 
+      error: getErrorMessage(error) 
     });
     throw error;
   }
@@ -510,7 +499,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
   } catch (error: any) {
     logger.error('Error handling subscription updated', { 
       subscriptionId: subscription.id, 
-      error: error.message 
+      error: getErrorMessage(error) 
     });
     throw error;
   }
@@ -528,7 +517,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
   } catch (error: any) {
     logger.error('Error handling subscription deleted', { 
       subscriptionId: subscription.id, 
-      error: error.message 
+      error: getErrorMessage(error) 
     });
     throw error;
   }
@@ -552,7 +541,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session):
   } catch (error: any) {
     logger.error('Error handling checkout session completed', { 
       sessionId: session.id, 
-      error: error.message 
+      error: getErrorMessage(error) 
     });
     throw error;
   }
@@ -570,7 +559,7 @@ async function handleCheckoutSessionExpired(session: Stripe.Checkout.Session): P
   } catch (error: any) {
     logger.error('Error handling checkout session expired', { 
       sessionId: session.id, 
-      error: error.message 
+      error: getErrorMessage(error) 
     });
     throw error;
   }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { gmbManager } from '@/lib/gmb/manager';
 import { gmbAutomationSystem } from '@/lib/gmb/automation-system';
 
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         error: 'Failed to schedule posts',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
       },
       { status: 500 }
     );
@@ -139,7 +140,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       enabled: false,
       error: 'Failed to get posting queue',
-      details: error instanceof Error ? error.message : 'Unknown error',
+      details: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
       timestamp: new Date().toISOString(),
     });
   }
@@ -192,7 +193,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json(
       { 
         error: 'Failed to cancel post',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
       },
       { status: 500 }
     );

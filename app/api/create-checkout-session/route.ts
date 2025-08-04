@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { headers } from 'next/headers';
 import { stripe } from '@/lib/stripe';
 import { logger } from '@/lib/logger';
@@ -173,10 +174,10 @@ export async function POST(request: NextRequest) {
     if (paymentId) {
       try {
         // @ts-ignore - newPayment is generated model alias
-        await (prisma as any).newPayment.update({
+        await (prisma as any).payment.update({
           where: { id: paymentId },
           data: {
-            stripeSessionId: session.id,
+            paymentIntentId: session.id,
             status: 'PROCESSING',
             metadata: {
               checkoutSession: session,
@@ -189,7 +190,7 @@ export async function POST(request: NextRequest) {
         logger.error('Failed to update payment record with session ID', {
           paymentId,
           sessionId: session.id,
-          error: error.message
+          error: getErrorMessage(error)
         });
       }
     }
@@ -203,7 +204,7 @@ export async function POST(request: NextRequest) {
           data: {
             paymentStatus: 'PROCESSING',
             metadata: {
-              stripeSessionId: session.id,
+              paymentIntentId: session.id,
               customerEmail,
               customerName
             }
@@ -213,7 +214,7 @@ export async function POST(request: NextRequest) {
         logger.error('Failed to update booking record with session ID', {
           bookingId,
           sessionId: session.id,
-          error: error.message
+          error: getErrorMessage(error)
         });
       }
     }
@@ -236,7 +237,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     logger.error('Checkout session creation failed', {
-      error: error.message,
+      error: getErrorMessage(error),
       stack: error.stack
     });
 
@@ -252,7 +253,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: false,
         error: 'Payment processing error',
-        message: error.message
+        message: getErrorMessage(error)
       }, { status: 400 });
     }
 
@@ -298,13 +299,13 @@ export async function GET(request: NextRequest) {
 
   } catch (error: any) {
     logger.error('Failed to retrieve checkout session', {
-      error: error.message
+      error: getErrorMessage(error)
     });
 
     return NextResponse.json({
       success: false,
       error: 'Failed to retrieve session',
-      message: error.message
+      message: getErrorMessage(error)
     }, { status: 500 });
   }
 }

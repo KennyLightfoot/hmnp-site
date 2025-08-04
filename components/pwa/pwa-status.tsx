@@ -18,7 +18,7 @@ import {
   WifiOff, 
   Download, 
   Bell, 
-  Sync, 
+  RefreshCw, 
   CheckCircle, 
   AlertCircle,
   Smartphone,
@@ -139,7 +139,7 @@ export function PWAStatus() {
                 >
                   {syncStatus === 'syncing' ? (
                     <>
-                      <Sync className="h-3 w-3 mr-1 animate-spin" />
+                      <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
                       Syncing...
                     </>
                   ) : syncStatus === 'success' ? (
@@ -149,7 +149,7 @@ export function PWAStatus() {
                     </>
                   ) : (
                     <>
-                      <Sync className="h-3 w-3 mr-1" />
+                      <RefreshCw className="h-3 w-3 mr-1" />
                       Sync Now
                     </>
                   )}

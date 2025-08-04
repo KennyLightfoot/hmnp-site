@@ -1,4 +1,5 @@
 import { getQueues } from '../config';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { QueueJob, JobResult } from '../types';
 import { processNotificationJob } from './notificationWorker';
 import { processBookingJob } from './bookingWorker';
@@ -115,7 +116,7 @@ export class QueueWorker {
         if (!this.running) return;
         
         // Attempt to get a job from the queue
-        const job = await queue.dequeue<QueueJob>();
+        const job = await queue.dequeue();
         
         if (!job) {
           // Queue is empty, nothing to do
@@ -168,8 +169,8 @@ export class QueueWorker {
         }
       } catch (error) {
         logger.error(`Error in queue processing for ${queueType}:`, { 
-          error: error.message,
-          stack: error.stack
+          error: getErrorMessage(error),
+          stack: error instanceof Error ? error.stack : undefined
         });
       }
     };
@@ -184,8 +185,8 @@ export class QueueWorker {
     // Also process immediately for the first time
     processQueueItem().catch(error => {
       logger.error(`Error in initial queue processing for ${queueType}:`, { 
-        error: error.message,
-        stack: error.stack
+        error: getErrorMessage(error),
+        stack: error instanceof Error ? error.stack : undefined
       });
     });
   }

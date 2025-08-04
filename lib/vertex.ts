@@ -1,4 +1,5 @@
 import { GoogleAuth } from 'google-auth-library';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import fs from 'fs';
 
 export interface LLMResponse {
@@ -156,7 +157,7 @@ async function executeFunction(functionCall: FunctionCall): Promise<FunctionResu
       name: functionCall.name,
       response: {
         error: `Failed to execute ${functionCall.name}`,
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
       }
     };
   }

@@ -45,7 +45,7 @@ interface NotaryInfo {
   name?: string;
   phone?: string;
   email?: string;
-  commissionNumber?: string;
+  commission_number?: string;
   estimatedArrival?: string;
 }
 
@@ -146,7 +146,7 @@ export function bookingConfirmationEmail(
         <p><strong>Name:</strong> ${notaryInfo.name || 'Will be assigned 24 hours before appointment'}</p>
         ${notaryInfo.phone ? `<p><strong>Phone:</strong> ${notaryInfo.phone}</p>` : ''}
         ${notaryInfo.email ? `<p><strong>Email:</strong> ${notaryInfo.email}</p>` : ''}
-        ${notaryInfo.commissionNumber ? `<p><strong>Commission #:</strong> ${notaryInfo.commissionNumber}</p>` : ''}
+        ${notaryInfo.commission_number ? `<p><strong>Commission #:</strong> ${notaryInfo.commission_number}</p>` : ''}
         ${notaryInfo.estimatedArrival ? `<p><strong>Estimated Arrival:</strong> ${notaryInfo.estimatedArrival}</p>` : ''}
       </div>
       ` : ''}

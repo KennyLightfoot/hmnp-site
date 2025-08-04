@@ -17,10 +17,10 @@ export default async function AdminDashboard() {
 
   // Fetch summary data for dashboard
   const [
-    totalBookings,
+            total_bookings,
     pendingBookings,
     totalClients,
-    totalRevenue,
+            totalRevenue,
     scheduledNotifications,
     activeAlerts
   ] = await Promise.all([
@@ -57,7 +57,7 @@ export default async function AdminDashboard() {
     {
       title: "Bookings",
       icon: CalendarDays,
-      value: totalBookings.toString(),
+      value: total_bookings.toString(),
       description: `${pendingBookings} pending`,
       href: "/admin/bookings",
       color: "bg-blue-100 text-blue-800"

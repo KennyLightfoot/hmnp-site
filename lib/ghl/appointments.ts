@@ -29,8 +29,8 @@ export async function createGhlAppointment(opts: CreateGhlAppointmentOpts) {
   const payload: AppointmentData = {
     calendarId: opts.calendarId,
     contactId: opts.contactId,
-    startTime: startDT.toISO({ suppressSeconds: true, suppressMilliseconds: true }),
-    endTime: endDT.toISO({ suppressSeconds: true, suppressMilliseconds: true }),
+    startTime: startDT.toISO({ suppressSeconds: true, suppressMilliseconds: true }) || '',
+    endTime: endDT.toISO({ suppressSeconds: true, suppressMilliseconds: true }) || '',
     title: opts.title,
     appointmentStatus: 'confirmed',
     address: opts.address ?? 'Remote/Online Service',

@@ -244,10 +244,12 @@ export default function EnhancedPaymentForm({
 
   // Auto-select default payment option if none selected
   useEffect(() => {
-    if (!selectedPaymentOption) {
+    if (!selectedPaymentOption && paymentOptions.length > 0) {
       const defaultOption = paymentOptions[0];
-      setSelectedPaymentOption(defaultOption);
-      onPaymentOptionSelect(defaultOption);
+      if (defaultOption) {
+        setSelectedPaymentOption(defaultOption);
+        onPaymentOptionSelect(defaultOption);
+      }
     }
   }, [selectedPaymentOption, paymentOptions, onPaymentOptionSelect]);
 

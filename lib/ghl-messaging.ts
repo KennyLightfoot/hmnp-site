@@ -3,6 +3,8 @@
  * Handles sending messages through Go High Level
  */
 
+import { getErrorMessage } from '@/lib/utils/error-utils';
+
 export interface GHLMessage {
   type: 'sms' | 'email';
   templateId?: string;
@@ -71,10 +73,10 @@ export async function sendGHLMessage(
       };
     }
   } catch (error) {
-    console.error('GHL messaging error:', error);
+    console.error('GHL messaging error:', getErrorMessage(error));
     return { 
       success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+      error: error instanceof Error ? getErrorMessage(error) : 'Unknown error' 
     };
   }
 }

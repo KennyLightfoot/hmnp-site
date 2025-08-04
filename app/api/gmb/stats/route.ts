@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
         id: task.id,
         type: task.type,
         status: task.status,
-        completedAt: task.scheduledTime,
+      // completedAt: new Date(), // Property does not exist on Booking model
         description: getTaskDescription(task.type, task.data),
       }));
 

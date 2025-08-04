@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 
@@ -24,14 +25,13 @@ export async function GET(
       }, { status: 400 });
     }
 
-    // Get notification from new notifications table
-    const notification = await prisma.newNotification.findUnique({
+    // Get notification from notification log table
+    const notification = await prisma.notificationLog.findUnique({
       where: { id: notificationId },
       include: {
-        booking: {
+        Booking: {
           select: {
             id: true,
-            bookingNumber: true,
             customerEmail: true,
             customerName: true,
             status: true,
@@ -46,16 +46,15 @@ export async function GET(
       const legacyNotification = await prisma.notificationLog.findUnique({
         where: { id: notificationId },
         include: {
-          Booking: {
-            select: {
-              id: true,
-              customerEmail: true,
-              customerFirstName: true,
-              customerLastName: true,
-              status: true,
-              scheduledDateTime: true
-            }
+                  Booking: {
+          select: {
+            id: true,
+            customerEmail: true,
+            customerName: true,
+            status: true,
+            scheduledDateTime: true
           }
+        }
         }
       });
 
@@ -76,7 +75,7 @@ export async function GET(
             metadata: legacyNotification.metadata,
             booking: legacyNotification.Booking ? {
               id: legacyNotification.Booking.id,
-              customerName: `${legacyNotification.Booking.customerFirstName} ${legacyNotification.Booking.customerLastName}`,
+              customerName: legacyNotification.Booking.customerName || 'Unknown',
               customerEmail: legacyNotification.Booking.customerEmail,
               status: legacyNotification.Booking.status,
               scheduledDateTime: legacyNotification.Booking.scheduledDateTime
@@ -121,13 +120,12 @@ export async function GET(
         errorMessage: notification.errorMessage,
         metadata: notification.metadata,
         deliveryTime,
-        booking: notification.booking ? {
-          id: notification.booking.id,
-          bookingNumber: notification.booking.bookingNumber,
-          customerName: notification.booking.customerName,
-          customerEmail: notification.booking.customerEmail,
-          status: notification.booking.status,
-          scheduledDateTime: notification.booking.scheduledDateTime
+        booking: notification.Booking ? {
+          id: notification.Booking.id,
+          customerName: notification.Booking.customerName,
+          customerEmail: notification.Booking.customerEmail,
+          status: notification.Booking.status,
+          scheduledDateTime: notification.Booking.scheduledDateTime
         } : null,
         createdAt: notification.createdAt
       },
@@ -139,8 +137,7 @@ export async function GET(
 
   } catch (error: any) {
     logger.error('Failed to get notification status', {
-      notificationId: id,
-      error: error.message
+      error: getErrorMessage(error)
     });
 
     return NextResponse.json({
@@ -172,7 +169,7 @@ export async function PUT(
     }
 
     // Update notification status
-    const updatedNotification = await prisma.newNotification.update({
+    const updatedNotification = await prisma.notificationLog.update({
       where: { id: notificationId },
       data: {
         status,
@@ -202,8 +199,7 @@ export async function PUT(
 
   } catch (error: any) {
     logger.error('Failed to update notification status', {
-      notificationId: id,
-      error: error.message
+      error: getErrorMessage(error)
     });
 
     return NextResponse.json({

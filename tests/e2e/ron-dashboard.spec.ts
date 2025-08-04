@@ -247,7 +247,7 @@ test.describe('RON Dashboard Tests', () => {
       tomorrow.setDate(tomorrow.getDate() + 1);
       const dateString = tomorrow.toISOString().split('T')[0];
       
-      await page.fill('[data-testid="new-date"]', dateString);
+      await page.fill('[data-testid="new-date"]', dateString || "");
       await page.selectOption('[data-testid="new-time"]', '15:00');
       
       // Add reschedule reason

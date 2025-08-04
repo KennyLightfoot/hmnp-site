@@ -1,8 +1,9 @@
 import { prisma } from './prisma'
+import { getErrorMessage } from './utils/error-utils';
 import { BookingStatus, NotificationType, NotificationMethod } from '@prisma/client'
 import { NotificationService } from './notifications'
 import { getContactsByTag, getContactByEmail, addTagsToContactByEmail } from './ghl'
-import { logger } from '@/lib/logger'
+import { logger } from './logger'
 
 export interface NurtureSequence {
   id: string
@@ -56,7 +57,7 @@ export interface LeadNurtureEnrollment {
 }
 
 export class LeadNurturingService {
-  private notificationService: NotificationService
+  private notificationService: typeof NotificationService
   
   // Predefined nurture sequences
   private sequences: NurtureSequence[] = [
@@ -420,13 +421,13 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
           if (processed.completed) results.enrollmentsCompleted++
         } catch (error) {
           logger.error(`Error processing enrollment ${enrollment.id}`, 'LEAD_NURTURING', error instanceof Error ? error : new Error(String(error)))
-          results.errors.push(`Enrollment ${enrollment.id}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+          results.errors.push(`Enrollment ${enrollment.id}: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`)
         }
       }
 
     } catch (error) {
       logger.error('Error in processNurtureSequences', 'LEAD_NURTURING', error instanceof Error ? error : new Error(String(error)))
-      results.errors.push(`Global error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      results.errors.push(`Global error: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`)
     }
 
     return results
@@ -456,7 +457,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
 
       for (const booking of incompleteBookings) {
         // Check if user has email before processing
-        const userEmail = booking.User_Booking_signerIdToUser.email
+        const userEmail = booking.User_Booking_signerIdToUser?.email
         if (!userEmail) {
           logger.warn(`Skipping booking ${booking.id} - no email for user`, 'LEAD_NURTURING')
           continue
@@ -500,12 +501,15 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
         const quoteSentHours = this.getHoursSince(new Date(quoteSentDate))
         
         if (quoteSentHours >= 4 && !contact.tags?.includes('Status:Booking_Completed')) {
-          const existingEnrollment = await this.findEnrollment(contact.email, 'quote-followup')
-          
-          if (!existingEnrollment) {
-            await this.enrollInSequence(contact.email, 'quote-followup', {
-              serviceType: contact.customFields?.cf_service_type || 'notary service'
-            })
+          const contactEmail = contact.email || '';
+          if (contactEmail) {
+            const existingEnrollment = await this.findEnrollment(contactEmail, 'quote-followup')
+            
+            if (!existingEnrollment) {
+              await this.enrollInSequence(contactEmail, 'quote-followup', {
+                serviceType: contact.customFields?.cf_service_type || 'notary service'
+              })
+            }
           }
         }
       }
@@ -536,7 +540,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
 
       for (const booking of inactiveClients) {
         // Check if user has email before processing
-        const userEmail = booking.User_Booking_signerIdToUser.email
+        const userEmail = booking.User_Booking_signerIdToUser?.email
         if (!userEmail) {
           logger.warn(`Skipping booking ${booking.id} - no email for user`, 'LEAD_NURTURING')
           continue
@@ -587,6 +591,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
       
       await prisma.notificationLog.create({
         data: {
+          id: `notification_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           bookingId: metadata.bookingId || 'nurture-sequence',
           notificationType: NotificationType.LEAD_NURTURING,
           method: NotificationMethod.EMAIL,
@@ -695,7 +700,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
             type: NotificationType.LEAD_NURTURING,
             recipient: {
               email: enrollment.contactEmail,
-              firstName: contact?.firstName || contact?.name?.split(' ')[0]
+              firstName: contact?.firstName || (contact?.firstName && contact?.lastName ? `${contact.firstName} ${contact.lastName}`.split(' ')[0] : '')
             },
             content: {
               subject: personalizedSubject,
@@ -719,7 +724,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
             type: NotificationType.LEAD_NURTURING,
             recipient: {
               phone: contact.phone,
-              firstName: contact?.firstName || contact?.name?.split(' ')[0]
+              firstName: contact?.firstName || (contact?.firstName && contact?.lastName ? `${contact.firstName} ${contact.lastName}`.split(' ')[0] : '')
             },
             content: {
               message: smsMessage,
@@ -861,7 +866,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
         metadata: {
           ...enrollment.metadata,
           status: 'COMPLETED',
-          completedAt: new Date().toISOString()
+      // completedAt: new Date(), // Property does not exist on Booking model
         }
       }
     })

@@ -7,6 +7,7 @@
  */
 
 import { redis } from '@/lib/redis';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 
@@ -193,7 +194,8 @@ export class AlertManager {
 
     // Store in Redis for real-time monitoring
     const key = `metrics:${metric}`;
-    await redis.lpush(key, JSON.stringify(metricData));
+    // Note: lpush not available in custom Redis client, using set instead
+    await redis.set(key, JSON.stringify(metricData));
     await redis.expire(key, 3600); // 1 hour TTL
 
     // Add to buffer for alert evaluation
@@ -393,7 +395,7 @@ ${JSON.stringify(alert.context, null, 2)}
         `
       });
     } catch (error) {
-      logger.error('Failed to send email notification', { error: error.message });
+      logger.error('Failed to send email notification', { error: getErrorMessage(error) });
     }
   }
 
@@ -452,7 +454,7 @@ ${JSON.stringify(alert.context, null, 2)}
         body: JSON.stringify(message)
       });
     } catch (error) {
-      logger.error('Failed to send Slack notification', { error: error.message });
+      logger.error('Failed to send Slack notification', { error: getErrorMessage(error) });
     }
   }
 
@@ -484,7 +486,7 @@ ${JSON.stringify(alert.context, null, 2)}
         }
       });
     } catch (error) {
-      logger.error('Failed to send Sentry notification', { error: error.message });
+      logger.error('Failed to send Sentry notification', { error: getErrorMessage(error) });
     }
   }
 
@@ -511,7 +513,7 @@ ${JSON.stringify(alert.context, null, 2)}
         })
       });
     } catch (error) {
-      logger.error('Failed to send webhook notification', { error: error.message });
+      logger.error('Failed to send webhook notification', { error: getErrorMessage(error) });
     }
   }
 
@@ -538,7 +540,7 @@ ${JSON.stringify(alert.context, null, 2)}
           })
         });
       } catch (error) {
-        logger.error('Failed to log to Better Stack', { error: error.message });
+        logger.error('Failed to log to Better Stack', { error: getErrorMessage(error) });
       }
     }
   }
@@ -550,12 +552,12 @@ ${JSON.stringify(alert.context, null, 2)}
     try {
       // Store in Redis for quick access
       const key = `alert:${alert.id}`;
-      await redis.set(key, JSON.stringify(alert), 'EX', 7 * 24 * 60 * 60); // 7 days TTL
+      await redis.setex(key, 7 * 24 * 60 * 60, JSON.stringify(alert)); // 7 days TTL
 
       // You can also store in database if you have an alerts table
       // await prisma.alert.create({ data: alert });
     } catch (error) {
-      logger.error('Failed to store alert', { error: error.message });
+      logger.error('Failed to store alert', { error: getErrorMessage(error) });
     }
   }
 
@@ -643,7 +645,7 @@ ${JSON.stringify(alert.context, null, 2)}
           })
         });
       } catch (error) {
-        logger.error('Failed to report to CrowdSec', { error: error.message });
+        logger.error('Failed to report to CrowdSec', { error: getErrorMessage(error) });
       }
     }
   }

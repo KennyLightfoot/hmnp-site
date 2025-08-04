@@ -40,7 +40,8 @@ export default async function CustomerDashboard() {
       },
       include: {
         service: true,
-        ProofTransaction: true
+        User_Booking_signerIdToUser: true,
+        payments: true
       },
       orderBy: {
         scheduledDateTime: 'asc'
@@ -55,7 +56,8 @@ export default async function CustomerDashboard() {
       },
       include: {
         service: true,
-        ProofTransaction: true
+        User_Booking_signerIdToUser: true,
+        payments: true
       },
       orderBy: {
         scheduledDateTime: 'desc'
@@ -342,7 +344,7 @@ export default async function CustomerDashboard() {
                               </Link>
                             </Button>
                             <Button variant="outline" size="sm" asChild>
-                              <Link href={booking.stripeReceiptUrl || `/api/payments/${booking.id}/receipt`}>
+                              <Link href={booking.stripePaymentUrl || `/api/payments/${booking.id}/receipt`}>
                                 <ExternalLink className="h-3 w-3 mr-1" />
                                 Receipt
                               </Link>

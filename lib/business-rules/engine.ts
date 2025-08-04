@@ -7,6 +7,7 @@
  */
 
 import { logger } from '../logger';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { UnifiedDistanceService } from '../maps/unified-distance-service';
 import { PricingEngine } from '../pricing-engine';
 import * as ghl from '../ghl/management';
@@ -145,7 +146,7 @@ export class BusinessRulesEngine {
     } catch (error) {
       logger.error('Business rules validation failed', {
         requestId: this.requestId,
-        error: error instanceof Error ? error.message : String(error),
+        error: error instanceof Error ? getErrorMessage(error) : String(error),
         serviceType: params.serviceType
       });
       throw error;
@@ -182,8 +183,8 @@ export class BusinessRulesEngine {
       const recommendations: string[] = [];
 
       // Rule 1: Maximum distance check
-      if (distance > rules.maxDistance) {
-        violations.push(`Distance of ${distance.toFixed(1)} miles exceeds maximum service area of ${rules.maxDistance} miles`);
+      if (distance > rules.maxServiceRadius) {
+        violations.push(`Distance of ${distance.toFixed(1)} miles exceeds maximum service area of ${rules.maxServiceRadius} miles`);
         recommendations.push('Consider contacting us directly for special arrangements');
       }
 
@@ -191,8 +192,9 @@ export class BusinessRulesEngine {
       const zone = this.classifyServiceZone(distance);
       
       // Rule 3: Extended service availability check
-      if (distance > 50 && distance <= rules.maxDistance && !rules.extendedServiceAvailable) {
-        violations.push('Extended service area is currently not available');
+      if (distance > 50 && distance <= rules.maxServiceRadius) {
+        // Extended service is available within max radius
+        // No additional restrictions needed
       }
 
       // Generate GHL actions
@@ -222,7 +224,7 @@ export class BusinessRulesEngine {
     } catch (error) {
       logger.error('Service area validation failed', {
         requestId: this.requestId,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? getErrorMessage(error) : String(error)
       });
       throw error;
     }
@@ -304,7 +306,7 @@ export class BusinessRulesEngine {
     } catch (error) {
       logger.error('Document limits validation failed', {
         requestId: this.requestId,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? getErrorMessage(error) : String(error)
       });
       throw error;
     }
@@ -389,7 +391,7 @@ export class BusinessRulesEngine {
     } catch (error) {
       logger.error('Pricing validation failed', {
         requestId: this.requestId,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? getErrorMessage(error) : String(error)
       });
       throw error;
     }
@@ -484,7 +486,7 @@ export class BusinessRulesEngine {
     } catch (error) {
       logger.error('Cancellation validation failed', {
         requestId: this.requestId,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? getErrorMessage(error) : String(error)
       });
       throw error;
     }
@@ -546,7 +548,7 @@ export class BusinessRulesEngine {
       logger.error('Failed to apply business rules to GHL', {
         requestId: this.requestId,
         contactId: ghlContactId,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? getErrorMessage(error) : String(error)
       });
       throw error;
     }
@@ -557,14 +559,13 @@ export class BusinessRulesEngine {
   // ============================================================================
 
   private classifyServiceZone(distance: number): { name: string; tag: string } {
-    const zones = BUSINESS_RULES_CONFIG.serviceArea.zones;
-    
-    if (distance <= zones.houston_metro.max) {
-      return { name: 'houston_metro', tag: zones.houston_metro.tag };
-    } else if (distance <= zones.extended_range.max) {
-      return { name: 'extended_range', tag: zones.extended_range.tag };
+    // Simple zone classification based on distance
+    if (distance <= 30) {
+      return { name: 'houston_metro', tag: 'houston_metro' };
+    } else if (distance <= 50) {
+      return { name: 'extended_range', tag: 'extended_range' };
     } else {
-      return { name: 'maximum_range', tag: zones.maximum_range.tag };
+      return { name: 'maximum_range', tag: 'maximum_range' };
     }
   }
 

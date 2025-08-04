@@ -4,6 +4,7 @@
  */
 
 import { prisma } from '@/lib/database-connection';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { cache } from '@/lib/cache';
 import { getDatabaseHealth } from '@/lib/database/connection-pool';
 import { getActiveServices } from '@/lib/database/query-optimization';
@@ -112,7 +113,7 @@ async function testDatabaseConnectivity(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Database connection failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -147,7 +148,7 @@ async function testDatabasePerformance(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Database performance test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -194,7 +195,7 @@ async function testPrismaRelationships(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Prisma relationship test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -225,7 +226,7 @@ async function testTransactionSafety(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Transaction test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -274,7 +275,7 @@ async function testRedisCaching(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Redis cache test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -322,7 +323,7 @@ async function testCacheInvalidation(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Cache invalidation test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -379,7 +380,7 @@ async function testCachePerformance(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Cache performance test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -420,7 +421,7 @@ async function testServicesAPI(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Services API test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -446,7 +447,7 @@ async function testAvailabilityAPI(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Availability API test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -477,7 +478,7 @@ async function testBookingAPI(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Booking API test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -504,7 +505,7 @@ async function testPaymentAPI(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Payment API test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -535,7 +536,7 @@ async function testRateLimiting(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Rate limiting test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -561,7 +562,7 @@ async function testSecurityHeaders(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Security headers test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -598,7 +599,7 @@ async function testCSRFProtection(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'CSRF protection test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -638,7 +639,7 @@ async function testInputValidation(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Input validation test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -676,7 +677,7 @@ async function testQueryOptimization(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Query optimization test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -711,7 +712,7 @@ async function testConnectionPooling(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Connection pooling test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -753,7 +754,7 @@ async function testMemoryUsage(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Memory usage test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -793,7 +794,7 @@ async function testBookingFlow(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Booking flow test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -827,7 +828,7 @@ async function testPaymentFlow(): Promise<TestResult> {
       status: 'FAIL',
       duration: Date.now() - startTime,
       message: 'Payment flow test failed',
-      details: { error: error instanceof Error ? error.message : String(error) }
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -883,7 +884,7 @@ export async function runQuickHealthCheck(): Promise<{ status: 'healthy' | 'unhe
     return {
       status: 'unhealthy',
       details: {
-        error: error instanceof Error ? error.message : String(error),
+        error: error instanceof Error ? getErrorMessage(error) : String(error),
         timestamp: new Date().toISOString()
       }
     };

@@ -337,12 +337,11 @@ export class ABTestingService {
         variants: test.variants.length
       });
 
-      // Send alert
-      await this.alertManager.sendAlert({
-        type: 'AB_TEST_STARTED',
-        severity: 'INFO',
-        message: `A/B test "${test.name}" has been started`,
-        metadata: { testId, testName: test.name }
+      // Log test start
+      logger.info('A/B test started', 'MARKETING', {
+        testId,
+        testName: test.name,
+        type: 'AB_TEST_STARTED'
       });
     } catch (error) {
       logger.error('Failed to start A/B test', 'MARKETING', error as Error);
@@ -373,18 +372,14 @@ export class ABTestingService {
         winner: results?.winner
       });
 
-      // Send alert with results
-      await this.alertManager.sendAlert({
-        type: 'AB_TEST_COMPLETED',
-        severity: 'INFO',
-        message: `A/B test "${test.name}" completed. Winner: ${results?.winner || 'No clear winner'}`,
-        metadata: { 
-          testId, 
-          testName: test.name, 
-          winner: results?.winner,
-          effect: results?.effect,
-          confidence: results?.confidence
-        }
+      // Log test completion
+      logger.info('A/B test completed', 'MARKETING', {
+        testId,
+        testName: test.name,
+        winner: results?.winner,
+        effect: results?.effect,
+        confidence: results?.confidence,
+        type: 'AB_TEST_COMPLETED'
       });
     } catch (error) {
       logger.error('Failed to stop A/B test', 'MARKETING', error as Error);
@@ -647,7 +642,7 @@ export class ABTestingService {
       }
     }
 
-    return test.variants[0]; // Fallback to first variant
+    return test.variants[0] || null; // Fallback to first variant
   }
 
   private hashString(str: string): number {

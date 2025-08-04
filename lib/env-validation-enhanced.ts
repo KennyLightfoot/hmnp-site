@@ -77,7 +77,7 @@ export function validateStripeEnvironment(): ValidationResult {
 /**
  * Clean environment variable of common corruption issues
  */
-export function cleanEnvironmentVariable(value: string | undefined): string | undefined {
+export function cleanEnvironmentVariable(value: string | undefined = ""): string | undefined {
   if (!value) return value;
   
   return value

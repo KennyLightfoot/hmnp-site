@@ -12,6 +12,7 @@
  */
 
 import { z } from 'zod';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { BUSINESS_RULES_CONFIG } from './config';
 import { validateBusinessRules } from './engine';
 
@@ -296,7 +297,7 @@ export class EnhancedPricingEngine {
 
     } catch (error) {
       console.error(`❌ [${requestId}] Pricing calculation failed:`, error);
-      throw new Error(`Pricing calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Pricing calculation failed: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`);
     }
   }
 

@@ -22,13 +22,9 @@ export const bookingQueries = {
         scheduledDateTime: true,
         createdAt: true,
         updatedAt: true,
-        basePrice: true,
-        finalPrice: true,
-        promoDiscount: true,
-        depositAmount: true,
-        signerEmail: true,
-        signerName: true,
-        signerPhone: true,
+        priceAtBooking: true,
+        customerName: true,
+        customerEmail: true,
         locationType: true,
         addressStreet: true,
         addressCity: true,
@@ -94,9 +90,9 @@ export const bookingQueries = {
         status: true,
         scheduledDateTime: true,
         createdAt: true,
-        finalPrice: true,
-        signerName: true,
-        signerEmail: true,
+        priceAtBooking: true,
+        customerName: true,
+        customerEmail: true,
         locationType: true,
         addressCity: true,
         addressState: true,
@@ -139,7 +135,7 @@ export const bookingQueries = {
         id: true,
         scheduledDateTime: true,
         status: true,
-        signerName: true,
+        customerName: true,
         locationType: true,
         addressCity: true,
         service: {
@@ -172,7 +168,7 @@ export const serviceQueries = {
         depositAmount: true,
         isActive: true,
       },
-      orderBy: { displayOrder: 'asc' }
+      orderBy: { name: 'asc' }
     }),
 
   /**
@@ -205,13 +201,7 @@ export const serviceQueries = {
         basePrice: true,
         _count: {
           select: {
-            Booking: {
-              where: {
-                status: {
-                  in: ['CONFIRMED', 'COMPLETED']
-                }
-              }
-            }
+            bookings: true
           }
         }
       }
@@ -230,7 +220,6 @@ export const userQueries = {
         id: true,
         name: true,
         email: true,
-        phone: true,
         role: true,
         createdAt: true,
         updatedAt: true,
@@ -247,7 +236,6 @@ export const userQueries = {
         id: true,
         name: true,
         email: true,
-        phone: true,
         role: true,
         _count: {
           select: {
@@ -295,8 +283,8 @@ export const promoCodeQueries = {
         code: true,
         discountType: true,
         discountValue: true,
-        maxUses: true,
-        currentUses: true,
+        usageLimit: true,
+        usageCount: true,
         validFrom: true,
         validUntil: true,
       }
@@ -318,9 +306,9 @@ export const promoCodeQueries = {
         code: true,
         discountType: true,
         discountValue: true,
-        maxUses: true,
-        currentUses: true,
-        minimumOrderAmount: true,
+        usageLimit: true,
+        usageCount: true,
+        minimumAmount: true,
         applicableServices: true,
       }
     })
@@ -381,7 +369,7 @@ export const paymentQueries = {
         amount: true,
         status: true,
         provider: true,
-        stripeSessionId: true,
+        paymentIntentId: true,
         createdAt: true,
         updatedAt: true,
       },

@@ -21,22 +21,22 @@ async function main() {
       {
         id: 'hmnp_quick_stamp_local',
         name: 'Quick-Stamp Local',
-        type: ServiceType.MOBILE,
+        type: ServiceType.STANDARD_NOTARY,
         description: 'Fast & simple local signings. ≤ 1 document, ≤ 2 stamps, 1 signer included.',
         basePrice: 50.00,
-        depositRequired: false,
+        requiresDeposit: false,
         depositAmount: null,
-        duration: 30,
+        durationMinutes: 30,
         maxSigners: 1,
         maxDocuments: 1,
         isActive: true,
-        serviceRadius: 10,
+        service_radius_miles: 10,
         travelFeeRate: 0.50,
-        businessHours: {
+        business_hours: {
           schedule: 'Monday-Friday 9:00 AM - 5:00 PM',
           notes: 'Quick local service during business hours'
         },
-        availability: {
+        notary_availability: {
           monday: { start: '09:00', end: '17:00', available: true },
           tuesday: { start: '09:00', end: '17:00', available: true },
           wednesday: { start: '09:00', end: '17:00', available: true },
@@ -51,22 +51,22 @@ async function main() {
       {
         id: 'hmnp_standard_notary',
         name: 'Standard Mobile Notary',
-        type: ServiceType.MOBILE,
+        type: ServiceType.STANDARD_NOTARY,
         description: 'Professional mobile notary services for up to 2 documents and 2 signers. Includes travel within 20-mile radius from ZIP 77591.',
         basePrice: 75.00,
-        depositRequired: true,
+        requiresDeposit: true,
         depositAmount: 25.00,
-        duration: 60,
+        durationMinutes: 60,
         maxSigners: 2,
         maxDocuments: 2,
         isActive: true,
-        serviceRadius: 20,
+        service_radius_miles: 20,
         travelFeeRate: 0.50,
-        businessHours: {
+        business_hours: {
           schedule: 'Monday-Friday 9:00 AM - 5:00 PM',
           notes: 'Standard business hours'
         },
-        availability: {
+        notary_availability: {
           monday: { start: '09:00', end: '17:00', available: true },
           tuesday: { start: '09:00', end: '17:00', available: true },
           wednesday: { start: '09:00', end: '17:00', available: true },
@@ -81,22 +81,22 @@ async function main() {
       {
         id: 'hmnp_extended_hours',
         name: 'Extended Hours Mobile Notary',
-        type: ServiceType.MOBILE,
+        type: ServiceType.EXTENDED_HOURS,
         description: 'Extended hours mobile notary services available 7 days a week, 7 AM - 9 PM. Up to 5 documents and 2 signers with 30-mile travel radius.',
         basePrice: 100.00,
-        depositRequired: true,
+        requiresDeposit: true,
         depositAmount: 25.00,
-        duration: 60,
+        durationMinutes: 60,
         maxSigners: 2,
         maxDocuments: 5,
         isActive: true,
-        serviceRadius: 30,
+        service_radius_miles: 30,
         travelFeeRate: 0.50,
-        businessHours: {
+        business_hours: {
           schedule: 'Daily 7:00 AM - 9:00 PM',
           notes: 'Extended hours available all week'
         },
-        availability: {
+        notary_availability: {
           monday: { start: '07:00', end: '21:00', available: true },
           tuesday: { start: '07:00', end: '21:00', available: true },
           wednesday: { start: '07:00', end: '21:00', available: true },
@@ -111,22 +111,22 @@ async function main() {
       {
         id: 'hmnp_loan_signing',
         name: 'Loan Signing Specialist',
-        type: ServiceType.MOBILE,
+        type: ServiceType.LOAN_SIGNING,
         description: 'Professional loan signing services by certified specialist. Unlimited documents, up to 4 signers, 90-minute sessions. Flat rate pricing.',
         basePrice: 150.00,
-        depositRequired: true,
+        requiresDeposit: true,
         depositAmount: 50.00,
-        duration: 90,
+        durationMinutes: 90,
         maxSigners: 4,
         maxDocuments: 999,
         isActive: true,
-        serviceRadius: 20,
+        service_radius_miles: 20,
         travelFeeRate: 0.50,
-        businessHours: {
+        business_hours: {
           schedule: 'By appointment',
           notes: 'Flexible scheduling available'
         },
-        availability: {
+        notary_availability: {
           monday: { start: '08:00', end: '20:00', available: true },
           tuesday: { start: '08:00', end: '20:00', available: true },
           wednesday: { start: '08:00', end: '20:00', available: true },
@@ -141,22 +141,22 @@ async function main() {
       {
         id: 'hmnp_ron_services',
         name: 'Remote Online Notarization (RON)',
-        type: ServiceType.RON,
+        type: ServiceType.RON_SERVICES,
         description: 'Secure remote online notarization via video conference using Proof.com technology. Available 24/7 with up to 10 documents per session.',
         basePrice: 35.00,
         depositRequired: false,
         depositAmount: null,
-        duration: 45,
+        durationMinutes: 45,
         maxSigners: 1,
         maxDocuments: 10,
         isActive: true,
-        serviceRadius: null,
+        service_radius_miles: null,
         travelFeeRate: null,
-        businessHours: {
+        business_hours: {
           schedule: '24/7 Availability',
           notes: 'Remote service available anytime'
         },
-        availability: {
+        notary_availability: {
           monday: { start: '00:00', end: '23:59', available: true },
           tuesday: { start: '00:00', end: '23:59', available: true },
           wednesday: { start: '00:00', end: '23:59', available: true },
@@ -171,22 +171,22 @@ async function main() {
       {
         id: 'hmnp_business_essentials',
         name: 'Business Subscription - Essentials',
-        type: ServiceType.RON,
+        type: ServiceType.RON_SERVICES,
         description: 'Monthly subscription: Up to 10 RON seals/month + 10% off mobile rates.',
         basePrice: 125.00,
-        depositRequired: false,
+        requiresDeposit: false,
         depositAmount: null,
-        duration: 30,
+        durationMinutes: 30,
         maxSigners: 1,
         maxDocuments: 10,
         isActive: true,
-        serviceRadius: null,
+        service_radius_miles: null,
         travelFeeRate: null,
-        businessHours: {
+        business_hours: {
           schedule: '24/7 RON availability + mobile discounts',
           notes: 'Monthly subscription service'
         },
-        availability: {
+        notary_availability: {
           monday: { start: '00:00', end: '23:59', available: true },
           tuesday: { start: '00:00', end: '23:59', available: true },
           wednesday: { start: '00:00', end: '23:59', available: true },
@@ -201,22 +201,22 @@ async function main() {
       {
         id: 'hmnp_business_growth',
         name: 'Business Subscription - Growth',
-        type: ServiceType.RON,
+        type: ServiceType.RON_SERVICES,
         description: 'Monthly subscription: Up to 40 RON seals/month + 10% off mobile rates + 1 free loan signing.',
         basePrice: 349.00,
-        depositRequired: false,
+        requiresDeposit: false,
         depositAmount: null,
-        duration: 30,
+        durationMinutes: 30,
         maxSigners: 1,
         maxDocuments: 40,
         isActive: true,
-        serviceRadius: null,
+        service_radius_miles: null,
         travelFeeRate: null,
-        businessHours: {
+        business_hours: {
           schedule: '24/7 RON availability + mobile discounts + loan signing',
           notes: 'Premium monthly subscription service'
         },
-        availability: {
+        notary_availability: {
           monday: { start: '00:00', end: '23:59', available: true },
           tuesday: { start: '00:00', end: '23:59', available: true },
           wednesday: { start: '00:00', end: '23:59', available: true },
@@ -234,36 +234,24 @@ async function main() {
         where: { id: service.id },
         update: {
           name: service.name,
-          type: service.type,
+          serviceType: service.type,
           description: service.description,
           basePrice: service.basePrice,
-          depositRequired: service.depositRequired,
-          depositAmount: service.depositAmount,
-          duration: service.duration,
-          maxSigners: service.maxSigners,
-          maxDocuments: service.maxDocuments,
+          requiresDeposit: service.requiresDeposit,
+          depositAmount: service.depositAmount || undefined,
+          durationMinutes: service.durationMinutes,
           isActive: service.isActive,
-          serviceRadius: service.serviceRadius,
-          travelFeeRate: service.travelFeeRate,
-          businessHours: service.businessHours,
-          availability: service.availability,
         },
         create: {
           id: service.id,
           name: service.name,
-          type: service.type,
+          serviceType: service.type,
           description: service.description,
           basePrice: service.basePrice,
-          depositRequired: service.depositRequired,
-          depositAmount: service.depositAmount,
-          duration: service.duration,
-          maxSigners: service.maxSigners,
-          maxDocuments: service.maxDocuments,
+          requiresDeposit: service.requiresDeposit,
+          depositAmount: service.depositAmount || undefined,
+          durationMinutes: service.durationMinutes,
           isActive: service.isActive,
-          serviceRadius: service.serviceRadius,
-          travelFeeRate: service.travelFeeRate,
-          businessHours: service.businessHours,
-          availability: service.availability,
         }
       });
       
@@ -278,12 +266,12 @@ async function main() {
     
     // Show service summary
     const services = await prisma.service.findMany({
-      select: { id: true, name: true, type: true, basePrice: true, isActive: true }
+      select: { id: true, name: true, serviceType: true, basePrice: true, isActive: true }
     });
     
     console.log('\n📋 Complete Service Summary:');
     services.forEach(service => {
-      console.log(`   ${service.type}: ${service.name} - $${service.basePrice} (${service.isActive ? 'Active' : 'Inactive'})`);
+      console.log(`   ${service.serviceType}: ${service.name} - $${service.basePrice} (${service.isActive ? 'Active' : 'Inactive'})`);
     });
     
     console.log('\n🚀 All 6 services from website now available in database!');

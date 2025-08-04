@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { getErrorMessage, safeGet } from '@/lib/utils/error-utils';
 import { 
   User, 
   Mail, 
@@ -165,9 +166,8 @@ export default function CustomerInfoStep({
                 id="customer.name"
                 placeholder={isMobile ? "Your name" : "Enter your full legal name"}
                 value={watchedName}
-                onChange={(e) => handleInputChange('name', e.target.value)}
                 className={`h-12 md:h-10 ${
-                  errors?.customer?.name || formErrors?.customer?.name 
+                  safeGet(errors, 'customer.name', null) || safeGet(formErrors, 'customer.name', null)
                     ? 'border-red-500 focus:border-red-500' 
                     : 'border-gray-300 focus:border-blue-500'
                 }`}
@@ -176,10 +176,10 @@ export default function CustomerInfoStep({
                   minLength: { value: 2, message: 'Name must be at least 2 characters' }
                 })}
               />
-              {(errors?.customer?.name || formErrors?.customer?.name) && (
+              {(safeGet(errors, 'customer.name', null) || safeGet(formErrors, 'customer.name', null)) && (
                 <div className="flex items-center space-x-1 text-red-600 text-sm">
                   <AlertCircle className="h-3 w-3" />
-                  <span>{errors?.customer?.name?.message || formErrors?.customer?.name?.message}</span>
+                  <span>{getErrorMessage(safeGet(errors, 'customer.name', null)) || getErrorMessage(safeGet(formErrors, 'customer.name', null))}</span>
                 </div>
               )}
             </div>
@@ -196,10 +196,8 @@ export default function CustomerInfoStep({
                   type="email"
                   placeholder={isMobile ? "your@email.com" : "Enter your email address"}
                   value={watchedEmail}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  onBlur={(e) => validateEmail(e.target.value)}
                   className={`h-12 md:h-10 pr-10 ${
-                    errors?.customer?.email || formErrors?.customer?.email 
+                    safeGet(errors, 'customer.email', null) || safeGet(formErrors, 'customer.email', null)
                       ? 'border-red-500 focus:border-red-500' 
                       : 'border-gray-300 focus:border-blue-500'
                   }`}
@@ -216,19 +214,19 @@ export default function CustomerInfoStep({
                     <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
                   </div>
                 )}
-                {watchedEmail && !isValidating && !errors?.customer?.email && !formErrors?.customer?.email && (
+                {watchedEmail && !isValidating && !safeGet(errors, 'customer.email', null) && !safeGet(formErrors, 'customer.email', null) && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
                   </div>
                 )}
               </div>
-              {(errors?.customer?.email || formErrors?.customer?.email) && (
+              {(safeGet(errors, 'customer.email', null) || safeGet(formErrors, 'customer.email', null)) && (
                 <div className="flex items-center space-x-1 text-red-600 text-sm">
                   <AlertCircle className="h-3 w-3" />
-                  <span>{errors?.customer?.email?.message || formErrors?.customer?.email?.message}</span>
+                  <span>{getErrorMessage(safeGet(errors, 'customer.email', null)) || getErrorMessage(safeGet(formErrors, 'customer.email', null))}</span>
                 </div>
               )}
-              {validationMessage && !errors?.customer?.email && !formErrors?.customer?.email && (
+              {validationMessage && !safeGet(errors, 'customer.email', null) && !safeGet(formErrors, 'customer.email', null) && (
                 <div className={`flex items-center space-x-1 text-sm ${
                   validationMessage.includes('✅') ? 'text-green-600' : 'text-orange-600'
                 }`}>
@@ -248,7 +246,6 @@ export default function CustomerInfoStep({
                 type="tel"
                 placeholder={isMobile ? "(555) 123-4567" : "Enter your phone number (optional)"}
                 value={watchedPhone}
-                onChange={(e) => handlePhoneChange(e.target.value)}
                 className="h-12 md:h-10 border-gray-300 focus:border-blue-500"
                 {...register('customer.phone')}
               />

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { citationManager } from '@/lib/citations/citation-manager';
 import { citationBuilder } from '@/lib/citations/citation-builder';
 import { citationTracker } from '@/lib/citations/citation-tracker';
@@ -131,7 +132,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         error: 'Failed to initialize citation management system',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
       },
       { status: 500 }
     );
@@ -172,7 +173,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       initialized: false,
       error: 'Failed to check initialization status',
-      details: error instanceof Error ? error.message : 'Unknown error',
+      details: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
       timestamp: new Date().toISOString()
     });
   }

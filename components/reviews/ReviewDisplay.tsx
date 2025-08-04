@@ -108,7 +108,7 @@ export default function ReviewDisplay({
     }
   };
 
-  const renderStars = (rating: number, size = 'sm') => {
+  const renderStars = (rating: number, size: 'sm' | 'md' | 'lg' = 'sm') => {
     const sizeClasses = {
       sm: 'h-4 w-4',
       md: 'h-5 w-5',
@@ -329,7 +329,7 @@ export default function ReviewDisplay({
             )}
 
             {/* Helpful Count */}
-            {review.helpfulCount > 0 && (
+            {review.helpfulCount && review.helpfulCount > 0 && (
               <div className="flex items-center mt-4 text-sm text-gray-600">
                 <ThumbsUp className="h-4 w-4 mr-1" />
                 {review.helpfulCount} people found this helpful

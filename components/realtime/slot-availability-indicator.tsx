@@ -102,8 +102,8 @@ export function SlotAvailabilityIndicator({
   const getStatusColor = () => {
     if (hasConflict) return 'destructive';
     if (!available) return 'secondary';
-    if (viewerCount > 3) return 'orange';
-    return 'green';
+    if (viewerCount > 3) return 'default';
+    return 'default';
   };
 
   const getStatusText = () => {

@@ -4,6 +4,7 @@
  */
 
 import { prisma } from '@/lib/database-connection';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { Prisma } from '@prisma/client';
 
 export interface HealthCheckResult {
@@ -69,7 +70,7 @@ export async function checkDatabaseHealth(): Promise<HealthCheckResult> {
       name: 'database',
       status: 'unhealthy',
       responseTime: Date.now() - start,
-      message: error instanceof Error ? error.message : 'Database connection failed',
+      message: error instanceof Error ? getErrorMessage(error) : 'Database connection failed',
       timestamp: new Date().toISOString(),
     };
   }
@@ -139,7 +140,7 @@ async function checkStripeHealth(): Promise<HealthCheckResult> {
       name: 'stripe',
       status: 'unhealthy',
       responseTime: Date.now() - start,
-      message: error instanceof Error ? error.message : 'Stripe API error',
+      message: error instanceof Error ? getErrorMessage(error) : 'Stripe API error',
       timestamp: new Date().toISOString(),
     };
   }
@@ -189,7 +190,7 @@ async function checkGoogleMapsHealth(): Promise<HealthCheckResult> {
       name: 'google_maps',
       status: 'unhealthy',
       responseTime: Date.now() - start,
-      message: error instanceof Error ? error.message : 'Google Maps API error',
+      message: error instanceof Error ? getErrorMessage(error) : 'Google Maps API error',
       timestamp: new Date().toISOString(),
     };
   }
@@ -240,7 +241,7 @@ async function checkGHLHealth(): Promise<HealthCheckResult> {
       name: 'gohighlevel',
       status: 'unhealthy',
       responseTime: Date.now() - start,
-      message: error instanceof Error ? error.message : 'GHL API error',
+      message: error instanceof Error ? getErrorMessage(error) : 'GHL API error',
       timestamp: new Date().toISOString(),
     };
   }
@@ -309,7 +310,7 @@ async function checkBookingSystemHealth(): Promise<HealthCheckResult> {
       name: 'booking_system',
       status: 'unhealthy',
       responseTime: Date.now() - start,
-      message: error instanceof Error ? error.message : 'Booking system error',
+      message: error instanceof Error ? getErrorMessage(error) : 'Booking system error',
       timestamp: new Date().toISOString(),
     };
   }
@@ -370,7 +371,7 @@ async function checkPaymentSystemHealth(): Promise<HealthCheckResult> {
       name: 'payment_system',
       status: 'unhealthy',
       responseTime: Date.now() - start,
-      message: error instanceof Error ? error.message : 'Payment system error',
+      message: error instanceof Error ? getErrorMessage(error) : 'Payment system error',
       timestamp: new Date().toISOString(),
     };
   }
@@ -428,7 +429,7 @@ async function checkPricingSystemHealth(): Promise<HealthCheckResult> {
       name: 'pricing_system',
       status: 'unhealthy',
       responseTime: Date.now() - start,
-      message: error instanceof Error ? error.message : 'Pricing system error',
+      message: error instanceof Error ? getErrorMessage(error) : 'Pricing system error',
       timestamp: new Date().toISOString(),
     };
   }
@@ -483,7 +484,7 @@ export async function getSystemHealth(): Promise<SystemHealth> {
         name: 'health_check_system',
         status: 'unhealthy',
         responseTime: Date.now() - startTime,
-        message: error instanceof Error ? error.message : 'Health check system error',
+        message: error instanceof Error ? getErrorMessage(error) : 'Health check system error',
         timestamp: new Date().toISOString(),
       }],
       timestamp: new Date().toISOString(),

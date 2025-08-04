@@ -8,13 +8,12 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    // Check if user is authenticated and has notary role
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userRole = (session.user as any).role;
-    if (userRole !== Role.NOTARY && userRole !== Role.ADMIN) {
+    const userWithRole = session.user as { id: string; role: Role };
+    if (userWithRole.role !== Role.NOTARY && userWithRole.role !== Role.ADMIN) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
@@ -22,47 +21,24 @@ export async function GET(request: NextRequest) {
     const locationType = searchParams.get('locationType') as LocationType;
     const status = searchParams.get('status');
 
-    // Build where clause for RON bookings
     const whereClause: any = {
       locationType: locationType || LocationType.REMOTE_ONLINE_NOTARIZATION,
     };
 
-    // Add notary filter for non-admin users
-    if (userRole === Role.NOTARY) {
-      whereClause.notaryId = (session.user as any).id;
+    if (userWithRole.role === Role.NOTARY) {
+      whereClause.notaryId = userWithRole.id;
     }
 
-    // Add status filter
     if (status && status !== 'all') {
       whereClause.status = status as BookingStatus;
     }
 
-    // Fetch RON bookings
     const bookings = await prisma.booking.findMany({
       where: whereClause,
       include: {
-        service: {
-          select: {
-            id: true,
-            name: true,
-            durationMinutes: true,
-            basePrice: true,
-          },
-        },
-        User_Booking_signerIdToUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        notary: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
+        service: true,
+        User_Booking_signerIdToUser: true,
+        User_Booking_notaryIdToUser: true,
       },
       orderBy: [
         { scheduledDateTime: 'asc' },
@@ -70,12 +46,10 @@ export async function GET(request: NextRequest) {
       ],
     });
 
-    // Format bookings for RON session panel
     const formattedBookings = bookings.map(booking => ({
       id: booking.id,
       signerName: booking.User_Booking_signerIdToUser?.name || 'Unknown',
       signerEmail: booking.User_Booking_signerIdToUser?.email || '',
-      signerPhone: null, // Phone field doesn't exist on User model,
       scheduledDateTime: booking.scheduledDateTime?.toISOString(),
       status: booking.status,
       service: {
@@ -83,9 +57,7 @@ export async function GET(request: NextRequest) {
         duration: booking.service?.durationMinutes || 0,
       },
       finalPrice: Number(booking.priceAtBooking || booking.service?.basePrice || 0),
-      proofTransactionId: null, // This property doesn't exist on booking model
-      proofAccessLink: null, // This property doesn't exist on booking model
-      proofStatus: null, // This property doesn't exist on booking model,
+      proofSessionUrl: booking.proofSessionUrl,
       notes: booking.notes,
       createdAt: booking.createdAt.toISOString(),
     }));
@@ -103,4 +75,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

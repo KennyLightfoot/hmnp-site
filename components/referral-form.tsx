@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -79,7 +80,7 @@ export default function ReferralForm() {
       reset();
     } catch (error: any) {
       setSubmissionStatus('error');
-      setServerError(error.message || 'Failed to submit referral. Please try again.');
+      setServerError(getErrorMessage(error) || 'Failed to submit referral. Please try again.');
     }
   };
 

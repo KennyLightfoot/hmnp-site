@@ -3,6 +3,7 @@
  * Run with: npx tsx scripts/testBookingGhlIntegration.ts
  */
 import { config } from 'dotenv';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import * as ghl from '../lib/ghl';
 
 // Load environment variables
@@ -76,7 +77,7 @@ async function testGhlIntegration() {
     console.log('\n--- All Tests Completed Successfully ---');
   } catch (error) {
     console.error('Test failed with error:', error instanceof Error ? {
-      message: error.message,
+      message: getErrorMessage(error),
       name: error.name,
       stack: error.stack
     } : error);

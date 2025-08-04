@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -35,8 +36,8 @@ const documentUploadSchema = z.object({
   documentType: z.enum(documentTypes).optional(),
   fileUpload: z.custom<FileList>()
     .refine(files => files && files.length > 0, 'A document is required for upload.')
-    .refine(files => files && files[0]?.size <= MAX_FILE_SIZE, `Max file size is ${MAX_FILE_SIZE / (1024*1024)}MB.`)
-    .refine(files => files && ACCEPTED_FILE_TYPES.includes(files[0]?.type), `Accepted file types: ${ACCEPTED_FILE_TYPES_STRING}.`),
+    .refine(files => files && files[0] && files[0].size <= MAX_FILE_SIZE, `Max file size is ${MAX_FILE_SIZE / (1024*1024)}MB.`)
+    .refine(files => files && files[0] && files[0].type && ACCEPTED_FILE_TYPES.includes(files[0].type), `Accepted file types: ${ACCEPTED_FILE_TYPES_STRING}.`),
   consent: z.boolean().refine(val => val === true, {
     message: 'You must confirm your authorization and agree to the terms.',
   }),
@@ -77,7 +78,7 @@ export default function DocumentUploadForm() {
     formData.append('name', data.name);
     formData.append('email', data.email);
     if (data.documentType) formData.append('documentType', data.documentType);
-    if (data.fileUpload && data.fileUpload.length > 0) {
+    if (data.fileUpload && data.fileUpload.length > 0 && data.fileUpload[0]) {
       formData.append('document', data.fileUpload[0]);
     }
     formData.append('consent', String(data.consent));
@@ -110,10 +111,10 @@ export default function DocumentUploadForm() {
         setSubmissionStatus('error');
       }
     } catch (error) {
-      console.error('Client-side Submission Error:', error);
+      console.error('Client-side Submission Error:', getErrorMessage(error));
       let errorMessage = 'A client-side error occurred. Please check your connection and try again.';
       if (error instanceof Error) {
-        errorMessage = error.message;
+        errorMessage = getErrorMessage(error);
       }
       setServerError(errorMessage);
       setSubmissionStatus('error');
@@ -191,7 +192,7 @@ export default function DocumentUploadForm() {
           <Input id="fileUpload" type="file" {...register('fileUpload')} className={`w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#002147] file:text-white hover:file:bg-[#001730] ${errors.fileUpload ? 'border-red-500 ring-red-500' : ''}`} />
           <p className="mt-1 text-xs text-muted-foreground">Accepted types: {ACCEPTED_FILE_TYPES_STRING}. Max size: {MAX_FILE_SIZE / (1024*1024)}MB.</p>
           {errors.fileUpload && <p className="mt-1 text-xs text-red-600">{errors.fileUpload.message}</p>}
-          {selectedFile && selectedFile.length > 0 && <p className="mt-1 text-xs text-green-600">Selected file: {selectedFile[0].name} ({(selectedFile[0].size / (1024)).toFixed(1)} KB)</p>}
+          {selectedFile && selectedFile.length > 0 && selectedFile[0] && <p className="mt-1 text-xs text-green-600">Selected file: {selectedFile[0].name} ({(selectedFile[0].size / (1024)).toFixed(1)} KB)</p>}
         </div>
 
         <div className="flex items-start space-x-3 pt-2 p-3 bg-gray-50 rounded-md border border-gray-200">

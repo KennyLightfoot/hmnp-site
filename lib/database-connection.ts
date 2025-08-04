@@ -5,6 +5,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 
 declare global {
   var __prisma: PrismaClient | undefined;
@@ -99,7 +100,7 @@ class UnifiedDatabaseConnection {
     } catch (error) {
       return {
         status: 'unhealthy',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
       };
     }
   }

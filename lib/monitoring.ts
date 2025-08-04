@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/nextjs';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { logger } from '@/lib/logger';
 
 /**
@@ -195,7 +196,8 @@ class MonitoringService {
       environment: process.env.NODE_ENV,
     };
 
-    logger[alert.level === 'critical' ? 'error' : alert.level]('Production Alert', alertData);
+    const logMethod = alert.level === 'critical' ? 'error' : alert.level;
+    (logger as any)[logMethod]('Production Alert', alertData);
 
     if (this.isProduction) {
       // Send to Sentry
@@ -334,7 +336,7 @@ class MonitoringService {
       }
     } catch (error) {
       logger.error('Failed to send external notification', {
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
         alert: alert.title,
       });
     }
@@ -380,7 +382,7 @@ class MonitoringService {
         this.sendAlert({
           level: 'error',
           title: `API Error: ${routeName}`,
-          message: `API route ${routeName} failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          message: `API route ${routeName} failed: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`,
           context: {
             route: routeName,
             error: error instanceof Error ? error.stack : error,

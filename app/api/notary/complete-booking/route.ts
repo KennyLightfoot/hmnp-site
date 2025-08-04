@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if booking is in a state that can be completed
-    const validStatuses = [
+    const validStatuses: BookingStatus[] = [
       BookingStatus.IN_PROGRESS,
       BookingStatus.READY_FOR_SERVICE,
       BookingStatus.SCHEDULED,

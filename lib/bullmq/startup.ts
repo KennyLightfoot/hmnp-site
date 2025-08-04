@@ -1,6 +1,6 @@
 import { logger } from '../logger';
 import { getBullQueueWorker } from './index';
-import { BullScheduler } from './scheduler';
+import { initializeSchedulers, shutdownSchedulers } from '../schedulers';
 
 /**
  * Initialize the Bull queue system
@@ -14,9 +14,8 @@ export async function initializeBullQueues(): Promise<boolean> {
     const worker = getBullQueueWorker();
     await worker.startProcessing();
     
-    // Start the Bull scheduler for recurring jobs
-    const scheduler = BullScheduler.getInstance();
-    scheduler.initialize();
+    // Start the unified scheduler for recurring jobs
+    await initializeSchedulers();
     
     logger.info('Bull queue system initialized successfully');
     return true;
@@ -34,9 +33,8 @@ export async function shutdownBullQueues(): Promise<void> {
   try {
     logger.info('Shutting down Bull queue system...');
     
-    // Stop the Bull scheduler
-    const scheduler = BullScheduler.getInstance();
-    scheduler.stop();
+    // Stop the unified scheduler
+    await shutdownSchedulers();
     
     // Stop the Bull worker
     const worker = getBullQueueWorker();

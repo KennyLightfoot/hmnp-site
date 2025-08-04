@@ -1,6 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
@@ -90,7 +91,7 @@ export default function ContactForm() {
       }
       router.push('/contact/thank-you');
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "An unexpected error occurred.");
+      setSubmitError(error instanceof Error ? getErrorMessage(error) : "An unexpected error occurred.");
     } finally {
       setIsSubmittingManual(false);
     }

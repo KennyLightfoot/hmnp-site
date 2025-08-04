@@ -97,6 +97,10 @@ class PerformanceMonitor {
     const total = this.metrics.reduce((sum, metric) => sum + metric.loadTime, 0);
     return total / this.metrics.length;
   }
+
+  addMetrics(metrics: PerformanceMetrics) {
+    this.metrics.push(metrics);
+  }
 }
 
 export const performanceMonitor = new PerformanceMonitor();
@@ -153,6 +157,7 @@ export function ComponentLoader({
       const observer = preloadManager.preloadComponent(componentName, preloadConfig);
       return () => observer?.disconnect();
     }
+    return undefined;
   }, [componentName, preloadConfig]);
 
   // Cleanup on unmount
@@ -290,7 +295,8 @@ export function usePerformanceMonitoring(componentName: string) {
       };
       
       setMetrics(newMetrics);
-      performanceMonitor.metrics.push(newMetrics);
+      // Use the public method instead of accessing private property
+      performanceMonitor.addMetrics(newMetrics);
     };
   }, [componentName]);
 

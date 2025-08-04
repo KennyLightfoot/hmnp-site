@@ -228,7 +228,6 @@ export default function ServiceAreaMap({
             position={center}
             title="Houston Mobile Notary Pros - Service Center (ZIP 77591)"
             icon={markerIcon}
-            className="map-marker"
           />
         )}
         
@@ -240,8 +239,7 @@ export default function ServiceAreaMap({
             options={{
               ...baseCircleOptions,
               strokeColor: SERVICE_AREAS[selectedServiceType === 'STANDARD_NOTARY' ? 'STANDARD' : 'EXTENDED'].strokeColor,
-              fillColor: SERVICE_AREAS[selectedServiceType === 'STANDARD_NOTARY' ? 'STANDARD' : 'EXTENDED'].fillColor,
-              className: 'service-area-circle'
+              fillColor: SERVICE_AREAS[selectedServiceType === 'STANDARD_NOTARY' ? 'STANDARD' : 'EXTENDED'].fillColor
             }}
           />
         )}

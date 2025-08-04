@@ -10,6 +10,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -134,8 +135,8 @@ export default function BookingCheckoutPage() {
       router.push(`/booking/success?bookingId=${responseData.bookingId}`);
 
     } catch (error) {
-      console.error('Booking creation failed:', error);
-      setError(error instanceof Error ? error.message : 'Booking creation failed');
+      console.error('Booking creation failed:', getErrorMessage(error));
+      setError(error instanceof Error ? getErrorMessage(error) : 'Booking creation failed');
     } finally {
       setIsProcessing(false);
     }

@@ -18,21 +18,25 @@ export type FrontendServiceType =
 // Mapping from Prisma enums to frontend types
 export const PRISMA_TO_FRONTEND_SERVICE_MAP: Record<PrismaServiceType, FrontendServiceType> = {
   STANDARD_NOTARY: "standard-notary",
-  EXTENDED_HOURS_NOTARY: "extended-hours-notary",
-  LOAN_SIGNING_SPECIALIST: "loan-signing-specialist",
-  SPECIALTY_NOTARY_SERVICE: "specialty-notary-service",
+  EXTENDED_HOURS: "extended-hours-notary",
+  LOAN_SIGNING: "loan-signing-specialist",
+  SPECIALTY_NOTARY: "specialty-notary-service",
   BUSINESS_SOLUTIONS: "business-solutions",
-  SUPPORT_SERVICE: "support-service",
+  QUICK_STAMP_LOCAL: "standard-notary", // Map to standard notary
+  RON_SERVICES: "standard-notary", // Map to standard notary
+  BUSINESS_ESSENTIALS: "business-solutions", // Map to business solutions
+  BUSINESS_GROWTH: "business-solutions", // Map to business solutions
+  ESTATE_PLANNING: "specialty-notary-service", // Map to specialty notary
 };
 
 // SOP COMPLIANT: Frontend to Prisma mapping (FORBIDDEN TYPES REMOVED)
 export const FRONTEND_TO_PRISMA_SERVICE_MAP: Record<FrontendServiceType, PrismaServiceType> = {
   "standard-notary": "STANDARD_NOTARY",
-  "extended-hours-notary": "EXTENDED_HOURS_NOTARY", 
-  "loan-signing-specialist": "LOAN_SIGNING_SPECIALIST",
-  "specialty-notary-service": "SPECIALTY_NOTARY_SERVICE",
+  "extended-hours-notary": "EXTENDED_HOURS", 
+  "loan-signing-specialist": "LOAN_SIGNING",
+  "specialty-notary-service": "SPECIALTY_NOTARY",
   "business-solutions": "BUSINESS_SOLUTIONS",
-  "support-service": "SUPPORT_SERVICE",
+  "support-service": "BUSINESS_SOLUTIONS", // Map to business solutions
 };
 
 // SOP COMPLIANT: Display names (FORBIDDEN TYPES REMOVED)

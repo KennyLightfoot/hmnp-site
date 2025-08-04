@@ -29,7 +29,7 @@ async function checkDatabase() {
     console.log('\n📋 Sample data:');
     
     try {
-      const serviceAreas = await prisma.serviceArea.findMany({ take: 3 });
+      const serviceAreas = await prisma.service_areas.findMany({ take: 3 });
       console.log('\n📍 Service Areas:');
       serviceAreas.forEach(area => {
         console.log(`  - ${area.name}: ${area.description}`);
@@ -39,7 +39,7 @@ async function checkDatabase() {
     }
 
     try {
-      const featureFlags = await prisma.featureFlag.findMany({ take: 3 });
+      const featureFlags = await prisma.feature_flags.findMany({ take: 3 });
       console.log('\n🚩 Feature Flags:');
       featureFlags.forEach(flag => {
         console.log(`  - ${flag.key}: ${flag.enabled ? '✅' : '❌'} (${flag.description})`);

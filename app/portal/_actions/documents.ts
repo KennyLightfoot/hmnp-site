@@ -51,19 +51,26 @@ export async function getPresignedDownloadUrl(documentId: string): Promise<{ err
     const document = await prisma.assignmentDocument.findUnique({
       where: { id: documentId },
       include: {
-        assignment: {
-          select: { id: true, partnerAssignedToId: true }, // Select only needed fields
-        },
-      },
+        Assignment: true
+      }
     });
 
-    if (!document || !document.assignment) {
+    if (!document) {
+      return { error: "Document not found" };
+    }
+
+    // Get assignment details separately since there's no direct relation
+    const assignment = await prisma.assignment.findUnique({
+      where: { id: document.assignmentId }
+    });
+
+    if (!assignment) {
       return { error: "Document or associated assignment not found" };
     }
 
     // 2. Authorization Check
     const isStaffOrAdmin = userRole === Role.ADMIN || userRole === Role.STAFF;
-    const isAssignedPartner = userRole === Role.PARTNER && document.assignment.partnerAssignedToId === userId;
+    const isAssignedPartner = userRole === Role.PARTNER && assignment.partnerAssignedToId === userId;
 
     if (!isStaffOrAdmin && !isAssignedPartner) {
       logger.warn(`User ${userId} (${userRole}) unauthorized download attempt for doc ${documentId}`, 'DOCUMENTS');
@@ -201,15 +208,12 @@ export async function registerUploadedDocument(
   try {
     const newDocument = await prisma.assignmentDocument.create({
       data: {
+        id: crypto.randomUUID(),
         assignmentId: assignmentId,
         filename: filename,
         key: s3Key,
-        uploadedById: userId, // Associate with the user who initiated the upload
-        // Consider storing contentType if useful
-      },
-      select: {
-        id: true, // Return the ID of the newly created document
-      },
+        uploadedById: userId
+      }
     });
 
     // TODO: Optionally create a StatusHistory entry for document upload?

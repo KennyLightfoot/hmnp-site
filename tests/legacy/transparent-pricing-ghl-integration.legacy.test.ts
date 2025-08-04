@@ -11,6 +11,55 @@ import { UnifiedPricingEngine } from '../lib/pricing/unified-pricing-engine';
 
 describe('Transparent Pricing GHL Integration', () => {
   
+  const mockPricingResult = {
+    serviceType: 'STANDARD_NOTARY',
+    basePrice: 75,
+    totalPrice: 60,
+    breakdown: {
+      serviceBase: {
+        amount: 75,
+        label: 'Standard Notary Service',
+        description: 'Professional notary service',
+        isDiscount: false
+      },
+      discounts: [{
+        amount: 15,
+        label: 'First-time customer',
+        description: 'Welcome discount',
+        isDiscount: true
+      }]
+    },
+    transparency: {
+      whyThisPrice: 'Your standard notary service is priced at $60 with first-time discount.',
+      feeExplanations: ['Base price includes up to 2 documents'],
+      alternatives: []
+    },
+    businessRules: {
+      serviceAreaZone: 'houston_metro',
+      isWithinServiceArea: true,
+      documentLimitsExceeded: false,
+      dynamicPricingActive: false,
+      discountsApplied: ['first_time'],
+      violations: [],
+      recommendations: []
+    },
+    ghlActions: {
+      tags: ['service:standard_notary', 'pricing:discount_applied'],
+      customFields: {
+        cf_service_type: 'STANDARD_NOTARY',
+        cf_base_price: 75,
+        cf_final_total: 60
+      },
+      workflows: ['GHL_PRICING_CONFIRMATION_WORKFLOW_ID']
+    },
+    metadata: {
+      calculatedAt: new Date().toISOString(),
+      requestId: 'test_pricing_123',
+      version: '1.0.0',
+      calculationTime: 100
+    }
+  };
+  
   beforeAll(async () => {
     // Ensure test environment is set up
     if (!process.env.GHL_PRIVATE_INTEGRATION_TOKEN) {
@@ -111,55 +160,6 @@ describe('Transparent Pricing GHL Integration', () => {
   });
 
   describe('GHL Integration', () => {
-    
-    const mockPricingResult = {
-      serviceType: 'STANDARD_NOTARY',
-      basePrice: 75,
-      totalPrice: 60,
-      breakdown: {
-        serviceBase: {
-          amount: 75,
-          label: 'Standard Notary Service',
-          description: 'Professional notary service',
-          isDiscount: false
-        },
-        discounts: [{
-          amount: 15,
-          label: 'First-time customer',
-          description: 'Welcome discount',
-          isDiscount: true
-        }]
-      },
-      transparency: {
-        whyThisPrice: 'Your standard notary service is priced at $60 with first-time discount.',
-        feeExplanations: ['Base price includes up to 2 documents'],
-        alternatives: []
-      },
-      businessRules: {
-        serviceAreaZone: 'houston_metro',
-        isWithinServiceArea: true,
-        documentLimitsExceeded: false,
-        dynamicPricingActive: false,
-        discountsApplied: ['first_time'],
-        violations: [],
-        recommendations: []
-      },
-      ghlActions: {
-        tags: ['service:standard_notary', 'pricing:discount_applied'],
-        customFields: {
-          cf_service_type: 'STANDARD_NOTARY',
-          cf_base_price: 75,
-          cf_final_total: 60
-        },
-        workflows: ['GHL_PRICING_CONFIRMATION_WORKFLOW_ID']
-      },
-      metadata: {
-        calculatedAt: new Date().toISOString(),
-        requestId: 'test_pricing_123',
-        version: '1.0.0',
-        calculationTime: 100
-      }
-    };
 
     test('should transform pricing result to custom fields', () => {
       const { TransparentPricingFieldManager } = require('../lib/ghl/transparent-pricing-fields');

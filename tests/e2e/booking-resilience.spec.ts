@@ -147,9 +147,8 @@ test.describe('Booking Flow Resilience Tests', () => {
 
     await test.step('Simulate payment failure', async () => {
       // Mock Stripe to return payment failure
-      await page.addInitScript(() => {
-        window.mockStripeFailure = true;
-      });
+      // @ts-ignore - Adding mock property for testing
+      (window as any).mockStripeFailure = true;
 
       await page.route('**/api/booking/create', route => {
         route.fulfill({
@@ -169,8 +168,7 @@ test.describe('Booking Flow Resilience Tests', () => {
 
       // Fill payment details and submit
       await fillPaymentForm(page);
-      const submitButton = page.locator('button:has-text("Complete Booking")');
-      await submitButton.click();
+      await page.click('[data-testid="submit-button"]');
 
       // Should show payment error
       await expect(page.locator('text=payment failed, text=card declined')).toBeVisible({ timeout: 10000 });
@@ -199,7 +197,7 @@ test.describe('Booking Flow Resilience Tests', () => {
       if (await retryButton.isVisible()) {
         await retryButton.click();
       } else {
-        await submitButton.click();
+        await page.click('[data-testid="submit-button"]');
       }
 
       // Should show success

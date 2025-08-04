@@ -179,7 +179,9 @@ class AIAnalyticsTracker {
             formSubmitted: false
           };
         }
-        interaction.conversionData[event] = true;
+        if (interaction.conversionData && event in interaction.conversionData) {
+          (interaction.conversionData as any)[event] = true;
+        }
       });
   }
 

@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
+import { ServiceType } from '@prisma/client';
 
 dotenv.config({ path: '.env.local' });
 const prisma = new PrismaClient();
@@ -39,7 +40,7 @@ async function verifyServices() {
     ];
     
     const actualServiceTypes = services.map(s => s.serviceType);
-    const missingServices = expectedServiceTypes.filter(type => !actualServiceTypes.includes(type));
+    const missingServices = expectedServiceTypes.filter(type => !actualServiceTypes.includes(type as ServiceType));
     const extraServices = actualServiceTypes.filter(type => !expectedServiceTypes.includes(type));
     
     if (missingServices.length === 0 && extraServices.length === 0 && services.length === 7) {

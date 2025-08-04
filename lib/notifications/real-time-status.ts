@@ -1,10 +1,11 @@
-// lib/notifications/real-time-status.ts
+// lib/notifications/real-time-status?.ts
 
 import { prisma } from '@/lib/db';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { NotificationService } from '@/lib/notifications';
 import { NotificationType, NotificationMethod } from '@prisma/client';
 import { realTimeStatusUpdateEmail } from '@/lib/email/templates';
-import { logger } from '@/lib/monitoring';
+import { logger } from '@/lib/logger';
 
 export interface StatusUpdateData {
   bookingId: string;
@@ -62,8 +63,8 @@ export class RealTimeStatusService {
 
     try {
       // Get booking details
-      const booking = await prisma.booking.findUnique({
-        where: { id: data.bookingId },
+      const booking = await prisma?.booking?.findUnique({
+        where: { id: data?.bookingId },
         include: {
           User_Booking_signerIdToUser: true,
           service: true
@@ -71,108 +72,109 @@ export class RealTimeStatusService {
       });
 
       if (!booking) {
-        throw new Error(`Booking ${data.bookingId} not found`);
+        throw new Error(`Booking ${data?.bookingId} not found`);
       }
 
       // Prepare notification data
       const client = {
-        firstName: booking.User_Booking_signerIdToUser?.name?.split(' ')[0] || 'there',
-        lastName: booking.User_Booking_signerIdToUser?.name?.split(' ').slice(1).join(' '),
-        email: booking.customerEmail || booking.User_Booking_signerIdToUser?.email,
+        firstName: booking?.User_Booking_signerIdToUser?.name?.split(' ')[0] || 'there',
+        lastName: booking?.User_Booking_signerIdToUser?.name?.split(' ').slice(1).join(' ') || '',
+        email: booking?.customerEmail || booking?.User_Booking_signerIdToUser?.email || '',
         phone: undefined
       };
 
       const bookingDetails = {
-        serviceName: booking.service.name,
-        date: booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleDateString('en-US', { 
+        serviceName: booking?.service?.name,
+        date: booking?.scheduledDateTime ? new Date(booking?.scheduledDateTime).toLocaleDateString('en-US', { 
           weekday: 'long', 
           year: 'numeric', 
           month: 'long', 
           day: 'numeric' 
         }) : 'TBD',
-        time: booking.scheduledDateTime ? new Date(booking.scheduledDateTime).toLocaleTimeString('en-US', { 
+        time: booking?.scheduledDateTime ? new Date(booking?.scheduledDateTime).toLocaleTimeString('en-US', { 
           hour: 'numeric', 
           minute: '2-digit', 
           hour12: true 
         }) : 'TBD',
-        address: booking.addressCity || 'TBD',
-        notaryName: data.notaryName || booking.User_Booking_notaryIdToUser?.name,
-        status: data.status,
-        bookingId: booking.id
+        address: booking?.addressCity || 'TBD',
+        notaryName: data?.notaryName || booking?.User_Booking_signerIdToUser?.name || undefined,
+        status: data?.status,
+        bookingId: booking?.id,
+        numberOfSigners: 1
       };
 
       // Send email notification
-      if (config.enableEmail && client.email) {
+      if (config?.enableEmail && client?.email) {
         try {
-          const emailContent = realTimeStatusUpdateEmail(client, bookingDetails, data.status);
+          const emailContent = realTimeStatusUpdateEmail(client, bookingDetails, data?.status);
           
-          await NotificationService.sendNotification({
-            bookingId: data.bookingId,
-            type: NotificationType.APPOINTMENT_REMINDER_NOW,
-            recipient: { email: client.email },
+          await NotificationService?.sendNotification({
+            bookingId: data?.bookingId,
+            type: NotificationType?.APPOINTMENT_REMINDER_NOW,
+            recipient: { email: client?.email },
             content: {
-              subject: emailContent.subject,
-              message: emailContent.html
+              subject: emailContent?.subject,
+              message: emailContent?.html
             },
-            methods: [NotificationMethod.EMAIL]
+            methods: [NotificationMethod?.EMAIL]
           });
           
           sentCount++;
-          logger.info(`Real-time status email sent for booking ${data.bookingId}`, 'REAL_TIME_STATUS');
+          logger?.info(`Real-time status email sent for booking ${data?.bookingId}`, 'REAL_TIME_STATUS');
         } catch (error) {
           failedCount++;
-          errors.push(`Email failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-          logger.error(`Failed to send real-time status email for booking ${data.bookingId}`, 'REAL_TIME_STATUS', { error });
+          errors?.push(`Email failed: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`);
+          logger?.error(`Failed to send real-time status email for booking ${data?.bookingId}`, 'REAL_TIME_STATUS', { error });
         }
       }
 
       // Send SMS notification
-      if (config.enableSMS && client.phone) {
+      if (config?.enableSMS && client?.phone) {
         try {
-          const smsMessage = this.generateStatusSMS(data.status, bookingDetails, data);
+          const smsMessage = this?.generateStatusSMS(data?.status, bookingDetails, data);
           
-          await NotificationService.sendNotification({
-            bookingId: data.bookingId,
-            type: NotificationType.APPOINTMENT_REMINDER_NOW,
-            recipient: { phone: client.phone },
+          await NotificationService?.sendNotification({
+            bookingId: data?.bookingId,
+            type: NotificationType?.APPOINTMENT_REMINDER_NOW,
+            recipient: { phone: client?.phone },
             content: {
               message: smsMessage
             },
-            methods: [NotificationMethod.SMS]
+            methods: [NotificationMethod?.SMS]
           });
           
           sentCount++;
-          logger.info(`Real-time status SMS sent for booking ${data.bookingId}`, 'REAL_TIME_STATUS');
+          logger?.info(`Real-time status SMS sent for booking ${data?.bookingId}`, 'REAL_TIME_STATUS');
         } catch (error) {
           failedCount++;
-          errors.push(`SMS failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-          logger.error(`Failed to send real-time status SMS for booking ${data.bookingId}`, 'REAL_TIME_STATUS', { error });
+          errors?.push(`SMS failed: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`);
+          logger?.error(`Failed to send real-time status SMS for booking ${data?.bookingId}`, 'REAL_TIME_STATUS', { error });
         }
       }
 
       // Send push notification
-      if (config.enablePush) {
+      if (config?.enablePush) {
         try {
-          await this.sendPushNotification(data, bookingDetails, client);
+          await this?.sendPushNotification(data, bookingDetails, client);
           sentCount++;
-          logger.info(`Real-time status push notification sent for booking ${data.bookingId}`, 'REAL_TIME_STATUS');
+          logger?.info(`Real-time status push notification sent for booking ${data?.bookingId}`, 'REAL_TIME_STATUS');
         } catch (error) {
           failedCount++;
-          errors.push(`Push notification failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-          logger.error(`Failed to send real-time status push notification for booking ${data.bookingId}`, 'REAL_TIME_STATUS', { error });
+          errors?.push(`Push notification failed: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`);
+          logger?.error(`Failed to send real-time status push notification for booking ${data?.bookingId}`, 'REAL_TIME_STATUS', { error });
         }
       }
 
       // Update booking status in database
-      await this.updateBookingStatus(data);
+      await this?.updateBookingStatus(data);
 
       // Log status update
-      await this.logStatusUpdate(data, sentCount, failedCount);
+      await this?.logStatusUpdate(data, sentCount, failedCount);
 
     } catch (error) {
       failedCount++;
-      errors.push(`General error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      logger.error(`Failed to send real-time status update for booking ${data.bookingId}`, 'REAL_TIME_STATUS', { error });
+      errors?.push(`General error: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`);
+      logger?.error(`Failed to send real-time status update for booking ${data?.bookingId}`, 'REAL_TIME_STATUS', { error });
     }
 
     return {
@@ -192,11 +194,11 @@ export class RealTimeStatusService {
     data: StatusUpdateData
   ): string {
     const statusMessages = {
-      on_way: `🚗 HMNP: Your notary is on the way! Service: ${bookingDetails.serviceName}. Be ready at ${bookingDetails.address}.`,
-      arrived: `✅ HMNP: Your notary has arrived! Please meet at the entrance. Service: ${bookingDetails.serviceName}.`,
+      on_way: `🚗 HMNP: Your notary is on the way! Service: ${bookingDetails?.serviceName}. Be ready at ${bookingDetails?.address}.`,
+      arrived: `✅ HMNP: Your notary has arrived! Please meet at the entrance. Service: ${bookingDetails?.serviceName}.`,
       in_progress: `📝 HMNP: Notarization in progress. Please follow your notary's instructions.`,
       completed: `🎉 HMNP: Service completed successfully! You'll receive a summary shortly.`,
-      delayed: `⏰ HMNP: Slight delay with your appointment. We'll keep you updated. ${data.delayReason ? `Reason: ${data.delayReason}` : ''}`
+      delayed: `⏰ HMNP: Slight delay with your appointment. We'll keep you updated. ${data?.delayReason ? `Reason: ${data?.delayReason}` : ''}`
     };
 
     return statusMessages[status] || 'HMNP: Status update received.';
@@ -212,7 +214,7 @@ export class RealTimeStatusService {
   ): Promise<void> {
     // Import push notification service
     const { PushNotificationService } = await import('@/lib/notifications/push-notification-service');
-    const pushService = PushNotificationService.getInstance();
+    const pushService = new PushNotificationService();
 
     const notification = {
       title: this.getPushNotificationTitle(data.status),
@@ -221,6 +223,9 @@ export class RealTimeStatusService {
       badge: '/icons/badge-72x72.png',
       tag: `status-${data.bookingId}`,
       requireInteraction: data.status === 'arrived',
+      silent: false,
+      ttl: 3600,
+      urgency: 'high' as const,
       data: {
         bookingId: data.bookingId,
         status: data.status,
@@ -228,10 +233,10 @@ export class RealTimeStatusService {
       }
     };
 
-    await pushService.sendNotification({
+    await pushService?.sendNotification({
       notification,
       targets: {
-        customerEmails: client.email ? [client.email] : []
+        customerEmails: client?.email ? [client?.email] : []
       }
     });
   }
@@ -255,7 +260,7 @@ export class RealTimeStatusService {
    */
   private getPushNotificationBody(status: StatusUpdateData['status'], bookingDetails: any): string {
     const bodies = {
-      on_way: `Your notary is en route for ${bookingDetails.serviceName}. Be ready at ${bookingDetails.address}.`,
+      on_way: `Your notary is en route for ${bookingDetails?.serviceName}. Be ready at ${bookingDetails?.address}.`,
       arrived: `Your notary has arrived! Please meet at the entrance.`,
       in_progress: `Your notarization service is currently in progress.`,
       completed: `Your service has been completed successfully!`,
@@ -276,12 +281,12 @@ export class RealTimeStatusService {
       delayed: 'IN_PROGRESS'
     };
 
-    await prisma.booking.update({
-      where: { id: data.bookingId },
+    await prisma?.booking?.update({
+      where: { id: data?.bookingId },
       data: {
-        status: statusMap[data.status],
+        status: statusMap[data?.status] as any,
         updatedAt: new Date(),
-        notes: data.notes ? `${data.notes}\n[Status Update: ${data.status}]` : `[Status Update: ${data.status}]`
+        notes: data?.notes ? `${data?.notes}\n[Status Update: ${data?.status}]` : `[Status Update: ${data?.status}]`
       }
     });
   }
@@ -294,21 +299,22 @@ export class RealTimeStatusService {
     sentCount: number,
     failedCount: number
   ): Promise<void> {
-    await prisma.notificationLog.create({
+    await prisma?.notificationLog?.create({
       data: {
-        bookingId: data.bookingId,
-        notificationType: NotificationType.APPOINTMENT_REMINDER_NOW,
-        method: NotificationMethod.EMAIL, // Primary method
-        subject: `Status Update: ${data.status}`,
-        message: `Real-time status update sent for booking ${data.bookingId}`,
+        id: `status_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        bookingId: data?.bookingId,
+        notificationType: NotificationType?.APPOINTMENT_REMINDER_NOW,
+        method: NotificationMethod?.EMAIL, // Primary method
+        subject: `Status Update: ${data?.status}`,
+        message: `Real-time status update sent for booking ${data?.bookingId}`,
         status: failedCount === 0 ? 'SENT' : 'FAILED',
         metadata: {
-          status: data.status,
+          status: data?.status,
           sentCount,
           failedCount,
-          notaryName: data.notaryName,
-          estimatedArrival: data.estimatedArrival,
-          delayReason: data.delayReason
+          notaryName: data?.notaryName,
+          estimatedArrival: data?.estimatedArrival,
+          delayReason: data?.delayReason
         }
       }
     });
@@ -318,13 +324,13 @@ export class RealTimeStatusService {
    * Get current status for a booking
    */
   async getCurrentStatus(bookingId: string): Promise<StatusUpdateData | null> {
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma?.booking?.findUnique({
       where: { id: bookingId },
       include: {
-        User_Booking_notaryIdToUser: true,
+        User_Booking_signerIdToUser: true,
         NotificationLog: {
           where: {
-            notificationType: NotificationType.APPOINTMENT_REMINDER_NOW
+            notificationType: NotificationType?.APPOINTMENT_REMINDER_NOW
           },
           orderBy: {
             sentAt: 'desc'
@@ -336,16 +342,17 @@ export class RealTimeStatusService {
 
     if (!booking) return null;
 
-    const lastStatusUpdate = booking.NotificationLog[0];
-    const status = lastStatusUpdate?.metadata?.status as StatusUpdateData['status'] || 'scheduled';
+    const lastStatusUpdate = booking?.NotificationLog[0];
+    const metadata = lastStatusUpdate?.metadata as any;
+    const status = metadata?.status as StatusUpdateData['status'] || 'scheduled';
 
     return {
       bookingId,
       status,
-      notaryName: booking.User_Booking_notaryIdToUser?.name,
-      estimatedArrival: lastStatusUpdate?.metadata?.estimatedArrival,
-      delayReason: lastStatusUpdate?.metadata?.delayReason,
-      notes: booking.notes || undefined
+      notaryName: booking?.User_Booking_signerIdToUser?.name || undefined,
+      estimatedArrival: metadata?.estimatedArrival,
+      delayReason: metadata?.delayReason,
+      notes: booking?.notes || undefined
     };
   }
 
@@ -353,25 +360,28 @@ export class RealTimeStatusService {
    * Get status history for a booking
    */
   async getStatusHistory(bookingId: string): Promise<Array<StatusUpdateData & { timestamp: Date }>> {
-    const statusUpdates = await prisma.notificationLog.findMany({
+    const statusUpdates = await prisma?.notificationLog?.findMany({
       where: {
         bookingId,
-        notificationType: NotificationType.APPOINTMENT_REMINDER_NOW
+        notificationType: NotificationType?.APPOINTMENT_REMINDER_NOW
       },
       orderBy: {
         sentAt: 'desc'
       }
     });
 
-    return statusUpdates.map(update => ({
-      bookingId,
-      status: update.metadata?.status as StatusUpdateData['status'] || 'unknown',
-      notaryName: update.metadata?.notaryName,
-      estimatedArrival: update.metadata?.estimatedArrival,
-      delayReason: update.metadata?.delayReason,
-      notes: update.metadata?.notes,
-      timestamp: update.sentAt
-    }));
+    return statusUpdates?.map(update => {
+      const metadata = update?.metadata as any;
+      return {
+        bookingId,
+        status: metadata?.status as StatusUpdateData['status'] || 'unknown',
+        notaryName: metadata?.notaryName,
+        estimatedArrival: metadata?.estimatedArrival,
+        delayReason: metadata?.delayReason,
+        notes: metadata?.notes,
+        timestamp: update?.sentAt
+      };
+    });
   }
 }
 
@@ -380,16 +390,16 @@ export const sendRealTimeStatusUpdate = async (
   data: StatusUpdateData,
   config?: RealTimeStatusConfig
 ) => {
-  const service = RealTimeStatusService.getInstance();
-  return await service.sendStatusUpdate(data, config);
+  const service = RealTimeStatusService?.getInstance();
+  return await service?.sendStatusUpdate(data, config);
 };
 
 export const getBookingStatus = async (bookingId: string) => {
-  const service = RealTimeStatusService.getInstance();
-  return await service.getCurrentStatus(bookingId);
+  const service = RealTimeStatusService?.getInstance();
+  return await service?.getCurrentStatus(bookingId);
 };
 
 export const getBookingStatusHistory = async (bookingId: string) => {
-  const service = RealTimeStatusService.getInstance();
-  return await service.getStatusHistory(bookingId);
+  const service = RealTimeStatusService?.getInstance();
+  return await service?.getStatusHistory(bookingId);
 }; 

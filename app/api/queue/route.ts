@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getQueueClient, getQueueWorker } from '@/lib/queue';
 import { logger } from '@/lib/logger';
 
@@ -14,7 +15,7 @@ async function authenticate(request: NextRequest): Promise<boolean> {
   // Expected format: "Bearer [token]"
   const [type, token] = authHeader.split(' ');
   if (!type || !token) {
-    return NextResponse.json({ error: 'Invalid authorization header' }, { status: 401 });
+    return false;
   }
   
   if (type !== 'Bearer') {
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest) {
     logger.error('Queue API error:', error instanceof Error ? error : new Error(String(error)));
     
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
+      { error: 'Internal server error', details: error instanceof Error ? getErrorMessage(error) : String(error) },
       { status: 500 }
     );
   }
@@ -142,7 +143,7 @@ export async function GET(request: NextRequest) {
     logger.error('Queue API error:', error instanceof Error ? error : new Error(String(error)));
     
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
+      { error: 'Internal server error', details: error instanceof Error ? getErrorMessage(error) : String(error) },
       { status: 500 }
     );
   }

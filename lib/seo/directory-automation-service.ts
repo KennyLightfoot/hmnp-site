@@ -7,6 +7,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { napAuditService, BusinessNAPData } from './nap-audit-service';
 
 export interface DirectoryTarget {
@@ -205,8 +206,8 @@ export class DirectoryAutomationService {
         status: 'failed',
         verificationRequired: false,
         estimatedApprovalTime: 0,
-        message: `Submission failed: ${error.message}`,
-        error: error.message
+        message: `Submission failed: ${getErrorMessage(error)}`,
+        error: getErrorMessage(error)
       };
     }
   }

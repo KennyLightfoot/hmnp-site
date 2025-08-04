@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getContactByEmail, addTagsToContact } from '@/lib/ghl';
 import { createContact, searchContacts } from '@/lib/ghl/management';
 import { triggerReviewThankYouPost } from '@/lib/gmb/automation-service';
@@ -161,7 +162,7 @@ export async function POST(request: NextRequest) {
       { 
         success: false, 
         error: 'Failed to process review webhook',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
       },
       { status: 500 }
     );

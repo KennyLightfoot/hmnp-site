@@ -22,8 +22,8 @@ import {
 
 interface AnalyticsData {
   overview: {
-    totalBookings: number;
-    totalRevenue: number;
+    total_bookings: number;
+          totalRevenue: number;
     averageBookingValue: number;
     conversionRate: number;
     trends: {
@@ -74,7 +74,7 @@ export default function AdminAnalyticsPage() {
       // For now, we'll use mock data since the analytics API isn't implemented yet
       const mockData: AnalyticsData = {
         overview: {
-          totalBookings: 342,
+          total_bookings: 342,
           totalRevenue: 28750,
           averageBookingValue: 84.06,
           conversionRate: 73.2,
@@ -220,7 +220,7 @@ export default function AdminAnalyticsPage() {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{data.overview.totalBookings}</div>
+              <div className="text-2xl font-bold">{data.overview.total_bookings}</div>
               <div className="flex items-center text-xs text-muted-foreground">
                 {data.overview.trends.bookings > 0 ? (
                   <TrendingUp className="h-3 w-3 mr-1 text-green-500" />

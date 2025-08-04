@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { leadNurturingService } from '@/lib/lead-nurturing'
 
 export async function POST(request: NextRequest) {
@@ -27,12 +28,12 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('❌ Error in lead nurturing cron job:', error)
+    console.error('❌ Error in lead nurturing cron job:', getErrorMessage(error))
     
     return NextResponse.json(
       { 
         error: 'Lead nurturing failed',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
       },
       { status: 500 }
     )

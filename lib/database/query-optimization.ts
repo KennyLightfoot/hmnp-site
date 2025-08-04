@@ -4,6 +4,7 @@
  */
 
 import { prisma } from '@/lib/database-connection';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { cache } from '@/lib/cache';
 import { Prisma, BookingStatus, ServiceType } from '@prisma/client';
 
@@ -128,7 +129,7 @@ export async function getBookingsForAvailability(
       id: true,
       scheduledDateTime: true,
       status: true,
-      Service: {
+      service: {
         select: {
           durationMinutes: true
         }
@@ -201,14 +202,14 @@ export async function getUserBookings(
         id: true,
         status: true,
         scheduledDateTime: true,
-        finalPrice: true,
+        priceAtBooking: true,
         depositAmount: true,
         locationType: true,
         addressStreet: true,
         addressCity: true,
         addressState: true,
         createdAt: true,
-        Service: {
+        service: {
           select: {
             name: true,
             serviceType: true,
@@ -257,7 +258,7 @@ export async function getBookingDetails(bookingId: string, useCache = true) {
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
     include: {
-      Service: {
+      service: {
         select: {
           id: true,
           name: true,
@@ -270,8 +271,7 @@ export async function getBookingDetails(bookingId: string, useCache = true) {
         select: {
           id: true,
           name: true,
-          email: true,
-          phone: true
+          email: true
         }
       },
       promoCode: {
@@ -282,12 +282,12 @@ export async function getBookingDetails(bookingId: string, useCache = true) {
           discountValue: true
         }
       },
-      Payment: {
+      payments: {
         select: {
           id: true,
           amount: true,
           status: true,
-          paymentMethod: true,
+          provider: true,
           createdAt: true,
           paidAt: true
         }
@@ -295,8 +295,8 @@ export async function getBookingDetails(bookingId: string, useCache = true) {
       NotarizationDocument: {
         select: {
           id: true,
-          documentName: true,
-          status: true
+          originalFilename: true,
+          isSigned: true
         }
       }
     },
@@ -333,10 +333,8 @@ export async function getUserByEmail(email: string, useCache = true) {
       id: true,
       name: true,
       email: true,
-      phone: true,
       role: true,
-      createdAt: true,
-      isActive: true
+      createdAt: true
     }
   });
 
@@ -367,10 +365,8 @@ export async function getUserById(userId: string, useCache = true) {
       id: true,
       name: true,
       email: true,
-      phone: true,
       role: true,
-      createdAt: true,
-      isActive: true
+      createdAt: true
     }
   });
 
@@ -436,7 +432,7 @@ export async function getDashboardStats(
       select: {
         id: true,
         scheduledDateTime: true,
-        Service: {
+        service: {
           select: {
             name: true,
             durationMinutes: true
@@ -482,7 +478,7 @@ export async function getDashboardStats(
         }
       },
       _sum: {
-        finalPrice: true
+        priceAtBooking: true
       }
     })
   ]);
@@ -492,7 +488,7 @@ export async function getDashboardStats(
     upcomingBookings,
     completedBookings,
     pendingPayments,
-    totalRevenue: totalRevenue._sum.finalPrice?.toNumber() || 0
+    totalRevenue: totalRevenue._sum?.priceAtBooking?.toNumber() || 0
   };
 
   if (useCache) {
@@ -609,7 +605,7 @@ export async function getDatabaseHealth() {
   } catch (error) {
     return {
       status: 'unhealthy',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
       responseTime: Date.now() - startTime,
       timestamp: new Date().toISOString()
     };

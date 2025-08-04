@@ -6,6 +6,7 @@
  */
 
 import { logger } from '../logger';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 
 export interface PWAInstallPrompt {
   prompt(): Promise<void>;
@@ -72,14 +73,14 @@ export class PWAManager {
       // Initialize offline storage
       await this.initializeOfflineStorage();
 
-      // Setup install prompt
-      this.setupInstallPrompt();
+      // Setup event listeners
+      this.setupEventListeners();
 
       // Check for pending offline data
       await this.checkOfflineQueue();
 
     } catch (error: any) {
-      logger.error('PWA initialization failed', { error: error.message });
+      logger.error('PWA initialization failed', { error: getErrorMessage(error) });
     }
   }
 
@@ -153,7 +154,7 @@ export class PWAManager {
         outcome: choice.outcome 
       };
     } catch (error: any) {
-      logger.error('PWA installation failed', { error: error.message });
+      logger.error('PWA installation failed', { error: getErrorMessage(error) });
       return { success: false };
     }
   }
@@ -207,7 +208,7 @@ export class PWAManager {
 
       logger.info('Push notification subscription created');
     } catch (error: any) {
-      logger.error('Push notification subscription failed', { error: error.message });
+      logger.error('Push notification subscription failed', { error: getErrorMessage(error) });
       throw error;
     }
   }
@@ -312,9 +313,12 @@ export class PWAManager {
     if (!('share' in navigator)) {
       // Fallback to clipboard
       try {
-        await navigator.clipboard.writeText(data.url || data.text);
-        this.showToast('Link copied to clipboard');
-        return true;
+        if ('clipboard' in navigator) {
+          await (navigator as any).clipboard.writeText(data.url || data.text);
+          this.showToast('Link copied to clipboard');
+          return true;
+        }
+        return false;
       } catch {
         return false;
       }
@@ -325,7 +329,7 @@ export class PWAManager {
       return true;
     } catch (error: any) {
       if (error.name !== 'AbortError') {
-        logger.error('Web Share failed', { error: error.message });
+        logger.error('Web Share failed', { error: getErrorMessage(error) });
       }
       return false;
     }
@@ -350,7 +354,7 @@ export class PWAManager {
           });
         },
         (error) => {
-          reject(new Error(`Location error: ${error.message}`));
+          reject(new Error(`Location error: ${getErrorMessage(error)}`));
         },
         {
           enableHighAccuracy: true,
@@ -505,7 +509,7 @@ export class PWAManager {
     
     // Register for background sync
     if (this.swRegistration && 'sync' in this.swRegistration) {
-      this.swRegistration.sync.register('background-sync-bookings').catch(() => {});
+      (this.swRegistration as any).sync.register('background-sync-bookings').catch(() => {});
     }
   }
 

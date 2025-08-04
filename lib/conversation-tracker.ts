@@ -3,8 +3,8 @@
  * Houston Mobile Notary Pros - Enhanced Customer Context
  */
 
-import { prisma } from '@/lib/prisma';
-import { logger } from '@/lib/logger';
+import { prisma } from '../lib/prisma';
+import { logger } from '../lib/logger';
 
 export interface ConversationEntry {
   id: string;
@@ -137,7 +137,9 @@ export class ConversationTracker {
       }
 
       // Get customer name from most recent interaction
-      const customerName = interactions[interactions.length - 1].metadata?.customerName as string || 'Customer';
+      const lastInteraction = interactions[interactions.length - 1];
+      const metadata = lastInteraction?.metadata as any;
+      const customerName = metadata?.customerName || 'Customer';
 
       // Get booking history
       const bookings = await prisma.booking.findMany({
@@ -367,7 +369,7 @@ export class ConversationTracker {
     const commonTopics = this.extractTopics(allMessages);
 
     // Extract service interests
-    const serviceInterests = [...new Set(bookings.map(b => b.service?.name).filter(Boolean))];
+    const serviceInterests: string[] = [...new Set(bookings.map(b => b.service?.name).filter(Boolean))];
 
     // Extract special needs
     const specialNeeds = interactions

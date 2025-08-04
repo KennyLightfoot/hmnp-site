@@ -213,17 +213,8 @@ export class TokenManager {
     const accessToken = this.generateAccessToken(user);
     const refreshToken = this.generateRefreshToken(user.id);
     
-    // Store refresh token in database
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
-    
-    await prisma.refreshToken.create({
-      data: {
-        token: refreshToken,
-        userId: user.id,
-        expiresAt
-      }
-    });
+    // Refresh tokens are handled by NextAuth.js automatically
+    // No need to store them separately in our database
     
     return { accessToken, refreshToken };
   }

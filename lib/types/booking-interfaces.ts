@@ -121,6 +121,7 @@ export interface SchedulingStepProps extends BaseStepProps {
 export interface ReviewStepProps extends BaseStepProps {
   completedBooking?: CompletedBooking;
   onSubmit?: () => void;
+  isSubmitting?: boolean;
 }
 
 // ============================================================================
@@ -249,25 +250,4 @@ export interface ValidationResult {
 // Export all types for easy importing
 // ============================================================================
 
-export type {
-  BookingStepUpdate,
-  BookingError,
-  BookingErrors,
-  PricingResult,
-  CompletedBooking,
-  BaseStepProps,
-  BookingFormProps,
-  BookingStep,
-  PopularArea,
-  LocationDetails,
-  PaymentOption,
-  PaymentMethod,
-  FormFieldValue,
-  InputChangeHandler,
-  LocationChangeHandler,
-  PaymentOptionChangeHandler,
-  BookingWizardState,
-  BookingAPIResponse,
-  PricingAPIResponse,
-  ValidationResult
-};
+// Types are already exported inline above

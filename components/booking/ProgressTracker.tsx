@@ -144,7 +144,7 @@ export default function ProgressTracker({
                 Step {currentStep + 1} of {totalSteps}
               </span>
               <Badge variant="secondary" className="text-xs">
-                {currentStepData.estimatedTime}
+                {currentStepData?.estimatedTime}
               </Badge>
             </div>
             <div className="text-right">
@@ -162,7 +162,7 @@ export default function ProgressTracker({
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-xs font-medium text-gray-600 bg-white px-2">
-                {currentStepData.shortTitle}
+                {currentStepData?.shortTitle}
               </span>
             </div>
           </div>
@@ -170,10 +170,10 @@ export default function ProgressTracker({
           {/* Mobile Step Info */}
           <div className="text-center">
             <h3 className="text-sm font-semibold text-gray-900 mb-1">
-              {currentStepData.mobileDescription}
+              {currentStepData?.mobileDescription}
             </h3>
             <p className="text-xs text-gray-600">
-              {currentStepData.description}
+              {currentStepData?.description}
             </p>
           </div>
 
@@ -207,15 +207,15 @@ export default function ProgressTracker({
             <div className="flex items-center space-x-4">
               <div>
                 <h2 className="text-xl font-semibold text-gray-900">
-                  {currentStepData.title}
+                  {currentStepData?.title}
                 </h2>
                 <p className="text-sm text-gray-600 mt-1">
-                  {currentStepData.description}
+                  {currentStepData?.description}
                 </p>
               </div>
               <div className="flex items-center space-x-2">
                 <Badge variant="outline" className="text-xs">
-                  {currentStepData.estimatedTime}
+                  {currentStepData?.estimatedTime}
                 </Badge>
                 <Badge variant="secondary" className="text-xs">
                   Step {currentStep + 1} of {totalSteps}
@@ -305,7 +305,7 @@ export default function ProgressTracker({
                 Pro Tips for This Step
               </h4>
               <ul className="text-sm text-blue-800 space-y-1">
-                {currentStepData.tips.map((tip, index) => (
+                {currentStepData?.tips?.map((tip, index) => (
                   <li key={index} className="flex items-start space-x-2">
                     <span className="text-blue-600 mt-0.5">•</span>
                     <span>{tip}</span>

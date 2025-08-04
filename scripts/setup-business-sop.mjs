@@ -272,7 +272,7 @@ async function updateBusinessSettings() {
 async function updateServiceAreas() {
   try {
     // Update primary service area
-    await prisma.serviceArea.upsert({
+    await prisma.service_areas.upsert({
       where: { name: 'Primary Service Area' },
       update: {
         zipCode: SOP_CONFIG.BASE_LOCATION,
@@ -291,7 +291,7 @@ async function updateServiceAreas() {
     });
     
     // Create/update extended service area
-    await prisma.serviceArea.upsert({
+    await prisma.service_areas.upsert({
       where: { name: 'Extended Service Area' },
       update: {
         zipCode: SOP_CONFIG.BASE_LOCATION,

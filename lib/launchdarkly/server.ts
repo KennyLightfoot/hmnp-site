@@ -3,7 +3,8 @@
  * This file is ONLY for server-side usage (API routes, server components)
  */
 
-import type { FeatureFlagKey, LDContext } from './config';
+import type { FeatureFlagKey } from './config';
+import type { LDContext } from 'launchdarkly-node-server-sdk';
 import { DEFAULT_FLAGS } from './config';
 
 // Environment configuration

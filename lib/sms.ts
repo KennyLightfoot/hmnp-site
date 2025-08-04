@@ -1,3 +1,5 @@
+import { getErrorMessage } from '@/lib/utils/error-utils';
+
 interface SmsArgs {
   to: string;
   body: string;
@@ -94,11 +96,11 @@ export async function sendSms({ to, body }: SmsArgs): Promise<GhlSmsApiResponse>
     };
 
   } catch (error: any) {
-    console.error('Error calling GHL SMS API:', error);
+    console.error('Error calling GHL SMS API:', getErrorMessage(error));
     return { 
       success: false, 
       error: 'Failed to make request to GHL SMS API.', 
-      details: error.message 
+      details: getErrorMessage(error) 
     };
   }
 }
@@ -143,7 +145,7 @@ export async function checkSmsConsent(email: string): Promise<boolean> {
       return false;
     }
   } catch (error: any) {
-    console.error(`Error checking SMS consent for ${email}: ${error.message}`, error);
+    console.error(`Error checking SMS consent for ${email}: ${getErrorMessage(error)}`, error);
     // In case of error (e.g., GHL API down), default to no consent to be safe.
     return false;
   }

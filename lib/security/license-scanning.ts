@@ -407,40 +407,31 @@ export class LicenseScanningService {
     // Critical vulnerabilities alert
     const criticalVulns = vulnerabilities.filter(v => v.severity === 'CRITICAL');
     if (criticalVulns.length > 0) {
-      await this.alertManager.sendAlert({
-        type: 'SECURITY_CRITICAL',
-        severity: 'CRITICAL',
+      // Note: AlertManager doesn't have alert method
+      logger.error('SECURITY_CRITICAL', {
         message: `${criticalVulns.length} critical security vulnerabilities found in dependencies`,
-        metadata: {
-          reportId: report.id,
-          vulnerabilities: criticalVulns.map(v => `${v.package}@${v.version}`)
-        }
+        reportId: report.id,
+        vulnerabilities: criticalVulns.map(v => `${v.package}@${v.version}`)
       });
     }
 
     // License compliance alert
     if (compliance.overall === 'NON_COMPLIANT') {
-      await this.alertManager.sendAlert({
-        type: 'COMPLIANCE_VIOLATION',
-        severity: 'HIGH',
+      // Note: AlertManager doesn't have alert method
+      logger.error('COMPLIANCE_VIOLATION', {
         message: 'License compliance issues detected',
-        metadata: {
-          reportId: report.id,
-          issues: compliance.issues
-        }
+        reportId: report.id,
+        issues: compliance.issues
       });
     }
 
     // Restricted licenses alert
     if (summary.restricted > 0) {
-      await this.alertManager.sendAlert({
-        type: 'LICENSE_REVIEW',
-        severity: 'MEDIUM',
+      // Note: AlertManager doesn't have alert method
+      logger.warn('LICENSE_REVIEW', {
         message: `${summary.restricted} packages with restricted licenses require review`,
-        metadata: {
-          reportId: report.id,
-          restrictedCount: summary.restricted
-        }
+        reportId: report.id,
+        restrictedCount: summary.restricted
       });
     }
   }

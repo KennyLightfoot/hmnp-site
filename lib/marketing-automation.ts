@@ -389,9 +389,9 @@ class MarketingAutomation {
       where: { id: customerId },
       include: {
         Booking_Booking_signerIdToUser: {
-          include: {
-            Service: true
-          },
+                  include: {
+          service: true
+        },
           orderBy: {
             createdAt: 'desc'
           }
@@ -403,16 +403,16 @@ class MarketingAutomation {
       throw new Error(`Customer ${customerId} not found`);
     }
 
-    const bookings = user.Booking_Booking_signerIdToUser || [];
+    const bookings = (user as any).Booking_Booking_signerIdToUser || [];
     
     return {
       user,
       bookings,
-      totalSpent: bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0),
+      totalSpent: bookings.reduce((sum: number, b: any) => sum + (b.priceAtBooking?.toNumber() || 0), 0),
       bookingCount: bookings.length,
       firstBookingDate: bookings.length > 0 ? bookings[bookings.length - 1].createdAt : null,
       lastBookingDate: bookings.length > 0 ? bookings[0].createdAt : null,
-      averageBookingValue: bookings.length > 0 ? bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0) / bookings.length : 0,
+      averageBookingValue: bookings.length > 0 ? bookings.reduce((sum: number, b: any) => sum + (b.priceAtBooking?.toNumber() || 0), 0) / bookings.length : 0,
       preferredServices: this.getPreferredServices(bookings)
     };
   }
@@ -585,7 +585,7 @@ class MarketingAutomation {
     
     bookings.forEach(booking => {
       const serviceName = booking.Service?.name || 'Unknown';
-      serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
+      (serviceCounts as any)[serviceName] = ((serviceCounts as any)[serviceName] || 0) + 1;
     });
     
     return Object.entries(serviceCounts)
@@ -679,7 +679,7 @@ class MarketingAutomation {
       'at-risk-churn': 32,
       'seasonal-users': 78
     };
-    return counts[segmentId] || 0;
+    return (counts as any)[segmentId] || 0;
   }
 
   private async getCampaignPerformance(campaignId: string): Promise<CampaignPerformance> {

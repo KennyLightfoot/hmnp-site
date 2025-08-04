@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 
 const prisma = new PrismaClient();
 
@@ -31,11 +32,11 @@ async function verifySync() {
     
     for (const tableTest of tableTests) {
       try {
-        const count = await prisma[tableTest.accessor].count();
+        const count = await (prisma as any)[tableTest.accessor].count();
         console.log(`✅ Table ${tableTest.name}: ${count} records`);
         results.schema.pass++;
       } catch (error) {
-        console.log(`❌ Table ${tableTest.name}: ${error.message}`);
+        console.log(`❌ Table ${tableTest.name}: ${getErrorMessage(error)}`);
         results.schema.fail++;
       }
     }
@@ -77,7 +78,7 @@ async function verifySync() {
           results.api.fail++;
         }
       } catch (error) {
-        console.log(`❌ ${endpoint}: ${error.message}`);
+        console.log(`❌ ${endpoint}: ${getErrorMessage(error)}`);
         results.api.fail++;
       }
     }

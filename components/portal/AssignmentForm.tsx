@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -79,7 +80,7 @@ export function AssignmentForm({ initialData, onSubmitSuccess }: AssignmentFormP
            .map(p => ({ id: p.id, name: p.name, email: p.email })); // Select only needed fields
         setPartners(partnerUsers);
       } catch (error) {
-        console.error("Failed to fetch partners:", error);
+        console.error("Failed to fetch partners:", getErrorMessage(error));
         toast({ variant: 'destructive', title: 'Error', description: 'Could not load partner list.' });
       }
     };
@@ -130,13 +131,13 @@ export function AssignmentForm({ initialData, onSubmitSuccess }: AssignmentFormP
        }
 
     } catch (error: any) {
-      console.error(`Assignment ${isEditing ? 'update' : 'creation'} error:`, error);
+      console.error(`Assignment ${isEditing ? 'update' : 'creation'} error:`, getErrorMessage(error));
       // Avoid setting form error if it's not a validation error
-      if (error.message !== 'Validation failed') {
+      if (getErrorMessage(error) !== 'Validation failed') {
           toast({
             variant: "destructive",
             title: `Error ${isEditing ? 'Updating' : 'Creating'} Assignment`,
-            description: error.message || 'An unexpected error occurred.',
+            description: getErrorMessage(error) || 'An unexpected error occurred.',
           });
       }
     } finally {

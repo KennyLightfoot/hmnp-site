@@ -327,13 +327,13 @@ class RedisClient {
 
       // Parse memory usage
       const memoryMatch = info.match(/used_memory:(\d+)/);
-      const memoryUsage = memoryMatch ? parseInt(memoryMatch[1]) : 0;
+      const memoryUsage = memoryMatch && memoryMatch[1] ? parseInt(memoryMatch[1]) : 0;
 
       // Parse hit rate
       const hitsMatch = stats.match(/keyspace_hits:(\d+)/);
       const missesMatch = stats.match(/keyspace_misses:(\d+)/);
-      const hits = hitsMatch ? parseInt(hitsMatch[1]) : 0;
-      const misses = missesMatch ? parseInt(missesMatch[1]) : 0;
+      const hits = hitsMatch && hitsMatch[1] ? parseInt(hitsMatch[1]) : 0;
+      const misses = missesMatch && missesMatch[1] ? parseInt(missesMatch[1]) : 0;
       const hitRate = hits + misses > 0 ? hits / (hits + misses) : 0;
 
       return {

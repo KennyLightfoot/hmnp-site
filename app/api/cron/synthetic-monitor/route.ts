@@ -7,6 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { headers } from 'next/headers';
 import { logger } from '@/lib/logger';
 
@@ -123,7 +124,7 @@ export async function GET(request: NextRequest) {
     const duration = Date.now() - startTime;
     
     logger.error('Synthetic monitoring failed', {
-      error: error instanceof Error ? error.message : String(error),
+      error: error instanceof Error ? getErrorMessage(error) : String(error),
       duration,
       stack: error instanceof Error ? error.stack : undefined
     });
@@ -242,9 +243,9 @@ async function runBookingFlow(): Promise<MonitoringResult> {
       name: 'Booking Flow',
       status: 'fail',
       duration: Date.now() - startTime,
-      message: `Booking flow error: ${error instanceof Error ? error.message : String(error)}`
+      message: `Booking flow error: ${error instanceof Error ? getErrorMessage(error) : String(error)}`
     });
-    errors.push(`Booking flow failed: ${error instanceof Error ? error.message : String(error)}`);
+    errors.push(`Booking flow failed: ${error instanceof Error ? getErrorMessage(error) : String(error)}`);
   }
 
   const failedChecks = checks.filter(c => c.status === 'fail');
@@ -340,8 +341,8 @@ async function checkEndpoint(
       name,
       status: 'fail',
       duration: Date.now() - startTime,
-      message: `Request failed: ${error instanceof Error ? error.message : String(error)}`,
-      details: { error: error instanceof Error ? error.message : String(error) }
+      message: `Request failed: ${error instanceof Error ? getErrorMessage(error) : String(error)}`,
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
   }
 }
@@ -370,7 +371,7 @@ async function checkDatabase(): Promise<HealthCheck> {
       name: 'Database',
       status: 'fail',
       duration: Date.now() - startTime,
-      message: `Database error: ${error.message}`
+      message: `Database error: ${getErrorMessage(error)}`
     };
   }
 }
@@ -402,7 +403,7 @@ async function checkRedis(): Promise<HealthCheck> {
       name: 'Redis',
       status: 'fail',
       duration: Date.now() - startTime,
-      message: `Redis error: ${error.message}`
+      message: `Redis error: ${getErrorMessage(error)}`
     };
   }
 }
@@ -446,7 +447,7 @@ async function checkStripeAPI(): Promise<HealthCheck> {
       name: 'Stripe API',
       status: 'fail',
       duration: Date.now() - startTime,
-      message: `Stripe error: ${error.message}`
+      message: `Stripe error: ${getErrorMessage(error)}`
     };
   }
 }
@@ -491,7 +492,7 @@ async function checkGoogleMapsAPI(): Promise<HealthCheck> {
       name: 'Google Maps API',
       status: 'fail',
       duration: Date.now() - startTime,
-      message: `Google Maps error: ${error.message}`
+      message: `Google Maps error: ${getErrorMessage(error)}`
     };
   }
 }
@@ -533,7 +534,7 @@ async function checkBookingPricing(bookingData: any): Promise<HealthCheck> {
       name: 'Booking Pricing',
       status: 'fail',
       duration: Date.now() - startTime,
-      message: `Pricing error: ${error.message}`
+      message: `Pricing error: ${getErrorMessage(error)}`
     };
   }
 }
@@ -576,7 +577,7 @@ async function checkSlotReservation(): Promise<HealthCheck> {
       name: 'Slot Reservation',
       status: 'fail',
       duration: Date.now() - startTime,
-      message: `Reservation error: ${error.message}`
+      message: `Reservation error: ${getErrorMessage(error)}`
     };
   }
 }
@@ -604,7 +605,7 @@ async function checkBookingValidation(bookingData: any): Promise<HealthCheck> {
       name: 'Booking Validation',
       status: 'fail',
       duration: Date.now() - startTime,
-      message: `Validation error: ${error.message}`
+      message: `Validation error: ${getErrorMessage(error)}`
     };
   }
 }
@@ -671,7 +672,7 @@ async function sendAlert(result: MonitoringResult): Promise<void> {
     });
 
   } catch (error) {
-    logger.error('Failed to send alert', { error: error.message });
+    logger.error('Failed to send alert', { error: getErrorMessage(error) });
   }
 }
 
@@ -697,7 +698,7 @@ async function sendCriticalAlert(error: Error): Promise<void> {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `The synthetic monitoring system has failed:\n\`\`\`${error.message}\`\`\``
+            text: `The synthetic monitoring system has failed:\n\`\`\`${getErrorMessage(error)}\`\`\``
           }
         }
       ]
@@ -710,7 +711,7 @@ async function sendCriticalAlert(error: Error): Promise<void> {
     });
 
   } catch (alertError) {
-    logger.error('Failed to send critical alert', { error: alertError.message });
+    logger.error('Failed to send critical alert', { error: getErrorMessage(alertError) });
   }
 }
 
@@ -747,7 +748,7 @@ async function sendMetrics(result: MonitoringResult): Promise<void> {
     });
 
   } catch (error) {
-    logger.error('Failed to send metrics', { error: error.message });
+    logger.error('Failed to send metrics', { error: getErrorMessage(error) });
   }
 }
 

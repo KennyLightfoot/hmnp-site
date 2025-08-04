@@ -458,7 +458,7 @@ function optimizeScrollBehavior(): void {
   const scrollableElements = document.querySelectorAll('.scrollable');
   scrollableElements.forEach(element => {
     const htmlElement = element as HTMLElement;
-    htmlElement.style.webkitOverflowScrolling = 'touch';
+    (htmlElement.style as any).webkitOverflowScrolling = 'touch';
   });
 }
 
@@ -467,12 +467,14 @@ function addSwipeGestures(): void {
   let startY = 0;
   
   document.addEventListener('touchstart', (e) => {
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
+    if (e.touches[0]) {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    }
   });
   
   document.addEventListener('touchmove', (e) => {
-    if (!startX || !startY) return;
+    if (!startX || !startY || !e.touches || !e.touches[0]) return;
     
     const diffX = startX - e.touches[0].clientX;
     const diffY = startY - e.touches[0].clientY;
@@ -519,11 +521,12 @@ export function monitorMobilePerformance(): void {
         const navigationEntry = entry as PerformanceNavigationTiming;
         
         // Send mobile performance data
+        const activationStart = navigationEntry.activationStart || 0;
         sendMobilePerformanceData({
           type: 'navigation',
-          loadTime: navigationEntry.loadEventEnd - navigationEntry.navigationStart,
-          domContentLoaded: navigationEntry.domContentLoadedEventEnd - navigationEntry.navigationStart,
-          firstPaint: navigationEntry.domContentLoadedEventEnd - navigationEntry.navigationStart,
+          loadTime: navigationEntry.loadEventEnd - activationStart,
+          domContentLoaded: navigationEntry.domContentLoadedEventEnd - activationStart,
+          firstPaint: navigationEntry.domContentLoadedEventEnd - activationStart,
           device: device,
           connectionType: device.connectionType
         });

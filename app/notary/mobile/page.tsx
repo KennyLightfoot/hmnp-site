@@ -33,7 +33,7 @@ interface MobileBooking {
   status: BookingStatus;
   service: {
     name: string;
-    duration: number;
+    durationMinutes: number;
   };
   finalPrice: number;
   notes?: string;

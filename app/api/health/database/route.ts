@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '@/lib/db';
 
 export async function GET() {
@@ -14,9 +15,9 @@ export async function GET() {
         users: await prisma.user.count(),
         bookings: await prisma.booking.count(),
         payments: await prisma.payment.count(),
-        securityAuditLog: await prisma.securityAuditLog.count(),
-        promoCodeUsage: await prisma.promoCodeUsage.count(),
-        stripeWebhookLog: await prisma.stripeWebhookLog.count(),
+    // TODO: securityAuditLog model does not exist in schema
+    // TODO: promoCodeUsage model does not exist in schema
+    // TODO: stripeWebhookLog model does not exist in schema
       },
       serviceData: {
         activeServices: await prisma.service.count({ where: { isActive: true } }),
@@ -34,7 +35,7 @@ export async function GET() {
           where: { status: 'CONFIRMED' } 
         }),
         withSecurityFlags: await prisma.booking.count({
-          where: { securityFlags: { not: null } }
+      // securityFlags: ..., // Property does not exist on Booking model
         })
       },
       businessSettings: {
@@ -60,13 +61,13 @@ export async function GET() {
 
     // Check for proper SOP pricing
     const standardNotary = requiredServices.find(s => 
-      s.serviceType === 'STANDARD_NOTARY' && s.basePrice?.toNumber() || 0 === 75
+      s.serviceType === 'STANDARD_NOTARY' && (s.basePrice?.toNumber() || 0) === 75
     );
     const extendedHours = requiredServices.find(s => 
-      s.serviceType === 'EXTENDED_HOURS_NOTARY' && s.basePrice?.toNumber() || 0 === 100
+      s.serviceType === 'EXTENDED_HOURS' && (s.basePrice?.toNumber() || 0) === 100
     );
     const loanSigning = requiredServices.find(s => 
-      s.serviceType === 'LOAN_SIGNING_SPECIALIST' && s.basePrice?.toNumber() || 0 === 150
+      s.serviceType === 'LOAN_SIGNING' && (s.basePrice?.toNumber() || 0) === 150
     );
 
     const compliance = {
@@ -76,7 +77,7 @@ export async function GET() {
       loanSigningCorrect: !!loanSigning,
       allServicesHaveDeposit: requiredServices.every(s => s.requiresDeposit),
       standardDepositAmount: requiredServices.every(s => 
-        s.depositAmount && s.depositAmount?.toNumber() || 0 === 25
+        s.depositAmount && (s.depositAmount?.toNumber() || 0) === 25
       )
     };
 
@@ -91,7 +92,7 @@ export async function GET() {
         ...(checks.tables.users === 0 ? ['⚠️ No users found - create admin user'] : []),
         ...(checks.businessSettings.bookingCategory === 0 ? ['⚠️ No booking settings - configure business hours'] : []),
         ...(!compliance.hasSopCompliantServices ? ['⚠️ Missing SOP-compliant services - run service setup'] : []),
-        ...(checks.tables.securityAuditLog === 0 ? ['ℹ️ No security events logged yet (normal for new system)'] : [])
+        // Note: securityAuditLog model not yet implemented
       ]
     });
 
@@ -101,7 +102,7 @@ export async function GET() {
     return NextResponse.json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
-      error: error instanceof Error ? error.message : String(error),
+      error: error instanceof Error ? getErrorMessage(error) : String(error),
       details: error instanceof Error ? error.stack : undefined
     }, { status: 500 });
   }

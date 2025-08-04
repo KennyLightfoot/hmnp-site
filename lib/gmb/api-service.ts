@@ -232,7 +232,7 @@ export class GMBAPIService {
       });
       return response;
     } catch (error) {
-      logger.error('Failed to create service completion post:', error);
+      logger.error('Failed to create service completion post:', error as any);
       throw error;
     }
   }
@@ -270,7 +270,7 @@ export class GMBAPIService {
       });
       return response;
     } catch (error) {
-      logger.error('Failed to create review thank you post:', error);
+      logger.error('Failed to create review thank you post:', error as any);
       throw error;
     }
   }
@@ -292,7 +292,7 @@ export class GMBAPIService {
       logger.info('GMB insights retrieved successfully');
       return response.data;
     } catch (error) {
-      logger.error('Failed to get GMB insights:', error);
+      logger.error('Failed to get GMB insights:', error as any);
       throw error;
     }
   }
@@ -315,7 +315,7 @@ export class GMBAPIService {
       
       return response.data.reviews || [];
     } catch (error) {
-      logger.error('Failed to get recent reviews:', error);
+      logger.error('Failed to get recent reviews:', error instanceof Error ? error : String(error));
       throw error;
     }
   }
@@ -340,7 +340,7 @@ export class GMBAPIService {
       
       return response.data;
     } catch (error) {
-      logger.error('Failed to reply to review:', error);
+      logger.error('Failed to reply to review:', error instanceof Error ? error : String(error));
       throw error;
     }
   }
@@ -359,7 +359,7 @@ export class GMBAPIService {
       
       return response.data;
     } catch (error) {
-      logger.error('Failed to create GMB post:', error);
+      logger.error('Failed to create GMB post:', error instanceof Error ? error : String(error));
       throw error;
     }
   }
@@ -387,7 +387,7 @@ export class GMBAPIService {
         websiteUrl: location.websiteUri || 'Website not available'
       };
     } catch (error) {
-      logger.error('Failed to get location info:', error);
+      logger.error('Failed to get location info:', error instanceof Error ? error : String(error));
       throw error;
     }
   }
@@ -402,7 +402,7 @@ export class GMBAPIService {
       logger.info('GMB API connection test successful');
       return true;
     } catch (error) {
-      logger.error('GMB API connection test failed:', error);
+      logger.error('GMB API connection test failed:', error instanceof Error ? error : String(error));
       return false;
     }
   }

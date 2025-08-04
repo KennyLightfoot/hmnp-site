@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
-import { calculateTotalPrice, DEFAULT_SERVICE_AREA_RADIUS } from "@/lib/pricing"
+import { PricingEngine } from "@/lib/pricing-engine"
 
 export default function ServiceCalculator() {
   const [serviceType, setServiceType] = useState("standard-notary")
@@ -30,7 +30,7 @@ export default function ServiceCalculator() {
   })
 
   // SOP COMPLIANT: Map service types to API service types
-  const mapServiceTypeToAPI = (serviceType: string): "STANDARD_NOTARY" | "EXTENDED_HOURS" | "LOAN_SIGNING" | "RON_SERVICES" | "SPECIALTY_NOTARY_SERVICE" | "BUSINESS_SOLUTIONS" | "SUPPORT_SERVICE" => {
+  const mapServiceTypeToAPI = (serviceType: string): "QUICK_STAMP_LOCAL" | "STANDARD_NOTARY" | "EXTENDED_HOURS" | "LOAN_SIGNING" | "RON_SERVICES" | "BUSINESS_ESSENTIALS" | "BUSINESS_GROWTH" => {
     switch (serviceType) {
       case "standard-notary":
         return "STANDARD_NOTARY"
@@ -41,11 +41,11 @@ export default function ServiceCalculator() {
       case "ron-services":
         return "RON_SERVICES"
       case "specialty-notary-service":
-        return "SPECIALTY_NOTARY_SERVICE"
+        return "STANDARD_NOTARY" // Map to standard notary
       case "business-solutions":
-        return "BUSINESS_SOLUTIONS"
+        return "BUSINESS_ESSENTIALS" // Map to business essentials
       case "support-service":
-        return "SUPPORT_SERVICE"
+        return "STANDARD_NOTARY" // Map to standard notary
       default:
         return "STANDARD_NOTARY"
     }
@@ -54,18 +54,53 @@ export default function ServiceCalculator() {
   // Calculate pricing whenever inputs change
   useEffect(() => {
     const apiServiceType = mapServiceTypeToAPI(serviceType)
-    const newPricing = calculateTotalPrice({
+    const pricingEngine = new PricingEngine()
+    
+    // Create a mock location for now - in real app this would come from user input
+    const mockLocation = {
+      address: "Houston, TX",
+      latitude: 29.7604,
+      longitude: -95.3698
+    }
+    
+    // Create scheduled date time (next business day at 2pm)
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    tomorrow.setHours(14, 0, 0, 0)
+    const scheduledDateTime = tomorrow.toISOString()
+    
+    pricingEngine.calculateBookingPrice({
       serviceType: apiServiceType,
-      numberOfSigners,
-      distance,
-      isWeekend,
-      isHoliday,
-      isAfterHours,
-      extraDocuments,
-      needsOvernightHandling,
-      needsBilingualService,
+      location: mockLocation,
+      scheduledDateTime,
+      documentCount: extraDocuments + 1, // At least 1 document
+      signerCount: numberOfSigners,
+      options: {
+        priority: isAfterHours,
+        sameDay: false,
+        weatherAlert: false
+      }
+    }).then(result => {
+      setPricing({
+        price: result.basePrice,
+        discount: result.discounts,
+        finalPrice: result.total,
+        promoCodeDiscount: 0, // Would come from promo code input
+        depositAmount: Math.round(result.total * 0.25), // 25% deposit
+        depositRequired: result.total > 100,
+      })
+    }).catch(error => {
+      console.error('Pricing calculation failed:', error)
+      // Set default pricing on error
+      setPricing({
+        price: 75,
+        discount: 0,
+        finalPrice: 75,
+        promoCodeDiscount: 0,
+        depositAmount: 19,
+        depositRequired: false,
+      })
     })
-    setPricing(newPricing)
   }, [
     serviceType,
     numberOfSigners,
@@ -169,12 +204,12 @@ export default function ServiceCalculator() {
               max={50}
               step={1}
               value={[distance]}
-              onValueChange={(value: number[]) => setDistance(value[0])}
+              onValueChange={(value: number[]) => setDistance(value[0] || 10)}
               className="py-4"
             />
             <div className="flex justify-between text-xs text-gray-500">
               <span>1 mile</span>
-              <span className="text-[#A52A2A]">{DEFAULT_SERVICE_AREA_RADIUS} miles (free service area)</span>
+              <span className="text-[#A52A2A]">20 miles (free service area)</span>
               <span>50 miles</span>
             </div>
           </div>
@@ -281,56 +316,10 @@ export default function ServiceCalculator() {
               <span className="font-medium">${pricing.price.toFixed(2)}</span>
             </div>
 
-            {pricing.extraSignersFee > 0 && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">Additional Signers Fee:</span>
-                <span className="font-medium">${pricing.extraSignersFee.toFixed(2)}</span>
-              </div>
-            )}
-
-            {pricing.travelFee > 0 && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">
-                  Travel Fee ({distance - DEFAULT_SERVICE_AREA_RADIUS} miles beyond 15-mile base radius from ZIP 77591):
-                </span>
-                <span className="font-medium">${pricing.travelFee.toFixed(2)}</span>
-              </div>
-            )}
-
-            {pricing.weekendHolidayFee > 0 && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">
-                  {isWeekend && isHoliday ? "Weekend & Holiday" : isWeekend ? "Weekend" : "Holiday"} Fee:
-                </span>
-                <span className="font-medium">${pricing.weekendHolidayFee.toFixed(2)}</span>
-              </div>
-            )}
-
-            {pricing.afterHoursFee > 0 && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">After Hours Fee:</span>
-                <span className="font-medium">${pricing.afterHoursFee.toFixed(2)}</span>
-              </div>
-            )}
-
-            {pricing.extraDocumentsFee > 0 && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">Extra Documents Fee ({extraDocuments} documents):</span>
-                <span className="font-medium">${pricing.extraDocumentsFee.toFixed(2)}</span>
-              </div>
-            )}
-
-            {pricing.overnightHandlingFee > 0 && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">Overnight Document Handling:</span>
-                <span className="font-medium">${pricing.overnightHandlingFee.toFixed(2)}</span>
-              </div>
-            )}
-
-            {pricing.bilingualFee > 0 && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">Bilingual Service Fee:</span>
-                <span className="font-medium">${pricing.bilingualFee.toFixed(2)}</span>
+            {pricing.discount > 0 && (
+              <div className="flex justify-between text-green-600">
+                <span>Discount:</span>
+                <span className="font-medium">-${pricing.discount.toFixed(2)}</span>
               </div>
             )}
 

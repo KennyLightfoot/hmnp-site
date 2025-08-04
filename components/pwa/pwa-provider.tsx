@@ -79,6 +79,7 @@ export function PWAProvider({ children }: { children: ReactNode }) {
         clearInterval(interval);
       };
     }
+    return undefined;
   }, []);
 
   const contextValue: PWAContextType = {

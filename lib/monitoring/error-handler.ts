@@ -6,6 +6,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { randomUUID } from 'crypto';
 
 // Initialize Prisma client
@@ -107,7 +108,7 @@ class ErrorMonitor {
       const isAppError = error instanceof AppError;
       const errorDetails = {
         id: errorId,
-        message: error.message,
+        message: getErrorMessage(error),
         stack: error.stack || '',
         code: isAppError ? error.code : 'UNKNOWN_ERROR',
         severity: isAppError ? error.severity : ErrorSeverity.MEDIUM,
@@ -141,7 +142,7 @@ class ErrorMonitor {
 
     } catch (loggingError) {
       console.error('[ERROR MONITOR] Failed to log error:', loggingError);
-      console.error('[ERROR MONITOR] Original error:', error);
+      console.error('[ERROR MONITOR] Original error:', getErrorMessage(error));
       return errorId;
     }
   }
@@ -304,7 +305,7 @@ export async function handleAPIError(
   
   if (error instanceof AppError) {
     return {
-      error: error.message,
+      error: getErrorMessage(error),
       requestId: errorId,
       statusCode: error.statusCode
     };
@@ -336,7 +337,7 @@ export async function retryWithBackoff<T>(
       
       // Log retry attempt
       if (attempt < maxAttempts) {
-        console.log(`[RETRY] Attempt ${attempt}/${maxAttempts} failed, retrying in ${baseDelay * attempt}ms:`, error.message);
+        console.log(`[RETRY] Attempt ${attempt}/${maxAttempts} failed, retrying in ${baseDelay * attempt}ms:`, getErrorMessage(error));
         await new Promise(resolve => setTimeout(resolve, baseDelay * attempt));
       }
     }

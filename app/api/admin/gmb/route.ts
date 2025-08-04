@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { gmbService } from '@/lib/gmb/api-service';
 import { gmbAutomation } from '@/lib/gmb/automation-service';
 import { logger } from '@/lib/logger';
@@ -97,7 +98,7 @@ export async function GET(request: NextRequest) {
     logger.error('GMB admin API error:', error instanceof Error ? error : String(error));
     return NextResponse.json({
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
     }, { status: 500 });
   }
 }
@@ -183,7 +184,7 @@ export async function POST(request: NextRequest) {
     logger.error('GMB admin POST error:', error instanceof Error ? error : new Error(String(error)));
     return NextResponse.json({
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
     }, { status: 500 });
   }
 }
@@ -221,7 +222,7 @@ export async function PUT(request: NextRequest) {
     logger.error('GMB admin PUT error:', error instanceof Error ? error : new Error(String(error)));
     return NextResponse.json({
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
     }, { status: 500 });
   }
 }
@@ -256,7 +257,7 @@ export async function DELETE(request: NextRequest) {
     logger.error('GMB admin DELETE error:', error instanceof Error ? error : new Error(String(error)));
     return NextResponse.json({
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
     }, { status: 500 });
   }
 } 

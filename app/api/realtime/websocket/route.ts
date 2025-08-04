@@ -4,6 +4,7 @@
  */
 
 import { NextRequest } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { webSocketManager } from '@/lib/realtime/websocket-manager';
 import { logger } from '@/lib/logger';
 
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
     return new Response('WebSocket upgrade initiated', { status: 200 });
     
   } catch (error) {
-    logger.error('WebSocket route error', { error: error instanceof Error ? error.message : String(error) });
+    logger.error('WebSocket route error', { error: error instanceof Error ? getErrorMessage(error) : String(error) });
     return new Response('WebSocket error', { status: 500 });
   }
 }

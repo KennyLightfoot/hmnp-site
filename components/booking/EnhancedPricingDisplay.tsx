@@ -268,7 +268,7 @@ export function EnhancedPricingDisplay({
               <div className="text-sm text-blue-700">
                 Total Price - No Hidden Fees
               </div>
-              {businessRules?.discountsApplied.length > 0 && (
+              {businessRules?.discountsApplied && businessRules.discountsApplied.length > 0 && (
                 <div className="mt-2">
                   <Badge variant="outline" className="text-green-600 border-green-600">
                     <CheckCircle className="h-3 w-3 mr-1" />
@@ -423,7 +423,7 @@ export function EnhancedPricingDisplay({
                     {businessRules.serviceAreaZone.replace(/_/g, ' ')}
                   </Badge>
                 </div>
-                {businessRules.discountsApplied.length > 0 && (
+                {businessRules.discountsApplied?.length > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Discounts:</span>
                     <span className="text-green-600 font-medium">

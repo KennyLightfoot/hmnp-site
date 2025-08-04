@@ -5,7 +5,7 @@
  * Provides real-time slot availability updates and collaborative booking prevention
  */
 
-import { WebSocketServer } from 'ws';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { redis } from '../redis';
 import { logger } from '../logger';
 import { z } from 'zod';
@@ -69,7 +69,7 @@ export interface RealtimeSlotUpdate {
  * WebSocket Manager for Real-time Slot Availability
  */
 export class WebSocketManager {
-  private wss: WebSocketServer | null = null;
+  private wss: any | null = null; // Changed type to any
   private clients: Map<string, any> = new Map();
   private subscriptions: Map<string, Set<string>> = new Map();
   private slotViewers: Map<string, Set<string>> = new Map();
@@ -81,9 +81,11 @@ export class WebSocketManager {
    */
   async initialize(server: any): Promise<void> {
     try {
+      // Use dynamic import for 'ws'
+      const { WebSocketServer } = await import('ws');
       this.wss = new WebSocketServer({ server });
       
-      this.wss.on('connection', (ws, req) => {
+      this.wss.on('connection', (ws: any, req: any) => {
         const sessionId = this.generateSessionId();
         
         // Store client connection
@@ -99,12 +101,12 @@ export class WebSocketManager {
         logger.info('WebSocket client connected', { sessionId });
 
         // Handle client messages
-        ws.on('message', async (message) => {
+        ws.on('message', async (message: any) => {
           try {
             const parsed = JSON.parse(message.toString());
             await this.handleClientMessage(sessionId, parsed);
           } catch (error) {
-            logger.error('Invalid WebSocket message', { sessionId, error: error.message });
+            logger.error('Invalid WebSocket message', { sessionId, error: getErrorMessage(error) });
             this.sendError(sessionId, 'Invalid message format');
           }
         });
@@ -115,8 +117,8 @@ export class WebSocketManager {
         });
 
         // Handle errors
-        ws.on('error', (error) => {
-          logger.error('WebSocket error', { sessionId, error: error.message });
+        ws.on('error', (error: any) => {
+          logger.error('WebSocket error', { sessionId, error: getErrorMessage(error) });
           this.handleClientDisconnect(sessionId);
         });
       });
@@ -129,7 +131,7 @@ export class WebSocketManager {
       
       logger.info('WebSocket server initialized');
     } catch (error) {
-      logger.error('Failed to initialize WebSocket server', { error: error.message });
+      logger.error('Failed to initialize WebSocket server', { error: getErrorMessage(error) });
       throw error;
     }
   }
@@ -169,7 +171,7 @@ export class WebSocketManager {
           this.sendError(sessionId, 'Unknown message type');
       }
     } catch (error) {
-      logger.error('Error handling client message', { sessionId, error: error.message });
+      logger.error('Error handling client message', { sessionId, error: getErrorMessage(error) });
       this.sendError(sessionId, 'Message processing error');
     }
   }
@@ -340,7 +342,7 @@ export class WebSocketManager {
     try {
       client.ws.send(JSON.stringify(message));
     } catch (error) {
-      logger.error('Failed to send WebSocket message', { sessionId, error: error.message });
+      logger.error('Failed to send WebSocket message', { sessionId, error: getErrorMessage(error) });
       this.handleClientDisconnect(sessionId);
     }
   }
@@ -421,21 +423,21 @@ export class WebSocketManager {
   private async subscribeToRedisUpdates(): Promise<void> {
     try {
       // Subscribe to slot reservation updates
-      const subscriber = redis.duplicate();
+      const subscriber = (redis as any).duplicate();
       await subscriber.subscribe('slot_updates');
       
-      subscriber.on('message', async (channel, message) => {
+      subscriber.on('message', async (channel: any, message: any) => {
         try {
           const update = JSON.parse(message);
           await this.broadcastSlotUpdate(update);
         } catch (error) {
-          logger.error('Failed to process Redis update', { channel, error: error.message });
+          logger.error('Failed to process Redis update', { channel, error: getErrorMessage(error) });
         }
       });
       
       logger.info('Subscribed to Redis slot updates');
     } catch (error) {
-      logger.error('Failed to subscribe to Redis updates', { error: error.message });
+      logger.error('Failed to subscribe to Redis updates', { error: getErrorMessage(error) });
     }
   }
 

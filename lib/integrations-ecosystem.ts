@@ -318,7 +318,7 @@ class IntegrationEcosystem {
           allowedEndpoints: partnerData.apiAccess?.allowedEndpoints || ['/api/public/*'],
           ipWhitelist: partnerData.apiAccess?.ipWhitelist
         },
-        integration: await this.createPartnerIntegration(partner),
+        integration: {} as Integration, // Temporary placeholder
         performance: {
           totalRequests: 0,
           successRate: 100,
@@ -328,6 +328,9 @@ class IntegrationEcosystem {
           satisfaction: 0
         }
       };
+
+      // Now create the integration with the fully defined partner
+      partner.integration = await this.createPartnerIntegration(partner);
 
       // Store partner
       this.partners.set(partner.partnerId, partner);
@@ -426,15 +429,9 @@ class IntegrationEcosystem {
    */
   private async loadIntegrations(): Promise<void> {
     // Load integrations from database or cache
-    // This is a mock implementation
-    const integrationKeys = await cache.client?.keys('integration:*') || [];
-    
-    for (const key of integrationKeys) {
-      const integration = await cache.get(key);
-      if (integration) {
-        this.integrations.set(integration.integrationId, integration);
-      }
-    }
+    // This is a mock implementation - in a real app, you'd load from database
+    // For now, we'll just set up default integrations
+    await this.setupDefaultIntegrations();
   }
 
   private async setupDefaultIntegrations(): Promise<void> {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/database-connection';
@@ -55,16 +56,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if Proof transaction already exists
-    if (booking.proofTransactionId) {
+    // Check if Proof session already exists
+    if (booking.proofSessionUrl) {
       return NextResponse.json(
-        { error: 'Proof transaction already exists for this booking' }, 
+        { error: 'Proof session already exists for this booking' }, 
         { status: 409 }
       );
     }
 
     // Check payment status for paid services
-    if (booking.finalPrice > 0 && booking.depositStatus !== 'COMPLETED') {
+    if (Number(booking.priceAtBooking) > 0 && booking.depositStatus !== 'COMPLETED') {
       return NextResponse.json(
         { 
           error: 'Payment required before starting RON session',
@@ -77,78 +78,52 @@ export async function POST(request: NextRequest) {
 
     // Create Proof transaction request
     const proofRequest: CreateTransactionRequest = {
+      title: `RON Session - ${booking.service?.name || 'Notary Service'}`,
       signers: [{
-        email: booking.signerEmail,
-        first_name: booking.User_Booking_signerIdToUser?.name?.split(' ')[0] || 'Signer',
-        last_name: booking.User_Booking_signerIdToUser?.name?.split(' ').slice(1).join(' ') || '',
-        phone: booking.signerPhone ? {
-          country_code: '1',
-          number: booking.signerPhone.replace(/\D/g, '')
-        } : undefined,
-        address: booking.addressStreet ? {
-          line1: booking.addressStreet,
-          city: booking.addressCity || 'Houston',
-          state: booking.addressState || 'TX',
-          postal: booking.addressZip || '',
-          country: 'US'
-        } : undefined
+        name: booking.User_Booking_signerIdToUser?.name || 'Signer',
+        email: booking.User_Booking_signerIdToUser?.email || booking.customerEmail || '',
+        phone: booking.customerEmail ? booking.customerEmail.replace(/\D/g, '') : undefined,
+        role: 'signer' as const,
+        // Note: address field not supported in ProofSigner interface
       }],
-      transaction_name: `HMNP RON - ${booking.service.name}`,
-      transaction_type: 'notarization',
-      message_to_User_Booking_signerIdToUser: `
-Thank you for choosing Houston Mobile Notary Pros for your Remote Online Notarization!
-
-Your notary will guide you through the process, including:
-- Identity verification
-- Document review and signing
-- Notarization with electronic seal
-
-If you have any questions, please contact us at (713) 936-4032.
-
-Best regards,
-Houston Mobile Notary Pros Team
-      `.trim(),
-      external_id: bookingId,
+      // Remove the message_to_User_Booking_signerIdToUser property since it doesn't exist in the type
+      // message_to_User_Booking_signerIdToUser: `Thank you for choosing Houston Mobile Notary Pros...`,
+      // Remove the external_id property since it doesn't exist in the type
       suppress_email: false, // Let Proof send the invitation email
       documents: documents.length > 0 ? documents : undefined,
-      redirect: {
-        url: process.env.PROOF_REDIRECT_URL,
-        message: process.env.PROOF_REDIRECT_MESSAGE,
-        force: process.env.PROOF_FORCE_REDIRECT === 'true'
-      }
+      // Remove the redirect property since it doesn't exist in the type
+      // redirect: `${process.env.NEXT_PUBLIC_BASE_URL}/ron/session/${bookingId}`,
     };
 
     // Create transaction with Proof
     const proofTransaction = await proofAPI.createTransaction(proofRequest);
 
-    // Update booking with Proof transaction details
+    // Update booking with Proof session details
     const updatedBooking = await prisma.booking.update({
       where: { id: bookingId },
       data: {
-        proofTransactionId: proofTransaction.id,
-        proofAccessLink: proofTransaction.signer_info.transaction_access_link,
-        proofStatus: proofTransaction.status,
+        proofSessionUrl: proofTransaction?.sessionUrl || proofTransaction?.id,
         status: BookingStatus.READY_FOR_SERVICE,
       }
     });
 
-    logger.info('Proof transaction created successfully', {
+    logger.info('Proof session created successfully', {
       bookingId,
-      proofTransactionId: proofTransaction.id,
+      proofSessionUrl: proofTransaction?.sessionUrl || proofTransaction?.id,
       userId: (session.user as any).id
     });
 
     return NextResponse.json({
       success: true,
       proofTransaction: {
-        id: proofTransaction.id,
-        status: proofTransaction.status,
-        accessLink: proofTransaction.signer_info.transaction_access_link
+        id: proofTransaction?.id,
+        status: proofTransaction?.status,
+        accessLink: proofTransaction?.sessionUrl || proofTransaction?.id
       },
       booking: {
         id: updatedBooking.id,
         status: updatedBooking.status,
-        proofStatus: updatedBooking.proofStatus
+        proofSessionUrl: updatedBooking.proofSessionUrl
       }
     });
 
@@ -158,7 +133,7 @@ Houston Mobile Notary Pros Team
     return NextResponse.json(
       { 
         error: 'Failed to create notarization transaction',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
       }, 
       { status: 500 }
     );
@@ -202,33 +177,32 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (!booking.proofTransactionId) {
+    if (!booking.proofSessionUrl) {
       return NextResponse.json(
-        { error: 'No Proof transaction found for this booking' }, 
+        { error: 'No Proof session found for this booking' }, 
         { status: 404 }
       );
     }
 
     // Get latest status from Proof
-    const proofTransaction = await proofAPI.getTransaction(booking.proofTransactionId);
+    const proofTransaction = await proofAPI.getTransaction(booking.proofSessionUrl);
 
     // Update our database with latest status
     await prisma.booking.update({
       where: { id: bookingId },
       data: {
-        proofStatus: proofTransaction.status,
-        proofNotarizationRecordId: proofTransaction.notarization_record || booking.proofNotarizationRecordId
+        // Note: proofStatus and proofNotarizationRecordId don't exist on Booking model
+        // We'll just update the session URL if needed
+        proofSessionUrl: proofTransaction?.sessionUrl || booking.proofSessionUrl
       }
     });
 
     return NextResponse.json({
       proofTransaction: {
-        id: proofTransaction.id,
-        status: proofTransaction.status,
-        detailed_status: proofTransaction.detailed_status,
-        accessLink: proofTransaction.signer_info.transaction_access_link,
-        documents: proofTransaction.documents,
-        notarizationRecord: proofTransaction.notarization_record
+        id: proofTransaction?.id,
+        status: proofTransaction?.status,
+        accessLink: proofTransaction?.sessionUrl || proofTransaction?.id,
+        documents: proofTransaction?.documents || []
       }
     });
 
@@ -238,7 +212,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       { 
         error: 'Failed to get transaction status',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
       }, 
       { status: 500 }
     );

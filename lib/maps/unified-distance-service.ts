@@ -20,6 +20,7 @@ import {
 } from '@/lib/config/maps';
 
 import { calculateDistanceWithCache, CachedDistanceResult } from './distance';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -284,7 +285,7 @@ export class UnifiedDistanceService {
       const duration = Date.now() - startTime;
       const errorDetails = {
         input: input.substring(0, 20) + '...',
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorMessage: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
         errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
         duration: `${duration}ms`,
         requestId,

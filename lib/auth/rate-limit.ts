@@ -49,11 +49,11 @@ export class RateLimitService {
 
     try {
       // Clean old entries and get current count
-      await redis.zremrangebyscore(key, 0, windowStart);
-      const currentCount = await redis.zcard(key);
+      await (redis as any).zremrangebyscore(key, 0, windowStart);
+      const currentCount = await (redis as any).zcard(key);
 
       // Check if blocked (for brute force protection)
-      if (config.blockDurationMs) {
+      if ((config as any).blockDurationMs) {
         const blockKey = `blocked:${endpoint}:${identifier}`;
         const isBlocked = await redis.get(blockKey);
         
@@ -71,12 +71,12 @@ export class RateLimitService {
       // Check rate limit
       if (currentCount >= config.maxAttempts) {
         // If brute force protection enabled, block the identifier
-        if (config.blockDurationMs) {
+        if ((config as any).blockDurationMs) {
           const blockKey = `blocked:${endpoint}:${identifier}`;
-          await redis.setex(blockKey, Math.floor(config.blockDurationMs / 1000), '1');
+          await redis.setex(blockKey, Math.floor((config as any).blockDurationMs / 1000), '1');
         }
 
-        const oldestEntry = await redis.zrange(key, 0, 0, 'WITHSCORES');
+        const oldestEntry = await (redis as any).zrange(key, 0, 0, 'WITHSCORES');
         const resetTime = oldestEntry.length > 0 ? 
           parseInt(oldestEntry[1] as string) + config.windowMs : 
           now + config.windowMs;
@@ -90,7 +90,7 @@ export class RateLimitService {
       }
 
       // Add current attempt
-      await redis.zadd(key, now, `${now}_${Math.random()}`);
+      await (redis as any).zadd(key, now, `${now}_${Math.random()}`);
       await redis.expire(key, Math.floor(config.windowMs / 1000));
 
       return {
@@ -166,11 +166,11 @@ export class RateLimitService {
     const windowStart = now - config.windowMs;
 
     // Clean old entries
-    await redis.zremrangebyscore(key, 0, windowStart);
-    const count = await redis.zcard(key);
-    const blocked = await redis.exists(blockKey) === 1;
+    await (redis as any).zremrangebyscore(key, 0, windowStart);
+    const count = await (redis as any).zcard(key);
+    const blocked = await redis.exists(blockKey) === true;
     
-    const oldestEntry = await redis.zrange(key, 0, 0, 'WITHSCORES');
+    const oldestEntry = await (redis as any).zrange(key, 0, 0, 'WITHSCORES');
     const resetTime = oldestEntry.length > 0 ? 
       parseInt(oldestEntry[1] as string) + config.windowMs : 
       now + config.windowMs;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { logger } from '@/lib/logger';
 import { format, addDays, startOfDay, endOfDay, parseISO, isToday, addHours } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
@@ -123,7 +124,7 @@ export default function UnifiedBookingCalendar({
       const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       setUserTimezone(detectedTimezone);
     } catch (error) {
-      logger.warn('Could not detect timezone', 'CALENDAR', { error: error instanceof Error ? error.message : 'Unknown error' });
+      logger.warn('Could not detect timezone', 'CALENDAR', { error: error instanceof Error ? getErrorMessage(error) : 'Unknown error' });
       setUserTimezone('America/Chicago'); // Fallback
     }
   }, []);
@@ -137,7 +138,7 @@ export default function UnifiedBookingCalendar({
         if (!bookingsMap[booking.date]) {
           bookingsMap[booking.date] = [];
         }
-        bookingsMap[booking.date] = [...bookingsMap[booking.date], ...booking.times];
+        bookingsMap[booking.date] = [...(bookingsMap[booking.date] || []), ...booking.times];
       });
       
       setBookedDateMap(bookingsMap);
@@ -154,7 +155,7 @@ export default function UnifiedBookingCalendar({
       try {
         return getCalendarIdForService('STANDARD_NOTARY');
       } catch (error) {
-        console.error('Failed to get fallback calendar ID:', error);
+        console.error('Failed to get fallback calendar ID:', getErrorMessage(error));
         return 'r9koQ0kxmuMuWryZkjdo'; // Ultimate fallback
       }
     }
@@ -187,7 +188,7 @@ export default function UnifiedBookingCalendar({
     } catch (error) {
       logger.error('Failed to get calendar ID for service', 'CALENDAR', { 
         serviceType, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+        error: error instanceof Error ? getErrorMessage(error) : 'Unknown error' 
       });
       // Return hardcoded fallback only if environment mapping fails
       return 'r9koQ0kxmuMuWryZkjdo';
@@ -354,8 +355,8 @@ export default function UnifiedBookingCalendar({
       }
       
     } catch (error) {
-      console.error('Error fetching availability:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load availability';
+      console.error('Error fetching availability:', getErrorMessage(error));
+      const errorMessage = error instanceof Error ? getErrorMessage(error) : 'Failed to load availability';
       setError(errorMessage);
       
       if (variant !== 'compact') {
@@ -437,7 +438,7 @@ export default function UnifiedBookingCalendar({
     
     // Check if fully booked
     const dateString = format(date, 'yyyy-MM-dd');
-    if (bookedDateMap[dateString]?.length >= 8) return true;
+    if (bookedDateMap[dateString] && bookedDateMap[dateString].length >= 8) return true;
     
     return false;
   };
@@ -447,11 +448,13 @@ export default function UnifiedBookingCalendar({
    */
   const formatTimeDisplay = (time: string) => {
     try {
-      const [hours, minutes] = time.split(':');
-      const hour = parseInt(hours);
+      const parts = time.split(':');
+      if (parts.length < 2) return time;
+      const [hours, minutes] = parts;
+      const hour = parseInt(hours || '0');
       const ampm = hour >= 12 ? 'PM' : 'AM';
       const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-      return `${displayHour}:${minutes} ${ampm}`;
+      return `${displayHour}:${minutes || '00'} ${ampm}`;
     } catch {
       return time; // Fallback to original if parsing fails
     }

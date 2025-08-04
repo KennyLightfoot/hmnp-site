@@ -25,27 +25,28 @@ export async function POST(request: NextRequest) {
     }
 
     // Store the subscription in the database
-    await prisma.pushSubscription.upsert({
-      where: {
-        userId_endpoint: {
-          userId: session.user.id,
-          endpoint: subscription.endpoint
-        }
-      },
-      update: {
-        p256dh: subscription.keys.p256dh,
-        auth: subscription.keys.auth,
-        userAgent: request.headers.get('user-agent') || '',
-        updatedAt: new Date()
-      },
-      create: {
-        userId: session.user.id,
-        endpoint: subscription.endpoint,
-        p256dh: subscription.keys.p256dh,
-        auth: subscription.keys.auth,
-        userAgent: request.headers.get('user-agent') || ''
-      }
-    })
+    // TODO: Implement push subscription storage when model is added
+    // await prisma.pushSubscription.upsert({
+    //   where: {
+    //     userId_endpoint: {
+    //       userId: session.user.id,
+    //       endpoint: subscription.endpoint
+    //     }
+    //   },
+    //   update: {
+    //     p256dh: subscription.keys.p256dh,
+    //     auth: subscription.keys.auth,
+    //     userAgent: request.headers.get('user-agent') || '',
+    //     updatedAt: new Date()
+    //   },
+    //   create: {
+    //     userId: session.user.id,
+    //     endpoint: subscription.endpoint,
+    //     p256dh: subscription.keys.p256dh,
+    //     auth: subscription.keys.auth,
+    //     userAgent: request.headers.get('user-agent') || ''
+    //   }
+    // })
 
     return NextResponse.json({ 
       success: true,

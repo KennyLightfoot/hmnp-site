@@ -257,9 +257,9 @@ export class PWAManager {
     
     if (permission === 'granted' && this.registration) {
       await this.registration.showNotification(title, {
+        body: options.body,
         icon: '/icons/icon-192x192.svg',
         badge: '/icons/icon-72x72.svg',
-        vibrate: [100, 50, 100],
         ...options
       });
     }
@@ -305,7 +305,7 @@ export class PWAManager {
   /**
    * Private: Handle online status changes
    */
-  private async handleOnlineStatusChange(isOnline: boolean): void {
+  private handleOnlineStatusChange(isOnline: boolean): void {
     if (isOnline) {
       // Try to sync offline bookings
       setTimeout(() => {

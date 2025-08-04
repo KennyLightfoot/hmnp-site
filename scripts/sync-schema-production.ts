@@ -1,4 +1,5 @@
 import { execSync } from 'child_process';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import fs from 'fs';
 
 async function syncSchemaToProduction() {
@@ -25,7 +26,7 @@ async function syncSchemaToProduction() {
       });
       console.log('✅ Production schema pulled successfully');
     } catch (pullError) {
-      console.log('❌ Schema pull failed:', pullError.message);
+      console.log('❌ Schema pull failed:', getErrorMessage(pullError));
       throw new Error('Cannot pull production schema - check DATABASE_URL and permissions');
     }
 
@@ -38,7 +39,7 @@ async function syncSchemaToProduction() {
       });
       console.log('✅ Prisma client generated successfully');
     } catch (generateError) {
-      console.log('❌ Client generation failed:', generateError.message);
+      console.log('❌ Client generation failed:', getErrorMessage(generateError));
       throw new Error('Prisma client generation failed');
     }
 
@@ -67,7 +68,7 @@ async function syncSchemaToProduction() {
         console.log('✅ All migrations up to date');
       }
     } catch (migrationError) {
-      console.log('⚠️ Migration check failed:', migrationError.message);
+      console.log('⚠️ Migration check failed:', getErrorMessage(migrationError));
       console.log('Manual migration review may be needed');
     }
 
@@ -96,7 +97,7 @@ async function syncSchemaToProduction() {
     console.log('3. Run: npm run build to ensure everything compiles');
 
   } catch (error) {
-    console.error('\n💥 SCHEMA SYNCHRONIZATION FAILED:', error.message);
+    console.error('\n💥 SCHEMA SYNCHRONIZATION FAILED:', error instanceof Error ? getErrorMessage(error) : String(error));
     console.log('\nRecovery steps:');
     console.log('1. Check DATABASE_URL environment variable');
     console.log('2. Verify database permissions');
@@ -124,12 +125,12 @@ async function verifySchemaIntegrity() {
         await test.query();
         console.log(`✅ ${test.name}: OK`);
       } catch (error) {
-        console.log(`❌ ${test.name}: ${error.message}`);
+        console.log(`❌ ${test.name}: ${getErrorMessage(error)}`);
       }
     }
 
   } catch (error) {
-    console.log('❌ Schema integrity check failed:', error.message);
+    console.log('❌ Schema integrity check failed:', error instanceof Error ? getErrorMessage(error) : String(error));
   } finally {
     await prisma.$disconnect();
   }

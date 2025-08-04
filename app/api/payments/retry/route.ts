@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { paymentRetryService } from '@/lib/payments/payment-retry-service';
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
     const { paymentId, bookingId, reason, forceRetry } = PaymentRetryRequestSchema.parse(body);
 
     // Check if user has permission to retry payments
-    const isAdmin = session.user.role === 'ADMIN' || session.user.role === 'SUPER_ADMIN';
+    const isAdmin = session.user.role === 'ADMIN';
     const isCustomerOwner = session.user.id === body.customerId; // Would need to validate this properly
 
     if (!isAdmin && !isCustomerOwner) {
@@ -106,7 +107,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     logger.error('Payment retry API error', {
-      error: error.message,
+      error: getErrorMessage(error),
       stack: error.stack
     });
 
@@ -173,7 +174,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error: any) {
     logger.error('Payment retry status API error', {
-      error: error.message,
+      error: getErrorMessage(error),
       stack: error.stack
     });
 

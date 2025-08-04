@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 
 interface ReferrerData {
   name: string;
@@ -89,7 +90,7 @@ export async function POST(request: Request) {
     console.error('Error processing referral submission:', error);
     let errorMessage = 'An unexpected error occurred.';
     if (error instanceof Error) {
-      errorMessage = error.message;
+      errorMessage = getErrorMessage(error);
     }
     return NextResponse.json({ message: 'Error submitting referral.', error: errorMessage }, { status: 500 });
   }

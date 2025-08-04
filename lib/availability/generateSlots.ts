@@ -36,13 +36,13 @@ export async function generateAvailableSlots(params: SlotGenerationParams) {
   const totalSlotTime = durationMins + bufferMins;
 
   const startOfDay = requestedDate.set({
-    hour: parseInt(businessHours.startTime.split(':')[0]),
-    minute: parseInt(businessHours.startTime.split(':')[1]),
+    hour: parseInt(businessHours.startTime.split(':')[0] || '0'),
+    minute: parseInt(businessHours.startTime.split(':')[1] || '0'),
   });
 
   const endOfDay = requestedDate.set({
-    hour: parseInt(businessHours.endTime.split(':')[0]),
-    minute: parseInt(businessHours.endTime.split(':')[1]),
+    hour: parseInt(businessHours.endTime.split(':')[0] || '0'),
+    minute: parseInt(businessHours.endTime.split(':')[1] || '0'),
   });
 
   const slots = [];

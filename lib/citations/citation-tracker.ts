@@ -209,8 +209,9 @@ export class CitationTracker {
     const metricIndex = this.metrics.findIndex(m => m.directoryId === directoryId);
     if (metricIndex === -1) return false;
 
-    this.metrics[metricIndex] = { ...this.metrics[metricIndex], ...updates };
-    this.metrics[metricIndex].lastChecked = new Date();
+    const updatedMetric = { ...this.metrics[metricIndex], ...updates };
+    updatedMetric.lastChecked = new Date();
+    this.metrics[metricIndex] = updatedMetric as CitationMetrics;
     
     return true;
   }

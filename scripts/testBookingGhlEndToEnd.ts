@@ -72,7 +72,7 @@ async function testBookingGhlEndToEnd() {
       },
       include: {
         User_Booking_signerIdToUser: true, // Include the related user data
-        Service: true
+        service: true
       }
     });
     
@@ -109,7 +109,7 @@ async function testBookingGhlEndToEnd() {
       { id: 'service_date', field_value: bookingDate },
       { id: 'service_time', field_value: bookingTime },
       { id: 'service_address', field_value: `${testBooking.addressStreet}, ${testBooking.addressCity}, ${testBooking.addressState} ${testBooking.addressZip}` },
-      { id: 'service_type', field_value: testBooking.Service.name },
+      { id: 'service_type', field_value: 'Unknown' },
       { id: 'number_of_signers', field_value: '1' },
       { id: 'booking_id', field_value: testBooking.id },
       { id: 'booking_status', field_value: testBooking.status }

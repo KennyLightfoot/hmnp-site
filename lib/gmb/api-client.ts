@@ -4,6 +4,7 @@
  */
 
 import type { GMBPost, ReviewResponse, QAItem } from './automation-system';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import type { GMBProfileData } from './profile-optimizer';
 
 export interface GMBApiConfig {
@@ -67,7 +68,7 @@ export class GMBApiClient {
       
       return true;
     } catch (error) {
-      console.error('Error refreshing access token:', error);
+      console.error('Error refreshing access token:', getErrorMessage(error));
       return false;
     }
   }
@@ -125,7 +126,7 @@ export class GMBApiClient {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
       };
     }
   }

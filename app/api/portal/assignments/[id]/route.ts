@@ -15,11 +15,11 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
     const assignment = await prisma.assignment.findFirst({
       where: { id: id, partnerAssignedToId: session.user.id },
       include: {
-        documents: {
+        AssignmentDocument: {
           select: { id: true, filename: true, uploadedAt: true },
           orderBy: { uploadedAt: "desc" },
         },
-        history: { orderBy: { changedAt: "desc" } },
+        StatusHistory: { orderBy: { changedAt: "desc" } },
       },
     })
 

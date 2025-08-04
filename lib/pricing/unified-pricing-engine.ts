@@ -11,6 +11,7 @@
  */
 
 import { z } from 'zod';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { UnifiedDistanceService } from '../maps/unified-distance-service';
 import { validateBusinessRules } from '../business-rules/engine';
 import { BUSINESS_RULES_CONFIG } from '../business-rules/config';
@@ -277,7 +278,7 @@ export class UnifiedPricingEngine {
         );
         
         if (travelResult.fee > 0) {
-          breakdown.travelFee = {
+          (breakdown as any).travelFee = {
             amount: travelResult.fee,
             label: `Travel Fee`,
             description: `${travelResult.distance.toFixed(1)} miles @ $${serviceConfig.feePerMile}/mile`,
@@ -306,7 +307,7 @@ export class UnifiedPricingEngine {
         const feePerDoc = PRICING_MULTIPLIERS.extraDocumentFees[validatedRequest.serviceType];
         const extraDocFee = extraDocs * feePerDoc;
         
-        breakdown.extraDocuments = {
+        (breakdown as any).extraDocuments = {
           amount: extraDocFee,
           label: `Additional Documents`,
           description: `${extraDocs} extra document${extraDocs > 1 ? 's' : ''} @ $${feePerDoc} each`,
@@ -407,7 +408,7 @@ export class UnifiedPricingEngine {
       
     } catch (error) {
       console.error(`❌ [${requestId}] Transparent pricing calculation failed:`, error);
-      throw new Error(`Pricing calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Pricing calculation failed: ${error instanceof Error ? getErrorMessage(error) : 'Unknown error'}`);
     }
   }
   
@@ -459,7 +460,7 @@ export class UnifiedPricingEngine {
       return { fee, distance, zone, withinArea };
       
     } catch (error: any) {
-      console.warn(`⚠️ [${requestId}] Travel fee calculation failed:`, error.message);
+      console.warn(`⚠️ [${requestId}] Travel fee calculation failed:`, getErrorMessage(error));
       
       // Fallback to estimated fee
       return { fee: 15, distance: 30, zone: 'houston_metro', withinArea: true };

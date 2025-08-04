@@ -431,7 +431,8 @@ export default function ServiceSelector({
   }, [filteredServices, serviceType, distance, smartRecommendation, urgency]);
 
   // Handle service type change
-  const handleServiceTypeChange = (newType: 'mobile' | 'online') => {
+  const handleServiceTypeChange = (value: string) => {
+    const newType = value as "mobile" | "online";
     setServiceType(newType);
     
     // Auto-select first service of new type if current selection is not compatible

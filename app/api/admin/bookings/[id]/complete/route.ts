@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { BookingAutomationService } from '@/lib/booking-automation';
@@ -64,7 +65,7 @@ export async function POST(
     console.error('Error completing booking:', error);
     return NextResponse.json({ 
       success: false, 
-      error: 'Failed to complete booking: ' + error.message 
+      error: 'Failed to complete booking: ' + getErrorMessage(error) 
     }, { status: 500 });
   }
 }

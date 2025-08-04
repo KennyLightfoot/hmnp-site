@@ -35,11 +35,11 @@ function detectServiceFromCallStack(): string {
   for (const line of stackLines) {
     if (line.includes('/api/')) {
       const match = line.match(/\/api\/([^\/]+)/);
-      if (match) return `API_${match[1].toUpperCase()}`;
+      if (match && match[1]) return `API_${match[1].toUpperCase()}`;
     }
     if (line.includes('/lib/')) {
       const match = line.match(/\/lib\/([^\/]+)/);
-      if (match) return match[1].toUpperCase().replace(/\.(ts|js)$/, '');
+      if (match && match[1]) return match[1].toUpperCase().replace(/\.(ts|js)$/, '');
     }
     if (line.includes('bullmq')) return 'BULLMQ';
     if (line.includes('queue')) return 'QUEUE';

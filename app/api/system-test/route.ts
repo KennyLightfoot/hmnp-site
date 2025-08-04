@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { runSystemTests, runQuickHealthCheck, exportTestReport } from '@/lib/testing/system-tests';
 import { withAdminSecurity } from '@/lib/security/comprehensive-security';
 
@@ -56,7 +57,7 @@ export const GET = withAdminSecurity(async (request: NextRequest) => {
     return NextResponse.json({
       status: 'error',
       message: 'System test execution failed',
-      error: error instanceof Error ? error.message : String(error),
+      error: error instanceof Error ? getErrorMessage(error) : String(error),
       timestamp: new Date().toISOString()
     }, { status: 500 });
   }
@@ -106,7 +107,7 @@ export const POST = withAdminSecurity(async (request: NextRequest) => {
     return NextResponse.json({
       status: 'error',
       message: 'Custom system test execution failed',
-      error: error instanceof Error ? error.message : String(error),
+      error: error instanceof Error ? getErrorMessage(error) : String(error),
       timestamp: new Date().toISOString()
     }, { status: 500 });
   }

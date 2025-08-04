@@ -142,7 +142,9 @@ export class AdvancedMemoryCache {
     if (this.accessOrder.length === 0) return;
 
     const oldestKey = this.accessOrder[0];
-    this.remove(oldestKey);
+    if (oldestKey) {
+      this.remove(oldestKey);
+    }
   }
 
   private getMemoryUsage(): number {

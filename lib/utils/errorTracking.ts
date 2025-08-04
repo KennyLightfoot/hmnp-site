@@ -1,3 +1,5 @@
+import { getErrorMessage } from '@/lib/utils/error-utils';
+
 interface ErrorContext {
   component?: string;
   userId?: string;
@@ -100,7 +102,7 @@ class ErrorTracker {
 
   trackError(error: Error | unknown, context: ErrorContext = {}) {
     const errorInfo: ErrorInfo = {
-      message: error instanceof Error ? error.message : String(error),
+      message: error instanceof Error ? getErrorMessage(error) : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       name: error instanceof Error ? error.name : 'UnknownError',
       cause: error instanceof Error ? error.cause : undefined,
@@ -139,7 +141,7 @@ class ErrorTracker {
   }
 
   private isCriticalError(error: Error | unknown, context: ErrorContext): boolean {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = error instanceof Error ? getErrorMessage(error) : String(error);
     const criticalPatterns = [
       'payment',
       'stripe',
@@ -182,7 +184,7 @@ class ErrorTracker {
         body: JSON.stringify({ errors }),
       });
     } catch (error) {
-      console.error('[ERROR_TRACKER] Failed to send errors:', error);
+      console.error('[ERROR_TRACKER] Failed to send errors:', getErrorMessage(error));
       // Re-queue errors if sending failed
       this.errorQueue.unshift(...errors);
     }

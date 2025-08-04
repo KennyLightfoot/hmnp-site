@@ -426,7 +426,10 @@ export class DistanceHelper {
     try {
       const keys = await redis.keys(`${CACHE_CONFIG.DISTANCE_PREFIX}*`);
       if (keys.length > 0) {
-        await redis.del(...(keys as string[]));
+        // Delete keys one by one to avoid spread operator issues
+        for (const key of keys) {
+          await redis.del(key);
+        }
       }
       
       // Reset stats

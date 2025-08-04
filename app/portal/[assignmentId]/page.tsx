@@ -74,36 +74,33 @@ export default async function AssignmentDetailPage({ params }: AssignmentDetailP
 
   let assignment: AssignmentWithDetails | null = null;
   try {
-    assignment = await prisma.assignment.findUnique({
+    const assignmentData = await prisma.assignment.findUnique({
       where: { id: assignmentId },
       include: {
-        // Include related data
-        documents: {
-          include: {
-            uploadedBy: true, // Include uploader info
-          },
-          orderBy: {
-            uploadedAt: 'desc',
-          }
-        },
-        history: {
-          include: {
-            changedBy: true, // Include user who changed status
-          },
-          orderBy: {
-            changedAt: 'desc',
-          }
-        },
-        comments: { // Fetch comments
-          include: {
-            author: true, // Include comment author details
-          },
-          orderBy: {
-            createdAt: 'asc', // Show oldest comments first
-          }
-        }
-      },
+        AssignmentDocument: true,
+        StatusHistory: true,
+        Comment: true
+      }
     });
+
+    if (assignmentData) {
+      // Transform the data to match AssignmentWithDetails interface
+      assignment = {
+        ...assignmentData,
+        documents: assignmentData.AssignmentDocument.map(doc => ({
+          ...doc,
+          uploadedBy: null // Since the relation doesn't exist in schema
+        })),
+        history: assignmentData.StatusHistory.map(history => ({
+          ...history,
+          changedBy: null // Since the relation doesn't exist in schema
+        })),
+        comments: assignmentData.Comment.map(comment => ({
+          ...comment,
+          author: null // Since the relation doesn't exist in schema
+        }))
+      };
+    }
   } catch (error) {
     console.error(`Failed to fetch assignment ${assignmentId}:`, error);
     // Consider showing a more user-friendly error message

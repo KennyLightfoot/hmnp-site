@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -31,8 +32,8 @@ const supportTicketSchema = z.object({
   description: z.string().min(20, { message: 'Please provide a detailed description (at least 20 characters).' }),
   urgency: z.enum(urgencyLevels),
   fileUpload: z.custom<FileList>().optional() // Placeholder for file upload
-    .refine(files => !files || files.length === 0 || files[0].size <= 5 * 1024 * 1024, `Max file size is 5MB.`) // Example validation
-    .refine(files => !files || files.length === 0 || ['image/jpeg', 'image/png', 'application/pdf'].includes(files[0].type), `Only JPG, PNG, or PDF files are allowed.`),
+    .refine(files => !files || files.length === 0 || (files[0] && files[0].size <= 5 * 1024 * 1024), `Max file size is 5MB.`) // Example validation
+    .refine(files => !files || files.length === 0 || (files[0] && ['image/jpeg', 'image/png', 'application/pdf'].includes(files[0].type)), `Only JPG, PNG, or PDF files are allowed.`),
 });
 
 interface SupportTicketFormValues {
@@ -83,7 +84,7 @@ export default function SupportTicketForm() {
     formData.append('issueCategory', data.issueCategory);
     formData.append('description', data.description);
     if (data.urgency) formData.append('urgency', data.urgency);
-    if (data.fileUpload && data.fileUpload.length > 0) {
+    if (data.fileUpload && data.fileUpload.length > 0 && data.fileUpload[0]) {
       formData.append('attachment', data.fileUpload[0]);
     }
 
@@ -107,7 +108,7 @@ export default function SupportTicketForm() {
       reset();
     } catch (error: any) {
       setSubmissionStatus('error');
-      setServerError(error.message || 'Failed to submit your ticket. Please try again.');
+      setServerError(getErrorMessage(error) || 'Failed to submit your ticket. Please try again.');
     }
   };
 
@@ -198,7 +199,7 @@ export default function SupportTicketForm() {
           <Input id="fileUpload" type="file" {...register('fileUpload')} className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#002147] file:text-white hover:file:bg-[#001730]" />
           <p className="mt-1 text-xs text-muted-foreground">Max file size: 5MB. Allowed types: JPG, PNG, PDF. Your backend will need S3 integration for secure storage.</p>
           {errors.fileUpload && <p className="mt-1 text-xs text-red-600">{errors.fileUpload.message}</p>}
-          {selectedFile && selectedFile.length > 0 && <p className="mt-1 text-xs text-green-600">Selected file: {selectedFile[0].name}</p>}
+          {selectedFile && selectedFile.length > 0 && selectedFile[0] && <p className="mt-1 text-xs text-green-600">Selected file: {selectedFile[0].name}</p>}
         </div>
 
         {serverError && (

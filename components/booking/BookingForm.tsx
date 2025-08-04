@@ -15,6 +15,7 @@
  */
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent } from '@/components/ui/card';
@@ -413,16 +414,16 @@ export default function BookingForm({
       // Prepare booking payload for API
       const bookingData: any = {
         serviceType: data.serviceType,
-        customerName: data.customer.name,
-        customerEmail: data.customer.email,
-        scheduledDateTime: data.scheduling.preferredTime, // ISO string
+        customerName: data.customer?.name || '',
+        customerEmail: data.customer?.email || '',
+        scheduledDateTime: data.scheduling?.preferredTime, // ISO string
         timeZone: 'America/Chicago',
-        numberOfDocuments: data.serviceDetails?.documentCount || 1,
-        numberOfSigners: data.serviceDetails?.signerCount || 1
+        numberOfDocuments: 1, // Default value since serviceDetails doesn't exist
+        numberOfSigners: 1 // Default value since serviceDetails doesn't exist
       };
 
       // Optional phone
-      if (data.customer.phone) {
+      if (data.customer?.phone) {
         bookingData.customerPhone = data.customer.phone;
       }
 
@@ -459,7 +460,7 @@ export default function BookingForm({
       
     } catch (error) {
       console.error('Booking submission failed:', error);
-      setErrorMessage(error instanceof Error ? error.message : 'Booking failed. Please check your information and try again.');
+      setErrorMessage(error instanceof Error ? getErrorMessage(error) : 'Booking failed. Please check your information and try again.');
       onError?.(error);
     } finally {
       setIsSubmitting(false);
@@ -812,7 +813,7 @@ export default function BookingForm({
                   {isMobile ? 'Quick Tip' : 'Pro Tips for This Step'}
                 </h4>
                 <ul className="text-xs text-blue-800 space-y-1">
-                  {currentStepData?.tips?.map((tip, index) => (
+                  {(currentStepData?.tips || []).map((tip, index) => (
                     <li key={index} className="flex items-start space-x-1">
                       <span className="text-blue-600 mt-0.5">•</span>
                       <span>{tip}</span>

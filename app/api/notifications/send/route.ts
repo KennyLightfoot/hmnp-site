@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { headers } from 'next/headers';
 import { NotificationService } from '@/lib/notifications';
 import { logger } from '@/lib/logger';
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     logger.error('Notification API error', {
-      error: error.message,
+      error: getErrorMessage(error),
       stack: error.stack
     });
 
@@ -125,29 +126,17 @@ async function handleSingleNotification(body: any, userAgent?: string | null): P
       }, { status: 400 });
     }
 
-    // Queue for scheduled delivery
-    const result = await NotificationService.getInstance().scheduleNotification({
-      type,
-      method,
-      bookingId,
-      recipientEmail,
-      recipientPhone,
-      customMessage,
-      customSubject,
-      scheduledAt: scheduledTime,
-      metadata: {
-        ...metadata,
-        priority,
-        source: 'api',
-        userAgent
-      }
-    });
+    // For now, we'll return an error since scheduling isn't implemented
+    // TODO: Implement scheduled notifications
+    return NextResponse.json({
+      success: false,
+      error: 'Scheduled notifications are not yet implemented'
+    }, { status: 501 });
 
     return NextResponse.json({
       success: true,
       scheduled: true,
       scheduledAt: scheduleAt,
-      notificationId: result.id,
       message: 'Notification scheduled successfully'
     });
   }
@@ -158,40 +147,25 @@ async function handleSingleNotification(body: any, userAgent?: string | null): P
   
   if (bookingId) {
     // Booking-based notification
-    result = await notificationService.sendNotification(
+    result = await notificationService.sendNotification({
       bookingId,
-      type,
-      method,
-      customMessage,
-      {
+      type: type as any,
+      method: method as any,
+      templateData: {
         ...metadata,
         priority,
         source: 'api',
         userAgent,
-        customSubject
-      }
-    );
-  } else if (recipientEmail || recipientPhone) {
-    // Direct recipient notification
-    result = await notificationService.sendDirectNotification({
-      type,
-      method: method || 'EMAIL',
-      recipientEmail,
-      recipientPhone,
-      subject: customSubject,
-      message: customMessage || '',
-      metadata: {
-        ...metadata,
-        priority,
-        source: 'api',
-        userAgent
+        customSubject,
+        customMessage
       }
     });
   } else {
+    // Direct recipient notifications not supported yet
     return NextResponse.json({
       success: false,
-      error: 'Either bookingId or recipient information is required'
-    }, { status: 400 });
+      error: 'Direct recipient notifications are not yet implemented. Please provide a bookingId.'
+    }, { status: 501 });
   }
 
   if (result.success) {
@@ -199,15 +173,13 @@ async function handleSingleNotification(body: any, userAgent?: string | null): P
       type,
       method,
       bookingId,
-      priority,
-      notificationId: result.notificationId
+      priority
     });
 
     return NextResponse.json({
       success: true,
-      notificationId: result.notificationId,
-      method: result.method,
-      status: result.status,
+      method: method || 'EMAIL',
+      status: 'sent',
       message: 'Notification sent successfully'
     });
   } else {
@@ -270,7 +242,7 @@ async function handleBulkNotifications(body: any): Promise<NextResponse> {
         return {
           index: i + index,
           success: false,
-          error: error.message
+          error: getErrorMessage(error)
         };
       }
     });

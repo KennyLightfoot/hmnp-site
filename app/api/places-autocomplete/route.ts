@@ -7,6 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 
 // Clean and validate API key
 const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY?.replace(/\s+/g, '');
@@ -204,7 +205,7 @@ export async function GET(request: NextRequest) {
     }
 
     console.error('Places API proxy error', {
-      error: error.message,
+      error: getErrorMessage(error),
       stack: error.stack,
       processingTime
     });

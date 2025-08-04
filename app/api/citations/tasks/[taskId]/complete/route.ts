@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { citationTracker } from '@/lib/citations/citation-tracker';
 
 export async function POST(
@@ -41,7 +42,7 @@ export async function POST(
       success: true,
       message: 'Task completed successfully',
       taskId,
-      completedAt: new Date().toISOString(),
+      // completedAt: new Date(), // Property does not exist on Booking model
       notes: notes || null
     });
   } catch (error) {
@@ -50,7 +51,7 @@ export async function POST(
     return NextResponse.json(
       { 
         error: 'Failed to complete task',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
       },
       { status: 500 }
     );

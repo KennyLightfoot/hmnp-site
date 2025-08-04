@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from './prisma';
 import Stripe from 'stripe';
 
@@ -69,7 +70,7 @@ export class WebhookProcessor {
       const processingTime = Date.now() - startTime;
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? getErrorMessage(error) : 'Unknown error',
         processingTime
       };
     }
@@ -121,9 +122,9 @@ export class WebhookProcessor {
         },
         create: {
           id: `webhook_${eventId}`,
+          component: 'WEBHOOK_PROCESSOR',
           level: 'WARN', // PROCESSING status
           message: `PROCESSING webhook ${eventType}`,
-          source: 'stripe_webhook',
           metadata: {
             eventId,
             eventType,
@@ -147,7 +148,6 @@ export class WebhookProcessor {
             metadata: {
               ...(eventLog.metadata as any),
               finalStatus: 'MAX_ATTEMPTS_EXCEEDED',
-              completedAt: new Date().toISOString()
             }
           }
         });
@@ -179,7 +179,6 @@ export class WebhookProcessor {
               metadata: {
                 ...(eventLog.metadata as any),
                 finalStatus: 'COMPLETED',
-                completedAt: new Date().toISOString(),
                 processingDurationMs: Date.now() - processingStartTime.getTime()
               }
             }
@@ -194,11 +193,11 @@ export class WebhookProcessor {
             where: { id: `webhook_${eventId}` },
             data: {
               level: 'ERROR',
-              message: `FAILED webhook ${eventType}: ${processingError instanceof Error ? processingError.message : 'Unknown error'}`,
+              message: `FAILED webhook ${eventType}: ${processingError instanceof Error ? getErrorMessage(processingError) : 'Unknown error'}`,
               metadata: {
                 ...(eventLog.metadata as any),
                 finalStatus: 'FAILED',
-                errorMessage: processingError instanceof Error ? processingError.message : 'Unknown error',
+                errorMessage: processingError instanceof Error ? getErrorMessage(processingError) : 'Unknown error',
                 errorStack: processingError instanceof Error ? processingError.stack : undefined,
                 failedAt: new Date().toISOString()
               }
@@ -213,94 +212,18 @@ export class WebhookProcessor {
       });
 
       console.log(`✅ Successfully processed webhook event: ${eventType} (${eventId})`);
-      return result;
+      return { success: true, skipped: false };
 
     } catch (error) {
-      console.error(`❌ Failed to process webhook event ${eventId}:`, error);
+      console.error(`❌ Failed to process webhook event ${eventId}:`, getErrorMessage(error));
       return { 
         success: false, 
         skipped: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+        error: error instanceof Error ? getErrorMessage(error) : 'Unknown error' 
       };
     }
-  }
-
-  /**
-   * Clean up old webhook logs (call this periodically)
-   */
-  static async cleanupOldWebhookLogs(olderThanDays: number = 30): Promise<number> {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
-
-    const result = await prisma.systemLog.deleteMany({
-      where: {
-        source: 'stripe_webhook',
-        createdAt: {
-          lt: cutoffDate
-        }
-      }
-    });
-
-    console.log(`🧹 Cleaned up ${result.count} old webhook logs`);
-    return result.count;
-  }
-
-  /**
-   * Get webhook processing statistics
-   */
-  static async getWebhookStats(days: number = 7): Promise<{
-    total: number;
-    completed: number;
-    failed: number;
-    processing: number;
-    successRate: number;
-  }> {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - days);
-
-    const [total, completed, failed, processing] = await Promise.all([
-      prisma.systemLog.count({
-        where: {
-          source: 'stripe_webhook',
-          createdAt: { gte: cutoffDate }
-        }
-      }),
-      prisma.systemLog.count({
-        where: {
-          source: 'stripe_webhook',
-          level: 'INFO',
-          message: { contains: 'COMPLETED' },
-          createdAt: { gte: cutoffDate }
-        }
-      }),
-      prisma.systemLog.count({
-        where: {
-          source: 'stripe_webhook',
-          level: 'ERROR',
-          createdAt: { gte: cutoffDate }
-        }
-      }),
-      prisma.systemLog.count({
-        where: {
-          source: 'stripe_webhook',
-          level: 'WARN',
-          message: { contains: 'PROCESSING' },
-          createdAt: { gte: cutoffDate }
-        }
-      })
-    ]);
-
-    const successRate = total > 0 ? (completed / total) * 100 : 0;
-
-    return {
-      total,
-      completed,
-      failed,
-      processing,
-      successRate: Math.round(successRate * 100) / 100
-    };
   }
 }
 
 // Export singleton instance for compatibility
-export const webhookProcessor = new WebhookProcessor(); 
+export const webhookProcessor = new WebhookProcessor();

@@ -15,7 +15,7 @@
 /**
  * Clean environment variable by removing all forms of whitespace corruption
  */
-export function cleanEnvVar(value: string | undefined): string | undefined {
+export function cleanEnvVar(value: string | undefined = ""): string | undefined {
   if (!value) return value;
   
   return value

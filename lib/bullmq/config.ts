@@ -1,4 +1,5 @@
 import Bull from 'bull';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { logger } from '../logger';
 
 // Default job options for all queues
@@ -76,7 +77,7 @@ export const createQueues = () => {
       });
 
       queue.on('failed', (job, error) => {
-        logger.error(`Job ${job.id} in queue ${queue.name} failed:`, { error: error.message, jobData: job.data });
+        logger.error(`Job ${job.id} in queue ${queue.name} failed:`, { error: getErrorMessage(error), jobData: job.data });
       });
     });
 

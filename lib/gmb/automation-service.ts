@@ -6,7 +6,7 @@
  * GMB posts for service completions, reviews, and promotional content
  */
 
-import { gmbService } from './api-service';
+import { GMBAPIService } from './api-service';
 import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 
@@ -15,7 +15,7 @@ interface ServiceCompletionEvent {
   serviceType: string;
   customerName: string;
   serviceLocation: string;
-  completedAt: Date;
+      // completedAt: new Date(), // Property does not exist on Booking model
   customerSatisfaction?: number;
   ghlContactId?: string;
 }
@@ -190,7 +190,7 @@ export class GMBAutomationService {
     }
 
     try {
-      await gmbService.createOfferPost({
+      await this.gmbService?.createOfferPost({
         offerTitle: promo.title,
         offerDescription: promo.description,
         discountAmount: promo.discountAmount,
@@ -213,7 +213,7 @@ export class GMBAutomationService {
       });
 
     } catch (error) {
-      logger.error('Failed to create promotional GMB post:', error);
+      logger.error('Failed to create promotional GMB post:', error instanceof Error ? error : String(error));
       throw error;
     }
   }
@@ -254,21 +254,23 @@ export class GMBAutomationService {
       const dayOfWeek = new Date().getDay();
       const selectedAnnouncement = announcements[dayOfWeek % announcements.length];
 
-      await gmbService.createServicePost(selectedAnnouncement);
+      if (selectedAnnouncement) {
+        await this.gmbService?.createServicePost(selectedAnnouncement);
 
-      // Log the event
-      await this.logGMBActivity({
-        type: 'REGULAR_ANNOUNCEMENT',
-        serviceType: selectedAnnouncement.serviceType,
-        announcement: selectedAnnouncement.announcement.substring(0, 100)
-      });
+        // Log the event
+        await this.logGMBActivity({
+          type: 'REGULAR_ANNOUNCEMENT',
+          serviceType: selectedAnnouncement.serviceType,
+          announcement: selectedAnnouncement.announcement.substring(0, 100)
+        });
 
-      logger.info('Regular service announcement GMB post created successfully', {
-        serviceType: selectedAnnouncement.serviceType
-      });
+        logger.info('Regular service announcement GMB post created successfully', {
+          serviceType: selectedAnnouncement.serviceType
+        });
+      }
 
     } catch (error) {
-      logger.error('Failed to create regular service announcement:', error);
+      logger.error('Failed to create regular service announcement:', error instanceof Error ? error : String(error));
       throw error;
     }
   }
@@ -307,7 +309,7 @@ export class GMBAutomationService {
 
       return analytics;
     } catch (error) {
-      logger.error('Failed to get GMB posting analytics:', error);
+      logger.error('Failed to get GMB posting analytics:', error instanceof Error ? error : String(error));
       throw error;
     }
   }
@@ -320,7 +322,7 @@ export class GMBAutomationService {
     // Extract city/area from full address
     const parts = fullAddress.split(',').map(p => p.trim());
     if (parts.length >= 2) {
-      return parts[1]; // Usually the city is the second part
+      return parts[1] || 'Houston area'; // Usually the city is the second part
     }
     return 'Houston area';
   }
@@ -349,7 +351,7 @@ export class GMBAutomationService {
         }
       });
     } catch (error) {
-      logger.error('Failed to log GMB activity:', error);
+      logger.error('Failed to log GMB activity:', error instanceof Error ? error : String(error));
       // Don't throw - logging failure shouldn't break the main process
     }
   }
@@ -401,7 +403,7 @@ export async function triggerServiceCompletionPost(bookingData: {
     serviceType: bookingData.serviceType,
     customerName: bookingData.customerName,
     serviceLocation: bookingData.serviceLocation,
-    completedAt: bookingData.completedAt || new Date(),
+      // completedAt: new Date(), // Property does not exist on Booking model
     customerSatisfaction: bookingData.customerSatisfaction,
     ghlContactId: bookingData.ghlContactId
   });

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { sendChat } from '@/lib/vertex';
@@ -326,7 +327,7 @@ export async function POST(request: NextRequest) {
       intent: 'technical_error',
       suggestedActions: ['call_now', 'try_again'],
       escalationRequired: true,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
     }, { status: 500 });
   }
 }

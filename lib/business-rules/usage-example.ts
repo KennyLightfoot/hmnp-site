@@ -7,6 +7,7 @@
  */
 
 import { createBusinessRulesEngine, validateBusinessRules } from './engine';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 
 // ============================================================================
 // 🚀 QUICK START - Simple Validation
@@ -25,20 +26,20 @@ export async function quickValidateBooking(bookingData: {
 }) {
   try {
     const result = await validateBusinessRules({
-      serviceType: bookingData.serviceType,
-      location: { address: bookingData.customerAddress },
-      documentCount: bookingData.documentCount,
-      documentTypes: bookingData.documentTypes,
-      ghlContactId: bookingData.ghlContactId
+      serviceType: bookingData?.serviceType,
+      location: { address: bookingData?.customerAddress },
+      documentCount: bookingData?.documentCount,
+      documentTypes: bookingData?.documentTypes,
+      ghlContactId: bookingData?.ghlContactId
     });
 
     return {
-      canProceed: result.isValid,
-      violations: result.violations,
-      ghlActions: result.ghlActions
+      canProceed: result?.isValid,
+      violations: result?.violations,
+      ghlActions: result?.ghlActions
     };
   } catch (error) {
-    console.error('Business rules validation failed:', error);
+    console?.error('Business rules validation failed:', error);
     return {
       canProceed: false,
       violations: ['System error during validation'],
@@ -79,56 +80,56 @@ export async function comprehensiveBookingValidation(params: {
 }) {
   // Create engine instance with context
   const engine = createBusinessRulesEngine({
-    requestId: params.requestId,
-    ghlContactId: params.ghlContactId,
+    requestId: params?.requestId,
+    ghlContactId: params?.ghlContactId,
     timestamp: new Date()
   });
 
   try {
     // Run comprehensive validation
-    const validation = await engine.validateAll({
-      serviceType: params.serviceType,
-      location: { address: params.customerAddress },
-      documentCount: params.documentCount,
-      documentTypes: params.documentTypes,
-      customerType: params.customerType,
-      scheduledDateTime: params.scheduledDateTime,
-      pricing: params.basePrice ? {
-        serviceType: params.serviceType,
-        basePrice: params.basePrice,
-        travelFee: params.travelFee || 0,
-        extraDocumentFees: params.extraDocumentFees || 0,
-        discounts: params.discounts || 0,
-        totalPrice: params.totalPrice || params.basePrice
+    const validation = await engine?.validateAll({
+      serviceType: params?.serviceType,
+      location: { address: params?.customerAddress },
+      documentCount: params?.documentCount,
+      documentTypes: params?.documentTypes,
+      customerType: params?.customerType,
+      scheduledDateTime: params?.scheduledDateTime,
+      pricing: params?.basePrice ? {
+        serviceType: params?.serviceType,
+        basePrice: params?.basePrice,
+        travelFee: params?.travelFee || 0,
+        extraDocumentFees: params?.extraDocumentFees || 0,
+        discounts: params?.discounts || 0,
+        totalPrice: params?.totalPrice || params?.basePrice
       } : undefined
     });
 
     // Apply to GHL if contact ID provided
-    if (params.ghlContactId && validation.ghlActions.tags.length > 0) {
-      await engine.applyToGHL([
-        validation.serviceArea,
-        validation.documentLimits,
-        validation.pricing
-      ], params.ghlContactId);
+    if (params?.ghlContactId && validation?.ghlActions?.tags?.length > 0) {
+      await engine?.applyToGHL([
+        validation?.serviceArea,
+        validation?.documentLimits,
+        validation?.pricing
+      ], params?.ghlContactId);
     }
 
     return {
-      isValid: validation.isValid,
-      violations: validation.violations,
-      serviceArea: validation.serviceArea,
-      documentLimits: validation.documentLimits,
-      pricing: validation.pricing,
-      ghlActions: validation.ghlActions,
+      isValid: validation?.isValid,
+      violations: validation?.violations,
+      serviceArea: validation?.serviceArea,
+      documentLimits: validation?.documentLimits,
+      pricing: validation?.pricing,
+      ghlActions: validation?.ghlActions,
       recommendations: [
-        ...validation.serviceArea.recommendations,
-        ...validation.documentLimits.recommendations,
-        ...validation.pricing.recommendations
+        ...validation?.serviceArea?.recommendations,
+        ...validation?.documentLimits?.recommendations,
+        ...validation?.pricing?.recommendations
       ]
     };
 
   } catch (error) {
-    console.error('Comprehensive validation failed:', error);
-    throw new Error(`Business rules validation failed: ${error instanceof Error ? error.message : String(error)}`);
+    console?.error('Comprehensive validation failed:', error);
+    throw new Error(`Business rules validation failed: ${error instanceof Error ? getErrorMessage(error) : String(error)}`);
   }
 }
 
@@ -142,7 +143,7 @@ export async function comprehensiveBookingValidation(params: {
  */
 export async function bookingApiValidation(req: any, res: any, next: any) {
   try {
-    const { serviceType, address, documentCount, documentTypes, ghlContactId } = req.body;
+    const { serviceType, address, documentCount, documentTypes, ghlContactId } = req?.body;
 
     // Validate business rules
     const validation = await quickValidateBooking({
@@ -153,21 +154,23 @@ export async function bookingApiValidation(req: any, res: any, next: any) {
       ghlContactId
     });
 
-    if (!validation.canProceed) {
-      return res.status(400).json({
+    if (!validation?.canProceed) {
+      return res?.status(400).json({
         error: 'Booking violates business rules',
-        violations: validation.violations,
+        violations: validation?.violations,
         code: 'BUSINESS_RULE_VIOLATION'
       });
     }
 
     // Add GHL actions to request for later processing
-    req.businessRules = validation;
+    if (req) {
+      req.businessRules = validation;
+    }
     
     next();
   } catch (error) {
-    console.error('Business rules validation error:', error);
-    res.status(500).json({
+    console?.error('Business rules validation error:', error);
+    res?.status(500).json({
       error: 'Business rules validation failed',
       code: 'VALIDATION_ERROR'
     });
@@ -179,31 +182,32 @@ export async function bookingApiValidation(req: any, res: any, next: any) {
  */
 export async function cancellationApiValidation(bookingId: string, reason: string, isWeatherRelated = false) {
   const engine = createBusinessRulesEngine({
-    requestId: `cancel_${bookingId}_${Date.now()}`
+    requestId: `cancel_${bookingId}_${Date?.now()}`
   });
 
   try {
     // Get booking data (you'll need to fetch from your database)
     const booking = await getBookingById(bookingId); // Your existing function
     
-    const cancellationValidation = await engine.validateCancellation({
+    const cancellationValidation = await engine?.validateCancellation({
       bookingId,
-      scheduledDateTime: booking.scheduledDateTime,
+      scheduledDateTime: booking?.scheduledDateTime,
       requestedAt: new Date(),
       reason,
-      isWeatherRelated
+      isWeatherRelated,
+      isReschedule: false
     });
 
     return {
-      canCancel: cancellationValidation.isValid,
-      refundEligibility: cancellationValidation.refundEligibility,
-      violations: cancellationValidation.violations,
-      recommendations: cancellationValidation.recommendations,
-      ghlActions: cancellationValidation.ghlActions
+      canCancel: cancellationValidation?.isValid,
+      refundEligibility: cancellationValidation?.refundEligibility,
+      violations: cancellationValidation?.violations,
+      recommendations: cancellationValidation?.recommendations,
+      ghlActions: cancellationValidation?.ghlActions
     };
 
   } catch (error) {
-    console.error('Cancellation validation failed:', error);
+    console?.error('Cancellation validation failed:', error);
     throw error;
   }
 }
@@ -229,33 +233,33 @@ export async function calculatePricingWithRules(params: {
     // Validate business rules including pricing
     const validation = await comprehensiveBookingValidation({
       ...params,
-      customerAddress: params.address,
-      basePrice: pricing.basePrice,
-      travelFee: pricing.travelFee,
-      extraDocumentFees: pricing.extraDocumentFees,
-      discounts: pricing.discounts,
-      totalPrice: pricing.total
+      customerAddress: params?.address,
+      basePrice: pricing?.basePrice,
+      travelFee: pricing?.travelFee,
+      extraDocumentFees: pricing?.extraDocumentFees,
+      discounts: pricing?.discounts,
+      totalPrice: pricing?.total
     });
 
     return {
       pricing: {
-        base: pricing.basePrice,
-        travel: pricing.travelFee,
-        extraDocs: pricing.extraDocumentFees,
-        discounts: pricing.discounts,
-        total: pricing.total,
-        breakdown: pricing.breakdown
+        base: pricing?.basePrice,
+        travel: pricing?.travelFee,
+        extraDocs: pricing?.extraDocumentFees,
+        discounts: pricing?.discounts,
+        total: pricing?.total,
+        breakdown: pricing?.breakdown
       },
       businessRules: {
-        isValid: validation.isValid,
-        violations: validation.violations,
-        recommendations: validation.recommendations
+        isValid: validation?.isValid,
+        violations: validation?.violations,
+        recommendations: validation?.recommendations
       },
-      ghlActions: validation.ghlActions
+      ghlActions: validation?.ghlActions
     };
 
   } catch (error) {
-    console.error('Pricing with rules calculation failed:', error);
+    console?.error('Pricing with rules calculation failed:', error);
     throw error;
   }
 }
@@ -291,13 +295,7 @@ async function calculateBasePricing(params: any) {
 // 📤 EXPORTS FOR EASY INTEGRATION
 // ============================================================================
 
-export {
-  quickValidateBooking,
-  comprehensiveBookingValidation,
-  bookingApiValidation,
-  cancellationApiValidation,
-  calculatePricingWithRules
-};
+// Functions are already exported inline above
 
 // ============================================================================
 // 📚 USAGE DOCUMENTATION

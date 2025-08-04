@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/database-connection';
@@ -45,9 +46,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!booking.proofTransactionId) {
+    if (!booking.proofSessionUrl) {
       return NextResponse.json(
-        { error: 'No Proof transaction found for this booking' }, 
+        { error: 'No Proof session found for this booking' }, 
         { status: 400 }
       );
     }
@@ -58,17 +59,18 @@ export async function POST(request: NextRequest) {
     const base64Data = `data:${file.type};base64,${base64File}`;
 
     // Upload document to Proof
-    await proofAPI.addDocument(booking.proofTransactionId, {
-      resource: base64Data,
-      document_name: documentName,
-      requirement: requirement as 'notarization' | 'witness' | 'acknowledgment'
+    await proofAPI.addDocument(booking.proofSessionUrl, {
+      name: documentName,
+      content: base64File,
+      contentType: file.type,
+      requiresNotarization: true
     });
 
     // Create local document record for tracking
     const documentRecord = await prisma.notarizationDocument.create({
       data: {
         id: `proof_doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        s3Key: `proof-docs/${booking.proofTransactionId}/${documentName}`,
+        s3Key: `proof-docs/${booking.proofSessionUrl}/${documentName}`,
         originalFilename: documentName,
         uploadedById: (session.user as any).id,
         bookingId: bookingId,
@@ -79,7 +81,7 @@ export async function POST(request: NextRequest) {
 
     logger.info('Document uploaded to Proof successfully', {
       bookingId,
-      proofTransactionId: booking.proofTransactionId,
+      proofSessionUrl: booking.proofSessionUrl,
       documentName,
       documentId: documentRecord.id,
       userId: (session.user as any).id
@@ -101,7 +103,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         error: 'Failed to upload document',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
       }, 
       { status: 500 }
     );
@@ -148,20 +150,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (!booking.proofTransactionId) {
+    if (!booking.proofSessionUrl) {
       return NextResponse.json(
-        { error: 'No Proof transaction found for this booking' }, 
+        { error: 'No Proof session found for this booking' }, 
         { status: 400 }
       );
     }
 
-    // Get latest transaction details from Proof
-    const proofTransaction = await proofAPI.getTransaction(booking.proofTransactionId);
+    // Get latest session details from Proof
+    const proofSession = await proofAPI.getTransaction(booking.proofSessionUrl);
 
     return NextResponse.json({
-      documents: proofTransaction.documents,
+      documents: proofSession?.documents || [],
       localDocuments: booking.NotarizationDocument,
-      transactionStatus: proofTransaction.status
+      sessionStatus: proofSession?.status || 'unknown'
     });
 
   } catch (error) {
@@ -170,7 +172,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       { 
         error: 'Failed to get documents',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
       }, 
       { status: 500 }
     );

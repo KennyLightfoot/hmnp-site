@@ -68,15 +68,13 @@ export class SecretRotationService {
       isActive: true
     };
 
-    await redis.hset(
-      `secret:${secretName}`,
-      'current',
+    await redis.set(
+      `secret:${secretName}:current`,
       JSON.stringify(secretVersion)
     );
 
-    await redis.hset(
-      `secret:${secretName}`,
-      'config',
+    await redis.set(
+      `secret:${secretName}:config`,
       JSON.stringify(secretConfig)
     );
   }
@@ -89,8 +87,8 @@ export class SecretRotationService {
     oldSecret: string;
     version: number;
   }> {
-    const currentData = await redis.hget(`secret:${secretName}`, 'current');
-    const configData = await redis.hget(`secret:${secretName}`, 'config');
+    const currentData = await redis.get(`secret:${secretName}:current`);
+    const configData = await redis.get(`secret:${secretName}:config`);
 
     if (!currentData || !configData) {
       throw new Error(`Secret ${secretName} not initialized`);
@@ -113,9 +111,8 @@ export class SecretRotationService {
     };
 
     // Store new version as current
-    await redis.hset(
-      `secret:${secretName}`,
-      'current',
+    await redis.set(
+      `secret:${secretName}:current`,
       JSON.stringify(newVersion)
     );
 
@@ -127,9 +124,8 @@ export class SecretRotationService {
       expiresAt: graceExpiresAt.toISOString()
     };
 
-    await redis.hset(
-      `secret:${secretName}`,
-      `version_${current.version}`,
+    await redis.set(
+      `secret:${secretName}:version_${current.version}`,
       JSON.stringify(oldVersion)
     );
 
@@ -150,7 +146,7 @@ export class SecretRotationService {
    * Get current secret
    */
   static async getCurrentSecret(secretName: string): Promise<string | null> {
-    const currentData = await redis.hget(`secret:${secretName}`, 'current');
+    const currentData = await redis.get(`secret:${secretName}:current`);
     if (!currentData) return null;
 
     const current: SecretVersion = JSON.parse(currentData);
@@ -164,7 +160,7 @@ export class SecretRotationService {
     const secrets = [];
     
     // Get current secret
-    const currentData = await redis.hget(`secret:${secretName}`, 'current');
+    const currentData = await redis.get(`secret:${secretName}:current`);
     if (currentData) {
       const current: SecretVersion = JSON.parse(currentData);
       secrets.push(current.secret);
@@ -195,8 +191,8 @@ export class SecretRotationService {
     daysUntilExpiry: number;
     notificationRequired: boolean;
   }> {
-    const currentData = await redis.hget(`secret:${secretName}`, 'current');
-    const configData = await redis.hget(`secret:${secretName}`, 'config');
+    const currentData = await redis.get(`secret:${secretName}:current`);
+    const configData = await redis.get(`secret:${secretName}:config`);
 
     if (!currentData || !configData) {
       return {
@@ -232,7 +228,7 @@ export class SecretRotationService {
     const status: Record<string, any> = {};
 
     for (const secretName of Object.keys(this.DEFAULT_CONFIGS)) {
-      const currentData = await redis.hget(`secret:${secretName}`, 'current');
+      const currentData = await redis.get(`secret:${secretName}:current`);
       
       if (currentData) {
         const current: SecretVersion = JSON.parse(currentData);

@@ -7,6 +7,7 @@
  */
 
 import { z } from 'zod';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 import { logger } from './logger';
 import { redis } from './redis';
 import { UnifiedDistanceService } from './maps/unified-distance-service';
@@ -242,7 +243,7 @@ export class PricingEngine {
           travelData = await this.calculateTravelFee(validatedParams.serviceType, validatedParams.location as { address: string; latitude?: number; longitude?: number });
         } catch (error) {
           logger.warn('Travel fee calculation failed, using fallback', { 
-            error: error.message,
+            error: getErrorMessage(error),
             requestId: this.requestId 
           });
           // Fallback to estimated travel fee
@@ -269,7 +270,7 @@ export class PricingEngine {
         );
       } catch (error) {
         logger.warn('Discount calculation failed', { 
-          error: error.message,
+          error: getErrorMessage(error),
           requestId: this.requestId 
         });
         // Continue without discounts
@@ -323,7 +324,7 @@ export class PricingEngine {
     } catch (error) {
       logger.error('Pricing calculation failed', { 
         params: this.sanitizeParams(params), 
-        error: error.message,
+        error: getErrorMessage(error),
         requestId: this.requestId
       });
       
@@ -353,7 +354,7 @@ export class PricingEngine {
         metadata: {
           calculatedAt: new Date().toISOString(),
           version: '2.0.0',
-          factors: { error: error.message },
+          factors: { error: getErrorMessage(error) },
           requestId: this.requestId
         }
       };
@@ -413,7 +414,7 @@ export class PricingEngine {
       logger.warn('Travel fee calculation failed, using fallback', { 
         serviceType, 
         location: location.address,
-        error: error.message 
+        error: getErrorMessage(error) 
       });
       
       // Fallback to estimated fee for graceful degradation
@@ -601,7 +602,7 @@ export class PricingEngine {
       lineItems.push({ 
         description: `Travel Fee (${travelData.distance.toFixed(1)} miles)`, 
         amount: travelFee, 
-        type: 'travel' as const 
+        type: 'base' as const 
       });
     }
 
@@ -609,7 +610,7 @@ export class PricingEngine {
       lineItems.push({ 
         description: 'Service Surcharges', 
         amount: surcharges, 
-        type: 'surcharge' as const 
+        type: 'base' as const 
       });
     }
 
@@ -617,7 +618,7 @@ export class PricingEngine {
       lineItems.push({ 
         description: 'Discounts Applied', 
         amount: -discounts, 
-        type: 'discount' as const 
+        type: 'base' as const 
       });
     }
 
@@ -715,7 +716,7 @@ export class PricingEngine {
       return isFirstTime;
       
     } catch (error) {
-      logger.warn('First-time customer check failed', { email, error: error.message });
+      logger.warn('First-time customer check failed', { email, error: getErrorMessage(error) });
       return false; // Default to not first-time on error
     }
   }
@@ -743,7 +744,7 @@ export class PricingEngine {
       return discount;
       
     } catch (error) {
-      logger.warn('Promo code check failed', { code, error: error.message });
+      logger.warn('Promo code check failed', { code, error: getErrorMessage(error) });
       return 0;
     }
   }
@@ -769,7 +770,7 @@ export class PricingEngine {
       if (typeof redis.setex === 'function') {
         await redis.setex(cacheKey, 300, JSON.stringify(result));
       } else if (typeof redis.set === 'function') {
-        await redis.set(cacheKey, JSON.stringify(result), { EX: 300 });
+        await redis.set(cacheKey, JSON.stringify(result), 300);
       }
       
       logger.info('Pricing result cached successfully', { 
@@ -780,7 +781,7 @@ export class PricingEngine {
       
     } catch (error) {
       logger.warn('Failed to cache pricing result', { 
-        error: error.message,
+        error: getErrorMessage(error),
         redisClient: Object.getOwnPropertyNames(redis).join(', ')
       });
     }

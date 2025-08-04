@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import crypto from 'crypto';
+import { getErrorMessage } from '@/lib/utils/error-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
     });
     
   } catch (error) {
-    console.error('[CSRF] Token generation failed:', error);
+    console.error('[CSRF] Token generation failed:', getErrorMessage(error));
     return NextResponse.json({
       success: false,
       error: 'Failed to generate CSRF token'

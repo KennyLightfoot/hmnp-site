@@ -549,9 +549,11 @@ class ComprehensiveMonitoring {
         }
       }
 
-      return alerts.sort((a, b) => 
-        new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime()
-      );
+      return alerts.sort((a, b) => {
+        const aTime = (a as any).timestamp ? new Date((a as any).timestamp).getTime() : 0;
+        const bTime = (b as any).timestamp ? new Date((b as any).timestamp).getTime() : 0;
+        return bTime - aTime;
+      });
 
     } catch (error) {
       logger.error('Recent alerts retrieval failed', error as Error);
