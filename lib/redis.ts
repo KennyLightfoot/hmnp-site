@@ -27,18 +27,40 @@ class RedisClient {
   private connectionAttempts = 0;
   private maxConnectionAttempts = 5;
   private reconnectInterval = 5000; // 5 seconds
+  private isInitializing = false;
 
   constructor(private config: RedisConfig = {}) {
-    this.initialize();
+    // Don't initialize immediately - let it be lazy
+  }
+
+  private async ensureInitialized(): Promise<void> {
+    if (this.client && this.isConnected) {
+      return;
+    }
+
+    if (this.isInitializing) {
+      // Wait for initialization to complete
+      while (this.isInitializing) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      return;
+    }
+
+    this.isInitializing = true;
+    try {
+      await this.initialize();
+    } finally {
+      this.isInitializing = false;
+    }
   }
 
   private async initialize() {
     try {
       const redisConfig: RedisConfig = {
-        maxRetriesPerRequest: 3,
-        connectTimeout: 10000,
-        commandTimeout: 5000,
-        enableOfflineQueue: true,
+        maxRetriesPerRequest: 1, // Reduce retries to fail faster
+        connectTimeout: 5000, // Reduce timeout
+        commandTimeout: 3000, // Reduce command timeout
+        enableOfflineQueue: false, // Disable offline queue to fail fast
         keepAlive: 1000,
         noDelay: true,
         lazyConnect: true,
@@ -54,7 +76,7 @@ class RedisClient {
         this.client = new Redis(redisUrl, {
           ...redisConfig,
           tls: isSSL ? {} : undefined,
-          maxRetriesPerRequest: 3,
+          maxRetriesPerRequest: 1, // Fail fast
           lazyConnect: true,
         });
       } else if (process.env.UPSTASH_REDIS_REST_URL) {
@@ -82,7 +104,9 @@ class RedisClient {
       
     } catch (error) {
       logger.error('Redis initialization failed', error as Error);
-      this.scheduleReconnect();
+      // Don't schedule reconnect - just mark as unavailable
+      this.isConnected = false;
+      this.client = null;
     }
   }
 
@@ -153,22 +177,30 @@ class RedisClient {
   }
 
   private async connect(): Promise<void> {
-    if (!this.client) throw new Error('Redis client not initialized');
+    if (!this.client) {
+      this.isConnected = false;
+      return;
+    }
 
     try {
       if (typeof this.client.connect === 'function') {
         await this.client.connect();
       }
       
-      // Test connection
-      await this.ping();
+      // Test connection with timeout
+      const pingPromise = this.client.ping();
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Ping timeout')), 3000)
+      );
+      
+      await Promise.race([pingPromise, timeoutPromise]);
       this.isConnected = true;
       logger.info('Redis connection established');
       
     } catch (error) {
       logger.error('Redis connection failed', error as Error);
       this.isConnected = false;
-      throw error;
+      // Don't throw - just mark as unavailable
     }
   }
 
@@ -187,8 +219,16 @@ class RedisClient {
 
   // Public methods
   async ping(): Promise<string> {
-    if (!this.client) throw new Error('Redis client not available');
-    return await this.client.ping();
+    try {
+      await this.ensureInitialized();
+      if (!this.client || !this.isConnected) {
+        throw new Error('Redis not available');
+      }
+      return await this.client.ping();
+    } catch (error) {
+      logger.error('Redis ping failed', error as Error);
+      throw error;
+    }
   }
 
   async get(key: string): Promise<string | null> {
@@ -356,7 +396,7 @@ class RedisClient {
   }
 
   isAvailable(): boolean {
-    return this.client !== null && this.isConnected;
+    return this.client !== null && this.isConnected && !this.isInitializing;
   }
 
   async disconnect(): Promise<void> {
