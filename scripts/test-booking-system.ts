@@ -38,7 +38,7 @@ class BookingSystemTester {
       const pingResult = await redis.ping();
       
       if (pingResult === 'PONG') {
-        this.addResult('Redis Connection', true, { ping: pingResult });
+        this.addResult('Redis Connection', true, undefined, { ping: pingResult });
         console.log('✅ Redis connection successful');
       } else {
         this.addResult('Redis Connection', false, 'Unexpected ping response');
@@ -66,7 +66,7 @@ class BookingSystemTester {
 
       if (response.ok) {
         const data = await response.json();
-        this.addResult('Pricing API', true, { status: response.status, hasData: !!data });
+        this.addResult('Pricing API', true, undefined, { status: response.status, hasData: !!data });
         console.log('✅ Pricing API working');
       } else {
         this.addResult('Pricing API', false, `HTTP ${response.status}`);
@@ -100,7 +100,7 @@ class BookingSystemTester {
     const missingVars = requiredVars.filter(varName => !process.env[varName]);
     
     if (missingVars.length === 0) {
-      this.addResult('Environment Variables', true, { checked: requiredVars.length });
+      this.addResult('Environment Variables', true, undefined, { checked: requiredVars.length });
       console.log('✅ All required environment variables present');
     } else {
       this.addResult('Environment Variables', false, `Missing: ${missingVars.join(', ')}`);
