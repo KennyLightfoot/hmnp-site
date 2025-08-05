@@ -268,7 +268,7 @@ export default function BookingForm({
     dynamicPricingActive,
     alternatives
   } = useBookingPricing(pricingParams, {
-    onPricingChange: useCallback((pricing) => {
+    onPricingChange: useCallback((pricing: any) => {
       console.log('💰 Pricing updated:', pricing?.totalPrice);
     }, [])
   });
@@ -903,7 +903,7 @@ export default function BookingForm({
             scheduledDateTime={watchedValues.scheduling?.preferredDate && watchedValues.scheduling?.preferredTime ? 
               `${watchedValues.scheduling.preferredDate} ${watchedValues.scheduling.preferredTime}` : 
               undefined}
-            onPricingChange={useCallback((breakdown) => {
+            onPricingChange={useCallback((breakdown: any) => {
               console.log('💰 Interactive pricing updated:', breakdown);
               // Could integrate with form state if needed
             }, [])}
