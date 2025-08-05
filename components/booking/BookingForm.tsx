@@ -44,11 +44,11 @@ import {
 
 // Import existing step components
 import ServiceSelector from './ServiceSelector';
-// import CustomerInfoStep from './steps/CustomerInfoStep';
-// import LocationStep from './steps/LocationStep';
-// import SchedulingStep from './steps/SchedulingStep';
-// import EnhancedSchedulingStep from './steps/EnhancedSchedulingStep';
-// import ReviewStep from './steps/ReviewStep';
+import CustomerInfoStep from './steps/CustomerInfoStep';
+import LocationStep from './steps/LocationStep';
+import SchedulingStep from './steps/SchedulingStep';
+import EnhancedSchedulingStep from './steps/EnhancedSchedulingStep';
+import ReviewStep from './steps/ReviewStep';
 
 // Import AI Booking Assistant
 import AIBookingAssistant from './AIBookingAssistant';
@@ -121,7 +121,7 @@ const BOOKING_STEPS = [
     shortTitle: 'Contact',
     description: 'Contact details for confirmation',
     mobileDescription: 'Your contact info',
-    component: () => <div className="p-6 text-center">Customer Info Step (Temporarily Disabled)</div>,
+    component: CustomerInfoStep,
     icon: Users,
     estimatedTime: '1 min',
     tips: ['We\'ll send confirmation to this email', 'Phone for urgent updates', 'Your info is secure']
@@ -132,7 +132,7 @@ const BOOKING_STEPS = [
     shortTitle: 'Where',
     description: 'Where should we meet you?',
     mobileDescription: 'Meeting location',
-    component: () => <div className="p-6 text-center">Location Step (Temporarily Disabled)</div>,
+    component: LocationStep,
     icon: MapPin,
     estimatedTime: '2 min',
     tips: ['We travel to you', 'RON: No location needed', 'Free travel within radius']
@@ -143,7 +143,7 @@ const BOOKING_STEPS = [
     shortTitle: 'When',
     description: 'Pick your preferred date and time',
     mobileDescription: 'Pick date & time',
-    component: () => <div className="p-6 text-center">Scheduling Step (Temporarily Disabled)</div>,
+    component: EnhancedSchedulingStep,
     icon: Calendar,
     estimatedTime: '2 min',
     tips: ['Same-day available', 'Weekend appointments', 'Flexible timing options']
@@ -154,7 +154,7 @@ const BOOKING_STEPS = [
     shortTitle: 'Confirm',
     description: 'Review and confirm your booking',
     mobileDescription: 'Final review',
-    component: () => <div className="p-6 text-center">Review Step (Temporarily Disabled)</div>,
+    component: ReviewStep,
     icon: CheckCircle,
     estimatedTime: '1 min',
     tips: ['Double-check details', 'Secure payment', 'Instant confirmation']
