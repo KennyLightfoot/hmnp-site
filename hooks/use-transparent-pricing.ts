@@ -126,7 +126,7 @@ export function useTransparentPricing(
   const [isCalculating, setIsCalculating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastRequest, setLastRequest] = useState<TransparentPricingRequest | null>(initialRequest || null);
-  const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Calculate pricing function
   const calculatePricing = useCallback(async (request: TransparentPricingRequest) => {
@@ -204,16 +204,16 @@ export function useTransparentPricing(
 
   // Debounced calculation
   const debouncedCalculatePricing = useCallback(async (request: TransparentPricingRequest) => {
-    if (debounceTimeout) {
-      clearTimeout(debounceTimeout);
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
     }
 
     const timeout = setTimeout(() => {
       calculatePricing(request);
     }, debounceMs);
 
-    setDebounceTimeout(timeout);
-  }, [calculatePricing, debounceMs, debounceTimeout]);
+    debounceTimeoutRef.current = timeout;
+  }, [calculatePricing, debounceMs]);
 
   // Recalculate using last request
   const recalculate = useCallback(async () => {
@@ -239,11 +239,11 @@ export function useTransparentPricing(
   // Cleanup debounce timeout
   useEffect(() => {
     return () => {
-      if (debounceTimeout) {
-        clearTimeout(debounceTimeout);
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
       }
     };
-  }, [debounceTimeout]);
+  }, []);
 
   // Memoized helper values
   const totalPrice = useMemo(() => pricing?.totalPrice || 0, [pricing]);
