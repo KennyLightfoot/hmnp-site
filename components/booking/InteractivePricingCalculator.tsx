@@ -13,7 +13,7 @@
  * ✅ Mobile-optimized interface
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -273,13 +273,26 @@ export default function InteractivePricingCalculator({
     }
   }, [address, serviceType]);
 
+  // Use ref to track previous pricing to prevent unnecessary callbacks
+  const prevPricingRef = useRef<PricingBreakdown | null>(null);
+  
   // Effect to notify parent of pricing changes - optimized to prevent excessive updates
   useEffect(() => {
     // Only call onPricingChange if it's actually a function and we have meaningful data
+    // and the pricing has actually changed
     if (typeof onPricingChange === 'function' && pricingBreakdown.total > 0) {
-      onPricingChange(pricingBreakdown);
+      const prevPricing = prevPricingRef.current;
+      const hasChanged = !prevPricing || 
+        prevPricing.total !== pricingBreakdown.total ||
+        prevPricing.serviceBase !== pricingBreakdown.serviceBase ||
+        prevPricing.travelFee !== pricingBreakdown.travelFee;
+      
+      if (hasChanged) {
+        prevPricingRef.current = pricingBreakdown;
+        onPricingChange(pricingBreakdown);
+      }
     }
-  }, [pricingBreakdown.total, pricingBreakdown.serviceBase, pricingBreakdown.travelFee, onPricingChange]);
+  }, [pricingBreakdown, onPricingChange]);
 
   return (
     <div className={`space-y-4 ${className}`}>

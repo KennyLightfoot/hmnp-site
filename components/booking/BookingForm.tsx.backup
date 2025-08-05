@@ -44,11 +44,11 @@ import {
 
 // Import existing step components
 import ServiceSelector from './ServiceSelector';
-// import CustomerInfoStep from './steps/CustomerInfoStep';
-// import LocationStep from './steps/LocationStep';
-// import SchedulingStep from './steps/SchedulingStep';
-// import EnhancedSchedulingStep from './steps/EnhancedSchedulingStep';
-// import ReviewStep from './steps/ReviewStep';
+import CustomerInfoStep from './steps/CustomerInfoStep';
+import LocationStep from './steps/LocationStep';
+import SchedulingStep from './steps/SchedulingStep';
+import EnhancedSchedulingStep from './steps/EnhancedSchedulingStep';
+import ReviewStep from './steps/ReviewStep';
 
 // Import AI Booking Assistant
 import AIBookingAssistant from './AIBookingAssistant';
@@ -121,7 +121,7 @@ const BOOKING_STEPS = [
     shortTitle: 'Contact',
     description: 'Contact details for confirmation',
     mobileDescription: 'Your contact info',
-    component: () => <div className="p-6 text-center">Customer Info Step (Temporarily Disabled)</div>,
+    component: CustomerInfoStep,
     icon: Users,
     estimatedTime: '1 min',
     tips: ['We\'ll send confirmation to this email', 'Phone for urgent updates', 'Your info is secure']
@@ -132,7 +132,7 @@ const BOOKING_STEPS = [
     shortTitle: 'Where',
     description: 'Where should we meet you?',
     mobileDescription: 'Meeting location',
-    component: () => <div className="p-6 text-center">Location Step (Temporarily Disabled)</div>,
+    component: LocationStep,
     icon: MapPin,
     estimatedTime: '2 min',
     tips: ['We travel to you', 'RON: No location needed', 'Free travel within radius']
@@ -143,7 +143,7 @@ const BOOKING_STEPS = [
     shortTitle: 'When',
     description: 'Pick your preferred date and time',
     mobileDescription: 'Pick date & time',
-    component: () => <div className="p-6 text-center">Scheduling Step (Temporarily Disabled)</div>,
+    component: EnhancedSchedulingStep,
     icon: Calendar,
     estimatedTime: '2 min',
     tips: ['Same-day available', 'Weekend appointments', 'Flexible timing options']
@@ -154,7 +154,7 @@ const BOOKING_STEPS = [
     shortTitle: 'Confirm',
     description: 'Review and confirm your booking',
     mobileDescription: 'Final review',
-    component: () => <div className="p-6 text-center">Review Step (Temporarily Disabled)</div>,
+    component: ReviewStep,
     icon: CheckCircle,
     estimatedTime: '1 min',
     tips: ['Double-check details', 'Secure payment', 'Instant confirmation']
@@ -205,26 +205,9 @@ export default function BookingForm({
   const [isMobile, setIsMobile] = useState(false);
   
   // AI Assistant state
-  const [stepStartTime, setStepStartTime] = useState(0);
+  const [stepStartTime, setStepStartTime] = useState(Date.now());
   const [userActions, setUserActions] = useState<string[]>([]);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  
-  // Initialize stepStartTime after mount to prevent hydration mismatch
-  useEffect(() => {
-    setStepStartTime(Date.now());
-  }, []);
-
-  // Memoize service selection callback to prevent infinite re-renders
-  const handleServiceSelect = useCallback((serviceType: string) => {
-    form.setValue('serviceType', serviceType);
-  }, [form]);
-
-  // Memoize step update callback to prevent infinite re-renders
-  const handleStepUpdate = useCallback((updates: any) => {
-    Object.entries(updates).forEach(([key, value]) => {
-      form.setValue(key as any, value);
-    });
-  }, [form]);
 
   // Business Rules state
   const [businessRulesValidation, setBusinessRulesValidation] = useState<{
@@ -268,9 +251,9 @@ export default function BookingForm({
     dynamicPricingActive,
     alternatives
   } = useBookingPricing(pricingParams, {
-    onPricingChange: useCallback((pricing) => {
+    onPricingChange: (pricing) => {
       console.log('💰 Pricing updated:', pricing?.totalPrice);
-    }, [])
+    }
   });
 
   // Mobile detection
@@ -675,13 +658,18 @@ export default function BookingForm({
                   {currentStep === 0 ? (
                     <CurrentStepComponent
                       selectedService={watchedValues.serviceType}
-                      onServiceSelect={handleServiceSelect}
+                      onServiceSelect={(serviceType: string) => 
+                        form.setValue('serviceType', serviceType)}
                       errors={formErrors}
                     />
                   ) : (
                     <CurrentStepComponent
                       data={watchedValues}
-                      onUpdate={handleStepUpdate}
+                      onUpdate={(updates: any) => {
+                        Object.entries(updates).forEach(([key, value]) => {
+                          form.setValue(key as any, value);
+                        });
+                      }}
                       errors={formErrors}
                       pricing={null}
                     />
@@ -903,10 +891,10 @@ export default function BookingForm({
             scheduledDateTime={watchedValues.scheduling?.preferredDate && watchedValues.scheduling?.preferredTime ? 
               `${watchedValues.scheduling.preferredDate} ${watchedValues.scheduling.preferredTime}` : 
               undefined}
-            onPricingChange={useCallback((breakdown) => {
+            onPricingChange={(breakdown) => {
               console.log('💰 Interactive pricing updated:', breakdown);
               // Could integrate with form state if needed
-            }, [])}
+            }}
             isMobile={isMobile}
             className="w-full"
           />

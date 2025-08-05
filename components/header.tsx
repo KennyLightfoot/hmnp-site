@@ -1,6 +1,6 @@
 "use client"
 
-import Image from "next/image"
+// import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { Menu, X } from "lucide-react"
@@ -34,7 +34,7 @@ export default function Header() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center">
-            <Image src="/logo.png" alt="Houston Mobile Notary Pros" width={150} height={150} className="h-16 w-auto" />
+            <img src="/logo.png" alt="Houston Mobile Notary Pros" className="h-16 w-auto" />
           </Link>
 
           {/* Mobile menu button */}

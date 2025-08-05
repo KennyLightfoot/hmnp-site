@@ -109,19 +109,9 @@ export default function ThirdPartyScripts() {
       {/* Service Worker Registration - TEMPORARILY DISABLED */}
       <Script id="service-worker" strategy="afterInteractive">
         {`
-          // Service Worker temporarily disabled to fix offline redirect loop
+          // Service Worker disabled to prevent 404 errors
           // Note: Using console.log here instead of logger because this runs in browser context
-          
-          // Unregister existing service worker if present
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
-              for(let registration of registrations) {
-                registration.unregister().then(function(boolean) {
-                  // Note: Using console.log here instead of logger because this runs in browser context
-                });
-              }
-            });
-          }
+          console.log('Service worker functionality disabled');
         `}
       </Script>
       

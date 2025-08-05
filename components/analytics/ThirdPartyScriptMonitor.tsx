@@ -127,37 +127,13 @@ export default function ThirdPartyScriptMonitor() {
         })
       }
 
-      // Check Service Worker
-      try {
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistration('/sw.js').then(registration => {
-            const swStatus: ScriptStatus = {
-              name: 'Service Worker',
-              loaded: !!registration,
-              error: registration ? undefined : 'Not registered',
-              lastChecked: now
-            }
-            setScriptStatuses(prev => {
-              const filtered = prev.filter(s => s.name !== 'Service Worker')
-              return [...filtered, swStatus]
-            })
-          })
-        } else {
-          statuses.push({
-            name: 'Service Worker',
-            loaded: false,
-            error: 'Service Worker not supported',
-            lastChecked: now
-          })
-        }
-      } catch (error) {
-        statuses.push({
-          name: 'Service Worker',
-          loaded: false,
-          error: `Error: ${error}`,
-          lastChecked: now
-        })
-      }
+      // Check Service Worker (disabled for now to prevent 404 errors)
+      statuses.push({
+        name: 'Service Worker',
+        loaded: false,
+        error: 'Disabled - no service worker configured',
+        lastChecked: now
+      })
 
       setScriptStatuses(statuses)
     }

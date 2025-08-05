@@ -54,14 +54,14 @@ export function CustomerPortalActions() {
     if ('Notification' in window) {
       setPushPermission(Notification.permission)
       
-      // Check if push notifications are already enabled
-      if ('serviceWorker' in navigator && 'PushManager' in window) {
-        navigator.serviceWorker.ready.then(registration => {
-          registration.pushManager.getSubscription().then(subscription => {
-            setPushEnabled(!!subscription)
-          })
-        })
-      }
+      // Check if push notifications are already enabled (disabled to prevent 404 errors)
+      // if ('serviceWorker' in navigator && 'PushManager' in window) {
+      //   navigator.serviceWorker.ready.then(registration => {
+      //     registration.pushManager.getSubscription().then(subscription => {
+      //       setPushEnabled(!!subscription)
+      //     })
+      //   })
+      // }
     }
 
     // Listen for PWA install prompt
@@ -113,12 +113,16 @@ export function CustomerPortalActions() {
       
       if (permission === 'granted') {
         try {
-          // Subscribe to push notifications
-          const registration = await navigator.serviceWorker.ready
-          const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
-          })
+          // Subscribe to push notifications (disabled to prevent 404 errors)
+          // const registration = await navigator.serviceWorker.ready
+          // const subscription = await registration.pushManager.subscribe({
+          //   userVisibleOnly: true,
+          //   applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+          // })
+          
+          // Temporarily disable push notifications
+          toast.error('Push notifications are temporarily disabled')
+          return
 
           // Send subscription to server
           const response = await fetch('/api/push/subscribe', {
@@ -143,9 +147,13 @@ export function CustomerPortalActions() {
       }
     } else {
       try {
-        // Unsubscribe from push notifications
-        const registration = await navigator.serviceWorker.ready
-        const subscription = await registration.pushManager.getSubscription()
+        // Unsubscribe from push notifications (disabled to prevent 404 errors)
+        // const registration = await navigator.serviceWorker.ready
+        // const subscription = await registration.pushManager.getSubscription()
+        
+        // Temporarily disable push notifications
+        toast.error('Push notifications are temporarily disabled')
+        return
         
         if (subscription) {
           await subscription.unsubscribe()

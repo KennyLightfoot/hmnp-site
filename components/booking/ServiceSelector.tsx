@@ -571,11 +571,7 @@ export default function ServiceSelector({
       )}
 
       {/* Service Selection */}
-      <RadioGroup 
-        value={selectedService} 
-        onValueChange={onServiceSelect}
-        className="grid gap-4 md:grid-cols-2"
-      >
+      <div className="grid gap-4 md:grid-cols-2">
         {enhancedServices.map((service) => {
           const isSelected = selectedService === service.id;
           const isHovered = hoveredService === service.id;
@@ -583,10 +579,11 @@ export default function ServiceSelector({
           
           return (
             <div key={service.id} className="relative">
-              <Label
-                htmlFor={service.id}
+              <button
+                type="button"
+                onClick={() => onServiceSelect(service.id)}
                 data-testid="service-option"
-                className="cursor-pointer"
+                className="w-full text-left cursor-pointer"
                 onMouseEnter={() => setHoveredService(service.id)}
                 onMouseLeave={() => setHoveredService(null)}
               >
@@ -601,11 +598,15 @@ export default function ServiceSelector({
                   <CardHeader className="relative pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-3">
-                        <RadioGroupItem 
-                          value={service.id} 
-                          id={service.id}
-                          className="mt-1"
-                        />
+                        <div className={`w-4 h-4 rounded-full border-2 mt-1 flex items-center justify-center ${
+                          isSelected 
+                            ? 'border-blue-500 bg-blue-500' 
+                            : 'border-gray-300'
+                        }`}>
+                          {isSelected && (
+                            <div className="w-2 h-2 rounded-full bg-white"></div>
+                          )}
+                        </div>
                         <div>
                           <CardTitle className="flex items-center space-x-2">
                             <span className="text-lg">{service.name}</span>
@@ -689,11 +690,11 @@ export default function ServiceSelector({
                     </div>
                   </CardContent>
                 </Card>
-              </Label>
-            </div>
-          );
-        })}
-      </RadioGroup>
+                </button>
+              </div>
+            );
+          })}
+        </div>
 
       {/* Service Type Comparison */}
       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">

@@ -1,4 +1,4 @@
-import Image from "next/image"
+// import Image from "next/image"
 import Link from "next/link"
 import { Facebook } from 'lucide-react'
 
@@ -8,11 +8,9 @@ export default function Footer() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-center mb-6">
           <Link href="/">
-            <Image
+            <img
               src="/logo.png"
               alt="Houston Mobile Notary Pros"
-              width={120}
-              height={120}
               className="h-24 w-auto mb-4"
             />
           </Link>

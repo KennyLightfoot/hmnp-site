@@ -60,6 +60,32 @@ const nextConfig = {
   
   // Webpack optimization for production builds
   webpack: (config, { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }) => {
+    // Fix module loading race conditions
+    config.resolve.fallback = {
+      ...(config.resolve.fallback || {}),
+      fs: false,
+      net: false,
+      tls: false,
+      crypto: false,
+      stream: false,
+      url: false,
+      zlib: false,
+      http: false,
+      https: false,
+      assert: false,
+      os: false,
+      path: false,
+    };
+
+    // Ensure proper module resolution
+    config.resolve.modules = ['node_modules', ...(config.resolve.modules || [])];
+    
+    // Fix async script loading issues
+    if (!isServer) {
+      config.output.chunkLoadingGlobal = 'webpackChunkLoad';
+      config.output.globalObject = 'self';
+    }
+
     // Exclude test files from production builds
     if (!dev) {
       config.module.rules.push({
@@ -152,13 +178,32 @@ const nextConfig = {
     }
 
     // Stub out Node.js-only modules when bundling for the browser so libraries
-    // like `ioredis` don’t cause webpack to fail during client compilation.
+    // like `ioredis` don't cause webpack to fail during client compilation.
     if (!isServer) {
       config.resolve.fallback = {
         ...(config.resolve.fallback || {}),
         dns: false,
         net: false,
         tls: false,
+      };
+      
+      // Fix module loading race conditions for client-side
+      config.optimization = {
+        ...config.optimization,
+        moduleIds: 'deterministic',
+        chunkIds: 'deterministic',
+        splitChunks: {
+          ...config.optimization.splitChunks,
+          automaticNameDelimiter: '-',
+          cacheGroups: {
+            ...config.optimization.splitChunks?.cacheGroups,
+            default: {
+              minChunks: 1,
+              priority: -20,
+              reuseExistingChunk: true,
+            },
+          },
+        },
       };
     }
 
