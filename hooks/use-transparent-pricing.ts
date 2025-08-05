@@ -309,11 +309,10 @@ export function useBookingPricing(
     onPricingChange?: (pricing: TransparentPricingResult | null) => void;
   }
 ) {
-  const request = useMemo((): TransparentPricingRequest | undefined => {
-    if (!formData.serviceType) return undefined;
-
+  // Always provide a consistent request object to prevent hook violations
+  const request = useMemo((): TransparentPricingRequest => {
     return {
-      serviceType: formData.serviceType,
+      serviceType: formData.serviceType || 'STANDARD_NOTARY', // Default service type
       documentCount: formData.documentCount || 1,
       signerCount: 1, // Default for now
       address: formData.address,
