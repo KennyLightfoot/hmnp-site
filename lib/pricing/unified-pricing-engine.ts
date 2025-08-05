@@ -123,12 +123,13 @@ export const TransparentPricingRequestSchema = z.object({
   address: z.string().trim().nullable().optional(),
   scheduledDateTime: z.string().datetime().optional(),
   customerType: z.enum(['new', 'returning', 'loyalty']).default('new'),
-  customerEmail: z.string().email().optional(),
+  customerEmail: z.string().email().optional().or(z.literal('')),
   referralCode: z.string().optional(),
   promoCode: z.string().optional(),
   requestId: z.string().optional()
 }).superRefine((data, ctx) => {
-  if (data.serviceType !== 'RON_SERVICES' && isAddressMissing(data.address)) {
+  // Only validate address if it's provided and not for RON services
+  if (data.serviceType !== 'RON_SERVICES' && data.address && isAddressMissing(data.address)) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: 'Address is required for in-person services.',

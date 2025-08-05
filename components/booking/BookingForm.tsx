@@ -227,12 +227,12 @@ export default function BookingForm({
   const pricingParams = useMemo(() => ({
     serviceType: watchedValues.serviceType,
     documentCount: 1, // Could be enhanced to get from form
-    address: watchedValues.location?.address,
+    address: watchedValues.location?.address?.trim() || undefined,
     scheduledDateTime: watchedValues.scheduling?.preferredDate ? 
       `${watchedValues.scheduling.preferredDate} ${watchedValues.scheduling.preferredTime || ''}` : 
       undefined,
     customerType: 'new' as const, // Could be enhanced based on user auth
-    customerEmail: watchedValues.customer?.email
+    customerEmail: watchedValues.customer?.email?.trim() || undefined
   }), [
     watchedValues.serviceType,
     watchedValues.location?.address,
