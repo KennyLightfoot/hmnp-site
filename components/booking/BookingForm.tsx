@@ -270,7 +270,7 @@ export default function BookingForm({
   } = useBookingPricing(pricingParams, {
     onPricingChange: useCallback((pricing: any) => {
       console.log('💰 Pricing updated:', pricing?.totalPrice);
-    }, [])
+    }, []) // Empty dependency array to ensure stable callback
   });
 
   // Mobile detection

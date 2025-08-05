@@ -107,6 +107,19 @@ export function useTransparentPricing(
     onError
   } = options;
 
+  // Use refs to store callbacks to prevent hook violations
+  const onPricingChangeRef = useRef(onPricingChange);
+  const onErrorRef = useRef(onError);
+  
+  // Update refs when callbacks change
+  useEffect(() => {
+    onPricingChangeRef.current = onPricingChange;
+  }, [onPricingChange]);
+  
+  useEffect(() => {
+    onErrorRef.current = onError;
+  }, [onError]);
+
   // State
   const [pricing, setPricing] = useState<TransparentPricingResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -168,7 +181,7 @@ export function useTransparentPricing(
       };
 
       setPricing(transformedResult);
-      onPricingChange?.(transformedResult);
+      onPricingChangeRef.current?.(transformedResult);
 
       console.log('✅ Transparent pricing calculated:', {
         totalPrice: transformedResult.totalPrice,
@@ -182,12 +195,12 @@ export function useTransparentPricing(
       
       setError(errorMessage);
       setPricing(null);
-      onError?.(errorMessage);
-      onPricingChange?.(null);
+      onErrorRef.current?.(errorMessage);
+      onPricingChangeRef.current?.(null);
     } finally {
       setIsCalculating(false);
     }
-  }, [onPricingChange, onError]);
+  }, []); // No dependencies since we use refs for callbacks
 
   // Debounced calculation
   const debouncedCalculatePricing = useCallback(async (request: TransparentPricingRequest) => {
@@ -309,26 +322,32 @@ export function useBookingPricing(
     onPricingChange?: (pricing: TransparentPricingResult | null) => void;
   }
 ) {
+  // Ensure formData is always defined to prevent hook violations
+  const safeFormData = useMemo(() => formData || {}, [formData]);
+  
   // Always provide a consistent request object to prevent hook violations
   const request = useMemo((): TransparentPricingRequest => {
     return {
-      serviceType: formData.serviceType || 'STANDARD_NOTARY', // Default service type
-      documentCount: formData.documentCount || 1,
+      serviceType: safeFormData.serviceType || 'STANDARD_NOTARY', // Default service type
+      documentCount: safeFormData.documentCount || 1,
       signerCount: 1, // Default for now
-      address: formData.address,
-      scheduledDateTime: formData.scheduledDateTime,
-      customerType: formData.customerType || 'new',
-      customerEmail: formData.customerEmail,
-      referralCode: formData.referralCode,
-      promoCode: formData.promoCode
+      address: safeFormData.address,
+      scheduledDateTime: safeFormData.scheduledDateTime,
+      customerType: safeFormData.customerType || 'new',
+      customerEmail: safeFormData.customerEmail,
+      referralCode: safeFormData.referralCode,
+      promoCode: safeFormData.promoCode
     };
-  }, [formData]);
+  }, [safeFormData]);
 
-  return useTransparentPricing(request, {
+  // Ensure options is always defined to prevent hook violations
+  const safeOptions = useMemo(() => ({
     autoCalculate: true,
     debounceMs: 750, // Slightly longer for form fields
     ...options
-  });
+  }), [options]);
+
+  return useTransparentPricing(request, safeOptions);
 }
 
 // Specialized hook for service comparison
