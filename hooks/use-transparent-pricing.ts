@@ -8,7 +8,7 @@
  * throughout the booking flow using the unified pricing engine.
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 // Types for the hook
 interface TransparentPricingRequest {
