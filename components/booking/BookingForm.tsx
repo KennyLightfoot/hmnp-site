@@ -241,16 +241,22 @@ export default function BookingForm({
   const formErrors = form.formState.errors;
   
   // Memoize pricing parameters to prevent hook violations
-  const pricingParams = useMemo(() => ({
-    serviceType: watchedValues.serviceType,
-    documentCount: 1, // Could be enhanced to get from form
-    address: watchedValues.location?.address?.trim() || undefined,
-    scheduledDateTime: watchedValues.scheduling?.preferredDate ? 
-      `${watchedValues.scheduling.preferredDate} ${watchedValues.scheduling.preferredTime || ''}` : 
-      undefined,
-    customerType: 'new' as const, // Could be enhanced based on user auth
-    customerEmail: watchedValues.customer?.email?.trim() || undefined
-  }), [
+  const pricingParams = useMemo(() => {
+    // Only include scheduledDateTime if both date and time are provided
+    const hasDate = watchedValues.scheduling?.preferredDate;
+    const hasTime = watchedValues.scheduling?.preferredTime;
+    
+    return {
+      serviceType: watchedValues.serviceType,
+      documentCount: 1, // Could be enhanced to get from form
+      address: watchedValues.location?.address?.trim() || undefined,
+      scheduledDateTime: (hasDate && hasTime) ? 
+        `${hasDate} ${hasTime}` : 
+        undefined,
+      customerType: 'new' as const, // Could be enhanced based on user auth
+      customerEmail: watchedValues.customer?.email?.trim() || undefined
+    };
+  }, [
     watchedValues.serviceType,
     watchedValues.location?.address,
     watchedValues.scheduling?.preferredDate,
