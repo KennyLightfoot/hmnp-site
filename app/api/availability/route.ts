@@ -1,8 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { DateTime } from "luxon";
 import type { TimeSlot } from "@/lib/types/booking";
+import { getAvailableSlots, getCalendars, testCalendarConnection } from "@/lib/ghl-calendar";
 
-// Mock – in real app you'd query DB
+// Fallback mock function if GHL is not available
 function generateMockSlots(date: DateTime): TimeSlot[] {
   const slots: TimeSlot[] = [];
   const startHour = 9;
@@ -80,7 +81,66 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Invalid date format. Use YYYY-MM-DD." }, { status: 400 });
   
   try {
-    const availableSlots = generateMockSlots(requestedDate);
+    let availableSlots: TimeSlot[] = [];
+    
+    // Try to get real availability from GHL calendars with timeout
+    try {
+      // Test GHL connection first with timeout
+      const connectionPromise = testCalendarConnection();
+      const isConnected = await Promise.race([
+        connectionPromise,
+        new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000)) // 5 second timeout
+      ]);
+      
+      if (isConnected) {
+        // Get all calendars for the location
+        const calendars = await getCalendars();
+        
+        if (calendars.length > 0) {
+          // Use the first calendar (you can modify this logic based on your needs)
+          const primaryCalendar = calendars[0];
+          const calendarId = primaryCalendar.id;
+          
+          // Get start and end of the requested date
+          const startOfDay = requestedDate.startOf('day');
+          const endOfDay = requestedDate.endOf('day');
+          
+          // Get available slots from GHL with timeout
+          const slotsPromise = getAvailableSlots(
+            calendarId,
+            startOfDay.toISO(),
+            endOfDay.toISO(),
+            60 // 60-minute duration
+          );
+          
+          const ghlSlots = await Promise.race([
+            slotsPromise,
+            new Promise<any[]>((resolve) => setTimeout(() => resolve([]), 10000)) // 10 second timeout
+          ]);
+          
+          // Transform GHL slots to our TimeSlot format
+          availableSlots = ghlSlots.map((slot: any) => ({
+            startTime: slot.startTime || slot.start,
+            endTime: slot.endTime || slot.end,
+            duration: slot.duration || 60,
+            demand: slot.demand || 'low',
+            available: slot.available !== false
+          } as TimeSlot));
+          
+          console.log(`✅ GHL availability fetched for ${dateStr}: ${availableSlots.length} slots`);
+        } else {
+          console.warn('No GHL calendars found, falling back to mock data');
+          availableSlots = generateMockSlots(requestedDate);
+        }
+      } else {
+        console.warn('GHL connection failed, falling back to mock data');
+        availableSlots = generateMockSlots(requestedDate);
+      }
+    } catch (ghlError) {
+      console.warn('GHL availability fetch failed, falling back to mock data:', ghlError);
+      availableSlots = generateMockSlots(requestedDate);
+    }
+    
     const response = { availableSlots };
     
     // Cache the response
