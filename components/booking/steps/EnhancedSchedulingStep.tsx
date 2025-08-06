@@ -284,12 +284,14 @@ export default function EnhancedSchedulingStep({
 
   // Handle time slot selection
   const handleTimeSelect = (slot: EnhancedTimeSlot) => {
-    setValue('scheduling.preferredTime', slot.displayTime);
+    // Ensure time is in HH:MM format for validation
+    const formattedTime = slot.displayTime;
+    setValue('scheduling.preferredTime', formattedTime);
     setValue('scheduling.estimatedDuration', slot.duration);
     onUpdate({ 
       scheduling: { 
         ...watchedScheduling, 
-        preferredTime: slot.displayTime,
+        preferredTime: formattedTime,
         estimatedDuration: slot.duration
       } 
     });

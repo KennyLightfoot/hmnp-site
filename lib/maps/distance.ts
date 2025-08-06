@@ -184,7 +184,14 @@ export class DistanceHelper {
         };
       }
       
-      throw error;
+      // Use fallback distance calculation instead of throwing error
+      console.warn('Using fallback distance calculation due to API failure');
+      const fallbackResult = this.calculateFallbackDistance(destination, serviceType);
+      return {
+        ...fallbackResult,
+        source: 'fallback',
+        cacheHit: false
+      };
     }
   }
 
@@ -197,7 +204,9 @@ export class DistanceHelper {
   ): Promise<Omit<CachedDistanceResult, 'source' | 'cacheHit'>> {
     const apiKey = getCleanApiKey('server');
     if (!apiKey) {
-      throw new Error('Google Maps API key not configured');
+      console.warn('Google Maps API key not configured, using fallback distance calculation');
+      // Use fallback distance calculation instead of throwing error
+      return this.calculateFallbackDistance(destination, serviceType);
     }
 
     const url = new URL('https://maps.googleapis.com/maps/api/distancematrix/json');
@@ -509,6 +518,41 @@ export class DistanceHelper {
     
     await Promise.allSettled(promises);
     logger.info('Cache warm-up completed');
+  }
+
+  /**
+   * Calculate fallback distance when Google Maps API is unavailable
+   */
+  private calculateFallbackDistance(
+    destination: string,
+    serviceType: string
+  ): Omit<CachedDistanceResult, 'source' | 'cacheHit'> {
+    // Use the estimateDistanceFromAddress function from maps config
+    const { estimateDistanceFromAddress } = require('@/lib/config/maps');
+    const estimatedDistance = estimateDistanceFromAddress(destination);
+    
+    // Calculate travel fee
+    const { calculateTravelFee } = require('@/lib/config/maps');
+    const travelFee = calculateTravelFee(estimatedDistance, serviceType);
+    
+    // Estimate duration (1 minute per mile + 10 minutes base)
+    const estimatedMinutes = Math.round(estimatedDistance + 10);
+    
+    return {
+      distance: {
+        miles: estimatedDistance,
+        kilometers: estimatedDistance * 1.60934,
+        text: `${estimatedDistance} mi`
+      },
+      duration: {
+        minutes: estimatedMinutes,
+        seconds: estimatedMinutes * 60,
+        text: `${estimatedMinutes} mins`
+      },
+      travelFee,
+      isWithinServiceArea: estimatedDistance <= 50, // 50 mile max service area
+      calculatedAt: new Date().toISOString()
+    };
   }
 }
 

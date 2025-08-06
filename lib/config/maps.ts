@@ -25,7 +25,7 @@ detectEnvironmentCorruption();
  * 
  * FIXED: Now uses comprehensive environment variable cleaning
  */
-export const GOOGLE_MAPS_SERVER_API_KEY = getCleanEnv('GOOGLE_MAPS_API_KEY') || '';
+export const GOOGLE_MAPS_SERVER_API_KEY = getCleanEnv('GOOGLE_MAPS_API_KEY') || process.env.GOOGLE_MAPS_API_KEY || '';
 
 /**
  * Client-side API key for frontend operations (RESTRICTED)
@@ -34,7 +34,7 @@ export const GOOGLE_MAPS_SERVER_API_KEY = getCleanEnv('GOOGLE_MAPS_API_KEY') || 
  * 
  * FIXED: Now uses comprehensive environment variable cleaning
  */
-export const GOOGLE_MAPS_CLIENT_API_KEY = getCleanEnv('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY') || '';
+export const GOOGLE_MAPS_CLIENT_API_KEY = getCleanEnv('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY') || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
 /**
  * Configuration validation
