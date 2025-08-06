@@ -52,7 +52,10 @@
     "booking:audit": "tsx scripts/audit-booking-config.ts",
     "booking:fix-hours": "tsx scripts/fix-business-hours.ts",
     "test:booking": "tsx scripts/test-booking-system.ts",
-    "test:booking:quick": "pnpm test:unit --run tests/unit/booking-system.test.ts"
+    "test:booking:quick": "pnpm test:unit --run tests/unit/booking-system.test.ts",
+    "v0:check-deps": "tsx scripts/v0-integration.ts check-deps",
+    "v0:validate": "tsx scripts/v0-integration.ts validate",
+    "v0:integrate": "tsx scripts/v0-integration.ts integrate"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -691,9 +691,9 @@ export default function ServiceSelector({
                   </CardContent>
                 </Card>
                 </button>
-              </div>
-            );
-          })}
+            </div>
+          );
+        })}
         </div>
 
       {/* Service Type Comparison */}
