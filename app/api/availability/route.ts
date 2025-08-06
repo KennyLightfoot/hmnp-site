@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
   if (!dateStr) return NextResponse.json({ error: "Date parameter is required" }, { status: 400 });
   
   // Rate limiting check
-  const clientIP = request.headers.get('x-forwarded-for') || request.ip || 'unknown';
+  const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
   const now = Date.now();
   const clientKey = `rate-${clientIP}`;
   
