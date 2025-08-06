@@ -169,7 +169,7 @@ export default function BookingForm({
 }: BookingFormProps) {
   
   // Memoize initialData to prevent form recreation
-  const memoizedInitialData = useMemo(() => initialData, [JSON.stringify(initialData)]);
+  const memoizedInitialData = useMemo(() => initialData, []);
   
   // Form state
   const form = useForm<CreateBooking>({

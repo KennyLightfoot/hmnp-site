@@ -229,10 +229,32 @@ export default function LocationStep({
           const suggestions: AddressSuggestion[] = data.predictions.slice(0, 5).map((prediction: any) => {
             // Parse the formatted address to extract components
             const addressParts = prediction.description.split(', ');
-            const city = addressParts[addressParts.length - 3] || '';
-            const stateZip = addressParts[addressParts.length - 2] || '';
-            const state = stateZip.split(' ')[0] || '';
-            const zipCode = stateZip.split(' ')[1] || '';
+            
+            // Handle different address formats
+            let city = '';
+            let state = '';
+            let zipCode = '';
+            
+            if (addressParts.length >= 3) {
+              // Format: "Street Address, City, State ZIP"
+              city = addressParts[addressParts.length - 3] || '';
+              const stateZipPart = addressParts[addressParts.length - 2] || '';
+              const stateZipMatch = stateZipPart.match(/^([A-Z]{2})\s+(\d{5}(?:-\d{4})?)$/);
+              
+              if (stateZipMatch) {
+                state = stateZipMatch[1];
+                zipCode = stateZipMatch[2];
+              } else {
+                // Fallback: try to extract state and zip from the last part
+                const lastPart = addressParts[addressParts.length - 1] || '';
+                const stateZipMatch2 = lastPart.match(/^([A-Z]{2})\s+(\d{5}(?:-\d{4})?)$/);
+                if (stateZipMatch2) {
+                  state = stateZipMatch2[1];
+                  zipCode = stateZipMatch2[2];
+                  city = addressParts[addressParts.length - 2] || '';
+                }
+              }
+            }
             
             return {
               address: prediction.description,
