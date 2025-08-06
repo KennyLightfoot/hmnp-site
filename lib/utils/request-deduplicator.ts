@@ -11,7 +11,7 @@ interface PendingRequest<T> {
 class RequestDeduplicator {
   private pendingRequests = new Map<string, PendingRequest<any>>();
   private readonly TTL = 30000; // 30 seconds
-  private readonly MAX_CONCURRENT = 5; // Max 5 concurrent requests
+           private readonly MAX_CONCURRENT = 3; // Reduced to 3 concurrent requests
 
   /**
    * Deduplicate requests by key with aggressive throttling
@@ -27,12 +27,12 @@ class RequestDeduplicator {
       return existing.promise;
     }
 
-    // Throttle if too many concurrent requests
-    if (this.pendingRequests.size >= this.MAX_CONCURRENT) {
-      console.warn(`⚠️ Too many concurrent requests (${this.pendingRequests.size}), throttling: ${key}`);
-      // Wait a bit before allowing new requests
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
+               // Throttle if too many concurrent requests
+           if (this.pendingRequests.size >= this.MAX_CONCURRENT) {
+             console.warn(`⚠️ Too many concurrent requests (${this.pendingRequests.size}), throttling: ${key}`);
+             // Wait longer before allowing new requests
+             await new Promise(resolve => setTimeout(resolve, 2000));
+           }
 
     // Create new request
     console.log(`🚀 New request: ${key} (${this.pendingRequests.size + 1} concurrent)`);
@@ -101,6 +101,16 @@ export async function fetchAvailabilityDeduped(
     
     const response = await fetch(`/api/availability?${params}`);
     if (!response.ok) {
+      if (response.status === 429) {
+        // Rate limited - wait and retry once
+        console.warn('Rate limited, waiting 2 seconds before retry...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        const retryResponse = await fetch(`/api/availability?${params}`);
+        if (!retryResponse.ok) {
+          throw new Error(`HTTP ${retryResponse.status}: ${retryResponse.statusText}`);
+        }
+        return retryResponse.json();
+      }
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     

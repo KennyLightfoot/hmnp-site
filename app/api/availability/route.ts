@@ -35,7 +35,7 @@ const cache = new Map<string, { data: any; expires: number }>();
 
 // Rate limiting to prevent browser overload
 const requestCounts = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT = 10; // Max 10 requests per minute per IP
+const RATE_LIMIT = 50; // Increased to 50 requests per minute per IP
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 
 export async function GET(request: NextRequest) {
