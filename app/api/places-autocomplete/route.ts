@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       throw new Error(`Google Maps API responded with status ${response.status}`);
     }
     const data = await response.json();
-    return NextResponse.json(data);
+        return NextResponse.json(data);
   } catch (error) {
     console.error("Places Autocomplete API error:", error);
     return NextResponse.json({ error: "Failed to fetch autocomplete data" }, { status: 500 });

@@ -3,7 +3,6 @@ import { type NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log("Processing payment with details:", body);
 
     // In a real application, you would integrate with a payment provider like Stripe.
     // Here we just simulate a successful payment.
