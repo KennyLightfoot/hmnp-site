@@ -375,7 +375,7 @@ export default function UnifiedBookingCalendar({
       setTimeSlots(slots);
       
       if (slots.length === 0) {
-        setError(data.message || 'No available time slots found for this date.');
+        setError('No available time slots found for this date.');
       }
       
     } catch (error) {
