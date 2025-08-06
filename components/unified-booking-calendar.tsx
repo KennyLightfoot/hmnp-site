@@ -218,7 +218,7 @@ export default function UnifiedBookingCalendar({
   };
   
   /**
-   * Fetch available time slots
+   * ✅ FIXED: Fetch available time slots with deduplication
    */
   const fetchAvailability = async (date: Date) => {
     if (!date || !userTimezone) return;
@@ -252,17 +252,35 @@ export default function UnifiedBookingCalendar({
         
         apiUrl = `/api/calendar/available-slots?${params}`;
       } else if (serviceId) {
-        // Use service-based API (BookingCalendar style)
+        // Use service-based API (BookingCalendar style) with deduplication
         const dateString = format(date, 'yyyy-MM-dd');
         
-        params = new URLSearchParams({
-          date: dateString,
-          serviceDuration: duration.toString(),
-          serviceId,
-          timezone: userTimezone
-        });
+        // Use deduplicated availability fetching for service-based API
+        const { fetchAvailabilityDeduped } = await import('@/lib/utils/request-deduplicator');
+        const result = await fetchAvailabilityDeduped(serviceId, dateString, userTimezone);
         
-        apiUrl = `/api/availability?${params}`;
+        console.log(`✅ UnifiedBookingCalendar availability for ${dateString}:`, result);
+        
+        // Handle the result directly
+        if (result.availableSlots) {
+          const slots: TimeSlot[] = result.availableSlots.map((slot: any) => ({
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+            formattedTime: slot.displayTime || slot.startTime,
+            available: slot.available,
+            duration: slot.duration || 60,
+            demand: slot.demand || 'low',
+            popular: slot.popular || false,
+            urgent: slot.urgent || false
+          }));
+          
+          setTimeSlots(slots);
+          setBusinessHours(result.businessHours);
+          setAvailabilityMessage(result.message || '');
+          return; // Exit early since we handled the result
+        } else {
+          throw new Error(result.message || 'Failed to fetch availability');
+        }
       } else {
         // Fallback to simple calendar API (CalendarSelector style)
         const startDate = format(startOfDay(date), "yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -279,7 +297,9 @@ export default function UnifiedBookingCalendar({
         apiUrl = `/api/calendar/available-slots?${params}`;
       }
       
-      const response = await fetch(apiUrl);
+      // Only fetch if we didn't use the deduplicated service-based API
+      if (apiUrl) {
+        const response = await fetch(apiUrl);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ 

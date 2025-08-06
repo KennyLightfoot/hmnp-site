@@ -11,9 +11,10 @@ interface PendingRequest<T> {
 class RequestDeduplicator {
   private pendingRequests = new Map<string, PendingRequest<any>>();
   private readonly TTL = 30000; // 30 seconds
+  private readonly MAX_CONCURRENT = 5; // Max 5 concurrent requests
 
   /**
-   * Deduplicate requests by key
+   * Deduplicate requests by key with aggressive throttling
    */
   async dedupe<T>(key: string, requestFn: () => Promise<T>): Promise<T> {
     // Clean expired requests
@@ -26,8 +27,15 @@ class RequestDeduplicator {
       return existing.promise;
     }
 
+    // Throttle if too many concurrent requests
+    if (this.pendingRequests.size >= this.MAX_CONCURRENT) {
+      console.warn(`⚠️ Too many concurrent requests (${this.pendingRequests.size}), throttling: ${key}`);
+      // Wait a bit before allowing new requests
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
     // Create new request
-    console.log(`🚀 New request: ${key}`);
+    console.log(`🚀 New request: ${key} (${this.pendingRequests.size + 1} concurrent)`);
     const promise = requestFn().finally(() => {
       // Clean up when request completes
       this.pendingRequests.delete(key);

@@ -159,7 +159,7 @@ export default function EnhancedSchedulingStep({
     setAvailableDays(days);
   }, [generateAvailableDays]);
 
-  // Fetch availability for a specific date
+  // ✅ FIXED: Fetch availability for a specific date with deduplication
   const fetchAvailability = useCallback(async (date: string) => {
     if (!watchedServiceType) return;
     
@@ -172,19 +172,11 @@ export default function EnhancedSchedulingStep({
       }
       const serviceId = getServiceId(watchedServiceType);
       
-      // Use the WORKING availability endpoint
-      const response = await fetch(
-        `/api/availability?serviceId=${serviceId}&date=${date}&timezone=America/Chicago`
-      );
+      // Use deduplicated availability fetching
+      const { fetchAvailabilityDeduped } = await import('@/lib/utils/request-deduplicator');
+      const result = await fetchAvailabilityDeduped(serviceId, date, 'America/Chicago');
       
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const result = await response.json();
-
-      // Verbose API debug logging
-      debugApiResponse('/api/availability', response, result);
+      console.log(`✅ EnhancedSchedulingStep availability for ${date}:`, result);
       
       if (result.availableSlots) {
         // Transform to enhanced format

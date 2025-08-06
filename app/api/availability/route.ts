@@ -33,14 +33,40 @@ function generateMockSlots(date: DateTime): TimeSlot[] {
 // Simple in-memory cache to prevent duplicate requests
 const cache = new Map<string, { data: any; expires: number }>();
 
+// Rate limiting to prevent browser overload
+const requestCounts = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT = 10; // Max 10 requests per minute per IP
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const dateStr = searchParams.get("date");
   if (!dateStr) return NextResponse.json({ error: "Date parameter is required" }, { status: 400 });
   
+  // Rate limiting check
+  const clientIP = request.headers.get('x-forwarded-for') || request.ip || 'unknown';
+  const now = Date.now();
+  const clientKey = `rate-${clientIP}`;
+  
+  const clientRequests = requestCounts.get(clientKey);
+  if (clientRequests) {
+    if (now < clientRequests.resetTime) {
+      if (clientRequests.count >= RATE_LIMIT) {
+        console.warn(`Rate limit exceeded for IP: ${clientIP}`);
+        return NextResponse.json({ 
+          error: "Too many requests. Please wait a moment and try again." 
+        }, { status: 429 });
+      }
+      clientRequests.count++;
+    } else {
+      requestCounts.set(clientKey, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    }
+  } else {
+    requestCounts.set(clientKey, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+  }
+  
   // Create cache key
   const cacheKey = `availability-${dateStr}`;
-  const now = Date.now();
   
   // Check cache first (5 minute TTL)
   const cached = cache.get(cacheKey);
