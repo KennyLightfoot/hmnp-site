@@ -232,6 +232,7 @@ export default function UnifiedBookingCalendar({
       const duration = getDuration(serviceType);
       let apiUrl: string;
       let params: URLSearchParams;
+      let slots: TimeSlot[] = [];
       
       // Determine which API endpoint to use
       if (serviceType && numberOfSigners) {
@@ -370,6 +371,7 @@ export default function UnifiedBookingCalendar({
       
       } // Close the if (apiUrl) block
       
+      // Set time slots and handle empty case
       setTimeSlots(slots);
       
       if (slots.length === 0) {
