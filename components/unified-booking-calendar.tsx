@@ -302,13 +302,13 @@ export default function UnifiedBookingCalendar({
         const response = await fetch(apiUrl);
         
         if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ 
-          message: `API Error: ${response.status} ${response.statusText}` 
-        }));
-        throw new Error(errorData.message || errorData.error || 'Failed to fetch availability');
-      }
-      
-      const data = await response.json();
+          const errorData = await response.json().catch(() => ({ 
+            message: `API Error: ${response.status} ${response.statusText}` 
+          }));
+          throw new Error(errorData.message || errorData.error || 'Failed to fetch availability');
+        }
+        
+        const data = await response.json();
       
       // Handle different API response formats
       let slots: TimeSlot[] = [];
@@ -367,6 +367,8 @@ export default function UnifiedBookingCalendar({
           }
         });
       }
+      
+      } // Close the if (apiUrl) block
       
       setTimeSlots(slots);
       
