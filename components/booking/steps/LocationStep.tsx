@@ -221,32 +221,39 @@ export default function LocationStep({
     
     if (value.length > 3) {
       try {
-        // Simulate address suggestions API call
-        await new Promise(resolve => setTimeout(resolve, 300));
+        // Use the actual Google Places API via our proxy
+        const response = await fetch(`/api/places-autocomplete?input=${encodeURIComponent(value)}`);
+        const data = await response.json();
         
-        const suggestions: AddressSuggestion[] = [
-          {
-            address: `${value}, Houston, TX`,
-            city: 'Houston',
-            state: 'TX',
-            zipCode: '77001',
-            latitude: 29.7604,
-            longitude: -95.3698
-          },
-          {
-            address: `${value} Street, Houston, TX`,
-            city: 'Houston',
-            state: 'TX',
-            zipCode: '77002',
-            latitude: 29.7604,
-            longitude: -95.3698
-          }
-        ];
-        
-        setAddressSuggestions(suggestions);
-        setShowSuggestions(true);
+        if (data.predictions && data.predictions.length > 0) {
+          const suggestions: AddressSuggestion[] = data.predictions.slice(0, 5).map((prediction: any) => {
+            // Parse the formatted address to extract components
+            const addressParts = prediction.description.split(', ');
+            const city = addressParts[addressParts.length - 3] || '';
+            const stateZip = addressParts[addressParts.length - 2] || '';
+            const state = stateZip.split(' ')[0] || '';
+            const zipCode = stateZip.split(' ')[1] || '';
+            
+            return {
+              address: prediction.description,
+              city,
+              state,
+              zipCode,
+              latitude: prediction.geometry?.location?.lat,
+              longitude: prediction.geometry?.location?.lng
+            };
+          });
+          
+          setAddressSuggestions(suggestions);
+          setShowSuggestions(true);
+        } else {
+          setAddressSuggestions([]);
+          setShowSuggestions(false);
+        }
       } catch (error) {
         console.error('Address suggestions failed:', error);
+        setAddressSuggestions([]);
+        setShowSuggestions(false);
       }
     } else {
       setAddressSuggestions([]);

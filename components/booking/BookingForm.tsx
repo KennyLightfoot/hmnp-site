@@ -243,8 +243,9 @@ export default function BookingForm({
   // Memoize pricing parameters to prevent hook violations
   const pricingParams = useMemo(() => {
     // Only include scheduledDateTime if both date and time are provided
-    const hasDate = watchedValues.scheduling?.preferredDate;
-    const hasTime = watchedValues.scheduling?.preferredTime;
+    const scheduling = watchedValues.scheduling || {};
+    const hasDate = (scheduling as any).preferredDate;
+    const hasTime = (scheduling as any).preferredTime;
     
     return {
       serviceType: watchedValues.serviceType,
@@ -259,8 +260,7 @@ export default function BookingForm({
   }, [
     watchedValues.serviceType,
     watchedValues.location?.address,
-    watchedValues.scheduling?.preferredDate,
-    watchedValues.scheduling?.preferredTime,
+    watchedValues.scheduling,
     watchedValues.customer?.email
   ]);
 
