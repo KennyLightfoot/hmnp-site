@@ -300,8 +300,8 @@ export default function UnifiedBookingCalendar({
       // Only fetch if we didn't use the deduplicated service-based API
       if (apiUrl) {
         const response = await fetch(apiUrl);
-      
-      if (!response.ok) {
+        
+        if (!response.ok) {
         const errorData = await response.json().catch(() => ({ 
           message: `API Error: ${response.status} ${response.statusText}` 
         }));
