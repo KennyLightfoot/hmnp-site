@@ -32,5 +32,5 @@
     "baseUrl": "."
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "batch-*-backup-*", "*-backup-*", "backup-*"]
+  "exclude": ["node_modules", "batch-*-backup-*", "*-backup-*", "backup-*", "tests/legacy"]
 }
