@@ -207,7 +207,7 @@ export default function ExamplePage() {
 }
 
 // CLI interface
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const helper = new V0IntegrationHelper();
   
   const command = process.argv[2];
