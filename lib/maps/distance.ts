@@ -28,7 +28,7 @@ export interface CachedDistanceResult {
   travelFee: number;
   isWithinServiceArea: boolean;
   calculatedAt: string;
-  source: 'google_maps' | 'cache';
+  source: 'google_maps' | 'cache' | 'fallback';
   cacheHit: boolean;
 }
 
