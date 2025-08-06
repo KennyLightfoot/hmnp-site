@@ -174,7 +174,7 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
     return days;
   }, [availabilityData, loadingDates, watchedServiceType, selectedUrgency]);
 
-  // ✅ FIXED: Fetch availability for a specific date
+  // ✅ FIXED: Fetch availability for a specific date with deduplication
   const fetchAvailability = useCallback(async (date: string) => {
     if (availabilityData[date] || loadingDates.has(date)) {
       return; // Already loaded or loading
@@ -186,12 +186,9 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
       // Resolve service ID from central map
       const serviceId = getServiceId(watchedServiceType);
       
-      // Use the WORKING availability endpoint
-      const response = await fetch(`/api/availability?serviceId=${serviceId}&date=${date}&timezone=America/Chicago`);
-      const result = await response.json();
-
-      // Verbose API debug logging
-      debugApiResponse('/api/availability', response, result);
+      // Use deduplicated availability fetching
+      const { fetchAvailabilityDeduped } = await import('@/lib/utils/request-deduplicator');
+      const result = await fetchAvailabilityDeduped(serviceId, date, 'America/Chicago');
       
       console.log(`✅ Availability for ${date}:`, result);
       

@@ -30,10 +30,23 @@ function generateMockSlots(date: DateTime): TimeSlot[] {
   return slots;
 }
 
+// Simple in-memory cache to prevent duplicate requests
+const cache = new Map<string, { data: any; expires: number }>();
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const dateStr = searchParams.get("date");
   if (!dateStr) return NextResponse.json({ error: "Date parameter is required" }, { status: 400 });
+  
+  // Create cache key
+  const cacheKey = `availability-${dateStr}`;
+  const now = Date.now();
+  
+  // Check cache first (5 minute TTL)
+  const cached = cache.get(cacheKey);
+  if (cached && cached.expires > now) {
+    return NextResponse.json(cached.data);
+  }
   
   // Force timezone to business timezone (Houston = America/Chicago)
   const requestedDate = DateTime.fromISO(dateStr, { zone: "America/Chicago" });
@@ -42,7 +55,22 @@ export async function GET(request: NextRequest) {
   
   try {
     const availableSlots = generateMockSlots(requestedDate);
-    return NextResponse.json({ availableSlots });
+    const response = { availableSlots };
+    
+    // Cache the response
+    cache.set(cacheKey, {
+      data: response,
+      expires: now + (5 * 60 * 1000) // 5 minutes
+    });
+    
+    // Clean old entries
+    for (const [key, value] of cache.entries()) {
+      if (value.expires <= now) {
+        cache.delete(key);
+      }
+    }
+    
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching availability:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

@@ -4,55 +4,45 @@ import { logger } from '@/lib/logger';
 import { headers } from 'next/headers';
 import crypto from 'crypto';
 
-// Enhanced webhook signature verification
+// Enhanced webhook signature verification - Fixed for GHL base64 signatures
 function verifyGHLWebhookSignature(payload: string, signature: string, secret: string): boolean {
   if (!signature || !secret) return false;
   
   try {
-    // Remove 'sha256=' prefix if present
-    const cleanSignature = signature.startsWith('sha256=') 
-      ? signature.substring(7)
-      : signature;
-    
-    // Create expected signature
+    // GHL sends base64-encoded signatures, not hex
+    // Create expected signature as base64
     const expectedSignature = crypto
       .createHmac('sha256', secret)
       .update(payload, 'utf8')
-      .digest('hex');
+      .digest('base64');
     
-    // Ensure both signatures are the same length before comparison
-    if (cleanSignature.length !== expectedSignature.length) {
-      // For base64, the length can vary, so we'll decode first and then compare buffers
-    }
-    
-    // Convert to buffers with proper error handling
-    let receivedBuffer: Buffer;
-    let expectedBuffer: Buffer;
-    
-    try {
-      receivedBuffer = Buffer.from(cleanSignature, 'hex');
-      expectedBuffer = Buffer.from(expectedSignature, 'hex');
-    } catch (bufferError) {
-      console.error('Buffer conversion error:', bufferError);
-      return false;
-    }
-    
-    // Ensure buffers are the same length
-    if (receivedBuffer.length !== expectedBuffer.length) {
-      console.warn('Buffer length mismatch after conversion:', {
-        received: receivedBuffer.length,
-        expected: expectedBuffer.length
-      });
-      return false;
-    }
-    
-         return crypto.timingSafeEqual(
-       new Uint8Array(receivedBuffer), 
-       new Uint8Array(expectedBuffer)
-     );
+    // Compare signatures directly (both should be base64)
+    return crypto.timingSafeEqual(
+      Buffer.from(signature, 'base64'),
+      Buffer.from(expectedSignature, 'base64')
+    );
   } catch (error) {
     console.error('Signature verification error:', getErrorMessage(error));
-    return false;
+    
+    // Fallback: Try hex comparison for older webhooks
+    try {
+      const cleanSignature = signature.startsWith('sha256=') 
+        ? signature.substring(7)
+        : signature;
+      
+      const expectedHex = crypto
+        .createHmac('sha256', secret)
+        .update(payload, 'utf8')
+        .digest('hex');
+      
+      return crypto.timingSafeEqual(
+        Buffer.from(cleanSignature, 'hex'),
+        Buffer.from(expectedHex, 'hex')
+      );
+    } catch (fallbackError) {
+      console.error('Fallback signature verification failed:', getErrorMessage(fallbackError));
+      return false;
+    }
   }
 }
 
