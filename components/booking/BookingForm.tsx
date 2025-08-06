@@ -260,7 +260,8 @@ export default function BookingForm({
   }, [
     watchedValues.serviceType,
     watchedValues.location?.address,
-    watchedValues.scheduling,
+    watchedValues.scheduling?.preferredDate,
+    watchedValues.scheduling?.preferredTime,
     watchedValues.customer?.email
   ]);
 

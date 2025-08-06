@@ -322,23 +322,29 @@ export function useBookingPricing(
     onPricingChange?: (pricing: TransparentPricingResult | null) => void;
   }
 ) {
-  // Ensure formData is always defined to prevent hook violations
-  const safeFormData = useMemo(() => formData || {}, [formData]);
-  
   // Always provide a consistent request object to prevent hook violations
   const request = useMemo((): TransparentPricingRequest => {
     return {
-      serviceType: safeFormData.serviceType || 'STANDARD_NOTARY', // Default service type
-      documentCount: safeFormData.documentCount || 1,
+      serviceType: formData?.serviceType || 'STANDARD_NOTARY', // Default service type
+      documentCount: formData?.documentCount || 1,
       signerCount: 1, // Default for now
-      address: safeFormData.address,
-      scheduledDateTime: safeFormData.scheduledDateTime,
-      customerType: safeFormData.customerType || 'new',
-      customerEmail: safeFormData.customerEmail,
-      referralCode: safeFormData.referralCode,
-      promoCode: safeFormData.promoCode
+      address: formData?.address,
+      scheduledDateTime: formData?.scheduledDateTime,
+      customerType: formData?.customerType || 'new',
+      customerEmail: formData?.customerEmail,
+      referralCode: formData?.referralCode,
+      promoCode: formData?.promoCode
     };
-  }, [safeFormData]);
+  }, [
+    formData?.serviceType,
+    formData?.documentCount,
+    formData?.address,
+    formData?.scheduledDateTime,
+    formData?.customerType,
+    formData?.customerEmail,
+    formData?.referralCode,
+    formData?.promoCode
+  ]);
 
   // Ensure options is always defined to prevent hook violations
   const safeOptions = useMemo(() => ({
