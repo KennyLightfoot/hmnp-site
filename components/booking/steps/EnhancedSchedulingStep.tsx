@@ -252,7 +252,6 @@ export default function EnhancedSchedulingStep({
   // Get selected day data
   const selectedDay = availableDays.find(day => day.date === selectedDate);
   const hasSelectedTime = !!watchedScheduling.preferredTime;
-  const urgencyData = URGENCY_LEVELS.find(u => u.id === selectedUrgency);
 
   // Navigation helpers
   const canGoPrevious = currentWeek > 0;
