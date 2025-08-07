@@ -79,46 +79,11 @@ interface AvailabilityResponse {
   };
 }
 
-const URGENCY_LEVELS = [
-  {
-    id: 'flexible',
-    title: 'Flexible Timing',
-    description: 'I can schedule anytime in the next 2 weeks',
-    discount: 0,
-    icon: Clock,
-    color: 'text-green-600'
-  },
-  {
-    id: 'this-week',
-    title: 'This Week',
-    description: 'I need service within the next 7 days',
-    discount: 0,
-    icon: TrendingUp,
-    color: 'text-blue-600'
-  },
-  {
-    id: 'tomorrow',
-    title: 'Tomorrow',
-    description: 'Next business day service',
-    surcharge: 0,
-    icon: Zap,
-    color: 'text-orange-600'
-  },
-  {
-    id: 'today',
-    title: 'Today (Same Day)',
-    description: 'Urgent same-day service needed',
-    surcharge: 0,
-    icon: Flame,
-    color: 'text-red-600',
-    badge: 'Limited Availability'
-  }
-];
+// Urgency selection removed - simplified booking flow
 
 export default function SchedulingStep({ data, onUpdate, errors, pricing }: SchedulingStepProps) {
   const { setValue, watch } = useFormContext<CreateBooking>();
   
-  const [selectedUrgency, setSelectedUrgency] = useState('flexible');
   const [currentWeek, setCurrentWeek] = useState(0);
   const [availabilityData, setAvailabilityData] = useState<{ [date: string]: AvailabilityResponse }>({});
   const [loadingDates, setLoadingDates] = useState<Set<string>>(new Set());
@@ -160,19 +125,19 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
         slots: slots.map(slot => ({
           ...slot,
           popular: slot.duration <= 60, // Shorter slots are more popular
-          urgent: i === 0 && selectedUrgency === 'today',
+          urgent: false, // Urgency selection removed
           demand: slot.duration <= 60 ? 'high' : slot.duration <= 90 ? 'medium' : 'low'
         })),
         isToday: i === 0,
         isTomorrow: i === 1,
-        sameDay: i === 0 && selectedUrgency === 'today',
+        sameDay: false, // Urgency selection removed
         loading: loadingDates.has(dateString),
         error: dayAvailability && !dayAvailability.success ? 'Failed to load availability' : undefined
       });
     }
     
     return days;
-  }, [availabilityData, loadingDates, watchedServiceType, selectedUrgency]);
+  }, [availabilityData, loadingDates, watchedServiceType]);
 
   // ✅ FIXED: Fetch availability for a specific date with deduplication
   const fetchAvailability = useCallback(async (date: string) => {
@@ -263,18 +228,7 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
     setLoadingDates(new Set());
   }, [watchedServiceType]);
 
-  const handleUrgencyChange = (urgency: string) => {
-    setSelectedUrgency(urgency);
-    setValue('scheduling.sameDay', urgency === 'today');
-    setValue('scheduling.priority', urgency === 'today' || urgency === 'tomorrow');
-    onUpdate({ 
-      scheduling: { 
-        ...watchedScheduling, 
-        sameDay: urgency === 'today',
-        priority: urgency === 'today' || urgency === 'tomorrow'
-      } 
-    });
-  };
+  // Urgency selection removed - simplified booking flow
 
   const handleDateSelect = (date: string) => {
     setValue('scheduling.preferredDate', date);
@@ -309,91 +263,6 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
 
   return (
     <div className="space-y-6">
-      {/* Urgency Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Flame className="h-5 w-5 text-orange-600" />
-            <span>How urgent is your appointment?</span>
-          </CardTitle>
-          <CardDescription>
-            Help us find the best available times for your needs
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <RadioGroup 
-            value={selectedUrgency} 
-            onValueChange={handleUrgencyChange}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3"
-          >
-            {URGENCY_LEVELS.map((level) => (
-              <div key={level.id} className="relative">
-                <RadioGroupItem value={level.id} id={level.id} className="sr-only" />
-                <Label
-                  htmlFor={level.id}
-                  className="cursor-pointer block"
-                >
-                  <Card className={`transition-all duration-200 ${
-                    selectedUrgency === level.id 
-                      ? 'ring-2 ring-blue-500 border-blue-500 bg-blue-50' 
-                      : 'hover:border-gray-300 hover:shadow-md'
-                  }`}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start space-x-3">
-                        <level.icon className={`h-5 w-5 ${level.color} mt-1`} />
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2">
-                            <h3 className="font-medium text-sm">{level.title}</h3>
-                            {level.badge && (
-                              <Badge variant="secondary" className="text-xs">
-                                {level.badge}
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-xs text-gray-600 mt-1">
-                            {level.description}
-                          </p>
-                          {level.surcharge && level.surcharge > 0 && (
-                            <p className="text-xs text-orange-600 font-medium mt-1">
-                              +${level.surcharge} urgency fee
-                            </p>
-                          )}
-                          {level.discount && level.discount > 0 && (
-                            <p className="text-xs text-green-600 font-medium mt-1">
-                              ${level.discount} discount
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Label>
-              </div>
-            ))}
-          </RadioGroup>
-        </CardContent>
-      </Card>
-
-      {/* Urgency-specific alerts */}
-      {selectedUrgency === 'today' && (
-        <Alert className="border-orange-200 bg-orange-50 animate-pulse">
-          <Flame className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Same-day service availability is limited.</strong> Book now to secure your slot! 
-            Times shown are subject to confirmation.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {selectedUrgency === 'tomorrow' && (
-        <Alert className="border-blue-200 bg-blue-50">
-          <Zap className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Next-day priority booking.</strong> We'll confirm your appointment within 2 hours.
-          </AlertDescription>
-        </Alert>
-      )}
-
       {/* Date Selection */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Calendar */}

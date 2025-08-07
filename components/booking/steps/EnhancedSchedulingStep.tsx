@@ -47,45 +47,7 @@ import EnhancedTimeSlotDisplay, { EnhancedTimeSlot } from '../EnhancedTimeSlotDi
 import { getServiceId } from '@/lib/services/serviceIdMap';
 import { debugApiResponse } from '@/lib/api-debug';
 
-// Urgency levels configuration
-const URGENCY_LEVELS = [
-  {
-    id: 'flexible',
-    title: 'Flexible Schedule',
-    description: 'I can work around your availability',
-    icon: CalendarDays,
-    color: 'text-green-600',
-    bgColor: 'bg-green-50',
-    borderColor: 'border-green-200'
-  },
-  {
-    id: 'soon',
-    title: 'Within a Week',
-    description: 'I need this done soon',
-    icon: Clock,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50',
-    borderColor: 'border-blue-200'
-  },
-  {
-    id: 'tomorrow',
-    title: 'Tomorrow',
-    description: 'I need this done tomorrow',
-    icon: TrendingUp,
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-50',
-    borderColor: 'border-orange-200'
-  },
-  {
-    id: 'today',
-    title: 'Same Day',
-    description: 'I need this done today (urgent)',
-    icon: Zap,
-    color: 'text-red-600',
-    bgColor: 'bg-red-50',
-    borderColor: 'border-red-200'
-  }
-];
+// Urgency selection removed - simplified booking flow
 
 interface AvailableDay {
   date: string;
@@ -113,7 +75,6 @@ export default function EnhancedSchedulingStep({
   const watchedServiceType = watch('serviceType');
   
   // State management
-  const [selectedUrgency, setSelectedUrgency] = useState('flexible');
   const [availableDays, setAvailableDays] = useState<AvailableDay[]>([]);
   const [currentWeek, setCurrentWeek] = useState(0);
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
@@ -242,19 +203,7 @@ export default function EnhancedSchedulingStep({
     }
   }, [watchedServiceType, currentWeek, availableDays, fetchAvailability]);
 
-  // Handle urgency selection
-  const handleUrgencyChange = (urgency: string) => {
-    setSelectedUrgency(urgency);
-    setValue('scheduling.sameDay', urgency === 'today');
-    setValue('scheduling.priority', urgency === 'today' || urgency === 'tomorrow');
-    onUpdate({ 
-      scheduling: { 
-        ...watchedScheduling, 
-        sameDay: urgency === 'today',
-        priority: urgency === 'today' || urgency === 'tomorrow'
-      } 
-    });
-  };
+  // Urgency selection removed - simplified booking flow
 
   // Handle date selection
   const handleDateSelect = (date: string) => {
@@ -323,48 +272,6 @@ export default function EnhancedSchedulingStep({
 
   return (
     <div className="space-y-6">
-      {/* Urgency Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Zap className="h-5 w-5 text-orange-600" />
-            <span>How Soon Do You Need This?</span>
-          </CardTitle>
-          <CardDescription>
-            This helps us prioritize your booking and show the most relevant time slots
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <RadioGroup
-            value={selectedUrgency}
-            onValueChange={handleUrgencyChange}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
-          >
-            {URGENCY_LEVELS.map((urgency) => (
-              <div key={urgency.id} className="flex items-center space-x-2">
-                <RadioGroupItem value={urgency.id} id={urgency.id} />
-                <Label
-                  htmlFor={urgency.id}
-                  className={`flex-1 p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md ${urgency.bgColor} ${urgency.borderColor}`}
-                >
-                  <div className="flex items-center space-x-2">
-                    <urgency.icon className={`h-4 w-4 ${urgency.color}`} />
-                    <div>
-                      <div className={`font-medium ${urgency.color}`}>
-                        {urgency.title}
-                      </div>
-                      <div className="text-xs text-gray-600">
-                        {urgency.description}
-                      </div>
-                    </div>
-                  </div>
-                </Label>
-              </div>
-            ))}
-          </RadioGroup>
-        </CardContent>
-      </Card>
-
       {/* Date Selection */}
       <Card>
         <CardHeader>
