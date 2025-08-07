@@ -236,10 +236,13 @@ export async function ghlApiRequest<T = any>(
   const baseUrl = process.env.GHL_API_BASE_URL || 'https://services.leadconnectorhq.com';
   const url = `${baseUrl}${endpoint}`;
   
+  const token = getCleanEnv('GHL_PRIVATE_INTEGRATION_TOKEN') as string;
+  const isJWT = token && !token.startsWith('pit_');
+  
   const requestOptions: RequestInit = {
     ...options,
     headers: {
-      'Authorization': getCleanEnv('GHL_PRIVATE_INTEGRATION_TOKEN') as string,
+      'Authorization': isJWT ? `Bearer ${token}` : token, // JWT needs Bearer, PIT doesn't
       'Version': '2021-07-28',
       'Content-Type': 'application/json',
       'User-Agent': 'HMNP-Integration/1.0',

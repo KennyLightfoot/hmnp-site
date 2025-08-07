@@ -95,9 +95,12 @@ async function callGhlApi<T = any>(endpoint: string, method: 'GET' | 'POST' | 'P
   const { apiKey, baseUrl } = getGhlApiConfig();
   const url = `${baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
+  // Check if token is JWT (doesn't start with pit_) or Private Integration Token
+  const isJWT = apiKey && !apiKey.startsWith('pit_');
+  
   // Updated authentication based on latest GHL API v2 requirements
   const headers: HeadersInit = {
-    'Authorization': apiKey,
+    'Authorization': isJWT ? `Bearer ${apiKey}` : apiKey, // JWT needs Bearer, PIT doesn't
     'Version': '2021-07-28',
     'Accept': 'application/json',
   };

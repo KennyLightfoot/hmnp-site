@@ -19,8 +19,11 @@ export class GHLClient {
       throw new Error('GHL_PRIVATE_INTEGRATION_TOKEN is not set');
     }
 
+    const token = process.env.GHL_PRIVATE_INTEGRATION_TOKEN;
+    const isJWT = token && !token.startsWith('pit_');
+    
     this.headers = {
-      'Authorization': process.env.GHL_PRIVATE_INTEGRATION_TOKEN, // ✅ FIXED: No Bearer prefix
+      'Authorization': isJWT ? `Bearer ${token}` : token, // JWT needs Bearer, PIT doesn't
       'Version': '2021-07-28',
       'Content-Type': 'application/json',
       // Specify the location so calendar/event endpoints authenticate correctly

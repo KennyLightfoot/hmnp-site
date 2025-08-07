@@ -34,9 +34,13 @@ export async function GET(request: NextRequest) {
     const token = process.env.GHL_PRIVATE_INTEGRATION_TOKEN;
     const locationId = process.env.GHL_LOCATION_ID;
     
+    const isJWT = token && !token.startsWith('pit_');
+    
     console.log('🔍 [DEBUG] Token exists:', !!token);
     console.log('🔍 [DEBUG] Token prefix:', token?.substring(0, 4));
     console.log('🔍 [DEBUG] Token length:', token?.length);
+    console.log('🔍 [DEBUG] Token type:', isJWT ? 'JWT (OAuth)' : 'Private Integration Token');
+    console.log('🔍 [DEBUG] Will use Bearer prefix:', isJWT);
     console.log('🔍 [DEBUG] Location ID exists:', !!locationId);
     console.log('🔍 [DEBUG] Location ID:', locationId?.substring(0, 8) + '...');
 

@@ -52,8 +52,11 @@ async function callGhlCalendarApi<T = any>(
   const { apiKey, baseUrl } = getGhlApiConfig();
   const url = `${baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
+  // Check if token is JWT (doesn't start with pit_) or Private Integration Token
+  const isJWT = apiKey && !apiKey.startsWith('pit_');
+  
   const headers: HeadersInit = {
-    'Authorization': apiKey, // ✅ FIXED: No Bearer prefix for Private Integration Token
+    'Authorization': isJWT ? `Bearer ${apiKey}` : apiKey, // JWT needs Bearer, PIT doesn't
     'Accept': 'application/json',
     'Content-Type': 'application/json',
     'Version': '2021-07-28', // GHL API v2 version
