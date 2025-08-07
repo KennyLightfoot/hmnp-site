@@ -106,7 +106,7 @@
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/auth-helpers-react": "^0.5.0",
     "@supabase/ssr": "^0.6.1",
-    "@supabase/supabase-js": "^2.50.5",
+    "@supabase/supabase-js": "^2.53.0",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/typography": "^0.5.10",
     "@types/bull": "^4.10.4",

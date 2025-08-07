@@ -10,31 +10,21 @@ function generateMockSlots(date: DateTime): TimeSlot[] {
   const startHour = 9;
   const endHour = 17;
   
-  // Check if date is in the past (use same timezone as input)
-  const now = DateTime.now().setZone(date.zone);
-  const today = now.startOf("day");
-  const requestedDay = date.startOf("day");
+  console.log(`🎲 Starting mock generation for ${date.toISODate()}`);
   
-  // If the requested date is today or in the future, generate slots
-  if (requestedDay >= today) {
-    for (let hour = startHour; hour < endHour; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) { // Changed to 30-minute intervals
-        if (Math.random() > 0.3) { // 70% chance of slot being available
-          const startTime = date.set({ hour, minute, second: 0, millisecond: 0 });
-          
-          // Only include slots that are in the future
-          if (startTime > now) {
-            const demandLevels = ["low", "moderate", "high"] as const;
-            slots.push({
-              startTime: startTime.toISO(),
-              endTime: startTime.plus({ minutes: 60 }).toISO(),
-              duration: 60,
-              demand: demandLevels[Math.floor(Math.random() * 3)],
-              available: true
-            } as TimeSlot);
-          }
-        }
-      }
+  // Generate slots for all future dates
+  for (let hour = startHour; hour < endHour; hour++) {
+    for (let minute = 0; minute < 60; minute += 30) { // 30-minute intervals
+      const startTime = date.set({ hour, minute, second: 0, millisecond: 0 });
+      const demandLevels = ["low", "moderate", "high"] as const;
+      
+      slots.push({
+        startTime: startTime.toISO(),
+        endTime: startTime.plus({ minutes: 60 }).toISO(),
+        duration: 60,
+        demand: demandLevels[Math.floor(Math.random() * 3)],
+        available: true
+      } as TimeSlot);
     }
   }
   
@@ -101,11 +91,14 @@ export async function GET(request: NextRequest) {
     // Try to get real availability from GHL calendars with timeout
     try {
       // Test GHL connection first with timeout
+      console.log('🔍 Testing GHL connection...');
       const connectionPromise = testCalendarConnection();
       const isConnected = await Promise.race([
         connectionPromise,
         new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000)) // 5 second timeout
       ]);
+      
+      console.log(`🔍 GHL connection result: ${isConnected}`);
       
       if (isConnected) {
         // Get service type from query params (default to STANDARD_NOTARY)
@@ -143,6 +136,12 @@ export async function GET(request: NextRequest) {
           } as TimeSlot));
           
           console.log(`✅ GHL availability fetched for ${dateStr} (${serviceType}): ${availableSlots.length} slots`);
+          
+          // If GHL returns empty slots, fall back to mock data
+          if (availableSlots.length === 0) {
+            console.log(`⚠️ GHL returned empty slots, falling back to mock data`);
+            availableSlots = generateMockSlots(requestedDate);
+          }
         } catch (calendarError) {
           console.warn(`Calendar mapping failed for ${serviceType}, falling back to mock data:`, calendarError);
           console.log(`🔧 Calendar error details:`, {

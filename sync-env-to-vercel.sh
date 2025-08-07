@@ -21,13 +21,13 @@ add_env_var() {
 }
 
 # Database Configuration (CRITICAL)
-add_env_var "DATABASE_URL" "postgresql://postgres:cyxI3XCjLTX57VI0@db.unnyhvuhobnmxnpffore.supabase.co:5432/postgres?sslmode=require"
-add_env_var "DATABASE_URL_UNPOOLED" "postgresql://postgres:cyxI3XCjLTX57VI0@db.unnyhvuhobnmxnpffore.supabase.co:5432/postgres?sslmode=require"
+add_env_var "DATABASE_URL" "postgresql://postgres.czxoxhokegnzfctgnhjo:Hmnp128174Supa@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require"
+add_env_var "DATABASE_URL_UNPOOLED" "postgresql://postgres:Hmnp128174Supa@db.czxoxhokegnzfctgnhjo.supabase.co:5432/postgres?sslmode=require"
 
 # Supabase Configuration (CRITICAL)
-add_env_var "NEXT_PUBLIC_SUPABASE_URL" "https://unnyhvuhobnmxnpffore.supabase.co"
-add_env_var "NEXT_PUBLIC_SUPABASE_ANON_KEY" "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVubnlodnVob2JubXhucGZmb3JlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3MjcxNzIsImV4cCI6MjA2NjMwMzE3Mn0.ZeZQ2nE322_bGjHq_lqtl0pEkIDfAA5usdXU1nx9k0Q"
-add_env_var "SUPABASE_SERVICE_ROLE_KEY" "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVubnlodnVob2JubXhucGZmb3JlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDcyNzE3MiwiZXhwIjoyMDY2MzAzMTcyfQ.9zbdk4ZqmvSzRaO_a3WMpxcrHTdwpkxJ2JiYJRqO4o0"
+add_env_var "NEXT_PUBLIC_SUPABASE_URL" "https://czxoxhokegnzfctgnhjo.supabase.co"
+add_env_var "NEXT_PUBLIC_SUPABASE_ANON_KEY" "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6eG94aG9rZWduemZjdGduaGpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY0NTU5OTIsImV4cCI6MjA1MjAzMTk5Mn0.3r6X85Fp7cCuDI3FeWVdIPd6RBOFBnwec21yRMTghHE"
+add_env_var "SUPABASE_SERVICE_ROLE_KEY" "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6eG94aG9rZWduemZjdGduaGpvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNjQ1NTk5MiwiZXhwIjoyMDUyMDMxOTkyfQ.Sg48MySxw8wwpAHMQIcQboNl-H56ez93cpvKMrmuBJk"
 
 # NextAuth Configuration (CRITICAL)
 add_env_var "NEXTAUTH_SECRET" "BoE/DaOyE7XJk2np0rDNmk7qXJq0ssgbsG4qMmCZ1Ic="
