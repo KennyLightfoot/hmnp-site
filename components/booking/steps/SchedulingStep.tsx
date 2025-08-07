@@ -195,7 +195,7 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
         serviceType: watchedServiceType,
         date,
         timezone: 'America/Chicago',
-        calendarId: serviceId,
+        calendarId: watchedServiceType, // Use serviceType instead of serviceId
         totalSlots: result.availableSlots?.length || 0,
         availableSlots: result.availableSlots?.map((slot: any) => ({
           startTime: `${date}T${slot.startTime}:00`,
