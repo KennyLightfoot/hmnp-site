@@ -466,12 +466,6 @@ export default function EnhancedSchedulingStep({
                 </span>
               </div>
             )}
-            {urgencyData && (
-              <div className="flex items-center space-x-2">
-                <urgencyData.icon className={`h-4 w-4 ${urgencyData.color}`} />
-                <span className="text-sm">{urgencyData.title}</span>
-              </div>
-            )}
           </CardContent>
         </Card>
       )}
