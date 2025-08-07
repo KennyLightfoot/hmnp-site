@@ -122,18 +122,32 @@ export async function createAppointment(appointmentData: AppointmentData) {
 }
 
 export async function getCalendarSlots(calendarId: string, startDate: string, endDate: string) {
-  // Convert date strings to Unix timestamps (GHL API requirement)
-  const startTimestamp = Math.floor(new Date(`${startDate}T00:00:00`).getTime() / 1000);
-  const endTimestamp = Math.floor(new Date(`${endDate}T23:59:59`).getTime() / 1000);
-  
-  const queryParams = new URLSearchParams({
-    startDate: startTimestamp.toString(),
-    endDate: endTimestamp.toString(),
-    timezone: 'America/Chicago'
-  });
-  
-  const endpoint = `/calendars/${calendarId}/free-slots?${queryParams}`;
-  return await makeGHLRequest(endpoint, 'GET');
+  try {
+    // ✅ FIXED: Better date handling for GHL API
+    const startTimestamp = Math.floor(new Date(`${startDate}T00:00:00`).getTime() / 1000);
+    const endTimestamp = Math.floor(new Date(`${endDate}T23:59:59`).getTime() / 1000);
+    
+    const queryParams = new URLSearchParams({
+      startDate: startTimestamp.toString(),
+      endDate: endTimestamp.toString(),
+      timezone: 'America/Chicago'
+    });
+    
+    console.log(`📅 [getCalendarSlots] Fetching slots for calendar ${calendarId}`);
+    console.log(`📅 [getCalendarSlots] Date range: ${startDate} to ${endDate}`);
+    console.log(`📅 [getCalendarSlots] Timestamps: ${startTimestamp} to ${endTimestamp}`);
+    
+    const endpoint = `/calendars/${calendarId}/free-slots?${queryParams}`;
+    const response = await makeGHLRequest(endpoint, 'GET');
+    
+    console.log(`📅 [getCalendarSlots] Response type: ${typeof response}`);
+    console.log(`📅 [getCalendarSlots] Response structure:`, JSON.stringify(response).slice(0, 200));
+    
+    return response;
+  } catch (error) {
+    console.error(`❌ [getCalendarSlots] Failed to fetch slots for calendar ${calendarId}:`, error);
+    throw error;
+  }
 }
 
 export async function updateAppointment(appointmentId: string, appointmentData: Partial<AppointmentData>) {

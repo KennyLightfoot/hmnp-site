@@ -53,7 +53,7 @@ async function callGhlCalendarApi<T = any>(
   const url = `${baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
   const headers: HeadersInit = {
-    'Authorization': `Bearer ${apiKey}`,
+    'Authorization': apiKey, // ✅ FIXED: No Bearer prefix for Private Integration Token
     'Accept': 'application/json',
     'Content-Type': 'application/json',
     'Version': '2021-07-28', // GHL API v2 version
