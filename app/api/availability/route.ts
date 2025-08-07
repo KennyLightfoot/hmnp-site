@@ -163,6 +163,13 @@ export async function GET(request: NextRequest) {
     
     const response = { availableSlots };
     
+    console.log(`✅ Availability response for ${dateStr}:`, {
+      serviceType,
+      slotCount: availableSlots.length,
+      cacheKey,
+      response
+    });
+    
     // Cache the response
     cache.set(cacheKey, {
       data: response,

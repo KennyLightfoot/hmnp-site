@@ -295,9 +295,14 @@ export default function BookingForm({
   const isCurrentStepValid = useMemo(() => {
     const currentStepFields = STEP_FIELD_MAPPING[currentStep];
     
-    // Special handling for RON services
+    // Special handling for RON services - skip location validation
     if (currentStep === 2 && watchedValues.serviceType === 'RON_SERVICES') {
       return true;
+    }
+    
+    // Special handling for review step
+    if (currentStep === 4) {
+      return true; // Review step doesn't need validation
     }
     
     if (!currentStepFields || currentStepFields.length === 0) {
@@ -385,7 +390,11 @@ export default function BookingForm({
         const currentStepFields = STEP_FIELD_MAPPING[currentStep];
         let currentStepValid = true;
         
+        // Special handling for RON services - skip location validation
         if (currentStep === 2 && watchedValues.serviceType === 'RON_SERVICES') {
+          currentStepValid = true;
+        } else if (currentStep === 4) {
+          // Review step doesn't need validation
           currentStepValid = true;
         } else if (currentStepFields && currentStepFields.length > 0) {
           currentStepValid = await form.trigger(currentStepFields as any);
@@ -396,12 +405,22 @@ export default function BookingForm({
           return;
         }
 
-        // 2. Business Rules validation (new)
-        const businessRulesValid = await validateCurrentStepBusinessRules();
-        
-        if (!businessRulesValid) {
-          setErrorMessage('Please address the business policy requirements to continue');
-          return;
+        // 2. Business Rules validation (new) - Make it non-blocking for now
+        try {
+          const businessRulesValid = await validateCurrentStepBusinessRules();
+          
+          if (!businessRulesValid) {
+            console.warn('Business rules validation failed, but allowing continuation');
+            // Don't block the user, just show a warning
+            setBusinessRulesValidation({
+              isValid: false,
+              violations: ['Some business rules were not met, but you can continue'],
+              recommendations: ['Contact us if you have questions about service area or document limits']
+            });
+          }
+        } catch (error) {
+          console.warn('Business rules validation error, allowing continuation:', error);
+          // Don't block on business rules errors
         }
 
         // 3. Track step completion for AI

@@ -152,20 +152,25 @@ export default function LocationStep({
 
   // Enhanced location change handler
   const handleLocationChange = useCallback((field: string, value: string) => {
-    setValue(`location.${field}`, value);
-    setErrorMessage(null);
-    
-    // Trigger update callback
-    onUpdate?.({
-      location: {
-        ...watchedLocation,
-        [field]: value
-      }
-    });
+    try {
+      setValue(`location.${field}`, value);
+      setErrorMessage(null);
+      
+      // Trigger update callback
+      onUpdate?.({
+        location: {
+          ...watchedLocation,
+          [field]: value
+        }
+      });
 
-    // Auto-calculate travel if we have enough data
-    if (field === 'zipCode' && value && locationType === 'CLIENT_LOCATION') {
-      setTimeout(() => calculateTravel(), 500);
+      // Auto-calculate travel if we have enough data
+      if (field === 'zipCode' && value && locationType === 'CLIENT_LOCATION') {
+        setTimeout(() => calculateTravel(), 500);
+      }
+    } catch (error) {
+      console.error('Location change error:', error);
+      setErrorMessage('Error updating location. Please try again.');
     }
   }, [setValue, watchedLocation, onUpdate, locationType]);
 

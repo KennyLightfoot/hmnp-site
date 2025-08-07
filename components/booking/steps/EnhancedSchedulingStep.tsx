@@ -258,34 +258,46 @@ export default function EnhancedSchedulingStep({
 
   // Handle date selection
   const handleDateSelect = (date: string) => {
-    setSelectedDate(date);
-    setValue('scheduling.preferredDate', date);
-    onUpdate({ scheduling: { ...watchedScheduling, preferredDate: date } });
-    
-    // Clear previous time selection
-    setValue('scheduling.preferredTime', '');
-    onUpdate({ 
-      scheduling: { 
-        ...watchedScheduling, 
-        preferredDate: date,
-        preferredTime: ''
-      } 
-    });
+    try {
+      console.log(`📅 Date selected: ${date}`);
+      setSelectedDate(date);
+      setValue('scheduling.preferredDate', date);
+      onUpdate({ scheduling: { ...watchedScheduling, preferredDate: date } });
+      
+      // Clear previous time selection
+      setValue('scheduling.preferredTime', '');
+      onUpdate({ 
+        scheduling: { 
+          ...watchedScheduling, 
+          preferredDate: date,
+          preferredTime: ''
+        } 
+      });
+    } catch (error) {
+      console.error('Date selection error:', error);
+      setAvailabilityError('Error selecting date. Please try again.');
+    }
   };
 
   // Handle time slot selection
   const handleTimeSelect = (slot: EnhancedTimeSlot) => {
-    // Ensure time is in HH:MM format for validation
-    const formattedTime = slot.displayTime;
-    setValue('scheduling.preferredTime', formattedTime);
-    setValue('scheduling.estimatedDuration', slot.duration);
-    onUpdate({ 
-      scheduling: { 
-        ...watchedScheduling, 
-        preferredTime: formattedTime,
-        estimatedDuration: slot.duration
-      } 
-    });
+    try {
+      console.log(`⏰ Time selected: ${slot.displayTime}`);
+      // Ensure time is in HH:MM format for validation
+      const formattedTime = slot.displayTime;
+      setValue('scheduling.preferredTime', formattedTime);
+      setValue('scheduling.estimatedDuration', slot.duration);
+      onUpdate({ 
+        scheduling: { 
+          ...watchedScheduling, 
+          preferredTime: formattedTime,
+          estimatedDuration: slot.duration
+        } 
+      });
+    } catch (error) {
+      console.error('Time selection error:', error);
+      setAvailabilityError('Error selecting time. Please try again.');
+    }
   };
 
   // Get selected day data
