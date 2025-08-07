@@ -176,36 +176,37 @@ export class EnhancedPricingEngine {
         ghlActions.workflows.push(...businessRulesResult.ghlActions.workflows);
       }
 
-      // 2. Calculate Travel Fee and Service Area
-      if (validatedRequest.address && validatedRequest.serviceType !== 'RON_SERVICES') {
-        console.log(`🚗 [${requestId}] Calculating travel fee and service area`);
-        
-        const { travelFeeAmount, distance, zone } = await this.calculateTravelFeeAndZone(
-          validatedRequest.address, 
-          validatedRequest.serviceType
-        );
-        
-        travelFee = travelFeeAmount;
-        serviceAreaMultiplier = SERVICE_AREA_MULTIPLIERS[zone as keyof typeof SERVICE_AREA_MULTIPLIERS]?.multiplier || 1;
-        businessRules.serviceAreaZone = zone;
-        
-        breakdown.travelFee = { 
-          amount: travelFee, 
-          label: `Travel Fee (${distance} miles)`, 
-          distance 
-        } as any;
-        
-        breakdown.serviceAreaFee = {
-          amount: basePrice * (serviceAreaMultiplier - 1),
-          label: SERVICE_AREA_MULTIPLIERS[zone as keyof typeof SERVICE_AREA_MULTIPLIERS]?.label || 'Service Area',
-          zone
-        } as any;
-        
-        ghlActions.customFields.cf_service_distance = distance;
-        ghlActions.customFields.cf_travel_fee = travelFee;
-        ghlActions.customFields.cf_service_zone = zone;
-        ghlActions.tags.push(`service_area:${zone}`);
-      }
+      // DISABLED: 2. Calculate Travel Fee and Service Area
+      // Travel fee calculation temporarily disabled to simplify booking system
+      // if (validatedRequest.address && validatedRequest.serviceType !== 'RON_SERVICES') {
+      //   console.log(`🚗 [${requestId}] Calculating travel fee and service area`);
+      //   
+      //   const { travelFeeAmount, distance, zone } = await this.calculateTravelFeeAndZone(
+      //     validatedRequest.address, 
+      //     validatedRequest.serviceType
+      //   );
+      //   
+      //   travelFee = travelFeeAmount;
+      //   serviceAreaMultiplier = SERVICE_AREA_MULTIPLIERS[zone as keyof typeof SERVICE_AREA_MULTIPLIERS]?.multiplier || 1;
+      //   businessRules.serviceAreaZone = zone;
+      //   
+      //   breakdown.travelFee = { 
+      //     amount: travelFee, 
+      //     label: `Travel Fee (${distance} miles)`, 
+      //     distance 
+      //   } as any;
+      //   
+      //   breakdown.serviceAreaFee = {
+      //     amount: basePrice * (serviceAreaMultiplier - 1),
+      //     label: SERVICE_AREA_MULTIPLIERS[zone as keyof typeof SERVICE_AREA_MULTIPLIERS]?.label || 'Service Area',
+      //     zone
+      //   } as any;
+      //   
+      //   ghlActions.customFields.cf_service_distance = distance;
+      //   ghlActions.customFields.cf_travel_fee = travelFee;
+      //   ghlActions.customFields.cf_service_zone = zone;
+      //   ghlActions.tags.push(`service_area:${zone}`);
+      // }
 
       // 3. Calculate Extra Document Fees
       const documentLimits = BUSINESS_RULES_CONFIG.documentLimits.serviceLimits;

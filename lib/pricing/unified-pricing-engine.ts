@@ -268,37 +268,38 @@ export class UnifiedPricingEngine {
       
       let runningTotal = basePrice;
       
-      // 1. Calculate Travel Fee (if address provided and not RON)
-      if (validatedRequest.address && validatedRequest.serviceType !== 'RON_SERVICES') {
-        console.log(`🗺️ [${requestId}] Calculating travel fee`);
-        
-        const travelResult = await this.calculateTravelFee(
-          validatedRequest.serviceType,
-          validatedRequest.address,
-          requestId
-        );
-        
-        if (travelResult.fee > 0) {
-          (breakdown as any).travelFee = {
-            amount: travelResult.fee,
-            label: `Travel Fee`,
-            description: `${travelResult.distance.toFixed(1)} miles @ $${serviceConfig.feePerMile}/mile`,
-            isDiscount: false,
-            calculation: `(${travelResult.distance.toFixed(1)} - ${serviceConfig.includedRadius}) × $${serviceConfig.feePerMile}`
-          };
-          runningTotal += travelResult.fee;
-        }
-        
-        // Update business rules
-        businessRules.serviceAreaZone = travelResult.zone;
-        businessRules.isWithinServiceArea = travelResult.withinArea;
-        
-        // Update GHL actions
-        ghlActions.customFields.cf_travel_fee = travelResult.fee;
-        ghlActions.customFields.cf_travel_distance = travelResult.distance;
-        ghlActions.customFields.cf_service_area_zone = travelResult.zone;
-        ghlActions.tags.push(`area:${travelResult.zone}`);
-      }
+      // DISABLED: 1. Calculate Travel Fee (if address provided and not RON)
+      // Travel fee calculation temporarily disabled to simplify booking system
+      // if (validatedRequest.address && validatedRequest.serviceType !== 'RON_SERVICES') {
+      //   console.log(`🗺️ [${requestId}] Calculating travel fee`);
+      //   
+      //   const travelResult = await this.calculateTravelFee(
+      //     validatedRequest.serviceType,
+      //     validatedRequest.address,
+      //     requestId
+      //   );
+      //   
+      //   if (travelResult.fee > 0) {
+      //     (breakdown as any).travelFee = {
+      //       amount: travelResult.fee,
+      //       label: `Travel Fee`,
+      //       description: `${travelResult.distance.toFixed(1)} miles @ $${serviceConfig.feePerMile}/mile`,
+      //       isDiscount: false,
+      //       calculation: `(${travelResult.distance.toFixed(1)} - ${serviceConfig.includedRadius}) × $${serviceConfig.feePerMile}`
+      //   };
+      //     runningTotal += travelResult.fee;
+      //   }
+      //   
+      //   // Update business rules
+      //   businessRules.serviceAreaZone = travelResult.zone;
+      //   businessRules.isWithinServiceArea = travelResult.withinArea;
+      //   
+      //   // Update GHL actions
+      //   ghlActions.customFields.cf_travel_fee = travelResult.fee;
+      //   ghlActions.customFields.cf_travel_distance = travelResult.distance;
+      //   ghlActions.customFields.cf_service_area_zone = travelResult.zone;
+      //   ghlActions.tags.push(`area:${travelResult.zone}`);
+      // }
       
       // 2. Calculate Extra Document Fees
       if (validatedRequest.documentCount > serviceConfig.maxDocuments) {

@@ -236,20 +236,21 @@ export class PricingEngine {
       // Get base service price
       const basePrice = this.getServiceBasePrice(validatedParams.serviceType);
       
-      // Calculate travel fees if location provided
+      // DISABLED: Calculate travel fees if location provided
+      // Travel fee calculation temporarily disabled to simplify booking system
       let travelData = { fee: 0, distance: 0, withinArea: true };
-      if (validatedParams.location && validatedParams.location.address) {
-        try {
-          travelData = await this.calculateTravelFee(validatedParams.serviceType, validatedParams.location as { address: string; latitude?: number; longitude?: number });
-        } catch (error) {
-          logger.warn('Travel fee calculation failed, using fallback', { 
-            error: getErrorMessage(error),
-            requestId: this.requestId 
-          });
-          // Fallback to estimated travel fee
-          travelData = { fee: 10, distance: 20, withinArea: false };
-        }
-      }
+      // if (validatedParams.location && validatedParams.location.address) {
+      //   try {
+      //     travelData = await this.calculateTravelFee(validatedParams.serviceType, validatedParams.location as { address: string; latitude?: number; longitude?: number });
+      //   } catch (error) {
+      //     logger.warn('Travel fee calculation failed, using fallback', { 
+      //       error: getErrorMessage(error),
+      //       requestId: this.requestId 
+      //     });
+      //     // Fallback to estimated travel fee
+      //     travelData = { fee: 10, distance: 20, withinArea: false };
+      //   }
+      // }
       
       // Apply time-based and situational surcharges
       const surcharges = this.calculateSurcharges(

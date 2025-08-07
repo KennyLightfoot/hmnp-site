@@ -194,9 +194,10 @@ export default function InteractivePricingCalculator({
   const pricingBreakdown = useMemo((): PricingBreakdown => {
     const basePrice = BASE_PRICES[serviceType as keyof typeof BASE_PRICES] || 75;
     
-    // Travel fee calculation (for mobile services)
-    const travelFee = serviceType === 'RON_SERVICES' ? 0 : 
-      estimatedDistance > 15 ? (estimatedDistance - 15) * 0.50 : 0;
+    // DISABLED: Travel fee calculation (for mobile services)
+    // Travel fee calculation temporarily disabled to simplify booking system
+    const travelFee = 0; // serviceType === 'RON_SERVICES' ? 0 : 
+      // estimatedDistance > 15 ? (estimatedDistance - 15) * 0.50 : 0;
     
     // Document fee calculation
     const documentFee = documentCount > 1 ? (documentCount - 1) * 15 : 0;

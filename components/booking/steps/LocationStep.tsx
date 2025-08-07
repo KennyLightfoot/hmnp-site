@@ -164,10 +164,11 @@ export default function LocationStep({
         }
       });
 
-      // Auto-calculate travel if we have enough data
-      if (field === 'zipCode' && value && locationType === 'CLIENT_LOCATION') {
-        setTimeout(() => calculateTravel(), 500);
-      }
+          // DISABLED: Auto-calculate travel if we have enough data
+    // Travel calculation temporarily disabled to simplify booking system
+    // if (field === 'zipCode' && value && locationType === 'CLIENT_LOCATION') {
+    //   setTimeout(() => calculateTravel(), 500);
+    // }
     } catch (error) {
       console.error('Location change error:', error);
       setErrorMessage('Error updating location. Please try again.');
@@ -579,8 +580,9 @@ export default function LocationStep({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           
-          {/* Travel Calculation */}
-          {locationType === 'CLIENT_LOCATION' && (
+          {/* DISABLED: Travel Calculation */}
+          {/* Travel calculation temporarily disabled to simplify booking system */}
+          {/* {locationType === 'CLIENT_LOCATION' && (
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center">
@@ -652,7 +654,7 @@ export default function LocationStep({
                 )}
               </CardContent>
             </Card>
-          )}
+          )} */}
         </div>
 
         <div className="space-y-4">
