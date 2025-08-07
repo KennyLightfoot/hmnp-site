@@ -9,40 +9,37 @@ function verifyGHLWebhookSignature(payload: string, signature: string, secret: s
   if (!signature || !secret) return false;
   
   try {
-    // GHL sends base64-encoded signatures, not hex
-    // Create expected signature as base64
+    // GHL v2 sends base64-encoded signatures
     const expectedSignature = crypto
       .createHmac('sha256', secret)
       .update(payload, 'utf8')
       .digest('base64');
     
-    // Compare signatures directly (both should be base64)
-    return crypto.timingSafeEqual(
-      Buffer.from(signature, 'base64'),
-      Buffer.from(expectedSignature, 'base64')
-    );
-  } catch (error) {
-    console.error('Signature verification error:', getErrorMessage(error));
+    // Direct string comparison for base64 signatures
+    if (signature === expectedSignature) {
+      return true;
+    }
+    
+    // Try with sha256= prefix removed
+    if (signature.startsWith('sha256=')) {
+      const cleanSignature = signature.substring(7);
+      return cleanSignature === expectedSignature;
+    }
     
     // Fallback: Try hex comparison for older webhooks
-    try {
-      const cleanSignature = signature.startsWith('sha256=') 
-        ? signature.substring(7)
-        : signature;
-      
-      const expectedHex = crypto
-        .createHmac('sha256', secret)
-        .update(payload, 'utf8')
-        .digest('hex');
-      
-      return crypto.timingSafeEqual(
-        Buffer.from(cleanSignature, 'hex'),
-        Buffer.from(expectedHex, 'hex')
-      );
-    } catch (fallbackError) {
-      console.error('Fallback signature verification failed:', getErrorMessage(fallbackError));
-      return false;
+    const expectedHex = crypto
+      .createHmac('sha256', secret)
+      .update(payload, 'utf8')
+      .digest('hex');
+    
+    if (signature === expectedHex || signature === `sha256=${expectedHex}`) {
+      return true;
     }
+    
+    return false;
+  } catch (error) {
+    console.error('Signature verification error:', getErrorMessage(error));
+    return false;
   }
 }
 
