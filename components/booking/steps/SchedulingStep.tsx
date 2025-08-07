@@ -489,14 +489,7 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
                     </span>
                   </div>
                 )}
-                {urgencyData && (
-                  <div className="flex items-center space-x-2">
-                    {urgencyData.icon && (
-                      <urgencyData.icon className={`h-4 w-4 ${urgencyData.color || 'text-gray-600'}`} />
-                    )}
-                    <span className="text-sm">{urgencyData.title || 'Unknown'}</span>
-                  </div>
-                )}
+
               </CardContent>
             </Card>
           )}
@@ -554,14 +547,7 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
                 </div>
               </div>
               
-              {selectedUrgency === 'today' && (
-                <Alert className="border-orange-200 bg-orange-50 p-2">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription className="text-xs">
-                    Same-day slots are limited. Book immediately to secure your preferred time.
-                  </AlertDescription>
-                </Alert>
-              )}
+
             </CardContent>
           </Card>
 
