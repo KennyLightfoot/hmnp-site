@@ -182,27 +182,51 @@ export async function POST(request: NextRequest) {
       payload: body
     });
 
-    // Enhanced webhook signature verification - accept both header formats
-    if (process.env.GHL_WEBHOOK_SECRET) {
-      const signature = headersList.get('x-ghl-signature') || headersList.get('x-wh-signature');
-      if (!signature) {
-        console.error('❌ Missing webhook signature');
-        return NextResponse.json({ 
-          success: false, 
-          error: 'Missing webhook signature' 
-        }, { status: 401 });
+    // Authentication: accept either signed global webhooks OR workflow shared-secret header
+    const configuredSignatureSecret = process.env.GHL_WEBHOOK_SECRET;
+    const configuredWorkflowSecret = process.env.GHL_WORKFLOW_SHARED_SECRET;
+
+    // Only enforce auth if at least one secret is configured
+    if (configuredSignatureSecret || configuredWorkflowSecret) {
+      let signatureValid = false;
+      let sharedSecretValid = false;
+
+      // Try signed verification (global GHL webhooks)
+      if (configuredSignatureSecret) {
+        const signature = headersList.get('x-ghl-signature') || headersList.get('x-wh-signature');
+        if (signature) {
+          signatureValid = verifyGHLWebhookSignature(rawBody, signature, configuredSignatureSecret);
+          if (signatureValid) {
+            console.log('✅ Webhook signature verified');
+          }
+        }
       }
 
-      const isValid = verifyGHLWebhookSignature(rawBody, signature, process.env.GHL_WEBHOOK_SECRET);
-      if (!isValid) {
-        console.error('❌ Invalid webhook signature');
-        return NextResponse.json({ 
-          success: false, 
-          error: 'Invalid webhook signature' 
-        }, { status: 401 });
+      // Try shared-secret header (workflow webhooks)
+      if (!signatureValid && configuredWorkflowSecret) {
+        const sharedSecretHeader =
+          headersList.get('x-webhook-secret') ||
+          headersList.get('x-shared-secret') ||
+          headersList.get('x-workflow-secret');
+
+        if (sharedSecretHeader && sharedSecretHeader === configuredWorkflowSecret) {
+          sharedSecretValid = true;
+          console.log('✅ Webhook shared-secret header verified');
+        }
       }
-      
-      console.log('✅ Webhook signature verified');
+
+      if (!signatureValid && !sharedSecretValid) {
+        console.error('❌ Unauthorized webhook: missing or invalid auth');
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Unauthorized webhook',
+            details:
+              'Provide a valid x-ghl-signature (with GHL global webhook signing) or a matching X-Webhook-Secret header (workflow secret).',
+          },
+          { status: 401 }
+        );
+      }
     }
 
     // Extract event type and data

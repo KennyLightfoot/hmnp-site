@@ -47,7 +47,6 @@ import ServiceSelector from './ServiceSelector';
 import CustomerInfoStep from './steps/CustomerInfoStep';
 import LocationStep from './steps/LocationStep';
 import SchedulingStep from './steps/SchedulingStep';
-import EnhancedSchedulingStep from './steps/EnhancedSchedulingStep';
 import ReviewStep from './steps/ReviewStep';
 
 // Import AI Booking Assistant
@@ -95,11 +94,11 @@ interface BookingFormProps {
 
 // Step-specific field validation mapping
 const STEP_FIELD_MAPPING: { [step: number]: string[] } = {
-  0: ['serviceType'], // Service selection
-  1: ['customer.name', 'customer.email'], // Customer info
-  2: ['location.address', 'location.city', 'location.state', 'location.zipCode'], // Location
-  3: ['scheduling.preferredDate', 'scheduling.preferredTime'], // Scheduling
-  4: [] // Review step - no validation needed
+  0: ['serviceType'],
+  1: ['customer.name', 'customer.email'],
+  2: ['location.address', 'location.city', 'location.state', 'location.zipCode'],
+  3: ['scheduling.preferredDate', 'scheduling.preferredTime'],
+  4: []
 };
 
 // Enhanced step configuration with mobile-optimized data
@@ -143,7 +142,7 @@ const BOOKING_STEPS = [
     shortTitle: 'When',
     description: 'Pick your preferred date and time',
     mobileDescription: 'Pick date & time',
-    component: EnhancedSchedulingStep,
+    component: SchedulingStep,
     icon: Calendar,
     estimatedTime: '2 min',
     tips: ['Same-day available', 'Weekend appointments', 'Flexible timing options']
@@ -309,7 +308,6 @@ export default function BookingForm({
       return true;
     }
     
-    // Check if all required fields for current step have values
     return currentStepFields.every(fieldPath => {
       const keys = fieldPath.split('.');
       let value: any = watchedValues;
@@ -472,9 +470,7 @@ export default function BookingForm({
         serviceType: data.serviceType,
         customerName: data.customer?.name || '',
         customerEmail: data.customer?.email || '',
-        scheduledDateTime: data.scheduling?.preferredDate && data.scheduling?.preferredTime ? 
-          `${data.scheduling.preferredDate} ${data.scheduling.preferredTime}` : 
-          data.scheduling?.preferredTime, // Fallback to just time if date is missing
+        scheduledDateTime: data.scheduling?.preferredTime, // ISO string
         timeZone: 'America/Chicago',
         numberOfDocuments: 1, // Default value since serviceDetails doesn't exist
         numberOfSigners: 1 // Default value since serviceDetails doesn't exist
