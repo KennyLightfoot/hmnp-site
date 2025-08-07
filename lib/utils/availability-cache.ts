@@ -86,7 +86,7 @@ export async function fetchAvailabilityCached(
   // If not in cache, fetch and cache the result
   console.log(`🌐 Fetching availability for ${date}`);
   const { fetchAvailabilityDeduped } = await import('@/lib/utils/request-deduplicator');
-  const result = await fetchAvailabilityDeduped(serviceId, date, timezone);
+  const result = await fetchAvailabilityDeduped(serviceType, date, timezone);
   
   // Cache the result
   availabilityCache.set(cacheKey, result);
