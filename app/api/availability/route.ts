@@ -143,8 +143,8 @@ export async function GET(request: NextRequest) {
           console.warn(`Calendar mapping failed for ${serviceType}, falling back to mock data:`, calendarError);
           console.log(`🔧 Calendar error details:`, {
             serviceType,
-            error: calendarError.message,
-            stack: calendarError.stack
+            error: calendarError instanceof Error ? calendarError.message : String(calendarError),
+            stack: calendarError instanceof Error ? calendarError.stack : undefined
           });
           availableSlots = generateMockSlots(requestedDate);
         }
