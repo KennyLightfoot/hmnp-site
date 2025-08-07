@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { DateTime } from "luxon";
 import type { TimeSlot } from "@/lib/types/booking";
 import { getAvailableSlots, getCalendars, testCalendarConnection } from "@/lib/ghl-calendar";
+import { getCalendarIdForService } from "@/lib/ghl/calendar-mapping";
 
 // Fallback mock function if GHL is not available
 function generateMockSlots(date: DateTime): TimeSlot[] {
@@ -93,13 +94,12 @@ export async function GET(request: NextRequest) {
       ]);
       
       if (isConnected) {
-        // Get all calendars for the location
-        const calendars = await getCalendars();
+        // Get service type from query params (default to STANDARD_NOTARY)
+        const serviceType = searchParams.get("serviceType") || "STANDARD_NOTARY";
         
-        if (calendars.length > 0) {
-          // Use the first calendar (you can modify this logic based on your needs)
-          const primaryCalendar = calendars[0];
-          const calendarId = primaryCalendar.id;
+        try {
+          // Get the specific calendar ID for this service type
+          const calendarId = getCalendarIdForService(serviceType);
           
           // Get start and end of the requested date
           const startOfDay = requestedDate.startOf('day');
@@ -127,9 +127,9 @@ export async function GET(request: NextRequest) {
             available: slot.available !== false
           } as TimeSlot));
           
-          console.log(`✅ GHL availability fetched for ${dateStr}: ${availableSlots.length} slots`);
-        } else {
-          console.warn('No GHL calendars found, falling back to mock data');
+          console.log(`✅ GHL availability fetched for ${dateStr} (${serviceType}): ${availableSlots.length} slots`);
+        } catch (calendarError) {
+          console.warn(`Calendar mapping failed for ${serviceType}, falling back to mock data:`, calendarError);
           availableSlots = generateMockSlots(requestedDate);
         }
       } else {

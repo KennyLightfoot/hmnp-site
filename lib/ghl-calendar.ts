@@ -53,10 +53,11 @@ async function callGhlCalendarApi<T = any>(
   const url = `${baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
   const headers: HeadersInit = {
-    'Authorization': apiKey,
+    'Authorization': `Bearer ${apiKey}`,
     'Accept': 'application/json',
     'Content-Type': 'application/json',
-    'Version': '2021-07-28' // GHL API v2 version
+    'Version': '2021-07-28', // GHL API v2 version
+    'LocationId': process.env.GHL_LOCATION_ID ?? ''
   };
 
   try {
@@ -163,14 +164,18 @@ export async function getAvailableSlots(
   }
 
   try {
-    const params = new URLSearchParams({
-      startDate,
-      endDate,
-      duration: duration.toString()
+    // Convert date strings to Unix timestamps (GHL API requirement)
+    const startTimestamp = Math.floor(new Date(`${startDate.split('T')[0]}T00:00:00`).getTime() / 1000);
+    const endTimestamp = Math.floor(new Date(`${endDate.split('T')[0]}T23:59:59`).getTime() / 1000);
+    
+    const queryParams = new URLSearchParams({
+      startDate: startTimestamp.toString(),
+      endDate: endTimestamp.toString(),
+      timezone: 'America/Chicago'
     });
 
     const response = await callGhlCalendarApi(
-      `/calendars/${calendarId}/available-slots?${params}`, 
+      `/calendars/${calendarId}/free-slots?${queryParams}`, 
       'GET'
     );
     

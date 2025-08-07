@@ -5,8 +5,6 @@
  * Maps service types to appropriate GHL calendar IDs for scheduling
  */
 
-import { getRequiredCleanEnv } from '../env-clean';
-
 // Service types from schema-v2 - Updated to include all 6 website services
 export enum ServiceType {
   QUICK_STAMP_LOCAL = 'QUICK_STAMP_LOCAL',        // NEW: Quick-Stamp Local ($50)
@@ -39,12 +37,13 @@ export function getCalendarIdForService(serviceType: string): string {
     throw new Error(`Unsupported service type: ${serviceType}. Supported types: ${Object.keys(CALENDAR_MAPPING).join(', ')}`);
   }
 
-  const calendarId = getRequiredCleanEnv(
-    envVarName, 
-    `GHL calendar ID required for ${serviceType} service`
-  );
+  const calendarId = process.env[envVarName];
+  
+  if (!calendarId) {
+    throw new Error(`GHL calendar ID required for ${serviceType} service. Set ${envVarName} environment variable.`);
+  }
 
-  return calendarId;
+  return calendarId.trim();
 }
 
 /**
@@ -55,10 +54,10 @@ export function getAllCalendarMappings(): Record<ServiceType, string> {
   
   for (const [serviceType, envVarName] of Object.entries(CALENDAR_MAPPING)) {
     try {
-      mappings[serviceType as ServiceType] = getRequiredCleanEnv(
-        envVarName,
-        `Calendar mapping for ${serviceType}`
-      );
+      const calendarId = process.env[envVarName];
+      if (calendarId) {
+        mappings[serviceType as ServiceType] = calendarId.trim();
+      }
     } catch (error) {
       console.warn(`Missing calendar configuration for ${serviceType}: ${error}`);
     }
@@ -74,10 +73,9 @@ export function validateCalendarMappings(): { valid: boolean; errors: string[] }
   const errors: string[] = [];
   
   for (const [serviceType, envVarName] of Object.entries(CALENDAR_MAPPING)) {
-    try {
-      getRequiredCleanEnv(envVarName, `Validation for ${serviceType}`);
-    } catch (error) {
-      errors.push(`${serviceType}: ${error}`);
+    const calendarId = process.env[envVarName];
+    if (!calendarId) {
+      errors.push(`${serviceType}: Missing ${envVarName} environment variable`);
     }
   }
   
