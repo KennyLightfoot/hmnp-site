@@ -259,7 +259,6 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
 
   const selectedDay = availableDays.find(day => day.date === watchedScheduling.preferredDate);
   const hasSelectedTime = !!watchedScheduling.preferredTime;
-  const urgencyData = URGENCY_LEVELS.find(u => u.id === selectedUrgency);
 
   return (
     <div className="space-y-6">
