@@ -182,7 +182,7 @@ export async function GET(request: NextRequest) {
         cache.delete(key);
       }
     }
-    
+
     return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching availability:", error);
