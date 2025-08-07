@@ -211,16 +211,13 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
     }
   }, [watchedServiceType, availabilityData, loadingDates]);
 
-  // ✅ FIXED: Load availability for visible days when component mounts or service type changes
+  // ✅ FIXED: Only load availability for selected date
   useEffect(() => {
-    const visibleDays = availableDays.slice(currentWeek * 7, (currentWeek + 1) * 7);
-    
-    visibleDays.forEach(day => {
-      if (day.available) {
-        fetchAvailability(day.date);
-      }
-    });
-  }, [availableDays, currentWeek, fetchAvailability]);
+    // Only fetch availability for the currently selected date
+    if (watchedScheduling.preferredDate) {
+      fetchAvailability(watchedScheduling.preferredDate);
+    }
+  }, [watchedScheduling.preferredDate, fetchAvailability]);
 
   // ✅ FIXED: Clear availability data when service type changes
   useEffect(() => {
@@ -230,12 +227,15 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
 
   // Urgency selection removed - simplified booking flow
 
-  const handleDateSelect = (date: string) => {
+  const handleDateSelect = async (date: string) => {
+    // Update the selected date
     setValue('scheduling.preferredDate', date);
     onUpdate({ scheduling: { ...watchedScheduling, preferredDate: date } });
     
-    // Prefetch availability for this date if not already loaded
-    fetchAvailability(date);
+    // Fetch availability for this specific date only
+    if (!availabilityData[date] && !loadingDates.has(date)) {
+      await fetchAvailability(date);
+    }
   };
 
   const handleTimeSelect = (slot: TimeSlot) => {

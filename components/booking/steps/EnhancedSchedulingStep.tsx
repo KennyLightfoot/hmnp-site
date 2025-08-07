@@ -191,22 +191,20 @@ export default function EnhancedSchedulingStep({
     }
   }, [watchedServiceType]);
 
-  // Prefetch availability for current week
+  // Only fetch availability for selected date
   useEffect(() => {
-    if (watchedServiceType && availableDays.length > 0) {
-      const currentWeekDays = availableDays.slice(currentWeek * 7, (currentWeek + 1) * 7);
-      currentWeekDays.forEach(day => {
-        if (day.available && !day.loading && day.slots.length === 0) {
-          fetchAvailability(day.date);
-        }
-      });
+    if (watchedServiceType && selectedDate) {
+      const selectedDay = availableDays.find(day => day.date === selectedDate);
+      if (selectedDay && selectedDay.available && !selectedDay.loading && selectedDay.slots.length === 0) {
+        fetchAvailability(selectedDate);
+      }
     }
-  }, [watchedServiceType, currentWeek, availableDays, fetchAvailability]);
+  }, [watchedServiceType, selectedDate, availableDays, fetchAvailability]);
 
   // Urgency selection removed - simplified booking flow
 
   // Handle date selection
-  const handleDateSelect = (date: string) => {
+  const handleDateSelect = async (date: string) => {
     try {
       console.log(`📅 Date selected: ${date}`);
       setSelectedDate(date);
@@ -222,6 +220,12 @@ export default function EnhancedSchedulingStep({
           preferredTime: ''
         } 
       });
+      
+      // Fetch availability for this specific date
+      const selectedDay = availableDays.find(day => day.date === date);
+      if (selectedDay && selectedDay.available && !selectedDay.loading && selectedDay.slots.length === 0) {
+        await fetchAvailability(date);
+      }
     } catch (error) {
       console.error('Date selection error:', error);
       setAvailabilityError('Error selecting date. Please try again.');

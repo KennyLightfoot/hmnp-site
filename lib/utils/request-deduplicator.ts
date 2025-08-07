@@ -11,7 +11,7 @@ interface PendingRequest<T> {
 class RequestDeduplicator {
   private pendingRequests = new Map<string, PendingRequest<any>>();
   private readonly TTL = 30000; // 30 seconds
-           private readonly MAX_CONCURRENT = 3; // Reduced to 3 concurrent requests
+           private readonly MAX_CONCURRENT = 1; // Only 1 concurrent request to prevent browser overload
 
   /**
    * Deduplicate requests by key with aggressive throttling
@@ -31,7 +31,7 @@ class RequestDeduplicator {
            if (this.pendingRequests.size >= this.MAX_CONCURRENT) {
              console.warn(`⚠️ Too many concurrent requests (${this.pendingRequests.size}), throttling: ${key}`);
              // Wait longer before allowing new requests
-             await new Promise(resolve => setTimeout(resolve, 2000));
+             await new Promise(resolve => setTimeout(resolve, 5000)); // Increased to 5 seconds
            }
 
     // Create new request
