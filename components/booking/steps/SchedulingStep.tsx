@@ -121,7 +121,8 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
         date: dateString,
         dayName,
         dayNumber: date.getDate(),
-        available: available && slots.length > 0,
+        // Allow clicking before slots are fetched; weekend rules still apply
+        available: available,
         slots: slots.map(slot => ({
           ...slot,
           popular: slot.duration <= 60, // Shorter slots are more popular
@@ -154,7 +155,7 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
       
       console.log(`✅ Availability for ${date}:`, result);
       
-      // Transform to match expected AvailabilityResponse format
+      // Transform API ISO timestamps into UI-friendly slots
       const transformedData: AvailabilityResponse = {
         success: !!result.availableSlots,
         serviceType: watchedServiceType,
@@ -162,16 +163,23 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
         timezone: 'America/Chicago',
         calendarId: watchedServiceType, // Use serviceType instead of serviceId
         totalSlots: result.availableSlots?.length || 0,
-        availableSlots: result.availableSlots?.map((slot: any) => ({
-          startTime: `${date}T${slot.startTime}:00`,
-          endTime: `${date}T${slot.endTime}:00`,
-          available: slot.available,
-          duration: 60,
-          displayTime: slot.startTime,
-          popular: false,
-          urgent: false,
-          demand: 'low' as const
-        })).filter((slot: any) => slot.available) || [],
+        availableSlots: result.availableSlots?.map((slot: any) => {
+          const startIso = slot.startTime || slot.start;
+          const endIso = slot.endTime || slot.end;
+          const displayTime = startIso
+            ? new Date(startIso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+            : '';
+          return {
+            startTime: startIso,
+            endTime: endIso,
+            available: slot.available !== false,
+            duration: slot.duration || 60,
+            displayTime,
+            popular: false,
+            urgent: false,
+            demand: 'low' as const
+          };
+        }).filter((slot: any) => slot.available) || [],
         metadata: {
           businessHours: { start: 8, end: 18 },
           fetchedAt: new Date().toISOString(),

@@ -154,20 +154,27 @@ export default function EnhancedSchedulingStep({
       console.log(`✅ EnhancedSchedulingStep availability for ${date}:`, result);
       
       if (result.availableSlots) {
-        // Transform to enhanced format
-        const enhancedSlots = result.availableSlots.map((slot: any) => ({
-          startTime: `${date}T${slot.startTime}:00`,
-          endTime: `${date}T${slot.endTime}:00`,
-          displayTime: slot.startTime,
-          duration: 60,
-          available: slot.available,
-          popular: false,
-          urgent: false,
-          demand: 'low' as const,
-          recommended: false,
-          sameDay: false,
-          nextDay: false
-        })).filter((slot: any) => slot.available);
+        // Transform API ISO timestamps into enhanced UI format
+        const enhancedSlots = result.availableSlots.map((slot: any) => {
+          const startIso = slot.startTime || slot.start;
+          const endIso = slot.endTime || slot.end;
+          const displayTime = startIso
+            ? new Date(startIso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+            : '';
+          return {
+            startTime: startIso,
+            endTime: endIso,
+            displayTime,
+            duration: slot.duration || 60,
+            available: slot.available !== false,
+            popular: false,
+            urgent: false,
+            demand: 'low' as const,
+            recommended: false,
+            sameDay: false,
+            nextDay: false
+          };
+        }).filter((slot: any) => slot.available);
         
         // Update the day with availability data
         setAvailableDays(prev => prev.map(day => {
@@ -240,11 +247,8 @@ export default function EnhancedSchedulingStep({
         } 
       });
       
-      // Fetch availability for this specific date
-      const selectedDay = availableDays.find(day => day.date === date);
-      if (selectedDay && selectedDay.available && !selectedDay.loading && selectedDay.slots.length === 0) {
-        await fetchAvailability(date);
-      }
+      // Always attempt to fetch for this date (internal guard prevents duplicates)
+      await fetchAvailability(date);
     } catch (error) {
       console.error('Date selection error:', error);
       setAvailabilityError('Error selecting date. Please try again.');

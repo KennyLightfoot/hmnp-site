@@ -264,16 +264,23 @@ export default function UnifiedBookingCalendar({
         
         // Handle the result directly
         if (result.availableSlots) {
-          const slots: TimeSlot[] = result.availableSlots.map((slot: any) => ({
-            startTime: slot.startTime,
-            endTime: slot.endTime,
-            formattedTime: slot.displayTime || slot.startTime,
-            available: slot.available,
-            duration: slot.duration || 60,
-            demand: slot.demand || 'low',
-            popular: slot.popular || false,
-            urgent: slot.urgent || false
-          }));
+          const slots: TimeSlot[] = result.availableSlots.map((slot: any) => {
+            const startIso = slot.startTime || slot.start;
+            const endIso = slot.endTime || slot.end;
+            const formattedTime = startIso
+              ? new Date(startIso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+              : '';
+            return {
+              startTime: startIso,
+              endTime: endIso,
+              formattedTime,
+              available: slot.available !== false,
+              duration: slot.duration || 60,
+              demand: slot.demand || 'low',
+              popular: slot.popular || false,
+              urgent: slot.urgent || false
+            };
+          });
           
           setTimeSlots(slots);
           setBusinessHours(result.businessHours);
