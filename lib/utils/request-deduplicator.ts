@@ -86,15 +86,15 @@ export const requestDeduplicator = new RequestDeduplicator();
  * Helper for availability requests
  */
 export async function fetchAvailabilityDeduped(
-  serviceId: string,
+  serviceType: string,
   date: string,
   timezone = 'America/Chicago'
 ): Promise<any> {
-  const key = `availability-${serviceId}-${date}-${timezone}`;
+  const key = `availability-${serviceType}-${date}-${timezone}`;
   
   return requestDeduplicator.dedupe(key, async () => {
     const params = new URLSearchParams({
-      serviceId,
+      serviceType,
       date,
       timezone
     });

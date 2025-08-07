@@ -256,9 +256,9 @@ export default function UnifiedBookingCalendar({
         // Use service-based API (BookingCalendar style) with deduplication
         const dateString = format(date, 'yyyy-MM-dd');
         
-                   // Use cached availability fetching for service-based API
-           const { fetchAvailabilityCached } = await import('@/lib/utils/availability-cache');
-           const result = await fetchAvailabilityCached(serviceId, dateString, userTimezone);
+        // Use cached availability fetching for service-based API
+        const { fetchAvailabilityCached } = await import('@/lib/utils/availability-cache');
+        const result = await fetchAvailabilityCached(serviceType || 'STANDARD_NOTARY', dateString, userTimezone);
         
         console.log(`✅ UnifiedBookingCalendar availability for ${dateString}:`, result);
         

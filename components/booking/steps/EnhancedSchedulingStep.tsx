@@ -170,11 +170,10 @@ export default function EnhancedSchedulingStep({
       if (!watchedServiceType) {
         throw new Error('Service type is required');
       }
-      const serviceId = getServiceId(watchedServiceType);
       
-                 // Use cached availability fetching
-           const { fetchAvailabilityCached } = await import('@/lib/utils/availability-cache');
-           const result = await fetchAvailabilityCached(serviceId, date, 'America/Chicago');
+      // Use cached availability fetching
+      const { fetchAvailabilityCached } = await import('@/lib/utils/availability-cache');
+      const result = await fetchAvailabilityCached(watchedServiceType, date, 'America/Chicago');
       
       console.log(`✅ EnhancedSchedulingStep availability for ${date}:`, result);
       

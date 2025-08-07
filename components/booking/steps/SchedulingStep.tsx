@@ -183,12 +183,9 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
     setLoadingDates(prev => new Set(prev).add(date));
 
     try {
-      // Resolve service ID from central map
-      const serviceId = getServiceId(watchedServiceType);
-      
-                 // Use cached availability fetching
-           const { fetchAvailabilityCached } = await import('@/lib/utils/availability-cache');
-           const result = await fetchAvailabilityCached(serviceId, date, 'America/Chicago');
+      // Use cached availability fetching
+      const { fetchAvailabilityCached } = await import('@/lib/utils/availability-cache');
+      const result = await fetchAvailabilityCached(watchedServiceType, date, 'America/Chicago');
       
       console.log(`✅ Availability for ${date}:`, result);
       

@@ -53,6 +53,10 @@ const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const dateStr = searchParams.get("date");
+  const serviceType = searchParams.get("serviceType");
+  
+  console.log(`📅 Availability request: date=${dateStr}, serviceType=${serviceType}`);
+  
   if (!dateStr) return NextResponse.json({ error: "Date parameter is required" }, { status: 400 });
   
   // Rate limiting check

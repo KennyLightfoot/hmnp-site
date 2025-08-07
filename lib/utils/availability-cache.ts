@@ -70,11 +70,11 @@ export const availabilityCache = new AvailabilityCache();
  * Cached availability fetcher that checks global cache first
  */
 export async function fetchAvailabilityCached(
-  serviceId: string,
+  serviceType: string,
   date: string,
   timezone = 'America/Chicago'
 ): Promise<any> {
-  const cacheKey = `availability-${serviceId}-${date}-${timezone}`;
+  const cacheKey = `availability-${serviceType}-${date}-${timezone}`;
   
   // Check global cache first
   const cached = availabilityCache.get(cacheKey);
