@@ -12,23 +12,33 @@ function generateMockSlots(date: DateTime): TimeSlot[] {
   
   // Check if date is in the past (use same timezone as input)
   const now = DateTime.now().setZone(date.zone);
-  if (date < now.startOf("day")) return [];
+  const today = now.startOf("day");
+  const requestedDay = date.startOf("day");
   
-  for (let hour = startHour; hour < endHour; hour++) {
-    for (let minute = 0; minute < 60; minute += 15) {
-      if (Math.random() > 0.3) {
-        const startTime = date.set({ hour, minute, second: 0, millisecond: 0 });
-        if (startTime < now) continue;
-        const demandLevels = ["low", "moderate", "high"] as const;
-        slots.push({
-          startTime: startTime.toISO(),
-          endTime: startTime.plus({ minutes: 60 }).toISO(),
-          duration: 60,
-          demand: demandLevels[Math.floor(Math.random() * 3)],
-        } as TimeSlot);
+  // If the requested date is today or in the future, generate slots
+  if (requestedDay >= today) {
+    for (let hour = startHour; hour < endHour; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) { // Changed to 30-minute intervals
+        if (Math.random() > 0.3) { // 70% chance of slot being available
+          const startTime = date.set({ hour, minute, second: 0, millisecond: 0 });
+          
+          // Only include slots that are in the future
+          if (startTime > now) {
+            const demandLevels = ["low", "moderate", "high"] as const;
+            slots.push({
+              startTime: startTime.toISO(),
+              endTime: startTime.plus({ minutes: 60 }).toISO(),
+              duration: 60,
+              demand: demandLevels[Math.floor(Math.random() * 3)],
+              available: true
+            } as TimeSlot);
+          }
+        }
       }
     }
   }
+  
+  console.log(`🎲 Generated ${slots.length} mock slots for ${date.toISODate()}`);
   return slots;
 }
 
@@ -100,6 +110,7 @@ export async function GET(request: NextRequest) {
         try {
           // Get the specific calendar ID for this service type
           const calendarId = getCalendarIdForService(serviceType);
+          console.log(`📅 Using calendar ID for ${serviceType}: ${calendarId}`);
           
           // Get start and end of the requested date
           const startOfDay = requestedDate.startOf('day');
@@ -130,6 +141,11 @@ export async function GET(request: NextRequest) {
           console.log(`✅ GHL availability fetched for ${dateStr} (${serviceType}): ${availableSlots.length} slots`);
         } catch (calendarError) {
           console.warn(`Calendar mapping failed for ${serviceType}, falling back to mock data:`, calendarError);
+          console.log(`🔧 Calendar error details:`, {
+            serviceType,
+            error: calendarError.message,
+            stack: calendarError.stack
+          });
           availableSlots = generateMockSlots(requestedDate);
         }
       } else {
