@@ -80,6 +80,7 @@ export default function EnhancedSchedulingStep({
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
+  const [fetchedDates, setFetchedDates] = useState<Set<string>>(new Set()); // Track which dates we've fetched
 
   // Generate available days for the next 4 weeks
   const generateAvailableDays = useCallback(() => {
@@ -123,6 +124,20 @@ export default function EnhancedSchedulingStep({
   // ✅ FIXED: Fetch availability for a specific date with deduplication
   const fetchAvailability = useCallback(async (date: string) => {
     if (!watchedServiceType) return;
+    
+    // Check if we've already fetched this date
+    if (fetchedDates.has(date)) {
+      return; // Already fetched - don't fetch again
+    }
+    
+    // Mark as fetched and loading immediately
+    setFetchedDates(prev => new Set(prev).add(date));
+    setAvailableDays(prev => prev.map(day => {
+      if (day.date === date) {
+        return { ...day, loading: true };
+      }
+      return day;
+    }));
     
     setIsLoadingAvailability(true);
     setAvailabilityError(null);
@@ -189,17 +204,21 @@ export default function EnhancedSchedulingStep({
     } finally {
       setIsLoadingAvailability(false);
     }
-  }, [watchedServiceType]);
+  }, [watchedServiceType, fetchedDates, availableDays]);
 
   // Only fetch availability for selected date
   useEffect(() => {
     if (watchedServiceType && selectedDate) {
-      const selectedDay = availableDays.find(day => day.date === selectedDate);
-      if (selectedDay && selectedDay.available && !selectedDay.loading && selectedDay.slots.length === 0) {
-        fetchAvailability(selectedDate);
-      }
+      // Only fetch if we haven't already fetched for this date
+      fetchAvailability(selectedDate);
     }
-  }, [watchedServiceType, selectedDate, availableDays, fetchAvailability]);
+  }, [watchedServiceType, selectedDate, fetchAvailability]);
+  
+  // Clear fetched dates when service type changes
+  useEffect(() => {
+    setFetchedDates(new Set());
+    setAvailableDays(prev => prev.map(day => ({ ...day, slots: [], loading: false, error: undefined })));
+  }, [watchedServiceType]);
 
   // Urgency selection removed - simplified booking flow
 
