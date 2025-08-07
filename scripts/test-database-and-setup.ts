@@ -117,7 +117,7 @@ async function testRedisConnection() {
   
   try {
     // Test Redis connectivity
-    await redis.set('test:connection', 'success', { ex: 10 });
+    await redis.set('test:connection', 'success', 10);
     const result = await redis.get('test:connection');
     
     if (result === 'success') {
