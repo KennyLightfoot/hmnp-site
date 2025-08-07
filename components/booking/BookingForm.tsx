@@ -95,11 +95,11 @@ interface BookingFormProps {
 
 // Step-specific field validation mapping
 const STEP_FIELD_MAPPING: { [step: number]: string[] } = {
-  0: ['serviceType'],
-  1: ['customer.name', 'customer.email'],
-  2: ['location.address', 'location.city', 'location.state', 'location.zipCode'],
-  3: ['scheduling.preferredDate', 'scheduling.preferredTime'],
-  4: []
+  0: ['serviceType'], // Service selection
+  1: ['customer.name', 'customer.email'], // Customer info
+  2: ['location.address', 'location.city', 'location.state', 'location.zipCode'], // Location
+  3: ['scheduling.preferredDate', 'scheduling.preferredTime'], // Scheduling
+  4: [] // Review step - no validation needed
 };
 
 // Enhanced step configuration with mobile-optimized data
@@ -309,6 +309,7 @@ export default function BookingForm({
       return true;
     }
     
+    // Check if all required fields for current step have values
     return currentStepFields.every(fieldPath => {
       const keys = fieldPath.split('.');
       let value: any = watchedValues;
@@ -471,7 +472,9 @@ export default function BookingForm({
         serviceType: data.serviceType,
         customerName: data.customer?.name || '',
         customerEmail: data.customer?.email || '',
-        scheduledDateTime: data.scheduling?.preferredTime, // ISO string
+        scheduledDateTime: data.scheduling?.preferredDate && data.scheduling?.preferredTime ? 
+          `${data.scheduling.preferredDate} ${data.scheduling.preferredTime}` : 
+          data.scheduling?.preferredTime, // Fallback to just time if date is missing
         timeZone: 'America/Chicago',
         numberOfDocuments: 1, // Default value since serviceDetails doesn't exist
         numberOfSigners: 1 // Default value since serviceDetails doesn't exist
