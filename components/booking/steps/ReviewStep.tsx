@@ -30,7 +30,6 @@ import {
   Calendar,
   FileText,
   DollarSign,
-  Zap,
   Lock,
   Gift,
   Phone,
@@ -506,45 +505,7 @@ export default function ReviewStep({
         </CardContent>
       </Card>
 
-      {/* Final CTA */}
-      <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
-        <CardContent className="p-6">
-          <div className="text-center space-y-4">
-            <div className="flex items-center justify-center space-x-2">
-              <Lock className="h-5 w-5 text-green-600" />
-              <span className="font-semibold text-green-900">
-                Secure Booking - Your Information is Protected
-              </span>
-            </div>
-            
-            <div className="text-sm text-green-700">
-              Complete your booking in one click. We'll send confirmation and appointment details immediately.
-            </div>
-            
-            <Button
-              size="lg"
-              className="bg-green-600 hover:bg-green-700 text-white text-lg px-8 py-4"
-              disabled={!termsAccepted || isSubmitting}
-            >
-              {isSubmitting ? (
-                <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                  <span>Processing...</span>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <Zap className="h-5 w-5" />
-                  <span>Confirm Booking</span>
-                </div>
-              )}
-            </Button>
-            
-            <div className="text-xs text-gray-600">
-              You'll receive confirmation via email and SMS
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Final CTA intentionally handled by parent navigation controls to avoid duplicates */}
 
       {/* Trust Bar */}
       <TrustBar />
