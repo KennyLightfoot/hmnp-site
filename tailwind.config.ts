@@ -7,7 +7,7 @@ const config: Config = {
     "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
-    "*.{js,ts,jsx,tsx,mdx}",
+    // Limit scanning to source directories to reduce memory usage
   ],
   prefix: "",
   theme: {
@@ -26,11 +26,11 @@ const config: Config = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#002147", // Oxford Blue
+          DEFAULT: "#A52A2A", // Auburn (Primary brand color)
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "#A52A2A", // Auburn
+          DEFAULT: "#002147", // Oxford Blue (Secondary brand color)
           foreground: "hsl(var(--secondary-foreground))",
         },
         accent: {

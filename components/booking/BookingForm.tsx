@@ -56,6 +56,7 @@ import AIBookingAssistant from './AIBookingAssistant';
 import { useBookingPricing } from '../../hooks/use-transparent-pricing';
 import { CompactPricingDisplay } from './EnhancedPricingDisplay';
 import InteractivePricingCalculator from './InteractivePricingCalculator';
+import StickySummary from './StickySummary';
 
 // Business Rules Integration
 import { validateBusinessRules } from '../../lib/business-rules/engine';
@@ -1017,6 +1018,12 @@ export default function BookingForm({
       </div>
       
       </div>
+      {/* Sticky mobile summary */}
+      <StickySummary
+        total={Number(totalPrice || 0)}
+        onContinue={currentStep < BOOKING_STEPS.length - 1 ? nextStep : form.handleSubmit(onSubmit)}
+        continueDisabled={!isCurrentStepValid || isSubmitting || isNavigating}
+      />
     </div>
   );
 }

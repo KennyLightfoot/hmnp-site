@@ -27,14 +27,14 @@ export default function Header() {
 
   return (
     <header
-      className={`sticky top-0 bg-white py-4 border-b w-full z-50 transition-all duration-200 ${
-        hasScrolled ? "shadow-md" : ""
+      className={`sticky top-0 w-full z-50 transition-all duration-300 backdrop-blur supports-[backdrop-filter]:bg-white/60 ${
+        hasScrolled ? 'bg-white/90 border-b shadow-sm' : 'bg-transparent'
       }`}
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center">
-            <img src="/logo.png" alt="Houston Mobile Notary Pros" className="h-16 w-auto" />
+            <img src="/logo.png" alt="Houston Mobile Notary Pros" className="h-14 w-auto" />
           </Link>
 
           {/* Mobile menu button */}
@@ -43,7 +43,7 @@ export default function Header() {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           >
-            {isMenuOpen ? <X className="h-6 w-6 text-[#002147]" /> : <Menu className="h-6 w-6 text-[#002147]" />}
+            {isMenuOpen ? <X className="h-6 w-6 text-secondary" /> : <Menu className="h-6 w-6 text-secondary" />}
           </button>
 
           {/* Desktop navigation and CTA */}
@@ -51,47 +51,47 @@ export default function Header() {
             <nav>
               <ul className="flex space-x-6 items-center">
                 <li>
-                  <Link href="/services" className="text-[#002147] hover:text-[#A52A2A]">
+                  <Link href="/services" className="text-secondary hover:text-primary">
                     Services
                   </Link>
                 </li>
                 <li>
-                  <Link href="/ron/how-it-works" className="text-[#002147] hover:text-[#A52A2A]">
+                  <Link href="/ron/how-it-works" className="text-secondary hover:text-primary">
                     RON
                   </Link>
                 </li>
                 <li>
-                  <Link href="/service-areas" className="text-[#002147] hover:text-[#A52A2A]">
+                  <Link href="/service-areas" className="text-secondary hover:text-primary">
                     Service Areas
                   </Link>
                 </li>
                 <li>
-                  <Link href="/what-to-expect" className="text-[#002147] hover:text-[#A52A2A]">
+                  <Link href="/what-to-expect" className="text-secondary hover:text-primary">
                     What to Expect
                   </Link>
                 </li>
                 <li>
-                  <Link href="/testimonials" className="text-[#002147] hover:text-[#A52A2A]">
+                  <Link href="/testimonials" className="text-secondary hover:text-primary">
                     Testimonials
                   </Link>
                 </li>
                 <li>
-                  <Link href="/faq" className="text-[#002147] hover:text-[#A52A2A]">
+                  <Link href="/faq" className="text-secondary hover:text-primary">
                     FAQ
                   </Link>
                 </li>
                 <li>
-                  <Link href="/blog" className="text-[#002147] hover:text-[#A52A2A]">
+                  <Link href="/blog" className="text-secondary hover:text-primary">
                     Blog
                   </Link>
                 </li>
                 <li>
-                  <Link href="/contact" className="text-[#002147] hover:text-[#A52A2A]">
+                  <Link href="/contact" className="text-secondary hover:text-primary">
                     Contact
                   </Link>
                 </li>
                 <li>
-                  <Link href="/login" className="text-[#002147] hover:text-[#A52A2A]">
+                  <Link href="/login" className="text-secondary hover:text-primary">
                     Sign In
                   </Link>
                 </li>
@@ -99,7 +99,7 @@ export default function Header() {
             </nav>
             <Link
               href="/booking"
-              className="bg-[#A52A2A] text-white px-6 py-2 rounded-full hover:bg-[#8B2323] transition-colors font-medium hover:shadow-md"
+              className="bg-primary text-primary-foreground px-6 py-2 rounded-full hover:bg-primary/90 transition-colors font-medium hover:shadow-md"
             >
               Book Now
             </Link>
@@ -113,7 +113,7 @@ export default function Header() {
               <li>
                 <Link
                   href="/services"
-                  className="text-[#002147] hover:text-[#A52A2A] block"
+                  className="text-secondary hover:text-primary block"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Services
@@ -122,7 +122,7 @@ export default function Header() {
               <li>
                 <Link
                   href="/ron/how-it-works"
-                  className="text-[#002147] hover:text-[#A52A2A] block"
+                  className="text-secondary hover:text-primary block"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   RON
@@ -131,7 +131,7 @@ export default function Header() {
               <li>
                 <Link
                   href="/service-areas"
-                  className="text-[#002147] hover:text-[#A52A2A] block"
+                  className="text-secondary hover:text-primary block"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Service Areas
@@ -140,7 +140,7 @@ export default function Header() {
               <li>
                 <Link
                   href="/what-to-expect"
-                  className="text-[#002147] hover:text-[#A52A2A] block"
+                  className="text-secondary hover:text-primary block"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   What to Expect
@@ -149,7 +149,7 @@ export default function Header() {
               <li>
                 <Link
                   href="/testimonials"
-                  className="text-[#002147] hover:text-[#A52A2A] block"
+                  className="text-secondary hover:text-primary block"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Testimonials
@@ -158,7 +158,7 @@ export default function Header() {
               <li>
                 <Link
                   href="/faq"
-                  className="text-[#002147] hover:text-[#A52A2A] block"
+                  className="text-secondary hover:text-primary block"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   FAQ
@@ -167,7 +167,7 @@ export default function Header() {
               <li>
                 <Link
                   href="/blog"
-                  className="text-[#002147] hover:text-[#A52A2A] block"
+                  className="text-secondary hover:text-primary block"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Blog
@@ -176,7 +176,7 @@ export default function Header() {
               <li>
                 <Link
                   href="/contact"
-                  className="text-[#002147] hover:text-[#A52A2A] block"
+                  className="text-secondary hover:text-primary block"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Contact
@@ -185,7 +185,7 @@ export default function Header() {
               <li>
                 <Link
                   href="/login"
-                  className="text-[#002147] hover:text-[#A52A2A] block"
+                  className="text-secondary hover:text-primary block"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Sign In
@@ -194,7 +194,7 @@ export default function Header() {
               <li>
                 <Link
                   href="/booking"
-                  className="bg-[#A52A2A] text-white px-6 py-2 rounded-full hover:bg-[#8B2323] transition-colors inline-block font-medium hover:shadow-md"
+                  className="bg-primary text-primary-foreground px-6 py-2 rounded-full hover:bg-primary/90 transition-colors inline-block font-medium hover:shadow-md"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Book Now

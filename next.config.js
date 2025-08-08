@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  productionBrowserSourceMaps: true,
+  productionBrowserSourceMaps: false,
   // Remove TypeScript ignore - enable proper type checking
   // typescript: {
   //   ignoreBuildErrors: true

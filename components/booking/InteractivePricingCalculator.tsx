@@ -472,34 +472,40 @@ export default function InteractivePricingCalculator({
         </CardContent>
       </Card>
 
-      {/* Service Add-ons */}
+      {/* Service Add-ons - Horizontal Scroller */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center space-x-2">
-            <Plus className="h-5 w-5 text-green-600" />
-            <span className={isMobile ? 'text-base' : 'text-lg'}>Service Add-ons</span>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Plus className="h-5 w-5 text-green-600" />
+              <span className={isMobile ? 'text-base' : 'text-lg'}>Service Add-ons</span>
+            </div>
+            <Badge variant="outline" className="hidden md:inline">Swipe/Scroll</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <div className="flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory">
             {SERVICE_ADD_ONS.map(addOn => (
-              <div key={addOn.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
-                <div className="flex items-center space-x-3">
+              <div
+                key={addOn.id}
+                className="min-w-[240px] snap-start flex flex-col justify-between p-4 border rounded-lg bg-white shadow-sm hover:shadow transition-all"
+              >
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{addOn.name}</span>
+                    {addOn.popular && (
+                      <Badge variant="secondary" className="text-xs">Popular</Badge>
+                    )}
+                  </div>
+                  <p className="mt-1 text-sm text-gray-600 line-clamp-3">{addOn.description}</p>
+                </div>
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="font-semibold text-green-600">+${addOn.price}</span>
                   <Switch
                     checked={selectedAddOns.includes(addOn.id)}
                     onCheckedChange={() => toggleAddOn(addOn.id)}
                   />
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-medium">{addOn.name}</span>
-                      {addOn.popular && (
-                        <Badge variant="secondary" className="text-xs">Popular</Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-600">{addOn.description}</p>
-                  </div>
                 </div>
-                <span className="font-medium text-green-600">+${addOn.price}</span>
               </div>
             ))}
           </div>
