@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       address,
       scheduledDateTime,
       customerType = 'new',
-      customerEmail,
+      customerEmail = '',
       referralCode,
       promoCode
     } = await request.json();
