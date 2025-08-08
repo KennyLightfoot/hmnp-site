@@ -139,12 +139,27 @@ export async function POST(request: Request) {
      * ---------------------------------------------------------*/
     let opportunity: any = null;
     if (!appointment) {
-      opportunity = await createOpportunity(contact.id, {
-        name: `${serviceType} – ${customerName}`,
-        status: 'open',
-        source: 'Website Booking',
-        monetaryValue: getServiceValue(serviceType, numberOfSigners),
-      });
+      try {
+        opportunity = await createOpportunity(contact.id, {
+          name: `${serviceType} – ${customerName}`,
+          status: 'open',
+          source: 'Website Booking',
+          monetaryValue: getServiceValue(serviceType, numberOfSigners),
+        });
+      } catch (opErr: any) {
+        console.error('❌ Opportunity creation failed:', opErr);
+        // Do not fail the whole request – return success with contact only so frontend can proceed
+        return NextResponse.json(
+          {
+            success: true,
+            contactId: contact.id,
+            appointmentId: null,
+            opportunityId: null,
+            note: 'GHL creation failed; contact recorded. We will finalize your booking shortly.'
+          },
+          { status: 201 }
+        );
+      }
     }
 
     return NextResponse.json(
@@ -158,9 +173,17 @@ export async function POST(request: Request) {
     );
   } catch (error: any) {
     console.error('❌ GHL-direct booking error:', error);
+    // Surface useful details from wrapped GHL errors to help diagnose
+    const status = (error?.ghlError?.statusCode as number) || 500;
+    const message = error?.message || 'Internal server error';
+    const details = error?.ghlError ? {
+      category: error.ghlError.category,
+      statusCode: error.ghlError.statusCode,
+      isRetryable: error.ghlError.isRetryable
+    } : undefined;
     return NextResponse.json(
-      { success: false, message: error?.message ?? 'Internal server error' },
-      { status: 500 },
+      { success: false, message, details },
+      { status },
     );
   }
 } 
