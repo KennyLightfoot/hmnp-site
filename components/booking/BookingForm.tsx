@@ -540,10 +540,18 @@ export default function BookingForm({
         const result = await response.json();
         setSuccessMessage('Booking created successfully! Redirecting to confirmation...');
         
-        // Redirect to success page
+        // Compute a generic confirmation id from available fields
+        const bookingId = result?.booking?.id 
+          || result?.appointmentId 
+          || result?.opportunityId 
+          || result?.contactId 
+          || '';
+
+        // Redirect to success page (works even without an id)
         setTimeout(() => {
-          window.location.href = `/booking/success?bookingId=${result.booking.id}`;
-        }, 1500);
+          const qs = bookingId ? `?bookingId=${encodeURIComponent(bookingId)}` : '';
+          window.location.href = `/booking/success${qs}`;
+        }, 1000);
       } else {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Booking failed. Please try again.');

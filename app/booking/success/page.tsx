@@ -1,5 +1,60 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CheckCircle, Calendar, MapPin, Mail } from 'lucide-react';
+
+export default function BookingSuccessPage() {
+  const searchParams = useSearchParams();
+  const bookingId = searchParams.get('bookingId') || '';
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="max-w-xl mx-auto px-4">
+        <div className="text-center mb-8">
+          <CheckCircle className="h-12 w-12 text-green-600 inline-block mb-2" />
+          <h1 className="text-3xl font-bold text-gray-900">Appointment Confirmed</h1>
+          <p className="text-gray-600 mt-2">
+            Thank you! Your booking has been received. We just sent a confirmation email with the details.
+          </p>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Booking Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {bookingId && (
+              <div className="flex items-center space-x-2 text-sm text-gray-700">
+                <span className="font-medium">Booking ID:</span>
+                <span>{bookingId}</span>
+              </div>
+            )}
+            <div className="flex items-center space-x-2 text-sm text-gray-700">
+              <Mail className="h-4 w-4 text-gray-500" />
+              <span>We will follow up by email or phone if needed.</span>
+            </div>
+            <div className="flex items-center space-x-2 text-sm text-gray-700">
+              <Calendar className="h-4 w-4 text-gray-500" />
+              <span>You can add the event from your confirmation email.</span>
+            </div>
+            <div className="flex items-center space-x-2 text-sm text-gray-700">
+              <MapPin className="h-4 w-4 text-gray-500" />
+              <span>If this is a mobile service, we come to your address.</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="text-center mt-8">
+          <a href="/" className="text-blue-600 hover:underline">Return to home</a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+'use client';
+
 /**
  * Booking Success Page - Confirmation
  * Houston Mobile Notary Pros
