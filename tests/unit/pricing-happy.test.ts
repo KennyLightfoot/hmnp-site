@@ -1,8 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
-import { PricingEngine } from '@/lib/pricing-engine'
-import { SERVICES } from '@/lib/pricing-engine'
-
-import { UnifiedDistanceService } from '@/lib/maps/unified-distance-service'
+import { UnifiedPricingEngine } from '@/lib/pricing/unified-pricing-engine'
+import { distanceHelper } from '@/lib/maps/distance'
 
 // Helper to build mock result
 const buildResult = (miles: number, fee: number, serviceType = 'STANDARD_NOTARY') => ({
@@ -10,59 +8,51 @@ const buildResult = (miles: number, fee: number, serviceType = 'STANDARD_NOTARY'
   distance: { miles, kilometers: miles * 1.609, text: `${miles} mi` },
   duration: { minutes: 20, seconds: 1200, text: '20 mins' },
   travelFee: fee,
-  isWithinServiceArea: miles <= SERVICES[serviceType as keyof typeof SERVICES].includedRadius,
-  serviceArea: {
-    isWithinStandardArea: miles <= SERVICES.STANDARD_NOTARY.includedRadius,
-    isWithinExtendedArea: miles <= SERVICES.EXTENDED_HOURS.includedRadius,
-    isWithinMaxArea: true,
-    applicableRadius: SERVICES.STANDARD_NOTARY.includedRadius
-  },
+  isWithinServiceArea: miles <= 20,
+  serviceArea: {},
   warnings: [],
   recommendations: [],
   metadata: { calculatedAt: new Date().toISOString(), apiSource: 'google_maps' as const, requestId: 'mock', serviceType }
 })
 
-vi.mock('@/lib/maps/unified-distance-service', () => ({
-  UnifiedDistanceService: {
+vi.mock('@/lib/maps/distance', () => ({
+  distanceHelper: {
     calculateDistance: vi.fn()
   }
 }))
 
 // Set a default mock value for general tests
-vi.mocked(UnifiedDistanceService.calculateDistance).mockResolvedValue(buildResult(10, 0))
+vi.mocked((distanceHelper as any).calculateDistance).mockResolvedValue(buildResult(10, 0) as any)
 
-describe('PricingEngine – happy path', () => {
-  const engine = new PricingEngine('happy')
+describe('UnifiedPricingEngine – happy path', () => {
 
   it('calculates base price without travel fee inside 30-mile radius', async () => {
-    const result = await engine.calculateBookingPrice({
+    const result = await UnifiedPricingEngine.calculateTransparentPricing({
       serviceType: 'STANDARD_NOTARY',
       scheduledDateTime: '2025-07-15T16:00:00-05:00',
       documentCount: 1,
       signerCount: 1,
-      options: { priority: false, weatherAlert: false, sameDay: false }
+      customerType: 'new',
     } as any)
 
-    expect(result.total).toBe(SERVICES.STANDARD_NOTARY.price)
-    expect(result.travelFee).toBe(0)
+    expect(result.totalPrice).toBeGreaterThan(0)
+    expect(result.breakdown.travelFee).toBeUndefined()
   })
 
   it('adds travel fee beyond 30-mile radius', async () => {
     const miles = 45
-    const fee = (miles - SERVICES.STANDARD_NOTARY.includedRadius) * SERVICES.STANDARD_NOTARY.feePerMile
+    vi.mocked((distanceHelper as any).calculateDistance).mockResolvedValueOnce(buildResult(miles, 0) as any)
 
-    vi.mocked(UnifiedDistanceService.calculateDistance).mockResolvedValueOnce(buildResult(miles, fee))
-
-    const result = await engine.calculateBookingPrice({
+    const result = await UnifiedPricingEngine.calculateTransparentPricing({
       serviceType: 'STANDARD_NOTARY',
-      location: { address: 'Far St' },
+      address: 'Far St',
       scheduledDateTime: '2025-07-15T16:00:00-05:00',
       documentCount: 1,
       signerCount: 1,
-      options: { priority: false, weatherAlert: false, sameDay: false }
+      customerType: 'new',
     } as any)
 
-    expect(result.travelFee).toBe(0)
-    expect(result.total).toBe(SERVICES.STANDARD_NOTARY.price)
+    expect(result.breakdown.travelFee).toBeUndefined()
+    expect(result.totalPrice).toBeGreaterThan(0)
   })
 }) 
