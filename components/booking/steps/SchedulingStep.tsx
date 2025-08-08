@@ -217,7 +217,7 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
         return newSet;
       });
     }
-  }, [watchedServiceType, availabilityData, loadingDates]);
+  }, [watchedServiceType]);
 
   // ✅ FIXED: Only load availability for selected date
   useEffect(() => {

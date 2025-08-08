@@ -211,7 +211,7 @@ export default function EnhancedSchedulingStep({
     } finally {
       setIsLoadingAvailability(false);
     }
-  }, [watchedServiceType, fetchedDates, availableDays]);
+  }, [watchedServiceType, fetchedDates]);
 
   // Only fetch availability for selected date
   useEffect(() => {
