@@ -6,7 +6,7 @@ import { prisma } from '@/lib/db';
 import { convertToBooking } from '@/lib/slot-reservation';
 import { bookingSchemas } from '@/lib/validation/schemas';
 import { processBookingJob } from '@/lib/bullmq/booking-processor';
-import { ServiceType } from '@prisma/client';
+import { ServiceType, BookingStatus } from '@prisma/client';
 import { z } from 'zod';
 
 export const BookingSchema = bookingSchemas.createBookingFromForm;
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     const existing = await prisma.booking.findMany({
       where: {
-        status: { notIn: ['CANCELLED' as any] },
+        status: { notIn: [BookingStatus.CANCELLED] },
         scheduledDateTime: {
           gte: overlapWindowStart,
           lte: newEndTime,
