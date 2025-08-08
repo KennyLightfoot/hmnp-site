@@ -550,6 +550,8 @@ export default function BookingForm({
         const qsParams = new URLSearchParams();
         if (bookingId) qsParams.set('bookingId', String(bookingId));
         if (data?.serviceType) qsParams.set('serviceType', data.serviceType);
+        if (data?.customer?.name) qsParams.set('customerName', data.customer.name);
+        if (data?.customer?.email) qsParams.set('customerEmail', data.customer.email);
         if (combinedDateTime) qsParams.set('scheduledDateTime', combinedDateTime.toISOString());
         if (data?.location?.address) qsParams.set('locationAddress', data.location.address);
 
