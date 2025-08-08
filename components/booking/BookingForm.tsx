@@ -466,11 +466,16 @@ export default function BookingForm({
       console.log('Submitting booking data:', data);
       
       // Prepare booking payload for API
+      // Build a full ISO datetime from selected date + time for downstream APIs
+      const hasDate = data.scheduling?.preferredDate;
+      const hasTime = data.scheduling?.preferredTime;
+      const combinedDateTime = hasDate && hasTime ? new Date(`${hasDate} ${hasTime}`) : null;
+
       const bookingData: any = {
         serviceType: data.serviceType,
         customerName: data.customer?.name || '',
         customerEmail: data.customer?.email || '',
-        scheduledDateTime: data.scheduling?.preferredTime, // ISO string
+        scheduledDateTime: combinedDateTime ? combinedDateTime.toISOString() : undefined,
         timeZone: 'America/Chicago',
         numberOfDocuments: 1, // Default value since serviceDetails doesn't exist
         numberOfSigners: 1 // Default value since serviceDetails doesn't exist
