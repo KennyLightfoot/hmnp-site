@@ -1018,12 +1018,14 @@ export default function BookingForm({
       </div>
       
       </div>
-      {/* Sticky mobile summary */}
-      <StickySummary
-        total={Number(totalPrice || 0)}
-        onContinue={currentStep < BOOKING_STEPS.length - 1 ? nextStep : form.handleSubmit(onSubmit)}
-        continueDisabled={!isCurrentStepValid || isSubmitting || isNavigating}
-      />
+      {/* Sticky mobile summary – hide on final step to avoid duplicate submit CTA */}
+      {currentStep < BOOKING_STEPS.length - 1 && (
+        <StickySummary
+          total={Number(totalPrice || 0)}
+          onContinue={nextStep}
+          continueDisabled={!isCurrentStepValid || isSubmitting || isNavigating}
+        />
+      )}
     </div>
   );
 }
