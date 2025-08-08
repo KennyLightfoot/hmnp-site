@@ -5,6 +5,13 @@
 
 Impact: resolves Vercel build failure due to missing `session.user.id` type and Prisma enum mismatch; local type check passes.
 
+### Booking + GHL integration tweaks
+
+- fix: GHL contact search now uses page/pageLimit (was sending invalid `limit`)
+- fix: Removed "Popular Areas" quick-select from `components/booking/steps/LocationStep.tsx`
+- fix: Removed "Popular" label in `SchedulingStep` and disabled in `EnhancedSchedulingStep`
+- feat: Create GHL appointment immediately during booking creation (also still queued). Adds proper `endTime` per API
+
 ## 2025-08-08
 
 - fix(booking): prevent crash when selecting time by hoisting helper functions in `components/booking/InteractivePricingCalculator.tsx` to avoid TDZ/hoisting error (ReferenceError: Cannot access 'L' before initialization)

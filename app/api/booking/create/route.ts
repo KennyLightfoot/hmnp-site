@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db';
 import { convertToBooking } from '@/lib/slot-reservation';
 import { bookingSchemas } from '@/lib/validation/schemas';
 import { processBookingJob } from '@/lib/bullmq/booking-processor';
+import { createAppointment as createGhlAppointment, createContact as createGhlContact, findContactByEmail } from '@/lib/ghl/api';
 import { ServiceType, BookingStatus } from '@prisma/client';
 import { z } from 'zod';
 
@@ -78,7 +79,54 @@ export async function POST(request: NextRequest) {
       await convertToBooking(reservationId, booking.id);
     }
 
+    // Enqueue background processing (emails, etc.)
     await processBookingJob(booking.id);
+
+    // Also create GHL appointment immediately (serverless-safe)
+    try {
+      const calendarId = service.externalCalendarId;
+      if (calendarId && booking.scheduledDateTime) {
+        // Ensure contact exists in GHL
+        let contactId: string | null = null;
+        try {
+          const existing = await findContactByEmail(validatedData.customerEmail);
+          if (existing?.id) {
+            contactId = existing.id;
+          } else {
+            const created = await createGhlContact({
+              firstName: (validatedData.customerName || '').split(' ')[0] || '',
+              lastName: (validatedData.customerName || '').split(' ').slice(1).join(' ') || '',
+              email: validatedData.customerEmail,
+              phone: (body?.customerPhone as string) || undefined,
+              source: 'Website Booking'
+            });
+            contactId = created?.id || created?.contact?.id || null;
+          }
+        } catch (e) {
+          console.error('GHL contact ensure failed (non-blocking):', e);
+        }
+
+        const startIso = booking.scheduledDateTime.toISOString();
+        const endIso = new Date(
+          booking.scheduledDateTime.getTime() + serviceDurationMinutes * 60 * 1000
+        ).toISOString();
+
+        try {
+          await createGhlAppointment({
+            calendarId,
+            contactId: contactId || undefined,
+            title: `${service.name} – ${validatedData.customerName}`,
+            description: 'Created from HMNP booking form',
+            startTime: startIso,
+            endTime: endIso,
+          });
+        } catch (e) {
+          console.error('GHL appointment creation failed (non-blocking):', e);
+        }
+      }
+    } catch (e) {
+      console.error('GHL immediate create (wrapper) failed (non-blocking):', e);
+    }
 
     return NextResponse.json({
       success: true,
