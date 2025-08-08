@@ -15,6 +15,7 @@
  */
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { DateTime } from 'luxon';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -502,17 +503,19 @@ export default function BookingForm({
       const hasDate = data.scheduling?.preferredDate;
       const hasTime = data.scheduling?.preferredTime;
       const normalizedTime = hasTime ? normalizeTimeTo24h(hasTime) : null;
-      const combinedDateTime = hasDate && normalizedTime ? new Date(`${hasDate}T${normalizedTime}`) : null;
+      const combinedDateTimeIso = hasDate && normalizedTime
+        ? DateTime.fromISO(`${hasDate}T${normalizedTime}`, { zone: 'America/Chicago' }).toUTC().toISO()
+        : null;
 
       // Try to reserve the selected slot (soft hold)
       let reservationId: string | null = null;
-      if (combinedDateTime && data.customer?.email) {
+      if (combinedDateTimeIso && data.customer?.email) {
         try {
           const reserveRes = await fetch('/api/booking/reserve-slot', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              datetime: combinedDateTime.toISOString(),
+              datetime: combinedDateTimeIso,
               serviceType: data.serviceType,
               customerEmail: data.customer.email,
               estimatedDuration: 60,
@@ -534,7 +537,7 @@ export default function BookingForm({
         serviceType: data.serviceType,
         customerName: data.customer?.name || '',
         customerEmail: data.customer?.email || '',
-        scheduledDateTime: combinedDateTime ? combinedDateTime.toISOString() : undefined,
+        scheduledDateTime: combinedDateTimeIso || undefined,
         timeZone: 'America/Chicago',
         numberOfDocuments: 1, // Default value since serviceDetails doesn't exist
         numberOfSigners: 1 // Default value since serviceDetails doesn't exist
@@ -578,7 +581,7 @@ export default function BookingForm({
         if (data?.serviceType) qsParams.set('serviceType', data.serviceType);
         if (data?.customer?.name) qsParams.set('customerName', data.customer.name);
         if (data?.customer?.email) qsParams.set('customerEmail', data.customer.email);
-        if (combinedDateTime) qsParams.set('scheduledDateTime', combinedDateTime.toISOString());
+        if (combinedDateTimeIso) qsParams.set('scheduledDateTime', combinedDateTimeIso);
         if (data?.location?.address) qsParams.set('locationAddress', data.location.address);
 
         // Redirect to success page with fallback details for display
