@@ -51,6 +51,7 @@ export async function POST(request: Request) {
     console.log('⏰ scheduledDateTime raw:', scheduledDateTime);
     console.log('⏰ Date.parse result:', Date.parse(scheduledDateTime));
 
+    // NOTE: This endpoint does not persist a local booking. Prefer /api/booking/create
     // Robust datetime parsing and validation
     let parsedDateTime: Date;
     try {

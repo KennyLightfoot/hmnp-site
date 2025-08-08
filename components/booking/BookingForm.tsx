@@ -503,6 +503,32 @@ export default function BookingForm({
       const normalizedTime = hasTime ? normalizeTimeTo24h(hasTime) : null;
       const combinedDateTime = hasDate && normalizedTime ? new Date(`${hasDate}T${normalizedTime}`) : null;
 
+      // Try to reserve the selected slot (soft hold)
+      let reservationId: string | null = null;
+      if (combinedDateTime && data.customer?.email) {
+        try {
+          const reserveRes = await fetch('/api/booking/reserve-slot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              datetime: combinedDateTime.toISOString(),
+              serviceType: data.serviceType,
+              customerEmail: data.customer.email,
+              estimatedDuration: 60,
+            })
+          });
+          if (reserveRes.ok) {
+            const reserveJson = await reserveRes.json();
+            reservationId = reserveJson?.reservation?.id || null;
+          } else if (reserveRes.status === 409) {
+            const conflict = await reserveRes.json();
+            throw new Error(conflict?.error || 'Selected time was just taken. Please choose another time.');
+          }
+        } catch (e) {
+          console.warn('Slot reservation failed (continuing to attempt booking):', e);
+        }
+      }
+
       const bookingData: any = {
         serviceType: data.serviceType,
         customerName: data.customer?.name || '',
@@ -512,6 +538,9 @@ export default function BookingForm({
         numberOfDocuments: 1, // Default value since serviceDetails doesn't exist
         numberOfSigners: 1 // Default value since serviceDetails doesn't exist
       };
+      if (reservationId) {
+        bookingData.reservationId = reservationId;
+      }
 
       // Optional phone
       if (data.customer?.phone) {
@@ -529,8 +558,8 @@ export default function BookingForm({
         });
       }
 
-      // Use the same API endpoint as the simple form for consistency
-      const response = await fetch('/api/booking/ghl-direct', {
+      // Submit via create endpoint which enforces overlap checks
+      const response = await fetch('/api/booking/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bookingData)

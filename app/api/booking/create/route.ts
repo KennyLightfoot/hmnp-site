@@ -15,6 +15,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validatedData = bookingSchemas.createBookingFromForm.parse(body);
+    const reservationId: string | undefined = typeof body?.reservationId === 'string' ? body.reservationId : undefined;
 
     const service = await prisma.service.findFirst({
       where: { serviceType: validatedData.serviceType },
@@ -24,32 +25,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Service not found' }, { status: 404 });
     }
 
-    /*
-    const pricingResult = await pricingEngine.calculatePrice({
-      serviceType: service.serviceType,
-      scheduledDateTime: validatedData.scheduledDateTime,
-      documentCount: validatedData.numberOfDocuments,
-      signerCount: validatedData.numberOfSigners,
-      options: {
-        priority: validatedData.priority,
-        sameDay: validatedData.sameDay,
+    // Prevent overlapping bookings (server-side hard lock)
+    const startTime = new Date(validatedData.scheduledDateTime);
+    const serviceDurationMinutes = (service as any)?.durationMinutes ?? 60;
+    const bufferMinutes = Number(process.env.MIN_APPOINTMENT_GAP_MINUTES || '15');
+    const newEndTime = new Date(startTime.getTime() + (serviceDurationMinutes + bufferMinutes) * 60 * 1000);
+
+    // Look for potentially overlapping bookings around the requested time
+    const windowBeforeMinutes = serviceDurationMinutes + bufferMinutes;
+    const overlapWindowStart = new Date(startTime.getTime() - windowBeforeMinutes * 60 * 1000);
+
+    const existing = await prisma.booking.findMany({
+      where: {
+        status: { notIn: ['CANCELLED' as any] },
+        scheduledDateTime: {
+          gte: overlapWindowStart,
+          lte: newEndTime,
+        },
       },
+      include: { service: true },
     });
 
-    if (!pricingResult.success) {
-      return NextResponse.json({ message: 'Price calculation failed', errors: pricingResult.errors }, { status: 400 });
-    }
-
-    const { isValid, violations } = await validateBusinessRules({
-      serviceType: service.serviceType,
-      documentCount: validatedData.numberOfDocuments,
-      scheduledDateTime: validatedData.scheduledDateTime,
+    const hasOverlap = existing.some((b) => {
+      const existingStart = b.scheduledDateTime as Date;
+      const existingDuration = (b as any)?.service?.durationMinutes ?? 60;
+      const existingEnd = new Date(existingStart.getTime() + (existingDuration + bufferMinutes) * 60 * 1000);
+      return startTime < existingEnd && newEndTime > existingStart;
     });
 
-    if (!isValid) {
-      return NextResponse.json({ message: 'Business rule validation failed', errors: violations }, { status: 400 });
+    if (hasOverlap) {
+      return NextResponse.json({ message: 'Selected time is no longer available. Please pick a different time.' }, { status: 409 });
     }
-    */
 
     const booking = await prisma.booking.create({
       data: {
@@ -64,9 +70,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    /* if (validatedData.reservationId) {
-      await convertToBooking(validatedData.reservationId, booking.id);
-    } */
+    // Link reservation to booking if provided
+    if (reservationId) {
+      await convertToBooking(reservationId, booking.id);
+    }
 
     await processBookingJob(booking.id);
 
