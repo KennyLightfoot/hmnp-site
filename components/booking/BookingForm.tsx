@@ -92,6 +92,34 @@ interface BookingFormProps {
   className?: string;
 }
 
+// Normalize a time string (e.g., "10:00 AM", "3:30 pm", "14:05") to 24-hour HH:mm
+function normalizeTimeTo24h(input: string): string | null {
+  if (!input) return null;
+  const time = input.trim();
+  // Match 12-hour format with AM/PM
+  const twelveHour = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(time);
+  if (twelveHour) {
+    let hours = parseInt(twelveHour[1], 10);
+    const minutes = twelveHour[2];
+    const meridian = twelveHour[3].toUpperCase();
+    if (meridian === 'PM' && hours !== 12) hours += 12;
+    if (meridian === 'AM' && hours === 12) hours = 0;
+    const hh = String(hours).padStart(2, '0');
+    return `${hh}:${minutes}`;
+  }
+  // Match 24-hour HH:mm or HH:mm:ss
+  const twentyFourHour = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(time);
+  if (twentyFourHour) {
+    const hours = parseInt(twentyFourHour[1], 10);
+    const minutes = twentyFourHour[2];
+    if (hours >= 0 && hours <= 23) {
+      const hh = String(hours).padStart(2, '0');
+      return `${hh}:${minutes}`;
+    }
+  }
+  return null;
+}
+
 // Step-specific field validation mapping
 const STEP_FIELD_MAPPING: { [step: number]: string[] } = {
   0: ['serviceType'],
@@ -246,12 +274,14 @@ export default function BookingForm({
     const hasDate = (scheduling as any).preferredDate;
     const hasTime = (scheduling as any).preferredTime;
     
+    // Normalize time into 24h to ensure valid ISO when combined
+    const normalizedTime = hasTime ? normalizeTimeTo24h((scheduling as any).preferredTime) : null;
     return {
       serviceType: watchedValues.serviceType,
       documentCount: 1, // Could be enhanced to get from form
       address: watchedValues.location?.address?.trim() || undefined,
-      scheduledDateTime: (hasDate && hasTime) ? 
-        `${hasDate}T${hasTime}` : 
+      scheduledDateTime: (hasDate && normalizedTime) ? 
+        `${hasDate}T${normalizedTime}` : 
         undefined,
       customerType: 'new' as const, // Could be enhanced based on user auth
       customerEmail: watchedValues.customer?.email?.trim() || undefined
@@ -469,7 +499,8 @@ export default function BookingForm({
       // Build a full ISO datetime from selected date + time for downstream APIs
       const hasDate = data.scheduling?.preferredDate;
       const hasTime = data.scheduling?.preferredTime;
-      const combinedDateTime = hasDate && hasTime ? new Date(`${hasDate}T${hasTime}`) : null;
+      const normalizedTime = hasTime ? normalizeTimeTo24h(hasTime) : null;
+      const combinedDateTime = hasDate && normalizedTime ? new Date(`${hasDate}T${normalizedTime}`) : null;
 
       const bookingData: any = {
         serviceType: data.serviceType,
@@ -931,7 +962,7 @@ export default function BookingForm({
             serviceType={watchedValues.serviceType}
             address={watchedValues.location?.address}
             scheduledDateTime={watchedValues.scheduling?.preferredDate && watchedValues.scheduling?.preferredTime ? 
-              `${watchedValues.scheduling.preferredDate}T${watchedValues.scheduling.preferredTime}` : 
+              `${watchedValues.scheduling.preferredDate}T${normalizeTimeTo24h(watchedValues.scheduling.preferredTime)}` : 
               undefined}
             onPricingChange={useCallback((breakdown: any) => {
               console.log('💰 Interactive pricing updated:', breakdown);
