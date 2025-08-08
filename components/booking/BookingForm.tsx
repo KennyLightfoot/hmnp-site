@@ -251,7 +251,7 @@ export default function BookingForm({
       documentCount: 1, // Could be enhanced to get from form
       address: watchedValues.location?.address?.trim() || undefined,
       scheduledDateTime: (hasDate && hasTime) ? 
-        `${hasDate} ${hasTime}` : 
+        `${hasDate}T${hasTime}` : 
         undefined,
       customerType: 'new' as const, // Could be enhanced based on user auth
       customerEmail: watchedValues.customer?.email?.trim() || undefined
@@ -469,7 +469,7 @@ export default function BookingForm({
       // Build a full ISO datetime from selected date + time for downstream APIs
       const hasDate = data.scheduling?.preferredDate;
       const hasTime = data.scheduling?.preferredTime;
-      const combinedDateTime = hasDate && hasTime ? new Date(`${hasDate} ${hasTime}`) : null;
+      const combinedDateTime = hasDate && hasTime ? new Date(`${hasDate}T${hasTime}`) : null;
 
       const bookingData: any = {
         serviceType: data.serviceType,
@@ -931,7 +931,7 @@ export default function BookingForm({
             serviceType={watchedValues.serviceType}
             address={watchedValues.location?.address}
             scheduledDateTime={watchedValues.scheduling?.preferredDate && watchedValues.scheduling?.preferredTime ? 
-              `${watchedValues.scheduling.preferredDate} ${watchedValues.scheduling.preferredTime}` : 
+              `${watchedValues.scheduling.preferredDate}T${watchedValues.scheduling.preferredTime}` : 
               undefined}
             onPricingChange={useCallback((breakdown: any) => {
               console.log('💰 Interactive pricing updated:', breakdown);

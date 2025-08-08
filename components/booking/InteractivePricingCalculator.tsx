@@ -190,6 +190,23 @@ export default function InteractivePricingCalculator({
   const [isCalculating, setIsCalculating] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
 
+  // Hoisted helper functions to avoid TDZ errors when referenced in useMemo
+  function calculateTimeSurcharge(dateTime: string): number {
+    const date = new Date(dateTime);
+    const hour = date.getHours();
+    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+
+    if (isWeekend) return 20;
+    if (hour >= 18 || hour < 8) return 15;
+    return 0;
+  }
+
+  function calculateDiscount(subtotal: number): number {
+    if (promoCode === 'WELCOME10') return Math.min(subtotal * 0.1, 25);
+    if (promoCode === 'MOBILE15') return Math.min(subtotal * 0.15, 50);
+    return 0;
+  }
+
   // Calculate pricing breakdown
   const pricingBreakdown = useMemo((): PricingBreakdown => {
     const basePrice = BASE_PRICES[serviceType as keyof typeof BASE_PRICES] || 75;
@@ -228,23 +245,7 @@ export default function InteractivePricingCalculator({
     };
   }, [serviceType, estimatedDistance, documentCount, scheduledDateTime, selectedAddOns, promoApplied]);
 
-  // Calculate time surcharge
-  const calculateTimeSurcharge = (dateTime: string): number => {
-    const date = new Date(dateTime);
-    const hour = date.getHours();
-    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-    
-    if (isWeekend) return 20;
-    if (hour >= 18 || hour < 8) return 15;
-    return 0;
-  };
-
-  // Calculate discount
-  const calculateDiscount = (subtotal: number): number => {
-    if (promoCode === 'WELCOME10') return Math.min(subtotal * 0.1, 25);
-    if (promoCode === 'MOBILE15') return Math.min(subtotal * 0.15, 50);
-    return 0;
-  };
+  // (moved) calculateTimeSurcharge and calculateDiscount declared above
 
   // Apply promo code
   const applyPromoCode = () => {
