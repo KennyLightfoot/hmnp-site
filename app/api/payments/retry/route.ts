@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     const { paymentId, bookingId, reason, forceRetry } = PaymentRetryRequestSchema.parse(body);
 
     // Check if user has permission to retry payments
-    const isAdmin = session.user.role === 'ADMIN';
+  const isAdmin = (session.user as any)?.role === 'ADMIN';
     const isCustomerOwner = session.user.id === body.customerId; // Would need to validate this properly
 
     if (!isAdmin && !isCustomerOwner) {
