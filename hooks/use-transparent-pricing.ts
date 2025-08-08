@@ -143,6 +143,21 @@ export function useTransparentPricing(
     try {
       console.log('🔍 Calculating transparent pricing:', request);
 
+      // Normalize datetime to RFC3339 (Z) to satisfy server Zod validation
+      const normalizeToIso = (value?: string): string | undefined => {
+        if (!value) return undefined;
+        try {
+          // If already includes timezone or 'Z', trust Date to parse
+          const date = new Date(value.includes('T') ? value : value.replace(' ', 'T'));
+          if (isNaN(date.getTime())) return undefined;
+          return date.toISOString();
+        } catch {
+          return undefined;
+        }
+      };
+
+      const isoDateTime = normalizeToIso(request.scheduledDateTime);
+
       const response = await fetch('/api/pricing/transparent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -151,7 +166,7 @@ export function useTransparentPricing(
           documentCount: request.documentCount || 1,
           signerCount: request.signerCount || 1,
           address: request.address,
-          scheduledDateTime: request.scheduledDateTime,
+          scheduledDateTime: isoDateTime,
           customerType: request.customerType || 'new',
           customerEmail: request.customerEmail,
           referralCode: request.referralCode,

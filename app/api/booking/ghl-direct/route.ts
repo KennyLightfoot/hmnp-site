@@ -129,6 +129,7 @@ export async function POST(request: Request) {
         title: `${serviceType.replace(/_/g, ' ')} – ${customerName}`,
         startTime: startIso,
         endTime: endIso,
+        locationId: process.env.GHL_LOCATION_ID,
       });
     } catch (err) {
       console.warn('📆 Appointment creation failed, falling back to Opportunity:', err);
