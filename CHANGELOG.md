@@ -1,5 +1,12 @@
 ## 2025-08-08
 
+- fix: include `types/**/*.d.ts` and `types/**/*.ts` in `tsconfig.json` so NextAuth session augmentation (`types/next-auth.d.ts`) is recognized during build
+- fix: replace nonexistent `BookingStatus.CANCELLED` with `CANCELLED_BY_CLIENT` and `CANCELLED_BY_STAFF` in `app/api/booking/create/route.ts`
+
+Impact: resolves Vercel build failure due to missing `session.user.id` type and Prisma enum mismatch; local type check passes.
+
+## 2025-08-08
+
 - fix(booking): prevent crash when selecting time by hoisting helper functions in `components/booking/InteractivePricingCalculator.tsx` to avoid TDZ/hoisting error (ReferenceError: Cannot access 'L' before initialization)
 - chore(booking): standardize datetime construction to ISO format (`YYYY-MM-DDTHH:mm`) in `components/booking/BookingForm.tsx` for reliable parsing across environments
 
