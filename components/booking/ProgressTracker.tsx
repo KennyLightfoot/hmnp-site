@@ -93,7 +93,7 @@ const STEP_DATA: StepData[] = [
     mobileDescription: 'Final review',
     estimatedTime: '1 min',
     icon: null,
-    tips: ['Double-check details', 'Secure payment', 'Instant confirmation']
+    tips: ['Double-check details', 'Instant confirmation']
   }
 ];
 

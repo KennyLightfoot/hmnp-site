@@ -534,7 +534,7 @@ export default function ReviewStep({
               ) : (
                 <div className="flex items-center space-x-2">
                   <Zap className="h-5 w-5" />
-                  <span>Confirm Booking & Pay</span>
+                  <span>Confirm Booking</span>
                 </div>
               )}
             </Button>

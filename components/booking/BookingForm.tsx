@@ -186,7 +186,7 @@ const BOOKING_STEPS = [
     component: ReviewStep,
     icon: CheckCircle,
     estimatedTime: '1 min',
-    tips: ['Double-check details', 'Secure payment', 'Instant confirmation']
+    tips: ['Double-check details', 'Instant confirmation']
   }
 ];
 
