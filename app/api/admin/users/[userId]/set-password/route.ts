@@ -23,7 +23,8 @@ export async function POST(
   const userId = params.userId;
 
   // 1. Authorization Check: Only Admins can set passwords
-  if (!session?.user || session.user.role !== Role.ADMIN) {
+  const userRole = (session?.user as any)?.role
+  if (!session?.user || userRole !== Role.ADMIN) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

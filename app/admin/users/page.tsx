@@ -31,8 +31,9 @@ const formatDateTime = (date: Date | string | null | undefined) => {
 export default async function AdminUsersPage() {
   const session = await getServerSession(authOptions);
 
-  // 1. Authorization Check: Only Admins allowed
-  if (!session?.user || session.user.role !== Role.ADMIN) {
+  // 1. Authorization Check: Only Admins allowed (tolerate NextAuth typing)
+  const userRole = (session?.user as any)?.role
+  if (!session?.user || userRole !== Role.ADMIN) {
     // Redirect non-admins or unauthenticated users
     redirect('/portal'); // Or '/unauthorized', or '/login'
   }

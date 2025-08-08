@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
-import { isAddressMissing } from '@/lib/utils/address';
+import { isAddressMissing } from '@/lib/validation/address';
 
 // A simplified schema focusing only on the address-related logic from the original BookingSchema
 const AddressValidationSchema = z.object({

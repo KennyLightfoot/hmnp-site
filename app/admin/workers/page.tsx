@@ -39,7 +39,8 @@ export default async function AdminWorkersPage() {
   const session = await getServerSession(authOptions);
 
   // Authorization Check: Only Admins allowed
-  if (!session?.user || session.user.role !== Role.ADMIN) {
+  const userRole = (session?.user as any)?.role
+  if (!session?.user || userRole !== Role.ADMIN) {
     redirect('/portal'); // Redirect non-admins
   }
 

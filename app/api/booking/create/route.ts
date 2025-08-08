@@ -37,7 +37,10 @@ export async function POST(request: NextRequest) {
 
     const existing = await prisma.booking.findMany({
       where: {
-        status: { notIn: [BookingStatus.CANCELLED] },
+        status: { notIn: [
+          BookingStatus.CANCELLED_BY_CLIENT,
+          BookingStatus.CANCELLED_BY_STAFF,
+        ] },
         scheduledDateTime: {
           gte: overlapWindowStart,
           lte: newEndTime,
