@@ -3,6 +3,12 @@
 - fix: include `types/**/*.d.ts` and `types/**/*.ts` in `tsconfig.json` so NextAuth session augmentation (`types/next-auth.d.ts`) is recognized during build
 - fix: replace nonexistent `BookingStatus.CANCELLED` with `CANCELLED_BY_CLIENT` and `CANCELLED_BY_STAFF` in `app/api/booking/create/route.ts`
 
+### Booking → GHL reliability
+
+- fix(booking): fallback to env-based calendar mapping via `getCalendarIdForService` when `service.externalCalendarId` is missing in `app/api/booking/create/route.ts`
+- feat(booking): if appointment creation fails, auto-create a GHL Opportunity to trigger workflows; keeps owners notified even on calendar misconfig
+- chore(booking): ensure contact is created/ensured once and reused for both appointment/opportunity
+
 Impact: resolves Vercel build failure due to missing `session.user.id` type and Prisma enum mismatch; local type check passes.
 
 ### Booking + GHL integration tweaks

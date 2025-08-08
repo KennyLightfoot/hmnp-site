@@ -6,7 +6,8 @@ import { prisma } from '@/lib/db';
 import { convertToBooking } from '@/lib/slot-reservation';
 import { bookingSchemas } from '@/lib/validation/schemas';
 import { processBookingJob } from '@/lib/bullmq/booking-processor';
-import { createAppointment as createGhlAppointment, createContact as createGhlContact, findContactByEmail } from '@/lib/ghl/api';
+import { createAppointment as createGhlAppointment, createContact as createGhlContact, findContactByEmail, createOpportunity as createGhlOpportunity, getServiceValue as getGhlServiceValue } from '@/lib/ghl/api';
+import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
 import { ServiceType, BookingStatus } from '@prisma/client';
 import { z } from 'zod';
 
@@ -84,14 +85,26 @@ export async function POST(request: NextRequest) {
 
     // Also create GHL appointment immediately (serverless-safe)
     try {
-      const calendarId = service.externalCalendarId;
+      // Prefer DB-mapped calendar; if missing, fall back to env mapping by serviceType
+      let calendarId = service.externalCalendarId as string | null;
+      if (!calendarId) {
+        try {
+          calendarId = getCalendarIdForService(service.serviceType as unknown as string);
+        } catch (e) {
+          console.warn('Missing calendar mapping for serviceType; will fall back to opportunity workflow', {
+            serviceType: service.serviceType,
+          });
+        }
+      }
+
+      let ghlContactId: string | null = null;
+
       if (calendarId && booking.scheduledDateTime) {
         // Ensure contact exists in GHL
-        let contactId: string | null = null;
         try {
           const existing = await findContactByEmail(validatedData.customerEmail);
           if (existing?.id) {
-            contactId = existing.id;
+            ghlContactId = existing.id;
           } else {
             const created = await createGhlContact({
               firstName: (validatedData.customerName || '').split(' ')[0] || '',
@@ -100,7 +113,7 @@ export async function POST(request: NextRequest) {
               phone: (body?.customerPhone as string) || undefined,
               source: 'Website Booking'
             });
-            contactId = created?.id || created?.contact?.id || null;
+            ghlContactId = created?.id || created?.contact?.id || null;
           }
         } catch (e) {
           console.error('GHL contact ensure failed (non-blocking):', e);
@@ -114,14 +127,37 @@ export async function POST(request: NextRequest) {
         try {
           await createGhlAppointment({
             calendarId,
-            contactId: contactId || undefined,
+            contactId: ghlContactId || undefined,
             title: `${service.name} – ${validatedData.customerName}`,
             description: 'Created from HMNP booking form',
             startTime: startIso,
             endTime: endIso,
           });
         } catch (e) {
-          console.error('GHL appointment creation failed (non-blocking):', e);
+          console.error('GHL appointment creation failed – attempting Opportunity fallback (non-blocking):', e);
+          try {
+            if (!ghlContactId) {
+              // Best-effort ensure contact for opportunity creation
+              const created = await createGhlContact({
+                firstName: (validatedData.customerName || '').split(' ')[0] || '',
+                lastName: (validatedData.customerName || '').split(' ').slice(1).join(' ') || '',
+                email: validatedData.customerEmail,
+                phone: (body?.customerPhone as string) || undefined,
+                source: 'Website Booking'
+              });
+              ghlContactId = created?.id || created?.contact?.id || null;
+            }
+            if (ghlContactId) {
+              await createGhlOpportunity(ghlContactId, {
+                name: `${service.name} – ${validatedData.customerName}`,
+                status: 'open',
+                source: 'Website Booking',
+                monetaryValue: getGhlServiceValue(String(service.serviceType).toLowerCase().replace(/_/g, '-'), 1),
+              });
+            }
+          } catch (opErr) {
+            console.error('GHL opportunity fallback failed (non-blocking):', opErr);
+          }
         }
       }
     } catch (e) {
