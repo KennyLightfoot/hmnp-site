@@ -98,10 +98,11 @@ function normalizeTimeTo24h(input: string): string | null {
   const time = input.trim();
   // Match 12-hour format with AM/PM
   const twelveHour = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(time);
-  if (twelveHour) {
-    let hours = parseInt(twelveHour[1], 10);
+  if (twelveHour && twelveHour[1] && twelveHour[2] && twelveHour[3]) {
+    const hoursStr = twelveHour[1];
     const minutes = twelveHour[2];
     const meridian = twelveHour[3].toUpperCase();
+    let hours = parseInt(hoursStr, 10);
     if (meridian === 'PM' && hours !== 12) hours += 12;
     if (meridian === 'AM' && hours === 12) hours = 0;
     const hh = String(hours).padStart(2, '0');
@@ -109,7 +110,7 @@ function normalizeTimeTo24h(input: string): string | null {
   }
   // Match 24-hour HH:mm or HH:mm:ss
   const twentyFourHour = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(time);
-  if (twentyFourHour) {
+  if (twentyFourHour && twentyFourHour[1] && twentyFourHour[2]) {
     const hours = parseInt(twentyFourHour[1], 10);
     const minutes = twentyFourHour[2];
     if (hours >= 0 && hours <= 23) {
