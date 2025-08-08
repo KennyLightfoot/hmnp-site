@@ -456,7 +456,7 @@ export default function EnhancedSchedulingStep({
                 onSlotSelect={handleTimeSelect}
                 showDemand={true}
                 showUrgency={true}
-                showPopular={true}
+                showPopular={false}
                 showRecommended={true}
                 variant="grid"
                 serviceType={watchedServiceType}

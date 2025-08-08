@@ -432,11 +432,7 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
                         >
                           <div className="font-medium">{slot.displayTime}</div>
                           <div className="text-xs text-gray-600">{slot.duration} min</div>
-                          {slot.popular && (
-                            <Badge variant="secondary" className="text-xs mt-1">
-                              Popular
-                            </Badge>
-                          )}
+                          {/* Remove "Popular" label for a cleaner UI */}
                           {slot.urgent && (
                             <Badge variant="destructive" className="text-xs mt-1">
                               Urgent

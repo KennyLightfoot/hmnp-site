@@ -160,10 +160,12 @@ export async function getContactByEmail(email: string): Promise<GhlContact | nul
     console.log(`[getContactByEmail] Searching for contact with email: ${email}`);
     
     // Method 1: Use the updated contacts search endpoint (v2 format)
+    // Note: API expects page/pageLimit, not limit
     const response = await callGhlApi('/contacts/search', 'POST', {
       locationId: getCleanLocationId(),
       query: email.toLowerCase().trim(),
-      limit: 10
+      page: 1,
+      pageLimit: 10
     });
 
     let foundContact: GhlContact | null = null;

@@ -576,7 +576,7 @@ export default function LocationStep({
         </Card>
       )}
 
-      {/* 🚀 TRAVEL CALCULATION & POPULAR AREAS SIDEBAR */}
+      {/* 🚀 TRAVEL CALCULATION & SIDEBAR */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           
@@ -658,33 +658,6 @@ export default function LocationStep({
         </div>
 
         <div className="space-y-4">
-          {/* Popular Areas Quick Select */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Popular Areas</CardTitle>
-              <CardDescription className="text-sm">
-                Quick select for common Houston locations
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {POPULAR_AREAS.map((area, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => selectPopularArea(area)}
-                    className="w-full text-left p-2 rounded border hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm">{area.name}</span>
-                      <span className="text-xs text-gray-500">{area.distance}mi</span>
-                    </div>
-                    <div className="text-xs text-gray-600">{area.zipCode}</div>
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Service Area Info */}
           <Card className="border-blue-100 bg-blue-50">
