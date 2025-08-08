@@ -8,6 +8,10 @@ const GHL_API_BASE_URL = process.env.GHL_API_BASE_URL || "https://services.leadc
 const GHL_PRIVATE_INTEGRATION_TOKEN = getCleanEnv('GHL_PRIVATE_INTEGRATION_TOKEN');
 const GHL_API_VERSION = "2021-07-28"; // Standardized to latest stable version
 const GHL_LOCATION_ID = getCleanEnv('GHL_LOCATION_ID');
+const BUSINESS_TIMEZONE = process.env.BUSINESS_TIMEZONE || 'America/Chicago';
+const DEFAULT_BUFFER_MINUTES = Number(process.env.MIN_APPOINTMENT_GAP_MINUTES || '15');
+const GHL_DEFAULT_PIPELINE_ID = process.env.GHL_DEFAULT_PIPELINE_ID || '';
+const GHL_DEFAULT_PIPELINE_STAGE_ID = process.env.GHL_DEFAULT_PIPELINE_STAGE_ID || '';
 
 // Validation helper for Private Integration setup
 function validateGHLConfig() {
@@ -115,11 +119,15 @@ export async function createOpportunity(contactId: string, opportunityData: any,
       throw new Error("No location ID provided or available in environment.");
     }
     
-    const payload = {
+    const payload: any = {
       locationId: locationIdToUse,
       contactId: contactId,
       ...opportunityData,
     };
+
+    // Include default pipeline info if provided via env (prevents 404/validation issues)
+    if (GHL_DEFAULT_PIPELINE_ID) payload.pipelineId = GHL_DEFAULT_PIPELINE_ID;
+    if (GHL_DEFAULT_PIPELINE_STAGE_ID) payload.pipelineStageId = GHL_DEFAULT_PIPELINE_STAGE_ID;
     
     console.log(`💼 Creating opportunity for contact: ${contactId}`);
     const response = await ghlApiRequest('/opportunities', {
@@ -195,13 +203,47 @@ export async function createAppointment(appointmentData: any, locationId?: strin
       appointmentData.locationId = locationIdToUse;
     }
     
+    // Add timeZone for clarity
+    if (!appointmentData.timeZone) {
+      appointmentData.timeZone = BUSINESS_TIMEZONE;
+    }
+
     console.log(`📅 Creating appointment:`, {
       calendarId: appointmentData.calendarId,
       contactId: appointmentData.contactId,
       title: appointmentData.title,
       startTime: appointmentData.startTime,
-      endTime: appointmentData.endTime
+      endTime: appointmentData.endTime,
+      timeZone: appointmentData.timeZone
     });
+
+    // Preflight: check for calendar conflicts in a buffered window
+    try {
+      const bufferMinutes = isFinite(DEFAULT_BUFFER_MINUTES) ? DEFAULT_BUFFER_MINUTES : 15;
+      const startMs = Date.parse(appointmentData.startTime);
+      const endMs = Date.parse(appointmentData.endTime);
+      const windowStartIso = new Date(startMs - bufferMinutes * 60 * 1000).toISOString();
+      const windowEndIso = new Date(endMs + bufferMinutes * 60 * 1000).toISOString();
+
+      const events = await getCalendarEvents(
+        appointmentData.calendarId,
+        windowStartIso,
+        windowEndIso
+      );
+
+      if (Array.isArray(events?.events) ? events.events.length > 0 : (Array.isArray(events) && events.length > 0)) {
+        console.warn('🛑 GHL preflight conflict detected – aborting appointment creation', {
+          calendarId: appointmentData.calendarId,
+          windowStartIso,
+          windowEndIso,
+          conflictCount: Array.isArray(events?.events) ? events.events.length : (Array.isArray(events) ? events.length : 0)
+        });
+        throw new Error('Selected time conflicts with existing calendar events');
+      }
+    } catch (preflightErr) {
+      // Bubble up – caller will decide fallback to opportunity
+      throw preflightErr;
+    }
 
     const response = await ghlApiRequest('/calendars/events/appointments', {
       method: 'POST',
@@ -214,6 +256,28 @@ export async function createAppointment(appointmentData: any, locationId?: strin
   } catch (error: any) {
     console.error(`❌ Error creating appointment:`, error instanceof Error ? getErrorMessage(error) : String(error));
     throw new Error(`Failed to create appointment: ${getErrorMessage(error)}`);
+  }
+}
+
+// List calendar events in a window – used for conflict preflight
+export async function getCalendarEvents(
+  calendarId: string,
+  startTimeIso: string,
+  endTimeIso: string
+): Promise<any> {
+  validateGHLConfig();
+  try {
+    const params = new URLSearchParams({
+      calendarId,
+      startTime: startTimeIso,
+      endTime: endTimeIso,
+    }).toString();
+    const endpoint = `/calendars/events?${params}`;
+    const data = await ghlApiRequest(endpoint, { method: 'GET' });
+    return data;
+  } catch (error: any) {
+    console.error('❌ Error retrieving calendar events:', getErrorMessage(error));
+    throw new Error(`Failed to retrieve calendar events: ${getErrorMessage(error)}`);
   }
 }
 
