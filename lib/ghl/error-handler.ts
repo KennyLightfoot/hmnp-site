@@ -238,6 +238,7 @@ export async function ghlApiRequest<T = any>(
   
   const token = getCleanEnv('GHL_PRIVATE_INTEGRATION_TOKEN') as string;
   const isJWT = token && !token.startsWith('pit_');
+  const locationId = getCleanEnv('GHL_LOCATION_ID') as string;
   
   const requestOptions: RequestInit = {
     ...options,
@@ -246,6 +247,8 @@ export async function ghlApiRequest<T = any>(
       'Version': '2021-07-28',
       'Content-Type': 'application/json',
       'User-Agent': 'HMNP-Integration/1.0',
+      // Many GHL v2 endpoints (calendars, opportunities) require LocationId header
+      ...(locationId ? { 'LocationId': locationId } : {}),
       ...options.headers
     }
   };

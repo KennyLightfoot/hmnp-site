@@ -7,3 +7,7 @@ Notes:
 - No behavioral changes to pricing logic; only function declaration order adjusted.
 - ISO formatting ensures consistent `Date` parsing and avoids locale-dependent issues.
 
+
+## 2025-08-08T14:04:18Z
+- fix: success page only uses real local booking.id; prevents 404 on /api/booking/[id]
+- fix: add LocationId header for GHL API requests to stabilize appointment/opportunity creation

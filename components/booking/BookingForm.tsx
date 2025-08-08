@@ -540,12 +540,8 @@ export default function BookingForm({
         const result = await response.json();
         setSuccessMessage('Booking created successfully! Redirecting to confirmation...');
         
-        // Compute a generic confirmation id from available fields
-        const bookingId = result?.booking?.id 
-          || result?.appointmentId 
-          || result?.opportunityId 
-          || result?.contactId 
-          || '';
+        // Only use a real local booking id for confirmation deep-linking
+        const bookingId = result?.booking?.id || '';
 
         const qsParams = new URLSearchParams();
         if (bookingId) qsParams.set('bookingId', String(bookingId));
@@ -561,8 +557,8 @@ export default function BookingForm({
           window.location.href = `/booking/success${qs ? `?${qs}` : ''}`;
         }, 800);
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Booking failed. Please try again.');
+        const errorData = await response.json().catch(() => ({} as any));
+        throw new Error((errorData as any).message || (errorData as any).error || 'Booking failed. Please try again.');
       }
       
     } catch (error) {
