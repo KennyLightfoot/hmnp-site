@@ -47,14 +47,26 @@ export default function BookingSuccessPage() {
 
   useEffect(() => {
     const bookingId = searchParams.get('bookingId');
-    
-    if (!bookingId) {
-      setError('Missing booking information');
-      setIsLoading(false);
-      return;
-    }
+    const fallbackBooking: BookingDetails | null = bookingId
+      ? null
+      : {
+          id: 'pending',
+          serviceType: searchParams.get('serviceType') || 'STANDARD_NOTARY',
+          customerName: searchParams.get('customerName') || 'Customer',
+          customerEmail: searchParams.get('customerEmail') || '',
+          scheduledDateTime: searchParams.get('scheduledDateTime') || '',
+          addressStreet: searchParams.get('locationAddress') || '',
+          addressCity: '',
+          addressState: '',
+          addressZip: ''
+        };
 
-    fetchBookingDetails(bookingId);
+    if (bookingId) {
+      fetchBookingDetails(bookingId);
+    } else if (fallbackBooking) {
+      setBooking(fallbackBooking);
+      setIsLoading(false);
+    }
   }, [searchParams]);
 
   const fetchBookingDetails = async (bookingId: string) => {

@@ -547,11 +547,17 @@ export default function BookingForm({
           || result?.contactId 
           || '';
 
-        // Redirect to success page (works even without an id)
+        const qsParams = new URLSearchParams();
+        if (bookingId) qsParams.set('bookingId', String(bookingId));
+        if (data?.serviceType) qsParams.set('serviceType', data.serviceType);
+        if (combinedDateTime) qsParams.set('scheduledDateTime', combinedDateTime.toISOString());
+        if (data?.location?.address) qsParams.set('locationAddress', data.location.address);
+
+        // Redirect to success page with fallback details for display
         setTimeout(() => {
-          const qs = bookingId ? `?bookingId=${encodeURIComponent(bookingId)}` : '';
-          window.location.href = `/booking/success${qs}`;
-        }, 1000);
+          const qs = qsParams.toString();
+          window.location.href = `/booking/success${qs ? `?${qs}` : ''}`;
+        }, 800);
       } else {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Booking failed. Please try again.');
