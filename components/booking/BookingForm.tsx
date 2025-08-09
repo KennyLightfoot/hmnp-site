@@ -57,7 +57,7 @@ import AIBookingAssistant from './AIBookingAssistant';
 import { useBookingPricing } from '../../hooks/use-transparent-pricing';
 import { CompactPricingDisplay } from './EnhancedPricingDisplay';
 import InteractivePricingCalculator from './InteractivePricingCalculator';
-import StickySummary from './StickySummary';
+// import StickySummary from './StickySummary';
 
 // Business Rules Integration
 import { validateBusinessRules } from '../../lib/business-rules/engine';
@@ -1022,14 +1022,7 @@ export default function BookingForm({
       </div>
       
       </div>
-      {/* Sticky mobile summary – hide on final step to avoid duplicate submit CTA */}
-      {currentStep < BOOKING_STEPS.length - 1 && (
-        <StickySummary
-          total={Number(totalPrice || 0)}
-          onContinue={nextStep}
-          continueDisabled={!isCurrentStepValid || isSubmitting || isNavigating}
-        />
-      )}
+      {/* Sticky mobile summary removed to simplify UI and avoid duplicate CTA */}
     </div>
   );
 }

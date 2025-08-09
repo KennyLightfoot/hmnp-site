@@ -184,8 +184,7 @@ export default function InteractivePricingCalculator({
   // State
   const [documentCount, setDocumentCount] = useState(1);
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
-  const [promoCode, setPromoCode] = useState('');
-  const [promoApplied, setPromoApplied] = useState(false);
+  // Promo code removed to simplify pricing
   const [estimatedDistance, setEstimatedDistance] = useState(0);
   const [isCalculating, setIsCalculating] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
@@ -201,11 +200,7 @@ export default function InteractivePricingCalculator({
     return 0;
   }
 
-  function calculateDiscount(subtotal: number): number {
-    if (promoCode === 'WELCOME10') return Math.min(subtotal * 0.1, 25);
-    if (promoCode === 'MOBILE15') return Math.min(subtotal * 0.15, 50);
-    return 0;
-  }
+  function calculateDiscount(subtotal: number): number { return 0; }
 
   // Calculate pricing breakdown
   const pricingBreakdown = useMemo((): PricingBreakdown => {
@@ -229,7 +224,7 @@ export default function InteractivePricingCalculator({
     }, 0);
     
     // Discount calculation
-    const discount = promoApplied ? calculateDiscount(basePrice + travelFee + documentFee + timeSurcharge + addOns) : 0;
+    const discount = 0;
     
     // Total calculation
     const total = Math.max(0, basePrice + travelFee + documentFee + timeSurcharge + addOns - discount);
@@ -247,12 +242,7 @@ export default function InteractivePricingCalculator({
 
   // (moved) calculateTimeSurcharge and calculateDiscount declared above
 
-  // Apply promo code
-  const applyPromoCode = () => {
-    if (promoCode && !promoApplied) {
-      setPromoApplied(true);
-    }
-  };
+  // Promo code removed
 
   // Toggle add-on
   const toggleAddOn = (addOnId: string) => {
@@ -512,48 +502,7 @@ export default function InteractivePricingCalculator({
         </CardContent>
       </Card>
 
-      {/* Promo Code */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center space-x-2">
-            <Tag className="h-5 w-5 text-purple-600" />
-            <span className={isMobile ? 'text-base' : 'text-lg'}>Promo Code</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex space-x-2">
-              <Input
-                placeholder="Enter promo code"
-                value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                disabled={promoApplied}
-                className="flex-1"
-              />
-              <Button
-                onClick={applyPromoCode}
-                disabled={!promoCode || promoApplied}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                {promoApplied ? 'Applied' : 'Apply'}
-              </Button>
-            </div>
-            
-            {promoApplied && (
-              <Alert className="border-green-200 bg-green-50">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-700">
-                  Promo code applied! You saved ${pricingBreakdown.discount.toFixed(2)}
-                </AlertDescription>
-              </Alert>
-            )}
-            
-            <div className="text-sm text-gray-600">
-              <p>Try: <code className="bg-gray-100 px-1 rounded">WELCOME10</code> or <code className="bg-gray-100 px-1 rounded">MOBILE15</code></p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Promo Code removed */}
     </div>
   );
 } 
