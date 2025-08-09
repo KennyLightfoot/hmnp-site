@@ -2,6 +2,8 @@
 import { ghlApiRequest } from './error-handler';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getCleanEnv } from '../env-clean';
+import { DateTime } from 'luxon';
+import { getCalendarSlots } from './management';
 
 // GHL Private Integration API configuration from environment variables
 const GHL_API_BASE_URL = process.env.GHL_API_BASE_URL || "https://services.leadconnectorhq.com";
@@ -217,31 +219,47 @@ export async function createAppointment(appointmentData: any, locationId?: strin
       timeZone: appointmentData.timeZone
     });
 
-    // Preflight: check for calendar conflicts in a buffered window
+    // Preflight: verify selected time exists in free-slots (uses LocationId and PIT scopes)
     try {
-      const bufferMinutes = isFinite(DEFAULT_BUFFER_MINUTES) ? DEFAULT_BUFFER_MINUTES : 15;
-      const startMs = Date.parse(appointmentData.startTime);
-      const endMs = Date.parse(appointmentData.endTime);
-      const windowStartIso = new Date(startMs - bufferMinutes * 60 * 1000).toISOString();
-      const windowEndIso = new Date(endMs + bufferMinutes * 60 * 1000).toISOString();
+      const startIso = String(appointmentData.startTime);
+      const startDT = DateTime.fromISO(startIso, { zone: BUSINESS_TIMEZONE });
+      const dayStr = startDT.toFormat('yyyy-LL-dd');
 
-      const events = await getCalendarEvents(
-        appointmentData.calendarId,
-        windowStartIso,
-        windowEndIso
+      const slotsResponse = await getCalendarSlots(
+        String(appointmentData.calendarId),
+        dayStr,
+        dayStr
       );
 
-      if (Array.isArray(events?.events) ? events.events.length > 0 : (Array.isArray(events) && events.length > 0)) {
-        console.warn('🛑 GHL preflight conflict detected – aborting appointment creation', {
+      const rawSlots = Array.isArray((slotsResponse as any))
+        ? (slotsResponse as any)
+        : (Array.isArray((slotsResponse as any)?.slots)
+            ? (slotsResponse as any).slots
+            : (Array.isArray((slotsResponse as any)?.availableSlots)
+                ? (slotsResponse as any).availableSlots
+                : []));
+
+      const desiredMs = Date.parse(startIso);
+      const hasMatchingStart = rawSlots.some((s: any) => {
+        const sStart = s?.startTime || s?.start;
+        if (!sStart) return false;
+        const ms = Date.parse(String(sStart));
+        return isFinite(ms) && Math.abs(ms - desiredMs) < 60 * 1000; // within 1 minute
+      });
+
+      if (!hasMatchingStart) {
+        console.warn('🛑 Free-slots preflight: selected start time not available', {
           calendarId: appointmentData.calendarId,
-          windowStartIso,
-          windowEndIso,
-          conflictCount: Array.isArray(events?.events) ? events.events.length : (Array.isArray(events) ? events.length : 0)
+          dayStr,
+          selectedStart: startIso,
+          returnedCount: rawSlots.length
         });
-        throw new Error('Selected time conflicts with existing calendar events');
+        const err = new Error('SLOT_UNAVAILABLE: Selected time is not available per free-slots');
+        (err as any).code = 'SLOT_UNAVAILABLE';
+        throw err;
       }
     } catch (preflightErr) {
-      // Bubble up – caller will decide fallback to opportunity
+      // Bubble up – caller will decide fallback behavior
       throw preflightErr;
     }
 

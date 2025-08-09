@@ -134,29 +134,36 @@ export async function POST(request: NextRequest) {
             endTime: endIso,
           });
         } catch (e) {
-          console.error('GHL appointment creation failed – attempting Opportunity fallback (non-blocking):', e);
-          try {
-            if (!ghlContactId) {
-              // Best-effort ensure contact for opportunity creation
-              const created = await createGhlContact({
-                firstName: (validatedData.customerName || '').split(' ')[0] || '',
-                lastName: (validatedData.customerName || '').split(' ').slice(1).join(' ') || '',
-                email: validatedData.customerEmail,
-                phone: (body?.customerPhone as string) || undefined,
-                source: 'Website Booking'
-              });
-              ghlContactId = created?.id || created?.contact?.id || null;
+          console.error('GHL appointment creation failed – evaluating opportunity fallback (non-blocking):', e);
+          // Only create an Opportunity if the failure is due to the slot not being available per free-slots
+          const code = (e as any)?.code || (e as any)?.message || '';
+          const isSlotUnavailable = typeof code === 'string' && code.includes('SLOT_UNAVAILABLE');
+          if (isSlotUnavailable) {
+            try {
+              if (!ghlContactId) {
+                // Best-effort ensure contact for opportunity creation
+                const created = await createGhlContact({
+                  firstName: (validatedData.customerName || '').split(' ')[0] || '',
+                  lastName: (validatedData.customerName || '').split(' ').slice(1).join(' ') || '',
+                  email: validatedData.customerEmail,
+                  phone: (body?.customerPhone as string) || undefined,
+                  source: 'Website Booking'
+                });
+                ghlContactId = created?.id || created?.contact?.id || null;
+              }
+              if (ghlContactId) {
+                await createGhlOpportunity(ghlContactId, {
+                  name: `${service.name} – ${validatedData.customerName}`,
+                  status: 'open',
+                  source: 'Website Booking',
+                  monetaryValue: getGhlServiceValue(String(service.serviceType).toLowerCase().replace(/_/g, '-'), 1),
+                });
+              }
+            } catch (opErr) {
+              console.error('GHL opportunity fallback failed (non-blocking):', opErr);
             }
-            if (ghlContactId) {
-              await createGhlOpportunity(ghlContactId, {
-                name: `${service.name} – ${validatedData.customerName}`,
-                status: 'open',
-                source: 'Website Booking',
-                monetaryValue: getGhlServiceValue(String(service.serviceType).toLowerCase().replace(/_/g, '-'), 1),
-              });
-            }
-          } catch (opErr) {
-            console.error('GHL opportunity fallback failed (non-blocking):', opErr);
+          } else {
+            console.warn('Skipping opportunity fallback because failure was not due to slot availability');
           }
         }
       }
