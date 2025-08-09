@@ -238,7 +238,7 @@ export default function InteractivePricingCalculator({
       discount,
       total
     };
-  }, [serviceType, estimatedDistance, documentCount, scheduledDateTime, selectedAddOns, promoApplied]);
+  }, [serviceType, estimatedDistance, documentCount, scheduledDateTime, selectedAddOns]);
 
   // (moved) calculateTimeSurcharge and calculateDiscount declared above
 
