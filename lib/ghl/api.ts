@@ -210,6 +210,23 @@ export async function createAppointment(appointmentData: any, locationId?: strin
       appointmentData.timeZone = BUSINESS_TIMEZONE;
     }
 
+    // Attach assigned user if configured (aligns with working flow using team member)
+    const TEAM_MEMBER_ID = process.env.GHL_DEFAULT_TEAM_MEMBER_ID || process.env.GHL_ASSIGNED_USER_ID;
+    if (TEAM_MEMBER_ID) {
+      // Prefer assignedUserId; some accounts accept selectedUsers instead
+      if (!appointmentData.assignedUserId) {
+        appointmentData.assignedUserId = TEAM_MEMBER_ID;
+      }
+      if (!appointmentData.selectedUsers) {
+        appointmentData.selectedUsers = [TEAM_MEMBER_ID];
+      }
+    }
+
+    // Provide helpful metadata
+    if (!appointmentData.channel) appointmentData.channel = 'web';
+    if (!appointmentData.source) appointmentData.source = 'api';
+    if (!appointmentData.selectedTimezone) appointmentData.selectedTimezone = BUSINESS_TIMEZONE;
+
     console.log(`📅 Creating appointment:`, {
       calendarId: appointmentData.calendarId,
       contactId: appointmentData.contactId,
