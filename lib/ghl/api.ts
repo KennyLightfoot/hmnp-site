@@ -225,10 +225,12 @@ export async function createAppointment(appointmentData: any, locationId?: strin
       const startDT = DateTime.fromISO(startIso, { zone: BUSINESS_TIMEZONE });
       const dayStr = startDT.toFormat('yyyy-LL-dd');
 
+      const teamMemberId = process.env.GHL_DEFAULT_TEAM_MEMBER_ID || undefined;
       const slotsResponse = await getCalendarSlots(
         String(appointmentData.calendarId),
         dayStr,
-        dayStr
+        dayStr,
+        teamMemberId
       );
 
       const rawSlots = Array.isArray((slotsResponse as any))

@@ -121,7 +121,12 @@ export async function createAppointment(appointmentData: AppointmentData) {
   return response;
 }
 
-export async function getCalendarSlots(calendarId: string, startDate: string, endDate: string) {
+export async function getCalendarSlots(
+  calendarId: string,
+  startDate: string,
+  endDate: string,
+  teamMemberId?: string
+) {
   try {
     // ✅ FIXED: Better date handling for GHL API
     const startTimestamp = Math.floor(new Date(`${startDate}T00:00:00`).getTime() / 1000);
@@ -132,6 +137,9 @@ export async function getCalendarSlots(calendarId: string, startDate: string, en
       endDate: endTimestamp.toString(),
       timezone: 'America/Chicago'
     });
+    if (teamMemberId) {
+      queryParams.set('teamMemberId', teamMemberId);
+    }
     
     console.log(`📅 [getCalendarSlots] Fetching slots for calendar ${calendarId}`);
     console.log(`📅 [getCalendarSlots] Date range: ${startDate} to ${endDate}`);
