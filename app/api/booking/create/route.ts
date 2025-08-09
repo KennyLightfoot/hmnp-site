@@ -62,6 +62,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Selected time is no longer available. Please pick a different time.' }, { status: 409 });
     }
 
+    const computedTotal = Number((validatedData as any)?.pricing?.totalPrice || 0);
+
     const booking = await prisma.booking.create({
       data: {
         serviceId: service.id,
@@ -69,7 +71,7 @@ export async function POST(request: NextRequest) {
         customerEmail: validatedData.customerEmail,
         scheduledDateTime: new Date(validatedData.scheduledDateTime),
         addressStreet: validatedData.locationAddress || undefined,
-        priceAtBooking: 0, //pricingResult.totalPrice,
+        priceAtBooking: isFinite(computedTotal) && computedTotal > 0 ? computedTotal : (service as any)?.basePrice ?? 0,
         depositStatus: 'COMPLETED',
         status: 'CONFIRMED',
       },

@@ -311,6 +311,13 @@ export default function BookingForm({
     }, []) // Empty dependency array to ensure stable callback
   });
 
+  // Capture the latest total price for submission
+  const latestTotalRef = React.useRef<number>(0);
+  useEffect(() => {
+    const total = Number(totalPrice || 0);
+    if (!Number.isNaN(total)) latestTotalRef.current = total;
+  }, [totalPrice]);
+
   // Mobile detection
   useEffect(() => {
     const checkMobile = () => {
@@ -541,7 +548,10 @@ export default function BookingForm({
         scheduledDateTime: combinedDateTimeIso || undefined,
         timeZone: 'America/Chicago',
         numberOfDocuments: 1, // Default value since serviceDetails doesn't exist
-        numberOfSigners: 1 // Default value since serviceDetails doesn't exist
+        numberOfSigners: 1, // Default value since serviceDetails doesn't exist
+        pricing: {
+          totalPrice: latestTotalRef.current
+        }
       };
       if (reservationId) {
         bookingData.reservationId = reservationId;
