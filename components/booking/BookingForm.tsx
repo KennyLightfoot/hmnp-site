@@ -283,9 +283,8 @@ export default function BookingForm({
       serviceType: watchedValues.serviceType,
       documentCount: 1, // Could be enhanced to get from form
       address: watchedValues.location?.address?.trim() || undefined,
-      scheduledDateTime: (hasDate && normalizedTime) ? 
-        `${hasDate}T${normalizedTime}` : 
-        undefined,
+      scheduledDateTime: (watchedValues as any)?.scheduling?.selectedStartIso
+        || ((hasDate && normalizedTime) ? `${hasDate}T${normalizedTime}` : undefined),
       customerType: 'new' as const, // Could be enhanced based on user auth
       customerEmail: watchedValues.customer?.email?.trim() || undefined
     };
@@ -502,10 +501,12 @@ export default function BookingForm({
       // Build a full ISO datetime from selected date + time for downstream APIs
       const hasDate = data.scheduling?.preferredDate;
       const hasTime = data.scheduling?.preferredTime;
+      const selectedStartIso = (data as any)?.scheduling?.selectedStartIso as string | undefined;
       const normalizedTime = hasTime ? normalizeTimeTo24h(hasTime) : null;
-      const combinedDateTimeIso = hasDate && normalizedTime
-        ? DateTime.fromISO(`${hasDate}T${normalizedTime}`, { zone: 'America/Chicago' }).toUTC().toISO()
-        : null;
+      const combinedDateTimeIso = selectedStartIso
+        || (hasDate && normalizedTime
+            ? DateTime.fromISO(`${hasDate}T${normalizedTime}`, { zone: 'America/Chicago' }).toUTC().toISO()
+            : null);
 
       // Try to reserve the selected slot (soft hold)
       let reservationId: string | null = null;

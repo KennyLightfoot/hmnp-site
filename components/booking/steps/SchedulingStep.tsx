@@ -251,7 +251,10 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
     onUpdate({ 
       scheduling: { 
         ...watchedScheduling, 
-        preferredTime: slot.displayTime
+        preferredTime: slot.displayTime,
+        // Persist the exact ISO start time to avoid timezone reconstruction errors
+        selectedStartIso: slot.startTime,
+        selectedEndIso: slot.endTime
       } 
     });
   };
