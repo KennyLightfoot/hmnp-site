@@ -118,7 +118,7 @@ export class EnhancedPricingEngine {
     });
 
     // Initialize pricing components
-    const basePrice = SERVICE_BASE_PRICES[validatedRequest.serviceType];
+    const basePrice = SERVICE_BASE_PRICES[validatedRequest.serviceType] ?? 0;
     let travelFee = 0;
     let extraDocumentFees = 0;
     let urgencyFee = 0;
