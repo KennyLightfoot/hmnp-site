@@ -414,7 +414,7 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
                   <Alert className="border-orange-200 bg-orange-50">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                      No available times for this date. Try selecting a different date or contact us directly.
+                      Selected time not available; please pick another.
                     </AlertDescription>
                   </Alert>
                 ) : (

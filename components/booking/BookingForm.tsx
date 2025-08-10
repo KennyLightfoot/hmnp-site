@@ -565,6 +565,8 @@ export default function BookingForm({
       // Address only for mobile services and when provided
       if (data.serviceType !== 'RON_SERVICES' && data.location?.address) {
         Object.assign(bookingData, {
+          // Backend schema expects `locationAddress` (street) as well
+          locationAddress: data.location.address,
           locationType: 'OTHER',
           addressStreet: data.location.address,
           addressCity: data.location.city || 'Houston',
@@ -811,62 +813,9 @@ export default function BookingForm({
         </CardContent>
       </Card>
 
-      {/* 🚀 ENHANCED NAVIGATION CONTROLS - MOBILE OPTIMIZED */}
+      {/* 🚀 UNIFIED NAVIGATION CONTROLS (Mobile + Desktop) */}
       <div className="space-y-4">
-        {/* Mobile Navigation */}
-        <div className="md:hidden">
-          <div className="flex justify-between items-center space-x-3">
-            <Button
-              variant="outline"
-              onClick={prevStep}
-              disabled={currentStep === 0 || isSubmitting || isNavigating}
-              className="flex-1 min-h-[48px] border-gray-300 text-gray-600 hover:text-gray-800"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Back
-            </Button>
-
-            {currentStep < BOOKING_STEPS.length - 1 ? (
-              <Button
-                onClick={nextStep}
-                disabled={!isCurrentStepValid || isSubmitting || isNavigating}
-                className={`flex-1 min-h-[48px] ${
-                  isCurrentStepValid 
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                {isNavigating ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                ) : (
-                  <ChevronRight className="h-4 w-4 mr-1" />
-                )}
-                Continue
-              </Button>
-            ) : (
-              <Button
-                onClick={form.handleSubmit(onSubmit)}
-                disabled={isSubmitting}
-                className="flex-1 min-h-[48px] bg-green-600 hover:bg-green-700 text-white"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <Check className="h-4 w-4 mr-1" />
-                    Confirm Booking
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex justify-between items-center">
+        <div className="flex justify-between items-center">
           <Button
             variant="outline"
             onClick={prevStep}

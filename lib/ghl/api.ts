@@ -278,8 +278,10 @@ export async function createAppointment(appointmentData: any, locationId?: strin
         throw err;
       }
     } catch (preflightErr) {
-      // Bubble up – caller will decide fallback behavior
-      throw preflightErr;
+      // Surface a clear, actionable error for UI
+      const err: any = new Error('SLOT_UNAVAILABLE: Selected time not available. Please pick another time.');
+      err.code = 'SLOT_UNAVAILABLE';
+      throw err;
     }
 
     const response = await ghlApiRequest('/calendars/events/appointments', {
