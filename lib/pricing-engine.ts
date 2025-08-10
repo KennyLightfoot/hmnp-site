@@ -11,93 +11,17 @@ import { getErrorMessage } from '@/lib/utils/error-utils';
 import { logger } from './logger';
 import { redis } from './redis';
 import { UnifiedDistanceService } from './maps/unified-distance-service';
+import { SERVICES_CONFIG } from './services/config';
 
-// Service Configuration - The Foundation of Our Championship System (ALL 6 SERVICES)
-export const SERVICES = {
-  QUICK_STAMP_LOCAL: {
-    price: 50,
-    hours: "9am-5pm Mon-Fri",
-    included: "≤1 doc, ≤2 stamps, 1 signer, 10-mile travel",
-    sameDayCutoff: "15:00", // 3pm
-    description: "Fast & simple local signings",
-    maxDocuments: 1,
-    maxStamps: 2,
-    includedRadius: 10, // Short radius for quick local service
-    feePerMile: 0.50
-  },
-  
-  STANDARD_NOTARY: {
-    price: 75,
-    hours: "9am-5pm Mon-Fri",
-    included: "≤4 docs, ≤2 signers, 20-mile travel",
-    sameDayCutoff: "15:00", // 3pm
-    description: "Professional notary service for routine documents",
-    maxDocuments: 4,
-    includedRadius: 20, // Standard 20-mile radius
-    feePerMile: 0.50
-  },
-  
-  EXTENDED_HOURS: {
-    price: 100,
-    hours: "7am-9pm Daily", 
-    included: "≤4 docs, ≤2 signers, 30-mile travel",
-    features: ["urgent", "same-day", "evening"],
-    description: "Extended availability for urgent and after-hours needs",
-    maxDocuments: 4,
-    includedRadius: 30, // Extended 30-mile radius
-    feePerMile: 0.50
-  },
-  
-  LOAN_SIGNING: {
-    price: 150,
-    hours: "By appointment",
-    included: "Single package, ≤4 signers, 30-mile travel, 2 hours table time",
-    requirements: ["title company verification"],
-    description: "Specialized loan document signing with expertise",
-    maxDocuments: 999, // Unlimited within session
-    includedRadius: 30, // Standard 30-mile radius
-    feePerMile: 0.50
-  },
-  
-  RON_SERVICES: {
-    price: 25, // Session fee only
-    sealPrice: 5, // Per seal fee
-    hours: "24/7 availability",
-    included: "Remote service, no travel required",
-    platform: "Proof.com integration",
-    description: "Secure remote online notarization from anywhere",
-    maxDocuments: 10,
-    includedRadius: 0, // Remote service - no travel
-    feePerMile: 0
-  },
-  
-  BUSINESS_ESSENTIALS: {
-    price: 125, // Monthly subscription
-    hours: "24/7 RON availability",
-    included: "Up to 10 RON seals/month + 10% off mobile",
-    subscription: true,
-    description: "Monthly business subscription with RON services",
-    maxDocuments: 10,
-    ronSealsIncluded: 10,
-    mobileDiscount: 0.10,
-    includedRadius: 0, // RON service - no travel
-    feePerMile: 0
-  },
-  
-  BUSINESS_GROWTH: {
-    price: 349, // Monthly subscription  
-    hours: "24/7 RON availability",
-    included: "Up to 40 RON seals/month + 10% off mobile + 1 free loan signing",
-    subscription: true,
-    description: "Premium monthly business subscription",
-    maxDocuments: 40,
-    ronSealsIncluded: 40,
-    mobileDiscount: 0.10,
-    freeLoanSigning: 1,
-    includedRadius: 0, // RON service - no travel
-    feePerMile: 0
-  }
-} as const;
+// Source of truth for base prices and limits
+export const SERVICES = Object.fromEntries(
+  Object.entries(SERVICES_CONFIG).map(([k, v]) => [k, {
+    price: v.basePrice,
+    includedRadius: v.includedRadius,
+    feePerMile: v.feePerMile,
+    maxDocuments: v.maxDocuments
+  }])
+) as Record<string, { price: number; includedRadius: number; feePerMile: number; maxDocuments: number }>;
 
 // Pricing Logic Configuration
 export const PRICING_CONFIG = {

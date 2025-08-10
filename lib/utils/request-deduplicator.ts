@@ -99,13 +99,14 @@ export async function fetchAvailabilityDeduped(
       timezone
     });
     
-    const response = await fetch(`/api/availability?${params}`);
+    // Canonical availability endpoint
+    const response = await fetch(`/api/booking/availability?${params}`);
     if (!response.ok) {
       if (response.status === 429) {
         // Rate limited - wait and retry once
         console.warn('Rate limited, waiting 2 seconds before retry...');
         await new Promise(resolve => setTimeout(resolve, 2000));
-        const retryResponse = await fetch(`/api/availability?${params}`);
+        const retryResponse = await fetch(`/api/booking/availability?${params}`);
         if (!retryResponse.ok) {
           throw new Error(`HTTP ${retryResponse.status}: ${retryResponse.statusText}`);
         }

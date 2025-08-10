@@ -20,15 +20,10 @@ import { validateBusinessRules } from './engine';
 // 🎯 PRICING CONFIGURATION
 // ============================================================================
 
-const SERVICE_BASE_PRICES = {
-  'QUICK_STAMP_LOCAL': 50,
-  'STANDARD_NOTARY': 75,
-  'EXTENDED_HOURS': 100,
-  'LOAN_SIGNING': 150,
-  'RON_SERVICES': 25,
-  'BUSINESS_ESSENTIALS': 125,
-  'BUSINESS_GROWTH': 349
-} as const;
+import { SERVICES_CONFIG } from '@/lib/services/config';
+const SERVICE_BASE_PRICES = Object.fromEntries(
+  Object.entries(SERVICES_CONFIG).map(([k, v]) => [k, v.basePrice])
+) as Record<string, number>;
 
 const SERVICE_AREA_MULTIPLIERS = {
   houston_metro: { range: '0-30 miles', multiplier: 1.0, label: 'Houston Metro' },

@@ -72,7 +72,8 @@ export async function POST(request: NextRequest) {
         scheduledDateTime: new Date(validatedData.scheduledDateTime),
         addressStreet: validatedData.locationAddress || undefined,
         priceAtBooking: isFinite(computedTotal) && computedTotal > 0 ? computedTotal : (service as any)?.basePrice ?? 0,
-        depositStatus: 'COMPLETED',
+        // No deposit required; confirm immediately
+        depositStatus: 'PENDING',
         status: 'CONFIRMED',
       },
     });

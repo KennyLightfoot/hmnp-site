@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
 import { getCalendarSlots } from '@/lib/ghl/management';
 import { prisma } from '@/lib/database-connection';
+import { getBusinessHours } from '@/lib/services/config';
 
 // Enhanced validation schema for availability request
 const AvailabilityRequestSchema = z.object({
@@ -32,16 +33,10 @@ const AvailabilityRequestSchema = z.object({
   includeUrgency: z.boolean().default(true),
 });
 
-// Business hours configuration per service
-const BUSINESS_HOURS = {
-  'QUICK_STAMP_LOCAL': { start: 9, end: 17, days: [1, 2, 3, 4, 5] }, // Mon-Fri 9-5
-  'STANDARD_NOTARY': { start: 9, end: 17, days: [1, 2, 3, 4, 5] }, // Mon-Fri 9-5
-  'EXTENDED_HOURS': { start: 7, end: 21, days: [0, 1, 2, 3, 4, 5, 6] }, // 7 days 7-9
-  'LOAN_SIGNING': { start: 8, end: 18, days: [1, 2, 3, 4, 5] }, // Mon-Fri 8-6
-  'RON_SERVICES': { start: 0, end: 24, days: [0, 1, 2, 3, 4, 5, 6] }, // 24/7
-  'BUSINESS_ESSENTIALS': { start: 9, end: 17, days: [1, 2, 3, 4, 5] }, // Mon-Fri 9-5
-  'BUSINESS_GROWTH': { start: 9, end: 17, days: [1, 2, 3, 4, 5] } // Mon-Fri 9-5
-};
+// Business hours come from centralized config now
+const BUSINESS_HOURS: Record<string, { start: number; end: number; days: number[] }> = new Proxy({}, {
+  get: (_target, prop: string) => getBusinessHours(prop)
+}) as any;
 
 // Urgency and demand calculation helpers
 function calculateDemandLevel(bookingsCount: number, totalSlots: number): 'low' | 'medium' | 'high' {

@@ -17,71 +17,23 @@ import { validateBusinessRules } from '../business-rules/engine';
 import { BUSINESS_RULES_CONFIG } from '../business-rules/config';
 import { PricingCacheService, withPricingCache } from './pricing-cache';
 import { isAddressMissing } from '@/lib/validation/address';
+import { SERVICES_CONFIG } from '@/lib/services/config';
 
 // ============================================================================
 // 🎯 UNIFIED PRICING CONFIGURATION
 // ============================================================================
 
-export const UNIFIED_SERVICE_CONFIG = {
-  QUICK_STAMP_LOCAL: {
-    basePrice: 50,
-    maxDocuments: 1,
-    maxStamps: 2,
-    includedRadius: 10,
-    feePerMile: 0.50,
-    description: "Fast & simple local signings",
-    features: ["Quick service", "1 document", "2 stamps", "10-mile radius"]
-  },
-  STANDARD_NOTARY: {
-    basePrice: 75,
-    maxDocuments: 4,
-    includedRadius: 20,
-    feePerMile: 0.50,
-    description: "Professional notary service for routine documents",
-    features: ["Up to 4 documents", "1-2 signers", "20-mile radius"]
-  },
-  EXTENDED_HOURS: {
-    basePrice: 100,
-    maxDocuments: 4,
-    includedRadius: 30,
-    feePerMile: 0.50,
-    description: "Extended availability for urgent and after-hours needs",
-    features: ["Up to 4 documents", "1-2 signers", "7am-9pm daily", "30-mile radius"]
-  },
-  LOAN_SIGNING: {
-    basePrice: 150,
-    maxDocuments: 999,
-    includedRadius: 30,
-    feePerMile: 0.50,
-    description: "Specialized loan document signing with expertise",
-    features: ["Single package", "Up to 4 signers", "Loan expertise", "30-mile radius", "2 hours table time"]
-  },
-  RON_SERVICES: {
-    basePrice: 25,
-    sealPrice: 5,
-    maxDocuments: 10,
-    includedRadius: 0, // No travel for RON
-    feePerMile: 0,
-    description: "24/7 Remote Online Notarization services",
-    features: ["24/7 availability", "Up to 10 documents", "No travel required", "Texas-compliant", "$25 session + $5 per seal"]
-  },
-  BUSINESS_ESSENTIALS: {
-    basePrice: 125,
-    maxDocuments: 10,
-    includedRadius: 30,
-    feePerMile: 0.50,
-    description: "Monthly business subscription - essentials",
-    features: ["Monthly plan", "Priority scheduling", "Business support"]
-  },
-  BUSINESS_GROWTH: {
-    basePrice: 349,
-    maxDocuments: 50,
-    includedRadius: 50,
-    feePerMile: 0.25,
-    description: "Monthly business subscription - growth",
-    features: ["Monthly plan", "Extended radius", "Premium support", "Reduced travel fees"]
-  }
-} as const;
+export const UNIFIED_SERVICE_CONFIG = Object.fromEntries(
+  Object.entries(SERVICES_CONFIG).map(([id, cfg]) => [id, {
+    basePrice: cfg.basePrice,
+    maxDocuments: cfg.maxDocuments,
+    includedRadius: cfg.includedRadius,
+    feePerMile: cfg.feePerMile,
+    description: cfg.displayName,
+    features: [] as string[],
+    ...(id === 'RON_SERVICES' ? { sealPrice: cfg.sealPrice } : {})
+  }])
+) as any;
 
 export const PRICING_MULTIPLIERS = {
   timeBasedSurcharges: {
@@ -121,21 +73,15 @@ export const TransparentPricingRequestSchema = z.object({
   documentCount: z.number().min(1).default(1),
   signerCount: z.number().min(1).default(1),
   address: z.string().trim().nullable().optional(),
-  scheduledDateTime: z.string().datetime().optional(),
+  // Accept any string or empty; downstream logic guards usage
+  scheduledDateTime: z.string().optional().or(z.literal('')),
   customerType: z.enum(['new', 'returning', 'loyalty']).default('new'),
   customerEmail: z.string().email().optional().or(z.literal('')),
   referralCode: z.string().optional(),
   promoCode: z.string().optional(),
   requestId: z.string().optional()
-}).superRefine((data, ctx) => {
-  // Only validate address if it's provided and not for RON services
-  if (data.serviceType !== 'RON_SERVICES' && data.address && isAddressMissing(data.address)) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Address is required for in-person services.',
-      path: ['address']
-    });
-  }
+}).superRefine((_data, _ctx) => {
+  // Travel fee calculation is disabled; skip strict address requirement
 });
 
 export const PricingBreakdownComponentSchema = z.object({
@@ -327,7 +273,7 @@ export class UnifiedPricingEngine {
       }
       
       // 3. Calculate Time-Based Surcharges
-      if (validatedRequest.scheduledDateTime) {
+       if (validatedRequest.scheduledDateTime && validatedRequest.scheduledDateTime !== '') {
         console.log(`⏰ [${requestId}] Calculating time-based surcharges`);
         
         const timeBasedSurcharges = this.calculateTimeBasedSurcharges(
@@ -477,6 +423,9 @@ export class UnifiedPricingEngine {
     currentTotal: number,
     requestId: string
   ): PricingBreakdownComponent[] {
+    if (!(scheduledDate instanceof Date) || isNaN(scheduledDate.getTime())) {
+      return [];
+    }
     const surcharges: PricingBreakdownComponent[] = [];
     const now = new Date();
     const hoursUntilService = (scheduledDate.getTime() - now.getTime()) / (1000 * 60 * 60);

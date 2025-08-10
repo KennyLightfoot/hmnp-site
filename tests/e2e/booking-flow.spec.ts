@@ -39,7 +39,7 @@ const TEST_BOOKING_DATA = {
   }
 };
 
-test.describe.skip('Critical Booking Flow', () => {
+test.describe('Critical Booking Flow', () => {
   test.beforeEach(async ({ page }) => {
     // Start each test from the home page
     await page.goto(BASE_URL);

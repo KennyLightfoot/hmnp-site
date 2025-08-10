@@ -14,6 +14,8 @@ import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { CalendarIcon, Clock, CalendarDays, Loader2 } from 'lucide-react';
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
+import { getServiceDurationMinutes, SERVICES_CONFIG } from '@/lib/services/config';
+import { toServiceId } from '@/lib/services/map';
 
 // Unified types for all calendar implementations
 export interface TimeSlot {
@@ -160,31 +162,10 @@ export default function UnifiedBookingCalendar({
       }
     }
     
-    // Map service types to our standard service enum
-    let serviceType: string;
-    switch (service.toLowerCase()) {
-      case 'standard-notary':
-        serviceType = 'STANDARD_NOTARY';
-        break;
-      case 'extended-hours':
-        serviceType = 'EXTENDED_HOURS';
-        break;
-      case 'loan-signing':
-        serviceType = 'LOAN_SIGNING';
-        break;
-      case 'specialty-notary-service':
-      case 'business-solutions':
-      case 'support-service':
-        // These services use the standard notary calendar
-        serviceType = 'STANDARD_NOTARY';
-        break;
-      default:
-        logger.warn('Unknown service type, using standard notary calendar', 'CALENDAR', { serviceType: service });
-        serviceType = 'STANDARD_NOTARY';
-    }
+    const mapped = toServiceId(service) || 'STANDARD_NOTARY';
     
     try {
-      return getCalendarIdForService(serviceType);
+      return getCalendarIdForService(mapped);
     } catch (error) {
       logger.error('Failed to get calendar ID for service', 'CALENDAR', { 
         serviceType, 
@@ -201,20 +182,8 @@ export default function UnifiedBookingCalendar({
   const getDuration = (service?: string): number => {
     if (serviceDuration) return serviceDuration;
     if (!service) return 60;
-    
-    switch (service.toLowerCase()) {
-      case 'loan-signing':
-        return 90; // SOP: 90-minute session for loan signing
-      case 'extended-hours':
-        return 60; // SOP: Standard duration
-      case 'standard-notary':
-      case 'specialty-notary-service':
-      case 'business-solutions':
-      case 'support-service':
-        return 60; // SOP: Standard duration
-      default:
-        return 60;
-    }
+    const id = toServiceId(service) || 'STANDARD_NOTARY';
+    return getServiceDurationMinutes(id);
   };
   
   /**

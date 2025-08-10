@@ -151,17 +151,17 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
     try {
       // Use cached availability fetching
       const { fetchAvailabilityCached } = await import('@/lib/utils/availability-cache');
-      const result = await fetchAvailabilityCached(watchedServiceType, date, 'America/Chicago');
+       const result = await fetchAvailabilityCached(watchedServiceType, date, 'America/Chicago');
       
       console.log(`✅ Availability for ${date}:`, result);
       
       // Transform API ISO timestamps into UI-friendly slots
       const transformedData: AvailabilityResponse = {
         success: !!result.availableSlots,
-        serviceType: watchedServiceType,
+         serviceType: watchedServiceType,
         date,
         timezone: 'America/Chicago',
-        calendarId: watchedServiceType, // Use serviceType instead of serviceId
+         calendarId: watchedServiceType,
         totalSlots: result.availableSlots?.length || 0,
         availableSlots: result.availableSlots?.map((slot: any) => {
           const startIso = slot.startTime || slot.start;
@@ -378,7 +378,7 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
             </CardContent>
           </Card>
 
-          {/* Time Selection */}
+              {/* Time Selection */}
           {selectedDay && (
             <Card className="mt-4">
               <CardHeader>
@@ -398,6 +398,17 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
               </CardHeader>
               
               <CardContent>
+                    {/* Same-day nudging banner for Standard Notary */}
+                    {watchedServiceType === 'STANDARD_NOTARY' && selectedDay.isToday && (
+                      <Alert className="border-orange-200 bg-orange-50 mb-4">
+                        <AlertCircle className="h-4 w-4 text-orange-600" />
+                        <AlertDescription className="text-sm text-orange-800">
+                          Looking for a same-day appointment? Extended Hours is designed for urgent bookings and may be a better fit.
+                          You can still choose Standard Notary today, but a priority fee may apply.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    
                 {selectedDay.loading ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin text-blue-600" />

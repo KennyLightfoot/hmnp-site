@@ -107,7 +107,7 @@ const SERVICES: ServiceOption[] = [
       '1-2 signers included',
       '30-mile travel radius',
       'Professional notary service',
-      'Same-day available (before 3pm)'
+      'Same-day available with priority fee'
     ],
     maxDocuments: 2,
     includedRadius: 30,
@@ -154,64 +154,7 @@ const SERVICES: ServiceOption[] = [
     serviceType: 'mobile'
   },
   
-  // ===== SPECIALIZED SERVICES =====
-  {
-    id: 'ESTATE_PLANNING',
-    name: 'Estate Planning Package',
-    price: 250,
-    description: 'Comprehensive estate document notarization - Wills, Trusts, POAs, and more',
-    hours: 'By appointment',
-    included: [
-      'Up to 10 documents',
-      'Up to 4 signers',
-      '2.5-hour session',
-      'Estate planning expertise',
-      'Multiple document types',
-      '30-mile travel radius'
-    ],
-    maxDocuments: 10,
-    includedRadius: 30,
-    badge: 'value',
-    serviceType: 'mobile'
-  },
-  {
-    id: 'SPECIALTY_NOTARY',
-    name: 'Specialty Notary Services',
-    price: 150,
-    description: 'Apostilles, embassy certifications, translations, and complex notarial acts',
-    hours: 'By appointment',
-    included: [
-      'Complex documents',
-      'Apostille services',
-      'Embassy certifications',
-      'Translation notarization',
-      'Expert handling',
-      '30-mile travel radius'
-    ],
-    maxDocuments: 5,
-    includedRadius: 30,
-    badge: 'recommended',
-    serviceType: 'mobile'
-  },
-  {
-    id: 'BUSINESS_SOLUTIONS',
-    name: 'Business Notary Solutions',
-    price: 250,
-    description: 'Volume signings, block-booking discounts, corporate accounts, and recurring appointments',
-    hours: 'Flexible scheduling',
-    included: [
-      'Volume discounts',
-      'Corporate accounts',
-      'Recurring appointments',
-      'Block booking',
-      'Dedicated support',
-      '30-mile travel radius'
-    ],
-    maxDocuments: 999,
-    includedRadius: 30,
-    badge: 'value',
-    serviceType: 'mobile'
-  },
+  // Excluded specialized services removed per product lineup decision
   
   // ===== REMOTE & SUBSCRIPTION SERVICES =====
   {

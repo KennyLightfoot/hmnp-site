@@ -71,19 +71,11 @@ interface InteractivePricingCalculatorProps {
   isMobile?: boolean;
 }
 
-// Base service prices
-const BASE_PRICES = {
-  'QUICK_STAMP_LOCAL': 50,
-  'STANDARD_NOTARY': 75,
-  'EXTENDED_HOURS': 100,
-  'LOAN_SIGNING': 150,
-  'ESTATE_PLANNING': 250,
-  'SPECIALTY_NOTARY': 150,
-  'BUSINESS_SOLUTIONS': 250,
-  'RON_SERVICES': 25,
-  'BUSINESS_ESSENTIALS': 125,
-  'BUSINESS_GROWTH': 349
-};
+// Base service prices (single source of truth)
+import { SERVICES_CONFIG } from '@/lib/services/config';
+const BASE_PRICES = Object.fromEntries(
+  Object.entries(SERVICES_CONFIG).map(([k, v]) => [k, v.basePrice])
+) as Record<string, number>;
 
 // Service Add-Ons Configuration
 const SERVICE_ADD_ONS: ServiceAddOn[] = [
@@ -204,7 +196,7 @@ export default function InteractivePricingCalculator({
 
   // Calculate pricing breakdown
   const pricingBreakdown = useMemo((): PricingBreakdown => {
-    const basePrice = BASE_PRICES[serviceType as keyof typeof BASE_PRICES] || 75;
+    const basePrice = BASE_PRICES[serviceType as keyof typeof BASE_PRICES] ?? 75;
     
     // DISABLED: Travel fee calculation (for mobile services)
     // Travel fee calculation temporarily disabled to simplify booking system
