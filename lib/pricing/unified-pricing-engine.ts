@@ -621,26 +621,37 @@ export class UnifiedPricingEngine {
     savings: number;
     tradeoffs: string[];
   }> {
-    const alternatives = [];
-    const currentService = UNIFIED_SERVICE_CONFIG[request.serviceType];
+    const alternatives = [] as Array<{ serviceType: string; price: number; savings: number; tradeoffs: string[] }>;
+    type ServiceConfig = {
+      basePrice: number;
+      description: string;
+      features: string[];
+      maxDocuments: number;
+      includedRadius: number;
+      feePerMile?: number;
+      sealPrice?: number;
+    };
+    const configMap = UNIFIED_SERVICE_CONFIG as Record<string, ServiceConfig>;
+    const currentService = configMap[request.serviceType];
+    if (!currentService) return alternatives;
     
     // Suggest cheaper alternatives
-    for (const [serviceType, config] of Object.entries(UNIFIED_SERVICE_CONFIG)) {
-      if (serviceType !== request.serviceType && config.basePrice < currentService.basePrice) {
-        const savings = currentService.basePrice - config.basePrice;
-        const tradeoffs = [];
+    for (const [serviceType, cfg] of Object.entries(configMap)) {
+      if (serviceType !== request.serviceType && cfg.basePrice < currentService.basePrice) {
+        const savings = currentService.basePrice - cfg.basePrice;
+        const tradeoffs: string[] = [];
         
-        if (config.maxDocuments < request.documentCount) {
-          tradeoffs.push(`Supports fewer documents (${config.maxDocuments} vs ${request.documentCount})`);
+        if (cfg.maxDocuments < request.documentCount) {
+          tradeoffs.push(`Supports fewer documents (${cfg.maxDocuments} vs ${request.documentCount})`);
         }
         
-        if (config.includedRadius < currentService.includedRadius) {
-          tradeoffs.push(`Smaller service area (${config.includedRadius} vs ${currentService.includedRadius} miles)`);
+        if (cfg.includedRadius < currentService.includedRadius) {
+          tradeoffs.push(`Smaller service area (${cfg.includedRadius} vs ${currentService.includedRadius} miles)`);
         }
         
         alternatives.push({
           serviceType,
-          price: config.basePrice,
+          price: cfg.basePrice,
           savings,
           tradeoffs
         });
