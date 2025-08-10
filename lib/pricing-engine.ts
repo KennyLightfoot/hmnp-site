@@ -411,7 +411,8 @@ export class PricingEngine {
 
     // Volume discount for standard service with multiple docs
     if (serviceType === 'STANDARD_NOTARY' && documentCount && documentCount >= 3) {
-      const basePrice = SERVICES.STANDARD_NOTARY.price;
+      const stdService = SERVICES['STANDARD_NOTARY'];
+      const basePrice = stdService?.price ?? 0;
       total += Math.round(basePrice * PRICING_CONFIG.discounts.volume);
     }
 
@@ -489,7 +490,7 @@ export class PricingEngine {
         type: 'service_upgrade',
         fromService: params.serviceType,
         toService: 'LOAN_SIGNING',
-        priceIncrease: SERVICES.LOAN_SIGNING.price - SERVICES[params.serviceType as keyof typeof SERVICES].price,
+        priceIncrease: (SERVICES['LOAN_SIGNING']?.price ?? 0) - (SERVICES[params.serviceType as keyof typeof SERVICES]?.price ?? 0),
         headline: "🏠 Loan Signing Specialist",
         benefit: "Unlimited documents + real estate expertise + title company coordination",
         conversionBoost: "Flat fee regardless of document count"
