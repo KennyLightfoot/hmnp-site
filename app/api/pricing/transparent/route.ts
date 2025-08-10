@@ -214,7 +214,16 @@ export async function GET(request: NextRequest) {
       // Return all available services with basic pricing
       const { UNIFIED_SERVICE_CONFIG } = await import('../../../../lib/pricing/unified-pricing-engine');
       
-      const services = Object.entries(UNIFIED_SERVICE_CONFIG).map(([type, config]) => ({
+      type ServiceConfig = {
+        basePrice: number;
+        description: string;
+        features: string[];
+        maxDocuments: number;
+        includedRadius: number;
+      };
+      
+      const configMap = UNIFIED_SERVICE_CONFIG as Record<string, ServiceConfig>;
+      const services = Object.entries(configMap).map(([type, config]) => ({
         serviceType: type,
         name: type.replace(/_/g, ' '),
         basePrice: config.basePrice,
