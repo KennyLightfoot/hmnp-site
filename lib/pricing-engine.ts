@@ -314,6 +314,9 @@ export class PricingEngine {
   ): Promise<{ fee: number; distance: number; withinArea: boolean }> {
     try {
       const service = SERVICES[serviceType as keyof typeof SERVICES];
+      if (!service) {
+        throw new PricingCalculationError(`Invalid service type for travel calc: ${serviceType}`);
+      }
       
       // Skip travel calculation for RON services
       if (serviceType === 'RON_SERVICES') {
