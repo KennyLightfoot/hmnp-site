@@ -138,9 +138,10 @@ export async function POST(request: NextRequest) {
         } catch (e) {
           console.error('GHL appointment creation failed – evaluating opportunity fallback (non-blocking):', e);
           // Only create an Opportunity if the failure is due to the slot not being available per free-slots
+          const BYPASS_PREFLIGHT = (process.env.BOOKING_BYPASS_PREFLIGHT || '').toLowerCase() === 'true';
           const code = (e as any)?.code || (e as any)?.message || '';
           const isSlotUnavailable = typeof code === 'string' && code.includes('SLOT_UNAVAILABLE');
-          if (isSlotUnavailable) {
+          if (isSlotUnavailable && !BYPASS_PREFLIGHT) {
             try {
               if (!ghlContactId) {
                 // Best-effort ensure contact for opportunity creation
