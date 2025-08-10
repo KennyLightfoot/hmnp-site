@@ -114,6 +114,4 @@ export async function GET(request: NextRequest) {
   }
 }
 
-import { GET as availabilityHandler } from '../../availability/route';
-
-export const GET = availabilityHandler; 
+ 

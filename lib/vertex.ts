@@ -59,7 +59,12 @@ const model = process.env.VERTEX_MODEL_ID || 'gemini-2.5-flash';
 const corpus = process.env.VERTEX_RAG_CORPUS;
 const promptId = process.env.VERTEX_CHAT_PROMPT_ID;
 
-const apiEndpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/${model}:streamGenerateContent`;
+function buildApiEndpoint(): string {
+  if (!project) throw new Error('GOOGLE_PROJECT_ID is required for Vertex AI');
+  if (!location) throw new Error('GOOGLE_REGION is required for Vertex AI');
+  const modelId = model || 'gemini-2.5-flash';
+  return `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/${modelId}:streamGenerateContent`;
+}
 
 // Response formatting instructions appended to every system prompt for consistency
 const STYLE_GUIDE = `\n\nSTYLE GUIDE (internal):\n• Keep answers to 2–4 sentences.\n• First sentence: give the price or direct answer.\n• Second: briefly explain what's included / why.\n• Third: offer to book, get a quote, or call.\n• Use clear, friendly tone. No markdown or code fences.`;
@@ -105,6 +110,73 @@ const FUNCTION_DEFINITIONS = [
       },
       required: ['datetime']
     }
+  },
+  {
+    name: 'create_booking',
+    description: 'Create a booking appointment in the system',
+    parameters: {
+      type: 'object',
+      properties: {
+        serviceType: { type: 'string' },
+        customerName: { type: 'string' },
+        customerEmail: { type: 'string' },
+        scheduledDateTime: { type: 'string', description: 'ISO datetime' },
+        locationAddress: { type: 'string' }
+      },
+      required: ['serviceType', 'customerName', 'customerEmail', 'scheduledDateTime']
+    }
+  },
+  {
+    name: 'create_payment_link',
+    description: 'Create a Stripe checkout session and return a payment URL',
+    parameters: {
+      type: 'object',
+      properties: {
+        bookingId: { type: 'string' },
+        customerEmail: { type: 'string' },
+        customerName: { type: 'string' },
+        amount: { type: 'number' },
+        description: { type: 'string' }
+      },
+      required: ['customerEmail', 'customerName', 'amount', 'description']
+    }
+  },
+  {
+    name: 'check_pending_payment',
+    description: 'Check if a contact has pending payments',
+    parameters: {
+      type: 'object',
+      properties: {
+        contactId: { type: 'string' }
+      },
+      required: ['contactId']
+    }
+  },
+  {
+    name: 'log_note',
+    description: 'Log a note to the CRM contact timeline',
+    parameters: {
+      type: 'object',
+      properties: {
+        contactId: { type: 'string' },
+        message: { type: 'string' }
+      },
+      required: ['contactId', 'message']
+    }
+  },
+  {
+    name: 'escalate_to_human',
+    description: 'Escalate the conversation to a human and notify the team',
+    parameters: {
+      type: 'object',
+      properties: {
+        contactId: { type: 'string' },
+        reason: { type: 'string' },
+        customerEmail: { type: 'string' },
+        customerPhone: { type: 'string' }
+      },
+      required: ['reason']
+    }
   }
 ];
 
@@ -148,6 +220,51 @@ async function executeFunction(functionCall: FunctionCall): Promise<FunctionResu
         response: data
       };
     }
+    if (functionCall.name === 'create_booking') {
+      const url = new URL('/api/booking/create', baseUrl);
+      const response = await fetch(url.toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(functionCall.args)
+      });
+      const data = await response.json();
+      return { name: 'create_booking', response: data };
+    }
+    if (functionCall.name === 'create_payment_link') {
+      const url = new URL('/api/create-checkout-session', baseUrl);
+      const response = await fetch(url.toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(functionCall.args)
+      });
+      const data = await response.json();
+      return { name: 'create_payment_link', response: data };
+    }
+    if (functionCall.name === 'check_pending_payment') {
+      // Placeholder implementation – backend endpoint can be added later
+      const { contactId } = functionCall.args || {};
+      return { name: 'check_pending_payment', response: { contactId, pending: false } };
+    }
+    if (functionCall.name === 'log_note') {
+      const url = new URL('/api/_ai/log-note', baseUrl);
+      const response = await fetch(url.toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(functionCall.args)
+      });
+      const data = await response.json();
+      return { name: 'log_note', response: data };
+    }
+    if (functionCall.name === 'escalate_to_human') {
+      const url = new URL('/api/_ai/escalate', baseUrl);
+      const response = await fetch(url.toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(functionCall.args)
+      });
+      const data = await response.json();
+      return { name: 'escalate_to_human', response: data };
+    }
     
     throw new Error(`Unknown function: ${functionCall.name}`);
     
@@ -168,11 +285,14 @@ export async function sendChat(
   systemPrompt?: string, 
   context?: any
 ): Promise<LLMResponse> {
-  // Use service account credentials from environment
-  const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
-  if (!serviceAccountJson) {
+  if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
     throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON environment variable is required');
   }
+  if (!project || !location) {
+    throw new Error('GOOGLE_PROJECT_ID and GOOGLE_REGION are required for Vertex AI');
+  }
+  // Use service account credentials from environment
+  const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
   
   // Remove outer quotes if they exist (common in environment variables)
   let jsonStr = serviceAccountJson;
@@ -202,15 +322,6 @@ export async function sendChat(
     contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
     tools: [
       {
-      retrieval: {
-        vertex_rag_store: {
-          rag_resources: [{ rag_corpus: corpus }],
-          similarity_top_k: 5
-        },
-        disable_attribution: false
-      }
-      },
-      {
         function_declarations: FUNCTION_DEFINITIONS
       }
     ],
@@ -219,6 +330,19 @@ export async function sendChat(
       maxOutputTokens: 300
     }
   };
+
+  const ragEnabled = typeof corpus === 'string' && corpus.length > 0;
+  if (ragEnabled) {
+    body.tools.unshift({
+      retrieval: {
+        vertex_rag_store: {
+          rag_resources: [{ rag_corpus: corpus }],
+          similarity_top_k: 5
+        },
+        disable_attribution: false
+      }
+    });
+  }
 
   // Add system instruction - prefer custom systemPrompt over default promptId
   if (systemPrompt) {
@@ -245,7 +369,7 @@ export async function sendChat(
     // Update body with current conversation history
     body.contents = conversationHistory;
 
-  const res = await fetch(apiEndpoint, {
+  const res = await fetch(buildApiEndpoint(), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

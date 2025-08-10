@@ -61,6 +61,13 @@ const optionalEnvSchema = z.object({
   
   // Google Maps
   GOOGLE_MAPS_API_KEY: z.string().optional(),
+  // Vertex / Google Cloud
+  GOOGLE_PROJECT_ID: z.string().min(3).optional(),
+  GOOGLE_REGION: z.string().min(2).optional(),
+  VERTEX_MODEL_ID: z.string().optional(),
+  VERTEX_RAG_CORPUS: z.string().optional(),
+  VERTEX_CHAT_PROMPT_ID: z.string().optional(),
+  GOOGLE_SERVICE_ACCOUNT_JSON: z.string().optional(),
   
   // AWS S3
   AWS_ACCESS_KEY_ID: z.string().optional(),
@@ -134,10 +141,21 @@ function validateProductionRequirements(): string[] {
       'STRIPE_SECRET_KEY',
       'STRIPE_WEBHOOK_SECRET'
     ];
+    // Vertex criticals in prod
+    const vertexCriticals = [
+      'GOOGLE_PROJECT_ID',
+      'GOOGLE_REGION',
+      'GOOGLE_SERVICE_ACCOUNT_JSON'
+    ];
     
     criticalVars.forEach(varName => {
       if (!process.env[varName]) {
         errors.push(`❌ CRITICAL: ${varName} is required in production`);
+      }
+    });
+    vertexCriticals.forEach(varName => {
+      if (!process.env[varName]) {
+        errors.push(`❌ CRITICAL: ${varName} is required for Vertex AI in production`);
       }
     });
   }

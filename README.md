@@ -82,8 +82,9 @@ The application features a sophisticated AI-powered chatbot that integrates with
 - **Proactive Engagement** - Context-aware suggestions based on user behavior
 
 #### **Architecture**
-- **Vertex AI Model**: `gemini-2.5-flash` with custom prompt template `hmnp_constitution_v1`
-- **RAG Corpus**: `hmnp-notary-corpus` in `us-central1` region
+- **Vertex AI Model**: `gemini-2.5-flash` (Vertex AI via service account)
+- **Prompt Template**: Optional prompt template (full resource name)
+- **RAG Corpus**: Optional corpus (full resource name)
 - **Storage**: Document corpus in `gs://hmnp-rag-docs/`
 - **Structured Schema**: JSON schema for booking extraction
 
@@ -94,13 +95,14 @@ The application features a sophisticated AI-powered chatbot that integrates with
 
 #### **Environment Variables**
 ```bash
-GOOGLE_PROJECT_ID=august-valor-444600-r7
+# Vertex AI (Gemini)
+GOOGLE_SERVICE_ACCOUNT_JSON={...}
+GOOGLE_PROJECT_ID=your-gcp-project-id
 GOOGLE_REGION=us-central1
-VERTEX_CHAT_PROMPT_ID=hmnp_constitution_v1
-VERTEX_RAG_CORPUS=hmnp-notary-corpus
 VERTEX_MODEL_ID=gemini-2.5-flash
-GHLCAL_API_KEY=your_ghl_calendar_api_key
-GHLCAL_LOCATION_ID=your_ghl_calendar_location_id
+# Optional: full resource names
+VERTEX_CHAT_PROMPT_ID=projects/your-project/locations/us-central1/promptTemplates/hmnp_constitution_v1
+VERTEX_RAG_CORPUS=projects/your-project/locations/us-central1/ragCorpora/hmnp-notary-corpus
 ```
 
 #### **Usage**

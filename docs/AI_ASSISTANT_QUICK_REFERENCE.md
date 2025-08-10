@@ -53,13 +53,19 @@
 
 ### **Environment Variables**
 ```bash
-# Required for AI functionality
-GOOGLE_PROJECT_ID=august-valor-444600-r7
-VERTEX_CHAT_PROMPT_ID=hmnp_constitution_v1
+# Required for AI functionality (Vertex AI)
+GOOGLE_SERVICE_ACCOUNT_JSON={...}
+GOOGLE_PROJECT_ID=your-gcp-project-id
+GOOGLE_REGION=us-central1
+VERTEX_MODEL_ID=gemini-2.5-flash
+# Optional: full resource names
+VERTEX_CHAT_PROMPT_ID=projects/your-project/locations/us-central1/promptTemplates/hmnp_constitution_v1
+VERTEX_RAG_CORPUS=projects/your-project/locations/us-central1/ragCorpora/hmnp-notary-corpus
 GOOGLE_MAPS_API_KEY=your-key
 
 # Required for integrations
-GHL_API_KEY=your-ghl-key
+GHL_PRIVATE_INTEGRATION_TOKEN=pit_...
+GHL_LOCATION_ID=...
 STRIPE_SECRET_KEY=your-stripe-key
 DATABASE_URL=your-supabase-url
 ```

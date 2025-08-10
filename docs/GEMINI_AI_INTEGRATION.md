@@ -53,12 +53,18 @@ Houston Mobile Notary Pros now uses **Google Gemini 2.0 Flash** for intelligent 
 
 ## 🔑 **Environment Configuration**
 
-Add to your `.env` file:
+This project uses Vertex AI (Gemini) via Google Cloud service account, not AI Studio API keys.
 
 ```bash
-# Google Gemini AI
-GEMINI_API_KEY=your-google-gemini-api-key
-GOOGLE_AI_API_KEY=your-google-gemini-api-key
+# Vertex AI (Gemini) – required
+GOOGLE_SERVICE_ACCOUNT_JSON={"type":"service_account","project_id":"...","private_key_id":"...","private_key":"-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n","client_email":"...","client_id":"..."}
+GOOGLE_PROJECT_ID=your-gcp-project-id
+GOOGLE_REGION=us-central1
+VERTEX_MODEL_ID=gemini-2.5-flash
+
+# Optional – full resource names
+VERTEX_CHAT_PROMPT_ID=projects/your-project/locations/us-central1/promptTemplates/yourPromptId
+VERTEX_RAG_CORPUS=projects/your-project/locations/us-central1/ragCorpora/yourCorpusId
 
 # Optional: Redis for caching (recommended for production)
 REDIS_URL=redis://your-redis-url

@@ -1,5 +1,8 @@
 ## 2025-08-10
 
+- feat(ai): add Vertex AI function tools (booking, payment link, notes, escalation) and optional RAG; introduce diagnostics endpoint `/api/ai/diagnostics`
+- docs: update `.env.example`, `docs/GEMINI_AI_INTEGRATION.md`, `docs/AI_ASSISTANT_QUICK_REFERENCE.md`, `README.md` to reflect Vertex service-account setup
+- fix(build): remove duplicate GET export in `app/api/v2/availability/route.ts` causing Vercel build failure
 - feat(services): introduce `lib/services/config.ts` as single source of truth for services (IDs, base prices, limits, durations, hours) and `lib/services/map.ts` for mapping and calendar integration
 - refactor(pricing): unify pricing engines to consume centralized config (`lib/pricing-engine.ts`, `lib/pricing/unified-pricing-engine.ts`, `lib/business-rules/pricing-engine.ts`)
 - refactor(ui): `InteractivePricingCalculator` now imports centralized base prices; removed excluded services from `ServiceSelector` (ESTATE_PLANNING, SPECIALTY_NOTARY, BUSINESS_SOLUTIONS)
