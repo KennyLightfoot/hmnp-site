@@ -21,16 +21,17 @@ const CheckoutSessionRequestSchema = z.object({
   customerId: z.string().trim().optional(),
   customerEmail: z.string().trim().email().max(254),
   customerName: z.string().trim().min(1).max(100),
-  amount: z.number().positive().max(100000, 'Amount too large'),
-  currency: z.string().trim().default('usd'),
-  description: z.string().trim().min(1).max(255),
+  // amount/description are no longer accepted from client unless no bookingId is present
+  amount: z.number().positive().max(100000, 'Amount too large').optional(),
+  currency: z.string().trim().default('usd').optional(),
+  description: z.string().trim().min(1).max(255).optional(),
   metadata: z.record(z.any()).optional(),
   successUrl: z.string().trim().url().optional(),
   cancelUrl: z.string().trim().url().optional(),
-  allowPromotionCodes: z.boolean().default(true),
-  billingAddressCollection: z.enum(['auto', 'required']).default('auto'),
-  paymentMethodTypes: z.array(z.string().trim()).default(['card']),
-  submitType: z.enum(['auto', 'book', 'donate', 'pay']).default('pay'),
+  allowPromotionCodes: z.boolean().default(true).optional(),
+  billingAddressCollection: z.enum(['auto', 'required']).default('auto').optional(),
+  paymentMethodTypes: z.array(z.string().trim()).default(['card']).optional(),
+  submitType: z.enum(['auto', 'book', 'donate', 'pay']).default('pay').optional(),
   invoiceCreation: z
     .object({
       enabled: z.boolean().default(true),
@@ -49,12 +50,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Disallow free bookings before deep validation so we emit clear message
-    if (body?.amount === 0) {
-      return NextResponse.json({
-        success: false,
-        error: 'free bookings not supported'
-      }, { status: 400 });
+    // Disallow free bookings if explicitly provided
+    if (typeof body?.amount === 'number' && body.amount === 0) {
+      return NextResponse.json({ success: false, error: 'free bookings not supported' }, { status: 400 });
     }
 
     const headersList = await headers();
@@ -66,20 +64,20 @@ export async function POST(request: NextRequest) {
     const {
       bookingId,
       paymentId,
-      mode,
+      mode = 'payment',
       customerId,
       customerEmail,
       customerName,
-      amount,
-      currency,
-      description,
+      amount: clientAmount,
+      currency: clientCurrency,
+      description: clientDescription,
       metadata = {},
       successUrl,
       cancelUrl,
-      allowPromotionCodes,
-      billingAddressCollection,
-      paymentMethodTypes,
-      submitType,
+      allowPromotionCodes = true,
+      billingAddressCollection = 'auto',
+      paymentMethodTypes = ['card'],
+      submitType = 'pay',
       invoiceCreation
     } = validatedData;
 
@@ -111,7 +109,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Prepare line items
+    // Determine amount/description on server
+    let amountCents: number;
+    let description: string;
+    const currency = clientCurrency || 'usd';
+
+    if (bookingId) {
+      const booking = await prisma.booking.findUnique({ where: { id: bookingId }, include: { service: true } });
+      if (!booking || !booking.priceAtBooking) {
+        return NextResponse.json({ success: false, error: 'Invalid booking' }, { status: 400 });
+      }
+      amountCents = Math.round(Number(booking.priceAtBooking) * 100);
+      description = booking.service?.name || 'Notary Service';
+    } else {
+      if (typeof clientAmount !== 'number' || !clientDescription) {
+        return NextResponse.json({ success: false, error: 'amount and description required' }, { status: 400 });
+      }
+      amountCents = Math.round(clientAmount * 100);
+      description = clientDescription;
+    }
+
     const lineItems = [
       {
         price_data: {
@@ -125,7 +142,7 @@ export async function POST(request: NextRequest) {
               ...metadata
             }
           },
-          unit_amount: Math.round(amount * 100) // Convert to cents
+          unit_amount: amountCents
         },
         quantity: 1
       }

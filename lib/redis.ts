@@ -425,7 +425,7 @@ if (process.env.NODE_ENV === 'development') {
 export default redis;
 
 // Export function to create Redis client for BullMQ
-export const createRedisClient = () => {
+export const createRedisClient = (): Redis | null => {
   if (process.env.REDIS_URL) {
     const redisUrl = process.env.REDIS_URL;
     const isSSL = redisUrl.startsWith('rediss://');
@@ -436,13 +436,10 @@ export const createRedisClient = () => {
       tls: isSSL ? {} : undefined,
     });
   } else if (process.env.UPSTASH_REDIS_REST_URL) {
-    // For Upstash Redis, we need to handle the rediss:// URL properly
-    const url = process.env.UPSTASH_REDIS_REST_URL.replace('rediss://', 'redis://');
-    return new Redis(url, {
-      maxRetriesPerRequest: null,
-      enableReadyCheck: false,
-      password: process.env.UPSTASH_REDIS_REST_TOKEN,
-    });
+    // Upstash REST is not compatible with BullMQ (requires wire protocol).
+    // Return null to signal queue features are unavailable in this environment.
+    logger.warn('Upstash REST detected without REDIS_URL. Disabling BullMQ features.');
+    return null;
   } else {
     // Local Redis fallback
     return new Redis({

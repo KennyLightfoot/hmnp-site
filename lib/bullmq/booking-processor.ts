@@ -12,20 +12,25 @@ interface BookingJobData {
   bookingId: string;
 }
 
-export const bookingProcessingQueue = new (await import('bullmq')).Queue<BookingJobData>(QUEUE_NAME, {
-  connection: createRedisClient(),
-});
+let bookingProcessingQueue: import('bullmq').Queue<BookingJobData> | null = null;
 
-if (bookingProcessingQueue) {
+async function getBookingQueue(): Promise<import('bullmq').Queue<BookingJobData> | null> {
+  if (bookingProcessingQueue) return bookingProcessingQueue;
+  const connection = createRedisClient();
+  if (!connection) {
+    logger?.warn('Redis (wire) not configured; BullMQ queue disabled');
+    return null;
+  }
+  const { Queue } = await import('bullmq');
+  bookingProcessingQueue = new Queue<BookingJobData>(QUEUE_NAME, { connection });
   logger?.info('✅ Booking processing queue initialized');
+  return bookingProcessingQueue;
 }
 
 export const processBookingJob = async (bookingId: string) => {
-  if (!bookingProcessingQueue) {
-    logger?.warn('Booking processing queue not initialized. Skipping job enqueue.');
-    return;
-  }
-  await bookingProcessingQueue?.add('process-booking', { bookingId }, {
+  const queue = await getBookingQueue();
+  if (!queue) return;
+  await queue.add('process-booking', { bookingId }, {
     attempts: 3,
     backoff: {
       type: 'exponential',
@@ -36,7 +41,9 @@ export const processBookingJob = async (bookingId: string) => {
 
 if (process?.env?.WORKER_MODE === 'true') {
   const { Worker } = await import('bullmq');
-  const worker = new Worker<BookingJobData>(
+  const connection = createRedisClient();
+  if (connection) {
+    const worker = new Worker<BookingJobData>(
     QUEUE_NAME,
     async (job: Job<BookingJobData>) => {
       const { bookingId } = job?.data;
@@ -137,10 +144,13 @@ if (process?.env?.WORKER_MODE === 'true') {
         throw error;
       }
     },
-    { connection: createRedisClient() }
+    { connection }
   );
 
-  worker?.on('failed', (job, err) => {
-    logger?.error(`Booking processing job ${job?.id} failed: ${err?.message}`, { jobId: job?.id, error: err });
-  });
+    worker?.on('failed', (job, err) => {
+      logger?.error(`Booking processing job ${job?.id} failed: ${err?.message}`, { jobId: job?.id, error: err });
+    });
+  } else {
+    logger?.warn('WORKER_MODE enabled but no Redis (wire) configured; worker not started');
+  }
 } 
