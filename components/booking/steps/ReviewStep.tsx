@@ -45,7 +45,7 @@ import PaymentRecoveryForm from '@/components/payments/PaymentRecoveryForm';
 import { ReviewStepProps, PaymentOptionChangeHandler, PricingLineItem } from '@/lib/types/booking-interfaces';
 
 // Determine if we still require card info (default false)
-const REQUIRE_CARD = process.env.NEXT_PUBLIC_REQUIRE_CARD === 'true';
+const REQUIRE_CARD = false;
 
 const GUARANTEES = [
   {

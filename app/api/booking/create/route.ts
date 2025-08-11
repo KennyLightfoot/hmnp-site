@@ -74,9 +74,11 @@ export async function POST(request: NextRequest) {
         scheduledDateTime: new Date(validatedData.scheduledDateTime),
         addressStreet: validatedData.locationAddress || undefined,
         priceAtBooking: isFinite(computedTotal) && computedTotal > 0 ? computedTotal : (service as any)?.basePrice ?? 0,
-        // No deposit required; confirm immediately
+        // No prepayment required; confirm immediately
         depositStatus: 'PENDING',
         status: 'CONFIRMED',
+        // Optional: record intended payment method if provided by client
+        paymentMethod: (body?.paymentMethod as any) || 'pay_on_site',
       },
     });
 

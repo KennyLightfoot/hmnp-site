@@ -549,6 +549,7 @@ export default function BookingForm({
         timeZone: 'America/Chicago',
         numberOfDocuments: 1, // Default value since serviceDetails doesn't exist
         numberOfSigners: 1, // Default value since serviceDetails doesn't exist
+        paymentMethod: 'pay_on_site',
         pricing: {
           totalPrice: latestTotalRef.current
         }
