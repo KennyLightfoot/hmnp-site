@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/database-connection';
+import { prisma } from '@/lib/db';
 import { proofAPI } from '@/lib/proof/api';
 import { logger } from '@/lib/logger';
 

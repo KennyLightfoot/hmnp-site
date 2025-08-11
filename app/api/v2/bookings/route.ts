@@ -60,7 +60,10 @@ export async function GET(request: NextRequest) {
       const user = null; // User relation doesn't exist in this include
       const specialInstructions = booking.notes || '';
       const internalNotes = booking.notes || '';
-      const paymentStatus = 'PENDING'; // Default since payments relation might not exist
+      const paymentStatus = booking.paymentStatus;
+      const paymentMethod = booking.paymentMethod;
+      const totalPaid = booking.totalPaid ? Number(booking.totalPaid) : 0;
+      const amountDue = Math.max((booking.priceAtBooking ? Number(booking.priceAtBooking) : 0) - totalPaid, 0);
       return {
         id: booking.id,
         status: booking.status,
@@ -101,7 +104,10 @@ export async function GET(request: NextRequest) {
         })),
         specialInstructions: specialInstructions,
         internalNotes: internalNotes,
-        paymentStatus: paymentStatus,
+        paymentStatus,
+        paymentMethod,
+        totalPaid,
+        amountDue,
       };
     });
     
