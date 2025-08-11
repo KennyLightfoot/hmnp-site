@@ -30,6 +30,7 @@
     "test:ci": "vitest run --coverage",
     "ci:verify": "pnpm type-check && pnpm lint && pnpm test:ci",
     "proof:smoke": "tsx scripts/proof-smoke.ts",
+    "cleanup:prebooking": "tsx scripts/cleanup-prebooking-uploads.ts",
     "test:ci-smoke": "vitest run --maxConcurrency=2",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
