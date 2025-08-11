@@ -77,8 +77,8 @@ export async function POST(request: NextRequest) {
         // No prepayment required; confirm immediately
         depositStatus: 'PENDING',
         status: 'CONFIRMED',
-        // Optional: record intended payment method if provided by client
-        paymentMethod: (body?.paymentMethod as any) || 'pay_on_site',
+        // Record intended payment method in notes for backoffice reference
+        notes: `payment_method:${(body?.paymentMethod as string) || 'pay_on_site'}`,
       },
     });
 

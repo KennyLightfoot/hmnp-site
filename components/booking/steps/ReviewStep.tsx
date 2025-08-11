@@ -338,6 +338,14 @@ export default function ReviewStep({
                   ${pricing.total.toFixed(2)}
                 </span>
               </div>
+
+              {/* Subtle on-site payment hint */}
+              {!REQUIRE_CARD && (
+                <div className="mt-2 flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2">
+                  <Badge variant="secondary">Pay on site</Badge>
+                  <span className="text-xs text-gray-600">No deposit required. You can pay at your appointment (cash or card).</span>
+                </div>
+              )}
               
 
             </div>
