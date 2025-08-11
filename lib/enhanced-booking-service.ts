@@ -10,6 +10,8 @@ import { getErrorMessage } from '@/lib/utils/error-utils';
 import { buildBookingConfirmationEmail } from '@/lib/email/booking';
 import { getGoogleCalendar } from './google-calendar';
 import { NotificationService } from './notifications';
+import { extractCalendarEventIdFromNotes } from '@/lib/calendar/utils'
+import { sendBookingConfirmationEmail, sendBookingUpdateEmail } from '@/lib/notifications/email'
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 
@@ -103,16 +105,12 @@ export class EnhancedBookingService {
           notaryInfo,
         });
         
-        await NotificationService.sendNotification({
+        await sendBookingConfirmationEmail({
           bookingId: bookingData.bookingId,
-          type: 'BOOKING_CONFIRMATION' as any,
-          recipient: { email: bookingData.customerEmail },
-          content: {
-            subject: emailTemplate.subject,
-            message: emailTemplate.html
-          },
-          methods: ['EMAIL' as any]
-        });
+          toEmail: bookingData.customerEmail,
+          subject: emailTemplate.subject,
+          html: emailTemplate.html,
+        })
 
         emailSent = true;
         logger.info('Enhanced booking confirmation email sent', 'ENHANCED_BOOKING', {
@@ -238,7 +236,7 @@ export class EnhancedBookingService {
         const googleCalendar = getGoogleCalendar();
         
         // Extract calendar event ID from booking notes
-        const calendarEventId = this.extractCalendarEventId(booking.notes);
+        const calendarEventId = extractCalendarEventIdFromNotes(booking.notes);
         
         if (calendarEventId) {
           const conversationHistory = await ConversationTracker.getBookingContext(
@@ -269,16 +267,12 @@ export class EnhancedBookingService {
         // 4. Send update notification email if significant changes
         if (this.isSignificantChange(bookingData.changes)) {
           try {
-            await NotificationService.sendNotification({
+            await sendBookingUpdateEmail({
               bookingId: bookingData.bookingId,
-              type: 'BOOKING_RESCHEDULED' as any,
-              recipient: { email: bookingData.customerEmail },
-              content: {
-                subject: `Booking Updated - ${booking.service?.name}`,
-                message: `Your booking has been updated: ${bookingData.updateReason}`
-              },
-              methods: ['EMAIL' as any]
-            });
+              toEmail: bookingData.customerEmail,
+              serviceName: booking.service?.name,
+              message: `Your booking has been updated: ${bookingData.updateReason}`,
+            })
             
             emailSent = true;
             logger.info('Booking update email sent', 'ENHANCED_BOOKING', {
