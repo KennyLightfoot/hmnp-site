@@ -49,6 +49,7 @@ import CustomerInfoStep from './steps/CustomerInfoStep';
 import LocationStep from './steps/LocationStep';
 import EnhancedSchedulingStep from './steps/EnhancedSchedulingStep';
 import ReviewStep from './steps/ReviewStep';
+import InPersonDocumentsStep from './steps/InPersonDocumentsStep';
 
 // Import AI Booking Assistant
 import AIBookingAssistant from './AIBookingAssistant';
@@ -129,7 +130,8 @@ const STEP_FIELD_MAPPING: { [step: number]: string[] } = {
   1: ['customer.name', 'customer.email'],
   2: ['location.address', 'location.city', 'location.state', 'location.zipCode'],
   3: ['scheduling.preferredDate', 'scheduling.preferredTime'],
-  4: []
+  4: [],
+  5: []
 };
 
 // Enhanced step configuration with mobile-optimized data
@@ -177,6 +179,17 @@ const BOOKING_STEPS = [
     icon: Calendar,
     estimatedTime: '2 min',
     tips: ['Same-day available', 'Weekend appointments', 'Flexible timing options']
+  },
+  {
+    id: 'documents',
+    title: 'Upload Documents (Optional)',
+    shortTitle: 'Documents',
+    description: 'Upload documents now so your notary can prepare',
+    mobileDescription: 'Optional documents',
+    component: InPersonDocumentsStep,
+    icon: FileText,
+    estimatedTime: '1 min',
+    tips: ['PDF/PNG/JPEG up to 25MB', 'You can also email documents later']
   },
   {
     id: 'review',
@@ -978,6 +991,12 @@ export default function BookingForm({
             isMobile={isMobile}
             className="w-full"
           />
+          {/* Hint: Only show documents step for in-person services */}
+          {watchedValues.serviceType === 'RON_SERVICES' && currentStepData?.id === 'documents' && (
+            <div className="mt-3 text-xs text-orange-700 bg-orange-50 border border-orange-200 p-2 rounded">
+              RON uploads are handled directly by Proof. This step is for in-person services only.
+            </div>
+          )}
         </div>
       </div>
       
