@@ -42,6 +42,7 @@ export default function BookingSuccessPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [booking, setBooking] = useState<BookingDetails | null>(null);
+  const [uploadedDocs, setUploadedDocs] = useState<{ name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -65,6 +66,11 @@ export default function BookingSuccessPage() {
       fetchBookingDetails(bookingId);
     } else if (fallbackBooking) {
       setBooking(fallbackBooking);
+      // Parse uploaded docs from notes if present in query (optional)
+      const docsParam = searchParams.get('uploadedDocs');
+      if (docsParam) {
+        try { setUploadedDocs(JSON.parse(decodeURIComponent(docsParam))); } catch {}
+      }
       setIsLoading(false);
     }
   }, [searchParams]);
@@ -216,6 +222,25 @@ export default function BookingSuccessPage() {
             </div>
           </CardContent>
         </Card>
+
+        {uploadedDocs.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <FileText className="h-5 w-5 text-blue-600" />
+                <span>Your Uploaded Documents</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 pt-2">
+              <p className="text-sm text-muted-foreground">Thanks! Your documents were received and attached to this booking.</p>
+              <ul className="list-disc list-inside text-sm text-gray-700">
+                {uploadedDocs.map((d, idx) => (
+                  <li key={idx}>{d.name}</li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="mb-6">
           <CardHeader>

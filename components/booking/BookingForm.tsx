@@ -615,7 +615,9 @@ export default function BookingForm({
         // Redirect to success page with fallback details for display
         setTimeout(() => {
           const qs = qsParams.toString();
-          window.location.href = `/booking/success${qs ? `?${qs}` : ''}`;
+          const docs = (watchedValues as any)?.uploadedDocs
+          const docsParam = docs && docs.length ? `&uploadedDocs=${encodeURIComponent(JSON.stringify(docs.map((d:any)=>({ name: d.name }))) )}` : ''
+          window.location.href = `/booking/success${qs ? `?${qs}` : ''}${docsParam}`;
         }, 800);
       } else {
         const errorData = await response.json().catch(() => ({} as any));
