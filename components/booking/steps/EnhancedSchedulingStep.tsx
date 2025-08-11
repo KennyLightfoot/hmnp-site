@@ -119,8 +119,9 @@ export default function EnhancedSchedulingStep({
   useEffect(() => {
     const days = generateAvailableDays();
     setAvailableDays(days);
-    if (days.length > 0) {
-      setSelectedDate(days[0].date); // Auto-select today to fetch times
+    const firstDate = days[0]?.date;
+    if (firstDate) {
+      setSelectedDate(firstDate); // Auto-select today to fetch times
     }
   }, [generateAvailableDays]);
 

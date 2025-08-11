@@ -17,6 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Comprehensive error handling and fallback responses
 
 ### Technical Improvements
+#### 2025-02-XX
+- Add Node runtime hints to server APIs to prevent accidental Edge bundling
+  - `app/api/booking/create/route.ts`: `runtime = 'nodejs'`, `dynamic = 'force-dynamic'`
+  - `app/api/ai/chat/route.ts`: `runtime = 'nodejs'`, `dynamic = 'force-dynamic'`
+- Reduce build-time warnings from BullMQ by lazy-loading Node-only worker
+  - `lib/bullmq/booking-processor.ts`: dynamic import of `Worker` behind `WORKER_MODE` guard
+- Hardened scheduling UI against strict TS (`noUncheckedIndexedAccess`)
+  - `components/booking/steps/EnhancedSchedulingStep.tsx`: guard `days[0]?.date`
 - **Function Calling Infrastructure**
   - `/api/_ai/get-distance` - Distance calculation API using Google Maps
   - `/api/_ai/get-availability` - Real-time calendar availability checking

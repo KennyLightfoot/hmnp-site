@@ -1,4 +1,4 @@
-import { Job, Worker } from 'bullmq';
+import type { Job, Worker } from 'bullmq';
 import { prisma } from '../db';
 import { logger } from '../logger';
 import { ghl } from '../ghl';
@@ -35,6 +35,7 @@ export const processBookingJob = async (bookingId: string) => {
 };
 
 if (process?.env?.WORKER_MODE === 'true') {
+  const { Worker } = await import('bullmq');
   const worker = new Worker<BookingJobData>(
     QUEUE_NAME,
     async (job: Job<BookingJobData>) => {

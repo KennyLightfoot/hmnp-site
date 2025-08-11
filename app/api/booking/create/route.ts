@@ -12,6 +12,8 @@ import { ServiceType, BookingStatus } from '@prisma/client';
 import { z } from 'zod';
 
 export const BookingSchema = bookingSchemas.createBookingFromForm;
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {

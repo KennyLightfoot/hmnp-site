@@ -10,6 +10,9 @@ import { ConversationTracker } from '@/lib/conversation-tracker';
 import { redis } from '@/lib/redis';
 import { alertManager } from '@/lib/monitoring/alert-manager';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 // Vertex-based chat helper does not need initialisation
 
 /**
