@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
-import {
-  findContactByEmail,
-  createContact,
-  createOpportunity,
-  createAppointment,
-  getServiceValue,
-} from '@/lib/ghl/api';
+import { findContactByEmail, createContact } from '@/lib/ghl/contacts'
+import { createOpportunity } from '@/lib/ghl/opportunities'
+import { createAppointment } from '@/lib/ghl/appointments-adapter'
+import { getServiceValue } from '@/lib/ghl/api-utils'
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
 
 /**
