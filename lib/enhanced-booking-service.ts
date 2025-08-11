@@ -82,6 +82,13 @@ export class EnhancedBookingService {
           email: bookingData.customerEmail
         };
 
+        // Fetch uploaded documents for inclusion in email
+        const uploadedDocs = await prisma.bookingUploadedDocument.findMany({
+          where: { bookingId: bookingData.bookingId },
+          select: { filename: true },
+          orderBy: { uploadedAt: 'asc' }
+        })
+
         const booking = {
           bookingId: bookingData.bookingId,
           serviceName: bookingData.serviceName,
@@ -108,7 +115,8 @@ export class EnhancedBookingService {
           bookingManagementLink: bookingData.bookingManagementLink,
           specialInstructions: bookingData.specialInstructions,
           locationNotes: bookingData.locationNotes,
-          witnessRequired: bookingData.serviceType === 'LOAN_SIGNING' // Example logic
+          witnessRequired: bookingData.serviceType === 'LOAN_SIGNING', // Example logic
+          uploadedDocumentNames: uploadedDocs.map(d => d.filename)
         };
 
         const emailTemplate = bookingConfirmationEmail(client, booking, conversationHistory, notaryInfo);

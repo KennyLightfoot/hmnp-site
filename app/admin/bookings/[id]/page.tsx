@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import DeleteUploadedDocButton from '@/components/admin/DeleteUploadedDocButton'
 
 export default async function AdminBookingDetail({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
@@ -53,10 +54,7 @@ export default async function AdminBookingDetail({ params }: { params: Promise<{
                     <Link href={`/api/admin/bookings/${booking.id}/documents/${doc.id}/download`}>
                       <Button size="sm" variant="outline">Download</Button>
                     </Link>
-                    <form action={`/api/admin/bookings/${booking.id}/documents/${doc.id}`} method="post">
-                      <input type="hidden" name="_method" value="DELETE" />
-                      <Button size="sm" variant="destructive">Delete</Button>
-                    </form>
+                    <DeleteUploadedDocButton bookingId={booking.id} docId={doc.id} filename={doc.filename} />
                   </div>
                 </div>
               ))}

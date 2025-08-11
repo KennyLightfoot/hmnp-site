@@ -28,6 +28,7 @@ interface BookingDetails {
   witnessRequired?: boolean;
   documentsRequired?: string[];
   idRequirements?: string[];
+  uploadedDocumentNames?: string[];
 }
 
 interface ConversationHistory {
@@ -137,6 +138,14 @@ export function bookingConfirmationEmail(
         <p><strong>Number of Documents:</strong> ${booking.numberOfDocuments}</p>
         <p><strong>Booking ID:</strong> ${booking.bookingId}</p>
         <p><strong>Status:</strong> <span class="status-badge">${booking.status}</span></p>
+        ${booking.uploadedDocumentNames?.length ? `
+        <div style="margin-top:10px;">
+          <p><strong>Uploaded Documents:</strong></p>
+          <ul>
+            ${booking.uploadedDocumentNames.map((n) => `<li>${n}</li>`).join('')}
+          </ul>
+        </div>
+        ` : ''}
       </div>
 
       <!-- Notary Information -->
