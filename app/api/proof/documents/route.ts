@@ -4,8 +4,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { proofAPI } from '@/lib/proof/api';
-import { z } from 'zod';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { logger } from '@/lib/logger';
 
 /**
@@ -38,10 +36,8 @@ export async function POST(request: NextRequest) {
 
     // Get the booking and verify access
     const booking = await prisma.booking.findUnique({
-      where: { 
-        id: bookingId,
-        signerId: (session.user as any).id
-      }
+      where: { id: bookingId, signerId: (session.user as any).id },
+      select: { id: true, proofSessionUrl: true, locationType: true }
     });
 
     if (!booking) {
@@ -58,6 +54,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Only allow Proof uploads for RON bookings
+    if (booking.locationType !== 'REMOTE_ONLINE_NOTARIZATION') {
+      return NextResponse.json(
+        { error: 'This endpoint is only for RON uploads. Use the in-person upload endpoint for on-site notarizations.' },
+        { status: 400 }
+      );
+    }
+
     // Enforce size/type limits
     if (file.size > MAX_SIZE_BYTES) {
       return NextResponse.json({ error: 'File too large. Max 10MB.' }, { status: 413 });
@@ -66,19 +70,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unsupported file type. Use PDF, PNG, or JPEG.' }, { status: 415 });
     }
 
-    // Preferred path: upload to S3 first, then send to Proof by URL if supported
-    const s3 = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
-    const safeName = documentName.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const s3Key = `proof-uploads/${booking.id}/${Date.now()}-${safeName}`;
+    // Forward directly to Proof (no internal storage)
     const arrayBuf = await file.arrayBuffer();
-    await s3.send(new PutObjectCommand({
-      Bucket: process.env.S3_BUCKET as string,
-      Key: s3Key,
-      Body: Buffer.from(arrayBuf),
-      ContentType: file.type,
-    }));
-
-    // Fallback: if Proof requires inline content, we still convert to base64 (bounded by 10MB)
     const base64File = Buffer.from(arrayBuf).toString('base64');
     await proofAPI.addDocument(booking.proofSessionUrl, {
       name: documentName,
@@ -87,33 +80,18 @@ export async function POST(request: NextRequest) {
       requiresNotarization: true
     });
 
-    // Create local document record for tracking
-    const documentRecord = await prisma.notarizationDocument.create({
-      data: {
-        id: `proof_doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        s3Key,
-        originalFilename: documentName,
-        uploadedById: (session.user as any).id,
-        bookingId: bookingId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    });
-
-    logger.info('Document uploaded to Proof successfully', {
+    logger.info('Document uploaded to Proof successfully (no local storage)', {
       bookingId,
       proofSessionUrl: booking.proofSessionUrl,
       documentName,
-      documentId: documentRecord.id,
       userId: (session.user as any).id
     });
 
     return NextResponse.json({
       success: true,
       document: {
-        id: documentRecord.id,
         name: documentName,
-        uploadedAt: documentRecord.createdAt
+        uploadedAt: new Date().toISOString()
       },
       message: 'Document uploaded to Proof successfully'
     });
