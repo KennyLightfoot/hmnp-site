@@ -8,7 +8,7 @@ import { bookingSchemas } from '@/lib/validation/schemas';
 import { processBookingJob } from '@/lib/bullmq/booking-processor';
 import { createAppointment as createGhlAppointment, createContact as createGhlContact, findContactByEmail, createOpportunity as createGhlOpportunity, getServiceValue as getGhlServiceValue } from '@/lib/ghl/api';
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
-import { ServiceType, BookingStatus } from '@prisma/client';
+import { ServiceType, BookingStatus, PaymentMethod } from '@prisma/client';
 import { z } from 'zod';
 
 export const BookingSchema = bookingSchemas.createBookingFromForm;
@@ -20,6 +20,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = bookingSchemas.createBookingFromForm.parse(body);
     const reservationId: string | undefined = typeof body?.reservationId === 'string' ? body.reservationId : undefined;
+    const paymentMethodRaw = String(body?.paymentMethod || 'pay_on_site').toUpperCase();
+    const paymentMethod: PaymentMethod =
+      paymentMethodRaw === 'CARD' ? PaymentMethod.CARD
+      : paymentMethodRaw === 'ACH' ? PaymentMethod.ACH
+      : paymentMethodRaw === 'OTHER' ? PaymentMethod.OTHER
+      : PaymentMethod.PAY_ON_SITE;
 
     const service = await prisma.service.findFirst({
       where: { serviceType: validatedData.serviceType },
@@ -77,8 +83,9 @@ export async function POST(request: NextRequest) {
         // No prepayment required; confirm immediately
         depositStatus: 'PENDING',
         status: 'CONFIRMED',
-        // Record intended payment method in notes for backoffice reference
-        notes: `payment_method:${(body?.paymentMethod as string) || 'pay_on_site'}`,
+        paymentMethod,
+        // Keep a human note, too
+        notes: `payment_method:${paymentMethod}`,
       },
     });
 

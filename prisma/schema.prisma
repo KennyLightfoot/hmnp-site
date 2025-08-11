@@ -99,10 +99,19 @@ model Booking {
   reviews                     Review[]
   stripeSessionId             String?                @unique // AC-5
   proofSessionUrl             String?                @db.Text
+  // Payment lifecycle (booking-level)
+  paymentMethod               PaymentMethod          @default(PAY_ON_SITE)
+  paymentStatus               PaymentStatus          @default(PENDING)
+  totalPaid                   Decimal?               @default(0) @db.Decimal(10, 2)
+  paidAt                      DateTime?
+  paidMarkedByUserId          String?
+  paidNotes                   String?
 
   @@index([scheduledDateTime])
   @@index([status])
   @@index([depositStatus])
+  @@index([paymentStatus])
+  @@index([paidAt])
   @@index([lastReminderSentAt])
   @@index([locationType])
   @@index([noShowCheckPerformedAt])
@@ -928,6 +937,13 @@ enum PaymentProvider {
   SQUARE
   PAYPAL
   MANUAL
+  OTHER
+}
+
+enum PaymentMethod {
+  PAY_ON_SITE
+  CARD
+  ACH
   OTHER
 }
 
