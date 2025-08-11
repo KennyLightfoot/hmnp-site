@@ -4,6 +4,8 @@
  */
 
 import { ConversationTracker } from './conversation-tracker';
+import { trackBookingRequest, getBookingContext } from '@/lib/conversation/tracking'
+import { buildCalendarBookingPayload, createCalendarEventWithContext } from '@/lib/calendar/booking'
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { buildBookingConfirmationEmail } from '@/lib/email/booking';
 import { getGoogleCalendar } from './google-calendar';
@@ -49,27 +51,22 @@ export class EnhancedBookingService {
 
     try {
       // 1. Track the booking request conversation
-      await ConversationTracker.trackBookingRequest({
+      await trackBookingRequest({
         customerEmail: bookingData.customerEmail,
         customerName: bookingData.customerName,
         serviceType: bookingData.serviceType,
         bookingId: bookingData.bookingId,
-        message: `Booking created for ${bookingData.serviceName} on ${bookingData.scheduledDateTime.toLocaleDateString()}`,
-        metadata: {
-          scheduledDateTime: bookingData.scheduledDateTime.toISOString(),
-          totalAmount: bookingData.totalAmount,
-          numberOfSigners: bookingData.numberOfSigners,
-          numberOfDocuments: bookingData.numberOfDocuments,
-          ...bookingData.metadata
-        }
-      });
+        serviceName: bookingData.serviceName,
+        scheduledDateTime: bookingData.scheduledDateTime,
+        totalAmount: bookingData.totalAmount,
+        numberOfSigners: bookingData.numberOfSigners,
+        numberOfDocuments: bookingData.numberOfDocuments,
+        metadata: bookingData.metadata,
+      })
       conversationTracked = true;
 
       // 2. Get conversation history for context
-      const conversationHistory = await ConversationTracker.getBookingContext(
-        bookingData.customerEmail,
-        bookingData.bookingId
-      );
+      const conversationHistory = await getBookingContext(bookingData.customerEmail, bookingData.bookingId)
 
       // 3. Get notary information (if available)
       const notaryInfo = await this.getNotaryInfo(bookingData.bookingId);
@@ -130,17 +127,10 @@ export class EnhancedBookingService {
 
       // 5. Create enhanced Google Calendar event
       try {
-        const googleCalendar = getGoogleCalendar();
-        
-        const bookingForCalendar = {
-          id: bookingData.bookingId,
-          Service: {
-            name: bookingData.serviceName,
-            serviceType: bookingData.serviceType,
-            durationMinutes: this.getServiceDuration(bookingData.serviceType)
-          },
-          customerEmail: bookingData.customerEmail,
-          customerName: bookingData.customerName,
+        const bookingForCalendar = buildCalendarBookingPayload({
+          bookingId: bookingData.bookingId,
+          serviceName: bookingData.serviceName,
+          serviceType: bookingData.serviceType,
           scheduledDateTime: bookingData.scheduledDateTime,
           addressStreet: bookingData.addressStreet,
           addressCity: bookingData.addressCity,
@@ -150,16 +140,12 @@ export class EnhancedBookingService {
           specialInstructions: bookingData.specialInstructions,
           numberOfSigners: bookingData.numberOfSigners,
           numberOfDocuments: bookingData.numberOfDocuments,
-          priceAtBooking: bookingData.totalAmount,
-          status: 'CONFIRMED',
-          notes: bookingData.specialInstructions
-        };
+          totalAmount: bookingData.totalAmount,
+          customerEmail: bookingData.customerEmail,
+          customerName: bookingData.customerName,
+        })
 
-        const calendarEvent = await googleCalendar.createBookingEvent(
-          bookingForCalendar, 
-          conversationHistory, 
-          notaryInfo
-        );
+        const calendarEvent = await createCalendarEventWithContext(bookingForCalendar, conversationHistory, notaryInfo)
 
         // Store calendar event ID for future updates
         await prisma.booking.update({
