@@ -5,7 +5,7 @@
 
 import { ConversationTracker } from './conversation-tracker';
 import { getErrorMessage } from '@/lib/utils/error-utils';
-import { bookingConfirmationEmail } from './email/templates/booking-confirmation';
+import { buildBookingConfirmationEmail } from '@/lib/email/booking';
 import { getGoogleCalendar } from './google-calendar';
 import { NotificationService } from './notifications';
 import { prisma } from '@/lib/prisma';
@@ -76,12 +76,6 @@ export class EnhancedBookingService {
 
       // 4. Send enhanced confirmation email
       try {
-        const client = {
-          firstName: bookingData.customerName.split(' ')[0] || '',
-          lastName: bookingData.customerName.split(' ').slice(1).join(' ') || '',
-          email: bookingData.customerEmail
-        };
-
         // Fetch uploaded documents for inclusion in email
         const uploadedDocs = await prisma.bookingUploadedDocument.findMany({
           where: { bookingId: bookingData.bookingId },
@@ -89,37 +83,28 @@ export class EnhancedBookingService {
           orderBy: { uploadedAt: 'asc' }
         })
 
-        const booking = {
+        const emailTemplate = buildBookingConfirmationEmail({
           bookingId: bookingData.bookingId,
-          serviceName: bookingData.serviceName,
+          customerEmail: bookingData.customerEmail,
+          customerName: bookingData.customerName,
           serviceType: bookingData.serviceType,
-          date: bookingData.scheduledDateTime.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          }),
-          time: bookingData.scheduledDateTime.toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-          }),
-          address: bookingData.addressStreet ? 
-            `${bookingData.addressStreet}, ${bookingData.addressCity}, ${bookingData.addressState} ${bookingData.addressZip}` : 
-            undefined,
+          serviceName: bookingData.serviceName,
+          scheduledDateTime: bookingData.scheduledDateTime,
+          addressStreet: bookingData.addressStreet,
+          addressCity: bookingData.addressCity,
+          addressState: bookingData.addressState,
+          addressZip: bookingData.addressZip,
           numberOfSigners: bookingData.numberOfSigners,
           numberOfDocuments: bookingData.numberOfDocuments,
-          status: 'CONFIRMED',
           paymentStatus: bookingData.paymentStatus,
           totalAmount: bookingData.totalAmount,
           bookingManagementLink: bookingData.bookingManagementLink,
           specialInstructions: bookingData.specialInstructions,
           locationNotes: bookingData.locationNotes,
-          witnessRequired: bookingData.serviceType === 'LOAN_SIGNING', // Example logic
-          uploadedDocumentNames: uploadedDocs.map(d => d.filename)
-        };
-
-        const emailTemplate = bookingConfirmationEmail(client, booking, conversationHistory, notaryInfo);
+          uploadedDocumentNames: uploadedDocs.map(d => d.filename),
+          conversationHistory,
+          notaryInfo,
+        });
         
         await NotificationService.sendNotification({
           bookingId: bookingData.bookingId,
@@ -389,36 +374,8 @@ export class EnhancedBookingService {
    * Get notary information for booking
    */
   private static async getNotaryInfo(bookingId: string): Promise<any> {
-    try {
-      const booking = await prisma.booking.findUnique({
-        where: { id: bookingId },
-        include: {
-          User_Booking_notaryIdToUser: {
-            include: {
-              notary_profiles: true
-            }
-          }
-        }
-      });
-
-      if (booking?.User_Booking_notaryIdToUser) {
-        const notary = booking.User_Booking_notaryIdToUser;
-        const phoneValue = (notary.customer_preferences as any)?.phone;
-        const phone = phoneValue && typeof phoneValue === 'string' ? phoneValue : null;
-        return {
-          name: notary.name,
-          email: notary.email,
-          phone: phone as string | null,
-          commission_number: notary.notary_profiles?.commission_number,
-          estimatedArrival: null // Would be calculated based on travel time
-        };
-      }
-
-      return null;
-    } catch (error) {
-      logger.error('Failed to get notary info', 'ENHANCED_BOOKING', error as Error);
-      return null;
-    }
+    const { getNotaryInfoForBooking } = await import('@/lib/notary/info')
+    return getNotaryInfoForBooking(bookingId)
   }
 
   /**
