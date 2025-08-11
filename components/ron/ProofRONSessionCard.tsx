@@ -215,7 +215,7 @@ export default function ProofRONSessionCard({ booking, onRefresh }: ProofRONSess
               RON Session {booking.id.slice(-8)}
             </CardTitle>
             <CardDescription>
-              Created: {new Date(booking.createdAt).toLocaleDateString()}
+              Created: {new Date(booking.createdAt).toLocaleDateString()} · Documents uploaded here go directly to Proof and are not stored on our servers.
             </CardDescription>
           </div>
           <Badge className={getStatusColor(booking.status, booking.proofStatus)}>

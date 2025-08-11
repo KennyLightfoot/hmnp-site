@@ -1,3 +1,35 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+export async function POST(request: NextRequest) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    const { assignmentId, filename, contentType, fileSize } = await request.json()
+    if (!assignmentId || !filename || !contentType || !fileSize) {
+      return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+    }
+    const MAX_BYTES = 25 * 1024 * 1024
+    if (fileSize > MAX_BYTES) {
+      return NextResponse.json({ error: 'File too large' }, { status: 413 })
+    }
+    const safeName = String(filename).replace(/[^a-zA-Z0-9._-]/g, '_')
+    const key = `inperson-uploads/${assignmentId}/${Date.now()}-${safeName}`
+    const s3 = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' })
+    const command = new PutObjectCommand({ Bucket: process.env.S3_BUCKET as string, Key: key, ContentType: contentType })
+    const url = await getSignedUrl(s3, command, { expiresIn: 60 * 5 })
+    return NextResponse.json({ url, key })
+  } catch (e: any) {
+    return NextResponse.json({ error: 'Failed to create presigned URL' }, { status: 500 })
+  }
+}
+
 import { NextRequest, NextResponse } from "next/server"
 import { PutObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
