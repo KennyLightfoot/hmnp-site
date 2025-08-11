@@ -85,8 +85,9 @@ export async function GET(request: NextRequest) {
   if (!requestedDate.isValid)
     return NextResponse.json({ error: "Invalid date format. Use YYYY-MM-DD." }, { status: 400 });
   
-  try {
+    try {
     let availableSlots: TimeSlot[] = [];
+      let source: 'ghl' | 'mock' = 'mock';
     
     // Try to get real availability from GHL calendars with timeout
     try {
@@ -134,6 +135,7 @@ export async function GET(request: NextRequest) {
             demand: slot.demand || 'low',
             available: slot.available !== false
           } as TimeSlot));
+          source = availableSlots.length > 0 ? 'ghl' : 'mock';
           
           console.log(`✅ GHL availability fetched for ${dateStr} (${serviceType}): ${availableSlots.length} slots`);
           
@@ -141,6 +143,7 @@ export async function GET(request: NextRequest) {
           if (availableSlots.length === 0) {
             console.log(`⚠️ GHL returned empty slots, falling back to mock data`);
             availableSlots = generateMockSlots(requestedDate);
+            source = 'mock';
           }
         } catch (calendarError) {
           console.warn(`Calendar mapping failed for ${serviceType}, falling back to mock data:`, calendarError);
@@ -150,17 +153,19 @@ export async function GET(request: NextRequest) {
             stack: calendarError instanceof Error ? calendarError.stack : undefined
           });
           availableSlots = generateMockSlots(requestedDate);
+          source = 'mock';
         }
       } else {
         console.warn('GHL connection failed, falling back to mock data');
         availableSlots = generateMockSlots(requestedDate);
+        source = 'mock';
       }
     } catch (ghlError) {
       console.warn('GHL availability fetch failed, falling back to mock data:', ghlError);
       availableSlots = generateMockSlots(requestedDate);
     }
     
-    const response = { availableSlots };
+    const response = { availableSlots, metadata: { source } };
     
     console.log(`✅ Availability response for ${dateStr}:`, {
       serviceType,

@@ -47,7 +47,7 @@ import {
 import ServiceSelector from './ServiceSelector';
 import CustomerInfoStep from './steps/CustomerInfoStep';
 import LocationStep from './steps/LocationStep';
-import SchedulingStep from './steps/SchedulingStep';
+import EnhancedSchedulingStep from './steps/EnhancedSchedulingStep';
 import ReviewStep from './steps/ReviewStep';
 
 // Import AI Booking Assistant
@@ -173,7 +173,7 @@ const BOOKING_STEPS = [
     shortTitle: 'When',
     description: 'Pick your preferred date and time',
     mobileDescription: 'Pick date & time',
-    component: SchedulingStep,
+    component: EnhancedSchedulingStep,
     icon: Calendar,
     estimatedTime: '2 min',
     tips: ['Same-day available', 'Weekend appointments', 'Flexible timing options']
