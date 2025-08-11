@@ -4,7 +4,7 @@
  */
 
 import { ConversationTracker } from './conversation-tracker';
-import { trackBookingRequest, getBookingContext } from '@/lib/conversation/tracking'
+import { trackBookingRequest, getBookingContext, trackUpdateInteraction, trackAppointmentCompletion } from '@/lib/conversation/tracking'
 import { buildCalendarBookingPayload, createCalendarEventWithContext } from '@/lib/calendar/booking'
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { buildBookingConfirmationEmail } from '@/lib/email/booking';
@@ -204,20 +204,13 @@ export class EnhancedBookingService {
 
     try {
       // 1. Track the update conversation
-      await ConversationTracker.trackInteraction({
+      await trackUpdateInteraction({
         customerEmail: bookingData.customerEmail,
         customerName: bookingData.customerName,
-        interactionType: 'booking_request',
-        source: 'system',
-        subject: `Booking Updated - ${bookingData.bookingId}`,
-        message: `Booking updated: ${bookingData.updateReason}`,
-        metadata: {
-          bookingId: bookingData.bookingId,
-          changes: bookingData.changes,
-          updateReason: bookingData.updateReason
-        },
-        tags: ['booking_update', 'system']
-      });
+        bookingId: bookingData.bookingId,
+        updateReason: bookingData.updateReason,
+        changes: bookingData.changes,
+      })
       conversationTracked = true;
 
       // 2. Get updated booking data
@@ -317,17 +310,15 @@ export class EnhancedBookingService {
   }): Promise<void> {
     try {
       // 1. Track completion
-      await ConversationTracker.trackAppointmentCompletion({
+      await trackAppointmentCompletion({
         customerEmail: bookingData.customerEmail,
         customerName: bookingData.customerName,
         bookingId: bookingData.bookingId,
         serviceType: bookingData.serviceType,
-        notes: bookingData.completionNotes,
-        metadata: {
-          documentsCompleted: bookingData.documentsCompleted,
-          nextSteps: bookingData.nextSteps
-        }
-      });
+        completionNotes: bookingData.completionNotes,
+        documentsCompleted: bookingData.documentsCompleted,
+        nextSteps: bookingData.nextSteps,
+      })
 
       // 2. Send completion email with next steps
       await NotificationService.sendNotification({
