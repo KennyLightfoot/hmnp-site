@@ -86,7 +86,15 @@ export async function POST(request: NextRequest) {
         status: 'CONFIRMED',
         paymentMethod,
         // Keep a human note, too
-        notes: `payment_method:${paymentMethod};${uploadedDocs ? ` uploaded_docs:${encodeURIComponent(JSON.stringify(uploadedDocs))}` : ''}`.trim(),
+        notes: `payment_method:${paymentMethod}`,
+        uploadedDocuments: uploadedDocs && uploadedDocs.length > 0 ? {
+          create: uploadedDocs.map((d: any) => ({
+            s3Key: d.key,
+            filename: d.name || d.filename || 'document',
+            contentType: d.contentType || null,
+            sizeBytes: typeof d.sizeBytes === 'number' ? d.sizeBytes : null,
+          }))
+        } : undefined,
       },
     });
 

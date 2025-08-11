@@ -91,6 +91,7 @@ model Booking {
   service_areas               service_areas?         @relation(fields: [service_area_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   User_Booking_signerIdToUser User?                  @relation("Booking_signerIdToUser", fields: [signerId], references: [id])
   NotarizationDocument        NotarizationDocument[]
+  uploadedDocuments           BookingUploadedDocument[]
   NotificationLog             NotificationLog[]
   payments                    Payment[]
   PricingAuditLog             PricingAuditLog[]
@@ -127,6 +128,20 @@ model Booking {
   @@index([travelFee], map: "idx_booking_travel_fee")
   @@index([urgency_level], map: "idx_booking_urgency")
   @@index([witness_type], map: "idx_booking_witness_type")
+}
+
+model BookingUploadedDocument {
+  id         String   @id @default(cuid())
+  bookingId  String
+  s3Key      String
+  filename   String
+  contentType String?
+  sizeBytes  Int?
+  uploadedAt DateTime @default(now())
+
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
 }
 
 model Payment {
