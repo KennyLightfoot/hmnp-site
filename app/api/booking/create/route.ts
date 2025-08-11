@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
 
     const computedTotal = Number((validatedData as any)?.pricing?.totalPrice || 0);
 
+    const uploadedDocs = Array.isArray((body as any)?.uploadedDocs) ? (body as any).uploadedDocs : null;
     const booking = await prisma.booking.create({
       data: {
         serviceId: service.id,
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
         status: 'CONFIRMED',
         paymentMethod,
         // Keep a human note, too
-        notes: `payment_method:${paymentMethod}`,
+        notes: `payment_method:${paymentMethod};${uploadedDocs ? ` uploaded_docs:${encodeURIComponent(JSON.stringify(uploadedDocs))}` : ''}`.trim(),
       },
     });
 

@@ -64,9 +64,25 @@ export default function InPersonDocumentsStep({ data, onUpdate }: Props) {
       {uploaded.length>0 && (
         <div>
           <p className="text-sm font-medium mb-1">Uploaded</p>
-          <ul className="list-disc list-inside text-sm text-muted-foreground">
-            {uploaded.map(u=> (<li key={u.key}>{u.name}</li>))}
-          </ul>
+          <div className="space-y-1">
+            {uploaded.map((u, idx)=> (
+              <div key={u.key} className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground truncate max-w-[70%]" title={u.name}>{u.name}</span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  onClick={() => {
+                    const next = uploaded.filter((_, i) => i !== idx)
+                    setUploaded(next)
+                    onUpdate({ uploadedDocs: next })
+                  }}
+                >
+                  Remove
+                </Button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

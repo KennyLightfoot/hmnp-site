@@ -565,7 +565,8 @@ export default function BookingForm({
         paymentMethod: 'pay_on_site',
         pricing: {
           totalPrice: latestTotalRef.current
-        }
+        },
+        uploadedDocs: Array.isArray((watchedValues as any)?.uploadedDocs) ? (watchedValues as any).uploadedDocs : undefined
       };
       if (reservationId) {
         bookingData.reservationId = reservationId;
