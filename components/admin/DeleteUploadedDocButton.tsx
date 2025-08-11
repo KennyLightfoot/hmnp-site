@@ -1,8 +1,19 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { useToast } from '@/hooks/use-toast'
 
 interface Props {
@@ -15,6 +26,7 @@ export default function DeleteUploadedDocButton({ bookingId, docId, filename }: 
   const router = useRouter()
   const { toast } = useToast()
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
   const onDelete = async () => {
     if (isDeleting) return
@@ -28,7 +40,7 @@ export default function DeleteUploadedDocButton({ bookingId, docId, filename }: 
         throw new Error(data?.error || `Delete failed (${res.status})`)
       }
       toast({ title: 'Document deleted', description: `Removed "${filename}"` })
-      router.refresh()
+      startTransition(() => router.refresh())
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Delete failed'
       toast({ title: 'Delete failed', description: message, variant: 'destructive' as any })
@@ -38,9 +50,27 @@ export default function DeleteUploadedDocButton({ bookingId, docId, filename }: 
   }
 
   return (
-    <Button size="sm" variant="destructive" onClick={onDelete} disabled={isDeleting}>
-      {isDeleting ? 'Deleting…' : 'Delete'}
-    </Button>
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button size="sm" variant="destructive" disabled={isDeleting || isPending}>
+          Delete
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete document?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will permanently remove "{filename}" from our storage. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isDeleting || isPending}>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onDelete} disabled={isDeleting || isPending}>
+            {isDeleting ? 'Deleting…' : 'Delete'}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
 

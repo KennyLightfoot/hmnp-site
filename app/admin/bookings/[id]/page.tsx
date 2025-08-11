@@ -58,6 +58,7 @@ export default async function AdminBookingDetail({ params }: { params: Promise<{
                   </div>
                 </div>
               ))}
+              {/* Skeleton row shown during refresh via button state handled locally */}
             </div>
           )}
         </CardContent>
