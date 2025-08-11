@@ -52,4 +52,14 @@ export async function createCalendarEventWithContext(
   return googleCalendar.createBookingEvent(payload, conversationHistory, notaryInfo)
 }
 
+export async function updateCalendarEventWithContext(
+  eventId: string,
+  booking: any,
+  conversationHistory: any,
+  notaryInfo: any
+) {
+  const googleCalendar = getGoogleCalendar()
+  return googleCalendar.updateBookingEvent(eventId, booking, conversationHistory, notaryInfo)
+}
+
 

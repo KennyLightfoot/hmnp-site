@@ -5,7 +5,7 @@
 
 import { ConversationTracker } from './conversation-tracker';
 import { trackBookingRequest, getBookingContext, trackUpdateInteraction, trackAppointmentCompletion } from '@/lib/conversation/tracking'
-import { buildCalendarBookingPayload, createCalendarEventWithContext } from '@/lib/calendar/booking'
+import { buildCalendarBookingPayload, createCalendarEventWithContext, updateCalendarEventWithContext } from '@/lib/calendar/booking'
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { buildBookingConfirmationEmail } from '@/lib/email/booking';
 import { getGoogleCalendar } from './google-calendar';
@@ -232,18 +232,10 @@ export class EnhancedBookingService {
         const calendarEventId = extractCalendarEventIdFromNotes(booking.notes);
         
         if (calendarEventId) {
-          const conversationHistory = await ConversationTracker.getBookingContext(
-            bookingData.customerEmail,
-            bookingData.bookingId
-          );
+          const conversationHistory = await ConversationTracker.getBookingContext(bookingData.customerEmail, bookingData.bookingId);
           const notaryInfo = await this.getNotaryInfo(bookingData.bookingId);
 
-          await googleCalendar.updateBookingEvent(
-            calendarEventId,
-            booking,
-            conversationHistory,
-            notaryInfo
-          );
+          await updateCalendarEventWithContext(calendarEventId, booking, conversationHistory, notaryInfo)
           
           calendarEventUpdated = true;
           logger.info('Google Calendar event updated', 'ENHANCED_BOOKING', {
