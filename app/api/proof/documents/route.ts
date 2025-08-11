@@ -4,6 +4,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { proofAPI } from '@/lib/proof/api';
+import { z } from 'zod';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { logger } from '@/lib/logger';
 
 /**
@@ -18,11 +20,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB hard cap for Proof upload path
+    const ALLOWED_TYPES = ['application/pdf', 'image/png', 'image/jpeg'];
+
     const formData = await request.formData();
     const bookingId = formData.get('bookingId') as string;
     const file = formData.get('file') as File;
-    const documentName = formData.get('documentName') as string || file.name;
-    const requirement = formData.get('requirement') as string || 'notarization';
+    const documentName = (formData.get('documentName') as string) || file?.name || 'document';
+    const requirement = (formData.get('requirement') as string) || 'notarization';
 
     if (!bookingId || !file) {
       return NextResponse.json(
@@ -53,12 +58,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Convert file to base64 for Proof API
-    const fileBuffer = await file.arrayBuffer();
-    const base64File = Buffer.from(fileBuffer).toString('base64');
-    const base64Data = `data:${file.type};base64,${base64File}`;
+    // Enforce size/type limits
+    if (file.size > MAX_SIZE_BYTES) {
+      return NextResponse.json({ error: 'File too large. Max 10MB.' }, { status: 413 });
+    }
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return NextResponse.json({ error: 'Unsupported file type. Use PDF, PNG, or JPEG.' }, { status: 415 });
+    }
 
-    // Upload document to Proof
+    // Preferred path: upload to S3 first, then send to Proof by URL if supported
+    const s3 = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+    const safeName = documentName.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const s3Key = `proof-uploads/${booking.id}/${Date.now()}-${safeName}`;
+    const arrayBuf = await file.arrayBuffer();
+    await s3.send(new PutObjectCommand({
+      Bucket: process.env.S3_BUCKET as string,
+      Key: s3Key,
+      Body: Buffer.from(arrayBuf),
+      ContentType: file.type,
+    }));
+
+    // Fallback: if Proof requires inline content, we still convert to base64 (bounded by 10MB)
+    const base64File = Buffer.from(arrayBuf).toString('base64');
     await proofAPI.addDocument(booking.proofSessionUrl, {
       name: documentName,
       content: base64File,
@@ -70,7 +91,7 @@ export async function POST(request: NextRequest) {
     const documentRecord = await prisma.notarizationDocument.create({
       data: {
         id: `proof_doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        s3Key: `proof-docs/${booking.proofSessionUrl}/${documentName}`,
+        s3Key,
         originalFilename: documentName,
         uploadedById: (session.user as any).id,
         bookingId: bookingId,
