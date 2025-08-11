@@ -227,6 +227,17 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
     }
   }, [watchedScheduling.preferredDate, fetchAvailability]);
 
+  // ✅ NEW: Auto-select the first available day to trigger initial fetch
+  useEffect(() => {
+    if (!watchedScheduling.preferredDate && availableDays.length > 0) {
+      const firstAvailable = availableDays.find((d) => d.available);
+      if (firstAvailable) {
+        setValue('scheduling.preferredDate', firstAvailable.date);
+        fetchAvailability(firstAvailable.date);
+      }
+    }
+  }, [availableDays, watchedScheduling.preferredDate, setValue, fetchAvailability]);
+
   // ✅ FIXED: Clear availability data when service type changes
   useEffect(() => {
     setAvailabilityData({});

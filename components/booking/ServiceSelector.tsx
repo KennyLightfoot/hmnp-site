@@ -38,6 +38,7 @@ import {
   Globe,
   ArrowRight
 } from 'lucide-react';
+import { SERVICES_CONFIG } from '@/lib/services/config';
 
 // Types
 interface ServiceOption {
@@ -343,13 +344,9 @@ export default function ServiceSelector({
   // Enhanced service options with dynamic badges and pricing
   const enhancedServices = useMemo(() => {
     return filteredServices.map(service => {
-      let enhancedService = { ...service };
-      
-      // Add distance-based travel fee estimation (only for mobile services)
-      if (serviceType === 'mobile' && distance > service.includedRadius) {
-        const travelFee = (distance - service.includedRadius) * 0.50;
-        enhancedService.price = service.price + travelFee;
-      }
+      const base = SERVICES_CONFIG[service.id as keyof typeof SERVICES_CONFIG];
+      const normalizedPrice = base?.basePrice ?? service.price;
+      const enhancedService = { ...service, price: normalizedPrice } as typeof service;
 
       // Dynamic badge assignment
       if (smartRecommendation?.serviceId === service.id) {
@@ -357,7 +354,7 @@ export default function ServiceSelector({
         enhancedService.savings = smartRecommendation.savings;
       }
 
-      // Urgency indicators
+      // Urgency indicators (display-only)
       if (urgency === 'today') {
         if (service.id === 'RON_SERVICES') {
           enhancedService.urgencyText = 'Available now';
@@ -371,7 +368,7 @@ export default function ServiceSelector({
 
       return enhancedService;
     });
-  }, [filteredServices, serviceType, distance, smartRecommendation, urgency]);
+  }, [filteredServices, smartRecommendation, urgency]);
 
   // Handle service type change
   const handleServiceTypeChange = (value: string) => {
