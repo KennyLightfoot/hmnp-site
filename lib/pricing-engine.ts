@@ -6,129 +6,18 @@
  * Built for 95%+ booking completion rates and 40%+ higher conversion.
  */
 
-import { z } from 'zod';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { logger } from './logger';
-import { redis } from './redis';
-import { UnifiedDistanceService } from './maps/unified-distance-service';
-import { SERVICES_CONFIG } from './services/config';
+import { SERVICES, PRICING_CONFIG, getServiceBasePrice } from '@/lib/pricing/base'
+import { calculateSurcharges } from '@/lib/pricing/surcharges'
+import { calculateDiscounts } from '@/lib/pricing/discounts'
+import { detectUpsellOpportunities } from '@/lib/pricing/upsells'
+import { generatePricingBreakdown } from '@/lib/pricing/breakdown'
+import { calculatePricingConfidence } from '@/lib/pricing/confidence'
+import { cacheResult } from '@/lib/pricing/cache'
+import { PricingCalculationError, PricingCalculationParams, PricingCalculationParamsSchema, PricingResult } from '@/lib/pricing/types'
 
-// Source of truth for base prices and limits
-export const SERVICES = Object.fromEntries(
-  Object.entries(SERVICES_CONFIG).map(([k, v]) => [k, {
-    price: v.basePrice,
-    includedRadius: v.includedRadius,
-    feePerMile: v.feePerMile,
-    maxDocuments: v.maxDocuments
-  }])
-) as Record<string, { price: number; includedRadius: number; feePerMile: number; maxDocuments: number }>;
-
-// Pricing Logic Configuration
-export const PRICING_CONFIG = {
-  baseLocation: "77591", // ZIP code center point
-  
-  surcharges: {
-    afterHours: 30,     // Outside extended hours with 24h notice
-    weekend: 40,        // Saturday/Sunday essential services  
-    weather: 0.65,      // Per mile during severe weather
-    priority: 25,       // Next available slot within 2 hours
-    sameDay: 0          // No charge but limited availability
-  },
-  
-  deposits: {
-    threshold: 100,     // 50% deposit if total > $100
-    percentage: 0.5
-  },
-  
-  discounts: {
-    firstTime: 15,      // First time customer discount
-    referral: 20,       // Referral discount
-    volume: 0.10        // 10% for 3+ documents in STANDARD
-  }
-} as const;
-
-// Zod Schemas for Type Safety and Validation
-export const PricingCalculationParamsSchema = z.object({
-  serviceType: z.enum(['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH']),
-  location: z.object({
-    address: z.string(),
-    latitude: z.number().optional(),
-    longitude: z.number().optional()
-  }).optional(),
-  scheduledDateTime: z.string().datetime(),
-  documentCount: z.number().min(1).default(1),
-  signerCount: z.number().min(1).default(1),
-  options: z.object({
-    priority: z.boolean().default(false),
-    weatherAlert: z.boolean().default(false),
-    sameDay: z.boolean().default(false)
-  }).default({}),
-  customerEmail: z.string().email().optional(),
-  promoCode: z.string().optional(),
-  referralCode: z.string().optional()
-});
-
-export type PricingCalculationParams = z.infer<typeof PricingCalculationParamsSchema>;
-
-// Result Types
-export interface PricingResult {
-  basePrice: number;
-  travelFee: number;
-  surcharges: number;
-  discounts: number;
-  total: number;
-  breakdown: PricingBreakdown;
-  upsellSuggestions: UpsellSuggestion[];
-  confidence: PricingConfidence;
-  metadata: PricingMetadata;
-}
-
-export interface PricingBreakdown {
-  lineItems: Array<{
-    description: string;
-    amount: number;
-    type?: 'base' | 'travel' | 'surcharge' | 'discount';
-  }>;
-  transparency: {
-    travelCalculation?: string;
-    surchargeExplanation?: string;
-    discountSource?: string;
-  };
-}
-
-export interface UpsellSuggestion {
-  type: 'service_upgrade' | 'add_on';
-  fromService?: string;
-  toService?: string;
-  priceIncrease: number;
-  headline: string;
-  benefit: string;
-  urgency?: string;
-  conversionBoost?: string;
-  savings?: number;
-  condition?: string;
-}
-
-export interface PricingConfidence {
-  level: 'high' | 'medium' | 'low';
-  factors: string[];
-  competitiveAdvantage?: string;
-}
-
-export interface PricingMetadata {
-  calculatedAt: string;
-  version: string;
-  factors: Record<string, any>;
-  requestId?: string;
-}
-
-// Custom Error Classes
-export class PricingCalculationError extends Error {
-  constructor(message: string, public details?: any) {
-    super(message);
-    this.name = 'PricingCalculationError';
-  }
-}
+// types now in lib/pricing/types
 
 /**
  * Championship Pricing Engine - The Heart of Our System
@@ -158,7 +47,7 @@ export class PricingEngine {
       });
 
       // Get base service price
-      const basePrice = this.getServiceBasePrice(validatedParams.serviceType);
+      const basePrice = getServiceBasePrice(validatedParams.serviceType);
       
       // DISABLED: Calculate travel fees if location provided
       // Travel fee calculation temporarily disabled to simplify booking system
@@ -177,7 +66,7 @@ export class PricingEngine {
       // }
       
       // Apply time-based and situational surcharges
-      const surcharges = this.calculateSurcharges(
+      const surcharges = calculateSurcharges(
         validatedParams.serviceType,
         validatedParams.scheduledDateTime,
         validatedParams.options
@@ -186,7 +75,7 @@ export class PricingEngine {
       // Check for applicable discounts
       let discounts = 0;
       try {
-        discounts = await this.calculateDiscounts(
+        discounts = await calculateDiscounts(
           validatedParams.promoCode,
           validatedParams.customerEmail,
           validatedParams.referralCode,
@@ -202,12 +91,12 @@ export class PricingEngine {
       }
       
       // Detect upsell opportunities - Conversion gold!
-      const upsellSuggestions = this.detectUpsellOpportunities(validatedParams, travelData);
+      const upsellSuggestions = detectUpsellOpportunities(validatedParams, travelData);
       
       const total = Math.max(0, basePrice + travelData.fee + surcharges - discounts);
       
       // Generate detailed breakdown for transparency
-      const breakdown = this.generatePricingBreakdown(
+      const breakdown = generatePricingBreakdown(
         basePrice, 
         travelData.fee, 
         surcharges, 
@@ -216,7 +105,7 @@ export class PricingEngine {
       );
 
       // Calculate confidence metrics
-      const confidence = this.calculatePricingConfidence(validatedParams, travelData);
+      const confidence = calculatePricingConfidence(validatedParams, travelData);
 
       const result: PricingResult = {
         basePrice,
@@ -236,7 +125,7 @@ export class PricingEngine {
       };
 
       // Cache result for performance
-      await this.cacheResult(validatedParams, result);
+      await cacheResult(validatedParams, result);
 
       logger.info('Pricing calculation completed', { 
         requestId: this.requestId, 
@@ -296,13 +185,7 @@ export class PricingEngine {
   /**
    * Get base price for service type
    */
-  private getServiceBasePrice(serviceType: string): number {
-    const service = SERVICES[serviceType as keyof typeof SERVICES];
-    if (!service) {
-      throw new PricingCalculationError(`Invalid service type: ${serviceType}`);
-    }
-    return service.price;
-  }
+  // helpers now imported
 
   /**
    * Calculate travel fees based on distance and service type
