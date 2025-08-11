@@ -1,9 +1,23 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { findContactByEmail, createContact } from '@/lib/ghl/contacts'
 import { createOpportunity } from '@/lib/ghl/opportunities'
 import { createAppointment } from '@/lib/ghl/appointments-adapter'
 import { getServiceValue } from '@/lib/ghl/api-utils'
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
+import { withRateLimit } from '@/lib/security/rate-limiting'
+import { z } from 'zod'
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+const bodySchema = z.object({
+  serviceType: z.string().min(1),
+  customerName: z.string().min(1),
+  customerEmail: z.string().email(),
+  scheduledDateTime: z.string().min(1),
+  customerPhone: z.string().optional(),
+  numberOfSigners: z.number().int().positive().max(10).optional(),
+})
 
 /**
  * POST /api/booking/ghl-direct
@@ -23,10 +37,14 @@ import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
  *   - customerPhone
  *   - numberOfSigners      (defaults to 1 – for getServiceValue)
  */
-export async function POST(request: Request) {
+export const POST = withRateLimit('public', 'booking_ghl_direct')(async (request: NextRequest) => {
   try {
     const data = await request.json();
 
+    const parsed = bodySchema.safeParse(data)
+    if (!parsed.success) {
+      return NextResponse.json({ success: false, message: parsed.error.issues[0]?.message || 'Invalid request body' }, { status: 400 })
+    }
     const {
       serviceType,
       customerName,
@@ -34,15 +52,10 @@ export async function POST(request: Request) {
       customerPhone,
       scheduledDateTime,
       numberOfSigners = 1,
-    } = data;
+    } = parsed.data
 
     // Basic validation – keep it simple
-    if (!serviceType || !customerName || !customerEmail || !scheduledDateTime) {
-      return NextResponse.json(
-        { success: false, message: 'Missing required booking fields' },
-        { status: 400 },
-      );
-    }
+    // Required fields validated by Zod above
 
     // Debug logging to see what we're getting
     console.log('⏰ scheduledDateTime raw:', scheduledDateTime);
@@ -185,4 +198,4 @@ export async function POST(request: Request) {
       { status },
     );
   }
-} 
+})
