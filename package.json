@@ -46,7 +46,7 @@
     "postinstall": "prisma generate",
     "prepare": "husky install",
     "db:migrate": "DATABASE_URL=$DIRECT_DATABASE_URL prisma migrate deploy",
-    "db:seed": "prisma db seed",
+    "db:seed": "tsx prisma/seed.ts",
     "setup-ghl-oauth": "node scripts/setup-ghl-oauth.js",
     "setup-ghl-calendars": "node scripts/setup-ghl-calendars.js",
     "verify-ghl-calendars": "node scripts/setup-ghl-calendars.js --verify-only",
@@ -57,9 +57,6 @@
     "v0:check-deps": "tsx scripts/v0-integration.ts check-deps",
     "v0:validate": "tsx scripts/v0-integration.ts validate",
     "v0:integrate": "tsx scripts/v0-integration.ts integrate"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.844.0",
@@ -110,7 +107,7 @@
     "@supabase/supabase-js": "^2.53.0",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/typography": "^0.5.10",
-    "@types/bull": "^4.10.4",
+    
     "@types/jsonwebtoken": "^9.0.10",
     "@types/luxon": "^3.6.2",
     "@types/node": "24.1.0",
@@ -122,7 +119,7 @@
     "axios": "^1.9.0",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
-    "bull": "^4.16.5",
+    
     "bullmq": "^5.8.2",
     "chalk": "^5.4.1",
     "class-variance-authority": "^0.7.0",
@@ -173,7 +170,7 @@
     "react-hot-toast": "^2.5.2",
     "react-resizable-panels": "^3.0.3",
     "recharts": "^2.15.3",
-    "redis": "^4.7.0",
+    
     "remark": "^15.0.1",
     "remark-html": "^16.0.1",
     "resend": "^2.1.0",
@@ -220,7 +217,7 @@
     "webpack-bundle-analyzer": "^4.10.2"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20 <21"
   },
   "overrides": {
     "prismjs@<1.30.0": ">=1.30.0",

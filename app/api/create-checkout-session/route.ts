@@ -240,7 +240,7 @@ export async function POST(request: NextRequest) {
       sessionId: session.id,
       bookingId,
       paymentId,
-      amount,
+      amount: amountCents / 100,
       customerEmail: customerEmail.replace(/(.{2}).*@/, '$1***@') // Mask email
     });
 
