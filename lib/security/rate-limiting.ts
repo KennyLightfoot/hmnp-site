@@ -90,7 +90,7 @@ function createRateLimitKey(
 /**
  * Check rate limit for a request
  */
-export function checkRateLimit(
+export async function checkRateLimit(
   request: NextRequest,
   limitType: RateLimitType,
   endpoint?: string
@@ -110,21 +110,19 @@ export function checkRateLimit(
 
   if (useRedis) {
     try {
-      // Use a sorted set per key with timestamps, expire set by window
-      // Remove old entries
-      (redis as any).client && (redis as any).client.zremrangebyscore?.(key, 0, now - config.windowMs);
-      // Count current
-      const currentCount = await (redis as any).client?.zcard?.(key) ?? 0;
-      const allowed = currentCount < config.maxRequests;
-      if (allowed) {
-        await (redis as any).client?.zadd?.(key, now, `${now}_${Math.random()}`);
-        await (redis as any).client?.expire?.(key, Math.ceil(config.windowMs / 1000));
+      // Use INCR + EXPIRE strategy for simplicity
+      const ttlSeconds = Math.ceil(config.windowMs / 1000);
+      // Increment
+      const count = await (redis as any).incr(key);
+      if (count === 1) {
+        await (redis as any).expire(key, ttlSeconds);
       }
+      const allowed = count <= config.maxRequests;
       const resetTime = now + config.windowMs;
       return {
         allowed,
         resetTime,
-        remaining: Math.max(0, config.maxRequests - (allowed ? currentCount + 1 : currentCount)),
+        remaining: Math.max(0, config.maxRequests - count),
         total: config.maxRequests,
       };
     } catch {
@@ -159,7 +157,7 @@ export function withRateLimit(limitType: RateLimitType, endpoint?: string) {
     handler: (request: NextRequest, ...args: T) => Promise<NextResponse>
   ) {
     return async (request: NextRequest, ...args: T): Promise<NextResponse> => {
-      const result = checkRateLimit(request, limitType, endpoint);
+      const result = await checkRateLimit(request, limitType, endpoint);
       
       // Add rate limit headers to response
       const headers = new Headers();
