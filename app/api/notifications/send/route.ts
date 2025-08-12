@@ -280,5 +280,4 @@ async function handleBulkNotifications(body: any): Promise<NextResponse> {
   });
 }
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+// (runtime/dynamic declared above)

@@ -156,7 +156,7 @@ export const GET = withPublicSecurity(async (
       error: 'Failed to retrieve notification status'
     }, { status: 500 });
   }
-) }
+)}
 
 /**
  * Update notification status (for webhooks or manual updates)
