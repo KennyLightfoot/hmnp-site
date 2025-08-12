@@ -3,6 +3,8 @@ import { DateTime } from "luxon";
 import type { TimeSlot } from "@/lib/types/booking";
 import { getAvailableSlots, getCalendars, testCalendarConnection } from "@/lib/ghl-calendar";
 import { getCalendarIdForService } from "@/lib/ghl/calendar-mapping";
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
 // Fallback mock function if GHL is not available
 function generateMockSlots(date: DateTime): TimeSlot[] {
@@ -35,44 +37,32 @@ function generateMockSlots(date: DateTime): TimeSlot[] {
 // Simple in-memory cache to prevent duplicate requests
 const cache = new Map<string, { data: any; expires: number }>();
 
-// Rate limiting to prevent browser overload
-const requestCounts = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT = 50; // Increased to 50 requests per minute per IP
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
-export async function GET(request: NextRequest) {
+const querySchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  serviceType: z.string().optional(),
+});
+
+export const GET = withRateLimit('public', 'availability')(async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
-  const dateStr = searchParams.get("date");
-  const serviceType = searchParams.get("serviceType");
+  const parsed = querySchema.safeParse({
+    date: searchParams.get('date'),
+    serviceType: searchParams.get('serviceType') || undefined,
+  });
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Invalid parameters' }, { status: 400 });
+  }
+  const { date: dateStr, serviceType } = parsed.data;
   
   console.log(`📅 Availability request: date=${dateStr}, serviceType=${serviceType}`);
   
-  if (!dateStr) return NextResponse.json({ error: "Date parameter is required" }, { status: 400 });
-  
-  // Rate limiting check
-  const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-  const now = Date.now();
-  const clientKey = `rate-${clientIP}`;
-  
-  const clientRequests = requestCounts.get(clientKey);
-  if (clientRequests) {
-    if (now < clientRequests.resetTime) {
-      if (clientRequests.count >= RATE_LIMIT) {
-        console.warn(`Rate limit exceeded for IP: ${clientIP}`);
-        return NextResponse.json({ 
-          error: "Too many requests. Please wait a moment and try again." 
-        }, { status: 429 });
-      }
-      clientRequests.count++;
-    } else {
-      requestCounts.set(clientKey, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    }
-  } else {
-    requestCounts.set(clientKey, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-  }
+  // centralized rate limiting applied via middleware above
   
   // Create cache key
   const cacheKey = `availability-${dateStr}`;
+  const now = Date.now();
   
   // Check cache first (5 minute TTL)
   const cached = cache.get(cacheKey);
@@ -187,9 +177,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json(response);
+  return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching availability:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
-}
+});

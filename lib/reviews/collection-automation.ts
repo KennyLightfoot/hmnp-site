@@ -7,7 +7,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
-import { addTagsToContact } from '@/lib/ghl';
+import { addTagsToContact } from '@/lib/ghl/contacts';
 
 interface ReviewCampaignConfig {
   name: string;

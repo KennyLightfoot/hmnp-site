@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
-import { getContactByEmail, addTagsToContact } from '@/lib/ghl';
+import { findContactByEmail, addTagsToContact } from '@/lib/ghl/contacts';
 import { createContact, searchContacts } from '@/lib/ghl/management';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 import { triggerReviewThankYouPost } from '@/lib/gmb/automation-service';
 
 /**
@@ -21,10 +23,32 @@ interface ReviewWebhookPayload {
   timestamp: string;
 }
 
-export async function POST(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const payloadSchema = z.object({
+  platform: z.enum(['google', 'yelp', 'facebook']),
+  rating: z.number().min(1).max(5),
+  reviewer_name: z.string().min(1),
+  reviewer_email: z.string().email().optional(),
+  review_text: z.string().min(1),
+  review_id: z.string().min(1),
+  review_url: z.string().url(),
+  timestamp: z.string().min(1),
+});
+
+export const POST = withRateLimit('public', 'webhook_reviews')(async (request: NextRequest) => {
   try {
     // Get the webhook payload
-    const payload: ReviewWebhookPayload = await request.json();
+    const raw = await request.json();
+    const parsed = payloadSchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { success: false, error: parsed.error.issues[0]?.message || 'Invalid payload' },
+        { status: 400 }
+      );
+    }
+    const payload: ReviewWebhookPayload = parsed.data as any;
     
     console.log('Review webhook received:', {
       platform: payload.platform,
@@ -45,7 +69,7 @@ export async function POST(request: NextRequest) {
     let ghlContact = null;
     
     if (payload.reviewer_email) {
-      ghlContact = await getContactByEmail(payload.reviewer_email);
+      ghlContact = await findContactByEmail(payload.reviewer_email);
     }
     
     // If no contact found by email, try to find by name
@@ -167,7 +191,7 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 // Health check endpoint
 export async function GET() {

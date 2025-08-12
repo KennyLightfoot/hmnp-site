@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
-import {
-  upsertContact,
-  GhlContact,
-  GhlCustomField,
-} from '@/lib/ghl';
+import { upsertContact, GhlContact, GhlCustomField } from '@/lib/ghl';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
 // GHL Custom Field IDs - validate environment variables
 const GHL_CUSTOM_FIELDS = {
@@ -43,8 +41,30 @@ async function createOpportunity(opportunityData: Record<string, unknown>): Prom
   return { id: 'mock_opportunity_id_created' }; 
 }
 
-export async function POST(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const leadSchema = z.object({
+  firstName: z.string().min(1).optional(),
+  lastName: z.string().min(1).optional(),
+  email: z.string().email().optional(),
+  phone: z.string().min(7).optional(),
+  preferredCallTime: z.string().optional(),
+  callRequestReason: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  customFieldsFromProps: z.record(z.any()).optional(),
+  utmData: z.record(z.string()).optional(),
+  landingPageUrl: z.string().url().optional(),
+  campaignName: z.string().optional(),
+});
+
+export const POST = withRateLimit('public', 'submit_ad_lead')(async (request: NextRequest) => {
   try {
+    const json = await request.json();
+    const parsed = leadSchema.safeParse(json);
+    if (!parsed.success) {
+      return NextResponse.json({ success: false, message: parsed.error.issues[0]?.message || 'Invalid request' }, { status: 400 });
+    }
     const { 
       firstName,
       lastName,
@@ -57,7 +77,7 @@ export async function POST(request: NextRequest) {
       utmData,
       landingPageUrl,
       campaignName 
-    } = await request.json();
+    } = parsed.data;
 
     // 1. Prepare Custom Fields for GHL
     const ghlCustomFields: GhlCustomField[] = [];
@@ -153,4 +173,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+});

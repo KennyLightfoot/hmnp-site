@@ -2,7 +2,7 @@ import { prisma } from '@/lib/database-connection';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { sendEmail } from '@/lib/email';
 import { sendSms, checkSmsConsent } from '@/lib/sms';
-import * as ghl from '@/lib/ghl';
+import { findContactByEmail } from '@/lib/ghl/contacts';
 import { NotificationType, NotificationMethod, NotificationStatus, BookingStatus } from '@prisma/client';
 import { withRetry } from '@/lib/utils/retry';
 import { logger } from '@/lib/logger';
@@ -891,7 +891,7 @@ export const sendBookingConfirmation = async (bookingId: string) => {
   // Get phone from GHL if email exists
   if (recipient.email) {
     try {
-      const ghlContact = await ghl.getContactByEmail(recipient.email);
+      const ghlContact = await findContactByEmail(recipient.email || '');
       if (ghlContact?.phone) {
         (recipient as any).phone = ghlContact.phone;
       }
@@ -946,7 +946,7 @@ export const sendAppointmentReminder = async (
   // Get phone from GHL
   if (recipient.email) {
     try {
-      const ghlContact = await ghl.getContactByEmail(recipient.email);
+      const ghlContact = await findContactByEmail(recipient.email || '');
       if (ghlContact?.phone) {
         recipient.phone = ghlContact.phone;
       }

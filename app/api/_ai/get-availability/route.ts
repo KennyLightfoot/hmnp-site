@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
 import { getCalendarSlots } from '@/lib/ghl/management';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
 /**
  * AI Helper API - Availability Check
@@ -11,11 +13,25 @@ import { getCalendarSlots } from '@/lib/ghl/management';
  * is available for booking. Returns simple boolean response.
  */
 
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const schema = z.object({
+  datetime: z.string().min(1),
+  serviceType: z.string().optional(),
+});
+
+export const GET = withRateLimit('public', 'ai_get_availability')(async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
-    const datetime = searchParams.get('datetime');
-    const serviceType = searchParams.get('serviceType') || 'STANDARD_NOTARY';
+    const parsed = schema.safeParse({
+      datetime: searchParams.get('datetime'),
+      serviceType: searchParams.get('serviceType') || 'STANDARD_NOTARY',
+    });
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Invalid parameters' }, { status: 400 });
+    }
+    const { datetime, serviceType } = parsed.data as any;
 
     // Validate input
     if (!datetime) {
@@ -151,7 +167,7 @@ export async function GET(request: NextRequest) {
       details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
     }, { status: 500 });
   }
-}
+});
 
 export async function OPTIONS(request: NextRequest) {
   return new NextResponse(null, {

@@ -5,12 +5,13 @@ import { bookingSchemas } from '@/lib/validation/schemas';
 import { ServiceType } from '@prisma/client';
 import { z } from 'zod';
 import { createBookingFromForm } from '@/lib/booking/create';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
 export const BookingSchema = bookingSchemas.createBookingFromForm;
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: NextRequest) {
+export const POST = withRateLimit('booking_create', 'booking_create')(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const validatedData = bookingSchemas.createBookingFromForm.parse(body);
@@ -37,4 +38,4 @@ export async function POST(request: NextRequest) {
     }
     return NextResponse.json({ message: 'Internal Server Error', error: getErrorMessage(error) }, { status: 500 });
   }
-}
+});

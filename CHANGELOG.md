@@ -1,3 +1,24 @@
+## 2025-08-11
+
+- Refactor: Replaced barrel `@/lib/ghl` usages in key paths with specific adapters where appropriate.
+  - `lib/notifications.ts`: use `findContactByEmail` from `lib/ghl/contacts`.
+  - `app/api/webhooks/reviews/route.ts`: use `findContactByEmail` and `addTagsToContact` from `lib/ghl/contacts`.
+  - `lib/reviews/collection-automation.ts`: use `addTagsToContact` from `lib/ghl/contacts`.
+
+- Security: Added runtime/dynamic flags, Zod validation, and standardized rate limiting via `withRateLimit` to public routes:
+  - `app/api/booking/ghl-direct/route.ts` (already done previously)
+  - `app/api/availability/route.ts` (removed custom in-handler rate limiter)
+  - `app/api/ghl/availability/route.ts`
+  - `app/api/_ai/get-availability/route.ts`
+  - `app/api/contact/route.ts`
+  - `app/api/submit-ad-lead/route.ts`
+  - `app/api/test-ghl/route.ts`
+  - `app/api/booking/[id]/route.ts` (GET wrapped)
+
+- Rate limiting: Standardized on `lib/security/rate-limiting.withRateLimit` for public endpoints; removed ad-hoc limiter in `app/api/availability/route.ts`.
+
+- Notes: Further de-duplication between `lib/security/rate-limiting.ts`, `lib/rate-limiting.ts`, and `lib/auth/rate-limit.ts` is planned; current change focuses on applying a single middleware to public endpoints.
+
 ## 2025-08-10
 
 - feat(ai): add Vertex AI function tools (booking, payment link, notes, escalation) and optional RAG; introduce diagnostics endpoint `/api/ai/diagnostics`

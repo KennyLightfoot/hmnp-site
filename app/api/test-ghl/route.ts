@@ -2,8 +2,12 @@
 import { NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { testGetLocationDetails } from '@/lib/ghl'; // Assuming lib is aliased to @/lib
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
-export async function GET() {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('public', 'test_ghl')(async () => {
   console.log('/api/test-ghl endpoint hit');
   try {
     const locationDetails = await testGetLocationDetails();
@@ -24,4 +28,4 @@ export async function GET() {
     }
     return NextResponse.json({ success: false, error: errorMessage, details: errorStack }, { status });
   }
-}
+});

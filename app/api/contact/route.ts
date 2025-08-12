@@ -2,14 +2,9 @@ import { Resend } from 'resend';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-import {
-  getLocationCustomFields,
-  getContactByEmail,
-  upsertContact,
-  addTagsToContact,
-  GhlCustomField,
-  getCleanLocationId,
-} from '@/lib/ghl';
+import { getLocationCustomFields, upsertContact, GhlCustomField, getCleanLocationId } from '@/lib/ghl';
+import { findContactByEmail, addTagsToContact } from '@/lib/ghl/contacts';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 import { z } from 'zod';
 
 const GHL_CONTACT_FORM_WORKFLOW_ID = process.env.GHL_CONTACT_FORM_WORKFLOW_ID;
@@ -134,7 +129,10 @@ async function sendEmailNotification(formData: any) {
   return { data };
 }
 
-export async function POST(request: Request) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const POST = withRateLimit('public', 'contact_form')(async (request: Request) => {
   try {
     const rawData = await request.json();
     
@@ -247,7 +245,7 @@ export async function POST(request: Request) {
     };
 
     try {
-      const existingContact = await getContactByEmail(email);
+      const existingContact = await findContactByEmail(email);
       if (existingContact && existingContact.id) {
         ghlContactId = existingContact.id;
         contactPayload.id = ghlContactId; 
@@ -370,4 +368,4 @@ export async function POST(request: Request) {
       { status: error instanceof SyntaxError ? 400 : 500 }
     );
   }
-}
+});

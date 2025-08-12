@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
-import * as ghl from '@/lib/ghl'; // Assuming ghl.ts is in lib, adjust path if needed
-import type { GhlContact, GhlCustomField } from '@/lib/ghl';
+import * as ghl from '@/lib/ghl';
+import type { GhlContact } from '@/lib/ghl';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
 interface CreditReferrerRequestBody {
   contactId: string; // Contact ID of the NEWLY REFERRED client
@@ -10,7 +11,10 @@ interface CreditReferrerRequestBody {
 // Environment variable for a simple webhook security check (optional, but recommended)
 const WEBHOOK_SECRET = process.env.GHL_CREDIT_REFERRER_WEBHOOK_SECRET;
 
-export async function POST(request: Request) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const POST = withRateLimit('public', 'ghl_credit_referrer')(async (request: Request) => {
   // Optional: Basic security check if a secret is configured
   if (WEBHOOK_SECRET) {
     const providedSecret = request.headers.get('x-webhook-secret');
@@ -143,4 +147,4 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
-}
+});
