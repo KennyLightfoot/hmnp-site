@@ -7,7 +7,6 @@ import { z } from 'zod';
 import { createBookingFromForm } from '@/lib/booking/create';
 import { withRateLimit } from '@/lib/security/rate-limiting';
 import { withBookingSecurity } from '@/lib/security/comprehensive-security';
-import { NextResponse } from 'next/server';
 
 export const BookingSchema = bookingSchemas.createBookingFromForm;
 export const runtime = 'nodejs';
