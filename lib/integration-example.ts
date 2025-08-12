@@ -4,9 +4,22 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { rateLimiters, rateLimitConfigs } from './rate-limiting';
-import { monitoring } from './comprehensive-monitoring';
-import { caches, cacheConfigs } from './intelligent-caching';
+// Deprecated example import updated to current module path
+import { withRateLimit } from './security/rate-limiting';
+import { monitoring } from './monitoring';
+// Stub intelligent caching imports for example; real module may differ or be internal
+const caches: any = {
+  app: {
+    get: async (_key: string, fallback: () => Promise<any>) => fallback(),
+    set: async () => {},
+    invalidateByTags: async () => {},
+    getStats: async () => ({ hitRate: 0, totalKeys: 0, memoryUsage: 0 }),
+  },
+  database: {
+    get: async (_key: string, fallback: () => Promise<any>) => fallback(),
+  },
+};
+const cacheConfigs: any = { services: {}, user: {} };
 import { logger } from './logger';
 
 /**
