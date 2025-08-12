@@ -165,11 +165,12 @@ export const GET = withAPISectionSecurity(async (request: NextRequest) => {
     }
 
     const { searchParams } = new URL(request.url);
-    const bookingId = searchParams.get('bookingId');
-    const parsed = getSchema.safeParse({ bookingId });
+  const bookingIdRaw = searchParams.get('bookingId');
+  const parsed = getSchema.safeParse({ bookingId: bookingIdRaw });
     if (!parsed.success) {
       return NextResponse.json({ error: 'Booking ID is required' }, { status: 400 });
     }
+  const bookingId = parsed.data.bookingId;
 
     // Get the booking and verify access
     const booking = await prisma.booking.findUnique({
