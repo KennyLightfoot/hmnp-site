@@ -12,7 +12,7 @@ import { authOptions } from '@/lib/auth';
 import { paymentRetryService } from '@/lib/payments/payment-retry-service';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';
-import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withAdminSecurity } from '@/lib/security/comprehensive-security';
 
 const PaymentRetryRequestSchema = z.object({
   paymentId: z.string().min(1, 'Payment ID is required'),
@@ -28,7 +28,7 @@ const PaymentRetryStatusSchema = z.object({
 /**
  * Manual payment retry
  */
-export const POST = withRateLimit('admin', 'payments_retry')(async (request: NextRequest) => {
+export const POST = withAdminSecurity(async (request: NextRequest) => {
   try {
     const session = await getServerSession(authOptions);
     
@@ -133,7 +133,7 @@ export const POST = withRateLimit('admin', 'payments_retry')(async (request: Nex
 /**
  * Get payment retry status
  */
-export const GET = withRateLimit('admin', 'payments_retry_status')(async (request: NextRequest) => {
+export const GET = withAdminSecurity(async (request: NextRequest) => {
   try {
     const session = await getServerSession(authOptions);
     

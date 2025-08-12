@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { redis } from '@/lib/redis';
-import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withAdminSecurity } from '@/lib/security/comprehensive-security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export const GET = withRateLimit('public', 'debug_redis_test')(async (request: NextRequest) => {
+export const GET = withAdminSecurity(async (request: NextRequest) => {
   try {
     // Test Redis connection
     const pingResult = await redis.ping();

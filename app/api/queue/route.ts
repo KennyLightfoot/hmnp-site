@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getQueueClient, getQueueWorker } from '@/lib/queue';
 import { logger } from '@/lib/logger';
-import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withAdminSecurity } from '@/lib/security/comprehensive-security';
 import { z } from 'zod';
 
 /**
@@ -39,7 +39,7 @@ const postSchema = z.object({
   job: z.any().optional(),
 });
 
-export const POST = withRateLimit('admin', 'queue_post')(async (request: NextRequest) => {
+export const POST = withAdminSecurity(async (request: NextRequest) => {
   try {
     // Verify authentication
     const isAuthenticated = await authenticate(request);
@@ -120,7 +120,7 @@ export const POST = withRateLimit('admin', 'queue_post')(async (request: NextReq
   }
 })
 
-export const GET = withRateLimit('admin', 'queue_get')(async (request: NextRequest) => {
+export const GET = withAdminSecurity(async (request: NextRequest) => {
   try {
     // Verify authentication
     const isAuthenticated = await authenticate(request);

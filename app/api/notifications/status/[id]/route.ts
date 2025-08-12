@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
-import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withAdminSecurity, withPublicSecurity } from '@/lib/security/comprehensive-security';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';
@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
 
 const paramsSchema = z.object({ id: z.string().min(1) });
 
-export const GET = withRateLimit('public', 'notification_status')(async (
+export const GET = withPublicSecurity(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) => {
@@ -161,7 +161,7 @@ export const GET = withRateLimit('public', 'notification_status')(async (
 /**
  * Update notification status (for webhooks or manual updates)
  */
-export const PUT = withRateLimit('admin', 'notification_status_update')(async (
+export const PUT = withAdminSecurity(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) => {

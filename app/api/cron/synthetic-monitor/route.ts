@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withAdminSecurity } from '@/lib/security/comprehensive-security';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { headers } from 'next/headers';
 import { logger } from '@/lib/logger';
@@ -55,7 +55,7 @@ interface HealthCheck {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export const GET = withRateLimit('admin', 'cron_synthetic_monitor')(async (request: NextRequest) => {
+export const GET = withAdminSecurity(async (request: NextRequest) => {
   const startTime = Date.now();
   
   try {

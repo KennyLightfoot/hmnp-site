@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
-import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withPublicSecurity } from '@/lib/security/comprehensive-security';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';
@@ -14,7 +14,7 @@ const schema = z.object({
   userAgent: z.string().optional(),
 });
 
-export const POST = withRateLimit('public', 'analytics_web_vitals')(async (request: NextRequest) => {
+export const POST = withPublicSecurity(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const parsed = schema.safeParse(body);

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withAdminSecurity } from '@/lib/security/comprehensive-security';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { proofAPI, RONService } from '@/lib/proof/api';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export const GET = withRateLimit('public', 'debug_proof_connection')(async (request: NextRequest) => {
+export const GET = withAdminSecurity(async (request: NextRequest) => {
   try {
     // Test 1: Check if Proof API is enabled
     const isEnabled = proofAPI.isEnabled();

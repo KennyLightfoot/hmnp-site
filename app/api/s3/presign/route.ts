@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db'
 import { PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { s3 } from '@/lib/s3'
-import { withRateLimit } from '@/lib/security/rate-limiting'
+import { withAPISectionSecurity } from '@/lib/security/comprehensive-security'
 import { z } from 'zod'
 
 export const runtime = 'nodejs'
@@ -20,7 +20,7 @@ const BodySchema = z.object({
   fileSize: z.number().int().positive().max(MAX_BYTES).optional(),
 });
 
-export const POST = withRateLimit('api_general', 's3_presign')(async (req: NextRequest) => {
+export const POST = withAPISectionSecurity(async (req: NextRequest) => {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

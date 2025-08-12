@@ -7,14 +7,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withAdminSecurity } from '@/lib/security/comprehensive-security';
 import { z } from 'zod';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export const GET = withRateLimit('public', 'debug_request_patterns')(async () => {
+export const GET = withAdminSecurity(async () => {
   const analysis: any = {
     timestamp: new Date().toISOString(),
     instructions: {
@@ -171,7 +171,7 @@ const postSchema = z.object({
   data: z.any().optional(),
 });
 
-export const POST = withRateLimit('public', 'debug_request_patterns_post')(async (request: NextRequest) => {
+export const POST = withAdminSecurity(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const parsed = postSchema.safeParse(body);

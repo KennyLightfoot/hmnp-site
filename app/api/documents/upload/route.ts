@@ -7,7 +7,7 @@ import { logger } from '@/lib/logger';
 import { FileUploadSecurity } from '@/lib/security/file-upload-security';
 import { z } from 'zod';
 import { headers } from 'next/headers';
-import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withAPISectionSecurity } from '@/lib/security/comprehensive-security';
 
 const uploadLogger = logger.forService('DocumentUpload');
 
@@ -23,7 +23,7 @@ const uploadRequestSchema = z.object({
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export const POST = withRateLimit('api_general', 'documents_upload')(async (request: Request) => {
+export const POST = withAPISectionSecurity(async (request: Request) => {
   const session = await getServerSession(authOptions);
   const headersList = await headers();
   const ipAddress = headersList.get('x-forwarded-for') || headersList.get('x-real-ip') || 'unknown';
@@ -208,7 +208,7 @@ async function generatePresignedUploadUrl(s3Key: string, contentType: string): P
 /**
  * Get upload status and virus scan results
  */
-export const GET = withRateLimit('api_general', 'documents_upload_status')(async (request: Request) => {
+export const GET = withAPISectionSecurity(async (request: Request) => {
   const session = await getServerSession(authOptions);
   
   if (!session?.user) {

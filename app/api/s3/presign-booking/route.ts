@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { withRateLimit } from '@/lib/security/rate-limiting'
+import { withAPISectionSecurity } from '@/lib/security/comprehensive-security'
 import { z } from 'zod'
 
 export const runtime = 'nodejs'
@@ -18,7 +18,7 @@ const BodySchema = z.object({
   serviceType: z.string().optional(),
 })
 
-export const POST = withRateLimit('api_general', 's3_presign_booking')(async (request: NextRequest) => {
+export const POST = withAPISectionSecurity(async (request: NextRequest) => {
   try {
     const parsed = BodySchema.safeParse(await request.json())
     if (!parsed.success) {

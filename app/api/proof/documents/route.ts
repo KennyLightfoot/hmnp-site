@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withAPISectionSecurity } from '@/lib/security/comprehensive-security';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -14,7 +14,7 @@ import { logger } from '@/lib/logger';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export const POST = withRateLimit('api_general', 'proof_documents')(async (request: NextRequest) => {
+export const POST = withAPISectionSecurity(async (request: NextRequest) => {
   try {
     const session = await getServerSession(authOptions);
     
@@ -117,7 +117,7 @@ export const POST = withRateLimit('api_general', 'proof_documents')(async (reque
  * GET /api/proof/documents?bookingId=xxx
  * Get documents for a Proof transaction
  */
-export const GET = withRateLimit('api_general', 'proof_documents_get')(async (request: NextRequest) => {
+export const GET = withAPISectionSecurity(async (request: NextRequest) => {
   try {
     const session = await getServerSession(authOptions);
     

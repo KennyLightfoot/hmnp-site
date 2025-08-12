@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withBookingSecurity, withPublicSecurity } from '@/lib/security/comprehensive-security';
 import { reserveSlot as engineReserveSlot, getReservationStatus } from '@/lib/slot-reservation';
 
 // Validation schema for slot reservation
@@ -41,7 +41,7 @@ const RESERVATION_EXPIRY_MINUTES = 15;
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export const POST = withRateLimit('public', 'reserve_slot')(async (request: NextRequest) => {
+export const POST = withBookingSecurity(async (request: NextRequest) => {
   try {
     const data = await request.json();
     const validatedData = SlotReservationSchema.parse(data);
@@ -81,7 +81,7 @@ export const POST = withRateLimit('public', 'reserve_slot')(async (request: Next
   }
 });
 
-export const GET = withRateLimit('public', 'reserve_slot_status')(async (request: NextRequest) => {
+export const GET = withPublicSecurity(async (request: NextRequest) => {
   try {
     const { searchParams } = request.nextUrl;
     const reservationId = searchParams.get('id');

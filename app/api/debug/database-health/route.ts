@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withAdminSecurity } from '@/lib/security/comprehensive-security';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '@/lib/database-connection';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export const GET = withRateLimit('public', 'debug_database_health')(async () => {
+export const GET = withAdminSecurity(async () => {
   const healthCheck: any = {
     timestamp: new Date().toISOString(),
     status: 'unknown',
