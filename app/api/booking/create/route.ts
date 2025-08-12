@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { createBookingFromForm } from '@/lib/booking/create';
 import { withRateLimit } from '@/lib/security/rate-limiting';
 import { withBookingSecurity } from '@/lib/security/comprehensive-security';
+import { NextResponse } from 'next/server';
 
 export const BookingSchema = bookingSchemas.createBookingFromForm;
 export const runtime = 'nodejs';
@@ -43,3 +44,16 @@ export const POST = withBookingSecurity(async (request: NextRequest) => {
     return NextResponse.json({ message: 'Internal Server Error', error: getErrorMessage(error) }, { status: 500 });
   }
 });
+
+// CORS preflight to support deploy previews and prevent null-origin 403s when CSRF is valid
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': process.env.NEXT_PUBLIC_BASE_URL || '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, x-csrf-token',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}

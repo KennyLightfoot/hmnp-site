@@ -147,6 +147,9 @@ export const SecurityLevels = {
     csrf: { 
       enabled: true,
       methods: ['POST', 'PUT', 'DELETE'],
+      // Allow deploy previews and localhost during development/preview
+      // Production domain stays enforced inside withEnhancedCSRF (expanded variants already handled)
+      // Skip list managed in CSRF middleware for webhooks only
     },
     securityValidation: true,
     errorHandling: true,

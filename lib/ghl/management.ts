@@ -138,6 +138,9 @@ export async function getCalendarSlots(
     console.log(`📅 [getCalendarSlots] Date range: ${startIso} to ${endIso}`);
     console.log(`📅 [getCalendarSlots] Seconds: ${startSec} to ${endSec}`);
 
+    // Helper to detect team member param rejection
+    const isTeamMemberRejected = (message: string) => /teamMemberId\s+should\s+not\s+exist/i.test(message);
+
     // Attempt 1: startDate/endDate (seconds)
     const qp1 = new URLSearchParams({
       startDate: String(startSec),
@@ -145,15 +148,26 @@ export async function getCalendarSlots(
       timezone: 'America/Chicago'
     });
     if (teamMemberId) qp1.set('teamMemberId', teamMemberId);
-    const ep1 = `/calendars/${calendarId}/free-slots?${qp1}`;
+    let ep1 = `/calendars/${calendarId}/free-slots?${qp1}`;
     try {
       const resp1 = await makeGHLRequest(ep1, 'GET');
       console.log(`📅 [getCalendarSlots] Used params: startDate/endDate (sec)`);
-      // Normalize response
       const s = Array.isArray(resp1) ? resp1 : (resp1?.slots || resp1?.data || resp1?.freeSlots || resp1?.availableSlots || []);
       return s;
     } catch (err: any) {
       const msg = (err?.response && JSON.stringify(err.response)) || String(err?.message || err);
+      if (isTeamMemberRejected(msg) && teamMemberId) {
+        console.warn(`⚠️ [getCalendarSlots] teamMemberId not accepted. Retrying without teamMemberId...`);
+        const qp1b = new URLSearchParams({
+          startDate: String(startSec),
+          endDate: String(endSec),
+          timezone: 'America/Chicago'
+        });
+        ep1 = `/calendars/${calendarId}/free-slots?${qp1b}`;
+        const resp1b = await makeGHLRequest(ep1, 'GET');
+        const s1b = Array.isArray(resp1b) ? resp1b : (resp1b?.slots || resp1b?.data || resp1b?.freeSlots || resp1b?.availableSlots || []);
+        return s1b;
+      }
       if (!/startDate|endDate/i.test(msg)) throw err;
       console.warn(`⚠️ [getCalendarSlots] startDate/endDate rejected. Retrying with startTime/endTime...`);
     }
@@ -165,7 +179,7 @@ export async function getCalendarSlots(
       timezone: 'America/Chicago'
     });
     if (teamMemberId) qp2.set('teamMemberId', teamMemberId);
-    const ep2 = `/calendars/${calendarId}/free-slots?${qp2}`;
+    let ep2 = `/calendars/${calendarId}/free-slots?${qp2}`;
     try {
       const resp2 = await makeGHLRequest(ep2, 'GET');
       console.log(`📅 [getCalendarSlots] Used params: startTime/endTime (sec)`);
@@ -173,6 +187,18 @@ export async function getCalendarSlots(
       return s;
     } catch (err2: any) {
       const msg2 = (err2?.response && JSON.stringify(err2.response)) || String(err2?.message || err2);
+      if (isTeamMemberRejected(msg2) && teamMemberId) {
+        console.warn(`⚠️ [getCalendarSlots] teamMemberId not accepted (sec). Retrying without...`);
+        const qp2b = new URLSearchParams({
+          startTime: String(startSec),
+          endTime: String(endSec),
+          timezone: 'America/Chicago'
+        });
+        ep2 = `/calendars/${calendarId}/free-slots?${qp2b}`;
+        const resp2b = await makeGHLRequest(ep2, 'GET');
+        const s2b = Array.isArray(resp2b) ? resp2b : (resp2b?.slots || resp2b?.data || resp2b?.freeSlots || resp2b?.availableSlots || []);
+        return s2b;
+      }
       if (!/start(Time|Date)|end(Time|Date)/i.test(msg2)) throw err2;
       console.warn(`⚠️ [getCalendarSlots] startTime/endTime (sec) rejected. Retrying with milliseconds...`);
     }
@@ -186,8 +212,25 @@ export async function getCalendarSlots(
       timezone: 'America/Chicago'
     });
     if (teamMemberId) qp3.set('teamMemberId', teamMemberId);
-    const ep3 = `/calendars/${calendarId}/free-slots?${qp3}`;
-    const resp3 = await makeGHLRequest(ep3, 'GET');
+    let ep3 = `/calendars/${calendarId}/free-slots?${qp3}`;
+    let resp3;
+    try {
+      resp3 = await makeGHLRequest(ep3, 'GET');
+    } catch (err3: any) {
+      const msg3 = (err3?.response && JSON.stringify(err3.response)) || String(err3?.message || err3);
+      if (isTeamMemberRejected(msg3) && teamMemberId) {
+        console.warn(`⚠️ [getCalendarSlots] teamMemberId not accepted (ms). Retrying without...`);
+        const qp3b = new URLSearchParams({
+          startTime: String(startMs),
+          endTime: String(endMs),
+          timezone: 'America/Chicago'
+        });
+        ep3 = `/calendars/${calendarId}/free-slots?${qp3b}`;
+        resp3 = await makeGHLRequest(ep3, 'GET');
+      } else {
+        throw err3;
+      }
+    }
     console.log(`📅 [getCalendarSlots] Used params: startTime/endTime (ms)`);
     const s3 = Array.isArray(resp3) ? resp3 : (resp3?.slots || resp3?.data || resp3?.freeSlots || resp3?.availableSlots || []);
     return s3;
