@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/database-connection';
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
 import { getAvailableSlots } from '@/lib/ghl-calendar';
+import { getCalendarSlots } from '@/lib/ghl/management';
 import { isSlotAvailable } from '@/lib/slot-reservation';
 import { getServiceDurationMinutes } from '@/lib/services/config';
 import { withRateLimit } from '@/lib/security/rate-limiting';
@@ -65,14 +66,12 @@ export const GET = withRateLimit('public', 'availability_v2')(async (request: Ne
     let availableSlots: any[] = [];
     try {
       const calendarId = getCalendarIdForService(serviceType);
-      const start = new Date(`${date}T00:00:00`);
-      const end = new Date(`${date}T23:59:59`);
       const teamMemberId = process.env.GHL_DEFAULT_TEAM_MEMBER_ID || undefined;
-      const slots = await getAvailableSlots(
+      // Use management adapter with original YYYY-MM-DD (mirrors working setup paths)
+      const slots = await getCalendarSlots(
         calendarId,
-        start.toISOString(),
-        end.toISOString(),
-        getServiceDurationMinutes(serviceType),
+        date,
+        date,
         teamMemberId
       );
       availableSlots = (slots || []).map((s: any) => ({
