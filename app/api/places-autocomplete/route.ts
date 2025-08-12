@@ -1,8 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const schema = z.object({ input: z.string().min(1) });
+
+export const GET = withRateLimit('public', 'places_autocomplete')(async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
-  const input = searchParams.get("input");
+  const parsed = schema.safeParse({ input: searchParams.get('input') });
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Invalid input' }, { status: 400 });
+  }
+  const { input } = parsed.data;
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
   if (!input) {
@@ -31,4 +42,4 @@ export async function GET(request: NextRequest) {
     console.error("Places Autocomplete API error:", error);
     return NextResponse.json({ error: "Failed to fetch autocomplete data" }, { status: 500 });
   }
-}
+});

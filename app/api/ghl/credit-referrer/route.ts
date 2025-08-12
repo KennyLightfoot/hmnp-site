@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import * as ghl from '@/lib/ghl';
 import type { GhlContact } from '@/lib/ghl';
+import { findContactByEmail, addTagsToContact } from '@/lib/ghl/contacts';
 import { withRateLimit } from '@/lib/security/rate-limiting';
 
 interface CreditReferrerRequestBody {
@@ -78,14 +79,14 @@ export const POST = withRateLimit('public', 'ghl_credit_referrer')(async (reques
     }
 
     // 4. Find the referrer contact in GHL (primarily by email)
-    const referrerContact = await ghl.getContactByEmail(referrerIdentifier);
+    const referrerContact = await findContactByEmail(referrerIdentifier);
     if (!referrerContact || !referrerContact.id) {
       return NextResponse.json({ message: `Referrer contact with email/identifier '${referrerIdentifier}' not found. No credit applied.` }, { status: 200 });
     }
 
     // 5. Credit the referrer by applying a tag
     const tagsToApplyToReferrer = ['Referral:Credit_Due_To_Referrer'];
-    await ghl.addTagsToContact(referrerContact.id, tagsToApplyToReferrer);
+    await addTagsToContact(referrerContact.id, tagsToApplyToReferrer);
     console.log(`Tag '${tagsToApplyToReferrer.join(', ')}' applied to referrer ${referrerContact.id} (${referrerIdentifier}).`);
 
     // 6. Update 'cf_referral_credits_earned' custom field for the referrer

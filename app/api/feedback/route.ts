@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { z } from 'zod';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
 // ---------------------------------------------------------------------------
 // Input validation & minimal sanitization
@@ -38,7 +39,10 @@ function escapeHtml(unsafe: string) {
 // GHL Pipeline Updates (from GHL_SETUP_GUIDE.md Section 3):
 // - Could move contact to a specific stage in "Client Support" or a dedicated "Marketing - Testimonials" pipeline.
 
-export async function POST(request: Request) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const POST = withRateLimit('public', 'feedback')(async (request: Request) => {
   try {
     const json = await request.json();
     const parsed = FeedbackRequestSchema.safeParse(json);
@@ -109,4 +113,4 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ message: 'Error submitting feedback.', error: errorMessage }, { status: 500 });
   }
-}
+});

@@ -5,6 +5,7 @@ import { prisma } from '@/lib/database-connection';
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
 import { getAvailableSlots } from '@/lib/ghl-calendar';
 import { getServiceDurationMinutes } from '@/lib/services/config';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
 const RequestSchema = z.object({
   serviceType: z.enum([
@@ -40,7 +41,10 @@ function generateMockSlots(dateIso: string) {
   return slots;
 }
 
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('public', 'availability_v2')(async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
     const parsed = RequestSchema.safeParse({
@@ -112,6 +116,6 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
-}
+});
 
  

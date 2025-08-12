@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { calculateDistanceWithCache } from '@/lib/maps/distance'
+import { withRateLimit } from '@/lib/security/rate-limiting'
+import { z } from 'zod'
 
 /**
  * Distance API
@@ -10,21 +12,26 @@ import { calculateDistanceWithCache } from '@/lib/maps/distance'
  * import Redis/ioredis code. The JSON payload is lightweight and designed for
  * direct consumption by client components.
  */
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
-  const zip = searchParams.get('zip')
-  const address = searchParams.get('address')
-  const serviceType = searchParams.get('serviceType') || 'STANDARD_NOTARY'
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
-  if (!zip && !address) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'ZIP code or address query parameter is required'
-      },
-      { status: 400 }
-    )
+const schema = z.object({
+  zip: z.string().optional(),
+  address: z.string().optional(),
+  serviceType: z.string().optional(),
+}).refine(v => Boolean(v.zip || v.address), { message: 'ZIP code or address query parameter is required' })
+
+export const GET = withRateLimit('public', 'maps_distance')(async (request: NextRequest) => {
+  const { searchParams } = new URL(request.url)
+  const parsed = schema.safeParse({
+    zip: searchParams.get('zip') || undefined,
+    address: searchParams.get('address') || undefined,
+    serviceType: searchParams.get('serviceType') || 'STANDARD_NOTARY',
+  })
+  if (!parsed.success) {
+    return NextResponse.json({ success: false, error: parsed.error.issues[0]?.message || 'Invalid parameters' }, { status: 400 })
   }
+  const { zip, address, serviceType } = parsed.data
 
   const destination = zip || address!
 
@@ -53,7 +60,7 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})
 
 export function OPTIONS() {
   return new NextResponse(null, {

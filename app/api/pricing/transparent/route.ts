@@ -9,11 +9,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { UnifiedPricingEngine } from '../../../../lib/pricing/unified-pricing-engine';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
-export async function POST(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const TransparentPricingSchema = z.object({
+  serviceType: z.string().min(1),
+  documentCount: z.number().int().min(1).max(50).optional(),
+  signerCount: z.number().int().min(1).max(20).optional(),
+  address: z.any().optional(),
+  scheduledDateTime: z.string().optional(),
+  customerType: z.string().optional(),
+  customerEmail: z.string().email().optional(),
+  referralCode: z.string().optional(),
+  promoCode: z.string().optional(),
+});
+
+export const POST = withRateLimit('public', 'pricing_transparent')(async (request: NextRequest) => {
   const startTime = Date.now();
   
   try {
+    const json = await request.json();
+    const parsed = TransparentPricingSchema.safeParse(json);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Invalid request' }, { status: 400 });
+    }
     const {
       serviceType,
       documentCount = 1,
@@ -24,7 +46,7 @@ export async function POST(request: NextRequest) {
       customerEmail = '',
       referralCode,
       promoCode
-    } = await request.json();
+    } = parsed.data as any;
     
     // Generate request ID for tracking
     const requestId = `api_transparent_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -200,12 +222,12 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * GET endpoint for pricing information and service details
  */
-export async function GET(request: NextRequest) {
+export const GET = withRateLimit('public', 'pricing_transparent_info')(async (request: NextRequest) => {
   try {
     const { searchParams } = request.nextUrl;
     const serviceType = searchParams.get('serviceType');
@@ -294,4 +316,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+});

@@ -1,8 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const schema = z.object({ address: z.string().min(1) });
+
+export const GET = withRateLimit('public', 'maps_geocode')(async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
-  const address = searchParams.get("address");
+  const parsed = schema.safeParse({ address: searchParams.get('address') });
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Invalid address' }, { status: 400 });
+  }
+  const { address } = parsed.data;
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
   if (!address) {
@@ -28,4 +39,4 @@ export async function GET(request: NextRequest) {
     console.error("Geocoding API error:", error);
     return NextResponse.json({ error: "Failed to fetch geocoding data" }, { status: 500 });
   }
-}
+});

@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 import { reserveSlot as engineReserveSlot, getReservationStatus } from '@/lib/slot-reservation';
 
 // Validation schema for slot reservation
@@ -37,7 +38,10 @@ const SlotReservationSchema = z.object({
 // Reservation expiry time (15 minutes)
 const RESERVATION_EXPIRY_MINUTES = 15;
 
-export async function POST(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const POST = withRateLimit('public', 'reserve_slot')(async (request: NextRequest) => {
   try {
     const data = await request.json();
     const validatedData = SlotReservationSchema.parse(data);
@@ -75,9 +79,9 @@ export async function POST(request: NextRequest) {
     }
     return NextResponse.json({ success: false, error: 'Failed to reserve time slot' }, { status: 500 });
   }
-}
+});
 
-export async function GET(request: NextRequest) {
+export const GET = withRateLimit('public', 'reserve_slot_status')(async (request: NextRequest) => {
   try {
     const { searchParams } = request.nextUrl;
     const reservationId = searchParams.get('id');
@@ -94,4 +98,4 @@ export async function GET(request: NextRequest) {
     console.error('GET reservation error:', error);
     return NextResponse.json({ success: false, error: 'Failed to retrieve reservation' }, { status: 500 });
   }
-} 
+});

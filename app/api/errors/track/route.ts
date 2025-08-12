@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { headers } from 'next/headers';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
 interface ErrorInfo {
   message: string;
@@ -20,9 +22,39 @@ interface ErrorInfo {
   };
 }
 
-export async function POST(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const ErrorInfoSchema = z.object({
+  message: z.string().min(1),
+  stack: z.string().optional(),
+  name: z.string().optional(),
+  cause: z.any().optional(),
+  timestamp: z.string().min(1),
+  url: z.string().min(1),
+  userAgent: z.string().optional(),
+  context: z.object({
+    component: z.string().optional(),
+    userId: z.string().optional(),
+    sessionId: z.string().optional(),
+    step: z.union([z.string(), z.number()]).optional(),
+    action: z.string().optional(),
+    metadata: z.record(z.any()).optional(),
+  }),
+});
+
+export const POST = withRateLimit('public', 'errors_track')(async (request: NextRequest) => {
   try {
-    const { errors }: { errors: ErrorInfo[] } = await request.json();
+    const { errors } = await request.json();
+    if (!Array.isArray(errors)) {
+      return NextResponse.json({ success: false, error: 'Invalid errors data' }, { status: 400 });
+    }
+    const parsed = errors.map((e: any) => ErrorInfoSchema.safeParse(e));
+    const firstInvalid = parsed.find(p => !p.success);
+    if (firstInvalid && !firstInvalid.success) {
+      return NextResponse.json({ success: false, error: firstInvalid.error.issues[0]?.message || 'Invalid error payload' }, { status: 400 });
+    }
+    const normalizedErrors = parsed.map(p => (p as any).data) as ErrorInfo[];
     
     if (!Array.isArray(errors) || errors.length === 0) {
       return NextResponse.json({
@@ -38,7 +70,7 @@ export async function POST(request: NextRequest) {
     const host = requestHeaders.get('host') || '';
 
     // Process each error
-    for (const error of errors) {
+    for (const error of normalizedErrors) {
       // Log to console (in production, this would go to a logging service)
       console.error('[ERROR_TRACKING]', {
         timestamp: error.timestamp,
@@ -117,7 +149,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      processed: errors.length,
+      processed: normalizedErrors.length,
       timestamp: new Date().toISOString(),
     });
 
@@ -129,7 +161,7 @@ export async function POST(request: NextRequest) {
       error: 'Failed to process error data'
     }, { status: 500 });
   }
-}
+});
 
 function isCriticalError(error: ErrorInfo): boolean {
   const criticalPatterns = [

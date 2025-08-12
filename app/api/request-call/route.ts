@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getErrorMessage } from '@/lib/utils/error-utils';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
 const GHL_API_BASE_URL = process.env.GHL_API_BASE_URL;
 const GHL_API_KEY = process.env.GHL_API_KEY;
@@ -55,13 +57,26 @@ async function triggerWorkflow(contactId: string) {
   }
 }
 
-export async function POST(req: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const schema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  phone: z.string().min(7),
+  preferredCallTime: z.string().min(1),
+  callRequestReason: z.string().min(1),
+  termsAccepted: z.boolean().optional(),
+});
+
+export const POST = withRateLimit('public', 'request_call')(async (req: NextRequest) => {
   try {
-    const body = await req.json();
-    const { name, email, phone, preferredCallTime, callRequestReason, termsAccepted } = body;
-    if (!name || !email || !phone || !preferredCallTime || !callRequestReason) {
-      return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
+    const json = await req.json();
+    const parsed = schema.safeParse(json);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Invalid request' }, { status: 400 });
     }
+    const { name, email, phone, preferredCallTime, callRequestReason, termsAccepted } = parsed.data;
     // Create or update contact in GHL
     const contactId = await createOrUpdateContact({ name, email, phone, preferredCallTime, callRequestReason, termsAccepted });
     // Trigger workflow (optional)
@@ -70,4 +85,4 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     return NextResponse.json({ error: getErrorMessage(error) || "Internal Server Error" }, { status: 500 });
   }
-}
+});

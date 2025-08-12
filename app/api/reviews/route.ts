@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
 /**
  * 🎯 Reviews API - Individual Review Management
@@ -91,7 +92,10 @@ const UpdateReviewSchema = z.object({
 /**
  * GET /api/reviews - Fetch reviews with filtering and pagination
  */
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('public', 'reviews_get')(async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
     
@@ -197,12 +201,12 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * POST /api/reviews - Create a new review
  */
-export async function POST(request: NextRequest) {
+export const POST = withRateLimit('public', 'reviews_post')(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const validatedData = CreateReviewSchema.parse(body);
@@ -285,12 +289,12 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * PUT /api/reviews/[id] - Update review (admin only)
  */
-export async function PUT(request: NextRequest) {
+export const PUT = withRateLimit('public', 'reviews_put')(async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
     const reviewId = searchParams.get('id');
@@ -349,4 +353,4 @@ export async function PUT(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+});

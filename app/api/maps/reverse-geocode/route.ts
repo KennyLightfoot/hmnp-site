@@ -1,9 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const schema = z.object({ lat: z.string().min(1), lng: z.string().min(1) });
+
+export const GET = withRateLimit('public', 'maps_reverse_geocode')(async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
-  const lat = searchParams.get("lat");
-  const lng = searchParams.get("lng");
+  const parsed = schema.safeParse({ lat: searchParams.get('lat'), lng: searchParams.get('lng') });
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Invalid coordinates' }, { status: 400 });
+  }
+  const { lat, lng } = parsed.data;
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
   if (!lat || !lng) {
@@ -29,4 +39,4 @@ export async function GET(request: NextRequest) {
     console.error("Reverse Geocoding API error:", error);
     return NextResponse.json({ error: "Failed to fetch reverse geocoding data" }, { status: 500 });
   }
-}
+});
