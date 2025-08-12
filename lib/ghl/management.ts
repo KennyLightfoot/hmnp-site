@@ -149,7 +149,9 @@ export async function getCalendarSlots(
     try {
       const resp1 = await makeGHLRequest(ep1, 'GET');
       console.log(`📅 [getCalendarSlots] Used params: startDate/endDate (sec)`);
-      return resp1;
+      // Normalize response
+      const s = Array.isArray(resp1) ? resp1 : (resp1?.slots || resp1?.data || resp1?.freeSlots || resp1?.availableSlots || []);
+      return s;
     } catch (err: any) {
       const msg = (err?.response && JSON.stringify(err.response)) || String(err?.message || err);
       if (!/startDate|endDate/i.test(msg)) throw err;
@@ -167,7 +169,8 @@ export async function getCalendarSlots(
     try {
       const resp2 = await makeGHLRequest(ep2, 'GET');
       console.log(`📅 [getCalendarSlots] Used params: startTime/endTime (sec)`);
-      return resp2;
+      const s = Array.isArray(resp2) ? resp2 : (resp2?.slots || resp2?.data || resp2?.freeSlots || resp2?.availableSlots || []);
+      return s;
     } catch (err2: any) {
       const msg2 = (err2?.response && JSON.stringify(err2.response)) || String(err2?.message || err2);
       if (!/start(Time|Date)|end(Time|Date)/i.test(msg2)) throw err2;
@@ -186,7 +189,8 @@ export async function getCalendarSlots(
     const ep3 = `/calendars/${calendarId}/free-slots?${qp3}`;
     const resp3 = await makeGHLRequest(ep3, 'GET');
     console.log(`📅 [getCalendarSlots] Used params: startTime/endTime (ms)`);
-    return resp3;
+    const s3 = Array.isArray(resp3) ? resp3 : (resp3?.slots || resp3?.data || resp3?.freeSlots || resp3?.availableSlots || []);
+    return s3;
   } catch (error) {
     console.error(`❌ [getCalendarSlots] Failed to fetch slots for calendar ${calendarId}:`, error);
     throw error;

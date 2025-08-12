@@ -185,18 +185,28 @@ export async function getAvailableSlots(
       `/calendars/${calendarId}/free-slots?${queryParams}`, 
       'GET'
     );
-    
-    if (response && Array.isArray(response)) {
-      // Cache the response
-      calendarCache.set(cacheKey, {
-        data: response,
-        timestamp: Date.now(),
-        expires: Date.now() + CALENDAR_CACHE_TTL
-      });
-      return response;
+
+    // Normalize various possible response shapes from GHL
+    let slots: any[] = [];
+    if (Array.isArray(response)) {
+      slots = response;
+    } else if (response && Array.isArray((response as any).slots)) {
+      slots = (response as any).slots;
+    } else if (response && Array.isArray((response as any).data)) {
+      slots = (response as any).data;
+    } else if (response && Array.isArray((response as any).freeSlots)) {
+      slots = (response as any).freeSlots;
+    } else if (response && Array.isArray((response as any).availableSlots)) {
+      slots = (response as any).availableSlots;
     }
-    
-    return [];
+
+    // Cache and return
+    calendarCache.set(cacheKey, {
+      data: slots,
+      timestamp: Date.now(),
+      expires: Date.now() + CALENDAR_CACHE_TTL
+    });
+    return slots;
   } catch (error) {
     console.error(`Failed to fetch available slots for calendar ${calendarId}:`, getErrorMessage(error));
     return [];
