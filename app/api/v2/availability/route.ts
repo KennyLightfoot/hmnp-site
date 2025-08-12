@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/database-connection';
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
 import { getAvailableSlots } from '@/lib/ghl-calendar';
+import { isSlotAvailable } from '@/lib/slot-reservation';
 import { getServiceDurationMinutes } from '@/lib/services/config';
 import { withRateLimit } from '@/lib/security/rate-limiting';
 
@@ -66,11 +67,13 @@ export const GET = withRateLimit('public', 'availability_v2')(async (request: Ne
       const calendarId = getCalendarIdForService(serviceType);
       const start = new Date(`${date}T00:00:00`);
       const end = new Date(`${date}T23:59:59`);
+      const teamMemberId = process.env.GHL_DEFAULT_TEAM_MEMBER_ID || undefined;
       const slots = await getAvailableSlots(
         calendarId,
         start.toISOString(),
         end.toISOString(),
-        getServiceDurationMinutes(serviceType)
+        getServiceDurationMinutes(serviceType),
+        teamMemberId
       );
       availableSlots = (slots || []).map((s: any) => ({
         startTime: s.startTime || s.start,
@@ -107,7 +110,13 @@ export const GET = withRateLimit('public', 'availability_v2')(async (request: Ne
           return slotStart < existingEnd && slotEnd > existingStart;
         });
       });
-      availableSlots = filtered;
+      // Also remove Redis-held slots (temporary holds during checkout)
+      const filteredHeld: typeof availableSlots = [];
+      for (const slot of filtered) {
+        const ok = await isSlotAvailable(slot.startTime, serviceType);
+        if (ok) filteredHeld.push(slot);
+      }
+      availableSlots = filteredHeld;
     } catch (err) {
       console.warn('Availability filter failed', err);
     }

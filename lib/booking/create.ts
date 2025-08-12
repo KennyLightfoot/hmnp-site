@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db'
 import { convertToBooking } from '@/lib/slot-reservation'
 import { processBookingJob } from '@/lib/bullmq/booking-processor'
 import { createAppointment as createGhlAppointment } from '@/lib/ghl/appointments-adapter'
+import { clearCalendarCache } from '@/lib/ghl-calendar'
 import { createContact as createGhlContact, findContactByEmail } from '@/lib/ghl/contacts'
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping'
 import type { Service } from '@prisma/client'
@@ -142,6 +143,11 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
           startTime: startIso,
           endTime: endIso,
         })
+        // Invalidate GHL free-slots cache for this calendar/date so UI updates immediately
+        try {
+          const day = startIso.split('T')[0]!
+          clearCalendarCache() // global clear (simple + safe); can be optimized to key-based later
+        } catch {}
       } catch {}
     }
   } catch {}

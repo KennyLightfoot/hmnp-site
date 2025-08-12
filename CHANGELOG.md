@@ -1,3 +1,12 @@
+## 2025-08-12
+
+- fix(availability): improve GHL free-slots accuracy and freshness
+  - Add optional `teamMemberId` to `lib/ghl-calendar.getAvailableSlots` and pass `GHL_DEFAULT_TEAM_MEMBER_ID` from `app/api/v2/availability/route.ts`.
+  - Filter out Redis-held slots in `app/api/v2/availability/route.ts` using `isSlotAvailable` to prevent showing temporarily reserved slots.
+  - Invalidate GHL calendar free-slots cache after booking in `lib/booking/create.ts` so UI updates immediately post-appointment.
+  - Repair `lib/ghl/client.ts` export so management helpers work reliably.
+  - No schema changes.
+
 ## 2025-08-11
 
 - Refactor: Replaced barrel `@/lib/ghl` usages in key paths with specific adapters where appropriate.

@@ -156,7 +156,8 @@ export async function getAvailableSlots(
   calendarId: string,
   startDate: string,
   endDate: string,
-  duration: number = 60
+  duration: number = 60,
+  teamMemberId?: string
 ): Promise<any[]> {
   const cacheKey = `slots-${calendarId}-${startDate}-${endDate}-${duration}`;
   
@@ -176,6 +177,9 @@ export async function getAvailableSlots(
       endDate: endTimestamp.toString(),
       timezone: 'America/Chicago'
     });
+    if (teamMemberId) {
+      queryParams.set('teamMemberId', teamMemberId);
+    }
 
     const response = await callGhlCalendarApi(
       `/calendars/${calendarId}/free-slots?${queryParams}`, 
