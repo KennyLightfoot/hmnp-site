@@ -128,30 +128,65 @@ export async function getCalendarSlots(
   teamMemberId?: string
 ) {
   try {
-    // ✅ FIXED: Better date handling for GHL API
-    const startTimestamp = Math.floor(new Date(`${startDate}T00:00:00`).getTime() / 1000);
-    const endTimestamp = Math.floor(new Date(`${endDate}T23:59:59`).getTime() / 1000);
-    
-    const queryParams = new URLSearchParams({
-      startDate: startTimestamp.toString(),
-      endDate: endTimestamp.toString(),
+    // Normalize inputs and compute timestamps (seconds)
+    const startIso = /T/.test(startDate) ? startDate : `${startDate}T00:00:00`;
+    const endIso = /T/.test(endDate) ? endDate : `${endDate}T23:59:59`;
+    const startSec = Math.floor(new Date(startIso).getTime() / 1000);
+    const endSec = Math.floor(new Date(endIso).getTime() / 1000);
+
+    console.log(`📅 [getCalendarSlots] Fetching slots for calendar ${calendarId}`);
+    console.log(`📅 [getCalendarSlots] Date range: ${startIso} to ${endIso}`);
+    console.log(`📅 [getCalendarSlots] Seconds: ${startSec} to ${endSec}`);
+
+    // Attempt 1: startDate/endDate (seconds)
+    const qp1 = new URLSearchParams({
+      startDate: String(startSec),
+      endDate: String(endSec),
       timezone: 'America/Chicago'
     });
-    if (teamMemberId) {
-      queryParams.set('teamMemberId', teamMemberId);
+    if (teamMemberId) qp1.set('teamMemberId', teamMemberId);
+    const ep1 = `/calendars/${calendarId}/free-slots?${qp1}`;
+    try {
+      const resp1 = await makeGHLRequest(ep1, 'GET');
+      console.log(`📅 [getCalendarSlots] Used params: startDate/endDate (sec)`);
+      return resp1;
+    } catch (err: any) {
+      const msg = (err?.response && JSON.stringify(err.response)) || String(err?.message || err);
+      if (!/startDate|endDate/i.test(msg)) throw err;
+      console.warn(`⚠️ [getCalendarSlots] startDate/endDate rejected. Retrying with startTime/endTime...`);
     }
-    
-    console.log(`📅 [getCalendarSlots] Fetching slots for calendar ${calendarId}`);
-    console.log(`📅 [getCalendarSlots] Date range: ${startDate} to ${endDate}`);
-    console.log(`📅 [getCalendarSlots] Timestamps: ${startTimestamp} to ${endTimestamp}`);
-    
-    const endpoint = `/calendars/${calendarId}/free-slots?${queryParams}`;
-    const response = await makeGHLRequest(endpoint, 'GET');
-    
-    console.log(`📅 [getCalendarSlots] Response type: ${typeof response}`);
-    console.log(`📅 [getCalendarSlots] Response structure:`, JSON.stringify(response).slice(0, 200));
-    
-    return response;
+
+    // Attempt 2: startTime/endTime (seconds)
+    const qp2 = new URLSearchParams({
+      startTime: String(startSec),
+      endTime: String(endSec),
+      timezone: 'America/Chicago'
+    });
+    if (teamMemberId) qp2.set('teamMemberId', teamMemberId);
+    const ep2 = `/calendars/${calendarId}/free-slots?${qp2}`;
+    try {
+      const resp2 = await makeGHLRequest(ep2, 'GET');
+      console.log(`📅 [getCalendarSlots] Used params: startTime/endTime (sec)`);
+      return resp2;
+    } catch (err2: any) {
+      const msg2 = (err2?.response && JSON.stringify(err2.response)) || String(err2?.message || err2);
+      if (!/start(Time|Date)|end(Time|Date)/i.test(msg2)) throw err2;
+      console.warn(`⚠️ [getCalendarSlots] startTime/endTime (sec) rejected. Retrying with milliseconds...`);
+    }
+
+    // Attempt 3: startTime/endTime (milliseconds)
+    const startMs = startSec * 1000;
+    const endMs = endSec * 1000;
+    const qp3 = new URLSearchParams({
+      startTime: String(startMs),
+      endTime: String(endMs),
+      timezone: 'America/Chicago'
+    });
+    if (teamMemberId) qp3.set('teamMemberId', teamMemberId);
+    const ep3 = `/calendars/${calendarId}/free-slots?${qp3}`;
+    const resp3 = await makeGHLRequest(ep3, 'GET');
+    console.log(`📅 [getCalendarSlots] Used params: startTime/endTime (ms)`);
+    return resp3;
   } catch (error) {
     console.error(`❌ [getCalendarSlots] Failed to fetch slots for calendar ${calendarId}:`, error);
     throw error;
