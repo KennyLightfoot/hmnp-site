@@ -16,6 +16,9 @@ import { generatePricingBreakdown } from '@/lib/pricing/breakdown'
 import { calculatePricingConfidence } from '@/lib/pricing/confidence'
 import { cacheResult } from '@/lib/pricing/cache'
 import { PricingCalculationError, PricingCalculationParams, PricingCalculationParamsSchema, PricingResult } from '@/lib/pricing/types'
+import type { UpsellSuggestion, PricingBreakdown, PricingConfidence } from '@/lib/pricing/types'
+import { UnifiedDistanceService } from '@/lib/maps/unified-distance-service'
+import { redis } from '@/lib/redis'
 
 // types now in lib/pricing/types
 

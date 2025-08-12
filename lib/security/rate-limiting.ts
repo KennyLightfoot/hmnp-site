@@ -94,12 +94,12 @@ export async function checkRateLimit(
   request: NextRequest,
   limitType: RateLimitType,
   endpoint?: string
-): {
+): Promise<{
   allowed: boolean;
   resetTime: number;
   remaining: number;
   total: number;
-} {
+}> {
   const config = RATE_LIMITS[limitType];
   const clientId = getClientIdentifier(request);
   const key = createRateLimitKey(clientId, limitType, endpoint);
