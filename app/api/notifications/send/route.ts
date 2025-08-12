@@ -11,7 +11,7 @@ import { headers } from 'next/headers';
 import { NotificationService } from '@/lib/notifications';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';
-import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withAdminSecurity } from '@/lib/security/comprehensive-security';
 
 // Validation schema for notification requests
 const NotificationRequestSchema = z.object({
@@ -55,7 +55,7 @@ const BulkNotificationRequestSchema = z.object({
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export const POST = withRateLimit('admin', 'notifications_send')(async (request: NextRequest) => {
+export const POST = withAdminSecurity(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const headersList = await headers();

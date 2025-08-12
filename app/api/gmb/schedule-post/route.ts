@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { gmbManager } from '@/lib/gmb/manager';
 import { gmbAutomationSystem } from '@/lib/gmb/automation-system';
-import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withAdminSecurity } from '@/lib/security/comprehensive-security';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';
@@ -19,7 +19,7 @@ const postSchema = z.object({
     .optional(),
 });
 
-export const POST = withRateLimit('admin', 'gmb_schedule_post')(async (request: NextRequest) => {
+export const POST = withAdminSecurity(async (request: NextRequest) => {
   try {
     // Check if GMB is enabled
     const gmbEnabled = process.env.GMB_POSTING_ENABLED === 'true';
@@ -109,7 +109,7 @@ export const POST = withRateLimit('admin', 'gmb_schedule_post')(async (request: 
 })
 
 // Get current posting queue
-export const GET = withRateLimit('admin', 'gmb_schedule_post_queue')(async (request: NextRequest) => {
+export const GET = withAdminSecurity(async (request: NextRequest) => {
   try {
     const gmbEnabled = process.env.GMB_POSTING_ENABLED === 'true';
     
@@ -165,7 +165,7 @@ export const GET = withRateLimit('admin', 'gmb_schedule_post_queue')(async (requ
 })
 
 // Cancel a scheduled post
-export const DELETE = withRateLimit('admin', 'gmb_schedule_post_cancel')(async (request: NextRequest) => {
+export const DELETE = withAdminSecurity(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const { postId } = body;

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withAPISectionSecurity } from '@/lib/security/comprehensive-security';
 import { z } from 'zod';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getServerSession } from 'next-auth';
@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic';
 
 const postSchema = z.object({ bookingId: z.string().min(1), documents: z.array(z.any()).optional() });
 
-export const POST = withRateLimit('public', 'proof_transactions')(async (request: NextRequest) => {
+export const POST = withAPISectionSecurity(async (request: NextRequest) => {
   try {
     const session = await getServerSession(authOptions);
     
@@ -156,7 +156,7 @@ export const POST = withRateLimit('public', 'proof_transactions')(async (request
  */
 const getSchema = z.object({ bookingId: z.string().min(1) });
 
-export const GET = withRateLimit('public', 'proof_transactions_get')(async (request: NextRequest) => {
+export const GET = withAPISectionSecurity(async (request: NextRequest) => {
   try {
     const session = await getServerSession(authOptions);
     

@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { Role, BookingStatus, LocationType } from '@prisma/client';
-import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withAuthSecurity } from '@/lib/security/comprehensive-security';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';
@@ -14,7 +14,7 @@ const schema = z.object({
   notes: z.string().optional(),
 });
 
-export const POST = withRateLimit('public', 'ron_sessions_create')(async (request: Request) => {
+export const POST = withAuthSecurity(async (request: Request) => {
   const session = await getServerSession(authOptions);
 
   // 1. Authorization Check

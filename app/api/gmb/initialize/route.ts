@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { gmbManager } from '@/lib/gmb/manager';
-import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withAdminSecurity } from '@/lib/security/comprehensive-security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export const POST = withRateLimit('admin', 'gmb_initialize')(async (request: NextRequest) => {
+export const POST = withAdminSecurity(async (request: NextRequest) => {
   try {
     // Check if GMB is enabled
     const gmbEnabled = process.env.GMB_POSTING_ENABLED === 'true';
@@ -60,7 +60,7 @@ export const POST = withRateLimit('admin', 'gmb_initialize')(async (request: Nex
 })
 
 // Health check endpoint
-export const GET = withRateLimit('admin', 'gmb_initialize_health')(async (request: NextRequest) => {
+export const GET = withAdminSecurity(async (request: NextRequest) => {
   try {
     const gmbEnabled = process.env.GMB_POSTING_ENABLED === 'true';
     
