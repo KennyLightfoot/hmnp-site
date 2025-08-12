@@ -231,6 +231,11 @@ export function applySecurityHeaders(
   response.headers.set('X-Download-Options', 'noopen');
   response.headers.set('X-Permitted-Cross-Domain-Policies', 'none');
 
+  // Default Cache-Control for API responses: explicit no-store unless overridden
+  if (!response.headers.has('Cache-Control')) {
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  }
+
   return response;
 }
 
