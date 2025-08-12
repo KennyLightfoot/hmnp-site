@@ -1,4 +1,4 @@
-import Bull from 'bull';
+import type { Job as BullJob } from 'bullmq';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { PrismaClient, BookingStatus, NotificationType, NotificationMethod, PaymentStatus, PaymentProvider } from '@prisma/client';
 import { NotificationJob, BookingProcessingJob, PaymentProcessingJob, JobResult } from '../queue/types';
@@ -47,7 +47,7 @@ export class BullQueueWorker {
   /**
    * Process a notification job
    */
-  private async processNotificationJob(job: Bull.Job<NotificationJob>): Promise<JobResult> {
+  private async processNotificationJob(job: BullJob<NotificationJob>): Promise<JobResult> {
     const jobData = job.data;
     logger.info(`Processing notification job ${job.id}`, {
       type: jobData.type,
@@ -119,7 +119,7 @@ export class BullQueueWorker {
   }
   
   // Process a booking job with proper error handling
-  private async processBookingJob(job: Bull.Job<BookingProcessingJob>): Promise<JobResult> {
+  private async processBookingJob(job: BullJob<BookingProcessingJob>): Promise<JobResult> {
     const jobData = job.data;
     logger.info(`Processing booking job ${job.id} for booking ${jobData.bookingId} - action: ${jobData.action}`);
     
@@ -447,7 +447,7 @@ export class BullQueueWorker {
   /**
    * Process a payment job with proper error handling
    */
-  private async processPaymentJob(job: Bull.Job<PaymentProcessingJob>): Promise<JobResult> {
+  private async processPaymentJob(job: BullJob<PaymentProcessingJob>): Promise<JobResult> {
     const jobData = job.data;
     logger.info(`Processing payment job ${job.id} - action: ${jobData.action}`);
     
