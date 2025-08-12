@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
 /**
  * Services Compatible API - Mock endpoint for diagnostic compatibility
  * Returns hardcoded services that match the ServiceSelector component
  */
-export async function GET() {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('public', 'services_compatible')(async () => {
   try {
     const services = {
       all: [
@@ -85,4 +89,4 @@ export async function GET() {
       error: 'Failed to fetch services'
     }, { status: 500 });
   }
-} 
+})

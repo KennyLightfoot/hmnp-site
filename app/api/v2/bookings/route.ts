@@ -8,14 +8,27 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { Role, LocationType } from '@prisma/client';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const querySchema = z.object({
+  locationType: z.nativeEnum(LocationType).optional(),
+});
+
+export const GET = withRateLimit('public', 'bookings_v2')(async (request: NextRequest) => {
   try {
     const session = await getServerSession(authOptions);
     
     // Check authentication for certain operations
-    const { searchParams } = request.nextUrl;
-    const locationType = searchParams.get('locationType') as LocationType;
+    const rawParams = Object.fromEntries(request.nextUrl.searchParams);
+    const parsed = querySchema.safeParse({ locationType: rawParams.locationType as any });
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid query parameters' }, { status: 400 });
+    }
+    const locationType = parsed.data.locationType as LocationType;
     
     // If requesting RON bookings, require authentication
     if (locationType === LocationType.REMOTE_ONLINE_NOTARIZATION) {
@@ -120,4 +133,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+})

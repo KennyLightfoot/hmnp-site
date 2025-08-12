@@ -10,12 +10,8 @@ import { getErrorMessage } from '@/lib/utils/error-utils';
 import { headers } from 'next/headers';
 import { dynamicPricingEngine } from '@/lib/pricing/dynamic-pricing-engine';
 import { logger } from '@/lib/logger';
-import { redis } from '@/lib/redis';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 import { z } from 'zod';
-
-// Rate limiting for pricing API
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const RATE_LIMIT_MAX_REQUESTS = 30; // 30 requests per minute
 
 // Request validation schema
 const ZIP_CODE_REGEX = /^\d{5}$/; // 5-digit ZIP code
@@ -100,7 +96,7 @@ const DynamicPricingRequestSchema = z.object({
   includeAlternatives: z.boolean().default(false)
 });
 
-export async function POST(request: NextRequest) {
+export const POST = withRateLimit('public', 'pricing_dynamic')(async (request: NextRequest) => {
   const startTime = Date.now();
   
   try {
@@ -108,16 +104,6 @@ export async function POST(request: NextRequest) {
     const headersList = await headers();
     const clientIP = headersList.get('x-forwarded-for') || headersList.get('x-real-ip') || 'unknown';
     const userAgent = headersList.get('user-agent');
-
-    // Rate limiting check
-    const rateLimitResult = await checkRateLimit(clientIP);
-    if (!rateLimitResult.allowed) {
-      return NextResponse.json({
-        success: false,
-        error: 'Rate limit exceeded',
-        retryAfter: rateLimitResult.retryAfter
-      }, { status: 429 });
-    }
 
     // Validate request
     const validatedRequest = DynamicPricingRequestSchema.parse(body);
@@ -227,12 +213,12 @@ export async function POST(request: NextRequest) {
       message: 'An unexpected error occurred while calculating pricing'
     }, { status: 500 });
   }
-}
+})
 
 /**
  * Get pricing quote by ID
  */
-export async function GET(request: NextRequest) {
+export const GET = withRateLimit('public', 'pricing_dynamic_info')(async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
     const quoteId = searchParams.get('quoteId');
@@ -273,32 +259,9 @@ export async function GET(request: NextRequest) {
       error: 'Failed to retrieve pricing information'
     }, { status: 500 });
   }
-}
+})
 
-/**
- * Rate limiting implementation
- */
-async function checkRateLimit(clientIP: string): Promise<{ allowed: boolean; retryAfter?: number }> {
-  try {
-    const key = `rate_limit:pricing:${clientIP}`;
-    const current = await redis.incr(key);
-    
-    if (current === 1) {
-      await redis.expire(key, Math.ceil(RATE_LIMIT_WINDOW / 1000));
-    }
-    
-    if (current > RATE_LIMIT_MAX_REQUESTS) {
-      const ttl = await redis.ttl(key);
-      return { allowed: false, retryAfter: ttl };
-    }
-    
-    return { allowed: true };
-  } catch (error) {
-    // Allow request if rate limiting fails
-    logger.error('Rate limiting check failed', { error, clientIP });
-    return { allowed: true };
-  }
-}
+// Internal rate limiting removed in favor of standardized middleware
 
 /**
  * Calculate pricing alternatives (different times, urgency levels)

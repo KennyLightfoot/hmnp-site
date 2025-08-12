@@ -5,19 +5,32 @@ import { prisma } from '@/lib/db'
 import { PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { s3 } from '@/lib/s3'
+import { withRateLimit } from '@/lib/security/rate-limiting'
+import { z } from 'zod'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const MAX_BYTES = 25 * 1024 * 1024
 
-export async function POST(req: NextRequest) {
+const BodySchema = z.object({
+  assignmentId: z.string().min(1),
+  filename: z.string().min(1),
+  contentType: z.string().optional(),
+  fileSize: z.number().int().positive().max(MAX_BYTES).optional(),
+});
+
+export const POST = withRateLimit('api_general', 's3_presign')(async (req: NextRequest) => {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { assignmentId, filename, contentType, fileSize } = await req.json()
+  const parsed = BodySchema.safeParse(await req.json())
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Bad request' }, { status: 400 })
+  }
+  const { assignmentId, filename, contentType, fileSize } = parsed.data
   if (!assignmentId || !filename) {
     return NextResponse.json({ error: 'Bad request' }, { status: 400 })
   }
@@ -42,4 +55,4 @@ export async function POST(req: NextRequest) {
   })
   const url = await getSignedUrl(s3, command, { expiresIn: 300 })
   return NextResponse.json({ url, key })
-}
+})

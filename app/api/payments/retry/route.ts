@@ -12,6 +12,7 @@ import { authOptions } from '@/lib/auth';
 import { paymentRetryService } from '@/lib/payments/payment-retry-service';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
 const PaymentRetryRequestSchema = z.object({
   paymentId: z.string().min(1, 'Payment ID is required'),
@@ -27,7 +28,7 @@ const PaymentRetryStatusSchema = z.object({
 /**
  * Manual payment retry
  */
-export async function POST(request: NextRequest) {
+export const POST = withRateLimit('admin', 'payments_retry')(async (request: NextRequest) => {
   try {
     const session = await getServerSession(authOptions);
     
@@ -127,12 +128,12 @@ export async function POST(request: NextRequest) {
       error: 'Internal server error'
     }, { status: 500 });
   }
-}
+})
 
 /**
  * Get payment retry status
  */
-export async function GET(request: NextRequest) {
+export const GET = withRateLimit('admin', 'payments_retry_status')(async (request: NextRequest) => {
   try {
     const session = await getServerSession(authOptions);
     
@@ -183,7 +184,7 @@ export async function GET(request: NextRequest) {
       error: 'Failed to get payment retry status'
     }, { status: 500 });
   }
-}
+})
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

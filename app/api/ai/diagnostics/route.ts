@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
-export async function GET() {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('public', 'ai_diagnostics')(async () => {
   const redact = (v?: string) => (v ? `${v.slice(0, 4)}***${v.slice(-4)}` : undefined);
   const hasJson = !!process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
   const hasMaps = !!process.env.GOOGLE_MAPS_API_KEY;
@@ -32,6 +36,6 @@ export async function GET() {
 
   const ok = status.vertex.projectConfigured && status.vertex.regionConfigured && status.vertex.serviceAccountJson;
   return NextResponse.json({ success: ok, status });
-}
+})
 
 

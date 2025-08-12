@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { withRateLimit } from '@/lib/security/rate-limiting'
+import { z } from 'zod'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -8,18 +10,21 @@ export const dynamic = 'force-dynamic'
 const ALLOWED_TYPES = ['application/pdf', 'image/png', 'image/jpeg']
 const MAX_BYTES = 25 * 1024 * 1024
 
-export async function POST(request: NextRequest) {
+const BodySchema = z.object({
+  customerEmail: z.string().email(),
+  filename: z.string().min(1),
+  contentType: z.enum(ALLOWED_TYPES as [string, ...string[]]),
+  fileSize: z.number().int().positive().max(MAX_BYTES),
+  serviceType: z.string().optional(),
+})
+
+export const POST = withRateLimit('api_general', 's3_presign_booking')(async (request: NextRequest) => {
   try {
-    const { customerEmail, filename, contentType, fileSize, serviceType } = await request.json()
-    if (!customerEmail || !filename || !contentType || !fileSize) {
-      return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+    const parsed = BodySchema.safeParse(await request.json())
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
     }
-    if (fileSize > MAX_BYTES) {
-      return NextResponse.json({ error: 'File too large' }, { status: 413 })
-    }
-    if (!ALLOWED_TYPES.includes(contentType)) {
-      return NextResponse.json({ error: 'Unsupported file type' }, { status: 415 })
-    }
+    const { customerEmail, filename, contentType, fileSize, serviceType } = parsed.data
 
     const bucket = process.env.S3_BUCKET as string
     if (!bucket) return NextResponse.json({ error: 'S3 not configured' }, { status: 500 })
@@ -35,6 +40,6 @@ export async function POST(request: NextRequest) {
   } catch (e: any) {
     return NextResponse.json({ error: 'Failed to create presigned URL' }, { status: 500 })
   }
-}
+})
 
 

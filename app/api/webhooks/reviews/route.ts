@@ -194,11 +194,11 @@ export const POST = withRateLimit('public', 'webhook_reviews')(async (request: N
 });
 
 // Health check endpoint
-export async function GET() {
+export const GET = withRateLimit('public', 'webhook_reviews_health')(async () => {
   return NextResponse.json({
     status: 'active',
     endpoint: 'Review monitoring webhook',
     workflow: 'Workflow 20: Review Response Automation',
     timestamp: new Date().toISOString()
   });
-} 
+})

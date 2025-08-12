@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -10,7 +11,10 @@ import { logger } from '@/lib/logger';
  * POST /api/proof/documents
  * Upload documents to Proof for a notarization transaction
  */
-export async function POST(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const POST = withRateLimit('api_general', 'proof_documents')(async (request: NextRequest) => {
   try {
     const session = await getServerSession(authOptions);
     
@@ -107,13 +111,13 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+})
 
 /**
  * GET /api/proof/documents?bookingId=xxx
  * Get documents for a Proof transaction
  */
-export async function GET(request: NextRequest) {
+export const GET = withRateLimit('api_general', 'proof_documents_get')(async (request: NextRequest) => {
   try {
     const session = await getServerSession(authOptions);
     
@@ -176,4 +180,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+})

@@ -1,16 +1,29 @@
 import { NextResponse } from "next/server"
+import { withRateLimit } from '@/lib/security/rate-limiting'
+import { z } from 'zod'
 
 const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY
 const GOOGLE_MAPS_API_URL = "https://maps.googleapis.com/maps/api/geocode/json"
 
-export async function GET(request: Request) {
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+const schema = z.object({
+  address: z.string().min(1),
+  city: z.string().min(1),
+  state: z.string().min(1),
+  zip: z.string().min(1),
+})
+
+export const GET = withRateLimit('public', 'geocode_legacy')(async (request: Request) => {
   const { searchParams } = new URL(request.url)
   const address = searchParams.get("address")
   const city = searchParams.get("city")
   const state = searchParams.get("state")
   const zip = searchParams.get("zip")
 
-  if (!address || !city || !state || !zip) {
+  const parsed = schema.safeParse({ address, city, state, zip })
+  if (!parsed.success) {
     return NextResponse.json({ error: "Missing required address components" }, { status: 400 })
   }
 
@@ -56,4 +69,4 @@ export async function GET(request: Request) {
     console.error(`Geocoding request failed for address "${fullAddress}":`, error)
     return NextResponse.json({ error: "Internal server error during geocoding" }, { status: 500 })
   }
-} 
+})
