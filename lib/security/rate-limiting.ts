@@ -253,21 +253,21 @@ export function adaptiveRateLimit(
 /**
  * Burst protection - allows short bursts but enforces stricter long-term limits
  */
-export function checkBurstProtection(
+export async function checkBurstProtection(
   request: NextRequest,
   shortWindow: { windowMs: number; maxRequests: number },
   longWindow: { windowMs: number; maxRequests: number }
-): { allowed: boolean; reason?: string } {
+): Promise<{ allowed: boolean; reason?: string }> {
   const clientId = getClientIdentifier(request);
   
   // Check short window (burst)
-  const shortResult = checkRateLimit(request, 'api_general', 'burst_short');
+  const shortResult = await checkRateLimit(request, 'api_general', 'burst_short');
   if (!shortResult.allowed) {
     return { allowed: false, reason: 'Short-term burst limit exceeded' };
   }
   
   // Check long window (sustained)
-  const longResult = checkRateLimit(request, 'api_general', 'burst_long');
+  const longResult = await checkRateLimit(request, 'api_general', 'burst_long');
   if (!longResult.allowed) {
     return { allowed: false, reason: 'Long-term rate limit exceeded' };
   }
