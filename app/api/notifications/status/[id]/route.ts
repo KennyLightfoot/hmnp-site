@@ -12,8 +12,7 @@ import { logger } from '@/lib/logger';
 import { withAdminSecurity, withPublicSecurity } from '@/lib/security/comprehensive-security';
 import { z } from 'zod';
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+// (runtime/dynamic declared at top of file)
 
 const paramsSchema = z.object({ id: z.string().min(1) });
 
