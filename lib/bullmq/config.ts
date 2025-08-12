@@ -1,5 +1,5 @@
 import { Queue, QueueEvents } from 'bullmq';
-import IORedis from 'ioredis';
+import Redis, { type Redis as RedisType } from 'ioredis';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { logger } from '../logger';
 
@@ -22,9 +22,9 @@ export enum QueueName {
 }
 
 // Get Redis connection for BullMQ (TCP). Returns null if only REST is available.
-const getRedisConnection = (): IORedis.Redis | null => {
+const getRedisConnection = (): RedisType | null => {
   if (process.env.REDIS_URL) {
-    return new IORedis(process.env.REDIS_URL, {
+    return new Redis(process.env.REDIS_URL, {
       maxRetriesPerRequest: null as any,
       enableReadyCheck: false as any,
     });
@@ -41,10 +41,10 @@ const getRedisConnection = (): IORedis.Redis | null => {
   const port = parseInt(process.env.REDIS_PORT || '6379', 10);
   const password = process.env.REDIS_PASSWORD || undefined;
   const db = parseInt(process.env.REDIS_DB || '0', 10);
-  return new IORedis({ host, port, password, db, maxRetriesPerRequest: null as any, enableReadyCheck: false as any } as any);
+  return new Redis({ host, port, password, db, maxRetriesPerRequest: null as any, enableReadyCheck: false as any } as any);
 };
 // Queue configuration with connection info
-const createQueue = (name: string, connection: IORedis.Redis) => {
+const createQueue = (name: string, connection: RedisType) => {
   try {
     return new Queue(name, {
       connection,
