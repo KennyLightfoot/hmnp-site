@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, AuthConfig } from '@/lib/auth/unified-middleware';
 import { TwoFactorService } from '@/lib/auth/two-factor';
-import { RateLimitService } from '@/lib/auth/rate-limit';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 import { Role } from '@prisma/client';
 
 /**
  * GET /api/auth/two-factor/setup
  * Generate 2FA setup (QR code and backup codes) for admin users
  */
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('auth_login', 'two_factor_setup')(async (request: NextRequest) => {
   return withAuth(request, async ({ user, context }) => {
     if (!context.isAuthenticated) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -19,19 +22,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ 
         error: 'Two-factor authentication is only available for admin users' 
       }, { status: 403 });
-    }
-
-    // Rate limiting for 2FA setup
-    const rateLimitResult = await RateLimitService.checkLimit(
-      context.userId!,
-      'twoFactor'
-    );
-
-    if (!rateLimitResult.success) {
-      return NextResponse.json({
-        error: 'Too many 2FA setup attempts',
-        retryAfter: rateLimitResult.resetTime
-      }, { status: 429 });
     }
 
     try {
@@ -63,4 +53,4 @@ export async function GET(request: NextRequest) {
       );
     }
   }, AuthConfig.authenticated());
-} 
+})

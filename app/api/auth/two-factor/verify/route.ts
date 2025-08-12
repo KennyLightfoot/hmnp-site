@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, AuthConfig } from '@/lib/auth/unified-middleware';
 import { TwoFactorService } from '@/lib/auth/two-factor';
-import { RateLimitService } from '@/lib/auth/rate-limit';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 import { z } from 'zod';
 import { Role } from '@prisma/client';
 
@@ -14,7 +14,10 @@ const verifySchema = z.object({
  * POST /api/auth/two-factor/verify
  * Verify 2FA token and enable/disable 2FA for admin users
  */
-export async function POST(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const POST = withRateLimit('auth_login', 'two_factor_verify')(async (request: NextRequest) => {
   return withAuth(request, async ({ user, context }) => {
     if (!context.isAuthenticated) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -25,19 +28,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ 
         error: 'Two-factor authentication is only available for admin users' 
       }, { status: 403 });
-    }
-
-    // Rate limiting for 2FA verification
-    const rateLimitResult = await RateLimitService.checkLimit(
-      context.userId!,
-      'twoFactor'
-    );
-
-    if (!rateLimitResult.success) {
-      return NextResponse.json({
-        error: 'Too many 2FA verification attempts',
-        retryAfter: rateLimitResult.resetTime
-      }, { status: 429 });
     }
 
     try {
@@ -103,4 +93,4 @@ export async function POST(request: NextRequest) {
       );
     }
   }, AuthConfig.authenticated());
-} 
+})

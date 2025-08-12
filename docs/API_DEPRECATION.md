@@ -45,6 +45,8 @@ Deprecated shims:
 - For Next.js route handlers, use `withRateLimit(limitType, endpoint)` or the higher-level `withComprehensiveSecurity` from `lib/security/comprehensive-security`.
 - `lib/auth/rate-limit.ts` remains for auth flows that rely on its Redis-based sliding window logic; consider migrating those routes to the standardized wrapper if feasible.
 
+For a live mapping of endpoints to rate limit buckets, see `docs/SECURITY_RATELIMITS.md`.
+
 ### Migration Guide
 - Before: `import { rateLimiters, rateLimitConfigs } from '@/lib/rate-limiting'`
 - After: `import { withRateLimit } from '@/lib/security/rate-limiting'`

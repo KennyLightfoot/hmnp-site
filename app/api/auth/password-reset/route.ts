@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { RateLimitService } from '@/lib/auth/rate-limit';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -31,26 +31,11 @@ const resetConfirmSchema = z.object({
  * POST /api/auth/password-reset
  * Request password reset (send reset email)
  */
-export async function POST(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const POST = withRateLimit('auth_login', 'password_reset_request')(async (request: NextRequest) => {
   try {
-    // Rate limiting for password reset requests
-    const clientIP = request.headers.get('x-forwarded-for') || 
-                     request.headers.get('x-real-ip') || 
-                     'unknown';
-    
-    const rateLimitResult = await RateLimitService.checkLimit(
-      clientIP,
-      'passwordReset'
-    );
-
-    if (!rateLimitResult.success) {
-      return NextResponse.json({
-        error: 'Too many password reset attempts',
-        message: 'Please try again later',
-        retryAfter: rateLimitResult.resetTime
-      }, { status: 429 });
-    }
-
     const body = await request.json();
     const { email } = resetRequestSchema.parse(body);
 
@@ -158,13 +143,13 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+})
 
 /**
  * PATCH /api/auth/password-reset
  * Confirm password reset (set new password)
  */
-export async function PATCH(request: NextRequest) {
+export const PATCH = withRateLimit('auth_login', 'password_reset_confirm')(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const { token, newPassword } = resetConfirmSchema.parse(body);
@@ -238,4 +223,4 @@ export async function PATCH(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+})

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { RateLimitService } from '@/lib/auth/rate-limit';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 import bcrypt from 'bcrypt';
 import { Role } from '@prisma/client';
 import { randomUUID } from 'crypto';
@@ -20,26 +20,11 @@ const registerSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(100).optional(),
 });
 
-export async function POST(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const POST = withRateLimit('auth_login', 'auth_register')(async (request: NextRequest) => {
   try {
-    // Rate limiting for registration
-    const clientIP = request.headers.get('x-forwarded-for') || 
-                     request.headers.get('x-real-ip') || 
-                     'unknown';
-    
-    const rateLimitResult = await RateLimitService.checkLimit(
-      clientIP,
-      'register'
-    );
-
-    if (!rateLimitResult.success) {
-      return NextResponse.json({
-        error: 'Too many registration attempts',
-        message: 'Please try again later',
-        retryAfter: rateLimitResult.resetTime
-      }, { status: 429 });
-    }
-
     const body = await request.json();
     const { email, password, role, name } = registerSchema.parse(body);
 
@@ -100,4 +85,4 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: 'Registration failed' }, { status: 500 });
   }
-} 
+})
