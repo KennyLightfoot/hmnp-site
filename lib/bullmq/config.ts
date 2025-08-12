@@ -1,4 +1,5 @@
-import Bull from 'bull';
+import { Queue, QueueEvents } from 'bullmq';
+import IORedis from 'ioredis';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { logger } from '../logger';
 
@@ -20,41 +21,33 @@ export enum QueueName {
   PAYMENT_PROCESSING = 'payment-processing',
 }
 
-// Get Redis connection options for Bull
-const getRedisOptions = () => {
+// Get Redis connection for BullMQ (TCP). Returns null if only REST is available.
+const getRedisConnection = (): IORedis.Redis | null => {
   if (process.env.REDIS_URL) {
-    return {
-      url: process.env.REDIS_URL,
-      maxRetriesPerRequest: null,
-      enableReadyCheck: false,
-    } as const;
-  } else if (process.env.UPSTASH_REDIS_REST_URL) {
-    // Convert rediss:// to redis:// for Bull compatibility
-    const url = process.env.UPSTASH_REDIS_REST_URL.replace('rediss://', 'redis://');
-    return {
-      url,
-      password: process.env.UPSTASH_REDIS_REST_TOKEN,
-      maxRetriesPerRequest: null,
-      enableReadyCheck: false,
-    } as const;
+    return new IORedis(process.env.REDIS_URL, {
+      maxRetriesPerRequest: null as any,
+      enableReadyCheck: false as any,
+    });
   }
 
-  // Local fallback (should only be used in dev/test)
-  return {
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
-    password: process.env.REDIS_PASSWORD,
-    db: parseInt(process.env.REDIS_DB || '0'),
-    maxRetriesPerRequest: null,
-    enableReadyCheck: false,
-  } as const;
+  // Upstash REST is HTTP and not compatible with BullMQ TCP connections
+  if (process.env.UPSTASH_REDIS_REST_URL) {
+    logger.warn('UPSTASH_REDIS_REST_URL detected but BullMQ requires a TCP Redis (REDIS_URL). Queues will be disabled.');
+    return null;
+  }
+
+  // Local fallback (dev/test)
+  const host = process.env.REDIS_HOST || '127.0.0.1';
+  const port = parseInt(process.env.REDIS_PORT || '6379', 10);
+  const password = process.env.REDIS_PASSWORD || undefined;
+  const db = parseInt(process.env.REDIS_DB || '0', 10);
+  return new IORedis({ host, port, password, db, maxRetriesPerRequest: null as any, enableReadyCheck: false as any } as any);
 };
 // Queue configuration with connection info
-const createQueue = (name: string) => {
+const createQueue = (name: string, connection: IORedis.Redis) => {
   try {
-    const redisOptions = getRedisOptions();
-    return new Bull(name, {
-      redis: redisOptions,
+    return new Queue(name, {
+      connection,
       defaultJobOptions,
     });
   } catch (error) {
@@ -66,18 +59,35 @@ const createQueue = (name: string) => {
 // Create all queues
 export const createQueues = () => {
   try {
-    const notificationsQueue = createQueue(QueueName.NOTIFICATIONS);
-    const bookingProcessingQueue = createQueue(QueueName.BOOKING_PROCESSING);
-    const paymentProcessingQueue = createQueue(QueueName.PAYMENT_PROCESSING);
+    const connection = getRedisConnection();
+    if (!connection) {
+      logger.warn('BullMQ queues disabled: no TCP Redis connection available');
+      return null;
+    }
+
+    const notificationsQueue = createQueue(QueueName.NOTIFICATIONS, connection);
+    const bookingProcessingQueue = createQueue(QueueName.BOOKING_PROCESSING, connection);
+    const paymentProcessingQueue = createQueue(QueueName.PAYMENT_PROCESSING, connection);
 
     // Configure event handlers for each queue
     [notificationsQueue, bookingProcessingQueue, paymentProcessingQueue].forEach(queue => {
       queue.on('error', (error) => {
         logger.error(`Queue error in ${queue.name}:`, error);
       });
+    });
 
-      queue.on('failed', (job, error) => {
-        logger.error(`Job ${job.id} in queue ${queue.name} failed:`, { error: getErrorMessage(error), jobData: job.data });
+    // Subscribe to job events using QueueEvents
+    const notificationsEvents = new QueueEvents(QueueName.NOTIFICATIONS, { connection });
+    const bookingEvents = new QueueEvents(QueueName.BOOKING_PROCESSING, { connection });
+    const paymentEvents = new QueueEvents(QueueName.PAYMENT_PROCESSING, { connection });
+
+    ;[notificationsEvents, bookingEvents, paymentEvents].forEach((qe, idx) => {
+      const name = [QueueName.NOTIFICATIONS, QueueName.BOOKING_PROCESSING, QueueName.PAYMENT_PROCESSING][idx];
+      qe.on('failed', ({ jobId, failedReason }) => {
+        logger.error(`Job ${jobId} in queue ${name} failed: ${failedReason}`);
+      });
+      qe.on('error', (error) => {
+        logger.error(`QueueEvents error in ${name}:`, error as any);
       });
     });
 
