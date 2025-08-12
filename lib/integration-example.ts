@@ -34,7 +34,12 @@ export async function enhancedBookingAPI(request: NextRequest) {
     rateLimitResult = await checkRateLimit(request, 'booking_create', 'enhanced_booking');
 
     if (!rateLimitResult.allowed) {
-      monitoring.trackRateLimit('booking', 'ip');
+      monitoring.trackPerformance({
+        metric: 'rate_limit_block',
+        value: 1,
+        unit: 'count',
+        tags: { bucket: 'booking', actor: 'ip' },
+      });
       
       return NextResponse.json(
         { error: 'Rate limit exceeded. Please try again later.' },
@@ -177,7 +182,12 @@ export async function rateLimitWithUserContext(
   const rateLimitResult = await checkRateLimit(request, 'api_general', 'user_ctx');
   
   if (!rateLimitResult.allowed) {
-    monitoring.trackRateLimit('api', userId ? 'user' : 'ip');
+    monitoring.trackPerformance({
+      metric: 'rate_limit_block',
+      value: 1,
+      unit: 'count',
+      tags: { bucket: 'api_general', actor: userId ? 'user' : 'ip' },
+    });
     
     return {
       allowed: false,
