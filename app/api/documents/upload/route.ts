@@ -7,6 +7,7 @@ import { logger } from '@/lib/logger';
 import { FileUploadSecurity } from '@/lib/security/file-upload-security';
 import { z } from 'zod';
 import { headers } from 'next/headers';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
 const uploadLogger = logger.forService('DocumentUpload');
 
@@ -19,7 +20,10 @@ const uploadRequestSchema = z.object({
   sessionId: z.string().optional(),
 });
 
-export async function POST(request: Request) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const POST = withRateLimit('api_general', 'documents_upload')(async (request: Request) => {
   const session = await getServerSession(authOptions);
   const headersList = await headers();
   const ipAddress = headersList.get('x-forwarded-for') || headersList.get('x-real-ip') || 'unknown';
@@ -184,7 +188,7 @@ export async function POST(request: Request) {
       message: 'Failed to initiate document upload',
     }, { status: 500 });
   }
-}
+});
 
 /**
  * Generate presigned URL for S3 upload
@@ -204,7 +208,7 @@ async function generatePresignedUploadUrl(s3Key: string, contentType: string): P
 /**
  * Get upload status and virus scan results
  */
-export async function GET(request: Request) {
+export const GET = withRateLimit('api_general', 'documents_upload_status')(async (request: Request) => {
   const session = await getServerSession(authOptions);
   
   if (!session?.user) {
@@ -278,4 +282,4 @@ export async function GET(request: Request) {
       error: 'Failed to retrieve document status',
     }, { status: 500 });
   }
-}
+});

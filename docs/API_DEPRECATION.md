@@ -38,3 +38,31 @@ Deprecated shims:
 
 ---
 *Generated: $(date)* 
+
+## 2025-08 Rate Limiting Utilities
+
+- Deprecated: `lib/rate-limiting.ts` has been removed in favor of standardized middleware in `lib/security/rate-limiting.ts`.
+- For Next.js route handlers, use `withRateLimit(limitType, endpoint)` or the higher-level `withComprehensiveSecurity` from `lib/security/comprehensive-security`.
+- `lib/auth/rate-limit.ts` remains for auth flows that rely on its Redis-based sliding window logic; consider migrating those routes to the standardized wrapper if feasible.
+
+### Migration Guide
+- Before: `import { rateLimiters, rateLimitConfigs } from '@/lib/rate-limiting'`
+- After: `import { withRateLimit } from '@/lib/security/rate-limiting'`
+
+Wrap your handlers:
+
+```ts
+export const POST = withRateLimit('public', 'example_endpoint')(async (request) => {
+  // handler body
+});
+```
+
+If you need multiple layers (CORS, CSRF, validation), compose via:
+
+```ts
+import { withComprehensiveSecurity, SecurityLevels } from '@/lib/security/comprehensive-security';
+
+export const POST = withComprehensiveSecurity(SecurityLevels.API, async (request) => {
+  // handler body
+});
+```

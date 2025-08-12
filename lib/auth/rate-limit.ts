@@ -1,3 +1,14 @@
+/**
+ * DEPRECATION NOTICE (2025-08)
+ *
+ * This module remains for select auth flows only. For all Next.js route handlers,
+ * prefer the standardized middleware in `lib/security/rate-limiting.ts`:
+ *   - withRateLimit(limitType, endpoint)
+ *   - or use withComprehensiveSecurity(SecurityLevels.*)
+ *
+ * Migration example:
+ *   export const POST = withRateLimit('auth_login', 'auth_login')(async (req) => { ... })
+ */
 import { redis } from '@/lib/redis';
 import { headers } from 'next/headers';
 

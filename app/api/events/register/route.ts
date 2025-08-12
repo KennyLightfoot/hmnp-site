@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
 interface EventRegistrationRequestBody {
   name: string;
@@ -25,9 +27,27 @@ interface EventRegistrationRequestBody {
 // GHL Pipeline Updates (from GHL_SETUP_GUIDE.md Section 3):
 // - "Event Registrations" pipeline, stage "Registered" or "New Registration"
 
-export async function POST(request: Request) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const schema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  phone: z.string().optional(),
+  eventSelection: z.string().min(1),
+  dietaryRestrictions: z.string().optional(),
+  consent: z.boolean(),
+  numberOfAttendees: z.number().int().min(1).max(20).optional(),
+});
+
+export const POST = withRateLimit('public', 'events_register')(async (request: Request) => {
   try {
-    const body = await request.json() as EventRegistrationRequestBody;
+    const json = await request.json();
+    const parsed = schema.safeParse(json);
+    if (!parsed.success) {
+      return NextResponse.json({ message: 'Validation failed', errors: parsed.error.flatten().fieldErrors }, { status: 400 });
+    }
+    const body = parsed.data as EventRegistrationRequestBody;
     const {
       name,
       email,
@@ -78,4 +98,4 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ message: 'Error submitting event registration.', error: errorMessage }, { status: 500 });
   }
-}
+});

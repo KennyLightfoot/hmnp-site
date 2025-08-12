@@ -1,10 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { leadNurturingService } from '@/lib/lead-nurturing'
+import { withRateLimit } from '@/lib/security/rate-limiting'
+import { z } from 'zod'
 
-export async function POST(request: NextRequest) {
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+const schema = z.object({
+  email: z.string().email(),
+  sequenceId: z.string().min(1),
+  metadata: z.record(z.any()).optional(),
+})
+
+export const POST = withRateLimit('public', 'nurture_enroll')(async (request: NextRequest) => {
   try {
-    const body = await request.json()
-    const { email, sequenceId, metadata } = body
+    const json = await request.json()
+    const parsed = schema.safeParse(json)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Invalid request' }, { status: 400 })
+    }
+    const { email, sequenceId, metadata } = parsed.data
 
     // Validate request
     if (!email || !sequenceId) {
@@ -38,4 +53,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-} 
+})
