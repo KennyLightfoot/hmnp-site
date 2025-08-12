@@ -4,8 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-// Deprecated example import updated to current module path
-import { withRateLimit } from './security/rate-limiting';
+import { checkRateLimit, getRateLimitStats } from './security/rate-limiting';
 import { monitoring } from './monitoring';
 // Stub intelligent caching imports for example; real module may differ or be internal
 const caches: any = {
@@ -32,10 +31,7 @@ export async function enhancedBookingAPI(request: NextRequest) {
   
   try {
     // 1. RATE LIMITING
-    rateLimitResult = await rateLimiters.booking.checkRateLimit(
-      `booking:${clientIP}`,
-      rateLimitConfigs.booking
-    );
+    rateLimitResult = await checkRateLimit(request, 'booking_create', 'enhanced_booking');
 
     if (!rateLimitResult.allowed) {
       monitoring.trackRateLimit('booking', 'ip');
@@ -46,7 +42,7 @@ export async function enhancedBookingAPI(request: NextRequest) {
           status: 429,
           headers: {
             'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-            'X-RateLimit-Reset': rateLimitResult.resetTime.toISOString(),
+            'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
           }
         }
       );
@@ -78,9 +74,6 @@ export async function enhancedBookingAPI(request: NextRequest) {
     const userData = { id: 'user123', preferences: 'cached_data' };
     await caches.app.set(`user:user123`, userData, cacheConfigs.user);
 
-    // Update trust score for rate limiting
-    await rateLimiters.booking.updateTrustScore(clientIP, true);
-
     return NextResponse.json({
       success: true,
       services,
@@ -102,9 +95,6 @@ export async function enhancedBookingAPI(request: NextRequest) {
       duration,
       rateLimitRemaining: rateLimitResult?.remaining,
     });
-
-    // Update trust score negatively
-    await rateLimiters.booking.updateTrustScore(clientIP, false);
 
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -182,16 +172,9 @@ export async function rateLimitWithUserContext(
   const clientIP = request.headers.get('x-forwarded-for') || 'unknown';
   
   // Use user ID if authenticated, otherwise fall back to IP
-  const identifier = userId ? `user:${userId}` : `ip:${clientIP}`;
-  
-  const rateLimitResult = await rateLimiters.api.checkRateLimit(
-    identifier,
-    {
-      ...rateLimitConfigs.api,
-      // Give authenticated users higher limits
-      maxRequests: userId ? rateLimitConfigs.api.maxRequests * 2 : rateLimitConfigs.api.maxRequests,
-    }
-  );
+  // Note: our current checkRateLimit API keys by request (IP/user header). This example
+  // just calls the general API bucket; authenticated boosting is omitted for simplicity.
+  const rateLimitResult = await checkRateLimit(request, 'api_general', 'user_ctx');
   
   if (!rateLimitResult.allowed) {
     monitoring.trackRateLimit('api', userId ? 'user' : 'ip');
@@ -204,7 +187,7 @@ export async function rateLimitWithUserContext(
           status: 429,
           headers: {
             'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-            'X-RateLimit-Reset': rateLimitResult.resetTime.toISOString(),
+            'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
           }
         }
       )
@@ -241,10 +224,12 @@ export async function comprehensiveHealthCheck() {
     };
     
     // Check rate limiting
-    const rateLimitStats = await rateLimiters.api.getStats();
+    const rateLimitStats = getRateLimitStats();
     healthData.rateLimit = {
-      activeEndpoints: rateLimitStats.length,
-      totalBlocked: rateLimitStats.reduce((sum, stat) => sum + stat.blockedRequests, 0),
+      totalKeys: rateLimitStats.totalKeys,
+      activeClients: rateLimitStats.activeClients,
+      blockedIPs: rateLimitStats.blockedIPs,
+      suspiciousActivity: rateLimitStats.suspiciousActivity,
     };
     
     return healthData;
