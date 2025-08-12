@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('public', 'debug_env_vars')(async (request: NextRequest) => {
   try {
     // Check if we're in development mode
     if (process.env.NODE_ENV === 'production') {
@@ -65,4 +69,4 @@ export async function GET(request: NextRequest) {
       message: error instanceof Error ? getErrorMessage(error) : String(error)
     }, { status: 500 });
   }
-} 
+});

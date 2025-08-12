@@ -1,8 +1,16 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
-export async function POST(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const schema = z.object({ amount: z.number().positive().optional(), currency: z.string().optional() }).optional();
+
+export const POST = withRateLimit('payment_create', 'payments_process')(async (request: NextRequest) => {
   try {
-    const body = await request.json();
+    const body = await request.json().catch(() => ({}));
+    schema.safeParse(body); // non-strict: accept optional fields
 
     // In a real application, you would integrate with a payment provider like Stripe.
     // Here we just simulate a successful payment.
@@ -16,4 +24,4 @@ export async function POST(request: NextRequest) {
     console.error("Failed to process payment:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
-}
+});

@@ -12,6 +12,7 @@ import { stripe } from '@/lib/stripe';
 import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
 // Validation schemas
 const CheckoutSessionRequestSchema = z.object({
@@ -46,7 +47,7 @@ const CheckoutSessionRequestSchema = z.object({
     .optional(),
 });
 
-export async function POST(request: NextRequest) {
+export const POST = withRateLimit('payment_create', 'create_checkout_session')(async (request: NextRequest) => {
   try {
     const body = await request.json();
 
@@ -280,9 +281,9 @@ export async function POST(request: NextRequest) {
       message: 'An unexpected error occurred'
     }, { status: 500 });
   }
-}
+});
 
-export async function GET(request: NextRequest) {
+export const GET = withRateLimit('payment_create', 'checkout_session_get')(async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get('session_id');
@@ -325,7 +326,7 @@ export async function GET(request: NextRequest) {
       message: getErrorMessage(error)
     }, { status: 500 });
   }
-}
+});
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
