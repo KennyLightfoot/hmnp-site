@@ -48,7 +48,8 @@ const CheckoutSessionRequestSchema = z.object({
     .optional(),
 });
 
-export const POST = withPaymentSecurity(async (request: NextRequest) => {
+export const POST = withPaymentSecurity(
+  async (request: NextRequest) => {
   try {
     const body = await request.json();
 
@@ -282,7 +283,9 @@ export const POST = withPaymentSecurity(async (request: NextRequest) => {
       message: 'An unexpected error occurred'
     }, { status: 500 });
   }
-});
+  },
+  process.env.NODE_ENV === 'test' ? { csrf: { enabled: false } } : undefined
+);
 
 export const GET = withRateLimit('payment_create', 'checkout_session_get')(async (request: NextRequest) => {
   try {

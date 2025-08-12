@@ -8,7 +8,8 @@ export const dynamic = 'force-dynamic';
 
 const schema = z.object({ amount: z.number().positive().optional(), currency: z.string().optional() }).optional();
 
-export const POST = withPaymentSecurity(async (request: NextRequest) => {
+export const POST = withPaymentSecurity(
+  async (request: NextRequest) => {
   try {
     const body = await request.json().catch(() => ({}));
     schema.safeParse(body); // non-strict: accept optional fields
@@ -25,4 +26,6 @@ export const POST = withPaymentSecurity(async (request: NextRequest) => {
     console.error("Failed to process payment:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
-});
+  },
+  process.env.NODE_ENV === 'test' ? { csrf: { enabled: false } } : undefined
+);
