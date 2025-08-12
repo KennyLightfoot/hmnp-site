@@ -6,7 +6,7 @@ import {
   PaymentProcessingJob 
 } from '../queue/types';
 import { logger } from '../logger';
-import type { JobOptions } from 'bull';
+import type { JobsOptions } from 'bullmq';
 
 /**
  * BullQueueClient provides methods to enqueue jobs to Bull queues with enhanced
@@ -149,7 +149,7 @@ export class BullQueueClient {
       if (job.action === 'refund') priority = 3;
       
       // Configure job options based on the action type
-      const jobOptions: JobOptions = {
+      const jobOptions: JobsOptions = {
         priority,
         attempts: fullJob.maxRetries,
         removeOnComplete: 100,
