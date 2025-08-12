@@ -17,17 +17,20 @@ export const POST = withRateLimit('booking_create', 'booking_create')(async (req
     const validatedData = bookingSchemas.createBookingFromForm.parse(body);
 
     const { booking, service } = await createBookingFromForm({ validatedData, rawBody: body });
+    const bookingId = (booking as any)?.id;
+    const scheduled = (booking as any)?.scheduledDateTime;
+    const totalAmount = (booking as any)?.priceAtBooking;
 
     return NextResponse.json({
       success: true,
       booking: {
-        id: booking.id,
-        confirmationNumber: booking.id,
-        scheduledDateTime: booking.scheduledDateTime,
-        totalAmount: booking.priceAtBooking,
+        id: bookingId,
+        confirmationNumber: bookingId,
+        scheduledDateTime: scheduled,
+        totalAmount,
         service: {
-          name: service.name,
-          serviceType: service.serviceType,
+          name: service.name as any,
+          serviceType: service.serviceType as any,
         },
       },
     });
