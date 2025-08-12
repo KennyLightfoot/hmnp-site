@@ -4,7 +4,7 @@ import { processBookingJob } from '@/lib/bullmq/booking-processor'
 import { createAppointment as createGhlAppointment } from '@/lib/ghl/appointments-adapter'
 import { createContact as createGhlContact, findContactByEmail } from '@/lib/ghl/contacts'
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping'
-import type { Service, Booking } from '@prisma/client'
+import type { Service } from '@prisma/client'
 import { PaymentMethod, BookingStatus, ServiceType } from '@prisma/client'
 
 export interface CreateBookingInput {
@@ -13,7 +13,8 @@ export interface CreateBookingInput {
 }
 
 export interface CreateBookingResult {
-  booking: Booking
+  // Using a widened type here to avoid Prisma type inference drift during Next build
+  booking: any
   service: Service
 }
 
