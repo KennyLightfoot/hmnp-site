@@ -4,6 +4,7 @@ import { hasPermission, Actions, Resources } from '@/lib/auth/permissions';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
 // Profile update validation schema
 const PHONE_REGEX = /^\+?1?\d{10,15}$/; // E.164 lite
@@ -28,7 +29,10 @@ const updateProfileSchema = z.object({
  * GET /api/auth/profile
  * Get current user's profile
  */
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('api_general', 'auth_profile_get')(async (request: NextRequest) => {
   return withAuth(request, async ({ user, context }) => {
     if (!context.isAuthenticated) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -69,13 +73,13 @@ export async function GET(request: NextRequest) {
       );
     }
   }, AuthConfig.authenticated());
-}
+})
 
 /**
  * PATCH /api/auth/profile
  * Update current user's profile
  */
-export async function PATCH(request: NextRequest) {
+export const PATCH = withRateLimit('api_general', 'auth_profile_patch')(async (request: NextRequest) => {
   return withAuth(request, async ({ user, context }) => {
     if (!context.isAuthenticated) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -199,4 +203,4 @@ export async function PATCH(request: NextRequest) {
       );
     }
   }, AuthConfig.authenticated());
-} 
+})

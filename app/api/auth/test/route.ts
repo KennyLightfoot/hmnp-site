@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { withAuth, AuthConfig, validateAuthEnvironment } from '@/lib/auth/unified-middleware';
 import { prisma } from '@/lib/db';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
 /**
  * GET /api/auth/test
  * Test auth system functionality - Public endpoint
  */
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('public', 'auth_test_get')(async (request: NextRequest) => {
   return withAuth(request, async ({ user, context }) => {
     try {
       // Test database connectivity
@@ -59,13 +63,13 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
   }, AuthConfig.public());
-}
+})
 
 /**
  * POST /api/auth/test
  * Test specific auth scenarios - Requires authentication
  */
-export async function POST(request: NextRequest) {
+export const POST = withRateLimit('admin', 'auth_test_post')(async (request: NextRequest) => {
   return withAuth(request, async ({ user, context }) => {
     if (!context.isAuthenticated) {
       return NextResponse.json({ error: 'Authentication required for this test' }, { status: 401 });
@@ -139,4 +143,4 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
   }, AuthConfig.authenticated());
-} 
+}) 

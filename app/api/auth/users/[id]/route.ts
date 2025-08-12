@@ -4,6 +4,7 @@ import { hasPermission, Actions, Resources } from '@/lib/auth/permissions';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 import { Role } from '@prisma/client';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
 // User update schema
 const updateUserSchema = z.object({
@@ -16,10 +17,13 @@ const updateUserSchema = z.object({
  * GET /api/auth/users/[id]
  * Get specific user details
  */
-export async function GET(
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('api_general', 'auth_users_id_get')(async (
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
-) {
+) => {
   return withAuth(request, async ({ user, context: authContext }) => {
     if (!authContext.isAuthenticated) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -72,16 +76,16 @@ export async function GET(
       );
     }
   }, AuthConfig.authenticated());
-}
+})
 
 /**
  * PATCH /api/auth/users/[id]
  * Update specific user
  */
-export async function PATCH(
+export const PATCH = withRateLimit('api_general', 'auth_users_id_patch')(async (
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
-) {
+) => {
   return withAuth(request, async ({ user, context: authContext }) => {
     if (!authContext.isAuthenticated) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -195,16 +199,16 @@ export async function PATCH(
       );
     }
   }, AuthConfig.authenticated());
-}
+})
 
 /**
  * DELETE /api/auth/users/[id]
  * Delete/deactivate specific user (Admin only)
  */
-export async function DELETE(
+export const DELETE = withRateLimit('admin', 'auth_users_id_delete')(async (
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
-) {
+) => {
   return withAuth(request, async ({ user, context: authContext }) => {
     if (!authContext.isAuthenticated) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -294,4 +298,4 @@ export async function DELETE(
       );
     }
   }, AuthConfig.adminOnly());
-} 
+})

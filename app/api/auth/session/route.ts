@@ -3,13 +3,17 @@ import { withAuth, AuthConfig } from '@/lib/auth/unified-middleware';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
 /**
  * GET /api/auth/session
  * Returns current session information
  * Requires authentication
  */
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('api_general', 'auth_session_get')(async (request: NextRequest) => {
   return withAuth(request, async ({ user, context }) => {
     if (!context.isAuthenticated) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -31,13 +35,13 @@ export async function GET(request: NextRequest) {
       lastActivity: new Date().toISOString(),
     });
   }, AuthConfig.authenticated());
-}
+})
 
 /**
  * POST /api/auth/session
  * Refresh session and update last activity
  */
-export async function POST(request: NextRequest) {
+export const POST = withRateLimit('api_general', 'auth_session_post')(async (request: NextRequest) => {
   return withAuth(request, async ({ user, context }) => {
     if (!context.isAuthenticated) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -66,4 +70,4 @@ export async function POST(request: NextRequest) {
       );
     }
   }, AuthConfig.authenticated());
-} 
+})

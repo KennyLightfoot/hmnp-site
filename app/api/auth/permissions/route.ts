@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, AuthConfig } from '@/lib/auth/unified-middleware';
 import { hasPermission, hasAnyPermission, Actions, Resources } from '@/lib/auth/permissions';
 import { z } from 'zod';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
 // Permission check schema
 const permissionCheckSchema = z.object({
@@ -23,7 +24,10 @@ const bulkPermissionCheckSchema = z.object({
  * GET /api/auth/permissions
  * Get all permissions for current user
  */
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('public', 'auth_permissions_get')(async (request: NextRequest) => {
   return withAuth(request, async ({ user, context }) => {
     const { searchParams } = new URL(request.url);
     const detailed = searchParams.get('detailed') === 'true';
@@ -89,13 +93,13 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(detailedPermissions);
   }, AuthConfig.public());
-}
+})
 
 /**
  * POST /api/auth/permissions/check
  * Check specific permissions
  */
-export async function POST(request: NextRequest) {
+export const POST = withRateLimit('api_general', 'auth_permissions_post')(async (request: NextRequest) => {
   return withAuth(request, async ({ user, context }) => {
     try {
       const body = await request.json();
@@ -176,4 +180,4 @@ export async function POST(request: NextRequest) {
       );
     }
   }, AuthConfig.public());
-} 
+})

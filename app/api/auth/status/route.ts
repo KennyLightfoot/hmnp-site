@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, AuthConfig } from '@/lib/auth/unified-middleware';
 import { getUserPermissionSummary } from '@/lib/auth/permissions';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
 /**
  * GET /api/auth/status
  * Returns current authentication status and user permissions
  * Public endpoint - works for both authenticated and guest users
  */
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('public', 'auth_status')(async (request: NextRequest) => {
   return withAuth(request, async ({ user, context }) => {
     const permissionSummary = getUserPermissionSummary(user);
     
@@ -31,4 +35,4 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
   }, AuthConfig.public());
-} 
+})
