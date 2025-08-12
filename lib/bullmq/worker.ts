@@ -1,3 +1,4 @@
+import { Worker } from 'bullmq';
 import type { Job as BullJob } from 'bullmq';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { PrismaClient, BookingStatus, NotificationType, NotificationMethod, PaymentStatus, PaymentProvider } from '@prisma/client';
@@ -820,46 +821,50 @@ export class BullQueueWorker {
     try {
       this.isProcessing = true;
       const { notificationsQueue, bookingProcessingQueue, paymentProcessingQueue } = this.queues;
-      
-      // Process notifications
-      notificationsQueue.process('process-notification', this.concurrency.notifications, 
-        async (job) => this.processNotificationJob(job));
-      
-      // Process booking jobs
-      bookingProcessingQueue.process('process-booking', this.concurrency.bookingProcessing,
-        async (job) => this.processBookingJob(job));
-        
-      // Process payment jobs
-      paymentProcessingQueue.process('process-payment', this.concurrency.paymentProcessing,
-        async (job) => this.processPaymentJob(job));
-      
-      // Log startup of processors
-      logger.info(`Started BullMQ processors with concurrency:`, {
-        notifications: this.concurrency.notifications,
-        bookings: this.concurrency.bookingProcessing,
-        payments: this.concurrency.paymentProcessing
-      });
-      
-      // Set up global event handlers for all queues
-      [notificationsQueue, bookingProcessingQueue, paymentProcessingQueue].forEach(queue => {
-        queue.on('error', (error) => {
-          logger.error(`Queue error in ${queue.name}:`, error instanceof Error ? error : new Error(String(error)));
+
+      const connection: any = notificationsQueue.opts?.connection || bookingProcessingQueue.opts?.connection || paymentProcessingQueue.opts?.connection;
+
+      const notificationsWorker = new Worker<NotificationJob>(
+        notificationsQueue.name,
+        async (job) => this.processNotificationJob(job as BullJob<NotificationJob>),
+        { concurrency: this.concurrency.notifications, connection }
+      );
+      const bookingsWorker = new Worker<BookingProcessingJob>(
+        bookingProcessingQueue.name,
+        async (job) => this.processBookingJob(job as BullJob<BookingProcessingJob>),
+        { concurrency: this.concurrency.bookingProcessing, connection }
+      );
+      const paymentsWorker = new Worker<PaymentProcessingJob>(
+        paymentProcessingQueue.name,
+        async (job) => this.processPaymentJob(job as BullJob<PaymentProcessingJob>),
+        { concurrency: this.concurrency.paymentProcessing, connection }
+      );
+
+      const attachWorkerEvents = (worker: Worker) => {
+        worker.on('error', (error) => {
+          logger.error('Worker error:', error instanceof Error ? error : new Error(String(error)));
         });
-        
-        queue.on('failed', (job, error) => {
-          logger.error(`Job ${job.id} failed in ${queue.name} queue:`, { 
-            error: getErrorMessage(error), 
-            jobData: job.data,
-            attemptsMade: job.attemptsMade
+        worker.on('failed', (job, error) => {
+          logger.error(`Job ${job?.id} failed:`, {
+            error: getErrorMessage(error),
+            jobData: job?.data,
+            attemptsMade: job?.attemptsMade,
           });
         });
-        
-        queue.on('completed', (job) => {
-          logger.info(`Job ${job.id} completed in ${queue.name} queue`);
+        worker.on('completed', (job) => {
+          logger.info(`Job ${job?.id} completed`);
         });
+      };
+
+      attachWorkerEvents(notificationsWorker);
+      attachWorkerEvents(bookingsWorker);
+      attachWorkerEvents(paymentsWorker);
+
+      logger.info('All BullMQ workers started successfully', {
+        notifications: this.concurrency.notifications,
+        bookings: this.concurrency.bookingProcessing,
+        payments: this.concurrency.paymentProcessing,
       });
-      
-      logger.info('All Bull queue processors started successfully');
     } catch (error) {
       logger.error('Error starting Bull queue processors', 'BULL_QUEUE_WORKER', error as Error);
       this.isProcessing = false;
