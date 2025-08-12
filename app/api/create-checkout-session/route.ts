@@ -13,6 +13,7 @@ import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withPaymentSecurity } from '@/lib/security/comprehensive-security';
 
 // Validation schemas
 const CheckoutSessionRequestSchema = z.object({
@@ -47,7 +48,7 @@ const CheckoutSessionRequestSchema = z.object({
     .optional(),
 });
 
-export const POST = withRateLimit('payment_create', 'create_checkout_session')(async (request: NextRequest) => {
+export const POST = withPaymentSecurity(async (request: NextRequest) => {
   try {
     const body = await request.json();
 

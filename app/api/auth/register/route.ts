@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withAuthSecurity } from '@/lib/security/comprehensive-security';
 import bcrypt from 'bcrypt';
 import { Role } from '@prisma/client';
 import { randomUUID } from 'crypto';
@@ -23,7 +24,7 @@ const registerSchema = z.object({
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export const POST = withRateLimit('auth_login', 'auth_register')(async (request: NextRequest) => {
+export const POST = withAuthSecurity(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const { email, password, role, name } = registerSchema.parse(body);

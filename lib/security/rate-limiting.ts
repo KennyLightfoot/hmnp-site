@@ -6,8 +6,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { RateLimitError } from '@/lib/monitoring/api-error-handler';
+import { redis } from '@/lib/redis';
 
-// In-memory store for development/simple deployments
+// In-memory store for development or when Redis is unavailable
 const rateLimitStore = new Map<string, { count: number; resetTime: number; firstRequest: number }>();
 
 // Rate limit configurations for different endpoints
@@ -103,30 +104,45 @@ export function checkRateLimit(
   const clientId = getClientIdentifier(request);
   const key = createRateLimitKey(clientId, limitType, endpoint);
   const now = Date.now();
-  
-  // Clean up expired entries
-  cleanupExpiredEntries();
-  
-  // Get current rate limit data
-  let data = rateLimitStore.get(key);
-  
-  // Initialize if not exists or window expired
-  if (!data || now > data.resetTime) {
-    data = {
-      count: 0,
-      resetTime: now + config.windowMs,
-      firstRequest: now,
-    };
+
+  // Prefer Redis in production if available
+  const useRedis = process.env.NODE_ENV === 'production' && (redis as any)?.isAvailable?.();
+
+  if (useRedis) {
+    try {
+      // Use a sorted set per key with timestamps, expire set by window
+      // Remove old entries
+      (redis as any).client && (redis as any).client.zremrangebyscore?.(key, 0, now - config.windowMs);
+      // Count current
+      const currentCount = await (redis as any).client?.zcard?.(key) ?? 0;
+      const allowed = currentCount < config.maxRequests;
+      if (allowed) {
+        await (redis as any).client?.zadd?.(key, now, `${now}_${Math.random()}`);
+        await (redis as any).client?.expire?.(key, Math.ceil(config.windowMs / 1000));
+      }
+      const resetTime = now + config.windowMs;
+      return {
+        allowed,
+        resetTime,
+        remaining: Math.max(0, config.maxRequests - (allowed ? currentCount + 1 : currentCount)),
+        total: config.maxRequests,
+      };
+    } catch {
+      // Fallback to memory on Redis failure
+    }
   }
-  
-  // Check if limit exceeded
+
+  // Memory fallback
+  cleanupExpiredEntries();
+  let data = rateLimitStore.get(key);
+  if (!data || now > data.resetTime) {
+    data = { count: 0, resetTime: now + config.windowMs, firstRequest: now };
+  }
   const allowed = data.count < config.maxRequests;
-  
   if (allowed) {
     data.count++;
     rateLimitStore.set(key, data);
   }
-  
   return {
     allowed,
     resetTime: data.resetTime,

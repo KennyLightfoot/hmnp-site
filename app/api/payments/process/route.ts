@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withPaymentSecurity } from '@/lib/security/comprehensive-security';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';
@@ -7,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 const schema = z.object({ amount: z.number().positive().optional(), currency: z.string().optional() }).optional();
 
-export const POST = withRateLimit('payment_create', 'payments_process')(async (request: NextRequest) => {
+export const POST = withPaymentSecurity(async (request: NextRequest) => {
   try {
     const body = await request.json().catch(() => ({}));
     schema.safeParse(body); // non-strict: accept optional fields

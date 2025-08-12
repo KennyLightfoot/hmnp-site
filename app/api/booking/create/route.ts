@@ -6,12 +6,13 @@ import { ServiceType } from '@prisma/client';
 import { z } from 'zod';
 import { createBookingFromForm } from '@/lib/booking/create';
 import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withBookingSecurity } from '@/lib/security/comprehensive-security';
 
 export const BookingSchema = bookingSchemas.createBookingFromForm;
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export const POST = withRateLimit('booking_create', 'booking_create')(async (request: NextRequest) => {
+export const POST = withBookingSecurity(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const validatedData = bookingSchemas.createBookingFromForm.parse(body);

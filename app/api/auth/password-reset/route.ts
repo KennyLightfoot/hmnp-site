@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withAuthSecurity } from '@/lib/security/comprehensive-security';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -34,7 +35,7 @@ const resetConfirmSchema = z.object({
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export const POST = withRateLimit('auth_login', 'password_reset_request')(async (request: NextRequest) => {
+export const POST = withAuthSecurity(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const { email } = resetRequestSchema.parse(body);
@@ -149,7 +150,7 @@ export const POST = withRateLimit('auth_login', 'password_reset_request')(async 
  * PATCH /api/auth/password-reset
  * Confirm password reset (set new password)
  */
-export const PATCH = withRateLimit('auth_login', 'password_reset_confirm')(async (request: NextRequest) => {
+export const PATCH = withAuthSecurity(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const { token, newPassword } = resetConfirmSchema.parse(body);
