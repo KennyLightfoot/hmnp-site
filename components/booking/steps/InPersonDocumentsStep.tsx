@@ -71,7 +71,7 @@ export default function InPersonDocumentsStep({ data, onUpdate }: Props) {
                 <Button
                   type="button"
                   variant="outline"
-                  size="xs"
+                   size="sm"
                   onClick={() => {
                     const next = uploaded.filter((_, i) => i !== idx)
                     setUploaded(next)
