@@ -7,9 +7,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 
-export async function GET() {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('public', 'debug_request_patterns')(async () => {
   const analysis: any = {
     timestamp: new Date().toISOString(),
     instructions: {
@@ -159,12 +164,21 @@ export async function GET() {
       'Cache-Control': 'no-cache, no-store, must-revalidate'
     }
   });
-}
+})
 
-export async function POST(request: NextRequest) {
+const postSchema = z.object({
+  action: z.enum(['analyze_requests', 'check_endpoints', 'test_rate_limiting']),
+  data: z.any().optional(),
+});
+
+export const POST = withRateLimit('public', 'debug_request_patterns_post')(async (request: NextRequest) => {
   try {
     const body = await request.json();
-    const { action, data } = body;
+    const parsed = postSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+    const { action, data } = parsed.data;
 
     switch (action) {
       case 'analyze_requests':
@@ -188,7 +202,7 @@ export async function POST(request: NextRequest) {
       details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
     }, { status: 400 });
   }
-}
+})
 
 async function analyzeRequests(requestData: any) {
   // Analyze provided request data for patterns

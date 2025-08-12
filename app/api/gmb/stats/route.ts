@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { gmbManager } from '@/lib/gmb/manager';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('public', 'gmb_stats')(async (request: NextRequest) => {
   try {
     // Check if GMB is enabled
     const gmbEnabled = process.env.GMB_POSTING_ENABLED === 'true';
@@ -89,7 +93,7 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+})
 
 function getTaskDescription(type: string, data: any): string {
   switch (type) {

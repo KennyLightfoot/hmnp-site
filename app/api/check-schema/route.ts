@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '@/lib/database-connection';
 
-export async function GET() {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('admin', 'check_schema')(async () => {
   try {
     console.log('🔍 Checking production database schema...');
     
@@ -67,4 +71,4 @@ export async function GET() {
   } finally {
     await prisma.$disconnect();
   }
-}
+})

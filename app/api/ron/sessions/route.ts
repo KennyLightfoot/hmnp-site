@@ -3,8 +3,18 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { Role, BookingStatus, LocationType } from '@prisma/client';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
-export async function POST(request: Request) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const schema = z.object({
+  serviceId: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+export const POST = withRateLimit('public', 'ron_sessions_create')(async (request: Request) => {
   const session = await getServerSession(authOptions);
 
   // 1. Authorization Check
@@ -15,8 +25,8 @@ export async function POST(request: Request) {
 
   try {
     // 2. Parse Request Body (if needed for additional session parameters)
-    const body = await request.json();
-    const { serviceId, notes } = body;
+    const parsed = schema.safeParse(await request.json());
+    const { serviceId, notes } = parsed.success ? parsed.data : ({} as any);
 
     // 3. Find or create a RON service
     let ronService = await prisma.service.findFirst({
@@ -65,4 +75,4 @@ export async function POST(request: Request) {
     console.error('Failed to create RON session:', error);
     return NextResponse.json({ error: 'Failed to create RON session.' }, { status: 500 });
   }
-}
+})

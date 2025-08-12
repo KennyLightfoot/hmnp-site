@@ -5,12 +5,32 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
 // Phase 2: Enhanced Pricing Engine
 import { EnhancedPricingEngine } from '../../../../lib/business-rules/pricing-engine';
 
-export async function POST(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const schema = z.object({
+  serviceType: z.string().min(1),
+  address: z.any().optional(),
+  documentCount: z.number().int().min(1).max(50).optional(),
+  appointmentDateTime: z.any().optional(),
+  customerType: z.string().optional(),
+  referralCode: z.string().optional(),
+  promoCode: z.string().optional(),
+  customerId: z.string().optional(),
+});
+
+export const POST = withRateLimit('public', 'booking_calculate_price')(async (request: NextRequest) => {
   try {
+    const parsed = schema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+    }
     const { 
       serviceType, 
       address, 
@@ -20,7 +40,7 @@ export async function POST(request: NextRequest) {
       referralCode,
       promoCode,
       customerId 
-    } = await request.json();
+    } = parsed.data as any;
     
     // Validate service type
     const validServiceTypes = ['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH'];
@@ -88,4 +108,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+})

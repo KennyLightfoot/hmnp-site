@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { proofAPI, RONService } from '@/lib/proof/api';
 
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('public', 'debug_proof_connection')(async (request: NextRequest) => {
   try {
     // Test 1: Check if Proof API is enabled
     const isEnabled = proofAPI.isEnabled();
@@ -107,4 +111,4 @@ export async function GET(request: NextRequest) {
       stack: error instanceof Error ? error.stack : undefined
     }, { status: 500 });
   }
-} 
+})

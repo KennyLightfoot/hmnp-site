@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
 interface ReferrerData {
   name: string;
@@ -44,9 +46,24 @@ interface ReferralRequestBody {
 // GHL Pipeline Updates (from GHL_SETUP_GUIDE.md Section 3):
 // - Referred Contact: "Client Acquisition" pipeline, stage "New Lead - Referral" or "Initial Contact"
 
-export async function POST(request: Request) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const schema = z.object({
+  referrer: z.object({ name: z.string().min(1), email: z.string().email().optional(), phone: z.string().optional() }),
+  referral: z.object({ name: z.string().min(1), email: z.string().email().optional(), phone: z.string().optional() }),
+  notes: z.string().optional(),
+  consent: z.boolean(),
+});
+
+export const POST = withRateLimit('public', 'referrals_submit')(async (request: Request) => {
   try {
-    const body = await request.json() as ReferralRequestBody;
+    const json = await request.json();
+    const parsed = schema.safeParse(json);
+    if (!parsed.success) {
+      return NextResponse.json({ message: 'Invalid request' }, { status: 400 });
+    }
+    const body = parsed.data as ReferralRequestBody;
     const { referrer, referral, notes, consent } = body;
 
     // Basic validation
@@ -94,4 +111,4 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ message: 'Error submitting referral.', error: errorMessage }, { status: 500 });
   }
-}
+})

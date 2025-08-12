@@ -7,6 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { headers } from 'next/headers';
 import { logger } from '@/lib/logger';
@@ -51,7 +52,10 @@ interface HealthCheck {
 /**
  * Main monitoring endpoint - triggered by Vercel Cron
  */
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('admin', 'cron_synthetic_monitor')(async (request: NextRequest) => {
   const startTime = Date.now();
   
   try {
@@ -138,7 +142,7 @@ export async function GET(request: NextRequest) {
       duration
     }, { status: 500 });
   }
-}
+})
 
 /**
  * Run basic health checks

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { sendChat } from '@/lib/vertex';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
 /**
  * Test API route for Gemini AI integration
@@ -10,7 +12,10 @@ import { sendChat } from '@/lib/vertex';
 
 // No need to instantiate – we call sendChat directly
 
-export async function GET() {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('public', 'ai_test_get')(async () => {
   try {
     const vertexResponse = await sendChat("Hello, I need to schedule a notary appointment in Houston.");
     const testResponse = { response: vertexResponse.text };
@@ -28,11 +33,17 @@ export async function GET() {
       details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
     }, { status: 500 });
   }
-}
+})
 
-export async function POST(request: NextRequest) {
+const bodySchema = z.object({ message: z.string().min(1), context: z.any().optional() });
+
+export const POST = withRateLimit('public', 'ai_test_post')(async (request: NextRequest) => {
   try {
-    const { message, context } = await request.json();
+    const parsed = bodySchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json({ success: false, error: 'Invalid request' }, { status: 400 });
+    }
+    const { message, context } = parsed.data;
 
     if (!message) {
       return NextResponse.json({
@@ -57,4 +68,4 @@ export async function POST(request: NextRequest) {
       details: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
     }, { status: 500 });
   }
-} 
+})

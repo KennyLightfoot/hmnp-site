@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '@/lib/database-connection';
 
-export async function GET() {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('public', 'debug_database_health')(async () => {
   const healthCheck: any = {
     timestamp: new Date().toISOString(),
     status: 'unknown',
@@ -149,4 +153,4 @@ export async function GET() {
   } finally {
     await prisma.$disconnect();
   }
-}
+})

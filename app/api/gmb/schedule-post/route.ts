@@ -2,8 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { gmbManager } from '@/lib/gmb/manager';
 import { gmbAutomationSystem } from '@/lib/gmb/automation-system';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
-export async function POST(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const postSchema = z.object({
+  postData: z
+    .object({
+      content: z.string().min(1).optional(),
+      scheduledTime: z.string().datetime().optional(),
+      location: z.string().optional(),
+      type: z.string().optional(),
+    })
+    .optional(),
+});
+
+export const POST = withRateLimit('admin', 'gmb_schedule_post')(async (request: NextRequest) => {
   try {
     // Check if GMB is enabled
     const gmbEnabled = process.env.GMB_POSTING_ENABLED === 'true';
@@ -15,7 +31,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json().catch(() => ({}));
+    const bodyRaw = await request.json().catch(() => ({}));
+    const parsed = postSchema.safeParse(bodyRaw);
+    const body = parsed.success ? parsed.data : {};
     
     // If specific post data is provided, schedule that post
     if (body.postData) {
@@ -88,10 +106,10 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+})
 
 // Get current posting queue
-export async function GET(request: NextRequest) {
+export const GET = withRateLimit('admin', 'gmb_schedule_post_queue')(async (request: NextRequest) => {
   try {
     const gmbEnabled = process.env.GMB_POSTING_ENABLED === 'true';
     
@@ -144,10 +162,10 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
   }
-}
+})
 
 // Cancel a scheduled post
-export async function DELETE(request: NextRequest) {
+export const DELETE = withRateLimit('admin', 'gmb_schedule_post_cancel')(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const { postId } = body;
@@ -198,4 +216,4 @@ export async function DELETE(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+})

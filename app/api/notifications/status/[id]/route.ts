@@ -9,13 +9,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
-export async function GET(
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const paramsSchema = z.object({ id: z.string().min(1) });
+
+export const GET = withRateLimit('public', 'notification_status')(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   try {
     const { id } = await params;
+    const parsedParams = paramsSchema.safeParse({ id });
+    if (!parsedParams.success) {
+      return NextResponse.json({ success: false, error: 'Notification ID is required' }, { status: 400 });
+    }
     const notificationId = id;
 
     if (!notificationId) {
@@ -145,15 +156,15 @@ export async function GET(
       error: 'Failed to retrieve notification status'
     }, { status: 500 });
   }
-}
+) }
 
 /**
  * Update notification status (for webhooks or manual updates)
  */
-export async function PUT(
+export const PUT = withRateLimit('admin', 'notification_status_update')(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   try {
     const { id } = await params;
     const notificationId = id;
@@ -207,7 +218,7 @@ export async function PUT(
       error: 'Failed to update notification status'
     }, { status: 500 });
   }
-}
+})
 
 /**
  * Get delivery analytics for the notification

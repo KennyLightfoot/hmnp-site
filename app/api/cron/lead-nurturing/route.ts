@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { leadNurturingService } from '@/lib/lead-nurturing'
+import { withRateLimit } from '@/lib/security/rate-limiting'
 
-export async function POST(request: NextRequest) {
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+export const POST = withRateLimit('admin', 'cron_lead_nurturing')(async (request: NextRequest) => {
   try {
     console.log('🎯 Starting lead nurturing cron job...')
     
@@ -38,9 +42,9 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})
 
 // Allow GET for manual testing
-export async function GET(request: NextRequest) {
+export const GET = withRateLimit('admin', 'cron_lead_nurturing_get')(async (request: NextRequest) => {
   return POST(request)
-} 
+})

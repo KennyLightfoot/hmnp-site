@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '@/lib/db';
 
-export async function GET() {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('public', 'health_database')(async () => {
   try {
     // Test basic database connectivity
     await prisma.$queryRaw`SELECT 1`;
@@ -106,4 +110,4 @@ export async function GET() {
       details: error instanceof Error ? error.stack : undefined
     }, { status: 500 });
   }
-}
+})

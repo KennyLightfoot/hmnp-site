@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getQueueClient, getQueueWorker } from '@/lib/queue';
 import { logger } from '@/lib/logger';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
 /**
  * Authentication middleware for queue operations
@@ -29,7 +31,15 @@ async function authenticate(request: NextRequest): Promise<boolean> {
   return isValidCronRequest || isValidAdminRequest;
 }
 
-export async function POST(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const postSchema = z.object({
+  action: z.enum(['enqueue', 'process', 'process-single']),
+  job: z.any().optional(),
+});
+
+export const POST = withRateLimit('admin', 'queue_post')(async (request: NextRequest) => {
   try {
     // Verify authentication
     const isAuthenticated = await authenticate(request);
@@ -38,8 +48,11 @@ export async function POST(request: NextRequest) {
     }
     
     // Parse the job from the request body
-    const body = await request.json();
-    const { action, job } = body;
+    const parsed = postSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+    }
+    const { action, job } = parsed.data as any;
     
     if (!action) {
       return NextResponse.json({ error: 'Missing action' }, { status: 400 });
@@ -105,9 +118,9 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+})
 
-export async function GET(request: NextRequest) {
+export const GET = withRateLimit('admin', 'queue_get')(async (request: NextRequest) => {
   try {
     // Verify authentication
     const isAuthenticated = await authenticate(request);
@@ -147,4 +160,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+})

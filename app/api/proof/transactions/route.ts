@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -11,7 +13,12 @@ import { LocationType, BookingStatus } from '@prisma/client';
  * POST /api/proof/transactions
  * Create a new Proof notarization transaction
  */
-export async function POST(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const postSchema = z.object({ bookingId: z.string().min(1), documents: z.array(z.any()).optional() });
+
+export const POST = withRateLimit('public', 'proof_transactions')(async (request: NextRequest) => {
   try {
     const session = await getServerSession(authOptions);
     
@@ -19,8 +26,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { bookingId, documents = [] } = body;
+    const parsed = postSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+    }
+    const { bookingId, documents = [] } = parsed.data as any;
 
     if (!bookingId) {
       return NextResponse.json(
@@ -138,13 +148,15 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+})
 
 /**
  * GET /api/proof/transactions?bookingId=xxx
  * Get Proof transaction status for a booking
  */
-export async function GET(request: NextRequest) {
+const getSchema = z.object({ bookingId: z.string().min(1) });
+
+export const GET = withRateLimit('public', 'proof_transactions_get')(async (request: NextRequest) => {
   try {
     const session = await getServerSession(authOptions);
     
@@ -154,12 +166,9 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const bookingId = searchParams.get('bookingId');
-
-    if (!bookingId) {
-      return NextResponse.json(
-        { error: 'Booking ID is required' }, 
-        { status: 400 }
-      );
+    const parsed = getSchema.safeParse({ bookingId });
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Booking ID is required' }, { status: 400 });
     }
 
     // Get the booking and verify access
@@ -217,4 +226,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}) 

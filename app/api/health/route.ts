@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { PrismaClient } from '@prisma/client';
 import { logger, generateRequestId } from '@/lib/logger';
@@ -48,7 +49,10 @@ interface HealthStatus {
   lastChecked: string;
 }
 
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('public', 'health')(async (request: NextRequest) => {
   const startTime = Date.now();
   const requestId = generateRequestId();
   
@@ -160,7 +164,7 @@ export async function GET(request: NextRequest) {
   } finally {
     // Clean up any request-specific context if needed
   }
-}
+})
 
 
 async function checkDatabase(): Promise<HealthStatus> {
@@ -316,7 +320,7 @@ async function checkSentry(): Promise<HealthStatus | undefined> {
  * Simple health check endpoint for basic monitoring
  * GET /api/health/simple
  */
-export async function HEAD(request: NextRequest) {
+export const HEAD = withRateLimit('public', 'health_head')(async (request: NextRequest) => {
   try {
     // Simple database ping
     await prisma.$queryRaw`SELECT 1`;
@@ -324,4 +328,4 @@ export async function HEAD(request: NextRequest) {
   } catch (error) {
     return new NextResponse(null, { status: 503 });
   }
-} 
+})
