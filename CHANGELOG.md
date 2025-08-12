@@ -7,6 +7,9 @@
   - Repair `lib/ghl/client.ts` export so management helpers work reliably.
   - No schema changes.
 
+- fix(ghl): accept both startDate/endDate and startTime/endTime; auto-retry with seconds/ms for free-slots endpoint
+- fix(csrf/cors): relax origin validation when Origin/Referer are null (server-to-server) and auto-include www/apex variants; add OPTIONS handler to POST /api/booking/reserve-slot for smoother preflights
+
 ## 2025-08-11
 
 - Refactor: Replaced barrel `@/lib/ghl` usages in key paths with specific adapters where appropriate.

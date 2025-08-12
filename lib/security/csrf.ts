@@ -182,7 +182,9 @@ export function validateOrigin(request: NextRequest, allowedOrigins: string[]): 
 
   // For same-origin requests, origin might be null
   if (!origin && !referer) {
-    return false;
+    // Allow when neither Origin nor Referer is present (SSR/server-to-server or strict browsers)
+    // CSRF token validation will still protect the request
+    return true;
   }
 
   const requestOrigin = origin || (referer ? new URL(referer).origin : null);
@@ -211,6 +213,30 @@ export function withEnhancedCSRF(options: {
     ]
   } = options;
 
+  // Expand allowed origins to include both apex and www variants automatically
+  const expandOrigins = (origins: string[]) => {
+    const set = new Set<string>();
+    for (const o of origins) {
+      if (!o) continue;
+      set.add(o);
+      try {
+        const u = new URL(o);
+        const host = u.host;
+        if (host.startsWith('www.')) {
+          const apex = `${u.protocol}//${host.replace(/^www\./, '')}`;
+          set.add(apex);
+        } else {
+          const www = `${u.protocol}//www.${host}`;
+          set.add(www);
+        }
+      } catch {
+        // ignore malformed
+      }
+    }
+    return Array.from(set);
+  };
+  const effectiveAllowedOrigins = expandOrigins(allowedOrigins);
+
   return function <T extends any[]>(
     handler: (request: NextRequest, ...args: T) => Promise<NextResponse>
   ) {
@@ -229,13 +255,13 @@ export function withEnhancedCSRF(options: {
       }
 
       // Validate origin
-      if (!validateOrigin(request, allowedOrigins)) {
+      if (!validateOrigin(request, effectiveAllowedOrigins)) {
         console.warn('[CSRF] Invalid origin:', {
           url: pathname,
           method,
           origin: request.headers.get('origin'),
           referer: request.headers.get('referer'),
-          allowedOrigins,
+          allowedOrigins: effectiveAllowedOrigins,
         });
 
         return new NextResponse('Invalid request origin', { status: 403 });

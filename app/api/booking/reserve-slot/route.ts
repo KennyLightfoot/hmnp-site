@@ -99,3 +99,16 @@ export const GET = withPublicSecurity(async (request: NextRequest) => {
     return NextResponse.json({ success: false, error: 'Failed to retrieve reservation' }, { status: 500 });
   }
 });
+
+// CORS preflight for this route (allows POST from allowed origins)
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': process.env.NEXT_PUBLIC_BASE_URL || '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, x-csrf-token',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}
