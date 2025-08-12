@@ -187,6 +187,120 @@ class MonitoringService {
   }
 
   /**
+   * Track HTTP request performance
+   */
+  public trackHttpRequest(
+    method: string,
+    route: string,
+    statusCode: number,
+    duration: number
+  ): void {
+    logger.info('HTTP Request', { method, route, statusCode, duration });
+
+    if (this.isProduction) {
+      Sentry.addBreadcrumb({
+        message: `HTTP ${method} ${route}`,
+        level: 'info',
+        data: { statusCode, duration },
+      });
+
+      if (duration > 5000) {
+        this.sendAlert({
+          level: 'warning',
+          title: 'Slow HTTP Request',
+          message: `${method} ${route} took ${duration}ms`,
+          context: { method, route, statusCode, duration },
+        });
+      }
+    }
+  }
+
+  /**
+   * Track database query performance
+   */
+  public trackDatabaseQuery(
+    operation: string,
+    table: string,
+    duration: number
+  ): void {
+    logger.info('Database Query', { operation, table, duration });
+
+    if (this.isProduction) {
+      Sentry.addBreadcrumb({
+        message: `DB ${operation} ${table}`,
+        level: 'info',
+        data: { operation, table, duration },
+      });
+
+      if (duration > 1000) {
+        this.sendAlert({
+          level: 'warning',
+          title: 'Slow Database Query',
+          message: `${operation} on ${table} took ${duration}ms`,
+          context: { operation, table, duration },
+        });
+      }
+    }
+  }
+
+  /**
+   * Track booking metrics
+   */
+  public trackBooking(status: string, serviceType: string): void {
+    logger.info('Booking Metric', { status, serviceType });
+
+    if (this.isProduction) {
+      Sentry.addBreadcrumb({
+        message: `Booking ${status}`,
+        level: 'info',
+        data: { serviceType },
+      });
+    }
+  }
+
+  /**
+   * Track application errors
+   */
+  public trackError(
+    type: string,
+    severity: 'low' | 'medium' | 'high' | 'critical'
+  ): void {
+    logger.error('Application Error', { type, severity });
+
+    if (this.isProduction && (severity === 'high' || severity === 'critical')) {
+      this.sendAlert({
+        level: severity === 'critical' ? 'critical' : 'error',
+        title: `${severity.toUpperCase()} Error Detected`,
+        message: `Error type: ${type}`,
+        context: { type, severity },
+        notifyEmail: severity === 'critical',
+      });
+    }
+  }
+
+  /**
+   * Get basic system health information
+   */
+  public async getSystemHealth() {
+    try {
+      const services = {
+        database: 'ok',
+        cache: 'ok',
+      };
+
+      const metrics = {
+        memoryUsage: process.memoryUsage().heapUsed,
+        uptime: process.uptime(),
+      };
+
+      return { services, metrics };
+    } catch (error) {
+      logger.error('Failed to get system health', error as Error);
+      return { services: {}, metrics: {} };
+    }
+  }
+
+  /**
    * Send production alerts
    */
   public sendAlert(alert: AlertData): void {
