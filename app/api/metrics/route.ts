@@ -20,7 +20,7 @@ export const GET = withRateLimit('api_general', 'metrics')(async (request: NextR
     // Get Prometheus metrics
     const metrics = await monitoring.getMetrics();
 
-    return new Response(metrics, {
+    return new NextResponse(metrics, {
       status: 200,
       headers: {
         'Content-Type': 'text/plain; version=0.0.4; charset=utf-8',
@@ -30,6 +30,6 @@ export const GET = withRateLimit('api_general', 'metrics')(async (request: NextR
 
   } catch (error) {
     logger.error('Metrics endpoint error', error as Error);
-    return new Response('Internal server error', { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
