@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
-export async function POST(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const POST = withRateLimit('public', 'ai_escalate')(async (request: NextRequest) => {
   try {
     const schema = z.object({
       contactId: z.string().optional(),
@@ -35,6 +39,6 @@ export async function POST(request: NextRequest) {
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err?.message || 'Invalid request' }, { status: 400 });
   }
-}
+});
 
 

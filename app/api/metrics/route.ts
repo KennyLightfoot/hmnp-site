@@ -5,32 +5,18 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { monitoring } from '@/lib/comprehensive-monitoring';
-import { rateLimiters, rateLimitConfigs } from '@/lib/rate-limiting';
 import { logger } from '@/lib/logger';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
 /**
  * GET /api/metrics
  * Returns Prometheus-formatted metrics
  */
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('api_general', 'metrics')(async (request: NextRequest) => {
   try {
-    // Rate limiting for metrics endpoint
-    const clientIP = request.headers.get('x-forwarded-for') || 'unknown';
-    const rateLimitResult = await rateLimiters.api.checkRateLimit(
-      `metrics:${clientIP}`,
-      { ...rateLimitConfigs.api, maxRequests: 60 } // Higher limit for monitoring
-    );
-
-    if (!rateLimitResult.allowed) {
-      return new Response('Rate limit exceeded', {
-        status: 429,
-        headers: {
-          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-          'X-RateLimit-Reset': rateLimitResult.resetTime.toISOString(),
-        },
-      });
-    }
-
     // Get Prometheus metrics
     const metrics = await monitoring.getMetrics();
 
@@ -39,8 +25,6 @@ export async function GET(request: NextRequest) {
       headers: {
         'Content-Type': 'text/plain; version=0.0.4; charset=utf-8',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-        'X-RateLimit-Reset': rateLimitResult.resetTime.toISOString(),
       },
     });
 
@@ -48,4 +32,4 @@ export async function GET(request: NextRequest) {
     logger.error('Metrics endpoint error', error as Error);
     return new Response('Internal server error', { status: 500 });
   }
-} 
+});

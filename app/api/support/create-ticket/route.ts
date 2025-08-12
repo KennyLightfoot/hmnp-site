@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+import { z } from 'zod';
 
 interface SupportTicketRequestBody {
   name: string;
@@ -26,12 +28,30 @@ interface SupportTicketRequestBody {
 // GHL Pipeline Updates (from GHL_SETUP_GUIDE.md Section 3):
 // - "Client Support" pipeline, stage "New Ticket" or "Open"
 
-export async function POST(request: Request) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const schema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  phone: z.string().optional(),
+  issueCategory: z.string().min(1),
+  description: z.string().min(1),
+  urgency: z.enum(['Low','Medium','High','Critical']),
+  fileUpload: z.any().optional(),
+});
+
+export const POST = withRateLimit('public', 'support_create_ticket')(async (request: Request) => {
   try {
     // Note: Handling multipart/form-data for file uploads requires different parsing
     // For now, we'll assume JSON and a placeholder for fileUpload
     // In a real app, use a library like 'formidable' or Next.js specific handlers for FormData
-    const body = await request.json() as SupportTicketRequestBody;
+    const json = await request.json();
+    const parsed = schema.safeParse(json);
+    if (!parsed.success) {
+      return NextResponse.json({ message: 'Validation failed', errors: parsed.error.flatten().fieldErrors }, { status: 400 });
+    }
+    const body = parsed.data as SupportTicketRequestBody;
 
     const { name, email, phone, issueCategory, description, urgency, fileUpload } = body;
 
@@ -90,4 +110,4 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ message: 'Error submitting support ticket.', error: errorMessage }, { status: 500 });
   }
-}
+});

@@ -9,6 +9,7 @@ import { getUserTier } from '@/lib/auth/user-tier';
 import { ConversationTracker } from '@/lib/conversation-tracker';
 import { redis } from '@/lib/redis';
 import { alertManager } from '@/lib/monitoring/alert-manager';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -121,7 +122,7 @@ const CONTEXT_PROMPTS = {
     with any questions about our notary services.`
 };
 
-export async function POST(request: NextRequest) {
+export const POST = withRateLimit('public', 'ai_chat')(async (request: NextRequest) => {
   try {
     /* -----------------------------------------------------------
        Parse request body early so we can validate/sanitize before
@@ -137,51 +138,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // -------------------------------------------------------------------
-    // 🛡️ Redis-backed Rate Limiting (tiered + burst)
-    // -------------------------------------------------------------------
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-               request.headers.get('x-real-ip') || 'unknown';
-
-    const userTier = await getUserTier();
-
-    const WINDOW_SEC = 300; // 5 minutes
-    const SHORT_WINDOW_SEC = 10;
-
-    const TIER_LIMITS: Record<string, number> = {
-      anon: 20,
-      auth: 50,
-      premium: 100
-    };
-    const tierMax = TIER_LIMITS[userTier] || 20;
-    const BURST_MAX = 4; // 4 per 10 seconds
-
-    // Keys
-    const longKey = `rl:l:${ip}`;
-    const burstKey = `rl:s:${ip}`;
-
-    // Increment counters only if Redis is available
-    const redisAvailable = typeof (redis as any).isAvailable === 'function' ? (redis as any).isAvailable() : true;
-    const canRateLimit = redisAvailable && typeof (redis as any).incr === 'function' && typeof (redis as any).expire === 'function';
-    if (canRateLimit) {
-      const longCount = await redis.incr(longKey);
-      if (longCount === 1) await redis.expire(longKey, WINDOW_SEC);
-
-      const burstCount = await redis.incr(burstKey);
-      if (burstCount === 1) await redis.expire(burstKey, SHORT_WINDOW_SEC);
-
-      const burstExceeded = burstCount > BURST_MAX;
-      const tierExceeded = longCount > tierMax;
-
-      if (burstExceeded || tierExceeded) {
-        const ttl = burstExceeded ? await redis.ttl(burstKey) : await redis.ttl(longKey);
-        try { await alertManager.recordMetric('rate_limit.violation', 1, { ip, burstExceeded, tierExceeded, userTier }); } catch (_) {}
-        return NextResponse.json(
-          { success: false, error: 'Rate limit exceeded. Please slow down.' },
-          { status: 429, headers: { 'Retry-After': Math.max(ttl,1).toString() } }
-        );
-      }
-    }
+    // Centralized rate limiting handled by middleware above
 
     // -------------------------------------------------------------------
     // 🔓 Optional Dev bypass session (still useful for local conversation tracking)
@@ -333,7 +290,7 @@ export async function POST(request: NextRequest) {
       error: error instanceof Error ? getErrorMessage(error) : 'Unknown error'
     }, { status: 500 });
   }
-}
+});
 
 /**
  * Enhance AI response with context-specific suggestions and actions

@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 
 // Minimal helper that logs a note to GHL if possible
-export async function POST(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const POST = withRateLimit('public', 'ai_log_note')(async (request: NextRequest) => {
   try {
     const schema = z.object({
       contactId: z.string().min(1),
@@ -35,6 +39,6 @@ export async function POST(request: NextRequest) {
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err?.message || 'Invalid request' }, { status: 400 });
   }
-}
+});
 
 

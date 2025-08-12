@@ -8,7 +8,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { monitoring } from '@/lib/comprehensive-monitoring';
 import { caches } from '@/lib/intelligent-caching';
-import { rateLimiters, rateLimitConfigs } from '@/lib/rate-limiting';
+import { withRateLimit } from '@/lib/security/rate-limiting';
 import { redis } from '@/lib/redis';
 import { logger } from '@/lib/logger';
 
@@ -38,42 +38,25 @@ async function verifyAdminAccess(request: NextRequest) {
  * GET /api/admin/monitoring
  * Get comprehensive monitoring dashboard data
  */
-export async function GET(request: NextRequest) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('admin', 'admin_monitoring')(async (request: NextRequest) => {
   try {
     // Verify admin access
     const accessError = await verifyAdminAccess(request);
     if (accessError) return accessError;
-
-    // Check rate limit for admin endpoints
-    const clientIP = request.headers.get('x-forwarded-for') || 'unknown';
-    const rateLimitResult = await rateLimiters.admin.checkRateLimit(
-      `admin:${clientIP}`,
-      rateLimitConfigs.admin
-    );
-
-    if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { 
-          error: 'Rate limit exceeded',
-          resetTime: rateLimitResult.resetTime,
-          remaining: rateLimitResult.remaining
-        },
-        { status: 429 }
-      );
-    }
 
     // Collect monitoring data
     const [
       systemHealth,
       cacheStats,
       recentAlerts,
-      rateLimitStats,
       redisStats
     ] = await Promise.all([
       monitoring.getSystemHealth(),
       caches.app.getStats(),
       monitoring.getRecentAlerts(24),
-      rateLimiters.api.getStats(),
       redis.getStats()
     ]);
 
@@ -93,10 +76,6 @@ export async function GET(request: NextRequest) {
         critical: recentAlerts.filter(a => a.level === 'critical').length,
         warnings: recentAlerts.filter(a => a.level === 'warning').length
       },
-      rateLimit: {
-        stats: rateLimitStats,
-        currentWindow: rateLimitResult
-      },
       timestamp: new Date(),
     };
 
@@ -112,7 +91,7 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * POST /api/admin/monitoring/alerts
