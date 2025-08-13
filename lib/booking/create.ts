@@ -105,8 +105,12 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
   // Fire and forget
   await processBookingJob(booking.id)
 
-  // Best-effort GHL appointment
+  // Best-effort GHL appointment (can be disabled via env)
   try {
+    const ghlDisabled = (process.env.DISABLE_GHL_APPOINTMENT_CREATE || '').toLowerCase() === 'true'
+    if (ghlDisabled) {
+      return { booking, service }
+    }
     let calendarId = (service as any).externalCalendarId as string | null
     if (!calendarId) {
       try {
