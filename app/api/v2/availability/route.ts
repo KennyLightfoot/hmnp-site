@@ -81,6 +81,11 @@ export const GET = withRateLimit('public', 'availability_v2')(async (request: Ne
         available: s.available !== false,
         demand: s.demand || 'low',
       }));
+      // Optional fallback: if GHL returns empty, allow mock slots via env flag for continuity
+      const fallbackToMock = (process.env.AVAILABILITY_FALLBACK_TO_MOCK_ON_EMPTY || '').toLowerCase() === 'true';
+      if (fallbackToMock && availableSlots.length === 0) {
+        availableSlots = generateMockSlots(date);
+      }
     } catch (e) {
       availableSlots = generateMockSlots(date);
     }
