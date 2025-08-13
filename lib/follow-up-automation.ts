@@ -7,6 +7,7 @@ import { prisma } from './prisma';
 import { BookingStatus } from '@prisma/client';
 import { logger, logBookingEvent } from './logger';
 import * as ghl from './ghl/api';
+import { addContactToWorkflow } from './ghl/management';
 import { updateBookingStatus } from './integration-example';
 
 export interface FollowUpRule {
@@ -445,6 +446,19 @@ async function triggerGHLWorkflow(booking: any, data: any): Promise<void> {
   // Add trigger tag if specified
   if (data.trigger) {
     await ghl.addTagsToContact(booking.ghlContactId, [`trigger:${data.trigger}`]);
+  }
+
+  // If a specific workflowId is provided, add contact directly to that workflow
+  if (data.workflowId) {
+    try {
+      await addContactToWorkflow(booking.ghlContactId, data.workflowId);
+    } catch (err) {
+      logger.warn('Failed to add contact to specified GHL workflow', 'FOLLOW_UP', err as Error, {
+        bookingId: booking.id,
+        contactId: booking.ghlContactId,
+        workflowId: data.workflowId
+      });
+    }
   }
 
   logger.info('GHL workflow triggered', 'FOLLOW_UP', {

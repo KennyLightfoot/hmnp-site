@@ -7,6 +7,7 @@ import { createContact as createGhlContact, findContactByEmail } from '@/lib/ghl
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping'
 import type { Service } from '@prisma/client'
 import { PaymentMethod, BookingStatus, ServiceType } from '@prisma/client'
+import { logger } from '@/lib/logger'
 
 export interface CreateBookingInput {
   validatedData: any
@@ -41,19 +42,45 @@ async function hasOverlap(startTime: Date, serviceType: ServiceType, bufferMinut
   const windowBeforeMinutes = serviceDurationMinutes + bufferMinutes
   const overlapWindowStart = new Date(startTime.getTime() - windowBeforeMinutes * 60 * 1000)
 
+  // Only block on statuses that truly occupy capacity
+  const blockingStatuses: BookingStatus[] = [
+    BookingStatus.SCHEDULED,
+    BookingStatus.CONFIRMED,
+    BookingStatus.READY_FOR_SERVICE,
+    BookingStatus.IN_PROGRESS,
+  ]
+
   const existing = await prisma.booking.findMany({
     where: {
-      status: { notIn: [BookingStatus.CANCELLED_BY_CLIENT, BookingStatus.CANCELLED_BY_STAFF] },
+      status: { in: blockingStatuses },
       scheduledDateTime: { gte: overlapWindowStart, lte: newEndTime },
     },
     include: { service: true },
   })
-  return existing.some((b) => {
+
+  const overlapFound = existing.some((b) => {
     const existingStart = b.scheduledDateTime as Date
     const existingDuration = (b as any)?.service?.durationMinutes ?? 60
     const existingEnd = new Date(existingStart.getTime() + (existingDuration + bufferMinutes) * 60 * 1000)
-    return startTime < existingEnd && newEndTime > existingStart
+    const isOverlap = startTime < existingEnd && newEndTime > existingStart
+    if (isOverlap) {
+      try {
+        logger.info('Overlap detected', {
+          requestedStart: startTime.toISOString(),
+          requestedEnd: newEndTime.toISOString(),
+          bufferMinutes,
+          serviceDurationMinutes,
+          blockingBookingId: b.id,
+          blockingStatus: b.status,
+          blockingStart: existingStart.toISOString(),
+          blockingEnd: existingEnd.toISOString(),
+        })
+      } catch {}
+    }
+    return isOverlap
   })
+
+  return overlapFound
 }
 
 export async function createBookingFromForm({ validatedData, rawBody }: CreateBookingInput): Promise<CreateBookingResult> {
@@ -132,6 +159,15 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
             source: 'Website Booking',
           })
           ghlContactId = (created as any)?.id || (created as any)?.contact?.id || null
+        }
+        // Persist the mapped GHL contact on the booking for downstream automations (reminders/workflows)
+        if (ghlContactId) {
+          try {
+            await prisma.booking.update({
+              where: { id: booking.id },
+              data: { ghlContactId },
+            })
+          } catch {}
         }
       } catch {}
 

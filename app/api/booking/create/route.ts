@@ -40,7 +40,15 @@ export const POST = withBookingSecurity(async (request: NextRequest) => {
     if (error.name === 'ZodError') {
       return NextResponse.json({ message: 'Validation failed', errors: error.errors }, { status: 400 });
     }
-    return NextResponse.json({ message: 'Internal Server Error', error: getErrorMessage(error) }, { status: 500 });
+    const status = (error as any)?.status || 500
+    if (status === 409) {
+      return NextResponse.json({
+        error: 'TIME_UNAVAILABLE',
+        message: error?.message || 'Selected time is no longer available. Please pick a different time.',
+        code: 'TIME_CONFLICT',
+      }, { status })
+    }
+    return NextResponse.json({ message: 'Internal Server Error', error: getErrorMessage(error) }, { status });
   }
 });
 
