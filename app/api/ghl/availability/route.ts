@@ -31,6 +31,14 @@ export const GET = withRateLimit('public', 'ghl_availability')(async (request: N
     }
     const { calendarId, startDate, endDate } = parsed.data;
 
+    // Ensure caches are cleared when explicitly asked
+    if (request.headers.get('x-clear-ghl-cache') === 'true') {
+      try {
+        const mod = await import('@/lib/ghl-calendar');
+        mod.clearCalendarCache?.();
+      } catch {}
+    }
+
     // Call GHL helper to fetch slots
     const slots = await getCalendarSlots(calendarId, startDate, endDate);
 

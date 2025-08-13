@@ -237,13 +237,13 @@ export async function ghlApiRequest<T = any>(
   const url = `${baseUrl}${endpoint}`;
   
   const token = getCleanEnv('GHL_PRIVATE_INTEGRATION_TOKEN') as string;
-  const isJWT = token && !token.startsWith('pit_');
   const locationId = getCleanEnv('GHL_LOCATION_ID') as string;
   
   const requestOptions: RequestInit = {
     ...options,
     headers: {
-      'Authorization': isJWT ? `Bearer ${token}` : token, // JWT needs Bearer, PIT doesn't
+      // Standardize: send Bearer for both PIT and JWT
+      'Authorization': `Bearer ${token}`,
       'Version': '2021-07-28',
       'Content-Type': 'application/json',
       'User-Agent': 'HMNP-Integration/1.0',
