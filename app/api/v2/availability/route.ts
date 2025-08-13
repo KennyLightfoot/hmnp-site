@@ -45,20 +45,23 @@ function generateMockSlots(dateIso: string) {
 
 function generateLocalServiceSlots(dateIso: string, serviceType: string) {
   const slots: any[] = [];
-  const date = new Date(dateIso + 'T00:00:00');
+  // Use business timezone if provided, else default to America/Chicago
+  const businessTz = process.env.BUSINESS_TIMEZONE || 'America/Chicago';
+  const date = new Date(`${dateIso}T00:00:00`);
   const day = date.getDay(); // 0-6
   const hours = getBusinessHours(serviceType);
   const durationMin = getServiceDurationMinutes(serviceType);
   if (!hours?.days?.includes(day)) return slots;
   for (let h = hours.start; h < hours.end; h++) {
     for (let m = 0; m < 60; m += 30) {
-      const start = new Date(date);
-      start.setHours(h, m, 0, 0);
+      // Construct start in business timezone, then convert to UTC ISO
+      const local = new Date(`${dateIso}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00`);
+      const start = new Date(local);
       const end = new Date(start.getTime() + durationMin * 60 * 1000);
-      // Ensure end does not exceed business end hour
-      if (end.getHours() > hours.end || (end.getHours() === hours.end && end.getMinutes() > 0)) {
-        continue;
-      }
+      // Ensure end does not exceed business end hour in local day window
+      const endHourLocal = end.getHours();
+      const endMinLocal = end.getMinutes();
+      if (endHourLocal > hours.end || (endHourLocal === hours.end && endMinLocal > 0)) continue;
       slots.push({
         startTime: start.toISOString(),
         endTime: end.toISOString(),

@@ -12,7 +12,73 @@ import { redis } from '@/lib/redis';
 const rateLimitStore = new Map<string, { count: number; resetTime: number; firstRequest: number }>();
 
 // Rate limit configurations for different endpoints
-export const RATE_LIMITS = {
+function envInt(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (!raw) return fallback;
+  const parsed = parseInt(raw, 10);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function envBool(name: string, fallback = false): boolean {
+  const v = (process.env[name] || '').toLowerCase();
+  if (v === 'true' || v === '1' || v === 'yes') return true;
+  if (v === 'false' || v === '0' || v === 'no') return false;
+  return fallback;
+}
+
+function getRateLimitConfig(limitType: keyof typeof RATE_LIMITS_BASE) {
+  // Global disable switch (use cautiously; for previews/testing only)
+  if (envBool('RATE_LIMIT_DISABLE_ALL', false)) {
+    return { windowMs: 60_000, maxRequests: Number.MAX_SAFE_INTEGER, message: 'Rate limit disabled' };
+  }
+
+  // Start with base
+  const base = RATE_LIMITS_BASE[limitType];
+
+  // Per-type overrides (window and max)
+  if (limitType === 'booking_create') {
+    if (envBool('RATE_LIMIT_BOOKING_CREATE_DISABLED', false)) {
+      return { ...base, windowMs: base.windowMs, maxRequests: Number.MAX_SAFE_INTEGER };
+    }
+    const windowMs = envInt('RATE_LIMIT_BOOKING_CREATE_WINDOW_MS', base.windowMs);
+    const maxRequests = envInt('RATE_LIMIT_BOOKING_CREATE_MAX_REQUESTS', base.maxRequests);
+    return { ...base, windowMs, maxRequests };
+  }
+
+  if (limitType === 'api_general') {
+    const windowMs = envInt('RATE_LIMIT_API_GENERAL_WINDOW_MS', base.windowMs);
+    const maxRequests = envInt('RATE_LIMIT_API_GENERAL_MAX_REQUESTS', base.maxRequests);
+    return { ...base, windowMs, maxRequests };
+  }
+
+  if (limitType === 'public') {
+    const windowMs = envInt('RATE_LIMIT_PUBLIC_WINDOW_MS', base.windowMs);
+    const maxRequests = envInt('RATE_LIMIT_PUBLIC_MAX_REQUESTS', base.maxRequests);
+    return { ...base, windowMs, maxRequests };
+  }
+
+  if (limitType === 'payment_create') {
+    const windowMs = envInt('RATE_LIMIT_PAYMENT_WINDOW_MS', base.windowMs);
+    const maxRequests = envInt('RATE_LIMIT_PAYMENT_MAX_REQUESTS', base.maxRequests);
+    return { ...base, windowMs, maxRequests };
+  }
+
+  if (limitType === 'auth_login') {
+    const windowMs = envInt('RATE_LIMIT_AUTH_LOGIN_WINDOW_MS', base.windowMs);
+    const maxRequests = envInt('RATE_LIMIT_AUTH_LOGIN_MAX_REQUESTS', base.maxRequests);
+    return { ...base, windowMs, maxRequests };
+  }
+
+  if (limitType === 'admin') {
+    const windowMs = envInt('RATE_LIMIT_ADMIN_WINDOW_MS', base.windowMs);
+    const maxRequests = envInt('RATE_LIMIT_ADMIN_MAX_REQUESTS', base.maxRequests);
+    return { ...base, windowMs, maxRequests };
+  }
+
+  return base;
+}
+
+const RATE_LIMITS_BASE = {
   // Booking endpoints - critical business operations
   booking_create: {
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -55,6 +121,12 @@ export const RATE_LIMITS = {
     message: 'Admin rate limit exceeded.',
   },
 } as const;
+
+export const RATE_LIMITS = new Proxy(RATE_LIMITS_BASE, {
+  get(target, prop: keyof typeof RATE_LIMITS_BASE) {
+    return getRateLimitConfig(prop);
+  }
+});
 
 export type RateLimitType = keyof typeof RATE_LIMITS;
 
