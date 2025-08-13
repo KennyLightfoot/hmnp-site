@@ -6,7 +6,7 @@ import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
 import { getAvailableSlots } from '@/lib/ghl-calendar';
 import { getCalendarSlots } from '@/lib/ghl/management';
 import { isSlotAvailable } from '@/lib/slot-reservation';
-import { getServiceDurationMinutes } from '@/lib/services/config';
+import { getServiceDurationMinutes, getBusinessHours } from '@/lib/services/config';
 import { withRateLimit } from '@/lib/security/rate-limiting';
 
 const RequestSchema = z.object({
@@ -43,6 +43,34 @@ function generateMockSlots(dateIso: string) {
   return slots;
 }
 
+function generateLocalServiceSlots(dateIso: string, serviceType: string) {
+  const slots: any[] = [];
+  const date = new Date(dateIso + 'T00:00:00');
+  const day = date.getDay(); // 0-6
+  const hours = getBusinessHours(serviceType);
+  const durationMin = getServiceDurationMinutes(serviceType);
+  if (!hours?.days?.includes(day)) return slots;
+  for (let h = hours.start; h < hours.end; h++) {
+    for (let m = 0; m < 60; m += 30) {
+      const start = new Date(date);
+      start.setHours(h, m, 0, 0);
+      const end = new Date(start.getTime() + durationMin * 60 * 1000);
+      // Ensure end does not exceed business end hour
+      if (end.getHours() > hours.end || (end.getHours() === hours.end && end.getMinutes() > 0)) {
+        continue;
+      }
+      slots.push({
+        startTime: start.toISOString(),
+        endTime: end.toISOString(),
+        duration: durationMin,
+        available: true,
+        demand: 'low',
+      });
+    }
+  }
+  return slots;
+}
+
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
@@ -64,30 +92,33 @@ export const GET = withRateLimit('public', 'availability_v2')(async (request: Ne
     // Policy update: Allow same-day Standard Notary; surcharge handled in pricing
 
     let availableSlots: any[] = [];
-    try {
-      const calendarId = getCalendarIdForService(serviceType);
-      const teamMemberId = process.env.GHL_DEFAULT_TEAM_MEMBER_ID || undefined;
-      // Use management adapter with original YYYY-MM-DD (mirrors working setup paths)
-      const slots = await getCalendarSlots(
-        calendarId,
-        date,
-        date,
-        teamMemberId
-      );
-      availableSlots = (slots || []).map((s: any) => ({
-        startTime: s.startTime || s.start,
-        endTime: s.endTime || s.end,
-        duration: s.duration || getServiceDurationMinutes(serviceType),
-        available: s.available !== false,
-        demand: s.demand || 'low',
-      }));
-      // Optional fallback: if GHL returns empty, allow mock slots via env flag for continuity
-      const fallbackToMock = (process.env.AVAILABILITY_FALLBACK_TO_MOCK_ON_EMPTY || '').toLowerCase() === 'true';
-      if (fallbackToMock && availableSlots.length === 0) {
+    const source = (process.env.AVAILABILITY_SOURCE || 'ghl').toLowerCase();
+    if (source === 'local') {
+      availableSlots = generateLocalServiceSlots(date, serviceType);
+    } else {
+      try {
+        const calendarId = getCalendarIdForService(serviceType);
+        const teamMemberId = process.env.GHL_DEFAULT_TEAM_MEMBER_ID || undefined;
+        const slots = await getCalendarSlots(
+          calendarId,
+          date,
+          date,
+          teamMemberId
+        );
+        availableSlots = (slots || []).map((s: any) => ({
+          startTime: s.startTime || s.start,
+          endTime: s.endTime || s.end,
+          duration: s.duration || getServiceDurationMinutes(serviceType),
+          available: s.available !== false,
+          demand: s.demand || 'low',
+        }));
+        const fallbackToMock = (process.env.AVAILABILITY_FALLBACK_TO_MOCK_ON_EMPTY || '').toLowerCase() === 'true';
+        if (fallbackToMock && availableSlots.length === 0) {
+          availableSlots = generateMockSlots(date);
+        }
+      } catch (e) {
         availableSlots = generateMockSlots(date);
       }
-    } catch (e) {
-      availableSlots = generateMockSlots(date);
     }
 
     // Optional: bypass DB/Redis filtering to surface raw GHL slots end-to-end (for diagnostics)
