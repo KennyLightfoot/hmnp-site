@@ -615,10 +615,15 @@ export default function BookingForm({
 
       if (response.ok) {
         const result = await response.json();
-        setSuccessMessage('Booking created successfully! Redirecting to confirmation...');
-        
-        // Only use a real local booking id for confirmation deep-linking
         const bookingId = result?.booking?.id || '';
+
+        const disableRedirect = process.env.NEXT_PUBLIC_BOOKING_DISABLE_REDIRECT === 'true';
+        if (disableRedirect) {
+          setSuccessMessage('Booking created successfully!');
+          return;
+        }
+
+        setSuccessMessage('Booking created successfully! Redirecting to confirmation...');
 
         const qsParams = new URLSearchParams();
         if (bookingId) qsParams.set('bookingId', String(bookingId));
@@ -628,7 +633,6 @@ export default function BookingForm({
         if (combinedDateTimeIso) qsParams.set('scheduledDateTime', combinedDateTimeIso);
         if (data?.location?.address) qsParams.set('locationAddress', data.location.address);
 
-        // Redirect to success page with fallback details for display
         setTimeout(() => {
           const qs = qsParams.toString();
           const docs = (watchedValues as any)?.uploadedDocs

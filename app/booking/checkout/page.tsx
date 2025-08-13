@@ -108,9 +108,13 @@ export default function BookingCheckoutPage() {
 
     try {
       // Directly call the booking creation API
+      const csrfRes = await fetch('/api/csrf-token', { method: 'GET', cache: 'no-store' });
+      const csrfJson = csrfRes.ok ? await csrfRes.json().catch(() => ({} as any)) : {} as any;
+      const csrfToken = (csrfJson as any)?.csrfToken || null;
+
       const response = await fetch('/api/booking/create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}) },
         body: JSON.stringify({
           serviceType: bookingData.serviceType,
           customerName: bookingData.customerName,
@@ -132,7 +136,10 @@ export default function BookingCheckoutPage() {
       const responseData = await response.json();
 
       // Redirect to a success page with booking details
-      router.push(`/booking/success?bookingId=${responseData.bookingId}`);
+      const disableRedirect = process.env.NEXT_PUBLIC_BOOKING_DISABLE_REDIRECT === 'true';
+      if (!disableRedirect) {
+        router.push(`/booking/success?bookingId=${responseData.bookingId}`);
+      }
 
     } catch (error) {
       console.error('Booking creation failed:', getErrorMessage(error));
