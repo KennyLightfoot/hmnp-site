@@ -8,7 +8,6 @@ import { getCalendarSlots } from '@/lib/ghl/management';
 import { isSlotAvailable } from '@/lib/slot-reservation';
 import { getServiceDurationMinutes, getBusinessHours } from '@/lib/services/config';
 import { withRateLimit } from '@/lib/security/rate-limiting';
-import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz';
 
 const RequestSchema = z.object({
   serviceType: z.enum([
@@ -55,15 +54,16 @@ function generateLocalServiceSlots(dateIso: string, serviceType: string) {
   if (!hours?.days?.includes(day)) return slots;
   for (let h = hours.start; h < hours.end; h++) {
     for (let m = 0; m < 60; m += 30) {
-      // Construct start in business timezone, then convert to UTC
-      const localStr = `${dateIso}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00`;
-      const start = zonedTimeToUtc(localStr, businessTz);
+      // Ensure end does not exceed business end hour in local minutes
+      const endTotalMinutes = h * 60 + m + durationMin;
+      if (endTotalMinutes > hours.end * 60) continue;
+
+      // Build an ISO with a fixed offset (configurable) so server can parse to UTC reliably
+      // Prefer explicit offset to avoid missing date-fns-tz dependency
+      const tzOffset = process.env.BUSINESS_TZ_OFFSET || (businessTz === 'America/Chicago' ? '-05:00' : 'Z');
+      const localIso = `${dateIso}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00${tzOffset}`;
+      const start = new Date(localIso);
       const end = new Date(start.getTime() + durationMin * 60 * 1000);
-      // Ensure end does not exceed business end hour in local timezone
-      const endLocal = utcToZonedTime(end, businessTz) as Date;
-      const endHourLocal = endLocal.getHours();
-      const endMinLocal = endLocal.getMinutes();
-      if (endHourLocal > hours.end || (endHourLocal === hours.end && endMinLocal > 0)) continue;
       slots.push({
         startTime: start.toISOString(),
         endTime: end.toISOString(),
