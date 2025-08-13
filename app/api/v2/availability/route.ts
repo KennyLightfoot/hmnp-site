@@ -8,6 +8,7 @@ import { getCalendarSlots } from '@/lib/ghl/management';
 import { isSlotAvailable } from '@/lib/slot-reservation';
 import { getServiceDurationMinutes, getBusinessHours } from '@/lib/services/config';
 import { withRateLimit } from '@/lib/security/rate-limiting';
+import { NextResponse as _NR } from 'next/server'
 
 const RequestSchema = z.object({
   serviceType: z.enum([
@@ -94,10 +95,11 @@ export const GET = withRateLimit('public', 'availability_v2')(async (request: Ne
 
     const { serviceType, date, timezone } = parsed.data;
 
-    // Policy update: Allow same-day Standard Notary; surcharge handled in pricing
+    // Admin override: runtime source toggle via admin API
+    const adminOverride = (globalThis as any).__AV_SOURCE_OVERRIDE as 'ghl' | 'local' | undefined
 
     let availableSlots: any[] = [];
-    const source = (process.env.AVAILABILITY_SOURCE || 'ghl').toLowerCase();
+    const source = (adminOverride || (process.env.AVAILABILITY_SOURCE || 'ghl')).toLowerCase();
     if (source === 'local') {
       availableSlots = generateLocalServiceSlots(date, serviceType);
     } else {

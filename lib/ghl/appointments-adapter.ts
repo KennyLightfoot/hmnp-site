@@ -2,6 +2,8 @@ import { ghlApiRequest } from './error-handler'
 import { DateTime } from 'luxon'
 import { getErrorMessage } from '@/lib/utils/error-utils'
 import { getCalendarSlots } from './management'
+import { redis } from '@/lib/redis'
+import crypto from 'crypto'
 
 const BUSINESS_TIMEZONE = process.env.BUSINESS_TIMEZONE || 'America/Chicago'
 
@@ -16,6 +18,20 @@ export async function createAppointment(appointmentData: any, locationId?: strin
   if (!payload.channel) payload.channel = 'web'
   if (!payload.source) payload.source = 'api'
   if (!payload.selectedTimezone) payload.selectedTimezone = BUSINESS_TIMEZONE
+
+  // Compute idempotency key (calendarId + startTime + contactId)
+  const rawKey = `${String(payload.calendarId)}|${String(payload.startTime)}|${String(payload.contactId || '')}`
+  const idempotencyKey = crypto.createHash('sha256').update(rawKey).digest('hex')
+  const idempoRedisKey = `ghl:idempotency:${idempotencyKey}`
+  try {
+    // Avoid duplicate appointment attempts within 15 minutes
+    const setOk = await (redis as any)?.set?.(idempoRedisKey, '1', 'NX', 'EX', 15 * 60)
+    if (setOk !== 'OK') {
+      const err = new Error('DUPLICATE_REQUEST: An identical appointment create is already in progress') as any
+      err.code = 'DUPLICATE_REQUEST'
+      throw err
+    }
+  } catch {}
 
   const BYPASS_PREFLIGHT = (process.env.BOOKING_BYPASS_PREFLIGHT || '').toLowerCase() === 'true'
   if (!BYPASS_PREFLIGHT) {
@@ -46,7 +62,11 @@ export async function createAppointment(appointmentData: any, locationId?: strin
   }
 
   try {
-    return await ghlApiRequest('/calendars/events/appointments', { method: 'POST', body: JSON.stringify(payload) })
+    return await ghlApiRequest('/calendars/events/appointments', {
+      method: 'POST',
+      headers: { 'Idempotency-Key': idempotencyKey },
+      body: JSON.stringify(payload)
+    })
   } catch (error) {
     throw new Error(`Failed to create appointment: ${getErrorMessage(error)}`)
   }
