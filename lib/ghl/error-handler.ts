@@ -145,7 +145,10 @@ export async function makeGHLRequestWithRetry(
         return response;
       }
 
-      const ghlError = classifyGHLError(response);
+      // Try to capture error body for diagnostics
+      let errorBody: string | undefined;
+      try { errorBody = await response.text(); } catch {}
+      const ghlError = classifyGHLError(response, errorBody);
       lastError = ghlError;
 
       logger.error(
@@ -157,6 +160,7 @@ export async function makeGHLRequestWithRetry(
           status: response.status,
           category: ghlError.category,
           message: ghlError.message,
+          errorBody: errorBody?.slice(0, 2000),
           isRetryable: ghlError.isRetryable,
           attempt,
           maxRetries: config.maxRetries + 1
