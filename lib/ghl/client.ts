@@ -20,10 +20,10 @@ export class GHLClient {
     }
 
     const token = process.env.GHL_PRIVATE_INTEGRATION_TOKEN;
-    const isJWT = token && !token.startsWith('pit_');
     
     this.headers = {
-      'Authorization': isJWT ? `Bearer ${token}` : token, // JWT needs Bearer, PIT doesn't
+      // Use Bearer for both JWT and PIT to satisfy newer API requirements
+      'Authorization': `Bearer ${token}`,
       'Version': '2021-07-28',
       'Content-Type': 'application/json',
       // Specify the location so calendar/event endpoints authenticate correctly
