@@ -453,10 +453,11 @@ async function triggerGHLWorkflow(booking: any, data: any): Promise<void> {
     try {
       await addContactToWorkflow(booking.ghlContactId, data.workflowId);
     } catch (err) {
-      logger.warn('Failed to add contact to specified GHL workflow', 'FOLLOW_UP', err as Error, {
+      logger.warn('Failed to add contact to specified GHL workflow', 'FOLLOW_UP', {
         bookingId: booking.id,
         contactId: booking.ghlContactId,
-        workflowId: data.workflowId
+        workflowId: data.workflowId,
+        error: err instanceof Error ? err.message : String(err)
       });
     }
   }

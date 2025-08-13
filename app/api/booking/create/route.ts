@@ -14,7 +14,17 @@ export const dynamic = 'force-dynamic';
 
 export const POST = withBookingSecurity(async (request: NextRequest) => {
   try {
-    const body = await request.json();
+    // Handle both JSON and form submissions
+    const contentType = request.headers.get('content-type') || ''
+    let body: any
+    if (contentType.includes('application/json')) {
+      body = await request.json()
+    } else if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
+      const form = await request.formData()
+      body = Object.fromEntries(form as any)
+    } else {
+      body = await request.json().catch(() => ({}))
+    }
     const validatedData = bookingSchemas.createBookingFromForm.parse(body);
 
     const { booking, service } = await createBookingFromForm({ validatedData, rawBody: body });
