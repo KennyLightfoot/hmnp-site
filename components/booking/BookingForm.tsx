@@ -528,13 +528,26 @@ export default function BookingForm({
             ? DateTime.fromISO(`${hasDate}T${normalizedTime}`, { zone: 'America/Chicago' }).toUTC().toISO()
             : null);
 
+      // Ensure CSRF token is present
+      let csrfToken: string | null = null;
+      try {
+        const csrfRes = await fetch('/api/csrf-token', { method: 'GET', cache: 'no-store' });
+        if (csrfRes.ok) {
+          const csrfJson = await csrfRes.json().catch(() => ({} as any));
+          csrfToken = (csrfJson as any)?.csrfToken || null;
+        }
+      } catch {}
+
       // Try to reserve the selected slot (soft hold)
       let reservationId: string | null = null;
       if (combinedDateTimeIso && data.customer?.email) {
         try {
           const reserveRes = await fetch('/api/booking/reserve-slot', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
+            },
             body: JSON.stringify({
               datetime: combinedDateTimeIso,
               serviceType: data.serviceType,
@@ -593,7 +606,10 @@ export default function BookingForm({
       // Submit via create endpoint which enforces overlap checks
       const response = await fetch('/api/booking/create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
+        },
         body: JSON.stringify(bookingData)
       });
 
