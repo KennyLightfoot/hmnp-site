@@ -85,6 +85,12 @@ export const GET = withRateLimit('public', 'availability_v2')(async (request: Ne
       availableSlots = generateMockSlots(date);
     }
 
+    // Optional: bypass DB/Redis filtering to surface raw GHL slots end-to-end (for diagnostics)
+    const bypassFilters = (process.env.AVAILABILITY_BYPASS_FILTERS || '').toLowerCase() === 'true';
+    if (bypassFilters) {
+      return NextResponse.json({ availableSlots });
+    }
+
     // Filter out slots overlapping existing bookings (with buffer)
     try {
       const dayStart = new Date(`${date}T00:00:00`);
