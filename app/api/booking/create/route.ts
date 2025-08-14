@@ -60,7 +60,7 @@ export const POST = withBookingSecurity(async (request: NextRequest) => {
     }
     return NextResponse.json({ message: 'Internal Server Error', error: getErrorMessage(error) }, { status });
   }
-});
+}, process.env.NODE_ENV !== 'production' ? { csrf: { enabled: false } } : undefined);
 
 // CORS preflight to support deploy previews and prevent null-origin 403s when CSRF is valid
 export async function OPTIONS() {

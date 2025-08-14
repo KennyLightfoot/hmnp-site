@@ -4,7 +4,7 @@
   "private": true,
   "comment": "Triggering a fresh build to run migrations",
   "type": "module",
-  "packageManager": "pnpm@10.11.0",
+  "packageManager": "pnpm@10.14.0+sha512.ad27a79641b49c3e481a16a805baa71817a04bbe06a38d17e60e2eaee83f6a146c6a688125f5792e48dd5ba30e7da52a5cda4c3992b9ccf333f9ce223af84748",
   "scripts": {
     "setup-booking": "npx tsx scripts/setup-booking-system.ts",
     "check-booking": "npx tsx scripts/check-booking-health.ts",
@@ -109,7 +109,6 @@
     "@supabase/supabase-js": "^2.53.0",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/typography": "^0.5.10",
-    
     "@types/jsonwebtoken": "^9.0.10",
     "@types/luxon": "^3.6.2",
     "@types/node": "24.1.0",
@@ -121,7 +120,6 @@
     "axios": "^1.9.0",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
-    
     "bullmq": "^5.8.2",
     "chalk": "^5.4.1",
     "class-variance-authority": "^0.7.0",
@@ -172,7 +170,6 @@
     "react-hot-toast": "^2.5.2",
     "react-resizable-panels": "^3.0.3",
     "recharts": "^2.15.3",
-    
     "remark": "^15.0.1",
     "remark-html": "^16.0.1",
     "resend": "^2.1.0",
