@@ -124,13 +124,13 @@ function normalizeTimeTo24h(input: string): string | null {
   return null;
 }
 
-// Step-specific field validation mapping
+// Step-specific field validation mapping (documents before scheduling)
 const STEP_FIELD_MAPPING: { [step: number]: string[] } = {
   0: ['serviceType'],
   1: ['customer.name', 'customer.email'],
   2: ['location.address', 'location.city', 'location.state', 'location.zipCode'],
-  3: ['scheduling.preferredDate', 'scheduling.preferredTime'],
-  4: [],
+  3: [], // documents optional
+  4: ['scheduling.preferredDate', 'scheduling.preferredTime'],
   5: []
 };
 
@@ -170,17 +170,6 @@ const BOOKING_STEPS = [
     tips: ['We travel to you', 'RON: No location needed', 'Free travel within radius']
   },
   {
-    id: 'scheduling',
-    title: 'Schedule',
-    shortTitle: 'When',
-    description: 'Pick your preferred date and time',
-    mobileDescription: 'Pick date & time',
-    component: EnhancedSchedulingStep,
-    icon: Calendar,
-    estimatedTime: '2 min',
-    tips: ['Same-day available', 'Weekend appointments', 'Flexible timing options']
-  },
-  {
     id: 'documents',
     title: 'Upload Documents (Optional)',
     shortTitle: 'Documents',
@@ -190,6 +179,17 @@ const BOOKING_STEPS = [
     icon: FileText,
     estimatedTime: '1 min',
     tips: ['PDF/PNG/JPEG up to 25MB', 'You can also email documents later']
+  },
+  {
+    id: 'scheduling',
+    title: 'Schedule',
+    shortTitle: 'When',
+    description: 'Pick your preferred date and time',
+    mobileDescription: 'Pick date & time',
+    component: EnhancedSchedulingStep,
+    icon: Calendar,
+    estimatedTime: '2 min',
+    tips: ['Same-day available', 'Weekend appointments', 'Flexible timing options']
   },
   {
     id: 'review',
@@ -351,8 +351,8 @@ export default function BookingForm({
       return true;
     }
     
-    // Special handling for review step
-    if (currentStep === 4) {
+    // Special handling for review step (now index 5)
+    if (currentStep === 5) {
       return true; // Review step doesn't need validation
     }
     
@@ -444,7 +444,7 @@ export default function BookingForm({
         // Special handling for RON services - skip location validation
         if (currentStep === 2 && watchedValues.serviceType === 'RON_SERVICES') {
           currentStepValid = true;
-        } else if (currentStep === 4) {
+        } else if (currentStep === 5) {
           // Review step doesn't need validation
           currentStepValid = true;
         } else if (currentStepFields && currentStepFields.length > 0) {
