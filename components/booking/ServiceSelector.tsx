@@ -510,8 +510,125 @@ export default function ServiceSelector({
         </Alert>
       )}
 
-      {/* Service Selection */}
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Service Selection – mobile carousel + desktop grid */}
+      {/* Mobile: horizontal swipeable cards */}
+      <div className="md:hidden -mx-4 px-4">
+        <div className="flex overflow-x-auto space-x-4 pb-1 snap-x snap-mandatory">
+          {enhancedServices.map((service) => {
+            const isSelected = selectedService === service.id;
+            const isHovered = hoveredService === service.id;
+            const isRecommended = smartRecommendation?.serviceId === service.id;
+            return (
+              <div key={service.id} className="min-w-[85%] snap-start">
+                <button
+                  type="button"
+                  onClick={() => onServiceSelect(service.id)}
+                  data-testid="service-option"
+                  className="w-full text-left cursor-pointer"
+                  onMouseEnter={() => setHoveredService(service.id)}
+                  onMouseLeave={() => setHoveredService(null)}
+                >
+                  <Card className={`transition-all duration-200 ${
+                    isSelected 
+                      ? 'ring-2 ring-blue-500 border-blue-500 shadow-lg' 
+                      : isHovered 
+                        ? 'shadow-md border-gray-300' 
+                        : 'shadow-sm hover:shadow-md'
+                  } ${isRecommended ? 'border-green-400 bg-green-50' : ''}`}>
+                    <CardHeader className="relative pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-4 h-4 rounded-full border-2 mt-1 flex items-center justify-center ${
+                            isSelected 
+                              ? 'border-blue-500 bg-blue-500' 
+                              : 'border-gray-300'
+                          }`}>
+                            {isSelected && (
+                              <div className="w-2 h-2 rounded-full bg-white"></div>
+                            )}
+                          </div>
+                          <div>
+                            <CardTitle className="flex items-center space-x-2">
+                              <span className="text-lg">{service.name}</span>
+                              {service.badge && (
+                                <Badge variant={getBadgeVariant(service.badge)}>
+                                  {getBadgeText(service.badge)}
+                                </Badge>
+                              )}
+                            </CardTitle>
+                            <CardDescription className="mt-1">
+                              {service.description}
+                            </CardDescription>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-green-600">
+                            ${service.price}
+                          </div>
+                          {service.savings && service.savings > 0 && (
+                            <div className="text-sm text-green-600 font-medium">
+                              Save ${service.savings.toFixed(2)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {service.urgencyText && (
+                        <Badge variant="outline" className="absolute top-4 right-4 bg-orange-100 text-orange-800 border-orange-200">
+                          <Zap className="h-3 w-3 mr-1" />
+                          {service.urgencyText}
+                        </Badge>
+                      )}
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                          <Clock className="h-4 w-4" />
+                          <span>{service.hours}</span>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="text-sm font-medium text-gray-700">What's included:</div>
+                          <ul className="text-sm text-gray-600 space-y-1">
+                            {service.included.map((item, index) => (
+                              <li key={index} className="flex items-center space-x-2">
+                                <CheckCircle className="h-3 w-3 text-green-500 flex-shrink-0" />
+                                <span>{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                          <div className="flex items-center space-x-2">
+                            {service.serviceType === 'mobile' ? (
+                              <>
+                                <Car className="h-4 w-4 text-blue-500" />
+                                <span className="text-sm text-blue-600 font-medium">Mobile Service</span>
+                              </>
+                            ) : (
+                              <>
+                                <Monitor className="h-4 w-4 text-green-500" />
+                                <span className="text-sm text-green-600 font-medium">Online Service</span>
+                              </>
+                            )}
+                          </div>
+                          {isSelected && (
+                            <div className="flex items-center space-x-1 text-blue-600">
+                              <CheckCircle className="h-4 w-4" />
+                              <span className="text-sm font-medium">Selected</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Desktop / Tablet: grid */}
+      <div className="hidden md:grid gap-4 md:grid-cols-2">
         {enhancedServices.map((service) => {
           const isSelected = selectedService === service.id;
           const isHovered = hoveredService === service.id;

@@ -475,7 +475,7 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
                   </Alert>
                 ) : (
                   <>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
                       {selectedDay.slots.map((slot, index) => (
                         <button
                           key={`${slot.startTime}-${index}`}
