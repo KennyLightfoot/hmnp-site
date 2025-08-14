@@ -55,9 +55,15 @@ export async function removeTagsFromContact(contactId: string, tags: string[]) {
   return { success: true }
 }
 
-export async function updateContactCustomFields(contactId: string, customFields: any) {
+export async function updateContactCustomFields(contactId: string, customFields: Record<string, any>) {
   try {
-    return await ghlApiRequest(`/contacts/${contactId}/custom-fields`, { method: 'PUT', body: JSON.stringify({ customFields }) })
+    // Updated for PIT-compatible endpoint: update contact with customField payload
+    const body = {
+      // Some PIT flows require location in body for PUT /contacts/{id}
+      locationId: process.env.GHL_LOCATION_ID,
+      customField: customFields,
+    }
+    return await ghlApiRequest(`/contacts/${contactId}`, { method: 'PUT', body: JSON.stringify(body) })
   } catch (error) {
     throw new Error(`Failed to update contact custom fields: ${getErrorMessage(error)}`)
   }

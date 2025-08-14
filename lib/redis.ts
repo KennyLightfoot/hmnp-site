@@ -241,11 +241,16 @@ class RedisClient {
     }
   }
 
-  async set(key: string, value: string, ttlSeconds?: number): Promise<boolean> {
+  async set(key: string, value: string, ttlSeconds?: number | string): Promise<boolean> {
     if (!this.isAvailable()) return false;
     try {
-      if (ttlSeconds) {
-        await this.client!.set(key, value, 'EX', ttlSeconds);
+      if (ttlSeconds !== undefined && ttlSeconds !== null) {
+        const ttl = typeof ttlSeconds === 'number' ? Math.floor(ttlSeconds) : parseInt(String(ttlSeconds), 10);
+        if (Number.isFinite(ttl) && ttl > 0) {
+          await this.client!.set(key, value, 'EX', ttl);
+        } else {
+          await this.client!.set(key, value);
+        }
       } else {
         await this.client!.set(key, value);
       }
