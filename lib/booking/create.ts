@@ -207,10 +207,21 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
             || process.env.GHL_BOOKING_CONFIRMATION_WORKFLOW_ID
             || process.env.GHL_BOOKING_CONFIRMED_WORKFLOW_ID
 
+          try {
+            console.info('[GHL] Resolved booking workflowId:', workflowId ? '[SET]' : '[MISSING]')
+          } catch {}
+
           if (workflowId) {
-            await addContactToWorkflow(ghlContactId, workflowId)
+            try {
+              const wfResp = await addContactToWorkflow(ghlContactId, workflowId)
+              try { console.info('[GHL] addContactToWorkflow success', { contactId: ghlContactId, workflowId }) } catch {}
+            } catch (err) {
+              try { console.warn('[GHL] addContactToWorkflow failed', { contactId: ghlContactId, workflowId, error: (err as any)?.message || String(err) }) } catch {}
+            }
           }
-        } catch {}
+        } catch (e) {
+          try { console.warn('[GHL] Workflow trigger block threw', (e as any)?.message || String(e)) } catch {}
+        }
       }
     }
   } catch {}
