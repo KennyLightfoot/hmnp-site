@@ -257,6 +257,7 @@ export default function BookingForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [sidebarVisible, setSidebarVisible] = useState(true);
   
   // AI Assistant state
   const [stepStartTime, setStepStartTime] = useState(0);
@@ -683,9 +684,16 @@ export default function BookingForm({
     <div className={`w-full max-w-7xl mx-auto space-y-4 md:space-y-6 ${className}`}>
       
       {/* 🚀 PHASE 1: TWO-COLUMN LAYOUT WITH INTERACTIVE PRICING */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="flex justify-end">
+        <div className="hidden xl:block mb-2">
+          <Button variant="outline" size="sm" onClick={() => setSidebarVisible(v => !v)}>
+            {sidebarVisible ? 'Hide Pricing Panel' : 'Show Pricing Panel'}
+          </Button>
+        </div>
+      </div>
+      <div className={`grid grid-cols-1 lg:grid-cols-3 gap-6`}>
         {/* LEFT COLUMN: BOOKING FORM */}
-        <div className="lg:col-span-2 space-y-4 md:space-y-6">
+        <div className={`${sidebarVisible ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-4 md:space-y-6`}>
           
           {/* 🚀 ENHANCED PROGRESS INDICATOR - MOBILE OPTIMIZED */}
           <Card className="border-gray-200 shadow-sm">
@@ -1055,6 +1063,7 @@ export default function BookingForm({
       </div>
       
       {/* RIGHT COLUMN: INTERACTIVE PRICING CALCULATOR */}
+      {sidebarVisible && (
       <div className="lg:col-span-1 hidden lg:block">
         <div className="sticky top-4">
           <InteractivePricingCalculator
@@ -1078,6 +1087,7 @@ export default function BookingForm({
           )}
         </div>
       </div>
+      )}
       
       </div>
       {/* Sticky mobile summary removed to simplify UI and avoid duplicate CTA */}
