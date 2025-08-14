@@ -15,6 +15,7 @@
  */
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { DateTime } from 'luxon';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useForm, FormProvider } from 'react-hook-form';
@@ -210,6 +211,7 @@ export default function BookingForm({
   onError,
   className = ''
 }: BookingFormProps) {
+  const router = useRouter();
   
   // Memoize initialData to prevent form recreation
   const memoizedInitialData = useMemo(() => initialData, []);
@@ -594,6 +596,11 @@ export default function BookingForm({
         },
         uploadedDocs: Array.isArray((watchedValues as any)?.uploadedDocs) ? (watchedValues as any).uploadedDocs : undefined
       };
+      // Attach reservationId if we have one from scheduling step
+      const reservationIdFromState = (watchedValues as any)?.scheduling?.reservationId as string | undefined;
+      if (reservationIdFromState) {
+        bookingData.reservationId = reservationIdFromState;
+      }
       if (reservationId) {
         bookingData.reservationId = reservationId;
       }
@@ -630,12 +637,6 @@ export default function BookingForm({
         const result = await response.json();
         const bookingId = result?.booking?.id || '';
 
-        const disableRedirect = process.env.NEXT_PUBLIC_BOOKING_DISABLE_REDIRECT === 'true';
-        if (disableRedirect) {
-          setSuccessMessage('Booking created successfully!');
-          return;
-        }
-
         setSuccessMessage('Booking created successfully! Redirecting to confirmation...');
 
         const qsParams = new URLSearchParams();
@@ -647,12 +648,11 @@ export default function BookingForm({
         if (data?.location?.address) qsParams.set('locationAddress', data.location.address);
         qsParams.set('ghl', 'true');
 
-        setTimeout(() => {
-          const qs = qsParams.toString();
-          const docs = (watchedValues as any)?.uploadedDocs
-          const docsParam = docs && docs.length ? `&uploadedDocs=${encodeURIComponent(JSON.stringify(docs.map((d:any)=>({ name: d.name }))) )}` : ''
-          window.location.href = `/booking/success${qs ? `?${qs}` : ''}${docsParam}`;
-        }, 800);
+        const qs = qsParams.toString();
+        const docs = (watchedValues as any)?.uploadedDocs
+        const docsParam = docs && docs.length ? `&uploadedDocs=${encodeURIComponent(JSON.stringify(docs.map((d:any)=>({ name: d.name }))) )}` : ''
+        const target = `/booking/success${qs ? `?${qs}` : ''}${docsParam}`;
+        router.push(target);
       } else {
         const errorData = await response.json().catch(() => ({} as any));
         throw new Error((errorData as any).message || (errorData as any).error || 'Booking failed. Please try again.');

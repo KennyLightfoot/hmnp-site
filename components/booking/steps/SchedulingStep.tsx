@@ -257,17 +257,51 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
     }
   };
 
-  const handleTimeSelect = (slot: TimeSlot) => {
+  const handleTimeSelect = async (slot: TimeSlot) => {
+    // Optimistically set selection
     setValue('scheduling.preferredTime', slot.displayTime);
-    onUpdate({ 
-      scheduling: { 
-        ...watchedScheduling, 
+    onUpdate({
+      scheduling: {
+        ...watchedScheduling,
         preferredTime: slot.displayTime,
-        // Persist the exact ISO start time to avoid timezone reconstruction errors
         selectedStartIso: slot.startTime,
         selectedEndIso: slot.endTime
-      } 
+      }
     });
+
+    // Soft-hold reservation immediately to reduce end-of-flow conflicts
+    try {
+      const customerEmail = (watch('customer') as any)?.email || undefined;
+      const serviceType = watch('serviceType') || 'STANDARD_NOTARY';
+      const res = await fetch('/api/booking/reserve-slot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          datetime: slot.startTime,
+          serviceType,
+          customerEmail,
+          estimatedDuration: slot.duration || 60
+        })
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const reservationId = json?.reservation?.id || null;
+        if (reservationId) {
+          setValue('scheduling.reservationId', reservationId as any);
+          onUpdate({ scheduling: { ...watch('scheduling'), reservationId } });
+        }
+      } else if (res.status === 409) {
+        // Time just got taken, clear selection
+        setValue('scheduling.preferredTime', '');
+        setValue('scheduling.selectedStartIso', '' as any);
+        setValue('scheduling.selectedEndIso', '' as any);
+        onUpdate({ scheduling: { ...watch('scheduling'), preferredTime: '', selectedStartIso: undefined, selectedEndIso: undefined } });
+        console.warn('Selected time was just taken. Please choose another time.');
+      }
+    } catch (e) {
+      // Non-blocking; user can still proceed and final submit will attempt hold again
+      console.warn('Failed to pre-reserve time slot:', e);
+    }
   };
 
   const getDemandColor = (demand: string) => {
