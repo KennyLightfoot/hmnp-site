@@ -9,6 +9,8 @@ const BUSINESS_TIMEZONE = process.env.BUSINESS_TIMEZONE || 'America/Chicago'
 
 export async function createAppointment(appointmentData: any, locationId?: string) {
   const payload = { ...appointmentData }
+  // Ensure locationId in body for PIT flows
+  if (!payload.locationId) payload.locationId = process.env.GHL_LOCATION_ID
   if (!payload.timeZone) payload.timeZone = BUSINESS_TIMEZONE
   const TEAM_MEMBER_ID = process.env.GHL_DEFAULT_TEAM_MEMBER_ID || process.env.GHL_ASSIGNED_USER_ID
   if (TEAM_MEMBER_ID) {
@@ -25,8 +27,8 @@ export async function createAppointment(appointmentData: any, locationId?: strin
   const idempoRedisKey = `ghl:idempotency:${idempotencyKey}`
   try {
     // Avoid duplicate appointment attempts within 15 minutes
-    const setOk = await (redis as any)?.set?.(idempoRedisKey, '1', 'NX', 'EX', 15 * 60)
-    if (setOk !== 'OK') {
+    const ok = await (redis as any)?.setex?.(idempoRedisKey, 15 * 60, '1')
+    if (ok === false) {
       const err = new Error('DUPLICATE_REQUEST: An identical appointment create is already in progress') as any
       err.code = 'DUPLICATE_REQUEST'
       throw err
@@ -39,7 +41,13 @@ export async function createAppointment(appointmentData: any, locationId?: strin
     const startDT = DateTime.fromISO(startIso, { zone: BUSINESS_TIMEZONE })
     const dayStr = startDT.toFormat('yyyy-LL-dd')
     const teamMemberId = process.env.GHL_DEFAULT_TEAM_MEMBER_ID || undefined
-    const slotsResponse = await getCalendarSlots(String(payload.calendarId), dayStr, dayStr, teamMemberId)
+    let slotsResponse: any = []
+    try {
+      slotsResponse = await getCalendarSlots(String(payload.calendarId), dayStr, dayStr, teamMemberId)
+    } catch (e) {
+      // If free-slots lookup fails, do not block appointment creation – GHL will validate again
+      slotsResponse = []
+    }
     const rawSlots = Array.isArray(slotsResponse as any)
       ? (slotsResponse as any)
       : Array.isArray((slotsResponse as any)?.slots)
