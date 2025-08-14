@@ -105,7 +105,17 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
         const status = await getReservationStatus(reservationId)
         const resv = (status as any)?.reservation
         const isActive = !!status?.active
-        const matches = isActive && resv && resv.datetime === validatedData.scheduledDateTime && resv.serviceType === (service.serviceType as unknown as string)
+        // Allow small tolerance for clock/format differences
+        let timeMatches = false
+        try {
+          if (resv?.datetime && validatedData?.scheduledDateTime) {
+            const resvMs = new Date(resv.datetime).getTime()
+            const reqMs = startTime.getTime()
+            timeMatches = Number.isFinite(resvMs) && Number.isFinite(reqMs) && Math.abs(resvMs - reqMs) <= 60_000
+          }
+        } catch {}
+        const serviceMatches = String(resv?.serviceType || '').toUpperCase() === String((service.serviceType as unknown as string) || '').toUpperCase()
+        const matches = isActive && timeMatches && serviceMatches
         if (!matches) {
           overlap = await hasOverlap(startTime, service.serviceType as unknown as ServiceType, bufferMinutes)
         }
