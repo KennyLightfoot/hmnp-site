@@ -128,6 +128,23 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
     }
   }
   if (overlap) {
+    // Idempotency: if the overlapping booking already exists for the same customer and time, return it as success
+    try {
+      const oneMinuteMs = 60 * 1000
+      const windowStart = new Date(startTime.getTime() - oneMinuteMs)
+      const windowEnd = new Date(startTime.getTime() + oneMinuteMs)
+      const existingForCustomer = await prisma.booking.findFirst({
+        where: {
+          customerEmail: validatedData.customerEmail,
+          scheduledDateTime: { gte: windowStart, lte: windowEnd },
+          status: { notIn: ['CANCELLED_BY_CLIENT', 'CANCELLED_BY_STAFF'] as any }
+        }
+      })
+      if (existingForCustomer) {
+        return { booking: existingForCustomer, service }
+      }
+    } catch {}
+
     const err = new Error('Selected time is no longer available. Please pick a different time.')
     ;(err as any).status = 409
     throw err
