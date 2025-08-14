@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { withBookingSecurity, withPublicSecurity } from '@/lib/security/comprehensive-security';
 import { reserveSlot as engineReserveSlot, getReservationStatus } from '@/lib/slot-reservation';
+import { extendReservation as engineExtendReservation } from '@/lib/slot-reservation';
 
 // Validation schema for slot reservation
 const SlotReservationSchema = z.object({
@@ -99,6 +100,37 @@ export const GET = withPublicSecurity(async (request: NextRequest) => {
     return NextResponse.json({ success: false, error: 'Failed to retrieve reservation' }, { status: 500 });
   }
 });
+
+// Extend an existing reservation TTL
+export const PATCH = withBookingSecurity(async (request: NextRequest) => {
+  try {
+    const data = await request.json()
+    const schema = z.object({
+      reservationId: z.string().min(10),
+      customerEmail: z.string().email().optional(),
+      userId: z.string().optional(),
+      reason: z.string().max(200).optional(),
+    })
+    const parsed = schema.parse(data)
+
+    const { success, reservation, message, timeRemaining } = await engineExtendReservation({
+      reservationId: parsed.reservationId,
+      customerEmail: parsed.customerEmail,
+      userId: parsed.userId,
+      reason: parsed.reason,
+    } as any)
+
+    if (!success) {
+      return NextResponse.json({ success: false, error: message }, { status: 409 })
+    }
+    return NextResponse.json({ success: true, reservation, timeRemaining })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ success: false, error: 'Invalid extend parameters', details: error.errors }, { status: 400 })
+    }
+    return NextResponse.json({ success: false, error: 'Failed to extend reservation' }, { status: 500 })
+  }
+})
 
 // CORS preflight for this route (allows POST from allowed origins)
 export async function OPTIONS() {
