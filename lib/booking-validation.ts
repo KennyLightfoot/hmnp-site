@@ -101,6 +101,11 @@ export const SchedulingSchema = z.object({
   timeZone: z.string().default("America/Chicago"),
   flexibleTiming: z.boolean().default(false),
   
+  // Optional hold/reservation fields used by the UI to prevent end-of-flow conflicts
+  reservationId: z.string().optional(),
+  selectedStartIso: z.string().optional(),
+  selectedEndIso: z.string().optional(),
+  
   // Urgency indicators
   priority: z.boolean().default(false),
   sameDay: z.boolean().default(false),
