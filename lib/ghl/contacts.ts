@@ -57,12 +57,73 @@ export async function removeTagsFromContact(contactId: string, tags: string[]) {
 
 export async function updateContactCustomFields(contactId: string, customFields: Record<string, any>) {
   try {
-    // Updated for PIT-compatible endpoint: update contact with customField payload
-    const body = {
-      // Some PIT flows require location in body for PUT /contacts/{id}
-      locationId: process.env.GHL_LOCATION_ID,
-      customField: customFields,
+    const locationId = process.env.GHL_LOCATION_ID
+
+    // 1) Fetch custom fields to map keys -> IDs (skip on failure)
+    let keyToId: Record<string, string> = {}
+    try {
+      if (locationId) {
+        // Try multiple endpoints; prefer primary
+        const endpoints = [
+          `/locations/${locationId}/customFields`,
+          `/locations/${locationId}/custom-fields`,
+          `/objects/schema/contact?locationId=${locationId}`
+        ]
+        for (const ep of endpoints) {
+          try {
+            const resp: any = await ghlApiRequest(ep, { method: 'GET' })
+            const arr: any[] = Array.isArray(resp?.customFields)
+              ? resp.customFields
+              : Array.isArray(resp?.fields)
+                ? resp.fields
+                : Array.isArray(resp?.data?.customFields)
+                  ? resp.data.customFields
+                  : Array.isArray(resp?.data?.fields)
+                    ? resp.data.fields
+                    : Array.isArray(resp)
+                      ? resp
+                      : []
+            if (arr.length) {
+              for (const f of arr) {
+                const id = String(f.id || '').trim()
+                const key = String(f.key || f.fieldKey || '').trim()
+                if (id) keyToId[id] = id
+                if (key) keyToId[key] = id || key
+              }
+              break
+            }
+          } catch {
+            // continue to next endpoint
+          }
+        }
+      }
+    } catch {}
+
+    // 2) Build array payload, filtering unknown keys
+    const payloadArray: Array<{ id: string; field_value: any }> = []
+    for (const [k, v] of Object.entries(customFields || {})) {
+      const mappedId = keyToId[k] || (keyToId[k] === '' ? '' : '')
+      // Allow direct IDs as keys
+      const finalId = keyToId[k] || keyToId[String(k).trim()] || (String(k).startsWith('cf_') ? keyToId[String(k)] : String(k))
+      // Only push if we have a plausible ID (starts with cf_ or mapped)
+      if (finalId && (finalId.startsWith('cf_') || keyToId[finalId])) {
+        // Basic sanitation: stringify objects
+        const fieldValue = typeof v === 'object' && v !== null ? JSON.stringify(v) : v
+        payloadArray.push({ id: finalId, field_value: fieldValue })
+      }
     }
+
+    if (payloadArray.length === 0) {
+      // Nothing to update; avoid 422
+      return { success: true, updated: 0 }
+    }
+
+    // 3) Use array format under `customFields` per GHL expectations
+    const body = {
+      locationId,
+      customFields: payloadArray,
+    }
+
     return await ghlApiRequest(`/contacts/${contactId}`, { method: 'PUT', body: JSON.stringify(body) })
   } catch (error) {
     throw new Error(`Failed to update contact custom fields: ${getErrorMessage(error)}`)
