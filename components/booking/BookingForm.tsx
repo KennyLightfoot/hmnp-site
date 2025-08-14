@@ -683,9 +683,9 @@ export default function BookingForm({
     <div className={`w-full max-w-7xl mx-auto space-y-4 md:space-y-6 ${className}`}>
       
       {/* 🚀 PHASE 1: TWO-COLUMN LAYOUT WITH INTERACTIVE PRICING */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* LEFT COLUMN: BOOKING FORM */}
-        <div className="xl:col-span-2 space-y-4 md:space-y-6">
+        <div className="lg:col-span-2 space-y-4 md:space-y-6">
           
           {/* 🚀 ENHANCED PROGRESS INDICATOR - MOBILE OPTIMIZED */}
           <Card className="border-gray-200 shadow-sm">
@@ -756,7 +756,7 @@ export default function BookingForm({
       )}
 
       {/* 💸 Compact Pricing (shown on small/medium screens) */}
-      <Card className="xl:hidden border-blue-200 bg-blue-50">
+      <Card className="lg:hidden border-blue-200 bg-blue-50">
         <CardContent className="p-4 flex items-center justify-between">
           <div>
             <div className="text-sm text-gray-700">Estimated Total</div>
@@ -1055,7 +1055,7 @@ export default function BookingForm({
       </div>
       
       {/* RIGHT COLUMN: INTERACTIVE PRICING CALCULATOR */}
-      <div className="xl:col-span-1 hidden xl:block">
+      <div className="lg:col-span-1 hidden lg:block">
         <div className="sticky top-4">
           <InteractivePricingCalculator
             serviceType={watchedValues.serviceType}
