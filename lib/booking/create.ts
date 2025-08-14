@@ -84,6 +84,29 @@ async function hasOverlap(startTime: Date, serviceType: ServiceType, bufferMinut
   return overlapFound
 }
 
+// Add reservation validation function
+async function validateReservation(reservationId: string, customerEmail: string): Promise<boolean> {
+  try {
+    const engine = getSlotReservationEngine()
+    const status = await engine.getReservationStatus(reservationId)
+    
+    if (!status.active) {
+      return false
+    }
+    
+    // Verify the reservation belongs to this customer
+    const reservation = status.reservation
+    if (reservation && reservation.customerEmail !== customerEmail) {
+      return false
+    }
+    
+    return true
+  } catch (error) {
+    logger.warn('Failed to validate reservation', { reservationId, customerEmail, error: getErrorMessage(error) })
+    return false
+  }
+}
+
 export async function createBookingFromForm({ validatedData, rawBody }: CreateBookingInput): Promise<CreateBookingResult> {
   const reservationId: string | undefined = typeof rawBody?.reservationId === 'string' ? rawBody.reservationId : undefined
   const paymentMethod = normalizePaymentMethod(rawBody?.paymentMethod)
@@ -94,7 +117,23 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
   const startTime = new Date(validatedData.scheduledDateTime)
   const bufferMinutes = Number(process.env.MIN_APPOINTMENT_GAP_MINUTES || '15')
   const disableOverlapCheck = String(process.env.DISABLE_OVERLAP_CHECK || '').toLowerCase() === 'true'
-  const overlap = disableOverlapCheck ? false : await hasOverlap(startTime, service.serviceType as unknown as ServiceType, bufferMinutes)
+  
+  // Validate reservation if one exists
+  if (reservationId) {
+    const isValidReservation = await validateReservation(reservationId, validatedData.customerEmail)
+    if (!isValidReservation) {
+      const err = new Error('Your time slot reservation has expired. Please select a new time.')
+      ;(err as any).status = 409
+      throw err
+    }
+  }
+  
+  // Skip overlap check if we have a valid reservation or if overlap check is disabled
+  let overlap = false
+  if (!reservationId && !disableOverlapCheck) {
+    overlap = await hasOverlap(startTime, service.serviceType as unknown as ServiceType, bufferMinutes)
+  }
+  
   if (overlap) {
     const err = new Error('Selected time is no longer available. Please pick a different time.')
     ;(err as any).status = 409
