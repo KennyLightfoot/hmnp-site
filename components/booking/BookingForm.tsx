@@ -538,7 +538,7 @@ export default function BookingForm({
         }
       } catch {}
 
-      // Try to reserve the selected slot (soft hold)
+      // Try to reserve the selected slot (soft hold). If conflict, stop and surface to user.
       let reservationId: string | null = null;
       if (combinedDateTimeIso && data.customer?.email) {
         try {
@@ -559,11 +559,24 @@ export default function BookingForm({
             const reserveJson = await reserveRes.json();
             reservationId = reserveJson?.reservation?.id || null;
           } else if (reserveRes.status === 409) {
-            const conflict = await reserveRes.json();
-            throw new Error(conflict?.error || 'Selected time was just taken. Please choose another time.');
+            const conflict = await reserveRes.json().catch(() => ({} as any));
+            const msg = (conflict as any)?.error || 'Selected time was just taken. Please choose another time.';
+            setErrorMessage(msg);
+            setIsSubmitting(false);
+            return; // Abort submission – prompt user to pick a different time
+          } else {
+            // Non-OK unexpected response
+            const errText = await reserveRes.text().catch(() => 'Failed to reserve time slot.');
+            setErrorMessage(errText || 'Failed to reserve time slot. Please try again.');
+            setIsSubmitting(false);
+            return;
           }
         } catch (e) {
-          console.warn('Slot reservation failed (continuing to attempt booking):', e);
+          // Network or unexpected error – be conservative and stop rather than risking a race
+          console.warn('Slot reservation error:', e);
+          setErrorMessage('We could not hold that time. Please reselect a time and try again.');
+          setIsSubmitting(false);
+          return;
         }
       }
 
