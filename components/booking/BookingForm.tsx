@@ -84,6 +84,11 @@ const CreateBookingSchema = z.object({
   scheduling: z.object({
     preferredDate: z.string().min(1, 'Date is required'),
     preferredTime: z.string().min(1, 'Time is required'),
+    // Optional client-side fields used for holds and precise ISO submission
+    reservationId: z.string().optional(),
+    selectedStartIso: z.string().optional(),
+    selectedEndIso: z.string().optional(),
+    flexibleTiming: z.boolean().optional(),
   }).optional(),
 });
 
@@ -235,6 +240,10 @@ export default function BookingForm({
       scheduling: {
         preferredDate: '',
         preferredTime: '',
+        reservationId: '',
+        selectedStartIso: '',
+        selectedEndIso: '',
+        flexibleTiming: false,
       },
       ...memoizedInitialData
     },
