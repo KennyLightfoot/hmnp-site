@@ -1,12 +1,8 @@
 'use client';
 
 /**
- * Booking Checkout/Confirmation Page
- * Houston Mobile Notary Pros
- * 
- * This page now serves as a confirmation step that creates the booking
- * directly, bypassing the previous Stripe payment flow for debugging and
- * simplified booking.
+ * Deprecated: Checkout page is not part of the canonical booking flow.
+ * Kept for reference but excluded from sitemap via next-sitemap config.
  */
 
 import React, { useState, useEffect } from 'react';

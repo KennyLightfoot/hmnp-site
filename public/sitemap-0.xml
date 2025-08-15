@@ -7,7 +7,6 @@
 <url><loc>http://localhost:3000/booking</loc><lastmod>2025-08-13T19:17:20.067Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
 <url><loc>http://localhost:3000/booking/simple</loc><lastmod>2025-08-13T19:17:20.067Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
 <url><loc>http://localhost:3000/blog</loc><lastmod>2025-08-13T19:17:20.067Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>http://localhost:3000/booking/checkout</loc><lastmod>2025-08-13T19:17:20.067Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
 <url><loc>http://localhost:3000/booking/success</loc><lastmod>2025-08-13T19:17:20.067Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
 <url><loc>http://localhost:3000/invite/accept</loc><lastmod>2025-08-13T19:17:20.067Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
 <url><loc>http://localhost:3000/login</loc><lastmod>2025-08-13T19:17:20.067Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>

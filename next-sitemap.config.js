@@ -4,4 +4,8 @@ export default {
   generateRobotsTxt: true,
   generateIndexSitemap: true,
   sitemapSize: 50000,
+  exclude: [
+    '/booking/checkout',
+    '/booking/checkout/*',
+  ],
 }
