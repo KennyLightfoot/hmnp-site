@@ -279,6 +279,7 @@ export default function EnhancedSchedulingStep({
           estimatedDuration: slot.duration
         } 
       });
+      // Do not auto-advance; user must press Continue
     } catch (error) {
       console.error('Time selection error:', error);
       setAvailabilityError('Error selecting time. Please try again.');

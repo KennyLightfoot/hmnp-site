@@ -330,6 +330,7 @@ export default function InteractivePricingCalculator({
           {/* Quick Breakdown Toggle */}
           <div className="flex items-center justify-center">
             <Button 
+              type="button"
               variant="outline" 
               size="sm"
               onClick={() => setShowBreakdown(!showBreakdown)}
@@ -429,6 +430,7 @@ export default function InteractivePricingCalculator({
             <Label className="text-sm font-medium">Number of Documents:</Label>
             <div className="flex items-center space-x-3">
               <Button
+                type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => setDocumentCount(Math.max(1, documentCount - 1))}
@@ -438,6 +440,7 @@ export default function InteractivePricingCalculator({
               </Button>
               <span className="font-medium w-8 text-center">{documentCount}</span>
               <Button
+                type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => setDocumentCount(documentCount + 1)}

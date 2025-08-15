@@ -656,7 +656,7 @@ export default function BookingForm({
         if (data?.customer?.email) qsParams.set('customerEmail', data.customer.email);
         if (combinedDateTimeIso) qsParams.set('scheduledDateTime', combinedDateTimeIso);
         if (data?.location?.address) qsParams.set('locationAddress', data.location.address);
-        qsParams.set('ghl', 'true');
+        // Important: do not signal early GHL in query; workflows trigger server-side only
 
         const qs = qsParams.toString();
         const docs = (watchedValues as any)?.uploadedDocs

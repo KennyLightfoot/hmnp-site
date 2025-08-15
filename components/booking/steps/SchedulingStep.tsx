@@ -273,7 +273,9 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
     try {
       const customerEmail = (watch('customer') as any)?.email || undefined;
       const serviceType = watch('serviceType') || 'STANDARD_NOTARY';
-      const res = await fetch('/api/booking/reserve-slot', {
+      // Reserve only if we have customer email to avoid creating anonymous holds
+      const shouldReserve = !!customerEmail;
+      const res = shouldReserve ? await fetch('/api/booking/reserve-slot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -282,15 +284,15 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
           customerEmail,
           estimatedDuration: slot.duration || 60
         })
-      });
-      if (res.ok) {
+      }) : null;
+      if (res && res.ok) {
         const json = await res.json();
         const reservationId = json?.reservation?.id || null;
         if (reservationId) {
           setValue('scheduling.reservationId', reservationId as any);
           onUpdate({ scheduling: { ...watch('scheduling'), reservationId } });
         }
-      } else if (res.status === 409) {
+      } else if (res && res.status === 409) {
         // Time just got taken, clear selection
         setValue('scheduling.preferredTime', '');
         setValue('scheduling.selectedStartIso', '' as any);

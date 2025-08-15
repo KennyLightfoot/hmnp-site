@@ -299,6 +299,7 @@ export default function EnhancedTimeSlotDisplay({
           
           return (
             <Button
+              type="button"
               key={`${slot.startTime}-${index}`}
               variant={isSelected ? 'default' : 'outline'}
               className={cn(
