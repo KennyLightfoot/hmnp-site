@@ -898,6 +898,7 @@ export default function BookingForm({
       <div className="space-y-4 pb-20 md:pb-0">
         <div className="flex justify-between items-center">
           <Button
+            type="button"
             variant="outline"
             onClick={prevStep}
             disabled={currentStep === 0 || isSubmitting || isNavigating}
@@ -927,6 +928,7 @@ export default function BookingForm({
             {/* Next/Complete Button */}
             {currentStep < BOOKING_STEPS.length - 1 ? (
               <Button
+                type="button"
                 onClick={nextStep}
                 disabled={!isCurrentStepValid || isSubmitting || isNavigating}
                 className={`min-h-[44px] px-8 ${
@@ -949,6 +951,7 @@ export default function BookingForm({
               </Button>
             ) : (
               <Button
+                type="button"
                 onClick={form.handleSubmit(onSubmit)}
                 disabled={isSubmitting}
                 className="min-h-[44px] bg-green-600 hover:bg-green-700 text-white px-8"
@@ -1006,12 +1009,12 @@ export default function BookingForm({
             <div className="text-lg font-semibold text-gray-900">${Number(totalPrice || 0).toFixed(2)}</div>
           </div>
           {currentStep < BOOKING_STEPS.length - 1 ? (
-            <Button onClick={nextStep} disabled={!isCurrentStepValid || isSubmitting || isNavigating} className="min-h-[44px] px-6 bg-blue-600 hover:bg-blue-700 text-white">
+            <Button type="button" onClick={nextStep} disabled={!isCurrentStepValid || isSubmitting || isNavigating} className="min-h-[44px] px-6 bg-blue-600 hover:bg-blue-700 text-white">
               Continue
               <ChevronRight className="h-4 w-4 ml-2" />
             </Button>
           ) : (
-            <Button onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting} className="min-h-[44px] px-6 bg-green-600 hover:bg-green-700 text-white">
+            <Button type="button" onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting} className="min-h-[44px] px-6 bg-green-600 hover:bg-green-700 text-white">
               {isSubmitting ? 'Submitting…' : 'Confirm'}
             </Button>
           )}

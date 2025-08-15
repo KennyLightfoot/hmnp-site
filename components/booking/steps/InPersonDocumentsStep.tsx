@@ -57,7 +57,7 @@ export default function InPersonDocumentsStep({ data, onUpdate }: Props) {
         if (f && f.size>MAX_BYTES) { setError(`Max ${MAX_MB}MB`); setFile(null) } else { setError(null); setFile(f) }
       }} />
       <div className="flex items-center gap-2">
-        <Button size="sm" disabled={!file} onClick={handleUpload}>Upload</Button>
+        <Button type="button" size="sm" disabled={!file} onClick={handleUpload}>Upload</Button>
         {progress>0 && <Progress value={progress} className="w-40" />}
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}

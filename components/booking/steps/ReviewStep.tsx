@@ -172,11 +172,11 @@ export default function ReviewStep({
               </div>
             </div>
             <div className="flex justify-center space-x-4">
-              <Button variant="outline">
+              <Button type="button" variant="outline">
                 <Mail className="h-4 w-4 mr-2" />
                 Resend Confirmation
               </Button>
-              <Button>
+              <Button type="button">
                 <Calendar className="h-4 w-4 mr-2" />
                 Add to Calendar
               </Button>
@@ -372,6 +372,7 @@ export default function ReviewStep({
               disabled={promoApplied}
             />
             <Button 
+              type="button"
               variant="outline" 
               onClick={applyPromoCode}
               disabled={promoApplied || !promoCode.trim()}
@@ -523,7 +524,7 @@ export default function ReviewStep({
         <div className="text-sm text-gray-600 mb-2">
           Questions about your booking?
         </div>
-        <Button variant="outline" size="sm">
+        <Button type="button" variant="outline" size="sm">
           <Phone className="h-4 w-4 mr-2" />
           Call (832) 617-4285
         </Button>

@@ -266,11 +266,16 @@ export default function EnhancedSchedulingStep({
       // Ensure time is in HH:MM format for validation
       const formattedTime = slot.displayTime;
       setValue('scheduling.preferredTime', formattedTime);
+      // Persist exact ISO boundaries to avoid timezone or rounding mismatches on submit
+      if (slot.startTime) setValue('scheduling.selectedStartIso', slot.startTime as any);
+      if (slot.endTime) setValue('scheduling.selectedEndIso', slot.endTime as any);
       setValue('scheduling.estimatedDuration', slot.duration);
       onUpdate({ 
         scheduling: { 
           ...watchedScheduling, 
           preferredTime: formattedTime,
+          selectedStartIso: slot.startTime,
+          selectedEndIso: slot.endTime,
           estimatedDuration: slot.duration
         } 
       });
@@ -321,6 +326,7 @@ export default function EnhancedSchedulingStep({
           {/* Week Navigation */}
           <div className="flex items-center justify-between mb-4">
             <Button
+              type="button"
               variant="outline"
               size="sm"
               onClick={goToPreviousWeek}
@@ -335,6 +341,7 @@ export default function EnhancedSchedulingStep({
             </div>
             
             <Button
+              type="button"
               variant="outline"
               size="sm"
               onClick={goToNextWeek}

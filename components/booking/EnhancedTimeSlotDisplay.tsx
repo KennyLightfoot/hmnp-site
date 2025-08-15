@@ -223,6 +223,7 @@ export default function EnhancedTimeSlotDisplay({
       {slots.length > 4 && (
         <div className="flex flex-wrap gap-2">
           <Button
+            type="button"
             variant={activeFilters.has('all') ? 'default' : 'outline'}
             size="sm"
             onClick={() => toggleFilter('all')}
@@ -234,6 +235,7 @@ export default function EnhancedTimeSlotDisplay({
           {showUrgency && (
             <>
               <Button
+                type="button"
                 variant={activeFilters.has('same-day') ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => toggleFilter('same-day')}
@@ -243,6 +245,7 @@ export default function EnhancedTimeSlotDisplay({
                 Same Day ({slots.filter(s => s.sameDay).length})
               </Button>
               <Button
+                type="button"
                 variant={activeFilters.has('next-day') ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => toggleFilter('next-day')}
@@ -256,6 +259,7 @@ export default function EnhancedTimeSlotDisplay({
           
           {showPopular && (
             <Button
+              type="button"
               variant={activeFilters.has('popular') ? 'default' : 'outline'}
               size="sm"
               onClick={() => toggleFilter('popular')}
@@ -268,6 +272,7 @@ export default function EnhancedTimeSlotDisplay({
           
           {showRecommended && (
             <Button
+              type="button"
               variant={activeFilters.has('recommended') ? 'default' : 'outline'}
               size="sm"
               onClick={() => toggleFilter('recommended')}

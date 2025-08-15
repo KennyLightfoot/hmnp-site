@@ -758,6 +758,7 @@ export default function ServiceSelector({
         <div className="flex items-center justify-between mb-3">
           <h4 className="font-medium text-gray-900">Need help choosing?</h4>
           <Button 
+            type="button"
             variant="outline" 
             size="sm"
             onClick={() => setShowComparison(!showComparison)}
