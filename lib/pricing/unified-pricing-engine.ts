@@ -504,7 +504,7 @@ export class UnifiedPricingEngine {
     const discountsApplied: string[] = [];
     
     // First-time customer discount
-    if (customerType === 'new') {
+    if (customerType === 'new' && (customerEmail && customerEmail.trim().length > 0)) {
       const firstTimeConfig = PRICING_MULTIPLIERS.discounts.firstTime;
       discounts.push({
         amount: firstTimeConfig.amount,

@@ -310,7 +310,8 @@ export default function BookingForm({
       address: watchedValues.location?.address?.trim() || undefined,
       scheduledDateTime: (watchedValues as any)?.scheduling?.selectedStartIso
         || ((hasDate && normalizedTime) ? `${hasDate}T${normalizedTime}` : undefined),
-      customerType: 'new' as const, // Could be enhanced based on user auth
+      // Default to 'returning' so we don't auto-apply first-time discounts until confirmed
+      customerType: 'returning' as const,
       customerEmail: watchedValues.customer?.email?.trim() || undefined
     };
   }, [
