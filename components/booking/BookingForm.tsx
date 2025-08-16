@@ -551,7 +551,7 @@ export default function BookingForm({
         }
       } catch {}
 
-      // Try to reserve the selected slot (soft hold) ONLY if we don't already have a reservation from the scheduling step
+      // Reserve the selected slot (soft hold) now at final submission to avoid double-reserving earlier
       let reservationId: string | null = null;
       const reservationIdFromState = (watchedValues as any)?.scheduling?.reservationId as string | undefined;
       if (!reservationIdFromState && combinedDateTimeIso && data.customer?.email) {

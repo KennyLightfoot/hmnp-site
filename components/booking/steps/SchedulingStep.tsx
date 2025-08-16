@@ -258,70 +258,17 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
   };
 
   const handleTimeSelect = async (slot: TimeSlot) => {
-    // Optimistically set selection
+    // Record selection; reservation will occur only at final submit to avoid double-reserve
     setValue('scheduling.preferredTime', slot.displayTime);
     onUpdate({
       scheduling: {
         ...watchedScheduling,
         preferredTime: slot.displayTime,
         selectedStartIso: slot.startTime,
-        selectedEndIso: slot.endTime
+        selectedEndIso: slot.endTime,
+        reservationId: undefined as any
       }
     });
-
-    // Soft-hold reservation immediately to reduce end-of-flow conflicts (mobile-safe: debounce rapid taps)
-    try {
-      // Debounce: prevent double POST if user taps quickly
-      if ((window as any).__hmnp_reserving__) return
-      ;(window as any).__hmnp_reserving__ = true
-      const customerEmail = (watch('customer') as any)?.email || undefined;
-      const serviceType = watch('serviceType') || 'STANDARD_NOTARY';
-      // Reserve only if we have customer email to avoid creating anonymous holds
-      const shouldReserve = !!customerEmail;
-      // Fetch CSRF token for protected booking endpoints
-      let csrfToken: string | null = null;
-      try {
-        const csrfRes = await fetch('/api/csrf-token', { method: 'GET', cache: 'no-store' });
-        if (csrfRes.ok) {
-          const csrfJson = await csrfRes.json().catch(() => ({} as any));
-          csrfToken = (csrfJson as any)?.csrfToken || null;
-        }
-      } catch {}
-
-      const res = shouldReserve ? await fetch('/api/booking/reserve-slot', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
-        },
-        body: JSON.stringify({
-          datetime: slot.startTime,
-          serviceType,
-          customerEmail,
-          estimatedDuration: slot.duration || 60
-        })
-      }) : null;
-      if (res && res.ok) {
-        const json = await res.json();
-        const reservationId = json?.reservation?.id || null;
-        if (reservationId) {
-          setValue('scheduling.reservationId', reservationId as any);
-          onUpdate({ scheduling: { ...watch('scheduling'), reservationId } });
-        }
-      } else if (res && res.status === 409) {
-        // Time just got taken, clear selection
-        setValue('scheduling.preferredTime', '');
-        setValue('scheduling.selectedStartIso', '' as any);
-        setValue('scheduling.selectedEndIso', '' as any);
-        onUpdate({ scheduling: { ...watch('scheduling'), preferredTime: '', selectedStartIso: undefined, selectedEndIso: undefined } });
-        console.warn('Selected time was just taken. Please choose another time.');
-      }
-    } catch (e) {
-      // Non-blocking; user can still proceed and final submit will attempt hold again
-      console.warn('Failed to pre-reserve time slot:', e);
-    } finally {
-      (window as any).__hmnp_reserving__ = false
-    }
   };
 
   const getDemandColor = (demand: string) => {
