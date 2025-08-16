@@ -252,7 +252,8 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
 
   // Best-effort GHL appointment (can be disabled via env)
   try {
-    const ghlDisabled = (process.env.DISABLE_GHL_APPOINTMENT_CREATE || '').toLowerCase() === 'true'
+    // Default to disabling inline GHL appointment creation so the worker handles it to avoid duplicates
+    const ghlDisabled = String(process.env.DISABLE_GHL_APPOINTMENT_CREATE ?? 'true').toLowerCase() === 'true'
     if (ghlDisabled) {
       try { console.info('[GHL] Skipping appointment create: DISABLE_GHL_APPOINTMENT_CREATE=true') } catch {}
       return { booking, service }

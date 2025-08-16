@@ -269,8 +269,11 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
       }
     });
 
-    // Soft-hold reservation immediately to reduce end-of-flow conflicts
+    // Soft-hold reservation immediately to reduce end-of-flow conflicts (mobile-safe: debounce rapid taps)
     try {
+      // Debounce: prevent double POST if user taps quickly
+      if ((window as any).__hmnp_reserving__) return
+      ;(window as any).__hmnp_reserving__ = true
       const customerEmail = (watch('customer') as any)?.email || undefined;
       const serviceType = watch('serviceType') || 'STANDARD_NOTARY';
       // Reserve only if we have customer email to avoid creating anonymous holds
@@ -316,6 +319,8 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
     } catch (e) {
       // Non-blocking; user can still proceed and final submit will attempt hold again
       console.warn('Failed to pre-reserve time slot:', e);
+    } finally {
+      (window as any).__hmnp_reserving__ = false
     }
   };
 
