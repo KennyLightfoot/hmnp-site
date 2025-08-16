@@ -182,6 +182,9 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
   // Always create or link GHL contact and trigger configured workflow/tags (independent of calendar)
   try {
     const enableGhl = String(process.env.ENABLE_GHL_INTEGRATION || 'true').toLowerCase() !== 'false'
+    if (!enableGhl) {
+      try { console.info('[GHL] Skipping contact/workflow: ENABLE_GHL_INTEGRATION is false') } catch {}
+    }
     if (enableGhl) {
       const customerEmail: string = validatedData.customerEmail
       const customerName: string = validatedData.customerName
@@ -202,7 +205,9 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
           })
           ghlContactId = (created as any)?.id || (created as any)?.contact?.id || null
         }
-      } catch {}
+      } catch (e) {
+        try { console.warn('[GHL] find/create contact failed (will skip workflow tag/trigger in this block)', (e as any)?.message || String(e)) } catch {}
+      }
 
       if (ghlContactId) {
         try {
@@ -223,9 +228,7 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
             || process.env.GHL_BOOKING_CONFIRMATION_WORKFLOW_ID
             || process.env.GHL_BOOKING_CONFIRMED_WORKFLOW_ID
 
-          try {
-            console.info('[GHL] Resolved booking workflowId:', workflowId ? '[SET]' : '[MISSING]')
-          } catch {}
+          try { console.info('[GHL] Resolved booking workflowId:', workflowId ? '[SET]' : '[MISSING]') } catch {}
 
           if (workflowId) {
             try {
@@ -234,6 +237,8 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
             } catch (err) {
               try { console.warn('[GHL] addContactToWorkflow failed', { contactId: ghlContactId, workflowId, error: (err as any)?.message || String(err) }) } catch {}
             }
+          } else {
+            try { console.info('[GHL] Skipping workflow trigger: no workflowId configured') } catch {}
           }
         } catch (e) {
           try { console.warn('[GHL] Workflow trigger block threw', (e as any)?.message || String(e)) } catch {}
@@ -249,6 +254,7 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
   try {
     const ghlDisabled = (process.env.DISABLE_GHL_APPOINTMENT_CREATE || '').toLowerCase() === 'true'
     if (ghlDisabled) {
+      try { console.info('[GHL] Skipping appointment create: DISABLE_GHL_APPOINTMENT_CREATE=true') } catch {}
       return { booking, service }
     }
     let calendarId = (service as any).externalCalendarId as string | null
@@ -282,12 +288,18 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
             })
           } catch {}
         }
-      } catch {}
+      } catch (e) {
+        try { console.warn('[GHL] Appointment flow: find/create contact failed', (e as any)?.message || String(e)) } catch {}
+      }
 
       const serviceDurationMinutes = (service as any)?.durationMinutes ?? 60
       const startIso = booking.scheduledDateTime.toISOString()
       const endIso = new Date(booking.scheduledDateTime.getTime() + serviceDurationMinutes * 60 * 1000).toISOString()
       try {
+        if (!ghlContactId) {
+          try { console.warn('[GHL] Skipping appointment create: missing contactId') } catch {}
+          return { booking, service }
+        }
         await createAppointment({
           calendarId,
           contactId: ghlContactId || "",
@@ -300,12 +312,15 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
           ignoreDateRange: false,
           toNotify: true,
         })
+        try { console.info('[GHL] Appointment created successfully') } catch {}
         // Invalidate GHL free-slots cache for this calendar/date so UI updates immediately
         try {
           const day = startIso.split('T')[0]!
           clearCalendarCache() // global clear (simple + safe); can be optimized to key-based later
         } catch {}
-      } catch {}
+      } catch (e) {
+        try { console.error('[GHL] Appointment create failed', (e as any)?.message || String(e)) } catch {}
+      }
     }
   } catch {}
 
