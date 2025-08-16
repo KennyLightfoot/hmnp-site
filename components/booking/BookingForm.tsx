@@ -1002,24 +1002,20 @@ export default function BookingForm({
       </div>
 
       {/* 📌 Sticky mobile CTA with total */}
-      <div className="xl:hidden fixed bottom-0 left-0 right-0 border-t bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/70 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div>
-            <div className="text-xs text-gray-600">Estimated Total</div>
-            <div className="text-lg font-semibold text-gray-900">${Number(totalPrice || 0).toFixed(2)}</div>
-          </div>
-          {currentStep < BOOKING_STEPS.length - 1 ? (
+      {currentStep < BOOKING_STEPS.length - 1 && (
+        <div className="xl:hidden fixed bottom-0 left-0 right-0 border-t bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/70 z-40">
+          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div>
+              <div className="text-xs text-gray-600">Estimated Total</div>
+              <div className="text-lg font-semibold text-gray-900">${Number(totalPrice || 0).toFixed(2)}</div>
+            </div>
             <Button type="button" onClick={nextStep} disabled={!isCurrentStepValid || isSubmitting || isNavigating} className="min-h-[44px] px-6 bg-blue-600 hover:bg-blue-700 text-white">
               Continue
               <ChevronRight className="h-4 w-4 ml-2" />
             </Button>
-          ) : (
-            <Button type="button" onClick={form.handleSubmit(onSubmit)} disabled={isSubmitting} className="min-h-[44px] px-6 bg-green-600 hover:bg-green-700 text-white">
-              {isSubmitting ? 'Submitting…' : 'Confirm'}
-            </Button>
-          )}
+          </div>
         </div>
-      </div>
+      )}
       
       {/* 🤖 AI BOOKING ASSISTANT - PHASE 3 ENHANCEMENT */}
       <AIBookingAssistant

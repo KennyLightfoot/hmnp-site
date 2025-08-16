@@ -275,9 +275,22 @@ export default function SchedulingStep({ data, onUpdate, errors, pricing }: Sche
       const serviceType = watch('serviceType') || 'STANDARD_NOTARY';
       // Reserve only if we have customer email to avoid creating anonymous holds
       const shouldReserve = !!customerEmail;
+      // Fetch CSRF token for protected booking endpoints
+      let csrfToken: string | null = null;
+      try {
+        const csrfRes = await fetch('/api/csrf-token', { method: 'GET', cache: 'no-store' });
+        if (csrfRes.ok) {
+          const csrfJson = await csrfRes.json().catch(() => ({} as any));
+          csrfToken = (csrfJson as any)?.csrfToken || null;
+        }
+      } catch {}
+
       const res = shouldReserve ? await fetch('/api/booking/reserve-slot', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
+        },
         body: JSON.stringify({
           datetime: slot.startTime,
           serviceType,
