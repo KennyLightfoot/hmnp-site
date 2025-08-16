@@ -1,10 +1,9 @@
 import { prisma } from '@/lib/db'
 import { convertToBooking } from '@/lib/slot-reservation'
 import { processBookingJob } from '@/lib/bullmq/booking-processor'
-import { createAppointment as createGhlAppointment } from '@/lib/ghl/appointments-adapter'
 import { clearCalendarCache } from '@/lib/ghl-calendar'
 import { createContact as createGhlContact, findContactByEmail, addTagsToContact } from '@/lib/ghl/contacts'
-import { addContactToWorkflow } from '@/lib/ghl/management'
+import { addContactToWorkflow, createAppointment } from '@/lib/ghl/management'
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping'
 import type { Service } from '@prisma/client'
 import { PaymentMethod, BookingStatus, ServiceType } from '@prisma/client'
@@ -289,13 +288,17 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
       const startIso = booking.scheduledDateTime.toISOString()
       const endIso = new Date(booking.scheduledDateTime.getTime() + serviceDurationMinutes * 60 * 1000).toISOString()
       try {
-        await createGhlAppointment({
+        await createAppointment({
           calendarId,
-          contactId: ghlContactId || undefined,
+          contactId: ghlContactId || "",
           title: `${(service as any).name} – ${validatedData.customerName}`,
-          description: 'Created from HMNP booking form',
+          
           startTime: startIso,
           endTime: endIso,
+          appointmentStatus: "confirmed",
+          address: validatedData.locationAddress || "Remote/Online Service",
+          ignoreDateRange: false,
+          toNotify: true,
         })
         // Invalidate GHL free-slots cache for this calendar/date so UI updates immediately
         try {
