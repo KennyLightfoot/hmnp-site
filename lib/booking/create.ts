@@ -252,11 +252,16 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
 
   // Best-effort GHL appointment (can be disabled via env)
   try {
-    // Default to disabling inline GHL appointment creation so the worker handles it to avoid duplicates
-    const ghlDisabled = String(process.env.DISABLE_GHL_APPOINTMENT_CREATE ?? 'true').toLowerCase() === 'true'
+    // Only skip inline appointment creation when a background worker is actually enabled.
+    // On Vercel (no persistent worker), always create inline so appointments exist immediately.
+    const workerEnabled = String(process.env.WORKER_MODE || 'false').toLowerCase() === 'true'
+    const ghlDisabledEnv = String(process.env.DISABLE_GHL_APPOINTMENT_CREATE || '').toLowerCase() === 'true'
+    const ghlDisabled = workerEnabled && ghlDisabledEnv
     if (ghlDisabled) {
-      try { console.info('[GHL] Skipping appointment create: DISABLE_GHL_APPOINTMENT_CREATE=true') } catch {}
+      try { console.info('[GHL] Skipping appointment create: handled by worker (WORKER_MODE=true & DISABLE_GHL_APPOINTMENT_CREATE=true)') } catch {}
       return { booking, service }
+    } else if (ghlDisabledEnv && !workerEnabled) {
+      try { console.warn('[GHL] Inline appointment forced: worker not enabled (WORKER_MODE=false)') } catch {}
     }
     let calendarId = (service as any).externalCalendarId as string | null
     if (!calendarId) {
