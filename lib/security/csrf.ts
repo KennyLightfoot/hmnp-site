@@ -88,6 +88,7 @@ export function withCSRFProtection(options: {
     return async (request: NextRequest, ...args: T): Promise<NextResponse> => {
       const { method, url } = request;
       const pathname = new URL(url).pathname;
+      const requestUrlOrigin = new URL(url).origin;
 
       // Skip CSRF protection for certain routes (like webhooks)
       if (skipRoutes.some(route => pathname.startsWith(route))) {
@@ -254,8 +255,12 @@ export function withEnhancedCSRF(options: {
         return handler(request, ...args);
       }
 
-      // Validate origin
-      if (!validateOrigin(request, effectiveAllowedOrigins)) {
+      // Validate origin (allow same-origin automatically even if not listed in env)
+      const headerOrigin = request.headers.get('origin');
+      const referer = request.headers.get('referer');
+      const headerOriginOrReferer = headerOrigin || (referer ? new URL(referer).origin : null);
+      const isSameOrigin = headerOriginOrReferer === requestUrlOrigin;
+      if (!isSameOrigin && !validateOrigin(request, effectiveAllowedOrigins)) {
         console.warn('[CSRF] Invalid origin:', {
           url: pathname,
           method,
