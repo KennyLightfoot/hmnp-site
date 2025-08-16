@@ -550,9 +550,10 @@ export default function BookingForm({
         }
       } catch {}
 
-      // Try to reserve the selected slot (soft hold). If conflict, stop and surface to user.
+      // Try to reserve the selected slot (soft hold) ONLY if we don't already have a reservation from the scheduling step
       let reservationId: string | null = null;
-      if (combinedDateTimeIso && data.customer?.email) {
+      const reservationIdFromState = (watchedValues as any)?.scheduling?.reservationId as string | undefined;
+      if (!reservationIdFromState && combinedDateTimeIso && data.customer?.email) {
         try {
           const reserveRes = await fetch('/api/booking/reserve-slot', {
             method: 'POST',
@@ -607,7 +608,6 @@ export default function BookingForm({
         uploadedDocs: Array.isArray((watchedValues as any)?.uploadedDocs) ? (watchedValues as any).uploadedDocs : undefined
       };
       // Attach reservationId if we have one from scheduling step
-      const reservationIdFromState = (watchedValues as any)?.scheduling?.reservationId as string | undefined;
       if (reservationIdFromState) {
         bookingData.reservationId = reservationIdFromState;
       }
