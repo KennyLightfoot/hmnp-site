@@ -89,6 +89,7 @@ export function withCSRFProtection(options: {
       const { method, url } = request;
       const pathname = new URL(url).pathname;
       const requestUrlOrigin = new URL(url).origin;
+      const requestUrlOrigin = new URL(url).origin;
 
       // Skip CSRF protection for certain routes (like webhooks)
       if (skipRoutes.some(route => pathname.startsWith(route))) {
