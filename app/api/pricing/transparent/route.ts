@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { UnifiedPricingEngine } from '../../../../lib/pricing/unified-pricing-engine';
 import { withRateLimit } from '@/lib/security/rate-limiting';
+import { withPublicSecurity } from '@/lib/security/comprehensive-security';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';
@@ -27,7 +28,7 @@ const TransparentPricingSchema = z.object({
   promoCode: z.string().optional(),
 });
 
-export const POST = withRateLimit('public', 'pricing_transparent')(async (request: NextRequest) => {
+export const POST = withPublicSecurity(async (request: NextRequest) => {
   const startTime = Date.now();
   
   try {

@@ -42,6 +42,7 @@ const RESERVATION_EXPIRY_MINUTES = 15;
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+// Use BOOKING security but relax CSRF on previews by accepting missing token and falling back to origin validation
 export const POST = withBookingSecurity(async (request: NextRequest) => {
   try {
     const data = await request.json();

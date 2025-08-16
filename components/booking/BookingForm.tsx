@@ -471,9 +471,6 @@ export default function BookingForm({
 
         // 2. Business Rules validation (new) - Make it non-blocking for now
         try {
-          // Guard against duplicate submits on mobile rapid taps
-          if ((window as any).__hmnp_creating__) return;
-          (window as any).__hmnp_creating__ = true;
           const businessRulesValid = await validateCurrentStepBusinessRules();
           
           if (!businessRulesValid) {
