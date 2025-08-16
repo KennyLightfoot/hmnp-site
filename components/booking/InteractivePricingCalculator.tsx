@@ -41,7 +41,19 @@ import {
   Car,
   ArrowRight
 } from 'lucide-react';
-import type { TransparentPricingResult } from '@/lib/pricing/unified-pricing-engine';
+// Minimal shape needed from unified transparent pricing
+type UnifiedPricingDisplay = {
+  serviceType?: string;
+  basePrice: number;
+  totalPrice: number;
+  breakdown: {
+    serviceBase: { amount: number; label: string; description?: string };
+    travelFee?: { amount: number; label: string };
+    extraDocuments?: { amount: number; label: string };
+    timeBasedSurcharges?: Array<{ amount: number; label: string }>;
+    discounts?: Array<{ amount: number; label: string }>;
+  };
+} | null;
 
 // Types
 interface PricingBreakdown {
@@ -73,7 +85,7 @@ interface InteractivePricingCalculatorProps {
   // When provided, this value will be displayed as the Total to keep UI consistent
   externalTotal?: number;
   // Optional unified transparent pricing result to drive the breakdown UI
-  transparentPricing?: TransparentPricingResult | null;
+  transparentPricing?: UnifiedPricingDisplay;
   // External calculating flag from unified pricing
   isPricingCalculating?: boolean;
 }
