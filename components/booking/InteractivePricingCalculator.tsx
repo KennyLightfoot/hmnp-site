@@ -41,6 +41,7 @@ import {
   Car,
   ArrowRight
 } from 'lucide-react';
+import type { TransparentPricingResult } from '@/lib/pricing/unified-pricing-engine';
 
 // Types
 interface PricingBreakdown {
@@ -69,6 +70,12 @@ interface InteractivePricingCalculatorProps {
   onPricingChange?: (breakdown: PricingBreakdown) => void;
   className?: string;
   isMobile?: boolean;
+  // When provided, this value will be displayed as the Total to keep UI consistent
+  externalTotal?: number;
+  // Optional unified transparent pricing result to drive the breakdown UI
+  transparentPricing?: TransparentPricingResult | null;
+  // External calculating flag from unified pricing
+  isPricingCalculating?: boolean;
 }
 
 // Base service prices (single source of truth)
@@ -171,7 +178,10 @@ export default function InteractivePricingCalculator({
   scheduledDateTime,
   onPricingChange,
   className = '',
-  isMobile = false
+  isMobile = false,
+  externalTotal,
+  transparentPricing,
+  isPricingCalculating
 }: InteractivePricingCalculatorProps) {
   // State
   const [documentCount, setDocumentCount] = useState(1);
@@ -298,13 +308,13 @@ export default function InteractivePricingCalculator({
           {/* Total Price Display */}
           <div className="text-center p-4 bg-white border border-blue-200 rounded-lg">
             <div className={`font-bold text-blue-900 ${isMobile ? 'text-2xl' : 'text-3xl'}`}>
-              {isCalculating ? (
+              {(isPricingCalculating ?? isCalculating) ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent" />
                   <span>Calculating...</span>
                 </div>
               ) : (
-                `$${pricingBreakdown.total.toFixed(2)}`
+                `$${Number((externalTotal ?? pricingBreakdown.total)).toFixed(2)}`
               )}
             </div>
             <div className="text-sm text-blue-700 mt-1">
@@ -344,158 +354,213 @@ export default function InteractivePricingCalculator({
           {/* Detailed Breakdown */}
           {showBreakdown && (
             <div className="bg-white p-4 border border-blue-200 rounded-lg space-y-3">
-              {/* Service Base */}
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Service Base:</span>
-                <span className="font-medium">${pricingBreakdown.serviceBase.toFixed(2)}</span>
-              </div>
-
-              {/* Travel Fee */}
-              {pricingBreakdown.travelFee > 0 && (
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-1">
-                    <MapPin className="h-4 w-4 text-blue-500" />
-                    <span className="text-sm">Travel Fee ({estimatedDistance} miles):</span>
+              {transparentPricing ? (
+                <>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Service Base:</span>
+                    <span className="font-medium">${transparentPricing.basePrice.toFixed(2)}</span>
                   </div>
-                  <span className="font-medium">${pricingBreakdown.travelFee.toFixed(2)}</span>
-                </div>
-              )}
 
-              {/* Document Fee */}
-              {pricingBreakdown.documentFee > 0 && (
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-1">
-                    <FileText className="h-4 w-4 text-blue-500" />
-                    <span className="text-sm">Extra Documents ({documentCount - 1}):</span>
+                  {transparentPricing.breakdown?.travelFee && transparentPricing.breakdown.travelFee.amount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center space-x-1">
+                        <MapPin className="h-4 w-4 text-blue-500" />
+                        <span className="text-sm">{transparentPricing.breakdown.travelFee.label}:</span>
+                      </div>
+                      <span className="font-medium">${transparentPricing.breakdown.travelFee.amount.toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {transparentPricing.breakdown?.extraDocuments && transparentPricing.breakdown.extraDocuments.amount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center space-x-1">
+                        <FileText className="h-4 w-4 text-blue-500" />
+                        <span className="text-sm">{transparentPricing.breakdown.extraDocuments.label}:</span>
+                      </div>
+                      <span className="font-medium">${transparentPricing.breakdown.extraDocuments.amount.toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {(transparentPricing.breakdown?.timeBasedSurcharges || []).map((s, idx) => (
+                    <div key={`surcharge_${idx}`} className="flex justify-between items-center">
+                      <div className="flex items-center space-x-1">
+                        <Clock className="h-4 w-4 text-orange-500" />
+                        <span className="text-sm">{s.label}:</span>
+                      </div>
+                      <span className="font-medium text-orange-600">${s.amount.toFixed(2)}</span>
+                    </div>
+                  ))}
+
+                  {(transparentPricing.breakdown?.discounts || []).map((d, idx) => (
+                    <div key={`discount_${idx}`} className="flex justify-between items-center">
+                      <div className="flex items-center space-x-1">
+                        <Tag className="h-4 w-4 text-green-500" />
+                        <span className="text-sm">{d.label}:</span>
+                      </div>
+                      <span className="font-medium text-green-600">-${d.amount.toFixed(2)}</span>
+                    </div>
+                  ))}
+
+                  <Separator />
+
+                  <div className="flex justify-between items-center text-lg font-bold">
+                    <span>Total:</span>
+                    <span className="text-blue-900">${Number((externalTotal ?? transparentPricing.totalPrice)).toFixed(2)}</span>
                   </div>
-                  <span className="font-medium">${pricingBreakdown.documentFee.toFixed(2)}</span>
-                </div>
-              )}
-
-              {/* Time Surcharge */}
-              {pricingBreakdown.timeSurcharge > 0 && (
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-1">
-                    <Clock className="h-4 w-4 text-orange-500" />
-                    <span className="text-sm">Time Surcharge:</span>
+                </>
+              ) : (
+                <>
+                  {/* Fallback to local demo calculator if unified pricing not provided */}
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Service Base:</span>
+                    <span className="font-medium">${pricingBreakdown.serviceBase.toFixed(2)}</span>
                   </div>
-                  <span className="font-medium text-orange-600">${pricingBreakdown.timeSurcharge.toFixed(2)}</span>
-                </div>
-              )}
 
-              {/* Add-ons */}
-              {pricingBreakdown.addOns > 0 && (
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-1">
-                    <Plus className="h-4 w-4 text-green-500" />
-                    <span className="text-sm">Add-ons:</span>
+                  {pricingBreakdown.travelFee > 0 && (
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center space-x-1">
+                        <MapPin className="h-4 w-4 text-blue-500" />
+                        <span className="text-sm">Travel Fee ({estimatedDistance} miles):</span>
+                      </div>
+                      <span className="font-medium">${pricingBreakdown.travelFee.toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {pricingBreakdown.documentFee > 0 && (
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center space-x-1">
+                        <FileText className="h-4 w-4 text-blue-500" />
+                        <span className="text-sm">Extra Documents ({documentCount - 1}):</span>
+                      </div>
+                      <span className="font-medium">${pricingBreakdown.documentFee.toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {pricingBreakdown.timeSurcharge > 0 && (
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center space-x-1">
+                        <Clock className="h-4 w-4 text-orange-500" />
+                        <span className="text-sm">Time Surcharge:</span>
+                      </div>
+                      <span className="font-medium text-orange-600">${pricingBreakdown.timeSurcharge.toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {pricingBreakdown.addOns > 0 && (
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center space-x-1">
+                        <Plus className="h-4 w-4 text-green-500" />
+                        <span className="text-sm">Add-ons:</span>
+                      </div>
+                      <span className="font-medium text-green-600">${pricingBreakdown.addOns.toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {pricingBreakdown.discount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center space-x-1">
+                        <Tag className="h-4 w-4 text-green-500" />
+                        <span className="text-sm">Discount:</span>
+                      </div>
+                      <span className="font-medium text-green-600">-${pricingBreakdown.discount.toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  <Separator />
+
+                  <div className="flex justify-between items-center text-lg font-bold">
+                    <span>Total:</span>
+                    <span className="text-blue-900">${pricingBreakdown.total.toFixed(2)}</span>
                   </div>
-                  <span className="font-medium text-green-600">${pricingBreakdown.addOns.toFixed(2)}</span>
-                </div>
+                </>
               )}
-
-              {/* Discount */}
-              {pricingBreakdown.discount > 0 && (
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-1">
-                    <Tag className="h-4 w-4 text-green-500" />
-                    <span className="text-sm">Discount:</span>
-                  </div>
-                  <span className="font-medium text-green-600">-${pricingBreakdown.discount.toFixed(2)}</span>
-                </div>
-              )}
-
-              <Separator />
-
-              {/* Total */}
-              <div className="flex justify-between items-center text-lg font-bold">
-                <span>Total:</span>
-                <span className="text-blue-900">${pricingBreakdown.total.toFixed(2)}</span>
-              </div>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Document Count */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center space-x-2">
-            <FileText className="h-5 w-5 text-gray-600" />
-            <span className={isMobile ? 'text-base' : 'text-lg'}>Document Count</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">Number of Documents:</Label>
-            <div className="flex items-center space-x-3">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setDocumentCount(Math.max(1, documentCount - 1))}
-                disabled={documentCount <= 1}
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
-              <span className="font-medium w-8 text-center">{documentCount}</span>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setDocumentCount(documentCount + 1)}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          {documentCount > 1 && (
-            <div className="mt-2 text-sm text-gray-600">
-              ${(documentCount - 1) * 15} for {documentCount - 1} additional document{documentCount > 2 ? 's' : ''}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Service Add-ons - Horizontal Scroller */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Plus className="h-5 w-5 text-green-600" />
-              <span className={isMobile ? 'text-base' : 'text-lg'}>Service Add-ons</span>
-            </div>
-            <Badge variant="outline" className="hidden md:inline">Swipe/Scroll</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory">
-            {SERVICE_ADD_ONS.map(addOn => (
-              <div
-                key={addOn.id}
-                className="min-w-[240px] snap-start flex flex-col justify-between p-4 border rounded-lg bg-white shadow-sm hover:shadow transition-all"
-              >
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">{addOn.name}</span>
-                    {addOn.popular && (
-                      <Badge variant="secondary" className="text-xs">Popular</Badge>
-                    )}
-                  </div>
-                  <p className="mt-1 text-sm text-gray-600 line-clamp-3">{addOn.description}</p>
-                </div>
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="font-semibold text-green-600">+${addOn.price}</span>
-                  <Switch
-                    checked={selectedAddOns.includes(addOn.id)}
-                    onCheckedChange={() => toggleAddOn(addOn.id)}
-                  />
-                </div>
+      {/* Hide demo controls when unified pricing is present to avoid confusion */}
+      {!transparentPricing && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center space-x-2">
+              <FileText className="h-5 w-5 text-gray-600" />
+              <span className={isMobile ? 'text-base' : 'text-lg'}>Document Count</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium">Number of Documents:</Label>
+              <div className="flex items-center space-x-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setDocumentCount(Math.max(1, documentCount - 1))}
+                  disabled={documentCount <= 1}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <span className="font-medium w-8 text-center">{documentCount}</span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setDocumentCount(documentCount + 1)}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+            {documentCount > 1 && (
+              <div className="mt-2 text-sm text-gray-600">
+                ${(documentCount - 1) * 15} for {documentCount - 1} additional document{documentCount > 2 ? 's' : ''}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {!transparentPricing && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Plus className="h-5 w-5 text-green-600" />
+                <span className={isMobile ? 'text-base' : 'text-lg'}>Service Add-ons</span>
+              </div>
+              <Badge variant="outline" className="hidden md:inline">Swipe/Scroll</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory">
+              {SERVICE_ADD_ONS.map(addOn => (
+                <div
+                  key={addOn.id}
+                  className="min-w-[240px] snap-start flex flex-col justify-between p-4 border rounded-lg bg-white shadow-sm hover:shadow transition-all"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{addOn.name}</span>
+                      {addOn.popular && (
+                        <Badge variant="secondary" className="text-xs">Popular</Badge>
+                      )}
+                    </div>
+                    <p className="mt-1 text-sm text-gray-600 line-clamp-3">{addOn.description}</p>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="font-semibold text-green-600">+${addOn.price}</span>
+                    <Switch
+                      checked={selectedAddOns.includes(addOn.id)}
+                      onCheckedChange={() => toggleAddOn(addOn.id)}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Promo Code removed */}
     </div>

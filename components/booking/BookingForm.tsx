@@ -677,6 +677,11 @@ export default function BookingForm({
     }
   }, [onComplete, onError]);
 
+  // Stable callback for interactive pricing sidebar (must not be created conditionally)
+  const handleInteractivePricingChange = useCallback((breakdown: any) => {
+    console.log('💰 Interactive pricing updated:', breakdown);
+  }, []);
+
   const CurrentStepComponent = BOOKING_STEPS[currentStep]?.component as any;
   const currentStepData = BOOKING_STEPS[currentStep];
 
@@ -1071,10 +1076,10 @@ export default function BookingForm({
             scheduledDateTime={watchedValues.scheduling?.preferredDate && watchedValues.scheduling?.preferredTime ? 
               `${watchedValues.scheduling.preferredDate}T${normalizeTimeTo24h(watchedValues.scheduling.preferredTime)}` : 
               undefined}
-            onPricingChange={useCallback((breakdown: any) => {
-              console.log('💰 Interactive pricing updated:', breakdown);
-              // Could integrate with form state if needed
-            }, [])}
+            onPricingChange={handleInteractivePricingChange}
+            externalTotal={Number(totalPrice || 0)}
+            transparentPricing={transparentPricing}
+            isPricingCalculating={isPricingCalculating}
             isMobile={isMobile}
             className="w-full"
           />
