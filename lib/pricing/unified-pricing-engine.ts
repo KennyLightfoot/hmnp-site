@@ -272,25 +272,31 @@ export class UnifiedPricingEngine {
         ghlActions.tags.push('docs:over_limit');
       }
       
-      // 3. Calculate Time-Based Surcharges
-       if (validatedRequest.scheduledDateTime && validatedRequest.scheduledDateTime !== '') {
-        console.log(`⏰ [${requestId}] Calculating time-based surcharges`);
-        
+      // 3. Calculate Time-Based Surcharges (restricted)
+      // Only apply dynamic time-based surcharges for EXTENDED_HOURS service.
+      // This avoids overestimation for Standard/Quick/Loan/RON which already
+      // have explicit service types for off-hours/weekend handling.
+      if (
+        validatedRequest.serviceType === 'EXTENDED_HOURS' &&
+        validatedRequest.scheduledDateTime &&
+        validatedRequest.scheduledDateTime !== ''
+      ) {
+        console.log(`⏰ [${requestId}] Calculating time-based surcharges (EXTENDED_HOURS only)`);
         const timeBasedSurcharges = this.calculateTimeBasedSurcharges(
           new Date(validatedRequest.scheduledDateTime),
           runningTotal,
           requestId
         );
-        
         breakdown.timeBasedSurcharges = timeBasedSurcharges;
         const totalSurcharges = timeBasedSurcharges.reduce((sum, surcharge) => sum + surcharge.amount, 0);
-        
         if (totalSurcharges > 0) {
           runningTotal += totalSurcharges;
           businessRules.dynamicPricingActive = true;
           ghlActions.customFields.cf_time_surcharges = totalSurcharges;
           ghlActions.tags.push('pricing:dynamic_active');
         }
+      } else {
+        breakdown.timeBasedSurcharges = [];
       }
       
       // 4. Calculate Discounts

@@ -159,7 +159,7 @@ export default function EnhancedSchedulingStep({
       
       if (result.availableSlots) {
         // Transform API ISO timestamps into enhanced UI format
-        const enhancedSlots = result.availableSlots.map((slot: any) => {
+        let enhancedSlots = result.availableSlots.map((slot: any) => {
           const startIso = slot.startTime || slot.start;
           const endIso = slot.endTime || slot.end;
           const displayTime = startIso
@@ -179,6 +179,17 @@ export default function EnhancedSchedulingStep({
             nextDay: false
           };
         }).filter((slot: any) => slot.available);
+
+        // If RON, restrict slots to 9 AM - 9 PM local
+        if (watchedServiceType === 'RON_SERVICES') {
+          enhancedSlots = enhancedSlots.filter((s: any) => {
+            try {
+              const d = new Date(s.startTime);
+              const hour = d.getHours();
+              return hour >= 9 && hour < 21;
+            } catch { return false }
+          });
+        }
         
         // Update the day with availability data
         setAvailableDays(prev => prev.map(day => {

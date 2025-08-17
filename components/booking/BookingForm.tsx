@@ -892,7 +892,8 @@ export default function BookingForm({
                       data={watchedValues}
                       onUpdate={handleStepUpdate}
                       errors={formErrors}
-                      pricing={null}
+                      // Hide document uploads for RON – Proof.com handles document flow
+                      pricing={watchedValues.serviceType === 'RON_SERVICES' && currentStepData?.id === 'documents' ? undefined : null}
                     />
                   )}
                 </div>

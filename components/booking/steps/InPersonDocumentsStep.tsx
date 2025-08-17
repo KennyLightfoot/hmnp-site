@@ -15,6 +15,14 @@ const MAX_BYTES = MAX_MB * 1024 * 1024
 const ALLOWED = ['application/pdf','image/png','image/jpeg']
 
 export default function InPersonDocumentsStep({ data, onUpdate }: Props) {
+  // Hide entire uploader for RON services – Proof.com handles document uploads
+  if ((data?.serviceType || '') === 'RON_SERVICES') {
+    return (
+      <div className="text-sm text-muted-foreground">
+        Document upload is handled securely inside the online notarization session.
+      </div>
+    )
+  }
   const [file, setFile] = useState<File|null>(null)
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState<string|null>(null)
