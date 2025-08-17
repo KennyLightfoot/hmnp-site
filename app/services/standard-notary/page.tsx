@@ -178,7 +178,7 @@ export default function EssentialServicePage() {
                   <div className="space-y-4">
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <h3 className="text-xl font-semibold text-[#002147] mb-2">Essential Service</h3>
-                      <p className="text-3xl font-bold text-[#A52A2A] mb-2">${SERVICES_CONFIG.STANDARD_NOTARY.basePrice}</p>
+                      <p className="text-3xl font-bold text-[#A52A2A] mb-2">${SERVICES_CONFIG.STANDARD_NOTARY.basePrice} <span className="text-sm text-gray-500 ml-1"><a href="#travel-tiers" className="underline text-[#002147]">See travel tiers</a></span></p>
                       <ul className="space-y-2 text-sm text-gray-700">
                         <li>• 1-2 documents per signer</li>
                         <li>• Includes travel within {SERVICES_CONFIG.STANDARD_NOTARY.includedRadius} miles</li>

@@ -62,7 +62,7 @@ export default function YelpGeneralNotaryLandingPage() {
             
             <p className="text-xl md:text-2xl text-slate-200 mb-8 max-w-3xl mx-auto leading-relaxed">
               Discovered us on Yelp? You've found Houston's highest-rated mobile notary service. 
-              Professional, convenient, and trusted by 500+ happy clients.
+              Professional, convenient, and trusted by 500+ happy clients. 30-mile travel included; fair travel tiers up to 50 miles.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-center">

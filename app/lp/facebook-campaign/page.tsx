@@ -27,7 +27,7 @@ const FacebookCampaignPage: NextPage = () => {
             
             <p className="text-xl md:text-2xl text-slate-200 mb-8 max-w-3xl mx-auto leading-relaxed">
               Houston's most trusted mobile notary service is offering Facebook followers an exclusive 30% discount. 
-              Professional notary services at your location - no travel required!
+              Professional notary services at your location. 30-mile travel included; fair travel tiers up to 50 miles.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-center">

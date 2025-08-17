@@ -174,7 +174,7 @@ export default function PriorityServicePage() {
               </CardHeader>
               <CardContent>
                 <div className="bg-gradient-to-r from-[#A52A2A] to-[#8B0000] text-white p-8 rounded-lg text-center mb-6">
-                  <h3 className="text-3xl font-bold mb-4">${SERVICES_CONFIG.EXTENDED_HOURS.basePrice}</h3>
+                  <h3 className="text-3xl font-bold mb-4">${SERVICES_CONFIG.EXTENDED_HOURS.basePrice} <span className="text-sm text-white/80 ml-1"><a href="#travel-tiers" className="underline">See travel tiers</a></span></h3>
                   <p className="text-xl mb-6">Flat fee for priority service</p>
                   <div className="grid md:grid-cols-2 gap-6 text-left">
                     <div>
@@ -191,7 +191,7 @@ export default function PriorityServicePage() {
                       <ul className="space-y-2 text-sm">
                         <li>• Extra signers: $10 each</li>
                         <li>• Extra documents: $5 each</li>
-                        <li>• Extended travel: $0.50/mile</li>
+                        <li>• 30-mile included travel (tiers 31–40 +$45; 41–50 +$65)</li>
                         <li>• Real-time SMS updates</li>
                       </ul>
                     </div>

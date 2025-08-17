@@ -63,6 +63,18 @@ export function OptimizedLayout({ children }: OptimizedLayoutProps) {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-white">
+        {/* Slim service-area band */}
+        <div className="w-full bg-[#002147] text-white text-xs sm:text-sm py-2">
+          <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row gap-1 sm:gap-4 items-center justify-center">
+            <span>Standard: 20 mi included</span>
+            <span className="hidden sm:inline">•</span>
+            <span>Extended/Loan: 30 mi included</span>
+            <span className="hidden sm:inline">•</span>
+            <span>Travel tiers: 21–30 +$25; 31–40 +$45; 41–50 +$65 (max 50 mi)</span>
+            <span className="hidden sm:inline">•</span>
+            <a href="/services/extras" className="underline text-white/90 hover:text-white">Details</a>
+          </div>
+        </div>
         {/* Navigation with intelligent preloading */}
         <nav className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
