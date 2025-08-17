@@ -133,7 +133,7 @@ const faqs: FAQ[] = [
           </div>
         </div>
         <p className="mt-2">
-          We gladly travel to all listed areas and beyond. An additional travel fee of $0.50 per mile applies for
+          We gladly travel to all listed areas and beyond. Beyond 20 miles, simple travel tiers apply: 21–30 +$25; 31–40 +$45; 41–50 +$65. See /services/extras#travel-tiers for details.
           distances beyond the initial 20 miles from 77591. Please see our Travel Fees question for more details or
           contact us for a precise quote.
         </p>
@@ -893,7 +893,7 @@ const faqs: FAQ[] = [
             <h3 className="font-semibold text-[#002147]">Additional Fees</h3>
             <ul className="list-disc list-inside mt-1 space-y-1 text-sm">
               <li>Weekend Service: +$50 flat fee</li>
-              <li>Extended travel beyond 20 miles: $0.50/mile</li>
+              <li>Extended travel beyond 20 miles: tiered travel applies (21–30 +$25; 31–40 +$45; 41–50 +$65)</li>
               <li>After-hours service (7-9pm): +$30</li>
               <li>Holiday Service: +$40</li>
               <li>Bilingual service (Spanish): +$20</li>
@@ -993,7 +993,7 @@ const faqs: FAQ[] = [
         </p>
         <p className="mt-2">
           For locations beyond this initial 15-mile radius, an additional travel fee applies. This fee is calculated at
-          <strong>$0.50 per mile for the one-way distance traveled beyond the first 15 miles</strong>.
+          <strong>Tiered travel beyond included miles: 21–30 +$25; 31–40 +$45; 41–50 +$65</strong>.
         </p>
         <p className="mt-2">
           Example: If your location is 25 miles from 77591:
@@ -1002,7 +1002,7 @@ const faqs: FAQ[] = [
           <li>Distance from ZIP 77591: 25 miles</li>
           <li>Included distance (no fee): 15 miles</li>
           <li>Billable distance: 10 miles (25 - 15 included)</li>
-          <li>Additional Travel Fee: 10 miles × $0.50/mile = $5.00</li>
+          <li>Additional Travel Fee example: 35 miles from 77591 → +$45 (31–40 tier)</li>
         </ul>
         <p className="mt-2">
           We use standard mapping services (like Google Maps) to determine the distance from ZIP 77591 to your signing

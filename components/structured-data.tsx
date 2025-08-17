@@ -80,7 +80,7 @@ export function StructuredData({ nonce }: StructuredDataProps) {
         "latitude": 29.5630556,
         "longitude": -95.2861111
       },
-      "geoRadius": "25 miles"
+      "geoRadius": "20 miles"
     },
     openingHoursSpecification: [
       {
@@ -191,7 +191,7 @@ export function StructuredData({ nonce }: StructuredDataProps) {
         name: "What areas does Houston Mobile Notary Pros serve?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "We serve Houston, Pearland, Sugar Land, Missouri City, Galveston, Stafford, and surrounding areas within a 25-mile radius of 77591 with mobile notary services at your location."
+          text: "We serve Houston, Pearland, Sugar Land, Missouri City, Galveston, Stafford, and nearby areas. Travel within 20 miles of 77591 is included; beyond that we use simple travel tiers to 50 miles."
         }
       },
       {
@@ -207,7 +207,7 @@ export function StructuredData({ nonce }: StructuredDataProps) {
         name: "Do you charge travel fees for mobile notary service?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Travel is included within our 25-mile service area from 77591 (Pearland area). Additional travel fees of $0.50 per mile apply beyond 25 miles for Houston metro and Galveston corridor service."
+          text: "Travel is included within 20 miles of 77591. Beyond that, tiered travel applies: 21–30 +$25; 31–40 +$45; 41–50 +$65."
         }
       },
       {
@@ -260,7 +260,7 @@ export function StructuredData({ nonce }: StructuredDataProps) {
       "@type": "Offer",
       "price": "75",
       "priceCurrency": "USD",
-      "description": "Starting price for mobile notary services including travel within 25-mile service area"
+      "description": "Starting price for mobile notary services including travel within 20 miles; tiered travel beyond"
     },
     "additionalType": "https://schema.org/NotaryService"
   }

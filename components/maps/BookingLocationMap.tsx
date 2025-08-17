@@ -229,7 +229,7 @@ export default function BookingLocationMap({
                 <p className="text-sm text-gray-600 mt-1">
                   Travel fee: <span className="font-medium">${locationInfo.travelFee.toFixed(2)}</span>
                   <span className="text-xs text-gray-500 ml-1">
-                    ($0.50/mile beyond 20-mile radius)
+                    (Tiered: 21–30 +$25; 31–40 +$45; 41–50 +$65 – <a href="/services/extras#travel-tiers" className="underline text-[#002147]">details</a>)
                   </span>
                 </p>
               ) : (

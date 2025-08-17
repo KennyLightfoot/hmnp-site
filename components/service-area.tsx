@@ -110,7 +110,7 @@ export default function ServiceArea() {
                   <div>
                     <h3 className="font-semibold text-[#002147] mb-1">Standard Service Area & Travel Fees</h3>
                     <p className="text-gray-700">
-                      Our primary service point is based in Texas City (ZIP 77591). Our standard service packages include travel within a 20-mile radius of this location. We gladly travel to all listed areas and beyond, with an additional travel fee of $0.50 per mile applying for distances beyond the initial 20 miles from 77591. Please contact us for a precise quote if you are unsure about potential travel fees for your location.
+                      Our primary service point is Texas City (ZIP 77591). Travel within 20 miles is included for Standard service. Beyond that, simple travel tiers apply: 21–30 +$25; 31–40 +$45; 41–50 +$65. See <Link href="/services/extras#travel-tiers" className="underline text-[#002147]">travel tiers</Link> for details.
                     </p>
                   </div>
                 </div>

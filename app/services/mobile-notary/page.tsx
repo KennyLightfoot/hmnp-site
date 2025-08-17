@@ -341,7 +341,7 @@ export default function MobileNotaryServicesPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-700">Standard Mobile</span>
-                    <span className="font-semibold text-[#002147]">$75+</span>
+                    <span className="font-semibold text-[#002147]">$75+ <Link href="/services/extras#travel-tiers" className="underline text-sm ml-1">See travel tiers</Link></span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-700">Extended Hours</span>

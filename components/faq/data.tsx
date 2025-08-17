@@ -229,7 +229,7 @@ export const faqs: FAQ[] = [
           </div>
         </div>
         <p className="mt-4 text-sm text-gray-600">
-          Pricing includes travel within our standard 20-mile service area. Additional travel fees may apply for longer distances.
+          Pricing includes travel within our standard 20-mile service area. Beyond that, simple travel tiers apply: 21–30 +$25; 31–40 +$45; 41–50 +$65. <a href="/services/extras#travel-tiers" className="underline">See travel tiers</a>.
         </p>
         <div className="mt-4 p-3 bg-green-50 rounded-md">
           <p className="text-sm text-green-800">
@@ -262,7 +262,7 @@ export const faqs: FAQ[] = [
           </div>
           <div className="flex items-center p-2 bg-green-50 rounded">
             <span className="text-green-600 mr-2">✓</span>
-            <span>Travel within 30 miles of Pearland (77591)</span>
+            <span>Travel within 20 miles of 77591; tiered travel beyond</span>
           </div>
           <div className="flex items-center p-2 bg-green-50 rounded">
             <span className="text-green-600 mr-2">✓</span>
@@ -297,25 +297,23 @@ export const faqs: FAQ[] = [
         <p>Travel fees are calculated transparently based on distance from our base in Pearland (77591):</p>
         <div className="mt-3 space-y-3">
           <div className="p-3 border border-gray-200 rounded">
-            <h4 className="font-semibold text-green-700">Free Travel Zones</h4>
+            <h4 className="font-semibold text-green-700">Included Travel</h4>
             <ul className="mt-2 space-y-1 text-sm">
               <li>• <strong>Quick-Stamp Local:</strong> 10 miles from 77591</li>
-              <li>• <strong>All Other Services:</strong> 30 miles from 77591</li>
+              <li>• <strong>Extended & Loan Signing:</strong> 30 miles from 77591</li>
             </ul>
           </div>
           <div className="p-3 border border-gray-200 rounded">
-            <h4 className="font-semibold text-orange-700">Travel Fee Calculation</h4>
-            <p className="text-sm mt-2">
-              <strong>$0.50 per mile</strong> (one-way) beyond the free zone
-            </p>
+            <h4 className="font-semibold text-orange-700">Tiered Travel Beyond Included</h4>
+            <p className="text-sm mt-2">21–30 +$25; 31–40 +$45; 41–50 +$65. <a href="/services/extras#travel-tiers" className="underline">Details</a>.</p>
           </div>
         </div>
         <p className="mt-4">Examples:</p>
         <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
-          <li><strong>Sugar Land (15 miles):</strong> No travel fee - within all free zones</li>
-          <li><strong>Houston Downtown (20 miles):</strong> No travel fee for Standard+ services</li>
-          <li><strong>Galveston (35 miles):</strong> $2.50 travel fee (5 miles beyond free zone)</li>
-          <li><strong>Katy (40 miles):</strong> $5.00 travel fee (10 miles beyond free zone)</li>
+          <li><strong>Sugar Land (15 miles):</strong> No travel fee – within 20 miles</li>
+          <li><strong>Houston Downtown (20 miles):</strong> No travel fee for Standard</li>
+          <li><strong>Galveston (35 miles):</strong> +$45 travel tier (31–40)</li>
+          <li><strong>Katy (40 miles):</strong> +$45 travel tier (31–40)</li>
         </ul>
         <div className="mt-4 p-3 bg-yellow-50 rounded-md">
           <p className="text-sm text-yellow-800">
@@ -344,7 +342,7 @@ export const faqs: FAQ[] = [
           </div>
           <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
             <span>Travel Fee (if applicable)</span>
-            <span className="font-semibold">$0.50/mile beyond free zone</span>
+            <span className="font-semibold">Tiered beyond included miles</span>
           </div>
           <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
             <span>Time-Based Fees</span>
