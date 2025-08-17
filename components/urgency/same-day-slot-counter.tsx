@@ -79,9 +79,12 @@ export default function SameDaySlotCounter({
 
   useEffect(() => {
     load()
+    let intervalId: ReturnType<typeof setInterval> | null = null
     if (refreshMs > 0) {
-      const id = setInterval(load, refreshMs)
-      return () => clearInterval(id)
+      intervalId = setInterval(load, refreshMs)
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId)
     }
   }, [dateStr, serviceType, refreshMs])
 
