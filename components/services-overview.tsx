@@ -49,7 +49,7 @@ export default function ServicesOverview() {
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                    <span>Travel within 15 miles included</span>
+                    <span>Travel within 20 miles included</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
@@ -87,7 +87,7 @@ export default function ServicesOverview() {
               </CardHeader>
               <CardContent className="pt-6">
                 <div className="flex items-baseline mb-6">
-                  <p className="text-3xl font-bold text-[#002147]">$100</p>
+                  <p className="text-3xl font-bold text-[#002147]">$125</p>
                   <span className="ml-2 text-gray-500">flat fee</span>
                 </div>
                 <ul className="space-y-3">
@@ -127,7 +127,7 @@ export default function ServicesOverview() {
               </CardHeader>
               <CardContent className="pt-6">
                 <div className="flex items-baseline mb-6">
-                  <p className="text-3xl font-bold text-[#002147]">$150</p>
+                  <p className="text-3xl font-bold text-[#002147]">$175</p>
                   <span className="ml-2 text-gray-500">flat fee</span>
                 </div>
                 <ul className="space-y-3">
