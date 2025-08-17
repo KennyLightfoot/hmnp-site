@@ -8,6 +8,7 @@ import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping'
 import type { Service } from '@prisma/client'
 import { PaymentMethod, BookingStatus, ServiceType } from '@prisma/client'
 import { logger } from '@/lib/logger'
+import { RONService } from '@/lib/proof/api'
 
 export interface CreateBookingInput {
   validatedData: any
@@ -177,6 +178,26 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
 
   if (reservationId) {
     await convertToBooking(reservationId, booking.id)
+  }
+
+  // Inline RON session creation on Vercel (no worker). If WORKER_MODE=true, the worker will handle it.
+  try {
+    const workerEnabled = String(process.env.WORKER_MODE || 'false').toLowerCase() === 'true'
+    const isRON = String(service.serviceType || '') === 'RON_SERVICES'
+    if (isRON && !workerEnabled) {
+      try { console.info('[RON] Creating Proof.com RON session inline (WORKER_MODE=false)') } catch {}
+      await RONService.createRONSession({
+        id: booking.id,
+        customerName: booking.customerName || '',
+        customerEmail: booking.customerEmail || '',
+        customerPhone: undefined,
+        documentTypes: ['General Document'],
+        scheduledDateTime: booking.scheduledDateTime as Date,
+      })
+      // Optionally persist session URL/ids if available – handled inside RONService/worker in prod
+    }
+  } catch (e) {
+    try { console.warn('[RON] Inline creation failed (continuing):', (e as any)?.message || String(e)) } catch {}
   }
 
   // Always create or link GHL contact and trigger configured workflow/tags (independent of calendar)
