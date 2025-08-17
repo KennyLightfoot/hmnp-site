@@ -32,7 +32,7 @@ export default function HeroSection() {
               <span className="text-white font-medium">Professional Mobile Notary Services</span>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-              Mobile Notary Houston - <span className="text-[#91A3B0]">Notary Near Me</span>
+              Get notarized in Texas in 15–30 minutes (24/7 RON) or same‑day mobile — guaranteed.
             </h1>
             
             {/* Guarantee Banner */}
@@ -50,7 +50,7 @@ export default function HeroSection() {
             </div>
             
             <p className="text-xl text-gray-100">
-              Need a mobile notary in Houston? We come to you! Professional loan signing agent, RON services, and emergency notarization available 24/7. Same-day service across Greater Houston.
+              From $35 online or $75 mobile. If we miss your arrival window by &gt;15 minutes, we credit $25.
             </p>
             {/* Quick badges */}
             <div className="flex flex-wrap gap-2 pt-1">
@@ -60,18 +60,18 @@ export default function HeroSection() {
               <Badge className="bg-white/10 text-white border-white/20">RON 24/7 (TX)</Badge>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Link href="/booking">
+              <Link href="/ron/dashboard">
                 <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white w-full sm:w-auto">
-                  Book Your Service Now
+                  Start RON Now
                 </Button>
               </Link>
-              <Link href="/services">
+              <Link href="/booking">
                 <Button
                   size="lg"
                   variant="outline"
                   className="border-white text-white bg-transparent hover:bg-white/20 w-full sm:w-auto"
                 >
-                  Our Services
+                  Book Mobile Notary
                 </Button>
               </Link>
               <Popover>

@@ -374,7 +374,7 @@ export function useBookingPricing(
 // Specialized hook for service comparison
 export function useServiceComparison(
   baseServiceType: string,
-  comparisonServices: string[] = ['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES']
+  comparisonServices: string[] = ['STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES']
 ) {
   const [comparisons, setComparisons] = useState<{ [serviceType: string]: TransparentPricingResult | null }>({});
   const [isLoading, setIsLoading] = useState(false);

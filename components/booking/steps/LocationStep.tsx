@@ -202,7 +202,7 @@ export default function LocationStep({
       // Mock travel calculation (replace with real API call)
       const distance = Math.floor(Math.random() * 25) + 5; // 5-30 miles
       const baseTravelFee = distance > 30 ? 25 : distance > 20 ? 20 : distance > 10 ? 15 : 0;
-      const serviceRadius = watchedServiceType === 'QUICK_STAMP_LOCAL' ? 10 : 30;
+      const serviceRadius = 30;
       
       const calculation: TravelCalculation = {
         distance,

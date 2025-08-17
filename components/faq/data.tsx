@@ -299,7 +299,7 @@ export const faqs: FAQ[] = [
           <div className="p-3 border border-gray-200 rounded">
             <h4 className="font-semibold text-green-700">Included Travel</h4>
             <ul className="mt-2 space-y-1 text-sm">
-              <li>• <strong>Quick-Stamp Local:</strong> 10 miles from 77591</li>
+              <li>• <strong>Standard:</strong> 20 miles from 77591</li>
               <li>• <strong>Extended & Loan Signing:</strong> 30 miles from 77591</li>
             </ul>
           </div>

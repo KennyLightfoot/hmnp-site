@@ -17,6 +17,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 
 import MiniFAQ from "@/components/mini-faq"
 import HeroSection from "@/components/hero-section"
+import SameDaySlotCounter from "@/components/urgency/same-day-slot-counter"
+import OfferStack from "@/components/offer/offer-stack"
+import PolicyStrip from "@/components/guarantees/policy-strip"
 import ServiceHoursBanner from "@/components/service-hours-banner"
 import ServicesOverview from "@/components/services-overview"
 import WhyChooseUs from "@/components/why-choose-us"
@@ -105,12 +108,17 @@ export default function HomePage() {
       {/* Hero Section with Background Image - Removed */}
       {/* <section className="relative py-20 md:py-28 overflow-hidden"> ... </section> */}
       <HeroSection />
+      <div className="container mx-auto px-4 -mt-8">
+        <SameDaySlotCounter className="bg-white/90 backdrop-blur border border-gray-200 shadow-sm" />
+      </div>
 
       {/* Service Hours Banner - Simplified */}
       <ServiceHoursBanner />
 
-      {/* Services Overview - Simplified */}
-      <ServicesOverview />
+      {/* Offer Stack replacing generic overview */}
+      <OfferStack />
+
+      <PolicyStrip />
 
       {/* Why Choose Us - Simplified */}
       <WhyChooseUs />

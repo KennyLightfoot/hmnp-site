@@ -7,6 +7,15 @@ echo "🚀 Syncing critical environment variables to Vercel..."
 echo "⚠️  Make sure you're in the correct Vercel project context first!"
 echo ""
 
+# Optionally load values from .env.local to avoid hard-coding secrets in this script
+if [ -f ./.env.local ]; then
+    echo "Loading variables from .env.local..."
+    set -a
+    # shellcheck disable=SC1091
+    . ./.env.local
+    set +a
+fi
+
 # Function to add environment variable to all environments
 add_env_var() {
     local name=$1
@@ -18,6 +27,17 @@ add_env_var() {
     echo "$value" | vercel env add "$name" development
     echo "✅ $name added to all environments"
     echo ""
+}
+
+# Helper: add env var by reading its value from current environment
+add_env_var_from_env() {
+    local name=$1
+    local value=${!name}
+    if [ -z "$value" ]; then
+        echo "⚠️  Skipping $name (no value set in environment)"
+        return 0
+    fi
+    add_env_var "$name" "$value"
 }
 
 # Database Configuration (CRITICAL)
@@ -57,8 +77,15 @@ add_env_var "GHL_LOCATION_ID" "oUvYNTw2Wvul7JSJplqQ"
 add_env_var "GHL_API_BASE_URL" "https://services.leadconnectorhq.com"
 
 # Google Maps (CRITICAL for booking location validation)
-add_env_var "GOOGLE_MAPS_API_KEY" "AIzaSyBEGc_wacW9IR8_XXY-P0sGn1EOfeUrGCw"
-add_env_var "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY" "AIzaSyBEGc_wacW9IR8_XXY-P0sGn1EOfeUrGCw"
+# Use values from current environment (loaded from .env.local if present)
+add_env_var_from_env "GOOGLE_MAPS_API_KEY"
+add_env_var_from_env "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY"
+
+# Vertex AI (Gemini)
+add_env_var_from_env "GOOGLE_SERVICE_ACCOUNT_JSON"
+add_env_var_from_env "GOOGLE_PROJECT_ID"
+add_env_var_from_env "GOOGLE_REGION"
+add_env_var_from_env "VERTEX_MODEL_ID"
 
 # Email Services (CRITICAL for notifications)
 add_env_var "RESEND_API_KEY" "re_LisJRVK9_LbaKdMi8gZNafPvWD2H2Myca"
