@@ -170,7 +170,7 @@ export default function BusinessSolutionsPage() {
               </CardHeader>
               <CardContent>
                 <div className="bg-gray-50 p-8 rounded-lg text-center mb-6">
-                  <h3 className="text-3xl font-bold text-[#A52A2A] mb-4">Starting at $250+</h3>
+                  <h3 className="text-3xl font-bold text-[#A52A2A] mb-4">Starting at $250+ <span className="text-sm text-[#002147] ml-1"><Link href="/services/extras#travel-tiers" title="View tiered travel zones" className="underline">See travel tiers</Link></span></h3>
                   <p className="text-lg mb-6 text-gray-700">Customized business packages with volume pricing</p>
                   <div className="text-left max-w-md mx-auto">
                     <h4 className="font-semibold mb-3 text-[#002147]">Includes:</h4>

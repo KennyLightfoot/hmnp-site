@@ -209,7 +209,7 @@ export default function EstatePlanningServicePage() {
               </CardHeader>
               <CardContent>
                 <div className="bg-gradient-to-r from-[#002147] to-[#003366] text-white p-8 rounded-lg text-center mb-6">
-                  <h3 className="text-3xl font-bold mb-4">$250</h3>
+                  <h3 className="text-3xl font-bold mb-4">$250 <span className="text-sm text-white/80 ml-1"><Link href="/services/extras#travel-tiers" title="View tiered travel zones" className="underline">See travel tiers</Link></span></h3>
                   <p className="text-xl mb-6">Complete Estate Planning Package</p>
                   <div className="grid md:grid-cols-2 gap-6 text-left">
                     <div>
@@ -227,7 +227,7 @@ export default function EstatePlanningServicePage() {
                       <ul className="space-y-2 text-sm">
                         <li>• Extra documents: $10 each</li>
                         <li>• Extra signers: $15 each</li>
-                        <li>• Extended travel: $0.50/mile</li>
+                        <li>• Travel tiers beyond included radius: 21–30 +$25; 31–40 +$45; 41–50 +$65</li>
                         <li>• Weekend/holiday: +$40</li>
                         <li>• After-hours: +$30</li>
                       </ul>
