@@ -215,6 +215,9 @@ export default function SugarLandMobileNotaryPage() {
                   </Link>
                 </Button>
               </div>
+              <div className="mt-2 text-xs text-blue-100">
+                <Link href="/services/extras#travel-tiers" className="underline">See travel tiers</Link>
+              </div>
               
               <div className="flex flex-wrap justify-center gap-4 text-sm">
                 <div className="flex items-center">
