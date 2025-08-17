@@ -903,7 +903,6 @@ model service_areas {
 }
 
 enum ServiceType {
-  QUICK_STAMP_LOCAL
   STANDARD_NOTARY
   EXTENDED_HOURS
   LOAN_SIGNING

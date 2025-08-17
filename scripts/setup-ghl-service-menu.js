@@ -29,27 +29,7 @@ const SERVICE_GROUPS = {
     description: 'Professional mobile notary services throughout Houston metro',
     category: 'mobile',
     services: [
-      {
-        id: 'QUICK_STAMP_LOCAL',
-        name: 'Quick-Stamp Local',
-        description: 'Fast & simple local signings for routine documents',
-        price: 50.00,
-        duration: 30,
-        features: [
-          '≤1 document notarization',
-          '≤2 stamps included',
-          '1 signer included',
-          '10-mile travel radius',
-          '9am-5pm weekdays',
-          'Perfect for simple documents'
-        ],
-        calendarId: process.env.GHL_STANDARD_NOTARY_CALENDAR_ID,
-        tags: ['Service:Quick_Stamp_Local', 'service:quick_stamp_local'],
-        workflows: {
-          booking: process.env.GHL_BOOKING_CONFIRMATION_WORKFLOW_ID,
-          reminder: process.env.GHL_24HR_REMINDER_WORKFLOW_ID
-        }
-      },
+      // Quick-Stamp Local removed from offering
       {
         id: 'STANDARD_NOTARY',
         name: 'Standard Mobile Notary',

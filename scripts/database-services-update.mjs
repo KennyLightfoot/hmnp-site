@@ -11,17 +11,7 @@ const prisma = new PrismaClient();
 
 // SOP v2.0 Service Definitions
 const SOP_SERVICES = [
-  {
-    name: 'Quick-Stamp Local',
-    description: 'Fast and simple local notary service for basic documents. Perfect for single documents with minimal signatures.',
-    serviceType: 'STANDARD_NOTARY',
-    price: 50.00,
-    requiresDeposit: false,
-    depositAmount: 0.00,
-    duration: 15,
-    active: true,
-    key: 'quick-stamp-local'
-  },
+  // Quick-Stamp Local removed from SOP services
   {
     name: 'Standard Mobile Notary',
     description: 'Professional mobile notary service for standard documents during regular business hours.',
@@ -150,13 +140,7 @@ async function updateBusinessSettings() {
       description: 'Last SOP update timestamp',
       category: 'system'
     },
-    {
-      key: 'pricing.quickStampLocal.base',
-      value: '50.00',
-      dataType: 'number', 
-      description: 'Quick-Stamp Local base price per SOP',
-      category: 'pricing'
-    },
+    // Quick-Stamp Local pricing removed
     {
       key: 'pricing.standardNotary.base',
       value: '75.00',

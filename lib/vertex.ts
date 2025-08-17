@@ -84,7 +84,7 @@ const FUNCTION_DEFINITIONS = [
         serviceType: {
           type: 'string',
           description: 'Type of service for pricing calculation',
-          enum: ['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH'],
+          enum: ['STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH'],
           default: 'STANDARD_NOTARY'
         }
       },
@@ -104,7 +104,7 @@ const FUNCTION_DEFINITIONS = [
         serviceType: {
           type: 'string',
           description: 'Type of service to check availability for',
-          enum: ['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH'],
+          enum: ['STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH'],
           default: 'STANDARD_NOTARY'
         }
       },

@@ -15,39 +15,9 @@ async function main() {
     await prisma.$connect();
     console.log('✅ Database connection successful');
     
-    // Complete service list - all 6 services from website
+    // Complete service list - all 6 services from website (Quick-Stamp removed)
     const allServices = [
-      // 1. Quick-Stamp Local (NEW - missing from backend)
-      {
-        id: 'hmnp_quick_stamp_local',
-        name: 'Quick-Stamp Local',
-        type: ServiceType.STANDARD_NOTARY,
-        description: 'Fast & simple local signings. ≤ 1 document, ≤ 2 stamps, 1 signer included.',
-        basePrice: 50.00,
-        requiresDeposit: false,
-        depositAmount: null,
-        durationMinutes: 30,
-        maxSigners: 1,
-        maxDocuments: 1,
-        isActive: true,
-        service_radius_miles: 10,
-        travelFeeRate: 0.50,
-        business_hours: {
-          schedule: 'Monday-Friday 9:00 AM - 5:00 PM',
-          notes: 'Quick local service during business hours'
-        },
-        notary_availability: {
-          monday: { start: '09:00', end: '17:00', available: true },
-          tuesday: { start: '09:00', end: '17:00', available: true },
-          wednesday: { start: '09:00', end: '17:00', available: true },
-          thursday: { start: '09:00', end: '17:00', available: true },
-          friday: { start: '09:00', end: '17:00', available: true },
-          saturday: { available: false },
-          sunday: { available: false }
-        }
-      },
-      
-      // 2. Standard Mobile Notary (EXISTING - update if needed)
+      // 1. Standard Mobile Notary (EXISTING - update if needed)
       {
         id: 'hmnp_standard_notary',
         name: 'Standard Mobile Notary',
@@ -61,7 +31,7 @@ async function main() {
         maxDocuments: 2,
         isActive: true,
         service_radius_miles: 20,
-        travelFeeRate: 0.50,
+        travelFeeRate: null,
         business_hours: {
           schedule: 'Monday-Friday 9:00 AM - 5:00 PM',
           notes: 'Standard business hours'
@@ -77,13 +47,13 @@ async function main() {
         }
       },
       
-      // 3. Extended Hours Mobile (EXISTING)
+      // 2. Extended Hours Mobile (EXISTING)
       {
         id: 'hmnp_extended_hours',
         name: 'Extended Hours Mobile Notary',
         type: ServiceType.EXTENDED_HOURS,
         description: 'Extended hours mobile notary services available 7 days a week, 7 AM - 9 PM. Up to 5 documents and 2 signers with 30-mile travel radius.',
-        basePrice: 100.00,
+        basePrice: 125.00,
         requiresDeposit: true,
         depositAmount: 25.00,
         durationMinutes: 60,
@@ -91,7 +61,7 @@ async function main() {
         maxDocuments: 5,
         isActive: true,
         service_radius_miles: 30,
-        travelFeeRate: 0.50,
+        travelFeeRate: null,
         business_hours: {
           schedule: 'Daily 7:00 AM - 9:00 PM',
           notes: 'Extended hours available all week'
@@ -107,21 +77,21 @@ async function main() {
         }
       },
       
-      // 4. Loan Signing Specialist (EXISTING)
+      // 3. Loan Signing Specialist (EXISTING)
       {
         id: 'hmnp_loan_signing',
         name: 'Loan Signing Specialist',
         type: ServiceType.LOAN_SIGNING,
         description: 'Professional loan signing services by certified specialist. Unlimited documents, up to 4 signers, 90-minute sessions. Flat rate pricing.',
-        basePrice: 150.00,
+        basePrice: 175.00,
         requiresDeposit: true,
         depositAmount: 50.00,
         durationMinutes: 90,
         maxSigners: 4,
         maxDocuments: 999,
         isActive: true,
-        service_radius_miles: 20,
-        travelFeeRate: 0.50,
+        service_radius_miles: 30,
+        travelFeeRate: null,
         business_hours: {
           schedule: 'By appointment',
           notes: 'Flexible scheduling available'
@@ -167,7 +137,7 @@ async function main() {
         }
       },
       
-      // 6. Business Subscription Essentials (NEW)
+      // 4. Business Subscription Essentials (NEW)
       {
         id: 'hmnp_business_essentials',
         name: 'Business Subscription - Essentials',
@@ -197,7 +167,7 @@ async function main() {
         }
       },
       
-      // 7. Business Subscription Growth (NEW)
+      // 5. Business Subscription Growth (NEW)
       {
         id: 'hmnp_business_growth',
         name: 'Business Subscription - Growth',
