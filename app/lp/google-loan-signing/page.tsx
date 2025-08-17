@@ -74,7 +74,7 @@ export default function GoogleLoanSigningLandingPage() {
               <div className="grid md:grid-cols-2 gap-4 mb-8">
                 <div className="flex items-center space-x-3">
                   <CheckCircle className="h-5 w-5 text-[#A52A2A] flex-shrink-0" />
-                  <span className="text-sm">NNA Certified Specialists</span>
+                  <span className="text-sm">NNA Certified Specialists • 30-mi included • +$25 evenings/weekends</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <CheckCircle className="h-5 w-5 text-[#A52A2A] flex-shrink-0" />

@@ -72,11 +72,19 @@ export default function HomePage() {
       id: "service-area",
       question: "What areas do you serve?",
       answer: (
-        <p>
-          We serve clients within a 20-mile radius of ZIP code 77591, covering the greater Houston area including
-          Houston, Galveston, League City, Pearland, Sugar Land, and more. We can also travel beyond our standard
-          service area for an additional fee.
-        </p>
+        <div>
+          <p>
+            We cover up to 50 miles from ZIP code 77591 across Greater Houston. Included travel:
+            Standard Mobile includes 20 miles; Extended Hours and Loan Signing include 30 miles.
+          </p>
+          <ul className="list-disc ml-6 mt-2">
+            <li>0–20 miles: included (Standard)</li>
+            <li>21–30 miles: +$25 (Extended/Loan include 30)</li>
+            <li>31–40 miles: +$45</li>
+            <li>41–50 miles: +$65 (maximum service area)</li>
+          </ul>
+          <p className="mt-2">RON is statewide (Texas) with no travel fees.</p>
+        </div>
       ),
     },
     {

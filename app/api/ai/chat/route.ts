@@ -63,8 +63,8 @@ const CONTEXT_PROMPTS = {
     
     Key Services to mention:
     - Standard Mobile Notary ($75) - Perfect for routine documents
-    - Extended Hours ($100) - Evening/weekend availability 
-    - Loan Signing Specialist ($150) - Real estate expertise
+    - Extended Hours ($125) - 30-mile included; evening/weekend included
+    - Loan Signing Specialist ($175) - 30-mile included; +$25 evenings/weekends
     - Remote Online Notarization ($35) - Sign from anywhere
     
     Always offer to help them book or get a quote.`,
@@ -75,8 +75,8 @@ const CONTEXT_PROMPTS = {
     Service Comparison:
     - Quick-Stamp Local ($50) - Basic, 1 document, 10-mile radius
     - Standard Notary ($75) - Most popular, 2 documents, 30-mile radius
-    - Extended Hours ($100) - 7am-9pm, same-day guarantee, 5 documents
-    - Loan Signing ($150) - Real estate expertise, unlimited documents
+    - Extended Hours ($125) - 7am-9pm, same-day guarantee, 5 documents, 30-mi included
+    - Loan Signing ($175) - Real estate expertise, unlimited documents, 30-mi included; +$25 evenings/weekends
     - RON Services ($35) - Remote online, 24/7 availability
     
     Ask about their specific needs: document type, timeline, location, number of signers.`,

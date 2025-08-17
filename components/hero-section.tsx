@@ -3,6 +3,8 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 export default function HeroSection() {
   return (
@@ -50,6 +52,13 @@ export default function HeroSection() {
             <p className="text-xl text-gray-100">
               Need a mobile notary in Houston? We come to you! Professional loan signing agent, RON services, and emergency notarization available 24/7. Same-day service across Greater Houston.
             </p>
+            {/* Quick badges */}
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Badge className="bg-white/10 text-white border-white/20">50-mile coverage from 77591</Badge>
+              <Badge className="bg-white/10 text-white border-white/20">Standard: 20 mi included</Badge>
+              <Badge className="bg-white/10 text-white border-white/20">Extended/Loan: 30 mi included</Badge>
+              <Badge className="bg-white/10 text-white border-white/20">RON 24/7 (TX)</Badge>
+            </div>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link href="/booking">
                 <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white w-full sm:w-auto">
@@ -65,6 +74,26 @@ export default function HeroSection() {
                   Our Services
                 </Button>
               </Link>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button size="lg" variant="outline" className="border-white text-white bg-transparent hover:bg-white/20 w-full sm:w-auto">
+                    Travel Zones
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-80">
+                  <div className="text-sm">
+                    <div className="font-semibold text-[#002147] mb-2">Simple, fair travel zones (from 77591)</div>
+                    <ul className="space-y-1 text-gray-700">
+                      <li>• 0–20 miles: included (Standard)</li>
+                      <li>• 21–30 miles: +$25 (Extended/Loan include 30)</li>
+                      <li>• 31–40 miles: +$45</li>
+                      <li>• 41–50 miles: +$65 (maximum service area)</li>
+                    </ul>
+                    <div className="text-xs text-gray-500 mt-2">RON has no travel fees.</div>
+                    <Link href="/services/extras" className="text-[#A52A2A] underline text-sm mt-3 inline-block">See Extras & Fees</Link>
+                  </div>
+                </PopoverContent>
+              </Popover>
               <p className="mt-4 text-sm text-gray-200">
                 <Link href="/service-areas" className="underline hover:text-white">
                   See all areas we serve

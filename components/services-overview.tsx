@@ -55,6 +55,10 @@ export default function ServicesOverview() {
                     <CheckCircle className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
                     <span>Available Monday-Friday, 9am-5pm</span>
                   </li>
+                  <li className="flex items-start text-sm text-gray-600">
+                    <CheckCircle className="text-[#A52A2A] mr-2 h-4 w-4 mt-0.5 shrink-0" />
+                    <span>Travel tiers beyond 20 miles: 21–30 +$25; 31–40 +$45; 41–50 +$65</span>
+                  </li>
                 </ul>
               </CardContent>
               <CardFooter className="pt-4 pb-6">
@@ -97,11 +101,15 @@ export default function ServicesOverview() {
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                    <span>Service from 7am-9pm daily</span>
+                    <span>Service from 7am-9pm daily (evening/weekend included)</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                    <span>Up to 5 documents and 2 signers</span>
+                    <span>Up to 5 documents and 2 signers • 30-mile travel included</span>
+                  </li>
+                  <li className="flex items-start text-sm text-gray-600">
+                    <CheckCircle className="text-[#A52A2A] mr-2 h-4 w-4 mt-0.5 shrink-0" />
+                    <span>Travel tiers 31–40 +$45; 41–50 +$65</span>
                   </li>
                 </ul>
               </CardContent>
@@ -133,7 +141,7 @@ export default function ServicesOverview() {
                 <ul className="space-y-3">
                   <li className="flex items-start">
                     <CheckCircle className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
-                    <span>Unlimited documents</span>
+                    <span>Unlimited documents • 30-mile travel included</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
@@ -142,6 +150,10 @@ export default function ServicesOverview() {
                   <li className="flex items-start">
                     <CheckCircle className="text-[#A52A2A] mr-2 h-5 w-5 mt-0.5 shrink-0" />
                     <span>90-minute signing session</span>
+                  </li>
+                  <li className="flex items-start text-sm text-gray-600">
+                    <CheckCircle className="text-[#A52A2A] mr-2 h-4 w-4 mt-0.5 shrink-0" />
+                    <span>Evenings/weekends +$25 • Travel tiers 31–40 +$45; 41–50 +$65</span>
                   </li>
                 </ul>
               </CardContent>
