@@ -3,6 +3,7 @@
 import LeadForm from "@/components/lead-form";
 import { NextPage } from "next";
 import { Gift, ShieldCheck, Zap, Star, Users, Clock, CheckCircle, Phone, Award, Timer } from "lucide-react";
+import { SERVICES_CONFIG } from "@/lib/services/config";
 
 const FacebookCampaignPage: NextPage = () => {
   return (
@@ -34,8 +35,8 @@ const FacebookCampaignPage: NextPage = () => {
                 <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold mb-2">
                   SAVE 30%
                 </div>
-                <div className="text-2xl font-bold">$52.50</div>
-                <div className="text-slate-300 line-through">Regular $75</div>
+                <div className="text-2xl font-bold">${(SERVICES_CONFIG.STANDARD_NOTARY.basePrice * 0.7).toFixed(2)}</div>
+                <div className="text-slate-300 line-through">Regular ${SERVICES_CONFIG.STANDARD_NOTARY.basePrice}</div>
               </div>
               <div className="flex flex-col items-center">
                 <Star className="h-8 w-8 text-yellow-400 mb-2" />
@@ -72,8 +73,8 @@ const FacebookCampaignPage: NextPage = () => {
                   <div className="text-center p-6 bg-white rounded-xl shadow-md">
                     <div className="text-3xl font-bold text-green-600 mb-2">30% OFF</div>
                     <div className="text-gray-600 mb-4">All Notary Services</div>
-                    <div className="text-2xl font-bold text-[#002147]">Starting at $52.50</div>
-                    <div className="text-sm text-gray-500 line-through">Regular Price: $75</div>
+                    <div className="text-2xl font-bold text-[#002147]">Starting at ${(SERVICES_CONFIG.STANDARD_NOTARY.basePrice * 0.7).toFixed(2)}</div>
+                    <div className="text-sm text-gray-500 line-through">Regular Price: ${SERVICES_CONFIG.STANDARD_NOTARY.basePrice}</div>
                   </div>
                   
                   <div className="space-y-4">
@@ -207,8 +208,8 @@ const FacebookCampaignPage: NextPage = () => {
                   <div className="bg-green-500 text-white px-4 py-2 rounded-full inline-block mb-4 font-bold">
                     🎉 FACEBOOK EXCLUSIVE - 30% OFF
                   </div>
-                  <div className="text-3xl font-bold text-green-600 mb-2">Save $22.50</div>
-                  <div className="text-gray-600">Regular $75 → <span className="font-bold text-green-600">Now $52.50</span></div>
+                  <div className="text-3xl font-bold text-green-600 mb-2">Save ${(SERVICES_CONFIG.STANDARD_NOTARY.basePrice * 0.3).toFixed(2)}</div>
+                  <div className="text-gray-600">Regular ${SERVICES_CONFIG.STANDARD_NOTARY.basePrice} → <span className="font-bold text-green-600">Now {(SERVICES_CONFIG.STANDARD_NOTARY.basePrice * 0.7).toFixed(2)}</span></div>
                   <div className="text-xs text-gray-500 mt-1">Standard Mobile Notary • ≤ 4 docs • ≤ 2 signers • ≤ 15 mi travel</div>
                 </div>
 

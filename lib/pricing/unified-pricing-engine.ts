@@ -13,6 +13,7 @@
 import { z } from 'zod';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { UnifiedDistanceService } from '../maps/unified-distance-service';
+import { estimateDistanceFromAddress as estimateMiles, calculateTravelFee as calcTieredFee, SERVICE_AREA_CONFIG } from '@/lib/config/maps';
 import { validateBusinessRules } from '../business-rules/engine';
 import { BUSINESS_RULES_CONFIG } from '../business-rules/config';
 import { PricingCacheService, withPricingCache } from './pricing-cache';
@@ -214,38 +215,33 @@ export class UnifiedPricingEngine {
       
       let runningTotal = basePrice;
       
-      // DISABLED: 1. Calculate Travel Fee (if address provided and not RON)
-      // Travel fee calculation temporarily disabled to simplify booking system
-      // if (validatedRequest.address && validatedRequest.serviceType !== 'RON_SERVICES') {
-      //   console.log(`🗺️ [${requestId}] Calculating travel fee`);
-      //   
-      //   const travelResult = await this.calculateTravelFee(
-      //     validatedRequest.serviceType,
-      //     validatedRequest.address,
-      //     requestId
-      //   );
-      //   
-      //   if (travelResult.fee > 0) {
-      //     (breakdown as any).travelFee = {
-      //       amount: travelResult.fee,
-      //       label: `Travel Fee`,
-      //       description: `${travelResult.distance.toFixed(1)} miles @ $${serviceConfig.feePerMile}/mile`,
-      //       isDiscount: false,
-      //       calculation: `(${travelResult.distance.toFixed(1)} - ${serviceConfig.includedRadius}) × $${serviceConfig.feePerMile}`
-      //   };
-      //     runningTotal += travelResult.fee;
-      //   }
-      //   
-      //   // Update business rules
-      //   businessRules.serviceAreaZone = travelResult.zone;
-      //   businessRules.isWithinServiceArea = travelResult.withinArea;
-      //   
-      //   // Update GHL actions
-      //   ghlActions.customFields.cf_travel_fee = travelResult.fee;
-      //   ghlActions.customFields.cf_travel_distance = travelResult.distance;
-      //   ghlActions.customFields.cf_service_area_zone = travelResult.zone;
-      //   ghlActions.tags.push(`area:${travelResult.zone}`);
-      // }
+      // 1. Calculate Travel Fee (if address provided and not RON)
+      if (validatedRequest.address && validatedRequest.serviceType !== 'RON_SERVICES') {
+        console.log(`🗺️ [${requestId}] Calculating travel fee`);
+        const travelResult = await this.calculateTravelFee(
+          validatedRequest.serviceType,
+          validatedRequest.address,
+          requestId
+        );
+        if (travelResult.fee > 0) {
+          (breakdown as any).travelFee = {
+            amount: travelResult.fee,
+            label: `Travel Fee`,
+            description: `${travelResult.distance.toFixed(1)} miles (tiered zone pricing)`,
+            isDiscount: false,
+            calculation: `Tiered travel fee based on distance from 77591`
+          };
+          runningTotal += travelResult.fee;
+        }
+        // Update business rules
+        businessRules.serviceAreaZone = travelResult.zone;
+        businessRules.isWithinServiceArea = travelResult.withinArea;
+        // Update GHL actions
+        ghlActions.customFields.cf_travel_fee = travelResult.fee;
+        ghlActions.customFields.cf_travel_distance = travelResult.distance;
+        ghlActions.customFields.cf_service_area_zone = travelResult.zone;
+        ghlActions.tags.push(`area:${travelResult.zone}`);
+      }
       
       // 2. Calculate Extra Document Fees
       if (validatedRequest.documentCount > serviceConfig.maxDocuments) {
@@ -272,31 +268,59 @@ export class UnifiedPricingEngine {
         ghlActions.tags.push('docs:over_limit');
       }
       
-      // 3. Calculate Time-Based Surcharges (restricted)
-      // Only apply dynamic time-based surcharges for EXTENDED_HOURS service.
-      // This avoids overestimation for Standard/Quick/Loan/RON which already
-      // have explicit service types for off-hours/weekend handling.
-      if (
-        validatedRequest.serviceType === 'EXTENDED_HOURS' &&
-        validatedRequest.scheduledDateTime &&
-        validatedRequest.scheduledDateTime !== ''
-      ) {
-        console.log(`⏰ [${requestId}] Calculating time-based surcharges (EXTENDED_HOURS only)`);
-        const timeBasedSurcharges = this.calculateTimeBasedSurcharges(
+      // 3. Calculate Time-Based Surcharges
+      // Policy: keep same-day multiplier across services; do NOT add extra after-hours/weekend for EXTENDED_HOURS
+      breakdown.timeBasedSurcharges = [];
+      if (validatedRequest.scheduledDateTime && validatedRequest.scheduledDateTime !== '') {
+        const sameDaySurcharges = this.calculateSameDaySurcharge(
           new Date(validatedRequest.scheduledDateTime),
           runningTotal,
           requestId
         );
-        breakdown.timeBasedSurcharges = timeBasedSurcharges;
-        const totalSurcharges = timeBasedSurcharges.reduce((sum, surcharge) => sum + surcharge.amount, 0);
-        if (totalSurcharges > 0) {
-          runningTotal += totalSurcharges;
+        if (sameDaySurcharges) {
+          breakdown.timeBasedSurcharges.push(sameDaySurcharges);
+          runningTotal += sameDaySurcharges.amount;
           businessRules.dynamicPricingActive = true;
-          ghlActions.customFields.cf_time_surcharges = totalSurcharges;
+          ghlActions.customFields.cf_time_surcharges = (ghlActions.customFields.cf_time_surcharges as number || 0) + sameDaySurcharges.amount;
           ghlActions.tags.push('pricing:dynamic_active');
         }
-      } else {
-        breakdown.timeBasedSurcharges = [];
+      }
+
+      // 3b. Loan Signing: flat +$25 for evenings/weekends
+      if (validatedRequest.serviceType === 'LOAN_SIGNING' && validatedRequest.scheduledDateTime && validatedRequest.scheduledDateTime !== '') {
+        const dt = new Date(validatedRequest.scheduledDateTime);
+        const hour = dt.getHours();
+        const day = dt.getDay();
+        const isWeekend = day === 0 || day === 6;
+        const isEvening = hour < 8 || hour >= 18;
+        if (isWeekend || isEvening) {
+          const fee = 25;
+          breakdown.timeBasedSurcharges.push({
+            amount: fee,
+            label: 'Evening/Weekend Fee (Loan Signing)',
+            description: 'Flat fee for evening or weekend loan signings',
+            isDiscount: false,
+            calculation: `$${fee} flat`
+          });
+          runningTotal += fee;
+        }
+      }
+
+      // 3c. RON after 9pm: +$10 convenience
+      if (validatedRequest.serviceType === 'RON_SERVICES' && validatedRequest.scheduledDateTime && validatedRequest.scheduledDateTime !== '') {
+        const dt = new Date(validatedRequest.scheduledDateTime);
+        const hour = dt.getHours();
+        if (hour >= 21) {
+          const fee = 10;
+          breakdown.timeBasedSurcharges.push({
+            amount: fee,
+            label: 'After-hours Convenience (RON)',
+            description: 'RON sessions after 9pm incur a small convenience fee',
+            isDiscount: false,
+            calculation: `$${fee} flat`
+          });
+          runningTotal += fee;
+        }
       }
       
       // 4. Calculate Discounts
@@ -381,114 +405,53 @@ export class UnifiedPricingEngine {
   }> {
     try {
       const serviceConfig = UNIFIED_SERVICE_CONFIG[serviceType as keyof typeof UNIFIED_SERVICE_CONFIG];
-      
       if (serviceType === 'RON_SERVICES') {
         return { fee: 0, distance: 0, zone: 'remote', withinArea: true };
       }
-
-      // Calculate distance using UnifiedDistanceService
-      const distanceResult = await UnifiedDistanceService.calculateDistance(address, serviceType);
-      const distance = distanceResult.distance.miles || 0;
-      
-      // Determine service area zone
-      let zone = 'houston_metro';
-      if (distance > 50) {
-        zone = 'maximum_range';
-      } else if (distance > 30) {
-        zone = 'extended_range';
-      }
-      
-      // Check if within service area (60 miles max based on business rules)
-      const withinArea = distance <= 60;
-      
+      // Deterministic, offline-friendly distance estimate for transparent quotes
+      const distance = Math.max(0, estimateMiles(address));
+      const zone = distance > 50 ? 'maximum_range' : distance > 30 ? 'extended_range' : 'houston_metro';
+      const withinArea = distance <= SERVICE_AREA_CONFIG.RADII.MAXIMUM;
       if (!withinArea) {
-        throw new Error(`Service area exceeded: ${distance.toFixed(1)} miles (maximum: 60 miles)`);
+        throw new Error(`Service area exceeded: ${distance.toFixed(1)} miles (maximum: ${SERVICE_AREA_CONFIG.RADII.MAXIMUM} miles)`);
       }
-      
-      // Calculate fee
-      const excessDistance = Math.max(0, distance - serviceConfig.includedRadius);
-      const fee = Math.round(excessDistance * serviceConfig.feePerMile * 100) / 100;
-
-      console.log(`🗺️ [${requestId}] Travel calculation: ${distance.toFixed(1)} miles, zone: ${zone}, fee: $${fee}`);
-      
+      const fee = calcTieredFee(distance, serviceType);
+      console.log(`🗺️ [${requestId}] Travel calculation (tiered): ${distance.toFixed(1)} miles, zone: ${zone}, fee: $${fee}`);
       return { fee, distance, zone, withinArea };
-      
     } catch (error: any) {
       console.warn(`⚠️ [${requestId}] Travel fee calculation failed:`, getErrorMessage(error));
-      
-      // Fallback to estimated fee
-      return { fee: 15, distance: 30, zone: 'houston_metro', withinArea: true };
+      return { fee: 0, distance: 0, zone: 'houston_metro', withinArea: true };
     }
   }
   
   /**
    * Calculate time-based surcharges
    */
-  private static calculateTimeBasedSurcharges(
+  private static calculateSameDaySurcharge(
     scheduledDate: Date,
     currentTotal: number,
     requestId: string
-  ): PricingBreakdownComponent[] {
+  ): PricingBreakdownComponent | null {
     if (!(scheduledDate instanceof Date) || isNaN(scheduledDate.getTime())) {
-      return [];
+      return null;
     }
-    const surcharges: PricingBreakdownComponent[] = [];
     const now = new Date();
     const hoursUntilService = (scheduledDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-    
-    // Same-day service (within 24 hours)
     if (hoursUntilService <= 24 && hoursUntilService > 0) {
       const sameDayConfig = PRICING_MULTIPLIERS.timeBasedSurcharges.sameDay;
       const surchargeAmount = Math.round(currentTotal * (sameDayConfig.multiplier - 1) * 100) / 100;
-      
-      surcharges.push({
+      const comp: PricingBreakdownComponent = {
         amount: surchargeAmount,
         label: sameDayConfig.label,
         description: sameDayConfig.description,
         isDiscount: false,
         multiplier: sameDayConfig.multiplier,
         calculation: `${currentTotal} × ${(sameDayConfig.multiplier - 1) * 100}%`
-      });
+      };
+      console.log(`⏰ [${requestId}] Same-day surcharge applied: $${surchargeAmount}`);
+      return comp;
     }
-    
-    // Extended hours (outside 9am-5pm Mon-Fri)
-    const hour = scheduledDate.getHours();
-    const day = scheduledDate.getDay();
-    const isWeekend = day === 0 || day === 6;
-    const isAfterHours = hour < 9 || hour >= 17;
-    
-    if (!isWeekend && isAfterHours) {
-      const extendedConfig = PRICING_MULTIPLIERS.timeBasedSurcharges.extendedHours;
-      const surchargeAmount = Math.round(currentTotal * (extendedConfig.multiplier - 1) * 100) / 100;
-      
-      surcharges.push({
-        amount: surchargeAmount,
-        label: extendedConfig.label,
-        description: extendedConfig.description,
-        isDiscount: false,
-        multiplier: extendedConfig.multiplier,
-        calculation: `${currentTotal} × ${(extendedConfig.multiplier - 1) * 100}%`
-      });
-    }
-    
-    // Weekend service
-    if (isWeekend) {
-      const weekendConfig = PRICING_MULTIPLIERS.timeBasedSurcharges.weekend;
-      const surchargeAmount = Math.round(currentTotal * (weekendConfig.multiplier - 1) * 100) / 100;
-      
-      surcharges.push({
-        amount: surchargeAmount,
-        label: weekendConfig.label,
-        description: weekendConfig.description,
-        isDiscount: false,
-        multiplier: weekendConfig.multiplier,
-        calculation: `${currentTotal} × ${(weekendConfig.multiplier - 1) * 100}%`
-      });
-    }
-    
-    console.log(`⏰ [${requestId}] Time-based surcharges: ${surcharges.length} applied, total: $${surcharges.reduce((sum, s) => sum + s.amount, 0)}`);
-    
-    return surcharges;
+    return null;
   }
   
   /**

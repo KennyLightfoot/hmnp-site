@@ -59,10 +59,10 @@ export const SERVICE_AREA_CONFIG = {
   
   // Service radii (in miles) - SIMPLIFIED UNIVERSAL SYSTEM
   RADII: {
-    STANDARD: 30,     // Universal free radius for all mobile services
-    EXTENDED: 30,     // Universal free radius for all mobile services  
+    STANDARD: 20,     // Standard Mobile: 20-mile included
+    EXTENDED: 30,     // Extended/Loan Signing: 30-mile included  
     MAXIMUM: 50,      // Absolute maximum service area
-    FREE: 30          // Universal 30-mile free radius
+    FREE: 20          // Default "free" radius reference (used for Standard)
   },
   
   // Pricing
@@ -71,17 +71,17 @@ export const SERVICE_AREA_CONFIG = {
   // Service type configurations - UNIVERSAL 30-MILE FREE RADIUS
   SERVICES: {
     STANDARD_NOTARY: { 
-      freeRadius: 30, // Universal free radius
+      freeRadius: 20, // Included radius for Standard Mobile
       maxRadius: 50,
       name: 'Standard Notary'
     },
     EXTENDED_HOURS: { 
-      freeRadius: 30, // Universal free radius
+      freeRadius: 30, // Included radius for Extended Hours
       maxRadius: 50,
       name: 'Extended Hours'
     },
     LOAN_SIGNING: { 
-      freeRadius: 30, // Universal free radius
+      freeRadius: 30, // Included radius for Loan Signing
       maxRadius: 50,
       name: 'Loan Signing'
     },
@@ -227,13 +227,23 @@ export function getServiceConfig(serviceType: string) {
  */
 export function calculateTravelFee(distance: number, serviceType: string): number {
   const serviceConfig = getServiceConfig(serviceType);
-  
-  if (distance <= serviceConfig.freeRadius) {
-    return 0;
+  // RON never has travel
+  if (serviceType === 'RON_SERVICES') return 0;
+
+  // Inside included radius
+  if (distance <= serviceConfig.freeRadius) return 0;
+
+  // Tiered travel fees from base (ZIP 77591)
+  // Tiers are absolute by distance; included radius controls which tiers apply per service
+  if (distance <= 30) {
+    // Only Standard (20-mi included) pays here; Extended/Loan include 30
+    return serviceConfig.freeRadius >= 30 ? 0 : 25;
   }
-  
-  const excessDistance = distance - serviceConfig.freeRadius;
-  return Math.round(excessDistance * SERVICE_AREA_CONFIG.TRAVEL_FEE_RATE * 100) / 100;
+  if (distance <= 40) return 45;
+  if (distance <= 50) return 65;
+
+  // Beyond 50 handled by geofence (booking not allowed); no fee computed here
+  return 0;
 }
 
 /**

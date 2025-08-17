@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { ChevronLeft, Check, DollarSign, MapPin, Clock, CalendarDays, Info, Users, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { SERVICES_CONFIG } from '@/lib/services/config'
+import { PRICING_CONFIG } from '@/lib/pricing/base'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import MiniFAQ from '@/components/mini-faq'
 
@@ -11,15 +13,15 @@ export const metadata = {
   metadataBase: new URL(BASE_URL),
   title: "Notary Service Extras & Fees | Transparent Pricing | Houston Mobile Notary Pros",
   description:
-    "Understand our transparent pricing for additional notary services and fees in Houston, including mileage, after-hours, and weekend appointments. No surprises.",
+    "Understand our transparent pricing for additional notary services and fees in Houston, including travel zones, after-hours, and weekend appointments. No surprises.",
   keywords:
-    "notary fees Houston, mobile notary pricing, mileage fee notary, after-hours notary fee, weekend notary fee, transparent notary pricing, additional notary services",
+    "notary fees Houston, mobile notary pricing, travel fee notary, after-hours notary fee, weekend notary fee, transparent notary pricing, additional notary services",
   alternates: {
     canonical: '/services/extras',
   },
   openGraph: {
     title: "Extras & Fees for Houston Mobile Notary Services | HMNP",
-    description: "Clear, transparent pricing for mileage, after-hours, weekend fees, and other additional notary services at Houston Mobile Notary Pros.",
+    description: "Clear, transparent pricing for travel zones, after-hours, weekend fees, and other additional notary services at Houston Mobile Notary Pros.",
     url: `${BASE_URL}/services/extras`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
@@ -36,19 +38,26 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: "Houston Notary Extras & Fees | Transparent & Fair | HMNP",
-    description: "Know your costs upfront. View our clear list of additional notary service fees for mileage, weekends, and after-hours in Houston.",
+    description: "Know your costs upfront. View our clear list of additional notary service fees for travel, weekends, and after-hours in Houston.",
     images: [`${BASE_URL}/og-image.jpg`],
   },
 }
 
 const extrasFaqs = [
   {
-    id: "when-mileage-applies",
-    question: "When does the mileage fee apply?",
+    id: "when-travel-fee-applies",
+    question: "When does the travel fee apply?",
     answer: (
-      <p>
-        Most of our standard service packages include travel within a 15-mile radius of our base (ZIP code 77591). The Mileage Fee of $0.50 per mile (one-way, calculated from 77591 to your location) applies for travel beyond this initial included radius. This will always be calculated and confirmed with you at the time of booking.
-      </p>
+      <div>
+        <p>We use simple, fair travel zones from ZIP 77591:</p>
+        <ul className="list-disc ml-6 mt-2">
+          <li>0–20 miles: included with Standard Mobile Notary</li>
+          <li>21–30 miles: +$25</li>
+          <li>31–40 miles: +$45</li>
+          <li>41–50 miles: +$65 (maximum service area)</li>
+        </ul>
+        <p className="mt-2">Extended Hours and Loan Signing include travel up to 30 miles; the same tier applies beyond that. RON has no travel fees.</p>
+      </div>
     ),
   },
   {
@@ -108,15 +117,18 @@ export default function ExtrasAndFeesPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center mb-2">
                 <MapPin className="h-8 w-8 text-[#002147] mr-3" />
-                <CardTitle className="text-2xl text-[#002147]">Mileage Fee</CardTitle>
+                <CardTitle className="text-2xl text-[#002147]">Travel Fee (Tiered Zones)</CardTitle>
               </div>
-              <CardDescription className="text-sm">For travel beyond our standard service radius.</CardDescription>
+              <CardDescription className="text-sm">Simple zones from ZIP 77591; max 50 miles.</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-[#002147] mb-2">$0.50 <span className="text-lg font-normal">/ mile</span></p>
-              <p className="text-xs text-gray-600">
-                Applies per mile (one-way from 77591) for travel exceeding the 15-mile radius included in most base service fees. This will be calculated and quoted during booking.
-              </p>
+              <div className="space-y-1 text-[#002147] font-semibold">
+                <p>0–20 mi: Included (Standard)</p>
+                <p>21–30 mi: +$25</p>
+                <p>31–40 mi: +$45</p>
+                <p>41–50 mi: +$65</p>
+              </div>
+              <p className="text-xs text-gray-600 mt-2">Extended Hours and Loan Signing include up to 30 miles. RON is remote and has no travel fee.</p>
             </CardContent>
           </Card>
 
@@ -129,7 +141,7 @@ export default function ExtrasAndFeesPage() {
               <CardDescription className="text-sm">For appointments outside 9 am - 5 pm, Mon-Fri (if not part of Extended Hours package).</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-[#002147] mb-2">$30</p>
+              <p className="text-3xl font-bold text-[#002147] mb-2">${PRICING_CONFIG.surcharges.afterHours}</p>
               <p className="text-xs text-gray-600">
                 This fee may apply for services scheduled before 9 am or after 5 pm on weekdays, if not covered by the <Link href="/services/extended" className="text-[#A52A2A] hover:underline">Extended Hours Notary</Link> service pricing.
               </p>
@@ -145,7 +157,7 @@ export default function ExtrasAndFeesPage() {
               <CardDescription className="text-sm">For appointments scheduled on Saturdays or Sundays.</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-[#002147] mb-2">$40</p>
+              <p className="text-3xl font-bold text-[#002147] mb-2">${PRICING_CONFIG.surcharges.weekend}</p>
               <p className="text-xs text-gray-600">
                 Applies to services requested on a weekend. Our <Link href="/services/extended" className="text-[#A52A2A] hover:underline">Extended Hours Notary</Link> service is available on weekends and includes this premium availability in its pricing structure.
               </p>

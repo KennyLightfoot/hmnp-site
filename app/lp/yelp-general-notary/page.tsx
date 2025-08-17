@@ -4,6 +4,7 @@ import LeadForm from "@/components/lead-form";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { Star, Award, Clock, MapPin, Shield, Users, CheckCircle, Phone } from "lucide-react";
+import { SERVICES_CONFIG } from "@/lib/services/config";
 
 function YelpLeadForm() {
   const searchParams = useSearchParams();
@@ -207,7 +208,7 @@ export default function YelpGeneralNotaryLandingPage() {
                     <Award className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
                     <div>
                       <h3 className="font-bold text-lg text-[#002147] mb-1">Transparent Pricing</h3>
-                      <p className="text-gray-700">Upfront pricing starting at $75. No hidden fees or surprise charges.</p>
+                      <p className="text-gray-700">Upfront pricing starting at ${SERVICES_CONFIG.STANDARD_NOTARY.basePrice}. No hidden fees or surprise charges.</p>
                     </div>
                   </div>
                 </div>

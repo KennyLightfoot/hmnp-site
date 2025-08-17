@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { ChevronLeft, Check, FileText, Users, Clock, Briefcase, Phone, Info, ExternalLink, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { SERVICES_CONFIG } from "@/lib/services/config"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import MiniFAQ from "@/components/mini-faq"; // Assuming you have this component
 
@@ -157,8 +158,8 @@ export default function LoanSigningPage() {
           
           <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 mb-8">
             <h3 className="text-xl font-semibold text-[#002147] mb-3">Pricing</h3>
-            <p className="text-3xl font-bold text-[#002147] mb-1">$200+</p>
-            <p className="text-sm text-gray-600 mb-4">Starting price for comprehensive loan signing services. This includes handling of all documents, travel within our standard service area, RON setup if applicable, and standard courier returns. Specific requirements for your signing will be confirmed upon booking. Visit our <Link href="/services/extras" className="text-[#A52A2A] hover:underline">Extras & Fees</Link> page for more details.</p>
+            <p className="text-3xl font-bold text-[#002147] mb-1">${SERVICES_CONFIG.LOAN_SIGNING.basePrice}+</p>
+            <p className="text-sm text-gray-600 mb-4">Starting price for comprehensive loan signing services. Includes travel up to 30 miles from 77591; beyond that, tiered travel applies (31–40 +$45; 41–50 +$65). Evening/weekend appointments add a flat $25. RON setup if applicable, and standard courier returns included. See <Link href="/services/extras" className="text-[#A52A2A] hover:underline">Extras & Fees</Link> for details.</p>
             <Link href="/booking?service=loan-signing">
               <Button size="lg" className="w-full sm:w-auto bg-[#002147] hover:bg-[#001a38] text-white">
                 Book Loan Signing Specialist

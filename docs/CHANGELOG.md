@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (2025-08-17)
+- Pricing: Extended Hours base → $125; Loan Signing base → $175
+- Travel: Switched from $0.50/mi to tiered zones (from ZIP 77591): 0–20 included; 21–30 +$25; 31–40 +$45; 41–50 +$65 (max)
+- Surcharges: Loan Signing evening/weekend +$25; RON after 9pm +$10 convenience
+- Service Areas: Standard includes 20 miles; Extended/Loan include 30 miles; cap 50 miles
+- Transparent Pricing: Travel fee re-enabled and displayed with tiered breakdown
+- Copy: Updated service pages and Extras page to reflect new tiers/policies
+- PRICING files: Updated `PRICING.md` and `PRICING.csv` accordingly
+- Business Settings: Added keys for tiered travel and after-hours fees for admin consistency
+
 ### Added
 - **AI Receptionist System** - Complete intelligent customer service automation
   - Real-time distance calculation and travel fee computation

@@ -21,7 +21,7 @@ const calculate = (payload: any) => UnifiedPricingEngine.calculateTransparentPri
 })
 
 describe('UnifiedPricingEngine – surcharges & travel edge cases', () => {
-  it('adds time-based surcharges (percentage-based)', async () => {
+  it('adds time-based surcharges (same-day at minimum)', async () => {
     // Distance inside free radius (10 mi)
     vi.mocked((distanceHelper as any).calculateDistance).mockResolvedValue({
       success: true,
@@ -29,7 +29,7 @@ describe('UnifiedPricingEngine – surcharges & travel edge cases', () => {
       duration: { minutes: 20 },
     } as any)
 
-    const scheduled = '2030-01-06T04:00:00Z' // Sunday 4 AM UTC – weekend & after-hours
+    const scheduled = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString() // within 24h -> same-day surcharge
     const result = await calculate({
       serviceType: 'EXTENDED_HOURS',
       location: { address: 'Somewhere' },
@@ -42,7 +42,7 @@ describe('UnifiedPricingEngine – surcharges & travel edge cases', () => {
     expect(totalSurcharges).toBeGreaterThan(0)
   })
 
-  it('charges no travel fee when exactly at included radius (travel disabled)', async () => {
+  it('charges no travel fee when exactly at included radius (20 miles standard)', async () => {
     vi.mocked((distanceHelper as any).calculateDistance).mockResolvedValue({
       success: true,
       distance: { miles: 20, kilometers: 32, text: '20 mi' },
@@ -57,6 +57,6 @@ describe('UnifiedPricingEngine – surcharges & travel edge cases', () => {
       signerCount: 1,
     } as any)
 
-    expect(result.breakdown.travelFee).toBeUndefined()
+    expect(result.breakdown.travelFee?.amount ?? 0).toBe(0)
   })
 }) 

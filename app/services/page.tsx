@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import MiniFAQ from "@/components/mini-faq"
+import { SERVICES_CONFIG } from "@/lib/services/config"
+import { PRICING_CONFIG } from "@/lib/pricing/base"
 
 // Define Base URL for metadata
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'; // Replace with your actual domain
@@ -49,12 +51,26 @@ export const metadata = {
 }
 
 export default function ServicesPage() {
+  const formatHours = (hours: { start: number; end: number; days: number[] }) => {
+    if (hours.start === 0 && hours.end === 24 && hours.days.length === 7) {
+      return '24/7'
+    }
+    const to12h = (h: number) => {
+      const suffix = h >= 12 ? 'pm' : 'am'
+      const hour = h % 12 === 0 ? 12 : h % 12
+      return `${hour} ${suffix}`
+    }
+    const isDaily = hours.days.length === 7
+    const isMF = hours.days.length === 5 && hours.days.every(d => [1,2,3,4,5].includes(d))
+    const dayLabel = isDaily ? 'Daily' : (isMF ? 'M-F' : 'By Appt')
+    return `${to12h(hours.start)}–${to12h(hours.end)} ${dayLabel}`
+  }
   // Move services array inside the component
   const services = [
     {
       slug: "standard-notary",
       name: "Standard Notary Services",
-      price: "$75+",
+      price: `$${SERVICES_CONFIG.STANDARD_NOTARY.basePrice}+`,
       tagline: "On-time, every time.",
       description:
         "On-site notarizations of standard documents (POAs, affidavits, contracts) between 9 am–5 pm.",
@@ -63,7 +79,7 @@ export default function ServicesPage() {
       features: [
         "POAs, affidavits, contracts",
         "Service between 9 am - 5 pm",
-        "Travel within 15 miles included",
+        `Travel within ${SERVICES_CONFIG.STANDARD_NOTARY.includedRadius} miles included`,
       ],
       bgColor: "bg-[#002147]",
       borderColor: "border-t-[#002147]",
@@ -75,7 +91,7 @@ export default function ServicesPage() {
     {
       slug: "extended-hours-notary",
       name: "Extended Hours Notary",
-      price: "$100",
+      price: `$${SERVICES_CONFIG.EXTENDED_HOURS.basePrice}+`,
       tagline: "Urgent notarization, 2-hour response.",
       description:
         "Guaranteed 2-hour response for urgent notarization needs, available 7am-9pm daily.",
@@ -84,7 +100,7 @@ export default function ServicesPage() {
       features: [
         "2-hour response guarantee",
         "Service 7am-9pm daily",
-        "Up to 5 documents, 2 signers",
+        `Up to ${SERVICES_CONFIG.EXTENDED_HOURS.maxDocuments} documents, 2 signers`,
       ],
       bgColor: "bg-[#A52A2A]",
       borderColor: "border-t-[#A52A2A]",
@@ -96,7 +112,7 @@ export default function ServicesPage() {
     {
       slug: "loan-signing-specialist",
       name: "Loan Signing Specialist",
-      price: "$200+",
+      price: `$${SERVICES_CONFIG.LOAN_SIGNING.basePrice}+`,
       tagline: "Paperwork pros you can trust.",
       description:
         "Certified loan signings, including all trip-chain, remote online signings, and courier returns.",
@@ -183,11 +199,11 @@ export default function ServicesPage() {
       price: "See details",
       tagline: "Transparent pricing, no surprises.",
       description:
-        "Mileage Fee: $0.50/mile • After-Hours Fee: $30 • Weekend Fee: $40",
+        `Travel Zones: 0–20 mi included (Standard) • 21–30 +$25 • 31–40 +$45 • 41–50 +$65 • After-Hours Fee: $${PRICING_CONFIG.surcharges.afterHours} • Weekend Fee: $${PRICING_CONFIG.surcharges.weekend}`,
       link: "/services/extras",
       icon: ListPlus,
       features: [
-        "Mileage Fee: $0.50/mile",
+        "Travel: 21–30 +$25; 31–40 +$45; 41–50 +$65",
         "After-Hours Fee: $30",
         "Weekend Fee: $40",
       ],
@@ -223,9 +239,9 @@ export default function ServicesPage() {
       question: "How far do you travel for your services?",
       answer: (
         <p>
-          We serve clients within a 20-mile radius of ZIP code 77591 at no additional travel fee. For locations beyond
-          this radius, we charge $0.50 per mile. Our Priority Service extends to a 35-mile radius. We can travel to most
-          locations in the greater Houston area.
+          We serve clients within a 20-mile radius of ZIP code 77591 at no additional travel fee (Standard). Beyond that we
+          use simple travel zones: 21–30 miles +$25, 31–40 miles +$45, 41–50 miles +$65 (maximum service area). Extended Hours
+          and Loan Signing include travel up to 30 miles.
         </p>
       ),
     },
@@ -324,7 +340,7 @@ export default function ServicesPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-baseline space-x-2">
-              <span className="text-3xl font-bold text-[#A52A2A]">$50</span>
+              <span className="text-3xl font-bold text-[#A52A2A]">${SERVICES_CONFIG.QUICK_STAMP_LOCAL.basePrice}</span>
               <span className="text-sm text-gray-500">starting at</span>
             </div>
             
@@ -373,14 +389,14 @@ export default function ServicesPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-baseline space-x-2">
-              <span className="text-3xl font-bold text-[#A52A2A]">$75</span>
+              <span className="text-3xl font-bold text-[#A52A2A]">${SERVICES_CONFIG.STANDARD_NOTARY.basePrice}</span>
               <span className="text-sm text-gray-500">base price</span>
             </div>
             
             <div className="space-y-2 text-sm">
               <div className="flex items-center space-x-2">
                 <Check className="h-4 w-4 text-green-500" />
-                <span>≤ 4 documents included</span>
+                <span>≤ {SERVICES_CONFIG.STANDARD_NOTARY.maxDocuments} documents included</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Check className="h-4 w-4 text-green-500" />
@@ -388,7 +404,7 @@ export default function ServicesPage() {
               </div>
               <div className="flex items-center space-x-2">
                 <Check className="h-4 w-4 text-green-500" />
-                <span>≤ 30 miles travel included</span>
+                <span>≤ {SERVICES_CONFIG.STANDARD_NOTARY.includedRadius} miles travel included</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Check className="h-4 w-4 text-green-500" />
@@ -422,14 +438,14 @@ export default function ServicesPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-baseline space-x-2">
-              <span className="text-3xl font-bold text-[#A52A2A]">$100</span>
+              <span className="text-3xl font-bold text-[#A52A2A]">${SERVICES_CONFIG.EXTENDED_HOURS.basePrice}</span>
               <span className="text-sm text-gray-500">base price</span>
             </div>
             
             <div className="space-y-2 text-sm">
               <div className="flex items-center space-x-2">
                 <Check className="h-4 w-4 text-green-500" />
-                <span>≤ 4 documents included</span>
+                <span>≤ {SERVICES_CONFIG.EXTENDED_HOURS.maxDocuments} documents included</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Check className="h-4 w-4 text-green-500" />
@@ -437,7 +453,7 @@ export default function ServicesPage() {
               </div>
               <div className="flex items-center space-x-2">
                 <Check className="h-4 w-4 text-green-500" />
-                <span>≤ 30 miles travel included</span>
+                <span>≤ {SERVICES_CONFIG.EXTENDED_HOURS.includedRadius} miles travel included</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Check className="h-4 w-4 text-green-500" />
@@ -471,7 +487,7 @@ export default function ServicesPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-baseline space-x-2">
-              <span className="text-3xl font-bold text-[#A52A2A]">$150</span>
+              <span className="text-3xl font-bold text-[#A52A2A]">${SERVICES_CONFIG.LOAN_SIGNING.basePrice}</span>
               <span className="text-sm text-gray-500">flat fee</span>
             </div>
             
@@ -524,9 +540,9 @@ export default function ServicesPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-baseline space-x-2">
-              <span className="text-2xl font-bold text-[#A52A2A]">$25</span>
+              <span className="text-2xl font-bold text-[#A52A2A]">${SERVICES_CONFIG.RON_SERVICES.basePrice}</span>
               <span className="text-sm text-gray-500">/session +</span>
-              <span className="text-2xl font-bold text-[#A52A2A]">$5</span>
+              <span className="text-2xl font-bold text-[#A52A2A]">${SERVICES_CONFIG.RON_SERVICES.sealPrice}</span>
               <span className="text-sm text-gray-500">/seal</span>
             </div>
             
@@ -579,12 +595,12 @@ export default function ServicesPage() {
           <CardContent className="space-y-4">
             <div className="space-y-3">
               <div className="flex items-baseline space-x-2">
-                <span className="text-xl font-bold text-[#A52A2A]">$125</span>
+                <span className="text-xl font-bold text-[#A52A2A]">${SERVICES_CONFIG.BUSINESS_ESSENTIALS.basePrice}</span>
                 <span className="text-sm text-gray-500">/month</span>
                 <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Essentials</span>
               </div>
               <div className="flex items-baseline space-x-2">
-                <span className="text-xl font-bold text-[#A52A2A]">$349</span>
+                <span className="text-xl font-bold text-[#A52A2A]">${SERVICES_CONFIG.BUSINESS_GROWTH.basePrice}</span>
                 <span className="text-sm text-gray-500">/month</span>
                 <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Growth</span>
               </div>
@@ -654,19 +670,19 @@ export default function ServicesPage() {
             <TableBody>
               <TableRow>
                 <TableCell className="font-medium">Starting Price</TableCell>
-                <TableCell>$75+</TableCell>
-                <TableCell>$100+</TableCell>
-                <TableCell>$200+</TableCell>
-                <TableCell>$150+</TableCell>
-                <TableCell>$250+</TableCell>
+                <TableCell>${SERVICES_CONFIG.STANDARD_NOTARY.basePrice}+</TableCell>
+                <TableCell>${SERVICES_CONFIG.EXTENDED_HOURS.basePrice}+</TableCell>
+                <TableCell>${SERVICES_CONFIG.LOAN_SIGNING.basePrice}+</TableCell>
+                <TableCell>${SERVICES_CONFIG.RON_SERVICES.basePrice}+ / RON</TableCell>
+                <TableCell>${SERVICES_CONFIG.BUSINESS_ESSENTIALS.basePrice}+ / mo</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Service Hours</TableCell>
-                <TableCell>9 am–5 pm M-F</TableCell>
-                <TableCell>7 am–9 pm Daily</TableCell>
-                <TableCell>By Appointment</TableCell>
-                <TableCell>By Appointment</TableCell>
-                <TableCell>Custom / Recurring</TableCell>
+                <TableCell>{formatHours(SERVICES_CONFIG.STANDARD_NOTARY.businessHours)}</TableCell>
+                <TableCell>{formatHours(SERVICES_CONFIG.EXTENDED_HOURS.businessHours)}</TableCell>
+                <TableCell>{formatHours(SERVICES_CONFIG.LOAN_SIGNING.businessHours)}</TableCell>
+                <TableCell>{formatHours(SERVICES_CONFIG.RON_SERVICES.businessHours)}</TableCell>
+                <TableCell>{formatHours(SERVICES_CONFIG.BUSINESS_ESSENTIALS.businessHours)}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Key Documents/Use</TableCell>
@@ -822,9 +838,9 @@ export default function ServicesPage() {
                        <div className="mt-4">
                         <h4 className="font-semibold text-[#002147] mb-2">Fee Details:</h4>
                         <ul className="space-y-1 text-gray-600">
-                          <li>Mileage Fee: $0.50/mile</li>
-                          <li>After-Hours Fee: $30</li>
-                          <li>Weekend Fee: $40</li>
+                          <li>{`Mileage Fee: $${SERVICES_CONFIG.STANDARD_NOTARY.feePerMile}/mile`}</li>
+                          <li>{`After-Hours Fee: $${PRICING_CONFIG.surcharges.afterHours}`}</li>
+                          <li>{`Weekend Fee: $${PRICING_CONFIG.surcharges.weekend}`}</li>
                         </ul>
                        </div>
                     )}

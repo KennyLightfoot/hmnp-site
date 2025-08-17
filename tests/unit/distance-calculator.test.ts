@@ -67,7 +67,7 @@ describe('UnifiedDistanceService – distance + geofence helpers', () => {
   describe('getServiceAreaConfig (legacy wrapper)', () => {
     it('maps service types to correct radius values', () => {
       const standard = UnifiedDistanceService.getServiceAreaConfig('STANDARD_NOTARY');
-      expect(standard).toEqual({ serviceType: 'STANDARD_NOTARY', freeRadius: 30, maxRadius: 50 });
+      expect(standard).toEqual({ serviceType: 'STANDARD_NOTARY', freeRadius: 20, maxRadius: 50 });
 
       const extended = UnifiedDistanceService.getServiceAreaConfig('EXTENDED_HOURS');
       expect(extended).toEqual({ serviceType: 'EXTENDED_HOURS', freeRadius: 30, maxRadius: 50 });
@@ -75,7 +75,7 @@ describe('UnifiedDistanceService – distance + geofence helpers', () => {
 
     it('falls back to STANDARD_NOTARY for unknown types', () => {
       const fallback = UnifiedDistanceService.getServiceAreaConfig('UNKNOWN');
-      expect(fallback).toEqual({ serviceType: 'STANDARD_NOTARY', freeRadius: 30, maxRadius: 50 });
+      expect(fallback).toEqual({ serviceType: 'STANDARD_NOTARY', freeRadius: 20, maxRadius: 50 });
     });
   });
 
@@ -127,12 +127,12 @@ describe('UnifiedDistanceService – distance + geofence helpers', () => {
       expect(geo.travelFee).toBe(0);
     });
 
-    it('adds travel fee but still allows within max radius', () => {
+    it('adds tiered travel fee but still allows within max radius', () => {
       const miles = 45;
       const geo = UnifiedDistanceService.validateGeofence(miles, 'STANDARD_NOTARY');
-      const expectedFee = (miles - SERVICE_AREA_CONFIG.RADII.FREE) * SERVICE_AREA_CONFIG.TRAVEL_FEE_RATE;
+      // Tiered: 41–50 miles => $65
       expect(geo.isAllowed).toBe(true);
-      expect(geo.travelFee).toBeCloseTo(expectedFee);
+      expect(geo.travelFee).toBe(65);
     });
 
     it('blocks bookings beyond max radius', () => {
@@ -151,12 +151,13 @@ describe('UnifiedDistanceService – distance + geofence helpers', () => {
 
     it('returns 0 inside free radius', () => {
       expect(UnifiedDistanceService.calculateTravelFee(10)).toBe(0);
-      expect(UnifiedDistanceService.calculateTravelFee(30)).toBe(0);
+      expect(UnifiedDistanceService.calculateTravelFee(20)).toBe(0);
     });
 
-    it('computes fee for distance beyond free radius', () => {
+    it('computes tiered fee for distance beyond free radius', () => {
       const fee = UnifiedDistanceService.calculateTravelFee(42);
-      expect(fee).toBeCloseTo((42 - 30) * rate);
+      // 31–40 => $45, 41–50 => $65; 42 => $65
+      expect(fee).toBe(65);
     });
   });
 });

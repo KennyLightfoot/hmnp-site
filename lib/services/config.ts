@@ -56,7 +56,7 @@ export const SERVICES_CONFIG: Record<ServiceId, ServiceConfig> = {
   EXTENDED_HOURS: {
     id: 'EXTENDED_HOURS',
     displayName: 'Extended Hours Mobile',
-    basePrice: 100,
+    basePrice: 125,
     maxDocuments: 4,
     includedRadius: 30,
     feePerMile: 0.5,
@@ -66,7 +66,7 @@ export const SERVICES_CONFIG: Record<ServiceId, ServiceConfig> = {
   LOAN_SIGNING: {
     id: 'LOAN_SIGNING',
     displayName: 'Loan Signing Specialist',
-    basePrice: 150,
+    basePrice: 175,
     maxDocuments: 999,
     includedRadius: 30,
     feePerMile: 0.5,

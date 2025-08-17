@@ -15,14 +15,6 @@ const MAX_BYTES = MAX_MB * 1024 * 1024
 const ALLOWED = ['application/pdf','image/png','image/jpeg']
 
 export default function InPersonDocumentsStep({ data, onUpdate }: Props) {
-  // Hide entire uploader for RON services – Proof.com handles document uploads
-  if ((data?.serviceType || '') === 'RON_SERVICES') {
-    return (
-      <div className="text-sm text-muted-foreground">
-        Document upload is handled securely inside the online notarization session.
-      </div>
-    )
-  }
   const [file, setFile] = useState<File|null>(null)
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState<string|null>(null)
@@ -59,7 +51,9 @@ export default function InPersonDocumentsStep({ data, onUpdate }: Props) {
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-muted-foreground">Optional: upload documents now to help your notary prepare. Max {MAX_MB}MB, PDF/PNG/JPEG.</p>
+      <p className="text-sm text-muted-foreground">
+        Optional: upload documents now so our notary can review and prepare. Max {MAX_MB}MB, PDF/PNG/JPEG.
+      </p>
       <Input type="file" onChange={(e)=>{
         const f = e.target.files?.[0]||null
         if (f && f.size>MAX_BYTES) { setError(`Max ${MAX_MB}MB`); setFile(null) } else { setError(null); setFile(f) }

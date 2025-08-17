@@ -2,6 +2,8 @@ import Link from "next/link"
 import { ChevronRight, Clock, MapPin, CheckCircle, Shield, Users, Calendar, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { SERVICES_CONFIG } from "@/lib/services/config"
+import { PRICING_CONFIG } from "@/lib/pricing/base"
 
 // Define Base URL for metadata
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'; // Replace with your actual domain
@@ -134,7 +136,7 @@ export default function EssentialServicePage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-700">We come to your location within 15 miles. Extended travel available for additional fee.</p>
+                  <p className="text-gray-700">We come to your location within 20 miles (included). Tiered travel applies 21–50 miles.</p>
                 </CardContent>
               </Card>
 
@@ -176,10 +178,11 @@ export default function EssentialServicePage() {
                   <div className="space-y-4">
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <h3 className="text-xl font-semibold text-[#002147] mb-2">Essential Service</h3>
-                      <p className="text-3xl font-bold text-[#A52A2A] mb-2">$75</p>
+                      <p className="text-3xl font-bold text-[#A52A2A] mb-2">${SERVICES_CONFIG.STANDARD_NOTARY.basePrice}</p>
                       <ul className="space-y-2 text-sm text-gray-700">
                         <li>• 1-2 documents per signer</li>
-                        <li>• Includes travel within 15 miles</li>
+                        <li>• Includes travel within {SERVICES_CONFIG.STANDARD_NOTARY.includedRadius} miles</li>
+                        <li>• Travel tiers: 21–30 +$25; 31–40 +$45; 41–50 +$65</li>
                         <li>• Monday-Friday, 9am-5pm</li>
                       </ul>
                     </div>

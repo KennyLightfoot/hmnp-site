@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react"; // Import Suspense
 import Link from "next/link";
 import { CheckCircle, Clock, Shield, Users, Award, ArrowRight, FileText, MapPin } from "lucide-react";
+import { SERVICES_CONFIG } from "@/lib/services/config";
 
 // This internal component is needed because useSearchParams can only be used in Client Components
 function CampaignLeadForm() {
@@ -231,9 +232,9 @@ export default function GoogleLoanSigningLandingPage() {
               </p>
               <div className="bg-white/10 backdrop-blur-sm p-6 rounded-lg mb-6">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-[#A52A2A] mb-2">$150</div>
+                  <div className="text-3xl font-bold text-[#A52A2A] mb-2">${SERVICES_CONFIG.LOAN_SIGNING.basePrice}</div>
                   <div className="text-sm text-blue-100">Starting price for loan signings</div>
-                  <div className="text-xs text-blue-200 mt-2">*Includes travel within 20 miles</div>
+                  <div className="text-xs text-blue-200 mt-2">*Includes travel within {SERVICES_CONFIG.LOAN_SIGNING.includedRadius} miles</div>
                 </div>
               </div>
               <a href="#form" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white px-6 py-3 rounded-lg font-semibold w-full text-center block transition-colors">

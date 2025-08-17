@@ -311,8 +311,8 @@ export default function LinkedInB2BSolutionsLandingPage() {
               <div className="bg-white/10 backdrop-blur-sm p-6 rounded-lg mb-6">
                 <div className="text-center">
                   <div className="text-sm text-blue-200 mb-2">Enterprise pricing starts at</div>
-                  <div className="text-3xl font-bold text-[#A52A2A] mb-2">$250/month</div>
-                  <div className="text-xs text-blue-200">*Includes up to 20 monthly notarizations</div>
+                  <div className="text-3xl font-bold text-[#A52A2A] mb-2">$125/month</div>
+                  <div className="text-xs text-blue-200">*Includes up to 10 monthly RON seals</div>
                 </div>
               </div>
               

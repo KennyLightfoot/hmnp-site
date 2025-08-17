@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { ChevronLeft, Check, Users, Monitor, Shield, Clock, Globe, Phone, Info, ExternalLink, ArrowRight, Zap, FileText, Video } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { SERVICES_CONFIG } from "@/lib/services/config"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import MiniFAQ from "@/components/mini-faq"
 import ServiceSchema from "@/components/schema/ServiceSchema"
@@ -20,7 +21,7 @@ export const metadata = {
   },
   openGraph: {
     title: "Remote Online Notarization Texas | Secure RON Services | HMNP",
-    description: "Professional Remote Online Notarization (RON) services across Texas. Secure, convenient, and available 24/7. Texas-compliant RON platform.",
+    description: "Professional Remote Online Notarization (RON) services across Texas. Secure, convenient, and available 24/7. After 9pm convenience fee $10. Texas-compliant RON platform.",
     url: `${BASE_URL}/services/remote-online-notarization`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
@@ -195,10 +196,10 @@ export default function RemoteOnlineNotarizationPage() {
             <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 mb-8">
               <h3 className="text-xl font-semibold text-[#002147] mb-3">Transparent RON Pricing</h3>
               <div className="flex items-baseline space-x-2 mb-2">
-                <span className="text-3xl font-bold text-[#A52A2A]">$25</span>
+                <span className="text-3xl font-bold text-[#A52A2A]">${SERVICES_CONFIG.RON_SERVICES.basePrice}</span>
                 <span className="text-lg text-gray-600">/session</span>
                 <span className="text-xl text-gray-600">+</span>
-                <span className="text-3xl font-bold text-[#A52A2A]">$5</span>
+                <span className="text-3xl font-bold text-[#A52A2A]">${SERVICES_CONFIG.RON_SERVICES.sealPrice}</span>
                 <span className="text-lg text-gray-600">/seal</span>
               </div>
               <p className="text-sm text-gray-600 mb-4">Session fee covers the entire notarization process. Each document requiring notarization gets one seal. Additional signers: $10 each. No hidden fees, travel charges, or rush fees.</p>

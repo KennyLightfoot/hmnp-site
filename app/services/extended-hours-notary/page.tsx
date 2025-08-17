@@ -2,6 +2,7 @@ import Link from "next/link"
 import { ChevronRight, Clock, MapPin, CheckCircle, Shield, Users, Zap, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { SERVICES_CONFIG } from "@/lib/services/config"
 
 // Define Base URL for metadata
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'; // Replace with your actual domain
@@ -134,7 +135,7 @@ export default function PriorityServicePage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-700">Service across extended 35-mile radius to reach you wherever urgent notarization is needed.</p>
+                  <p className="text-gray-700">Service includes travel up to 30 miles (from 77591). Tiered travel applies 31–50 miles.</p>
                 </CardContent>
               </Card>
 
@@ -173,14 +174,14 @@ export default function PriorityServicePage() {
               </CardHeader>
               <CardContent>
                 <div className="bg-gradient-to-r from-[#A52A2A] to-[#8B0000] text-white p-8 rounded-lg text-center mb-6">
-                  <h3 className="text-3xl font-bold mb-4">$100</h3>
+                  <h3 className="text-3xl font-bold mb-4">${SERVICES_CONFIG.EXTENDED_HOURS.basePrice}</h3>
                   <p className="text-xl mb-6">Flat fee for priority service</p>
                   <div className="grid md:grid-cols-2 gap-6 text-left">
                     <div>
                       <h4 className="font-semibold mb-3">Included:</h4>
                       <ul className="space-y-2 text-sm">
                         <li>• 2-hour response guarantee</li>
-                        <li>• Up to 5 documents</li>
+                        <li>• Up to {SERVICES_CONFIG.EXTENDED_HOURS.maxDocuments} documents</li>
                         <li>• Up to 2 signers</li>
                         <li>• Service 7am-9pm daily</li>
                       </ul>
@@ -274,7 +275,7 @@ export default function PriorityServicePage() {
                   <li>• 2-hour response guarantee</li>
                   <li>• 7am-9pm availability</li>
                   <li>• Weekend service included</li>
-                  <li>• Extended 35-mile radius</li>
+                  <li>• 30-mile included travel</li>
                   <li>• Real-time SMS updates</li>
                   <li>• Professional precision</li>
                   <li>• E&O insurance coverage</li>
@@ -353,7 +354,7 @@ export default function PriorityServicePage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-[#002147] mb-2">What's the coverage area?</h3>
-                <p className="text-gray-700">We serve an extended 35-mile radius from Houston. Additional mileage fees apply beyond 20 miles at $0.50 per mile.</p>
+                <p className="text-gray-700">We cover up to 50 miles from 77591. Travel tiers: 0–20 mi included (Standard), 21–30 +$25, 31–40 +$45, 41–50 +$65.</p>
               </div>
             </div>
             <div className="space-y-6">
