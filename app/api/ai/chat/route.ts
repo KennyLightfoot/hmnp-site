@@ -73,8 +73,7 @@ const CONTEXT_PROMPTS = {
     Help them understand the differences and choose the right service for their needs.
     
     Service Comparison:
-    - Quick-Stamp Local ($50) - Basic, 1 document, 10-mile radius
-    - Standard Notary ($75) - Most popular, 2 documents, 30-mile radius
+    - Standard Notary ($75) - Most popular, 2 documents, 20-mile included
     - Extended Hours ($125) - 7am-9pm, same-day guarantee, 5 documents, 30-mi included
     - Loan Signing ($175) - Real estate expertise, unlimited documents, 30-mi included; +$25 evenings/weekends
     - RON Services ($35) - Remote online, 24/7 availability

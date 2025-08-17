@@ -79,24 +79,7 @@ interface SmartRecommendation {
 // Service configuration matching the pricing engine - ALL 10 SERVICES
 const SERVICES: ServiceOption[] = [
   // ===== CORE MOBILE SERVICES =====
-  {
-    id: 'QUICK_STAMP_LOCAL',
-    name: 'Quick-Stamp Local',
-    price: 50,
-    description: 'Fast & simple local signings for routine documents',
-    hours: '9am-5pm Mon-Fri',
-    included: [
-      '≤ 1 document',
-      '1 signer included',
-      '10-mile travel radius',
-      'Same-day available (before 3pm)',
-      'Fast turnaround'
-    ],
-    maxDocuments: 1,
-    includedRadius: 10,
-    badge: 'value',
-    serviceType: 'mobile'
-  },
+  // Quick-Stamp Local temporarily removed from public selection
   {
     id: 'STANDARD_NOTARY',
     name: 'Standard Mobile Notary',

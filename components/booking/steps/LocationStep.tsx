@@ -664,8 +664,7 @@ export default function LocationStep({
             <CardContent className="p-4">
               <h4 className="font-medium text-blue-900 mb-2">Service Area</h4>
               <div className="text-sm text-blue-800 space-y-1">
-                <p>• Standard services: 30-mile radius</p>
-                <p>• Quick-Stamp Local: 10-mile radius</p>
+                <p>• Standard services: 20-mile included; tiers to 50 mi</p>
                 <p>• RON services: No travel required</p>
                 <p>• Extended hours available</p>
               </div>

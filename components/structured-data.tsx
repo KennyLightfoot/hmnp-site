@@ -118,15 +118,6 @@ export function StructuredData({ nonce }: StructuredDataProps) {
     },
     offers: [
       {
-        "@type": "Offer",
-        "name": "Quick-Stamp Local",
-        "description": "Fast and simple local notary service for basic documents",
-        "price": "50.00",
-        "priceCurrency": "USD",
-        "availability": "https://schema.org/InStock",
-        "validFrom": new Date().toISOString()
-      },
-      {
         "@type": "Offer", 
         "name": "Standard Mobile Notary",
         "description": "Professional mobile notary service for standard documents",
@@ -139,7 +130,7 @@ export function StructuredData({ nonce }: StructuredDataProps) {
         "@type": "Offer",
         "name": "Extended Hours Mobile",
         "description": "Extended hours and same-day notary service with premium scheduling",
-        "price": "100.00", 
+        "price": "125.00", 
         "priceCurrency": "USD",
         "availability": "https://schema.org/InStock",
         "validFrom": new Date().toISOString()
@@ -148,7 +139,7 @@ export function StructuredData({ nonce }: StructuredDataProps) {
         "@type": "Offer",
         "name": "Loan Signing Specialist", 
         "description": "Expert loan signing and real estate closing services",
-        "price": "150.00",
+        "price": "175.00",
         "priceCurrency": "USD", 
         "availability": "https://schema.org/InStock",
         "validFrom": new Date().toISOString()

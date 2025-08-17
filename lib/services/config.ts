@@ -4,7 +4,6 @@
  */
 
 export type ServiceId =
-  | 'QUICK_STAMP_LOCAL'
   | 'STANDARD_NOTARY'
   | 'EXTENDED_HOURS'
   | 'LOAN_SIGNING'
@@ -33,16 +32,6 @@ export interface ServiceConfig {
 }
 
 export const SERVICES_CONFIG: Record<ServiceId, ServiceConfig> = {
-  QUICK_STAMP_LOCAL: {
-    id: 'QUICK_STAMP_LOCAL',
-    displayName: 'Quick-Stamp Local',
-    basePrice: 50,
-    maxDocuments: 1,
-    includedRadius: 10,
-    feePerMile: 0.5,
-    defaultDurationMinutes: 45,
-    businessHours: { start: 9, end: 17, days: [1, 2, 3, 4, 5] }
-  },
   STANDARD_NOTARY: {
     id: 'STANDARD_NOTARY',
     displayName: 'Standard Mobile Notary',

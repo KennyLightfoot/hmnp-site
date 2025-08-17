@@ -255,20 +255,9 @@ export default function HomePage() {
       {/* Updated Service Showcase - SOP Pricing */}
       <div className="grid md:grid-cols-3 gap-8">
         <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-          <h3 className="text-xl font-semibold text-[#002147] mb-3">Quick-Stamp Local</h3>
-          <div className="text-3xl font-bold text-[#A52A2A] mb-2">$50</div>
-          <p className="text-gray-600 mb-4">Simple documents • ≤ 1 doc, ≤ 2 stamps • ≤ 10 mi travel</p>
-          <Link href="/booking">
-            <Button className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
-              Book Now
-            </Button>
-          </Link>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow-lg text-center">
           <h3 className="text-xl font-semibold text-[#002147] mb-3">Standard Mobile Notary</h3>
           <div className="text-3xl font-bold text-[#A52A2A] mb-2">$75</div>
-          <p className="text-gray-600 mb-4">Professional service • ≤ 4 docs • ≤ 2 signers • ≤ 15 mi travel</p>
+          <p className="text-gray-600 mb-4">Professional service • ≤ 4 docs • ≤ 2 signers • ≤ 20 mi travel</p>
           <Link href="/booking">
             <Button className="bg-[#002147] hover:bg-[#001a38] text-white">
               Book Now
@@ -278,7 +267,7 @@ export default function HomePage() {
         
         <div className="bg-white p-6 rounded-lg shadow-lg text-center">
           <h3 className="text-xl font-semibold text-[#002147] mb-3">Loan Signing Specialist</h3>
-          <div className="text-3xl font-bold text-[#A52A2A] mb-2">$150</div>
+          <div className="text-3xl font-bold text-[#A52A2A] mb-2">$175</div>
           <p className="text-gray-600 mb-4">Real estate closings • Flat fee • ≤ 4 signers • Expert handling</p>
           <Link href="/booking">
             <Button className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">

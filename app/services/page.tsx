@@ -322,58 +322,7 @@ export default function ServicesPage() {
 
       {/* Service Cards */}
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {/* Quick-Stamp Local - NEW per SOP */}
-        <Card className="relative overflow-hidden border-2 border-[#91A3B0]/20 hover:border-[#A52A2A]/30 transition-all duration-300 hover:shadow-xl">
-          <div className="absolute top-0 left-0 bg-[#A52A2A] text-white px-3 py-1 text-xs font-bold rounded-br-lg">
-            NEW
-          </div>
-          <CardHeader className="pb-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-[#A52A2A]/10 rounded-lg flex items-center justify-center">
-                <Clock className="h-6 w-6 text-[#A52A2A]" />
-              </div>
-              <div>
-                <CardTitle className="text-xl text-[#002147]">Quick-Stamp Local</CardTitle>
-                <CardDescription className="text-[#91A3B0]">Fast & simple local signings</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-baseline space-x-2">
-              <span className="text-3xl font-bold text-[#A52A2A]">${SERVICES_CONFIG.QUICK_STAMP_LOCAL.basePrice}</span>
-              <span className="text-sm text-gray-500">starting at</span>
-              <span className="text-xs text-[#002147] ml-2"><Link href="/services/extras#travel-tiers" className="underline">See travel tiers</Link></span>
-            </div>
-            
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center space-x-2">
-                <Check className="h-4 w-4 text-green-500" />
-                <span>≤ 1 document, ≤ 2 stamps</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Check className="h-4 w-4 text-green-500" />
-                <span>1 signer included</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Check className="h-4 w-4 text-green-500" />
-                <span>≤ 10 miles travel included</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Check className="h-4 w-4 text-green-500" />
-                <span>Perfect for simple documents</span>
-              </div>
-            </div>
-            
-            <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
-              <strong>Add-ons:</strong> Extra stamp $5 ea. • Extra signer $10 ea.
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button asChild className="w-full bg-[#A52A2A] hover:bg-[#8B0000]">
-              <Link href="/booking?service=quick-stamp-local">Book Quick-Stamp</Link>
-            </Button>
-          </CardFooter>
-        </Card>
+        
 
         {/* Standard Mobile Notary - Updated pricing */}
         <Card className="border-2 border-[#91A3B0]/20 hover:border-[#A52A2A]/30 transition-all duration-300 hover:shadow-xl">
