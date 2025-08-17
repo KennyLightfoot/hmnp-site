@@ -31,7 +31,7 @@ describe('UnifiedPricingEngine – surcharges & travel edge cases', () => {
 
     const scheduled = '2030-01-06T04:00:00Z' // Sunday 4 AM UTC – weekend & after-hours
     const result = await calculate({
-      serviceType: 'STANDARD_NOTARY',
+      serviceType: 'EXTENDED_HOURS',
       location: { address: 'Somewhere' },
       scheduledDateTime: scheduled,
       documentCount: 1,
