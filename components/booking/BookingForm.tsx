@@ -546,7 +546,11 @@ export default function BookingForm({
     setSuccessMessage(null);
     
     try {
-      console.log('Submitting booking data:', data);
+      console.info('[BOOKING] onSubmit start', {
+        serviceType: data?.serviceType,
+        hasDate: !!data?.scheduling?.preferredDate,
+        hasTime: !!data?.scheduling?.preferredTime
+      });
       
       // Prepare booking payload for API
       // Build a full ISO datetime from selected date + time for downstream APIs
@@ -568,11 +572,13 @@ export default function BookingForm({
           csrfToken = (csrfJson as any)?.csrfToken || null;
         }
       } catch {}
+      console.info('[BOOKING] CSRF token fetched?', !!csrfToken);
 
       // Reserve the selected slot (soft hold) now at final submission to avoid double-reserving earlier
       let reservationId: string | null = null;
       const reservationIdFromState = (watchedValues as any)?.scheduling?.reservationId as string | undefined;
       if (!reservationIdFromState && combinedDateTimeIso && data.customer?.email) {
+        console.info('[BOOKING] Reserving slot now', { combinedDateTimeIso });
         try {
           const reserveRes = await fetch('/api/booking/reserve-slot', {
             method: 'POST',
@@ -590,6 +596,7 @@ export default function BookingForm({
           if (reserveRes.ok) {
             const reserveJson = await reserveRes.json();
             reservationId = reserveJson?.reservation?.id || null;
+            console.info('[BOOKING] Slot reserved', { reservationId });
           } else if (reserveRes.status === 409) {
             const conflict = await reserveRes.json().catch(() => ({} as any));
             const msg = (conflict as any)?.error || 'Selected time was just taken. Please choose another time.';
@@ -655,6 +662,7 @@ export default function BookingForm({
       }
 
       // Submit via create endpoint which enforces overlap checks
+      console.info('[BOOKING] Creating booking now');
       const response = await fetch('/api/booking/create', {
         method: 'POST',
         headers: {
@@ -665,6 +673,7 @@ export default function BookingForm({
       });
 
       if (response.ok) {
+        console.info('[BOOKING] Booking created OK');
         const result = await response.json();
         const bookingId = result?.booking?.id || '';
 
@@ -685,6 +694,7 @@ export default function BookingForm({
         const target = `/booking/success${qs ? `?${qs}` : ''}${docsParam}`;
         router.push(target);
       } else {
+        console.warn('[BOOKING] Booking create failed status', response.status);
         const errorData = await response.json().catch(() => ({} as any));
         throw new Error((errorData as any).message || (errorData as any).error || 'Booking failed. Please try again.');
       }
