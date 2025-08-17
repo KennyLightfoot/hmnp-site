@@ -42,7 +42,7 @@ export default function TermsPage() {
           <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">2. Service Area</h2>
           <ul className="list-disc pl-6 space-y-1">
             <li><strong>Primary Service Area:</strong> 20-mile radius from ZIP code 77591.</li>
-            <li><strong>Extended Service Area:</strong> 20-35 miles from ZIP code 77591. An additional travel fee of $0.50 per mile (round trip distance beyond the primary 20-mile radius) applies.</li>
+            <li><strong>Extended Service Area:</strong> 20-50 miles from ZIP code 77591. Tiered travel applies beyond the included 20 miles: 21–30 +$25; 31–40 +$45; 41–50 +$65.</li>
             <li>We reserve the right to decline service outside our defined service areas or adjust fees based on travel time and distance. Service availability is subject to notary availability.</li>
           </ul>
 

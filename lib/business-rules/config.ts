@@ -17,7 +17,7 @@ export const BUSINESS_RULES_CONFIG = {
   serviceArea: {
     baseLocation: '77591', // "Pearland, TX"
     maxServiceRadius: 60, // "60 miles max"
-    travelFeeRate: 0.50, // "$0.50 per mile"
+    // Tiered travel fees handled in pricing engine (no per-mile rate)
     freeRadiusByService: {
       QUICK_STAMP_LOCAL: 10,
       STANDARD_NOTARY: 20,

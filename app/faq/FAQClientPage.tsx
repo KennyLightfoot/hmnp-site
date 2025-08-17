@@ -996,10 +996,10 @@ const faqs: FAQ[] = [
           <strong>Tiered travel beyond included miles: 21–30 +$25; 31–40 +$45; 41–50 +$65</strong>.
         </p>
         <p className="mt-2">
-          Example: If your location is 25 miles from 77591:
+          Example: Tiered travel: If your location is 35 miles from 77591, the travel fee tier is +$45.
         </p>
         <ul className="list-disc list-inside mt-1 space-y-1 text-sm">
-          <li>Distance from ZIP 77591: 25 miles</li>
+          <li>Distance from ZIP 77591: 35 miles</li>
           <li>Included distance (no fee): 15 miles</li>
           <li>Billable distance: 10 miles (25 - 15 included)</li>
           <li>Additional Travel Fee example: 35 miles from 77591 → +$45 (31–40 tier)</li>

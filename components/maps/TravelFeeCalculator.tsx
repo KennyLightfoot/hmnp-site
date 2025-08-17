@@ -163,7 +163,7 @@ export default function TravelFeeCalculator({
               <strong>How travel fees work:</strong>
               <ul className="mt-1 space-y-1">
                 <li>• Free service within 20 miles of Texas City, TX 77591</li>
-                <li>• $0.50 per mile for distances beyond 20 miles</li>
+                <li>• Tiered travel beyond included miles: 21–30 +$25; 31–40 +$45; 41–50 +$65</li>
                 <li>• Maximum service area: 50 miles (special arrangements for longer distances)</li>
                 <li>• Travel fee covers round-trip distance</li>
               </ul>

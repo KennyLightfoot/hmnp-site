@@ -65,8 +65,7 @@ export const SERVICE_AREA_CONFIG = {
     FREE: 20          // Default "free" radius reference (used for Standard)
   },
   
-  // Pricing
-  TRAVEL_FEE_RATE: 0.50, // $0.50 per mile beyond free radius
+  // Pricing: tiered travel fees handled by calculateTravelFee below
   
   // Service type configurations - UNIVERSAL 30-MILE FREE RADIUS
   SERVICES: {
@@ -350,9 +349,7 @@ export function validateMapsConfig(): { isValid: boolean; errors: string[] } {
     errors.push('Base location coordinates not configured');
   }
   
-  if (SERVICE_AREA_CONFIG.TRAVEL_FEE_RATE <= 0) {
-    errors.push('Travel fee rate must be greater than 0');
-  }
+  // Tiered travel fees are defined in calculateTravelFee; no per-mile rate validation needed
   
   return {
     isValid: errors.length === 0,
