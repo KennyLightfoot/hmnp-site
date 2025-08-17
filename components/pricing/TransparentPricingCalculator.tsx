@@ -63,7 +63,6 @@ interface TransparentPricingResult {
 }
 
 const SERVICE_OPTIONS = [
-  { value: 'QUICK_STAMP_LOCAL', label: 'Quick Stamp Local', description: 'Fast local signings' },
   { value: 'STANDARD_NOTARY', label: 'Standard Notary', description: 'Professional routine documents' },
   { value: 'EXTENDED_HOURS', label: 'Extended Hours', description: 'Urgent and after-hours service' },
   { value: 'LOAN_SIGNING', label: 'Loan Signing', description: 'Specialized loan documents' },

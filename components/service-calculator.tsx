@@ -30,7 +30,7 @@ export default function ServiceCalculator() {
   })
 
   // SOP COMPLIANT: Map service types to API service types
-  const mapServiceTypeToAPI = (serviceType: string): "QUICK_STAMP_LOCAL" | "STANDARD_NOTARY" | "EXTENDED_HOURS" | "LOAN_SIGNING" | "RON_SERVICES" | "BUSINESS_ESSENTIALS" | "BUSINESS_GROWTH" => {
+  const mapServiceTypeToAPI = (serviceType: string): "STANDARD_NOTARY" | "EXTENDED_HOURS" | "LOAN_SIGNING" | "RON_SERVICES" | "BUSINESS_ESSENTIALS" | "BUSINESS_GROWTH" => {
     switch (serviceType) {
       case "standard-notary":
         return "STANDARD_NOTARY"

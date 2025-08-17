@@ -24,21 +24,19 @@
 ### 1.1 Required Information
 - ☑️ Full legal name(s) of signer(s) and verifying government-issued ID
 - ☑️ Document type(s) and count
-- ☑️ Service type (Quick-Stamp Local, Standard Mobile Notary, Extended Hours Mobile, Loan Signing Specialist, RON Services, Business Subscription)
+- ☑️ Service type (Standard Mobile Notary, Extended Hours Mobile, Loan Signing Specialist, RON Services, Business Subscription)
 - ☑️ Physical address of signing location (or Remote for RON)
 - ☑️ **Available appointment windows**:
-  - **Quick-Stamp Local**: 9am-5pm Mon-Fri (Base: ≤1 document, ≤2 stamps, 1 signer, 10-mile travel included)
   - **Standard Mobile Notary**: 9am-5pm Mon-Fri (Base: ≤4 documents, ≤2 signers, 20-mile travel included)
   - **Extended Hours Mobile**: 7am-9pm Daily (Base: ≤4 documents, ≤2 signers, 30-mile travel included). Also for urgent/same-day needs during standard hours.
   - **Loan Signing Specialist**: By appointment (Flat fee service - single package, ≤4 signers, 2 hours table time)
   - **RON Services**: 24/7 availability (Remote Online Notarization - $25/session + $5/seal)
 
 ### 1.2 Service Area & Verification
-- **Quick-Stamp Local**: 10-mile radius from ZIP code 77591
 - **Standard Mobile Notary**: 20-mile radius from ZIP code 77591
 - **Extended Hours Mobile**: 30-mile radius from ZIP code 77591
 - **Loan Signing Specialist**: 30-mile radius from ZIP code 77591
-- **Extended Travel Fee**: Beyond primary service area, $0.50/mile fee applies.
+- **Extended Travel Fee**: Beyond included radius, tiered travel applies: 21–30 +$25; 31–40 +$45; 41–50 +$65 (max 50 miles).
 - **Automated Distance Calculation**: System automatically calculates travel distance using Google Maps API
 - **Real-time Pricing Updates**: Live quote updates based on location, urgency, and service selections
 
@@ -172,7 +170,6 @@ Texas Maximums for Notarial Acts (these are for individual acts, distinct from o
 ## 8. Business Operations
 
 ### 8.1 Service Hours
-- **Quick-Stamp Local**: 9am-5pm (Mon-Fri)
 - **Standard Mobile Notary**: 9am-5pm (Mon-Fri)
 - **Extended Hours Mobile**: 7am-9pm (Daily)
 - **After-Hours Approval (Outside Extended Hours Window)**: Requires 24-hour notice and $30 surcharge
@@ -189,11 +186,11 @@ Texas Maximums for Notarial Acts (these are for individual acts, distinct from o
 ### 8.4 Transparent Pricing
 - All fees clearly listed on website and booking form
 - Instant fee calculator available for clients
-- Quick-Stamp Local starts at $50; Standard Mobile Notary is $75; Extended Hours Mobile is $100; Loan Signing Specialist is $150 flat
+- Standard Mobile Notary is $75; Extended Hours Mobile is $125; Loan Signing Specialist is $175 flat; RON $35 (session + notarial)
 
 ### 8.5 Service Area Enforcement
 - Distance from ZIP code 77591 automatically calculated
-- Extended Travel Fee ($0.50/mile) applied automatically for travel beyond included radius
+- Tiered Travel applied automatically: 21–30 +$25; 31–40 +$45; 41–50 +$65 (max 50 miles)
 
 ### 8.6 Payment Policies
 - **Deposits**: 50% required for bookings over $100

@@ -67,7 +67,7 @@ export const GET = withRateLimit('public', 'ai_get_availability')(async (request
     } catch (error) {
       return NextResponse.json({
         error: `Unsupported service type: ${serviceType}`,
-        supportedTypes: ['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH']
+        supportedTypes: ['STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH']
       }, { status: 400 });
     }
 

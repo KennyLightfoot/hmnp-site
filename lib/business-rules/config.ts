@@ -19,7 +19,6 @@ export const BUSINESS_RULES_CONFIG = {
     maxServiceRadius: 60, // "60 miles max"
     // Tiered travel fees handled in pricing engine (no per-mile rate)
     freeRadiusByService: {
-      QUICK_STAMP_LOCAL: 10,
       STANDARD_NOTARY: 20,
       EXTENDED_HOURS: 30,
       LOAN_SIGNING: 30,
@@ -40,7 +39,6 @@ export const BUSINESS_RULES_CONFIG = {
     
     // Service-specific limits (from existing system)
     serviceLimits: {
-      QUICK_STAMP_LOCAL: { base: 1, extraFee: 5, maxStamps: 2 },
       STANDARD_NOTARY: { base: 4, extraFee: 10 },
       EXTENDED_HOURS: { base: 4, extraFee: 10 },
       LOAN_SIGNING: { base: 999, extraFee: 0 }, // unlimited

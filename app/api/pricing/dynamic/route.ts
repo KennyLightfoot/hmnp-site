@@ -20,7 +20,7 @@ const CUSTOMER_ID_REGEX = /^[a-zA-Z0-9\-_]{1,50}$/; // Customer ID format
 const BOOKING_ID_REGEX = /^[a-zA-Z0-9\-_]{1,50}$/; // Booking ID format
 
 const DynamicPricingRequestSchema = z.object({
-  serviceType: z.enum(['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH'], {
+  serviceType: z.enum(['STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH'], {
     errorMap: () => ({ message: 'Please select a valid service type' })
   }),
   scheduledDateTime: z

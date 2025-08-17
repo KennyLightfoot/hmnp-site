@@ -8,15 +8,14 @@ Note: Where public-facing pages differ, this document and the config files preva
 
 ## Mobile & RON Services
 
-| Service ID | Display name | Base price | Included radius | Fee/mi beyond radius | Max docs | Default duration | Business hours |
+| Service ID | Display name | Base price | Included radius | Travel beyond radius | Max docs | Default duration | Business hours |
 |---|---|---:|---:|---:|---:|---:|---|
-| `QUICK_STAMP_LOCAL` | Quick-Stamp Local | $50 | 10 mi | $0.50 | 1 | 45 min | Mon–Fri 9–17 |
-| `STANDARD_NOTARY` | Standard Mobile Notary | $75 | 20 mi | $0.50 | 4 | 60 min | Mon–Fri 9–17 |
+| `STANDARD_NOTARY` | Standard Mobile Notary | $75 | 20 mi | tiered | 4 | 60 min | Mon–Fri 9–17 |
 | `EXTENDED_HOURS` | Extended Hours Mobile | $125 | 30 mi | tiered | 4 | 60 min | Daily 7–21 |
 | `LOAN_SIGNING` | Loan Signing Specialist | $175 | 30 mi | tiered | Unlimited | 90 min | Mon–Fri 8–18 |
 | `RON_SERVICES` | Remote Online Notarization | $25/session + $10 notarial (=$35 for acknowledgments); $5 per seal | N/A | N/A | 10 | 30 min | 24/7 |
-| `BUSINESS_ESSENTIALS` | Business Subscription — Essentials | $125/mo | 30 mi | $0.50 | 10 | 60 min | Mon–Fri 9–17 |
-| `BUSINESS_GROWTH` | Business Subscription — Growth | $349/mo | 50 mi | $0.25 | 50 | 60 min | Mon–Fri 9–17 |
+| `BUSINESS_ESSENTIALS` | Business Subscription — Essentials | $125/mo | 30 mi | tiered | 10 | 60 min | Mon–Fri 9–17 |
+| `BUSINESS_GROWTH` | Business Subscription — Growth | $349/mo | 50 mi | tiered | 50 | 60 min | Mon–Fri 9–17 |
 
 ### RON details (Texas-compliant)
 - Base: $25 session + $10 notarial = $35 for acknowledgments
@@ -25,14 +24,13 @@ Note: Where public-facing pages differ, this document and the config files preva
 
 ## Add-ons and extras
 - Extra documents when exceeding included max:
-  - Quick‑Stamp: $5/doc
   - Standard: $10/doc
   - Extended: $10/doc
   - RON: $5/seal
   - Business Essentials: $3/doc
   - Business Growth: $2/doc
   - Loan Signing: $0 (unlimited)
-- Extra signer (public UX cues): Quick‑Stamp $10 each; Standard/Extended $5 each
+- Extra signer (public UX cues): Standard/Extended $5 each
 
 ## Surcharges
 Classic surcharges (applied by core engine):

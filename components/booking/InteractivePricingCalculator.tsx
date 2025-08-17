@@ -107,13 +107,7 @@ const SERVICE_ADD_ONS: ServiceAddOn[] = [
     category: 'document',
     popular: true
   },
-  {
-    id: 'extra_stamp',
-    name: 'Additional Stamp',
-    price: 5,
-    description: 'Each additional stamp (Quick-Stamp service)',
-    category: 'document'
-  },
+  // Removed Quick-Stamp specific add-on
   {
     id: 'document_scan',
     name: 'Document Scanning',

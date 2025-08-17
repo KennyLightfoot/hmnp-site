@@ -6,26 +6,23 @@
 ## 🚨 **CRITICAL BUSINESS RULES - NEVER BREAK**
 
 ### **Service Limits**
-- **Quick-Stamp Local**: 1 document, 2 stamps max
 - **Standard Mobile**: 4 documents max  
 - **Extended Hours**: 4 documents max
 - **Loan Signing**: Unlimited documents (single package)
 - **RON**: 10 documents max
 
 ### **Service Areas**
-- **Quick-Stamp**: 10-mile radius from 77591
 - **Standard Mobile**: 20-mile radius from 77591
 - **Extended Hours**: 30-mile radius from 77591
 - **Loan Signing**: 30-mile radius from 77591
 - **Maximum**: 60 miles (with approval)
 
 ### **Pricing (2025)**
-- **Quick-Stamp Local**: $50 base
 - **Standard Mobile**: $75 base
-- **Extended Hours**: $100 base
-- **Loan Signing**: $150 flat fee
+- **Extended Hours**: $125 base
+- **Loan Signing**: $175 flat fee
 - **RON**: $25 session + $5 per seal
-- **Travel**: $0.50/mile beyond included radius
+- **Travel**: Tiered beyond included radius (21–30 +$25; 31–40 +$45; 41–50 +$65)
 
 ### **Restrictions**
 - ❌ **NEVER** accept HELOC documents (no office space)

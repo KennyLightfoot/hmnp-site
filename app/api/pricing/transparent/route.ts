@@ -73,7 +73,6 @@ export const POST = withPublicSecurity(async (request: NextRequest) => {
     }
     
     const validServiceTypes = [
-      'QUICK_STAMP_LOCAL', 
       'STANDARD_NOTARY', 
       'EXTENDED_HOURS', 
       'LOAN_SIGNING', 

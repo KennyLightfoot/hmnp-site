@@ -43,7 +43,7 @@ export const POST = withRateLimit('public', 'booking_calculate_price')(async (re
     } = parsed.data as any;
     
     // Validate service type
-    const validServiceTypes = ['QUICK_STAMP_LOCAL', 'STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH'];
+    const validServiceTypes = ['STANDARD_NOTARY', 'EXTENDED_HOURS', 'LOAN_SIGNING', 'RON_SERVICES', 'BUSINESS_ESSENTIALS', 'BUSINESS_GROWTH'];
     if (!serviceType || !validServiceTypes.includes(serviceType)) {
       return NextResponse.json(
         { error: 'Invalid service type' },

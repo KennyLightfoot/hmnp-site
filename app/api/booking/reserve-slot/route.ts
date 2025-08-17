@@ -16,7 +16,6 @@ const SlotReservationSchema = z.object({
     .trim()
     .refine((val) => !isNaN(new Date(val).getTime()), 'Valid ISO datetime required'),
   serviceType: z.enum([
-    'QUICK_STAMP_LOCAL',
     'STANDARD_NOTARY',
     'EXTENDED_HOURS',
     'LOAN_SIGNING',

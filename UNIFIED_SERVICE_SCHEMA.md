@@ -1,30 +1,13 @@
 # **UNIFIED SERVICE SCHEMA - SINGLE SOURCE OF TRUTH**
 ## Houston Mobile Notary Pros - Service Standardization
 
-### **🎯 UNIFIED SERVICE STRUCTURE (7 Services)**
+### **🎯 UNIFIED SERVICE STRUCTURE (6 Services)**
 
 Based on the comprehensive ServiceSelector frontend component, these 7 services will be the **single source of truth** across the entire system:
 
 ---
 
-#### **1. QUICK_STAMP_LOCAL**
-- **ID**: `QUICK_STAMP_LOCAL`
-- **Name**: Quick-Stamp Local
-- **Price**: $50.00
-- **Description**: Fast & simple local signings for routine documents
-- **Hours**: 9am-5pm Mon-Fri
-- **Features**:
-  - ≤1 document
-  - ≤2 stamps
-  - 1 signer included
-  - 10-mile travel radius
-  - Same-day available (before 3pm)
-  - Fast turnaround
-- **Badge**: Value
-
----
-
-#### **2. STANDARD_NOTARY**
+#### **1. STANDARD_NOTARY**
 - **ID**: `STANDARD_NOTARY`
 - **Name**: Standard Mobile Notary
 - **Price**: $75.00
@@ -40,7 +23,7 @@ Based on the comprehensive ServiceSelector frontend component, these 7 services 
 
 ---
 
-#### **3. EXTENDED_HOURS**
+#### **2. EXTENDED_HOURS**
 - **ID**: `EXTENDED_HOURS`
 - **Name**: Extended Hours Mobile
 - **Price**: $100.00
@@ -57,7 +40,7 @@ Based on the comprehensive ServiceSelector frontend component, these 7 services 
 
 ---
 
-#### **4. LOAN_SIGNING**
+#### **3. LOAN_SIGNING**
 - **ID**: `LOAN_SIGNING`
 - **Name**: Loan Signing Specialist
 - **Price**: $150.00
@@ -76,7 +59,7 @@ Based on the comprehensive ServiceSelector frontend component, these 7 services 
 
 ---
 
-#### **5. RON_SERVICES**
+#### **4. RON_SERVICES**
 - **ID**: `RON_SERVICES`
 - **Name**: Remote Online Notarization (RON)
 - **Price**: $25/session + $5/seal
@@ -94,7 +77,7 @@ Based on the comprehensive ServiceSelector frontend component, these 7 services 
 
 ---
 
-#### **6. BUSINESS_ESSENTIALS**
+#### **5. BUSINESS_ESSENTIALS**
 - **ID**: `BUSINESS_ESSENTIALS`
 - **Name**: Business Subscription - Essentials
 - **Price**: $125/month
@@ -110,7 +93,7 @@ Based on the comprehensive ServiceSelector frontend component, these 7 services 
 
 ---
 
-#### **7. BUSINESS_GROWTH**
+#### **6. BUSINESS_GROWTH**
 - **ID**: `BUSINESS_GROWTH`
 - **Name**: Business Subscription - Growth
 - **Price**: $349/month
@@ -133,12 +116,11 @@ Based on the comprehensive ServiceSelector frontend component, these 7 services 
 - **Coordinates**: 29.4052, -94.9355
 
 ### **Service Radii**
-| Service | Free Radius | Max Radius | Travel Fee |
-|---------|-------------|------------|------------|
-| Quick-Stamp Local | 10 miles | 30 miles | $0.50/mile |
-| Standard Mobile | 20 miles | 50 miles | $0.50/mile |
-| Extended Hours | 30 miles | 50 miles | $0.50/mile |
-| Loan Signing | 30 miles | 50 miles | $0.50/mile |
+| Service | Included Radius | Max Radius | Travel Fee |
+|---------|------------------|------------|------------|
+| Standard Mobile | 20 miles | 50 miles | Tiered (21–30 +$25; 31–40 +$45; 41–50 +$65) |
+| Extended Hours | 30 miles | 50 miles | Tiered (31–40 +$45; 41–50 +$65) |
+| Loan Signing | 30 miles | 50 miles | Tiered (31–40 +$45; 41–50 +$65) |
 | RON Services | 0 miles | 0 miles | N/A |
 
 ---
@@ -148,10 +130,9 @@ Based on the comprehensive ServiceSelector frontend component, these 7 services 
 ### **Base Service Pricing**
 | Service | Base Price | Extra Documents | Extra Signers | Travel Fee |
 |---------|------------|-----------------|---------------|------------|
-| Quick-Stamp Local | $50 | $5/stamp | $10 | $0.50/mile |
-| Standard Mobile | $75 | $10 | $5 | $0.50/mile |
-| Extended Hours | $100 | $10 | $5 | $0.50/mile |
-| Loan Signing | $150 | Unlimited | Included | $0.50/mile |
+| Standard Mobile | $75 | $10 | $5 | Tiered travel |
+| Extended Hours | $125 | $10 | $5 | Tiered travel |
+| Loan Signing | $175 | Unlimited | Included | Tiered travel |
 | RON Services | $25 + $5/seal | $5 | $10 | N/A |
 
 ### **Time-Based Surcharges**
@@ -171,7 +152,6 @@ Based on the comprehensive ServiceSelector frontend component, these 7 services 
 ### **Included Documents by Service**
 | Service | Base Documents | Extra Fee | Notes |
 |---------|----------------|-----------|-------|
-| Quick-Stamp Local | 1 | $5/stamp | ≤2 stamps included |
 | Standard Mobile | 4 | $10 | Standard notarization |
 | Extended Hours | 4 | $10 | Extended availability |
 | Loan Signing | Unlimited | $0 | Within session |
