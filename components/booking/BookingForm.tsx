@@ -90,6 +90,24 @@ const CreateBookingSchema = z.object({
     selectedEndIso: z.string().optional(),
     flexibleTiming: z.boolean().optional(),
   }).optional(),
+}).superRefine((val, ctx) => {
+  // For in-person services, enforce location fields
+  const inPerson = val.serviceType !== 'RON_SERVICES';
+  if (inPerson) {
+    const loc = (val as any).location || {};
+    if (!loc.address || String(loc.address).trim().length === 0) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Address is required', path: ['location', 'address'] });
+    }
+    if (!loc.city || String(loc.city).trim().length === 0) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'City is required', path: ['location', 'city'] });
+    }
+    if (!loc.state || String(loc.state).trim().length === 0) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'State is required', path: ['location', 'state'] });
+    }
+    if (!loc.zipCode || String(loc.zipCode).trim().length === 0) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'ZIP code is required', path: ['location', 'zipCode'] });
+    }
+  }
 });
 
 type CreateBooking = z.infer<typeof CreateBookingSchema>;
@@ -878,7 +896,7 @@ export default function BookingForm({
       <Card className="border-gray-200 shadow-sm">
         <CardContent className="p-4 md:p-6">
           <FormProvider {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form id="booking-form" onSubmit={form.handleSubmit(onSubmit)}>
               {CurrentStepComponent && (
                 <div className={isNavigating ? 'opacity-50 pointer-events-none' : ''}>
                   {currentStep === 0 ? (
@@ -960,8 +978,11 @@ export default function BookingForm({
               </Button>
             ) : (
               <Button
-                type="button"
-                onClick={form.handleSubmit(onSubmit)}
+                type="submit"
+                form="booking-form"
+                onClick={() => {
+                  try { console.info('[BOOKING] Confirm clicked'); } catch {}
+                }}
                 disabled={isSubmitting}
                 className="min-h-[44px] bg-green-600 hover:bg-green-700 text-white px-8"
               >
