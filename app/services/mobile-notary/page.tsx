@@ -8,16 +8,16 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Mobile Notary Houston | Traveling Notary Near Me | 25-Mile Service Area",
+  title: "Mobile Notary Houston | Traveling Notary Near Me | 20-Mile Included + Tiers to 50 mi",
   description:
-    "Professional mobile notary services in Houston, Pearland, Sugar Land, Galveston & 25-mile radius from 77591. We come to you - home, office, hospital. Same-day available 24/7.",
+    "Professional mobile notary services in Houston, Pearland, Sugar Land, Galveston. 20-mile travel included from 77591; fair travel tiers up to 50 miles. We come to you - home, office, hospital. Same-day available.",
   keywords: "mobile notary Houston, mobile notary near me, traveling notary Houston, mobile notary Pearland, mobile notary Sugar Land, mobile notary Galveston, mobile notary services, notary comes to you, on-site notary, home notary services, 77591 mobile notary",
   alternates: {
     canonical: '/services/mobile-notary',
   },
   openGraph: {
-    title: "Mobile Notary Services Houston | Traveling Notary | We Come to You",
-    description: "Professional mobile notary services in Houston. We travel to your location for convenient, reliable notarization. Same-day service available.",
+    title: "Mobile Notary Services Houston | 20-Mile Included • Tiers to 50 mi",
+    description: "Professional mobile notary services in Houston. 20-mile travel included; tiered travel fees up to 50 miles. We travel to your location for convenient, reliable notarization.",
     url: `${BASE_URL}/services/mobile-notary`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
@@ -59,7 +59,7 @@ export default function MobileNotaryServicesPage() {
       <div className="bg-gradient-to-r from-[#002147] to-[#003366] text-white py-16">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Mobile Notary Houston | 25-Mile Service Area
+            Mobile Notary Houston | 20-Mile Included
           </h1>
           <p className="text-xl md:text-2xl mb-4 text-blue-100">
             Traveling notary near you - Pearland to Galveston corridor
@@ -81,6 +81,9 @@ export default function MobileNotaryServicesPage() {
               </Button>
             </Link>
           </div>
+          <div className="mt-2 text-xs text-blue-100">
+            <Link href="/services/extras#travel-tiers" className="underline">See travel tiers</Link>
+          </div>
           
           {/* Trust Signals */}
           <div className="mt-8 flex flex-wrap justify-center items-center gap-6 text-blue-100">
@@ -98,7 +101,7 @@ export default function MobileNotaryServicesPage() {
             </div>
             <div className="flex items-center">
               <MapPin className="h-5 w-5 mr-2" />
-              <span className="text-sm">25-Mile Service Area</span>
+              <span className="text-sm">20-Mile Included • Up to 50 mi</span>
             </div>
           </div>
         </div>
@@ -349,7 +352,7 @@ export default function MobileNotaryServicesPage() {
                     <span className="font-semibold text-[#002147]">$150+</span>
                   </div>
                   <div className="text-xs text-gray-600 mt-3">
-                    Base pricing includes travel within 20 miles. Additional fees may apply for extra documents, signers, or extended travel.
+                    Base pricing includes travel within 20 miles. Beyond that, tiered travel applies: 21–30 +$25; 31–40 +$45; 41–50 +$65. <Link href="/services/extras#travel-tiers" className="underline text-[#002147]">See travel tiers</Link>.
                   </div>
                 </div>
               </CardContent>
