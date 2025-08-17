@@ -300,7 +300,7 @@ export default function EssentialServicePage() {
                   </div>
                   <div>
                     <p className="font-semibold">Extended Travel</p>
-                    <p className="text-gray-600">$0.50/mile beyond 15 miles</p>
+                    <p className="text-gray-600">Tiered beyond included miles (21–30 +$25; 31–40 +$45; 41–50 +$65)</p>
                   </div>
                 </div>
               </CardContent>

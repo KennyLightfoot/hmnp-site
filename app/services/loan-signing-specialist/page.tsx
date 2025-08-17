@@ -12,7 +12,7 @@ export const metadata = {
   metadataBase: new URL(BASE_URL),
   title: "Loan Signing Agent Houston | Pearland to Galveston | Mobile Mortgage Notary",
   description:
-    "Certified loan signing agent serving Houston, Pearland, Sugar Land, Galveston & 25-mile radius. Mobile mortgage notary for closings, refinances, HELOCs. Same-day available!",
+    "Certified loan signing agent serving Houston, Pearland, Sugar Land, Galveston. 30-mile travel included; fair travel tiers to 50 miles. Mobile mortgage notary for closings, refinances, HELOCs. Same-day available!",
   keywords:
     "loan signing agent Houston, loan signing agent Pearland, loan signing agent Sugar Land, mortgage notary Houston, mobile loan signing, certified loan signer, loan signing agent near me, Houston closing agent, 77591 loan signing, Galveston loan signing agent",
   alternates: {

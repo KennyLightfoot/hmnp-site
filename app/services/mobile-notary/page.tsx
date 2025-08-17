@@ -258,7 +258,7 @@ export default function MobileNotaryServicesPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 mb-3">We serve the entire Houston metro area + 25-mile radius:</p>
+                <p className="text-gray-700 mb-3">We serve the entire Houston metro area (20-mile included; tiers to 50 mi):</p>
                 <ul className="space-y-1 text-sm text-gray-700">
                   <li>• <strong>Houston</strong> - All districts & neighborhoods</li>
                   <li>• <strong>Pearland</strong> - Our home base (77591)</li>
@@ -284,7 +284,7 @@ export default function MobileNotaryServicesPage() {
               <CardContent>
                 <ul className="space-y-2 text-sm text-gray-700">
                   <li>✓ <strong>Same-Day Service</strong> - Available when you need it</li>
-                  <li>✓ <strong>No Travel Fees</strong> - Within our 25-mile radius</li>
+                  <li>✓ <strong>No Travel Fees</strong> - Within 20 miles</li>
                   <li>✓ <strong>$1M E&O Insurance</strong> - Your protection guaranteed</li>
                   <li>✓ <strong>Texas Certified</strong> - Licensed & bonded professionals</li>
                   <li>✓ <strong>Evening & Weekend</strong> - Available 7 days a week</li>
