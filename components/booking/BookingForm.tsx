@@ -711,6 +711,12 @@ export default function BookingForm({
     }
   }, [onComplete, onError]);
 
+  // Invalid submit handler to surface why submission didn't fire
+  const onInvalid = useCallback((errors: any) => {
+    try { console.warn('[BOOKING] Submit validation failed', errors); } catch {}
+    setErrorMessage('Please complete all required fields to continue');
+  }, []);
+
   // Stable callback for interactive pricing sidebar (must not be created conditionally)
   const handleInteractivePricingChange = useCallback((breakdown: any) => {
     console.log('💰 Interactive pricing updated:', breakdown);
@@ -909,7 +915,7 @@ export default function BookingForm({
       <Card className="border-gray-200 shadow-sm">
         <CardContent className="p-4 md:p-6">
           <FormProvider {...form}>
-            <form id="booking-form" onSubmit={form.handleSubmit(onSubmit)}>
+            <form id="booking-form" onSubmit={form.handleSubmit(onSubmit, onInvalid)}>
               {CurrentStepComponent && (
                 <div className={isNavigating ? 'opacity-50 pointer-events-none' : ''}>
                   {currentStep === 0 ? (
