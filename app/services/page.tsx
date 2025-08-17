@@ -342,6 +342,7 @@ export default function ServicesPage() {
             <div className="flex items-baseline space-x-2">
               <span className="text-3xl font-bold text-[#A52A2A]">${SERVICES_CONFIG.QUICK_STAMP_LOCAL.basePrice}</span>
               <span className="text-sm text-gray-500">starting at</span>
+              <span className="text-xs text-[#002147] ml-2"><Link href="/services/extras#travel-tiers" className="underline">See travel tiers</Link></span>
             </div>
             
             <div className="space-y-2 text-sm">
@@ -391,6 +392,7 @@ export default function ServicesPage() {
             <div className="flex items-baseline space-x-2">
               <span className="text-3xl font-bold text-[#A52A2A]">${SERVICES_CONFIG.STANDARD_NOTARY.basePrice}</span>
               <span className="text-sm text-gray-500">base price</span>
+              <span className="text-xs text-[#002147] ml-2"><Link href="/services/extras#travel-tiers" className="underline">See travel tiers</Link></span>
             </div>
             
             <div className="space-y-2 text-sm">
@@ -440,6 +442,7 @@ export default function ServicesPage() {
             <div className="flex items-baseline space-x-2">
               <span className="text-3xl font-bold text-[#A52A2A]">${SERVICES_CONFIG.EXTENDED_HOURS.basePrice}</span>
               <span className="text-sm text-gray-500">base price</span>
+              <span className="text-xs text-[#002147] ml-2"><Link href="/services/extras#travel-tiers" className="underline">See travel tiers</Link></span>
             </div>
             
             <div className="space-y-2 text-sm">
@@ -489,6 +492,7 @@ export default function ServicesPage() {
             <div className="flex items-baseline space-x-2">
               <span className="text-3xl font-bold text-[#A52A2A]">${SERVICES_CONFIG.LOAN_SIGNING.basePrice}</span>
               <span className="text-sm text-gray-500">flat fee</span>
+              <span className="text-xs text-[#002147] ml-2"><Link href="/services/extras#travel-tiers" className="underline">See travel tiers</Link></span>
             </div>
             
             <div className="space-y-2 text-sm">
@@ -722,8 +726,7 @@ export default function ServicesPage() {
               <div>
                 <h3 className="font-semibold text-[#002147] mb-1">Standard Service Area</h3>
                 <p className="text-gray-700">
-                  Our standard service area extends to a 20-mile radius from ZIP code 77591. We can travel beyond this
-                  area for an additional fee of $0.50 per mile.
+                  Our standard service area extends to a 20-mile radius from ZIP code 77591. Beyond that, we use simple travel zones: 21–30 +$25; 31–40 +$45; 41–50 +$65. See <Link href="/services/extras#travel-tiers" className="underline text-[#002147]">travel tiers</Link>.
                 </p>
               </div>
             </div>

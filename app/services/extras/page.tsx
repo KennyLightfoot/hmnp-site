@@ -117,7 +117,7 @@ export default function ExtrasAndFeesPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center mb-2">
                 <MapPin className="h-8 w-8 text-[#002147] mr-3" />
-                <CardTitle className="text-2xl text-[#002147]">Travel Fee (Tiered Zones)</CardTitle>
+                <CardTitle id="travel-tiers" className="text-2xl text-[#002147]">Travel Fee (Tiered Zones)</CardTitle>
               </div>
               <CardDescription className="text-sm">Simple zones from ZIP 77591; max 50 miles.</CardDescription>
             </CardHeader>

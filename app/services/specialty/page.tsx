@@ -129,7 +129,7 @@ export default function SpecialtyServicesPage() {
           
           <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
             <h3 className="text-xl font-semibold text-[#002147] mb-3">Pricing & Consultation</h3>
-            <p className="text-3xl font-bold text-[#002147] mb-1">${SERVICES_CONFIG.RON_SERVICES.basePrice + 125}+{/* Placeholder: specialty is variable; showing example baseline */}</p>
+            <p className="text-3xl font-bold text-[#002147] mb-1">${SERVICES_CONFIG.RON_SERVICES.basePrice + 125}+ <span className="text-sm text-gray-500 ml-1"><Link href="/services/extras#travel-tiers" className="text-[#002147] underline">See travel tiers</Link></span>{/* Placeholder: specialty is variable; showing example baseline */}</p>
             <p className="text-sm text-gray-600 mb-4">Starting price for specialty notary services. Due to the unique nature of each request, final pricing is determined after a thorough consultation. This ensures we understand the full scope, any third-party fees (like government apostille fees), and the time involved. We provide a transparent quote before any work begins. Please visit our <Link href="/services/extras" className="text-[#A52A2A] hover:underline">Extras & Fees</Link> page for general fee information.</p>
             <Link href="/contact?subject=Specialty%20Service%20Consultation">
               <Button size="lg" className="w-full sm:w-auto bg-[#002147] hover:bg-[#001a38] text-white">

@@ -171,10 +171,12 @@ export default function RealEstateNotaryPage() {
             <div className="flex items-baseline space-x-2 mb-2">
               <span className="text-3xl font-bold text-[#A52A2A]">${SERVICES_CONFIG.STANDARD_NOTARY.basePrice}+</span>
               <span className="text-lg text-gray-600">basic property documents</span>
+              <span className="text-sm text-[#002147] ml-2"><Link href="/services/extras#travel-tiers" className="underline">See travel tiers</Link></span>
             </div>
             <div className="flex items-baseline space-x-2 mb-2">
               <span className="text-2xl font-bold text-[#002147]">${SERVICES_CONFIG.LOAN_SIGNING.basePrice}+</span>
               <span className="text-lg text-gray-600">full loan signing packages</span>
+              <span className="text-sm text-[#002147] ml-2"><Link href="/services/extras#travel-tiers" className="underline">See travel tiers</Link></span>
             </div>
             <p className="text-sm text-gray-600 mb-4">Pricing varies based on document complexity, number of signers, and travel requirements. Volume discounts available for real estate professionals and title companies. Same-day service available.</p>
             <div className="flex flex-col sm:flex-row gap-3">
