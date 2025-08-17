@@ -75,11 +75,14 @@ const CreateBookingSchema = z.object({
     email: z.string().email('Valid email required'),
     phone: z.string().optional(),
   }).optional(),
+  // Make location fields optional at the schema level; we enforce requirements
+  // for in-person services in superRefine below. This prevents silent submit
+  // blocking for RON when location is blank but present in defaultValues.
   location: z.object({
-    address: z.string().min(1, 'Address is required'),
-    city: z.string().min(1, 'City is required'),
-    state: z.string().min(1, 'State is required'),
-    zipCode: z.string().min(1, 'ZIP code is required'),
+    address: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    zipCode: z.string().optional(),
   }).optional(),
   scheduling: z.object({
     preferredDate: z.string().min(1, 'Date is required'),
