@@ -31,7 +31,7 @@ export default function EnhancedFAQSchema() {
               name: "What areas do you serve?",
               acceptedAnswer: {
                 "@type": "Answer",
-                text: "We serve clients within a 30-mile radius of ZIP code 77591, covering the greater Houston area including Houston, Galveston, League City, Pearland, Sugar Land, Katy, The Woodlands, Baytown, Friendswood, and Missouri City. We can also travel beyond our standard service area for an additional fee of $0.50 per mile.",
+                text: "We serve clients within a 20-mile radius for Standard and 30-mile radius for Extended/Loan Signing, covering the greater Houston area including Houston, Galveston, League City, Pearland, Sugar Land, Katy, The Woodlands, Baytown, Friendswood, and Missouri City. Beyond included miles, tiered travel applies: 21–30 +$25; 31–40 +$45; 41–50 +$65.",
               },
             },
             {
@@ -39,7 +39,7 @@ export default function EnhancedFAQSchema() {
               name: "How much do your notary services cost?",
               acceptedAnswer: {
                 "@type": "Answer",
-                text: "Our pricing varies based on the service package you select: Essential Mobile Package starts at $75 for one signer with 1-2 documents. Priority Service Package is $100 flat fee for 2-hour response time. Loan Signing Services are $150 flat fee for standard loan closings and reverse mortgages. Additional fees may apply for weekend service (+$50), extended travel beyond 20 miles ($0.50/mile), or extra documents.",
+                text: "Our pricing varies based on the service package you select: Essential Mobile Package starts at $75 for one signer with 1-2 documents. Priority Service Package is $100 flat fee for 2-hour response time. Loan Signing Services are $150 flat fee for standard loan closings and reverse mortgages. Additional fees may apply for weekend service (+$50), and tiered travel beyond included miles (21–30 +$25; 31–40 +$45; 41–50 +$65).",
               },
             },
             {
