@@ -12,62 +12,62 @@ export { metadata }
 const ronSteps = [
   {
     number: 1,
-    title: "Schedule Your RON Session",
-    description: "Book your remote online notarization appointment through our secure online platform.",
+    title: "Start Your RON Session",
+    description: "Book with HMNP and access your secure Proof.com workspace.",
     icon: <Clock className="h-6 w-6" />,
     details: [
-      "Choose a convenient time that works for you",
-      "Select the type of documents you need notarized",
-      "Provide basic information about your notarization needs",
-      "Receive confirmation and preparation instructions"
+      "Book online with HMNP. We create your Proof.com session",
+      "You’ll get a “Sign documents now” email from Proof or a link in your dashboard",
+      "First-time users create a Proof account (password) to access documents",
+      "Upload your PDFs in Proof or send them to us and we’ll upload for you"
     ]
   },
   {
     number: 2,
     title: "Prepare Your Documents & Technology",
-    description: "Get your documents ready and ensure your technology meets the requirements.",
+    description: "Make sure your files and device are ready for a smooth session.",
     icon: <FileText className="h-6 w-6" />,
     details: [
-      "Prepare all documents in digital format (PDF preferred)",
-      "Ensure stable internet connection (minimum 5 Mbps recommended)",
-      "Test your camera and microphone",
-      "Have your government-issued ID ready"
+      "Have documents in digital format (PDF preferred)",
+      "Stable internet connection (5 Mbps+ recommended)",
+      "Camera and microphone enabled (computer or smartphone)",
+      "Government-issued photo ID available"
     ]
   },
   {
     number: 3,
     title: "Identity Verification",
-    description: "Complete secure identity verification using advanced technology.",
+    description: "Complete KBA and credential analysis inside Proof.",
     icon: <CreditCard className="h-6 w-6" />,
     details: [
-      "Present your government-issued photo ID to the camera",
-      "Automated credential analysis verifies your ID",
-      "Complete Knowledge-Based Authentication (KBA) questions",
-      "Biometric verification ensures you are who you claim to be"
+      "Answer Knowledge-Based Authentication (KBA) questions",
+      "Scan front and back of your government-issued ID",
+      "Optional phone handoff for easier ID capture",
+      "Automated credential analysis verifies authenticity"
     ]
   },
   {
     number: 4,
     title: "Live Video Session",
-    description: "Connect with our commissioned Texas notary for the notarization.",
+    description: "Join the secure audio-video meeting with a Texas notary.",
     icon: <Video className="h-6 w-6" />,
     details: [
-      "Join the secure video conference with our notary",
-      "Review and sign documents electronically",
-      "Receive notarial certificate and official seal",
+      "Connect via your device’s camera and microphone",
+      "Review and e-sign documents together in Proof",
+      "Notary completes the notarial certificate and seal",
       "Session is recorded for legal compliance"
     ]
   },
   {
     number: 5,
-    title: "Receive Your Notarized Documents",
-    description: "Download your completed, legally valid notarized documents.",
+    title: "Access Your Notarized Documents",
+    description: "Download and keep everything in your Proof account.",
     icon: <Gavel className="h-6 w-6" />,
     details: [
-      "Download notarized documents immediately after completion",
-      "Receive digital copies with embedded notarial seal",
-      "Documents are legally valid and accepted nationwide",
-      "Secure backup stored in compliance with Texas law"
+      "Instantly download notarized documents from Proof",
+      "Your Proof account retains access to your records",
+      "If payment is required, you’ll be prompted during or after the session",
+      "Secure, long-term storage per Texas compliance"
     ]
   }
 ]

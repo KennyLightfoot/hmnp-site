@@ -12,16 +12,6 @@ type Offer = {
 
 const OFFERS: Offer[] = [
   {
-    name: "Remote Online Notarization (RON)",
-    priceFrom: "$35",
-    points: [
-      "Texas-compliant: credential analysis, KBA, recording",
-      "Up to 10 docs included",
-      "24/7 statewide",
-    ],
-    href: "/ron/how-it-works",
-  },
-  {
     name: "Mobile Standard",
     priceFrom: "$75",
     points: [
@@ -51,6 +41,16 @@ const OFFERS: Offer[] = [
       "Scanbacks/courier add‑ons",
     ],
     href: "/booking",
+  },
+  {
+    name: "Remote Online Notarization (RON)",
+    priceFrom: "$35",
+    points: [
+      "Texas-compliant: credential analysis, KBA, recording",
+      "Up to 10 docs included",
+      "24/7 statewide",
+    ],
+    href: "/ron/how-it-works",
   },
 ]
 

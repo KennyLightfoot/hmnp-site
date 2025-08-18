@@ -7,6 +7,11 @@
 - Added `test:integration` script in `package.json` to run API tests with coverage.
 - Created GitHub Actions workflow at `.github/workflows/ci.yml` with jobs for unit, e2e, and integration tests.
 - Declared `supertest` as a dev dependency for API tests.
+ - docs(ads): Added ad-generation brief and templates
+   - `docs/ads/ad-brief-prompt.md` (master AI brief)
+   - `docs/ads/templates-search.md` (Google-style search)
+   - `docs/ads/templates-social.md` (Meta/LinkedIn)
+   - `docs/ads/templates-display.md` (display banners)
 ## 2025-08-12
 
 - fix(availability): improve GHL free-slots accuracy and freshness

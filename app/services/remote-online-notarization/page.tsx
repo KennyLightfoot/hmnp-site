@@ -252,11 +252,11 @@ export default function RemoteOnlineNotarizationPage() {
               </CardHeader>
               <CardContent>
                 <ol className="space-y-2 text-sm text-gray-700">
-                  <li><strong>1. Upload:</strong> Upload your PDF documents</li>
-                  <li><strong>2. Verify:</strong> Complete ID & KBA verification</li>
-                  <li><strong>3. Connect:</strong> Join video call with notary</li>
-                  <li><strong>4. Sign:</strong> Electronically sign documents</li>
-                  <li><strong>5. Download:</strong> Get notarized documents instantly</li>
+                  <li><strong>1. Access Proof:</strong> Book with HMNP → open the Proof.com link from your email/dashboard (create a Proof account if new)</li>
+                  <li><strong>2. Upload:</strong> Add your PDF documents in Proof (or we can upload for you)</li>
+                  <li><strong>3. Verify:</strong> Complete KBA and ID scan (credential analysis)</li>
+                  <li><strong>4. Connect:</strong> Join the secure video call with the notary</li>
+                  <li><strong>5. Sign & Download:</strong> E‑sign in Proof and download notarized copies; your Proof account keeps access</li>
                 </ol>
                 <p className="text-xs text-gray-500 mt-3">Average session time: 5-10 minutes</p>
               </CardContent>

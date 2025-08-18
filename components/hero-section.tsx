@@ -48,18 +48,18 @@ export default function HeroSection() {
               <Badge className="bg-white/10 text-white border-white/20">Transparent pricing</Badge>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Link href="/ron/dashboard">
+              <Link href="/booking">
                 <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white w-full sm:w-auto">
-                  Start RON Now
+                  Book Mobile Notary
                 </Button>
               </Link>
-              <Link href="/booking">
+              <Link href="/ron/how-it-works">
                 <Button
                   size="lg"
                   variant="outline"
                   className="border-white text-white bg-transparent hover:bg-white/20 w-full sm:w-auto"
                 >
-                  Book Mobile Notary
+                  Start Online Notary (RON)
                 </Button>
               </Link>
               <Popover>
@@ -77,7 +77,7 @@ export default function HeroSection() {
                       <li>• 31–40 miles: +$45</li>
                       <li>• 41–50 miles: +$65 (maximum service area)</li>
                     </ul>
-                    <div className="text-xs text-gray-500 mt-2">RON has no travel fees.</div>
+                    
                     <Link href="/services/extras" className="text-[#A52A2A] underline text-sm mt-3 inline-block">See Extras & Fees</Link>
                   </div>
                 </PopoverContent>

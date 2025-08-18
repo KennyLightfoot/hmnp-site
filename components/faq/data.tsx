@@ -41,7 +41,7 @@ export const faqs: FAQ[] = [
     ),
     category: "general",
     keywords: ["notary", "public", "official", "witness", "texas", "notarial acts", "state-appointed"],
-    popular: true,
+    popular: false,
   },
   {
     id: "why-mobile-notary",

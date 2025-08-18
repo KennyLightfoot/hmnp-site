@@ -41,7 +41,8 @@ import {
   Shield,
   Star,
   Smartphone,
-  Monitor
+  Monitor,
+  DollarSign
 } from 'lucide-react';
 
 // Import existing step components
@@ -278,7 +279,7 @@ export default function BookingForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
   
   // AI Assistant state
   const [stepStartTime, setStepStartTime] = useState(0);
@@ -730,7 +731,7 @@ export default function BookingForm({
       
       {/* 🚀 PHASE 1: TWO-COLUMN LAYOUT WITH INTERACTIVE PRICING */}
       <div className="flex justify-end">
-        <div className="hidden xl:block mb-2">
+        <div className="hidden lg:block mb-2">
           <Button variant="outline" size="sm" onClick={() => setSidebarVisible(v => !v)}>
             {sidebarVisible ? 'Hide Pricing Panel' : 'Show Pricing Panel'}
           </Button>
@@ -1049,6 +1050,19 @@ export default function BookingForm({
           </CardContent>
         </Card>
       </div>
+
+      {/* Floating Show Pricing pill (visible when sidebar hidden) */}
+      {!sidebarVisible && (
+        <button
+          type="button"
+          onClick={() => setSidebarVisible(true)}
+          className="hidden lg:flex fixed right-4 bottom-24 z-50 items-center gap-2 rounded-full bg-blue-600 text-white px-4 py-2 shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          aria-label="Show pricing panel"
+        >
+          <DollarSign className="h-4 w-4" />
+          <span className="text-sm font-medium">Show Pricing</span>
+        </button>
+      )}
 
       {/* 📌 Sticky mobile CTA with total */}
       {currentStep < BOOKING_STEPS.length - 1 && (
