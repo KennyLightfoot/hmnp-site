@@ -16,13 +16,12 @@ export type FrontendServiceType =
   | "support-service";
 
 // Mapping from Prisma enums to frontend types
-export const PRISMA_TO_FRONTEND_SERVICE_MAP: Record<PrismaServiceType, FrontendServiceType> = {
+export const PRISMA_TO_FRONTEND_SERVICE_MAP: Partial<Record<PrismaServiceType, FrontendServiceType>> = {
   STANDARD_NOTARY: "standard-notary",
   EXTENDED_HOURS: "extended-hours-notary",
   LOAN_SIGNING: "loan-signing-specialist",
   SPECIALTY_NOTARY: "specialty-notary-service",
   BUSINESS_SOLUTIONS: "business-solutions",
-  QUICK_STAMP_LOCAL: "standard-notary", // Map to standard notary
   RON_SERVICES: "standard-notary", // Map to standard notary
   BUSINESS_ESSENTIALS: "business-solutions", // Map to business solutions
   BUSINESS_GROWTH: "business-solutions", // Map to business solutions
@@ -63,7 +62,7 @@ export const SERVICE_DESCRIPTIONS: Record<FrontendServiceType, string> = {
  * Convert Prisma ServiceType to frontend type
  */
 export function mapPrismaToFrontend(prismaType: PrismaServiceType): FrontendServiceType {
-  return PRISMA_TO_FRONTEND_SERVICE_MAP[prismaType];
+  return PRISMA_TO_FRONTEND_SERVICE_MAP[prismaType] ?? "standard-notary";
 }
 
 /**
