@@ -196,12 +196,11 @@ export default function PearlandMobileNotaryPage() {
               </Badge>
               
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                Mobile Notary Service in Pearland, TX
+                Notary near you today — mobile to your door (Pearland)
               </h1>
               
               <p className="text-xl mb-6 text-blue-100">
-                Professional mobile notary service serving Pearland, Shadow Creek Ranch, and Pearland Town Center. 
-                We bring certified notary services to your home, office, or any convenient location.
+                From $75. Same‑day available. 20–30 mi included around Pearland.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
@@ -220,19 +219,11 @@ export default function PearlandMobileNotaryPage() {
                 <Link href="/services/extras#travel-tiers" className="underline">See travel tiers</Link>
               </div>
               
-              <div className="flex flex-wrap justify-center gap-4 text-sm">
-                <div className="flex items-center">
-                  <Star className="h-4 w-4 mr-1 text-yellow-400" />
-                  <span>4.9/5 Rating • 247 Reviews</span>
-                </div>
-                <div className="flex items-center">
-                  <MapPin className="h-4 w-4 mr-1" />
-                  <span>Serving ZIP codes 77581, 77584</span>
-                </div>
-                <div className="flex items-center">
-                  <Clock className="h-4 w-4 mr-1" />
-                  <span>Same-Day Service Available</span>
-                </div>
+              <div className="mt-2 flex flex-wrap justify-center gap-2 text-sm">
+                <span className="inline-flex items-center rounded-full bg-white/10 border border-white/20 px-3 py-1">Same‑day windows</span>
+                <span className="inline-flex items-center rounded-full bg-white/10 border border-white/20 px-3 py-1">20–30 mi included</span>
+                <span className="inline-flex items-center rounded-full bg-white/10 border border-white/20 px-3 py-1">Transparent pricing</span>
+                <span className="inline-flex items-center rounded-full bg-white/10 border border-white/20 px-3 py-1">$1M E&O</span>
               </div>
             </div>
           </div>

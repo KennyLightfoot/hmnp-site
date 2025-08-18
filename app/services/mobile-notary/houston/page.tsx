@@ -209,12 +209,11 @@ export default function HoustonMobileNotaryPage() {
               </Badge>
               
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                Mobile Notary Service in Houston, TX
+                Notary near you today — mobile to your door (Houston)
               </h1>
               
               <p className="text-xl mb-6 text-blue-100">
-                Professional mobile notary service serving all Houston neighborhoods and ZIP codes. 
-                We bring certified notary services to your location - home, office, or any convenient place.
+                From $75. Same‑day available. 20–30 mi included across Houston.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
@@ -233,19 +232,11 @@ export default function HoustonMobileNotaryPage() {
                 <Link href="/services/extras#travel-tiers" className="underline">See travel tiers</Link>
               </div>
               
-              <div className="flex flex-wrap justify-center gap-4 text-sm">
-                <div className="flex items-center">
-                  <Star className="h-4 w-4 mr-1 text-yellow-400" />
-                  <span>4.9/5 Rating • 247 Reviews</span>
-                </div>
-                <div className="flex items-center">
-                  <MapPin className="h-4 w-4 mr-1" />
-                  <span>All Houston ZIP Codes</span>
-                </div>
-                <div className="flex items-center">
-                  <Clock className="h-4 w-4 mr-1" />
-                  <span>Same-Day Service Available</span>
-                </div>
+              <div className="mt-2 flex flex-wrap justify-center gap-2 text-sm">
+                <span className="inline-flex items-center rounded-full bg-white/10 border border-white/20 px-3 py-1">Same‑day windows</span>
+                <span className="inline-flex items-center rounded-full bg-white/10 border border-white/20 px-3 py-1">20–30 mi included</span>
+                <span className="inline-flex items-center rounded-full bg-white/10 border border-white/20 px-3 py-1">Transparent pricing</span>
+                <span className="inline-flex items-center rounded-full bg-white/10 border border-white/20 px-3 py-1">$1M E&O</span>
               </div>
             </div>
           </div>

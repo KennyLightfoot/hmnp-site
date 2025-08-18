@@ -128,27 +128,17 @@ export default function RemoteOnlineNotarizationPage() {
         {/* Hero Section */}
         <section className="text-center mb-12">
           <h1 className="text-4xl font-bold text-[#002147] mb-3">
-            Remote Online Notarization Texas
+            Upload. Verify. Notarized — often in 15–30 minutes.
           </h1>
-          <p className="text-2xl font-semibold text-[#A52A2A] mb-6">
-            Secure online notarization, available 24/7 statewide.
+          <p className="text-lg text-gray-700 max-w-3xl mx-auto mb-4">
+            Built on Proof.com. From $35 online. Texas‑compliant with credential analysis, KBA, and recording.
           </p>
-          
-          {/* RON Availability Banner */}
-          <div className="bg-gradient-to-r from-[#A52A2A] to-[#8B0000] border-2 border-[#002147] rounded-lg px-8 py-6 mx-auto max-w-3xl mb-6">
-            <div className="flex items-center justify-center">
-              <Zap className="w-10 h-10 text-white mr-4" />
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white">AVAILABLE 24/7</div>
-                <div className="text-white font-semibold text-xl">No appointments needed • Instant access • Texas statewide</div>
-                <div className="text-sm text-[#FFE4E1] mt-2">Secure, legal, and recognized in all 50 states</div>
-              </div>
-            </div>
+          <div className="flex flex-wrap justify-center gap-2 text-sm mb-6">
+            <span className="inline-flex items-center rounded-full bg-[#002147]/5 border border-[#002147]/10 text-[#002147] px-3 py-1">Credential analysis</span>
+            <span className="inline-flex items-center rounded-full bg-[#002147]/5 border border-[#002147]/10 text-[#002147] px-3 py-1">KBA</span>
+            <span className="inline-flex items-center rounded-full bg-[#002147]/5 border border-[#002147]/10 text-[#002147] px-3 py-1">AV recording</span>
+            <span className="inline-flex items-center rounded-full bg-[#002147]/5 border border-[#002147]/10 text-[#002147] px-3 py-1">Transparent pricing</span>
           </div>
-          
-          <p className="text-lg text-gray-700 max-w-3xl mx-auto mb-6">
-            Get your documents notarized online from anywhere in Texas. Our secure RON platform combines convenience with compliance, offering the same legal validity as traditional notarization with modern efficiency.
-          </p>
         </section>
 
         {/* Main Content Area */}
