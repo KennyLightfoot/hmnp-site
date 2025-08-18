@@ -32,32 +32,20 @@ export default function HeroSection() {
               <span className="text-white font-medium">Professional Mobile Notary Services</span>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-              Get notarized in Texas in 15–30 minutes (24/7 RON) or same‑day mobile — guaranteed.
+              Upload. Verify. Notarized — often in 15–30 minutes.
             </h1>
             
-            {/* Guarantee Banner */}
-            <div className="bg-gradient-to-r from-[#002147] to-[#001a38] border-2 border-[#A52A2A] rounded-lg px-6 py-4 my-6">
-              <div className="flex items-center justify-center">
-                <svg className="w-6 h-6 text-[#A52A2A] mr-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <div className="text-center">
-                  <div className="text-lg font-bold text-[#A52A2A]">OUR GUARANTEE</div>
-                  <div className="text-white font-semibold">Flawless the first time—or we pay the redraw fee</div>
-                  <div className="text-xs text-[#91A3B0] mt-1">*Terms apply. Valid for notarization errors due to our oversight.</div>
-                </div>
-              </div>
-            </div>
+            {/* Removed hard guarantee banner for softer positioning */}
             
             <p className="text-xl text-gray-100">
-              From $35 online or $75 mobile. If we miss your arrival window by &gt;15 minutes, we credit $25.
+              Built on Proof.com. From $35 online. Same‑day mobile across Greater Houston.
             </p>
-            {/* Quick badges */}
+            {/* Trust bar */}
             <div className="flex flex-wrap gap-2 pt-1">
-              <Badge className="bg-white/10 text-white border-white/20">50-mile coverage from 77591</Badge>
-              <Badge className="bg-white/10 text-white border-white/20">Standard: 20 mi included</Badge>
-              <Badge className="bg-white/10 text-white border-white/20">Extended/Loan: 30 mi included</Badge>
-              <Badge className="bg-white/10 text-white border-white/20">RON 24/7 (TX)</Badge>
+              <Badge className="bg-white/10 text-white border-white/20">Credential analysis</Badge>
+              <Badge className="bg-white/10 text-white border-white/20">KBA</Badge>
+              <Badge className="bg-white/10 text-white border-white/20">AV recording</Badge>
+              <Badge className="bg-white/10 text-white border-white/20">Transparent pricing</Badge>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link href="/ron/dashboard">
