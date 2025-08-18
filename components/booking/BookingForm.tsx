@@ -667,6 +667,15 @@ export default function BookingForm({
 
       // Submit via create endpoint which enforces overlap checks
       console.info('[BOOKING] Creating booking now');
+      try {
+        const gtag = (typeof window !== 'undefined' && (window as any).gtag) ? (window as any).gtag : null;
+        if (gtag) {
+          gtag('event', 'booking_submitted', {
+            event_category: 'booking',
+            service_type: data?.serviceType || '',
+          });
+        }
+      } catch {}
       const response = await fetch('/api/booking/create', {
         method: 'POST',
         headers: {
@@ -696,6 +705,17 @@ export default function BookingForm({
         const docs = (watchedValues as any)?.uploadedDocs
         const docsParam = docs && docs.length ? `&uploadedDocs=${encodeURIComponent(JSON.stringify(docs.map((d:any)=>({ name: d.name }))) )}` : ''
         const target = `/booking/success${qs ? `?${qs}` : ''}${docsParam}`;
+        try {
+          const gtag = (typeof window !== 'undefined' && (window as any).gtag) ? (window as any).gtag : null;
+          if (gtag) {
+            gtag('event', 'booking_success', {
+              event_category: 'booking',
+              booking_id: bookingId,
+              service_type: data?.serviceType || '',
+            });
+          }
+        } catch {}
+
         router.push(target);
       } else {
         console.warn('[BOOKING] Booking create failed status', response.status);

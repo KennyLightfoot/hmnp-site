@@ -5,6 +5,7 @@ import { Providers } from "./providers"
 import { Suspense } from "react"
 import Script from "next/script"
 import GAPathTracker from "@/components/analytics/GAPathTracker"
+import GAConversionEvents from "@/components/analytics/GAConversionEvents"
 import { LoadingSpinner } from "@/components/ui/loading-states"
 import dynamic from 'next/dynamic'
 
@@ -102,6 +103,7 @@ export default function RootLayout({
               `}
             </Script>
             <GAPathTracker />
+            <GAConversionEvents />
           </>
         )}
         <Providers>
