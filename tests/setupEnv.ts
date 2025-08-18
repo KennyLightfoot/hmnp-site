@@ -7,7 +7,8 @@
  */
 
 import { vi, beforeAll, afterAll, beforeEach } from 'vitest';
-import { exec } from 'child_process';
+import { exec, spawn, ChildProcess } from 'child_process';
+import fs from 'node:fs';
 import { promisify } from 'util';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -40,7 +41,12 @@ if (process.env.NODE_ENV !== 'production') {
 async function checkDockerAvailable(): Promise<boolean> {
   try {
     await execAsync('docker --version');
-    await execAsync('docker-compose --version');
+    // Prefer modern Docker Compose v2; fall back to v1 if needed
+    try {
+      await execAsync('docker compose version');
+    } catch {
+      await execAsync('docker-compose --version');
+    }
     return true;
   } catch {
     console.warn('⚠️ Docker not available - using local test services');
@@ -62,7 +68,16 @@ async function startDockerServices(): Promise<void> {
   
   try {
     // Start services in background
-    await execAsync('docker-compose -f tests/docker-compose.yml up -d postgres-test redis-test', {
+    // Ensure a clean state first to avoid rename/container conflicts
+    try {
+      await execAsync('docker compose -f tests/docker-compose.yml down -v', {
+        cwd: path.join(__dirname, '..')
+      });
+    } catch {
+      // ignore
+    }
+
+    await execAsync('docker compose -f tests/docker-compose.yml up -d postgres-test redis-test', {
       cwd: path.join(__dirname, '..')
     });
 
@@ -72,7 +87,7 @@ async function startDockerServices(): Promise<void> {
     let retries = 30;
     while (retries > 0) {
       try {
-        await execAsync('docker-compose -f tests/docker-compose.yml exec -T postgres-test pg_isready -U hmnp_test', {
+        await execAsync('docker compose -f tests/docker-compose.yml exec -T postgres-test pg_isready -U hmnp_test', {
           cwd: path.join(__dirname, '..')
         });
         break;
@@ -86,7 +101,7 @@ async function startDockerServices(): Promise<void> {
     retries = 10;
     while (retries > 0) {
       try {
-        await execAsync('docker-compose -f tests/docker-compose.yml exec -T redis-test redis-cli ping', {
+        await execAsync('docker compose -f tests/docker-compose.yml exec -T redis-test redis-cli ping', {
           cwd: path.join(__dirname, '..')
         });
         break;
@@ -110,7 +125,7 @@ async function startDockerServices(): Promise<void> {
 async function stopDockerServices(): Promise<void> {
   try {
     console.log('🛑 Stopping Docker test services...');
-    await execAsync('docker-compose -f tests/docker-compose.yml down -v', {
+    await execAsync('docker compose -f tests/docker-compose.yml down -v', {
       cwd: path.join(__dirname, '..')
     });
     console.log('✅ Docker services stopped');
@@ -119,16 +134,88 @@ async function stopDockerServices(): Promise<void> {
   }
 }
 
+/**
+ * Start Next.js dev server for integration tests and wait until health endpoint is ready
+ */
+let nextDevServer: ChildProcess | null = null;
+
+async function waitForServerReady(baseUrl: string, timeoutMs = 120_000): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    try {
+      const res = await fetch(`${baseUrl}/api/health/status`);
+      if (res.ok) return;
+    } catch {
+      // ignore until ready
+    }
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+  throw new Error(`Next server did not become ready within ${timeoutMs}ms`);
+}
+
+async function startNextServer(): Promise<void> {
+  if (nextDevServer) return;
+
+  const PORT = process.env.PORT || '3000';
+  const env = { ...process.env, PORT };
+
+  // If a server already responds on the health endpoint, do not start another
+  try {
+    const res = await fetch(`http://localhost:${PORT}/api/health/status`);
+    if (res.ok) {
+      console.log(`ℹ️ Next server already running on port ${PORT}`);
+      return;
+    }
+  } catch {
+    // proceed to spawn
+  }
+
+  // Start Next dev server via pnpm
+  nextDevServer = spawn('pnpm', ['dev'], {
+    env,
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+
+  nextDevServer.stdout?.on('data', (data) => {
+    const msg = data.toString();
+    if (msg.includes('ready - started server')) {
+      // noop: still wait on health endpoint to ensure app readiness
+    }
+  });
+
+  nextDevServer.stderr?.on('data', (data) => {
+    // keep logs visible for debugging but do not throw
+    console.error(`[next-dev]`, data.toString());
+  });
+
+  const baseUrl = `http://localhost:${PORT}`;
+  await waitForServerReady(baseUrl);
+}
+
+async function stopNextServer(): Promise<void> {
+  if (!nextDevServer) return;
+  try {
+    nextDevServer.kill();
+  } catch {
+    // ignore
+  } finally {
+    nextDevServer = null;
+  }
+}
+
 // Global setup for integration tests only
-if (process.env.TEST_TYPE === 'integration') {
+// When global setup is used for integration, skip per-file environment bootstrapping
+if (process.env.TEST_TYPE === 'integration' && !process.env.VITEST_GLOBAL_SETUP) {
   beforeAll(async () => {
     console.log('🚀 Setting up integration test environment...');
     await startDockerServices();
+    await startNextServer();
     console.log('✅ Integration test environment ready');
   }, 60000); // 60 second timeout for setup
 
   afterAll(async () => {
     console.log('🧹 Tearing down integration test environment...');
+    await stopNextServer();
     await stopDockerServices();
     console.log('✅ Integration test environment cleaned up');
   }, 30000); // 30 second timeout for teardown

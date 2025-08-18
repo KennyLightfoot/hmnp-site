@@ -1,3 +1,12 @@
+## 2025-08-18
+
+- Added `tests/.env.test` for integration test environment variables.
+- Updated `vitest.config.ts` to:
+  - Include API tests only when `TEST_TYPE=integration`.
+  - Exclude `tests/api/auth.test.ts` from integration until HTTP server wiring is added.
+- Added `test:integration` script in `package.json` to run API tests with coverage.
+- Created GitHub Actions workflow at `.github/workflows/ci.yml` with jobs for unit, e2e, and integration tests.
+- Declared `supertest` as a dev dependency for API tests.
 ## 2025-08-12
 
 - fix(availability): improve GHL free-slots accuracy and freshness

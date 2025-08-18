@@ -14,13 +14,22 @@ export default defineConfig({
     react(),
   ],
   test: {
+    globalSetup: process.env.TEST_TYPE === 'integration' ? ['./tests/integration.global.ts'] : [],
     environment: 'jsdom', // Use jsdom for DOM simulation
     globals: true, // Optional: Use Vitest globals (describe, it, expect) without importing
     setupFiles: ['./tests/setupEnv.ts'], // Add the setup file here
-    // Run all unit tests; we rely on directory naming to scope
-    include: ['tests/unit/**/*.test.ts', '__tests__/**/*.test.ts'],
+    // Run all unit tests by default; add API tests when running integration suite
+    include: [
+      'tests/unit/**/*.test.ts',
+      '__tests__/**/*.test.ts',
+      ...(process.env.TEST_TYPE === 'integration' ? ['tests/api/**/*.test.ts'] : [])
+    ],
     // Exclude quarantined legacy tests until they are refactored
-    exclude: ['**/*.legacy.test.ts'],
+    exclude: [
+      '**/*.legacy.test.ts',
+      // By default, skip API tests during unit runs; they'll be run via the integration script
+      ...(process.env.TEST_TYPE === 'integration' ? [] : ['tests/api/**'])
+    ],
     deps: {
       optimizer: {
         web: {
