@@ -7,11 +7,13 @@ How to import the campaign using Google Ads Editor (desktop)
    - Add account: 507-264-9468
    - Download recent changes
 
-3) Import the CSV
-   - In Editor: Account menu → Import → From file…
-   - Select: docs/ads/google-ads-editor-import.csv
-   - When prompted, ensure “First row contains column names” is checked
-   - Review mapping (Editor should auto-detect Types: Campaigns, Ad groups, Keywords, Ads, Negatives)
+3) Import the CSVs in this order (reduces mapping errors):
+   - Campaigns: docs/ads/google-ads-editor-campaigns.csv
+   - Ad groups: docs/ads/google-ads-editor-adgroups.csv
+   - Keywords: docs/ads/google-ads-editor-keywords.csv
+   - Ads (RSA): docs/ads/google-ads-editor-ads.csv
+   - Negative keywords: docs/ads/google-ads-editor-negatives.csv
+   - For each import: Account → Import → From file… → pick file → ensure “First row contains column names” is checked → Process → Review → Finish and review changes
 
 4) Review campaign settings
    - Campaign name: Mobile Notary — Houston — Search
