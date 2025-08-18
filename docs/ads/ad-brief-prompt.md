@@ -1,5 +1,53 @@
 Title: HMNP — Performance Ad Brief (Single-Prompt for AI)
 
+Objective: Launch high-intent Google Search ads for Mobile Notary in Greater Houston with a $75 flat offer and $25 on-time credit.
+
+Target Locations: Houston core + Pearland + Sugar Land + Baytown + Pasadena (20–30 mile radius)
+
+Primary Conversions (GA4):
+- booking_success (primary)
+- booking_submitted (secondary)
+- click_to_call (secondary)
+
+Campaign Structure:
+- Campaign: Mobile Notary — Houston — Search
+- Networks: Search only
+- Bidding: Maximize Conversions (switch to tCPA after 30 conversions)
+- Budget: $30–$50/day
+- Locations: Houston metro (zip clusters served)
+- Ad schedule: 7am–9pm; open test 24/7 then refine
+
+Ad Groups & Keywords (exact + phrase):
+- Mobile Notary: "mobile notary", "mobile notary near me", "same day notary"
+- Notary Near Me: "notary near me", "notary service near me"
+- Loan Signing: "loan signing notary", "loan signing agent"
+
+Responsive Search Ad Copy:
+- Headlines:
+  - $75 Mobile Notary
+  - Same‑Day Appointments
+  - We Come To You
+  - On‑Time Credit $25
+  - Book In 60 Seconds
+  - Houston Mobile Notary
+  - 20‑Mile Included
+- Descriptions:
+  - $75 flat (≤4 docs, ≤2 signers, 20 miles). If we’re late to your window, you get $25 off.
+  - Book now for same‑day mobile notary service anywhere in Greater Houston.
+
+Assets:
+- Call extension: (832) 617‑4285
+- Sitelinks: Booking, Pricing, Service Areas, FAQs
+- Callouts: $75 Flat, Same‑Day, On‑Time Credit, Insured
+- Location extension: connect GBP
+
+UTM Template:
+- utm_source=google&utm_medium=search&utm_campaign=mobile_notary_houston&utm_term={keyword}&utm_content={creative}
+
+Notes:
+- Ensure GA4 linked to Google Ads; import booking_success as primary.
+- Verify GA Realtime for events before launching.
+
 Goal: Generate high-performing ad copy (Search, Social, Display) for Houston Mobile Notary Pros with strict factual accuracy and brand consistency.
 
 How to use:

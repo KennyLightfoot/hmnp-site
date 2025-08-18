@@ -22,6 +22,24 @@ export default function GAConversionEvents() {
             })
           }
         }
+        if (href.startsWith('tel:')) {
+          const gtag = (window as any).gtag as undefined | ((...args: any[]) => void)
+          if (gtag) {
+            gtag('event', 'click_to_call', {
+              event_category: 'engagement',
+              event_label: href,
+            })
+          }
+        }
+        if (href.startsWith('sms:')) {
+          const gtag = (window as any).gtag as undefined | ((...args: any[]) => void)
+          if (gtag) {
+            gtag('event', 'click_to_text', {
+              event_category: 'engagement',
+              event_label: href,
+            })
+          }
+        }
       } catch {}
     }
 
