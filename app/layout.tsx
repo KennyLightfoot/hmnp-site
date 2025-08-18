@@ -87,7 +87,7 @@ export default function RootLayout({
       <body className={inter.className}>
         {/* Google Analytics 4 */}
         {process.env.NEXT_PUBLIC_GA_ID && (
-          <>
+          <Suspense fallback={null}>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
               strategy="afterInteractive"
@@ -104,7 +104,7 @@ export default function RootLayout({
             </Script>
             <GAPathTracker />
             <GAConversionEvents />
-          </>
+          </Suspense>
         )}
         <Providers>
           <Suspense fallback={<LoadingSpinner size="lg" />}>
