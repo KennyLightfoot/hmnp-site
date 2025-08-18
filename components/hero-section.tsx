@@ -83,12 +83,12 @@ export default function HeroSection() {
                   </div>
                 </PopoverContent>
               </Popover>
-              <p className="mt-4 text-sm text-gray-200">
-                <Link href="/service-areas" className="underline hover:text-white">
-                  See all areas we serve
-                </Link>
-              </p>
             </div>
+            <p className="mt-2 text-sm text-gray-200">
+              <Link href="/service-areas" className="underline hover:text-white">
+                See all areas we serve
+              </Link>
+            </p>
             {/* Quick value bullets */}
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-gray-100">
               <div className="bg-white/10 border border-white/20 rounded-lg px-4 py-3">Priority arrival windows all day</div>
@@ -97,8 +97,7 @@ export default function HeroSection() {
             </div>
 
             {/* Bonus + Guarantee */}
-            <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-              <Badge className="bg-green-100 text-green-800 border-green-300">Bonus today: Free extra seal</Badge>
+            <div className="mt-4">
               <Badge className="bg-amber-100 text-amber-800 border-amber-300">$25 On‑Time Credit Guarantee</Badge>
             </div>
 
