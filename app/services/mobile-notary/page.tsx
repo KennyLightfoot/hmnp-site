@@ -59,13 +59,13 @@ export default function MobileNotaryServicesPage() {
       <div className="bg-gradient-to-r from-[#002147] to-[#003366] text-white py-16">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Mobile Notary Houston | 20-Mile Included
+            Notary near you today — mobile to your door
           </h1>
           <p className="text-xl md:text-2xl mb-4 text-blue-100">
-            Traveling notary near you - Pearland to Galveston corridor
+            From $75. Same‑day available. 20–30 mi included.
           </p>
           <p className="text-lg mb-8 text-blue-100 max-w-3xl mx-auto">
-            Skip the trip to the notary office. Our mobile notary services bring certified, professional notarization directly to your home, office, hospital, or any location in Houston metro, Sugar Land, Missouri City, and southeast to Galveston.
+            We come to homes, offices, hospitals, and more across Greater Houston.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/booking?service=mobile-notary">
@@ -86,23 +86,11 @@ export default function MobileNotaryServicesPage() {
           </div>
           
           {/* Trust Signals */}
-          <div className="mt-8 flex flex-wrap justify-center items-center gap-6 text-blue-100">
-            <div className="flex items-center">
-              <Shield className="h-5 w-5 mr-2" />
-              <span className="text-sm">$1M E&O Insurance</span>
-            </div>
-            <div className="flex items-center">
-              <Clock className="h-5 w-5 mr-2" />
-              <span className="text-sm">Same-Day Available</span>
-            </div>
-            <div className="flex items-center">
-              <Star className="h-5 w-5 mr-2" />
-              <span className="text-sm">5-Star Reviews</span>
-            </div>
-            <div className="flex items-center">
-              <MapPin className="h-5 w-5 mr-2" />
-              <span className="text-sm">20-Mile Included • Up to 50 mi</span>
-            </div>
+          <div className="mt-4 flex flex-wrap justify-center items-center gap-3 text-blue-100">
+            <span className="inline-flex items-center rounded-full bg-white/10 border border-white/20 px-3 py-1 text-sm">Same‑day windows</span>
+            <span className="inline-flex items-center rounded-full bg-white/10 border border-white/20 px-3 py-1 text-sm">20–30 mi included</span>
+            <span className="inline-flex items-center rounded-full bg-white/10 border border-white/20 px-3 py-1 text-sm">Transparent pricing</span>
+            <span className="inline-flex items-center rounded-full bg-white/10 border border-white/20 px-3 py-1 text-sm">$1M E&O</span>
           </div>
         </div>
       </div>
