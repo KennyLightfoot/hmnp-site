@@ -86,7 +86,7 @@ export default function HomePage() {
             <li>31–40 miles: +$45</li>
             <li>41–50 miles: +$65 (maximum service area)</li>
           </ul>
-          <p className="mt-2">RON is statewide (Texas) with no travel fees.</p>
+          
         </div>
       ),
     },
@@ -108,9 +108,6 @@ export default function HomePage() {
       {/* Hero Section with Background Image - Removed */}
       {/* <section className="relative py-20 md:py-28 overflow-hidden"> ... </section> */}
       <HeroSection />
-      <div className="container mx-auto px-4 -mt-8">
-        <SameDaySlotCounter className="bg-white/90 backdrop-blur border border-gray-200 shadow-sm" />
-      </div>
 
       {/* Service Hours Banner - Simplified */}
       <ServiceHoursBanner />

@@ -15,11 +15,12 @@ const OFFERS: Offer[] = [
     name: "Mobile Standard",
     priceFrom: "$75",
     points: [
-      "≤4 docs, ≤2 signers",
-      "20‑mile included",
-      "60‑minute slot (business hours)",
+      "Flat rate: ≤4 docs, ≤2 signers, 20‑mile included",
+      "Priority arrival windows all day",
+      "$25 On‑Time Credit Guarantee",
     ],
     href: "/booking",
+    highlight: true,
   },
   {
     name: "Extended Mobile (Urgent)",
@@ -30,7 +31,6 @@ const OFFERS: Offer[] = [
       "Priority same‑day windows",
     ],
     href: "/booking",
-    highlight: true,
   },
   {
     name: "Loan Signing",

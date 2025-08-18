@@ -5,6 +5,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import SameDaySlotCounter from "@/components/urgency/same-day-slot-counter"
 
 export default function HeroSection() {
   return (
@@ -32,13 +33,13 @@ export default function HeroSection() {
               <span className="text-white font-medium">Professional Mobile Notary Services</span>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-              Upload. Verify. Notarized — often in 15–30 minutes.
+              Same‑Day Mobile Notary. No Surprises.
             </h1>
             
             {/* Removed hard guarantee banner for softer positioning */}
             
             <p className="text-xl text-gray-100">
-              Built on Proof.com. From $35 online. Same‑day mobile across Greater Houston.
+              Transparent $75 flat rate (4 docs, 2 signers, 20 miles). If we’re late to your window, you get $25 off.
             </p>
             {/* Trust bar */}
             <div className="flex flex-wrap gap-2 pt-1">
@@ -53,13 +54,13 @@ export default function HeroSection() {
                   Book Mobile Notary
                 </Button>
               </Link>
-              <Link href="/ron/how-it-works">
+              <Link href="tel:+18326174285">
                 <Button
                   size="lg"
                   variant="outline"
                   className="border-white text-white bg-transparent hover:bg-white/20 w-full sm:w-auto"
                 >
-                  Start Online Notary (RON)
+                  Call/Text a Notary Now
                 </Button>
               </Link>
               <Popover>
@@ -87,6 +88,23 @@ export default function HeroSection() {
                   See all areas we serve
                 </Link>
               </p>
+            </div>
+            {/* Quick value bullets */}
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-gray-100">
+              <div className="bg-white/10 border border-white/20 rounded-lg px-4 py-3">Priority arrival windows all day</div>
+              <div className="bg-white/10 border border-white/20 rounded-lg px-4 py-3">Live text updates + arrival tracking</div>
+              <div className="bg-white/10 border border-white/20 rounded-lg px-4 py-3">Pay on site — card or cash</div>
+            </div>
+
+            {/* Bonus + Guarantee */}
+            <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <Badge className="bg-green-100 text-green-800 border-green-300">Bonus today: Free extra seal</Badge>
+              <Badge className="bg-amber-100 text-amber-800 border-amber-300">$25 On‑Time Credit Guarantee</Badge>
+            </div>
+
+            {/* Same-day slots counter inside hero */}
+            <div className="mt-4">
+              <SameDaySlotCounter className="bg-white/90 backdrop-blur border border-gray-200 shadow-sm" />
             </div>
             <div className="flex items-center pt-2">
               <div className="flex -space-x-2">
