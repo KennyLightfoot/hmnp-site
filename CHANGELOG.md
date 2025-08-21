@@ -1,3 +1,10 @@
+## 2025-08-21
+
+- feat(booking): enhance service comparison for mobile vs in-person
+  - Replace minimal comparison with persuasive, detailed bullets
+  - Remove online (RON) from the comparison widget to focus on in-person choices
+  - Add clear “Choose this if” guidance for each option
+
 ## 2025-08-18
 
 - Added `tests/.env.test` for integration test environment variables.
