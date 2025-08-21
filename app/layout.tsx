@@ -102,11 +102,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             />
           </noscript>
         )}
-        {/* Google Analytics 4 */}
-        {process.env.NEXT_PUBLIC_GA_ID && !process.env.NEXT_PUBLIC_GTM_ID && (
+        {/* Google Analytics / Google Ads via gtag.js (no GTM) */}
+        {(process.env.NEXT_PUBLIC_GA_ID || process.env.NEXT_PUBLIC_GOOGLE_ADS_ID) && !process.env.NEXT_PUBLIC_GTM_ID && (
           <Suspense fallback={null}>
             <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID || process.env.NEXT_PUBLIC_GOOGLE_ADS_ID}`}
               strategy="afterInteractive"
             />
             <Script id="ga4" strategy="afterInteractive">
@@ -114,9 +114,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}', {
-                  page_path: window.location.pathname
-                });
+                ${process.env.NEXT_PUBLIC_GA_ID ? `gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}', { page_path: window.location.pathname });` : ''}
+                ${process.env.NEXT_PUBLIC_GOOGLE_ADS_ID ? `gtag('config', '${process.env.NEXT_PUBLIC_GOOGLE_ADS_ID}');` : ''}
               `}
             </Script>
             <GAPathTracker />

@@ -105,6 +105,18 @@ export default function BookingSuccessPage() {
         transaction_id: booking.id,
         service: booking.serviceType,
       });
+
+      // Fire Google Ads conversion event if configured
+      const adsSendTo = process.env.NEXT_PUBLIC_GOOGLE_ADS_SEND_TO || '';
+      const gtag = (window as any).gtag as undefined | ((...args: any[]) => void);
+      if (gtag && adsSendTo) {
+        gtag('event', 'conversion', {
+          send_to: adsSendTo,
+          value,
+          currency,
+          transaction_id: booking.id,
+        });
+      }
     } catch (e) {
       // Swallow client-side tracking errors
     }

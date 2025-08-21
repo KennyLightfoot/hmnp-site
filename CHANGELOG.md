@@ -5,6 +5,16 @@
   - Remove online (RON) from the comparison widget to focus on in-person choices
   - Add clear “Choose this if” guidance for each option
 
+- feat(analytics): add Google Ads/GA4 gtag loader and conversion for bookings
+  - Load gtag.js when `NEXT_PUBLIC_GA_ID` or `NEXT_PUBLIC_GOOGLE_ADS_ID` is set (no GTM path)
+  - Configure both GA4 and Ads when both IDs are present
+  - Fire Ads conversion on booking success with dynamic value/currency
+  - Required env vars:
+    - `NEXT_PUBLIC_GA_ID` (optional, GA4)
+    - `NEXT_PUBLIC_GOOGLE_ADS_ID` (e.g., AW-17079349538)
+    - `NEXT_PUBLIC_GOOGLE_ADS_SEND_TO` (e.g., AW-17079349538/ItryCJmg0IkbEKLiiNA_)
+    - `NEXT_PUBLIC_ADS_CONVERSION_CURRENCY` (default: USD)
+
 ## 2025-08-18
 
 - Added `tests/.env.test` for integration test environment variables.
