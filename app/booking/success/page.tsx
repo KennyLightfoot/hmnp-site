@@ -7,7 +7,7 @@
  * Displays confirmation details for a successfully created booking.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,6 +36,7 @@ interface BookingDetails {
   addressCity: string;
   addressState: string;
   addressZip: string;
+  totalPrice?: number;
 }
 
 export default function BookingSuccessPage() {
@@ -45,6 +46,7 @@ export default function BookingSuccessPage() {
   const [uploadedDocs, setUploadedDocs] = useState<{ name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const conversionPushedRef = useRef(false);
 
   useEffect(() => {
     const bookingId = searchParams.get('bookingId');
@@ -74,6 +76,39 @@ export default function BookingSuccessPage() {
       setIsLoading(false);
     }
   }, [searchParams]);
+
+  // Estimate value per service when an explicit totalPrice is not present
+  const getEstimatedValue = (serviceType: string): number => {
+    const map: Record<string, number> = {
+      STANDARD_NOTARY: 35,
+      EXTENDED_HOURS: 45,
+      LOAN_SIGNING: 125,
+      RON_SERVICES: 35,
+    };
+    return map[serviceType] ?? 35;
+  };
+
+  // Push Google Ads/GA4-friendly event via GTM dataLayer once booking is present
+  useEffect(() => {
+    if (!booking || conversionPushedRef.current) return;
+    conversionPushedRef.current = true;
+    try {
+      // Use totalPrice if available, else fallback estimate
+      const value = typeof booking.totalPrice === 'number' ? booking.totalPrice : getEstimatedValue(booking.serviceType);
+      const currency = process.env.NEXT_PUBLIC_ADS_CONVERSION_CURRENCY || 'USD';
+      // Initialize dataLayer and push booking_complete event
+      (window as any).dataLayer = (window as any).dataLayer || [];
+      (window as any).dataLayer.push({
+        event: 'booking_complete',
+        value,
+        currency,
+        transaction_id: booking.id,
+        service: booking.serviceType,
+      });
+    } catch (e) {
+      // Swallow client-side tracking errors
+    }
+  }, [booking]);
 
   const fetchBookingDetails = async (bookingId: string) => {
     try {

@@ -333,7 +333,7 @@ export default function MobileNotaryServicesPage() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-700">Extended Hours</span>
-                    <span className="font-semibold text-[#002147]">$100+</span>
+                    <span className="font-semibold text-[#002147]">$125+</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-700">Emergency Service</span>

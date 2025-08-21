@@ -39,7 +39,7 @@ export default function FAQSchema() {
               name: "How much do your notary services cost?",
               acceptedAnswer: {
                 "@type": "Answer",
-                text: "Our pricing varies based on the service package you select: Essential Mobile Package starts at $75 for one signer with 1-2 documents. Priority Service Package is $100 flat fee for 2-hour response time. Loan Signing Services are $150 flat fee for standard loan closings and reverse mortgages. Additional fees may apply for weekend service (+$50), and tiered travel beyond included miles (21–30 +$25; 31–40 +$45; 41–50 +$65).",
+                text: "Our pricing varies based on the service package you select: Essential Mobile Package starts at $75 for one signer with 1-2 documents. Priority Service Package is $125 flat fee for 2-hour response time. Loan Signing Services are $175 flat fee for standard loan closings and reverse mortgages. Additional fees may apply for weekend service (+$40), and tiered travel beyond included miles (21–30 +$25; 31–40 +$45; 41–50 +$65).",
               },
             },
             {

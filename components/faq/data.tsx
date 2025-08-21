@@ -217,7 +217,7 @@ export const faqs: FAQ[] = [
           </div>
           <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
             <span>Loan Signing Specialist</span>
-            <span className="font-semibold">$150</span>
+            <span className="font-semibold">$175</span>
           </div>
           <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
             <span>Emergency/After Hours</span>
@@ -225,7 +225,7 @@ export const faqs: FAQ[] = [
           </div>
           <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
             <span>Remote Online Notarization</span>
-            <span className="font-semibold">$50</span>
+            <span className="font-semibold">$35</span>
           </div>
         </div>
         <p className="mt-4 text-sm text-gray-600">
@@ -391,10 +391,10 @@ export const faqs: FAQ[] = [
             </ul>
           </div>
           <div className="p-3 border border-orange-200 rounded bg-orange-50">
-            <h4 className="font-semibold text-orange-800">Extended Hours Mobile ($100)</h4>
+            <h4 className="font-semibold text-orange-800">Extended Hours Mobile ($125)</h4>
             <p className="text-sm text-orange-700 mt-1">Best for urgent needs and flexible scheduling</p>
             <ul className="mt-2 text-sm space-y-1">
-              <li>• Up to 5 documents, 2 signers</li>
+              <li>• Up to 4 documents, 2 signers</li>
               <li>• 7am-9pm daily (including weekends)</li>
               <li>• 2-hour response time</li>
               <li>• Perfect for: Urgent docs, evening/weekend needs</li>
@@ -417,10 +417,10 @@ export const faqs: FAQ[] = [
     question: "Is loan signing worth the extra cost?",
     answer: (
       <div>
-        <p>Absolutely! Our $150 Loan Signing service provides exceptional value for mortgage transactions:</p>
+        <p>Absolutely! Our $175 Loan Signing service provides exceptional value for mortgage transactions:</p>
         <div className="mt-3 space-y-3">
           <div className="p-3 border border-green-200 rounded bg-green-50">
-            <h4 className="font-semibold text-green-800">What's Included ($150 flat fee)</h4>
+            <h4 className="font-semibold text-green-800">What's Included ($175 flat fee)</h4>
             <ul className="mt-2 text-sm space-y-1">
               <li>• <strong>Unlimited loan documents</strong> (usually 80-150 pages)</li>
               <li>• <strong>Up to 4 signers</strong> (borrowers, co-signers)</li>
