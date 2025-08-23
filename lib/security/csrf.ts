@@ -52,7 +52,14 @@ function extractCSRFToken(request: NextRequest): string | null {
  * Get CSRF token from cookie
  */
 function getCSRFCookie(request: NextRequest): string | null {
-  return request.cookies.get(CSRF_COOKIE_NAME)?.value || null;
+  try {
+    const anyReq: any = request as any;
+    const cookies = anyReq?.cookies;
+    if (!cookies || typeof cookies.get !== 'function') return null;
+    return cookies.get(CSRF_COOKIE_NAME)?.value || null;
+  } catch {
+    return null;
+  }
 }
 
 /**
