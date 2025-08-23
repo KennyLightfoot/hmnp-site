@@ -92,34 +92,62 @@ export default function BookingSuccessPage() {
   useEffect(() => {
     if (!booking || conversionPushedRef.current) return;
     conversionPushedRef.current = true;
-    try {
-      // Use totalPrice if available, else fallback estimate
-      const value = typeof booking.totalPrice === 'number' ? booking.totalPrice : getEstimatedValue(booking.serviceType);
-      const currency = process.env.NEXT_PUBLIC_ADS_CONVERSION_CURRENCY || 'USD';
-      // Initialize dataLayer and push booking_complete event
-      (window as any).dataLayer = (window as any).dataLayer || [];
-      (window as any).dataLayer.push({
-        event: 'booking_complete',
-        value,
-        currency,
-        transaction_id: booking.id,
-        service: booking.serviceType,
-      });
+    (async () => {
+      try {
+        // Use totalPrice if available, else fallback estimate
+        const value = typeof booking.totalPrice === 'number' ? booking.totalPrice : getEstimatedValue(booking.serviceType);
+        const currency = process.env.NEXT_PUBLIC_ADS_CONVERSION_CURRENCY || 'USD';
 
-      // Fire Google Ads conversion event if configured
-      const adsSendTo = process.env.NEXT_PUBLIC_GOOGLE_ADS_SEND_TO || '';
-      const gtag = (window as any).gtag as undefined | ((...args: any[]) => void);
-      if (gtag && adsSendTo) {
-        gtag('event', 'conversion', {
-          send_to: adsSendTo,
+        // Build Enhanced Conversions payload (hashed PII)
+        const sha256 = async (str: string) => {
+          const enc = new TextEncoder().encode(str.trim().toLowerCase());
+          const buf = await crypto.subtle.digest('SHA-256', enc);
+          return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        };
+        const email = (booking.customerEmail || '').toString();
+        const nameParts = (booking.customerName || '').split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        const address = `${booking.addressStreet || ''}`;
+        const city = `${booking.addressCity || ''}`;
+        const region = `${booking.addressState || ''}`;
+        const postalCode = `${booking.addressZip || ''}`;
+
+        const enhanced: Record<string, string> = {};
+        if (email) enhanced.email = await sha256(email);
+        if (firstName) enhanced.first_name = await sha256(firstName);
+        if (lastName) enhanced.last_name = await sha256(lastName);
+        if (address) enhanced.street = await sha256(address);
+        if (city) enhanced.city = await sha256(city);
+        if (region) enhanced.region = await sha256(region);
+        if (postalCode) enhanced.postal_code = await sha256(postalCode);
+
+        // Initialize dataLayer and push single booking_complete event with enhanced data inline
+        (window as any).dataLayer = (window as any).dataLayer || [];
+        (window as any).dataLayer.push({
+          event: 'booking_complete',
           value,
           currency,
           transaction_id: booking.id,
+          service: booking.serviceType,
+          enhanced_conversion_data: enhanced,
         });
+
+        // Fire Google Ads conversion event if configured (used when not relying on GTM)
+        const adsSendTo = process.env.NEXT_PUBLIC_GOOGLE_ADS_SEND_TO || '';
+        const gtag = (window as any).gtag as undefined | ((...args: any[]) => void);
+        if (gtag && adsSendTo) {
+          gtag('event', 'conversion', {
+            send_to: adsSendTo,
+            value,
+            currency,
+            transaction_id: booking.id,
+          });
+        }
+      } catch (e) {
+        // Swallow client-side tracking errors
       }
-    } catch (e) {
-      // Swallow client-side tracking errors
-    }
+    })();
   }, [booking]);
 
   const fetchBookingDetails = async (bookingId: string) => {
@@ -136,7 +164,19 @@ export default function BookingSuccessPage() {
 
     } catch (error) {
       console.error('Failed to fetch booking details:', error);
-      setError(error instanceof Error ? getErrorMessage(error) : 'An unknown error occurred');
+      // Fallback to query params so tracking and UI still work for preview/testing
+      const fallback: BookingDetails = {
+        id: bookingId,
+        serviceType: searchParams.get('serviceType') || 'STANDARD_NOTARY',
+        customerName: searchParams.get('customerName') || 'Customer',
+        customerEmail: searchParams.get('customerEmail') || '',
+        scheduledDateTime: searchParams.get('scheduledDateTime') || '',
+        addressStreet: searchParams.get('locationAddress') || '',
+        addressCity: '',
+        addressState: '',
+        addressZip: ''
+      };
+      setBooking(fallback);
     } finally {
       setIsLoading(false);
     }

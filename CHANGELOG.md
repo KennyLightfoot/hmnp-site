@@ -1,3 +1,13 @@
+## 2025-08-23
+
+- feat: Inline `enhanced_conversion_data` with `booking_complete` dataLayer push on `app/booking/success/page.tsx` to align with GTM variables DLV – value, currency, transaction_id, and enhanced_conversion_data.
+- feat: Add query param fallback when booking API fetch fails so Tag Assistant preview URL works and triggers `booking_complete` immediately.
+
+GTM setup reference:
+- Variables: DLV – value, currency, transaction_id, enhanced_conversion_data (Version 2)
+- Trigger: EVT – booking_complete (Custom Event)
+- Tag: Google Ads Conversion Tracking (ID 17079349538, Label ItryCJmg0IkbEKLiiNA_) with Value/Currency/Transaction ID bound to the DLVs and Enhanced Conversions using data layer variable.
+
 ## 2025-08-21
 
 - feat(booking): enhance service comparison for mobile vs in-person

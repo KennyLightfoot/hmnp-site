@@ -121,6 +121,7 @@ interface BookingFormProps {
   onComplete?: (booking: any) => void;
   onError?: (error: any) => void;
   className?: string;
+  initialStep?: number;
 }
 
 // Normalize a time string (e.g., "10:00 AM", "3:30 pm", "14:05") to 24-hour HH:mm
@@ -236,7 +237,8 @@ export default function BookingForm({
   initialData = {},
   onComplete,
   onError,
-  className = ''
+  className = '',
+  initialStep = 0
 }: BookingFormProps) {
   const router = useRouter();
   
@@ -273,7 +275,7 @@ export default function BookingForm({
   });
 
   // Enhanced state management
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(initialStep);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -409,6 +411,19 @@ export default function BookingForm({
   const completionProgress = useMemo(() => {
     return Math.round(((currentStep + 1) / BOOKING_STEPS.length) * 100);
   }, [currentStep]);
+
+  // GTM: push booking_step on step change
+  useEffect(() => {
+    try {
+      (window as any).dataLayer = (window as any).dataLayer || [];
+      (window as any).dataLayer.push({
+        event: 'booking_step',
+        step_index: currentStep,
+        step_id: BOOKING_STEPS[currentStep]?.id || '',
+        serviceType: watchedValues.serviceType
+      });
+    } catch {}
+  }, [currentStep, watchedValues.serviceType]);
 
   // Business Rules validation function
   const validateCurrentStepBusinessRules = useCallback(async () => {
@@ -550,6 +565,11 @@ export default function BookingForm({
     setSuccessMessage(null);
     
     try {
+      // GTM: submit click
+      try {
+        (window as any).dataLayer = (window as any).dataLayer || [];
+        (window as any).dataLayer.push({ event: 'booking_submit_click' });
+      } catch {}
       console.info('[BOOKING] onSubmit start', {
         serviceType: data?.serviceType,
         hasDate: !!data?.scheduling?.preferredDate,
@@ -725,6 +745,10 @@ export default function BookingForm({
       
     } catch (error) {
       console.error('Booking submission failed:', error);
+      try {
+        (window as any).dataLayer = (window as any).dataLayer || [];
+        (window as any).dataLayer.push({ event: 'booking_error', reason: 'submit_failed', message: error instanceof Error ? error.message : String(error) });
+      } catch {}
       setErrorMessage(error instanceof Error ? getErrorMessage(error) : 'Booking failed. Please check your information and try again.');
       onError?.(error);
     } finally {
@@ -735,6 +759,11 @@ export default function BookingForm({
   // Invalid submit handler to surface why submission didn't fire
   const onInvalid = useCallback((errors: any) => {
     try { console.warn('[BOOKING] Submit validation failed', errors); } catch {}
+    try {
+      const fields = Object.keys(errors || {});
+      (window as any).dataLayer = (window as any).dataLayer || [];
+      (window as any).dataLayer.push({ event: 'booking_error', reason: 'validation', fields });
+    } catch {}
     setErrorMessage('Please complete all required fields to continue');
   }, []);
 
@@ -1092,55 +1121,55 @@ export default function BookingForm({
               <div className="text-xs text-gray-600">Estimated Total</div>
               <div className="text-lg font-semibold text-gray-900">${Number(totalPrice || 0).toFixed(2)}</div>
             </div>
-            <Button type="button" onClick={nextStep} disabled={!isCurrentStepValid || isSubmitting || isNavigating} className="min-h-[44px] px-6 bg-blue-600 hover:bg-blue-700 text-white">
-              Continue
-              <ChevronRight className="h-4 w-4 ml-2" />
-            </Button>
+            <div className="flex items-center gap-3">
+              <a href="tel:+18326174285" className="text-blue-700 underline text-sm">Call Now</a>
+              <Button type="button" onClick={nextStep} disabled={!isCurrentStepValid || isSubmitting || isNavigating} className="min-h-[44px] px-6 bg-blue-600 hover:bg-blue-700 text-white">
+                Continue
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
           </div>
         </div>
       )}
       
-      {/* 🤖 AI BOOKING ASSISTANT - PHASE 3 ENHANCEMENT */}
-      <AIBookingAssistant
-        bookingContext={{
-          currentStep,
-          stepId: BOOKING_STEPS[currentStep]?.id || '',
-          formData: watchedValues,
-          errors: Object.keys(form.formState.errors),
-          completedSteps,
-          timeOnStep: Date.now() - stepStartTime,
-          userActions,
-          selectedService: watchedValues.serviceType,
-          location: typeof watchedValues.location === 'object' ? watchedValues.location?.address : watchedValues.location,
-          urgency: 'flexible' // Default since urgency is not in form schema
-        }}
-        onContextualHelp={(action, data) => {
-          // Handle contextual help actions
-          setUserActions(prev => [...prev, `ai_help_${action}`]);
-          
-          if (action === 'focus_field' && data?.fieldName) {
-            // Focus on specific field
-            const field = document.querySelector(`[name="${data.fieldName}"]`) as HTMLElement;
+      {/* 🤖 AI BOOKING ASSISTANT - lazy after step >= 2 */}
+      {currentStep >= 2 && (
+        <AIBookingAssistant
+          bookingContext={{
+            currentStep,
+            stepId: BOOKING_STEPS[currentStep]?.id || '',
+            formData: watchedValues,
+            errors: Object.keys(form.formState.errors),
+            completedSteps,
+            timeOnStep: Date.now() - stepStartTime,
+            userActions,
+            selectedService: watchedValues.serviceType,
+            location: typeof watchedValues.location === 'object' ? watchedValues.location?.address : watchedValues.location,
+            urgency: 'flexible'
+          }}
+          onContextualHelp={(action, data) => {
+            setUserActions(prev => [...prev, `ai_help_${action}`]);
+            if (action === 'focus_field' && data?.fieldName) {
+              const field = document.querySelector(`[name="${data.fieldName}"]`) as HTMLElement;
+              if (field) {
+                field.focus();
+                field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            }
+          }}
+          onServiceRecommendation={(serviceId) => {
+            form.setValue('serviceType', serviceId);
+            setUserActions(prev => [...prev, `ai_recommended_${serviceId}`]);
+          }}
+          onFieldFocus={(fieldName) => {
+            const field = document.querySelector(`[name="${fieldName}"]`) as HTMLElement;
             if (field) {
               field.focus();
               field.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-          }
-        }}
-        onServiceRecommendation={(serviceId) => {
-          // Handle AI service recommendations
-          form.setValue('serviceType', serviceId);
-          setUserActions(prev => [...prev, `ai_recommended_${serviceId}`]);
-        }}
-        onFieldFocus={(fieldName) => {
-          // Handle field focus assistance
-          const field = document.querySelector(`[name="${fieldName}"]`) as HTMLElement;
-          if (field) {
-            field.focus();
-            field.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }}
-      />
+          }}
+        />
+      )}
       
       </div>
       
