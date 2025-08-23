@@ -103,10 +103,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           </noscript>
         )}
         {/* Google Analytics / Google Ads via gtag.js (no GTM) */}
-        {(process.env.NEXT_PUBLIC_GA_ID || process.env.NEXT_PUBLIC_GOOGLE_ADS_ID) && !process.env.NEXT_PUBLIC_GTM_ID && (
+        {(() => {
+          const adsConversionId = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID || '';
+          const adsAccountId = adsConversionId ? adsConversionId.split('/')[0] : '';
+          const gaId = process.env.NEXT_PUBLIC_GA_ID;
+          const shouldLoadGtagDirect = (gaId || adsAccountId) && !process.env.NEXT_PUBLIC_GTM_ID;
+          if (!shouldLoadGtagDirect) return null;
+          return (
           <Suspense fallback={null}>
             <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID || process.env.NEXT_PUBLIC_GOOGLE_ADS_ID}`}
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId || adsAccountId}`}
               strategy="afterInteractive"
             />
             <Script id="ga4" strategy="afterInteractive">
@@ -114,14 +120,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                ${process.env.NEXT_PUBLIC_GA_ID ? `gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}', { page_path: window.location.pathname });` : ''}
-                ${process.env.NEXT_PUBLIC_GOOGLE_ADS_ID ? `gtag('config', '${process.env.NEXT_PUBLIC_GOOGLE_ADS_ID}');` : ''}
+                ${gaId ? `gtag('config', '${gaId}', { page_path: window.location.pathname });` : ''}
+                ${adsAccountId ? `gtag('config', '${adsAccountId}');` : ''}
               `}
             </Script>
             <GAPathTracker />
             <GAConversionEvents />
           </Suspense>
-        )}
+          );
+        })()}
         <Providers>
           <Suspense fallback={<LoadingSpinner size="lg" />}>
             <LazyHeader />

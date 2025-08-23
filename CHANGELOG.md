@@ -2,6 +2,8 @@
 
 - feat: Inline `enhanced_conversion_data` with `booking_complete` dataLayer push on `app/booking/success/page.tsx` to align with GTM variables DLV – value, currency, transaction_id, and enhanced_conversion_data.
 - feat: Add query param fallback when booking API fetch fails so Tag Assistant preview URL works and triggers `booking_complete` immediately.
+- fix(ads): Use `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID` to derive Ads account ID for gtag loader when GTM is not present; fallback `send_to` to `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID` when `NEXT_PUBLIC_GOOGLE_ADS_SEND_TO` is unset.
+- feat(analytics): Add dataLayer fallbacks for pageviews and key clicks when `window.gtag` is unavailable (GTM-only setups).
 
 GTM setup reference:
 - Variables: DLV – value, currency, transaction_id, enhanced_conversion_data (Version 2)

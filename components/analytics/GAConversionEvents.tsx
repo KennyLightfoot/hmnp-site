@@ -20,6 +20,15 @@ export default function GAConversionEvents() {
               event_category: 'booking',
               event_label: document.location.pathname,
             })
+          } else {
+            try {
+              (window as any).dataLayer = (window as any).dataLayer || []
+              ;(window as any).dataLayer.push({
+                event: 'booking_started',
+                event_category: 'booking',
+                event_label: document.location.pathname,
+              })
+            } catch {}
           }
         }
         if (href.startsWith('tel:')) {
@@ -29,6 +38,15 @@ export default function GAConversionEvents() {
               event_category: 'engagement',
               event_label: href,
             })
+          } else {
+            try {
+              (window as any).dataLayer = (window as any).dataLayer || []
+              ;(window as any).dataLayer.push({
+                event: 'click_to_call',
+                event_category: 'engagement',
+                event_label: href,
+              })
+            } catch {}
           }
         }
         if (href.startsWith('sms:')) {
@@ -38,6 +56,15 @@ export default function GAConversionEvents() {
               event_category: 'engagement',
               event_label: href,
             })
+          } else {
+            try {
+              (window as any).dataLayer = (window as any).dataLayer || []
+              ;(window as any).dataLayer.push({
+                event: 'click_to_text',
+                event_category: 'engagement',
+                event_label: href,
+              })
+            } catch {}
           }
         }
       } catch {}

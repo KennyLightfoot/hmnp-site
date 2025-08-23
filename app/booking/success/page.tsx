@@ -134,7 +134,7 @@ export default function BookingSuccessPage() {
         });
 
         // Fire Google Ads conversion event if configured (used when not relying on GTM)
-        const adsSendTo = process.env.NEXT_PUBLIC_GOOGLE_ADS_SEND_TO || '';
+        const adsSendTo = process.env.NEXT_PUBLIC_GOOGLE_ADS_SEND_TO || process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID || '';
         const gtag = (window as any).gtag as undefined | ((...args: any[]) => void);
         if (gtag && adsSendTo) {
           gtag('event', 'conversion', {
