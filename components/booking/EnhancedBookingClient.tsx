@@ -9,7 +9,7 @@ function normalizeTime(input: string | null): string | undefined {
   const t = input.trim()
   const twelve = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(t)
   if (twelve) {
-    const [, hh, mm, merRaw] = twelve as [string, string, string, string]
+    const [, hh, mm, merRaw] = twelve
     let h = parseInt(hh, 10)
     const m = mm
     const mer = merRaw.toUpperCase()
@@ -19,7 +19,7 @@ function normalizeTime(input: string | null): string | undefined {
   }
   const twenty = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(t)
   if (twenty) {
-    const [, hh, mm] = twenty as [string, string, string]
+    const [, hh, mm] = twenty
     const h = parseInt(hh, 10)
     const m = mm
     if (h >= 0 && h <= 23) return `${String(h).padStart(2, '0')}:${m}`
