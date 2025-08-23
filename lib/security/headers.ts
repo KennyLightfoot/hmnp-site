@@ -76,6 +76,8 @@ export function getCSPHeader(isDevelopment: boolean = false): string {
       'https://api.stripe.com',
       'https://maps.googleapis.com',
       'https://www.google-analytics.com',
+      'https://www.googletagmanager.com',
+      'https://tagassistant.google.com',
       'https://rest.gohighlevel.com',
       'https://api.openai.com',
     ],
@@ -84,6 +86,8 @@ export function getCSPHeader(isDevelopment: boolean = false): string {
       'https://js.stripe.com',
       'https://hooks.stripe.com',
       'https://www.google.com',
+      'https://www.googletagmanager.com',
+      'https://tagassistant.google.com',
     ],
     'worker-src': [
       "'self'",
