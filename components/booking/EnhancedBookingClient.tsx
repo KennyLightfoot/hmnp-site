@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import BookingForm from '@/components/booking/BookingForm'
 
@@ -9,17 +9,19 @@ function normalizeTime(input: string | null): string | undefined {
   const t = input.trim()
   const twelve = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(t)
   if (twelve) {
-    let h = parseInt(twelve[1], 10)
-    const m = twelve[2]
-    const mer = twelve[3].toUpperCase()
+    const [, hh, mm, merRaw] = twelve as [string, string, string, string]
+    let h = parseInt(hh, 10)
+    const m = mm
+    const mer = merRaw.toUpperCase()
     if (mer === 'PM' && h !== 12) h += 12
     if (mer === 'AM' && h === 12) h = 0
     return `${String(h).padStart(2, '0')}:${m}`
   }
   const twenty = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(t)
   if (twenty) {
-    const h = parseInt(twenty[1], 10)
-    const m = twenty[2]
+    const [, hh, mm] = twenty as [string, string, string]
+    const h = parseInt(hh, 10)
+    const m = mm
     if (h >= 0 && h <= 23) return `${String(h).padStart(2, '0')}:${m}`
   }
   return undefined
@@ -80,13 +82,13 @@ export default function EnhancedBookingClient() {
     }
   }, [serviceTypeParam, defaultService, name, email, address, date, time])
 
-  // dataLayer funnel start
-  if (typeof window !== 'undefined') {
+  // dataLayer funnel start (once)
+  useEffect(() => {
     try {
       (window as any).dataLayer = (window as any).dataLayer || []
       ;(window as any).dataLayer.push({ event: 'booking_form_view', page: 'booking_enhanced' })
     } catch {}
-  }
+  }, [])
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -112,7 +114,7 @@ export default function EnhancedBookingClient() {
 
       {/* Booking form with prefill and optional express initial step */}
       <div className="max-w-4xl mx-auto">
-        <BookingForm initialData={initialData as any} className="" {...(express ? { } : {})} />
+        <BookingForm initialData={initialData as any} className="" initialStep={express ? 1 : 0} />
       </div>
 
       {/* Sticky second CTA for mobile callers */}
