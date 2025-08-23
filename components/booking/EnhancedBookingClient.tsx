@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import BookingForm from '@/components/booking/BookingForm'
 
@@ -8,20 +8,18 @@ function normalizeTime(input: string | null): string | undefined {
   if (!input) return undefined
   const t = input.trim()
   const twelve = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(t)
-  if (twelve) {
-    const [, hh, mm, merRaw] = twelve
-    let h = parseInt(hh, 10)
-    const m = mm
-    const mer = merRaw.toUpperCase()
+  if (twelve && typeof twelve[1] === 'string' && typeof twelve[2] === 'string' && typeof twelve[3] === 'string') {
+    let h = parseInt(twelve[1], 10)
+    const m: string = twelve[2]
+    const mer: string = twelve[3].toUpperCase()
     if (mer === 'PM' && h !== 12) h += 12
     if (mer === 'AM' && h === 12) h = 0
     return `${String(h).padStart(2, '0')}:${m}`
   }
   const twenty = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(t)
-  if (twenty) {
-    const [, hh, mm] = twenty
-    const h = parseInt(hh, 10)
-    const m = mm
+  if (twenty && typeof twenty[1] === 'string' && typeof twenty[2] === 'string') {
+    const h = parseInt(twenty[1], 10)
+    const m: string = twenty[2]
     if (h >= 0 && h <= 23) return `${String(h).padStart(2, '0')}:${m}`
   }
   return undefined
@@ -82,13 +80,13 @@ export default function EnhancedBookingClient() {
     }
   }, [serviceTypeParam, defaultService, name, email, address, date, time])
 
-  // dataLayer funnel start (once)
-  useEffect(() => {
+  // dataLayer funnel start
+  if (typeof window !== 'undefined') {
     try {
       (window as any).dataLayer = (window as any).dataLayer || []
       ;(window as any).dataLayer.push({ event: 'booking_form_view', page: 'booking_enhanced' })
     } catch {}
-  }, [])
+  }
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -114,7 +112,7 @@ export default function EnhancedBookingClient() {
 
       {/* Booking form with prefill and optional express initial step */}
       <div className="max-w-4xl mx-auto">
-        <BookingForm initialData={initialData as any} className="" initialStep={express ? 1 : 0} />
+        <BookingForm initialData={initialData as any} className="" {...(express ? { } : {})} />
       </div>
 
       {/* Sticky second CTA for mobile callers */}
