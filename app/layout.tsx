@@ -85,7 +85,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       {process.env.NEXT_PUBLIC_GTM_ID && (
-        <Script id="gtm-base" strategy="afterInteractive">{`
+        <Script id="gtm-base" strategy="beforeInteractive">{`
           (function(w,d,s,l,i){
             w[l]=w[l]||[];
             w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});
