@@ -30,14 +30,19 @@ const leadFormSchema = z.object({
   firstName: z.string().min(1, { message: "First name is required" }),
   lastName: z.string().min(1, { message: "Last name is required" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
-  phone: z.string().min(1, { message: "Phone number is required" }),
+  phone: z.string()
+    .min(7, { message: "Phone number is required" })
+    .regex(/^\+?[0-9 ()-]{7,}$/i, { message: "Enter a valid phone number" }),
   message: z.string().min(1, { message: "Message is required" }),
   preferredCallTime: z.string().optional(),
   callRequestReason: z.string().optional(),
+  serviceType: z.enum(["general_notary","loan_signing","ron"]).optional(),
+  preferredTiming: z.enum(["today","24_48h","just_comparing"]).optional(),
   termsAccepted: z.boolean().refine((val) => val === true, {
     message: "You must accept the terms and conditions",
   }),
   smsConsent: z.boolean().optional(),
+  callConsent: z.boolean().optional(),
   // Hidden fields will be registered dynamically and included in form.getValues()
 });
 
@@ -89,8 +94,11 @@ export default function LeadForm({
       message: "",
       preferredCallTime: "",
       callRequestReason: "",
+      serviceType: undefined,
+      preferredTiming: undefined,
       termsAccepted: false,
       smsConsent: false,
+      callConsent: false,
     },
   });
 
@@ -227,6 +235,55 @@ export default function LeadForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
           <FormField
             control={form.control}
+            name="serviceType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Service Needed</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a service" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="general_notary">General Notary</SelectItem>
+                    <SelectItem value="loan_signing">Loan Signing</SelectItem>
+                    <SelectItem value="ron">Online Notary (RON)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription>Select the primary service you need.</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="preferredTiming"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Preferred Timing</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select timing" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="today">Today</SelectItem>
+                    <SelectItem value="24_48h">Within 24–48 hours</SelectItem>
+                    <SelectItem value="just_comparing">Just comparing options</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription>Helps us route your request quickly.</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
+          <FormField
+            control={form.control}
             name="email"
             render={({ field }) => (
               <FormItem>
@@ -331,6 +388,25 @@ export default function LeadForm({
               </FormControl>
               <FormLabel htmlFor="smsConsent" className="text-sm font-normal !mt-0"> 
                 I consent to receive text messages from Houston Mobile Notary Pros regarding my inquiry, appointment confirmations, and related services. Standard message and data rates may apply. You can opt-out at any time.
+              </FormLabel>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="callConsent"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+               <FormControl>
+                <Checkbox
+                  checked={field.value || false}
+                  onCheckedChange={field.onChange}
+                  id="callConsent"
+                />
+              </FormControl>
+              <FormLabel htmlFor="callConsent" className="text-sm font-normal !mt-0"> 
+                I consent to be contacted by phone regarding my request. Calls may be recorded for quality.
               </FormLabel>
             </FormItem>
           )}

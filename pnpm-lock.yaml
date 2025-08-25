@@ -239,6 +239,9 @@ importers:
       gray-matter:
         specifier: ^4.0.3
         version: 4.0.3
+      gtag:
+        specifier: ^1.0.1
+        version: 1.0.1
       helmet:
         specifier: ^8.1.0
         version: 8.1.0
@@ -6625,6 +6628,11 @@ packages:
   groq@3.99.0:
     resolution: {integrity: sha512-ZwKAWzvVCw51yjmIf5484KgsAzZAlGTM4uy9lki4PjAYxcEME2Xf93d31LhHzgUAr2JI79H+cNKoRjDHdv1BXQ==}
     engines: {node: '>=18'}
+
+  gtag@1.0.1:
+    resolution: {integrity: sha512-BvWgeldFJq1MBpgf5LP0UXhcvdzdl5Sb+TmC+l2hskLn4EWS2IDEqW4dbkKx2sxOqm8tCDpedu0xden1DdlD/w==}
+    engines: {node: '>=0.10.0'}
+    hasBin: true
 
   gtoken@8.0.0:
     resolution: {integrity: sha512-+CqsMbHPiSTdtSO14O51eMNlrp9N79gmeqmXeouJOhfucAedHw9noVe/n5uJk3tbKE6a+6ZCQg3RPhVhHByAIw==}
@@ -18012,6 +18020,8 @@ snapshots:
       - supports-color
 
   groq@3.99.0: {}
+
+  gtag@1.0.1: {}
 
   gtoken@8.0.0:
     dependencies:

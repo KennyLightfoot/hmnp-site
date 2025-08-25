@@ -139,6 +139,7 @@
     "google-auth-library": "^10.2.1",
     "googleapis": "^150.0.1",
     "gray-matter": "^4.0.3",
+    "gtag": "^1.0.1",
     "helmet": "^8.1.0",
     "input-otp": "^1.4.2",
     "ioredis": "^5.7.0",

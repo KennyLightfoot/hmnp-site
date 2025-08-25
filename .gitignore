@@ -50,3 +50,11 @@ next-env.d.ts
 # Google Calendar Service Account (SECURITY)
 google-calendar-key.json 
 .env*.local
+
+
+# Virtual environment
+venv/
+.env
+
+# Google Ads config (keep outside repo)
+google-ads.yaml

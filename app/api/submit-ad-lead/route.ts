@@ -41,6 +41,36 @@ async function createOpportunity(opportunityData: Record<string, unknown>): Prom
   return { id: 'mock_opportunity_id_created' }; 
 }
 
+const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY;
+const HCAPTCHA_SECRET = process.env.HCAPTCHA_SECRET_KEY;
+
+async function verifyCaptcha(provider: 'turnstile' | 'hcaptcha', token: string, remoteIp?: string): Promise<boolean> {
+  try {
+    if (provider === 'turnstile' && TURNSTILE_SECRET) {
+      const resp = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ secret: TURNSTILE_SECRET, response: token, remoteip: remoteIp || '' })
+      });
+      const data = await resp.json();
+      return !!data.success;
+    }
+    if (provider === 'hcaptcha' && HCAPTCHA_SECRET) {
+      const resp = await fetch('https://hcaptcha.com/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ secret: HCAPTCHA_SECRET, response: token, remoteip: remoteIp || '' })
+      });
+      const data = await resp.json();
+      return !!data.success;
+    }
+    // If no provider configured, treat as passed
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
@@ -56,6 +86,8 @@ const leadSchema = z.object({
   utmData: z.record(z.string()).optional(),
   landingPageUrl: z.string().url().optional(),
   campaignName: z.string().optional(),
+  captchaProvider: z.enum(['turnstile','hcaptcha']).optional(),
+  captchaToken: z.string().optional(),
 });
 
 export const POST = withRateLimit('public', 'submit_ad_lead')(async (request: NextRequest) => {
@@ -76,8 +108,19 @@ export const POST = withRateLimit('public', 'submit_ad_lead')(async (request: Ne
       customFieldsFromProps,
       utmData,
       landingPageUrl,
-      campaignName 
+      campaignName,
+      captchaProvider,
+      captchaToken,
     } = parsed.data;
+
+    // 0. Optional CAPTCHA verification if configured
+    if (captchaProvider && captchaToken) {
+      const remoteIp = request.headers.get('x-forwarded-for') || undefined;
+      const ok = await verifyCaptcha(captchaProvider, captchaToken, remoteIp);
+      if (!ok) {
+        return NextResponse.json({ success: false, message: 'Captcha verification failed' }, { status: 400 });
+      }
+    }
 
     // 1. Prepare Custom Fields for GHL
     const ghlCustomFields: GhlCustomField[] = [];
