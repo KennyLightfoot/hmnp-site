@@ -3,6 +3,8 @@
 - fix(lp): fill testimonial star icons on Standard Services LP (`app/lp/standard-services/testimonials.client.tsx`)
 - fix(thank-you): update ad thank-you page phone/link to (832) 617-4285 (`app/thank-you-ads/page.tsx`)
 - feat(lead): send email notifications on ad quote form submissions via Resend (`app/api/submit-ad-lead/route.ts`)
+- chore(phone): centralize phone via `lib/phone.ts` and use on LP + thank-you
+- fix(pricing): remove same-day surcharge for `STANDARD_NOTARY` in unified pricing engine
 
 ## 2025-08-23
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from 'react';
+import { getBusinessTel, getBusinessPhoneFormatted } from '@/lib/phone';
 
 export default function ThankYouAdsPage() {
   useEffect(() => {
@@ -33,7 +34,7 @@ export default function ThankYouAdsPage() {
           We appreciate you reaching out to Houston Mobile Notary Pros. A member of our team will be in contact with you shortly to discuss your notary needs.
         </p>
         <p className="text-lg text-gray-600">
-          If you have any urgent questions, please don't hesitate to call us at <a href="tel:+18326174285" className="text-blue-600 hover:underline">(832) 617-4285</a>.
+          If you have any urgent questions, please don't hesitate to call us at <a href={`tel:${getBusinessTel()}`} className="text-blue-600 hover:underline">{getBusinessPhoneFormatted()}</a>.
         </p>
       </section>
 

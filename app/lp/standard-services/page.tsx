@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, Clock, Shield, MapPin, FileText, Building2, Phone, Star, BadgeCheck, Rocket } from "lucide-react";
+import { getBusinessPhoneFormatted, getBusinessTel } from "@/lib/phone";
 import { trackPhoneClick } from "@/lib/tracking";
 import ServiceSchema from "@/components/schema/ServiceSchema";
 import EnhancedFAQSchema from "@/components/enhanced-faq-schema";
@@ -82,10 +83,10 @@ export default function StandardServicesLandingPage() {
                 <a href="#form" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white px-8 py-3 rounded-lg font-semibold inline-flex items-center justify-center">
                   {subCtaText}
                 </a>
-                <a href="tel:+18326174285" className="border-2 border-white text-white hover:bg-white hover:text-[#002147] px-8 py-3 rounded-lg font-semibold inline-flex items-center justify-center" onClick={() => trackPhoneClick('lp_standard_services_hero')}>
-                  Call (832) 617-4285
+                <a href={`tel:${getBusinessTel()}`} className="border-2 border-white text-white hover:bg-white hover:text-[#002147] px-8 py-3 rounded-lg font-semibold inline-flex items-center justify-center" onClick={() => trackPhoneClick('lp_standard_services_hero')}>
+                  Call {getBusinessPhoneFormatted()}
                 </a>
-                <a href="sms:+18326174285" className="border-2 border-white/70 text-white/90 hover:bg-white hover:text-[#002147] px-8 py-3 rounded-lg font-semibold inline-flex items-center justify-center">
+                <a href={`sms:${getBusinessTel()}`} className="border-2 border-white/70 text-white/90 hover:bg-white hover:text-[#002147] px-8 py-3 rounded-lg font-semibold inline-flex items-center justify-center">
                   Text Us
                 </a>
               </div>
@@ -127,7 +128,7 @@ export default function StandardServicesLandingPage() {
             <div className="flex items-center gap-2 text-amber-900"><Rocket className="h-4 w-4" /> From $75 • 20–30 mi included • After‑hours +$25 • Priority arrival available</div>
             <div className="flex items-center gap-3">
               <a href="#form" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white px-4 py-2 rounded-md font-semibold">Get a fast quote</a>
-              <a href="tel:+18326174285" className="text-[#002147] underline" onClick={() => trackPhoneClick('lp_standard_services_pricing_bar')}>Click to call</a>
+              <a href={`tel:${getBusinessTel()}`} className="text-[#002147] underline" onClick={() => trackPhoneClick('lp_standard_services_pricing_bar')}>Click to call</a>
             </div>
           </div>
         </section>
@@ -247,7 +248,7 @@ export default function StandardServicesLandingPage() {
           <div className="flex items-center gap-2 text-[#002147]"><Rocket className="h-4 w-4" /> Fast quote • Same‑day available</div>
           <div className="flex items-center gap-2">
             <a href="#form" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white px-4 py-2 rounded-md font-semibold">Get a quote</a>
-            <a href="tel:+18326174285" className="text-[#002147] underline" onClick={() => trackPhoneClick('lp_standard_services_sticky_bar')}>Call now</a>
+            <a href={`tel:${getBusinessTel()}`} className="text-[#002147] underline" onClick={() => trackPhoneClick('lp_standard_services_sticky_bar')}>Call now</a>
           </div>
         </div>
       </div>

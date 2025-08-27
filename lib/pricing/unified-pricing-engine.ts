@@ -269,14 +269,16 @@ export class UnifiedPricingEngine {
       }
       
       // 3. Calculate Time-Based Surcharges
-      // Policy: keep same-day multiplier across services; do NOT add extra after-hours/weekend for EXTENDED_HOURS
+      // Policy: keep same-day multiplier across services EXCEPT Standard Notary; do NOT add extra after-hours/weekend for EXTENDED_HOURS
       breakdown.timeBasedSurcharges = [];
       if (validatedRequest.scheduledDateTime && validatedRequest.scheduledDateTime !== '') {
-        const sameDaySurcharges = this.calculateSameDaySurcharge(
-          new Date(validatedRequest.scheduledDateTime),
-          runningTotal,
-          requestId
-        );
+        const sameDaySurcharges = validatedRequest.serviceType === 'STANDARD_NOTARY'
+          ? null // No same-day surcharge for standard mobile notary
+          : this.calculateSameDaySurcharge(
+              new Date(validatedRequest.scheduledDateTime),
+              runningTotal,
+              requestId
+            );
         if (sameDaySurcharges) {
           breakdown.timeBasedSurcharges.push(sameDaySurcharges);
           runningTotal += sameDaySurcharges.amount;
