@@ -16,10 +16,10 @@ export default function ServicesGrid() {
             { title: "Online Notary", sub: "$25/act", desc: "Secure RON with ID check & recording.", href: "/booking?mode=RON" },
           ].map((s) => (
             <div key={s.title} className="rounded-2xl border border-black/5 p-6">
-              <h3 className="text-lg font-semibold">{s.title} <span className="text-[#A0522D]">{s.sub}</span></h3>
-              <p className="text-sm text-black/70 mt-1">{s.desc}</p>
+              <h3 className="text-lg font-semibold text-secondary">{s.title} <span className="text-primary">{s.sub}</span></h3>
+              <p className="text-sm text-secondary/70 mt-1">{s.desc}</p>
               <Link href={s.href} className="inline-flex mt-4" onClick={() => track('cta_clicked', { cta_name: s.title, location: 'services_grid' })}>
-                <Button className="bg-[#0F1419] text-white hover:bg-black">Book</Button>
+                <Button className="bg-secondary text-white hover:bg-secondary/90">Book</Button>
               </Link>
             </div>
           ))}

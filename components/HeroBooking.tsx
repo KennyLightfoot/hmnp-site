@@ -60,7 +60,7 @@ export default function HeroBooking() {
   }
 
   return (
-    <section className="bg-[#0F1419] text-white">
+    <section className="bg-secondary text-white">
       <div className="container mx-auto px-4 py-16 md:py-24 grid md:grid-cols-2 gap-10 items-center">
         <div>
           <h1 className="text-4xl md:text-5xl font-serif mb-4">{currentHeadline}</h1>
@@ -107,7 +107,7 @@ export default function HeroBooking() {
                 onChange={(e) => setActs(Math.max(1, parseInt(e.target.value || "1", 10)))}
                 inputMode="numeric"
               />
-              <Button onClick={getEstimate} className="col-span-2 md:col-span-2 bg-[#A0522D] hover:bg-[#8d471f] h-12">
+              <Button onClick={getEstimate} className="col-span-2 md:col-span-2 bg-primary hover:bg-primary/90 h-12">
                 {isLoading ? "Calculating..." : "Get Instant Estimate"}
               </Button>
             </div>
