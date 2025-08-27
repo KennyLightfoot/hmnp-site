@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import { dmSerifDisplay, inter } from './fonts'
 import "./globals.css"
 import { Providers } from "./providers"
 import { Suspense } from "react"
@@ -8,8 +8,9 @@ import GAPathTracker from "@/components/analytics/GAPathTracker"
 import GAConversionEvents from "@/components/analytics/GAConversionEvents"
 import { LoadingSpinner } from "@/components/ui/loading-states"
 import dynamic from 'next/dynamic'
+import Analytics from '@/components/Analytics'
 
-const inter = Inter({ subsets: ["latin"] })
+// Fonts now provided via CSS variables for Tailwind
 
 export const metadata: Metadata = {
   title: {
@@ -83,7 +84,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${dmSerifDisplay.variable}`}>
       {process.env.NEXT_PUBLIC_GTM_ID && (
         <Script id="gtm-base" strategy="beforeInteractive">{`
           (function(w,d,s,l,i){
@@ -97,7 +98,10 @@ export default function RootLayout({
           })(window,document,'script','dataLayer','${process.env.NEXT_PUBLIC_GTM_ID}');
         `}</Script>
       )}
-      <body className={inter.className}>
+      <body>
+        <Suspense>
+          <Analytics />
+        </Suspense>
         {process.env.NEXT_PUBLIC_GTM_ID && (
           <noscript>
             <iframe

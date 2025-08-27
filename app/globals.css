@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --ink: #0F1419;
+  --paper: #F7F7F5;
+  --text-primary: #121212;
+  --text-secondary: rgba(18, 18, 18, 0.7);
+  --accent: #A52A2A;
+  --radius: 16px;
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  color-scheme: light;
+}
+
+body {
+  color: var(--text-primary);
+  background: white;
+}
+
+/* Apply serif font to headings */
+h1, h2, h3 { font-family: var(--font-dm-serif-display); }
+
 @layer base {
   :root {
     --background: 0 0% 100%;

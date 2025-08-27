@@ -4,6 +4,7 @@
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { Menu, X } from "lucide-react"
+import { track } from "@/app/lib/analytics"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -33,7 +34,7 @@ export default function Header() {
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center">
+          <Link href="/" className="flex items-center" onClick={() => track('cta_clicked', { cta_name: 'Logo', location: 'header' })}>
             <img src="/logo.png" alt="Houston Mobile Notary Pros" className="h-14 w-auto" />
           </Link>
 
@@ -51,47 +52,47 @@ export default function Header() {
             <nav>
               <ul className="flex space-x-6 items-center">
                 <li>
-                  <Link href="/services" className="text-secondary hover:text-primary">
+                  <Link href="/services" className="text-secondary hover:text-primary" onClick={() => track('cta_clicked', { cta_name: 'Services', location: 'header' })}>
                     Services
                   </Link>
                 </li>
                 <li>
-                  <Link href="/ron/how-it-works" className="text-secondary hover:text-primary">
+                  <Link href="/ron/how-it-works" className="text-secondary hover:text-primary" onClick={() => track('cta_clicked', { cta_name: 'RON', location: 'header' })}>
                     RON
                   </Link>
                 </li>
                 <li>
-                  <Link href="/service-areas" className="text-secondary hover:text-primary">
+                  <Link href="/service-areas" className="text-secondary hover:text-primary" onClick={() => track('cta_clicked', { cta_name: 'Service Areas', location: 'header' })}>
                     Service Areas
                   </Link>
                 </li>
                 <li>
-                  <Link href="/what-to-expect" className="text-secondary hover:text-primary">
+                  <Link href="/what-to-expect" className="text-secondary hover:text-primary" onClick={() => track('cta_clicked', { cta_name: 'What to Expect', location: 'header' })}>
                     What to Expect
                   </Link>
                 </li>
                 <li>
-                  <Link href="/testimonials" className="text-secondary hover:text-primary">
+                  <Link href="/testimonials" className="text-secondary hover:text-primary" onClick={() => track('cta_clicked', { cta_name: 'Testimonials', location: 'header' })}>
                     Testimonials
                   </Link>
                 </li>
                 <li>
-                  <Link href="/faq" className="text-secondary hover:text-primary">
+                  <Link href="/faq" className="text-secondary hover:text-primary" onClick={() => track('cta_clicked', { cta_name: 'FAQ', location: 'header' })}>
                     FAQ
                   </Link>
                 </li>
                 <li>
-                  <Link href="/blog" className="text-secondary hover:text-primary">
+                  <Link href="/blog" className="text-secondary hover:text-primary" onClick={() => track('cta_clicked', { cta_name: 'Blog', location: 'header' })}>
                     Blog
                   </Link>
                 </li>
                 <li>
-                  <Link href="/contact" className="text-secondary hover:text-primary">
+                  <Link href="/contact" className="text-secondary hover:text-primary" onClick={() => track('cta_clicked', { cta_name: 'Contact', location: 'header' })}>
                     Contact
                   </Link>
                 </li>
                 <li>
-                  <Link href="/login" className="text-secondary hover:text-primary">
+                  <Link href="/login" className="text-secondary hover:text-primary" onClick={() => track('cta_clicked', { cta_name: 'Sign In', location: 'header' })}>
                     Sign In
                   </Link>
                 </li>
@@ -99,7 +100,8 @@ export default function Header() {
             </nav>
             <Link
               href="/booking"
-              className="bg-primary text-primary-foreground px-6 py-2 rounded-full hover:bg-primary/90 transition-colors font-medium hover:shadow-md"
+              className="px-6 py-2 rounded-full transition-colors font-medium hover:shadow-md bg-brand text-white"
+              onClick={() => track('cta_clicked', { cta_name: 'Book', location: 'header' })}
             >
               Book Now
             </Link>
@@ -114,7 +116,7 @@ export default function Header() {
                 <Link
                   href="/services"
                   className="text-secondary hover:text-primary block"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => { setIsMenuOpen(false); track('cta_clicked', { cta_name: 'Services', location: 'header' }) }}
                 >
                   Services
                 </Link>
@@ -123,7 +125,7 @@ export default function Header() {
                 <Link
                   href="/ron/how-it-works"
                   className="text-secondary hover:text-primary block"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => { setIsMenuOpen(false); track('cta_clicked', { cta_name: 'RON', location: 'header' }) }}
                 >
                   RON
                 </Link>
@@ -132,7 +134,7 @@ export default function Header() {
                 <Link
                   href="/service-areas"
                   className="text-secondary hover:text-primary block"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => { setIsMenuOpen(false); track('cta_clicked', { cta_name: 'Service Areas', location: 'header' }) }}
                 >
                   Service Areas
                 </Link>
@@ -141,7 +143,7 @@ export default function Header() {
                 <Link
                   href="/what-to-expect"
                   className="text-secondary hover:text-primary block"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => { setIsMenuOpen(false); track('cta_clicked', { cta_name: 'What to Expect', location: 'header' }) }}
                 >
                   What to Expect
                 </Link>
@@ -150,7 +152,7 @@ export default function Header() {
                 <Link
                   href="/testimonials"
                   className="text-secondary hover:text-primary block"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => { setIsMenuOpen(false); track('cta_clicked', { cta_name: 'Testimonials', location: 'header' }) }}
                 >
                   Testimonials
                 </Link>
@@ -159,7 +161,7 @@ export default function Header() {
                 <Link
                   href="/faq"
                   className="text-secondary hover:text-primary block"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => { setIsMenuOpen(false); track('cta_clicked', { cta_name: 'FAQ', location: 'header' }) }}
                 >
                   FAQ
                 </Link>
@@ -168,7 +170,7 @@ export default function Header() {
                 <Link
                   href="/blog"
                   className="text-secondary hover:text-primary block"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => { setIsMenuOpen(false); track('cta_clicked', { cta_name: 'Blog', location: 'header' }) }}
                 >
                   Blog
                 </Link>
@@ -177,7 +179,7 @@ export default function Header() {
                 <Link
                   href="/contact"
                   className="text-secondary hover:text-primary block"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => { setIsMenuOpen(false); track('cta_clicked', { cta_name: 'Contact', location: 'header' }) }}
                 >
                   Contact
                 </Link>
@@ -186,7 +188,7 @@ export default function Header() {
                 <Link
                   href="/login"
                   className="text-secondary hover:text-primary block"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => { setIsMenuOpen(false); track('cta_clicked', { cta_name: 'Sign In', location: 'header' }) }}
                 >
                   Sign In
                 </Link>
@@ -194,8 +196,8 @@ export default function Header() {
               <li>
                 <Link
                   href="/booking"
-                  className="bg-primary text-primary-foreground px-6 py-2 rounded-full hover:bg-primary/90 transition-colors inline-block font-medium hover:shadow-md"
-                  onClick={() => setIsMenuOpen(false)}
+                  className="bg-brand text-white px-6 py-2 rounded-full transition-colors inline-block font-medium hover:shadow-md"
+                  onClick={() => { setIsMenuOpen(false); track('cta_clicked', { cta_name: 'Book', location: 'header' }) }}
                 >
                   Book Now
                 </Link>

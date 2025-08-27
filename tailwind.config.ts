@@ -19,7 +19,13 @@ const config: Config = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['var(--font-inter)'],
+        serif: ['var(--font-dm-serif-display)'],
+      },
       colors: {
+        ink: 'var(--ink)',
+        paper: 'var(--paper)',
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -75,6 +81,9 @@ const config: Config = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      boxShadow: {
+        DEFAULT: 'var(--shadow)'
       },
       keyframes: {
         "accordion-down": {
