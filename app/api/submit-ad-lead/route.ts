@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Resend } from 'resend';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { upsertContact, GhlContact, GhlCustomField } from '@/lib/ghl';
 import { withRateLimit } from '@/lib/security/rate-limiting';
@@ -202,10 +203,38 @@ export const POST = withRateLimit('public', 'submit_ad_lead')(async (request: Ne
       console.warn('Skipping opportunity creation: Pipeline ID or Stage ID for ad leads is not configured in environment variables.');
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Lead processed successfully.', 
-      ghlContactId: contactId 
+    // 5. Send notification email (optional but recommended)
+    try {
+      const receiver = process.env.CONTACT_FORM_RECEIVER_EMAIL?.trim();
+      const sender = process.env.CONTACT_FORM_SENDER_EMAIL?.trim();
+      const apiKey = process.env.RESEND_API_KEY?.trim();
+
+      if (receiver && sender && apiKey) {
+        const resend = new Resend(apiKey);
+        const leadName = `${firstName || ''} ${lastName || ''}`.trim() || 'New Lead';
+        const subject = `New Quote Lead: ${leadName}${campaignName ? ` • ${campaignName}` : ''}`;
+        const html = `
+          <h1>New Quote Request</h1>
+          <p><strong>Name:</strong> ${leadName}</p>
+          <p><strong>Email:</strong> ${email || 'N/A'}</p>
+          <p><strong>Phone:</strong> ${phone || 'N/A'}</p>
+          ${preferredCallTime ? `<p><strong>Preferred Call Time:</strong> ${preferredCallTime}</p>` : ''}
+          ${callRequestReason ? `<p><strong>Reason:</strong> ${callRequestReason}</p>` : ''}
+          ${campaignName ? `<p><strong>Campaign:</strong> ${campaignName}</p>` : ''}
+          ${landingPageUrl ? `<p><strong>Landing Page:</strong> ${landingPageUrl}</p>` : ''}
+        `;
+        await resend.emails.send({ from: `Lead Alerts <${sender}>`, to: [receiver], subject, html });
+      } else {
+        console.warn('Email notification skipped for ad lead: missing env (receiver/sender/api key)');
+      }
+    } catch (notifyError) {
+      console.error('Failed to send ad lead notification email:', notifyError);
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Lead processed successfully.',
+      ghlContactId: contactId
     });
 
   } catch (error) {

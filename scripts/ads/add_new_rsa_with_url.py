@@ -116,46 +116,51 @@ def main(argv: Optional[list[str]] = None) -> int:
         ad_group_res = get_ad_group_resource_name(client, args.customer_id, args.ad_group_id)
 
         rows = list_rsas_in_ad_group(client, args.customer_id, ad_group_res)
-        already_enabled_with_target = False
+        # Pause every non-removed RSA in this ad group so traffic consolidates to the new LP ad
         to_pause: List[str] = []
         for row in rows:
-            urls = list(row.ad_group_ad.ad.final_urls) if row.ad_group_ad.ad.final_urls else []
             status = row.ad_group_ad.status.name
             rn = row.ad_group_ad.resource_name
-            if args.final_url in urls and status == "ENABLED":
-                already_enabled_with_target = True
-            elif status != "REMOVED":
-                # Pause all other RSAs so traffic consolidates to the LP
+            if status != "REMOVED":
                 to_pause.append(rn)
 
         if to_pause:
             pause_ads(client, args.customer_id, to_pause)
 
-        if not already_enabled_with_target:
-            headlines = [
-                "24/7 Mobile Notary",
-                "Same‑Day Appointments",
-                "We Come To You",
-                "Fast, Professional Service",
-                "Licensed & Insured",
-                "Loan Signings & Closings",
-            ]
-            descriptions = [
-                "Houston‑area mobile notary. Book same‑day. Reliable and compliant.",
-                "Loan signings, POA, affidavits. On‑site or online. Get a quote now.",
-            ]
-            rn = create_rsa(
-                client=client,
-                customer_id=args.customer_id,
-                ad_group_resource=ad_group_res,
-                final_url=args.final_url,
-                headlines=headlines,
-                descriptions=descriptions,
-                enabled=True,
-            )
-            print(f"Created RSA: {rn}")
-        else:
-            print("An ENABLED RSA with the target Final URL already exists; no new ad created.")
+        # High-quality asset set to improve Ad Strength (15 headlines, 4 descriptions)
+        headlines = [
+            "Mobile Notary Near You",
+            "Houston Mobile Notary",
+            "Book Same‑Day Notary",
+            "We Come To Your Location",
+            "Evenings & Weekends Available",
+            "Licensed, Bonded, Insured",
+            "Loan Signing Specialist",
+            "Remote Online Notary (RON)",
+            "Transparent Upfront Pricing",
+            "60‑Second Booking",
+            "24/7 Customer Support",
+            "Business Accounts Welcome",
+            "Apostille & POA Notarization",
+            "Witness Available On Request",
+            "Local Houston Professionals",
+        ]
+        descriptions = [
+            "Houston‑area mobile notary. Same‑day appointments. We travel to you. Book in minutes.",
+            "Loan signings, POA, affidavits, real estate. Licensed & insured. Evenings & weekends.",
+            "Upfront pricing. SMS/email reminders. Pay securely online. 5‑star local service.",
+            "Mobile or online notarization (RON). Fast response. Reserve your time now.",
+        ]
+        rn = create_rsa(
+            client=client,
+            customer_id=args.customer_id,
+            ad_group_resource=ad_group_res,
+            final_url=args.final_url,
+            headlines=headlines,
+            descriptions=descriptions,
+            enabled=True,
+        )
+        print(f"Created RSA: {rn}")
 
         return 0
     except GoogleAdsException as ex:

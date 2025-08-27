@@ -1,3 +1,9 @@
+## 2025-08-27
+
+- fix(lp): fill testimonial star icons on Standard Services LP (`app/lp/standard-services/testimonials.client.tsx`)
+- fix(thank-you): update ad thank-you page phone/link to (832) 617-4285 (`app/thank-you-ads/page.tsx`)
+- feat(lead): send email notifications on ad quote form submissions via Resend (`app/api/submit-ad-lead/route.ts`)
+
 ## 2025-08-23
 
 - feat: Inline `enhanced_conversion_data` with `booking_complete` dataLayer push on `app/booking/success/page.tsx` to align with GTM variables DLV – value, currency, transaction_id, and enhanced_conversion_data.

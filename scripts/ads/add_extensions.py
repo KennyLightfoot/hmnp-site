@@ -121,7 +121,12 @@ def add_structured_snippet(client: GoogleAdsClient, customer_id: str, campaign_i
     op = client.get_type("AssetOperation")
     asset = op.create
     ss = asset.structured_snippet_asset
-    ss.header = client.enums.StructuredSnippetAssetHeaderEnum.SERVICES
+    # Some versions expose header enums directly on StructuredSnippetAsset
+    try:
+        ss.header = client.enums.StructuredSnippetAssetHeaderEnum.SERVICES
+    except Exception:
+        # Fallback enum path depending on library version
+        ss.header = client.enums.StructuredSnippetHeaderEnum.SERVICES
     ss.values.extend(values)
     resp = asset_service.mutate_assets(customer_id=customer_id, operations=[op])
     asset_rn = resp.results[0].resource_name
