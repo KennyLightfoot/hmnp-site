@@ -1122,7 +1122,7 @@ export default function BookingForm({
               <div className="text-lg font-semibold text-gray-900">${Number(totalPrice || 0).toFixed(2)}</div>
             </div>
             <div className="flex items-center gap-3">
-              <a href="tel:+18326174285" className="text-blue-700 underline text-sm">Call Now</a>
+              <a href={`tel:${require('@/lib/phone').getBusinessTel()}`} className="text-blue-700 underline text-sm">Call Now</a>
               <Button type="button" onClick={nextStep} disabled={!isCurrentStepValid || isSubmitting || isNavigating} className="min-h-[44px] px-6 bg-blue-600 hover:bg-blue-700 text-white">
                 Continue
                 <ChevronRight className="h-4 w-4 ml-2" />

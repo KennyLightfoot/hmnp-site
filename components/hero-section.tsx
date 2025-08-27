@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import SameDaySlotCounter from "@/components/urgency/same-day-slot-counter"
+import { getBusinessTel } from "@/lib/phone"
+import { trackPhoneClick } from "@/lib/tracking"
 
 export default function HeroSection() {
   return (
@@ -54,7 +56,7 @@ export default function HeroSection() {
                   Book Mobile Notary
                 </Button>
               </Link>
-              <Link href="tel:+18326174285">
+              <Link href={`tel:${getBusinessTel()}`} onClick={() => trackPhoneClick('hero_section_call')}>
                 <Button
                   size="lg"
                   variant="outline"

@@ -106,7 +106,7 @@ export default function EnhancedBookingClient() {
           <span>•</span>
           <span>Licensed & Insured</span>
           <span>•</span>
-          <a href="tel:+18326174285" className="text-blue-600 hover:text-blue-700">(832) 617‑4285</a>
+          <a href={`tel:${require('@/lib/phone').getBusinessTel()}`} className="text-blue-600 hover:text-blue-700">{require('@/lib/phone').getBusinessPhoneFormatted()}</a>
         </div>
       </div>
 
@@ -117,7 +117,7 @@ export default function EnhancedBookingClient() {
 
       {/* Sticky second CTA for mobile callers */}
       <div className="md:hidden text-center mt-6">
-        <a href="tel:+18326174285" className="inline-flex items-center justify-center text-blue-700 underline">
+        <a href={`tel:${require('@/lib/phone').getBusinessTel()}`} className="inline-flex items-center justify-center text-blue-700 underline">
           Prefer to call? Tap to dial now
         </a>
       </div>
