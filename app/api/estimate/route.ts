@@ -74,8 +74,10 @@ async function geocodeZip(zip: string): Promise<Coordinates> {
   const res = await fetch(url, { headers: { "User-Agent": "hmnp-site/estimate-route" } })
   if (!res.ok) throw new Error("Failed to geocode ZIP (OSM)")
   const data = (await res.json()) as Array<{ lat: string; lon: string }>
-  if (!data?.length) throw new Error("ZIP code not found")
-  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }
+  if (!data || data.length === 0) throw new Error("ZIP code not found")
+  const first = data[0]
+  if (!first || first.lat == null || first.lon == null) throw new Error("ZIP code not found")
+  return { lat: parseFloat(first.lat), lng: parseFloat(first.lon) }
 }
 
 function isAfterHours(date: Date): boolean {
