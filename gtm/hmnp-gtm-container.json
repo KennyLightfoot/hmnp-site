@@ -1,0 +1,124 @@
+{
+  "exportFormatVersion": 2,
+  "exportTime": "2025-08-27T00:00:00Z",
+  "containerVersion": {
+    "path": "accounts/0/containers/0/versions/0",
+    "container": {
+      "publicId": "GTM-M7CB2XJ2",
+      "name": "HMNP – Core Funnel Events",
+      "usageContext": ["WEB"]
+    },
+    "variable": [
+      {
+        "name": "GA4 Measurement ID",
+        "type": "c",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "value", "value": "G-XXXXXXXXXX" }
+        ],
+        "variableId": "1"
+      },
+      { "name": "DLV - event", "type": "v", "parameter": [ { "type": "TEMPLATE", "key": "name", "value": "event" }, { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" } ], "variableId": "2" },
+      { "name": "DLV - cta_name", "type": "v", "parameter": [ { "type": "TEMPLATE", "key": "name", "value": "cta_name" }, { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" } ], "variableId": "3" },
+      { "name": "DLV - location", "type": "v", "parameter": [ { "type": "TEMPLATE", "key": "name", "value": "location" }, { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" } ], "variableId": "4" },
+      { "name": "DLV - mode", "type": "v", "parameter": [ { "type": "TEMPLATE", "key": "name", "value": "mode" }, { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" } ], "variableId": "5" },
+      { "name": "DLV - amount", "type": "v", "parameter": [ { "type": "TEMPLATE", "key": "name", "value": "amount" }, { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" } ], "variableId": "6" },
+      { "name": "DLV - acts", "type": "v", "parameter": [ { "type": "TEMPLATE", "key": "name", "value": "acts" }, { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" } ], "variableId": "7" },
+      { "name": "DLV - page", "type": "v", "parameter": [ { "type": "TEMPLATE", "key": "name", "value": "page" }, { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" } ], "variableId": "8" }
+    ],
+    "trigger": [
+      { "name": "Event – cta_clicked", "type": "CUSTOM_EVENT", "customEventFilter": [ { "type": "EQUALS", "parameter": [ { "type": "TEMPLATE", "key": "arg0", "value": "{{DLV - event}}" }, { "type": "TEMPLATE", "key": "arg1", "value": "cta_clicked" } ] } ], "triggerId": "10" },
+      { "name": "Event – call_clicked", "type": "CUSTOM_EVENT", "customEventFilter": [ { "type": "EQUALS", "parameter": [ { "type": "TEMPLATE", "key": "arg0", "value": "{{DLV - event}}" }, { "type": "TEMPLATE", "key": "arg1", "value": "call_clicked" } ] } ], "triggerId": "11" },
+      { "name": "Event – booking_started", "type": "CUSTOM_EVENT", "customEventFilter": [ { "type": "EQUALS", "parameter": [ { "type": "TEMPLATE", "key": "arg0", "value": "{{DLV - event}}" }, { "type": "TEMPLATE", "key": "arg1", "value": "booking_started" } ] } ], "triggerId": "12" },
+      { "name": "Event – estimate_shown", "type": "CUSTOM_EVENT", "customEventFilter": [ { "type": "EQUALS", "parameter": [ { "type": "TEMPLATE", "key": "arg0", "value": "{{DLV - event}}" }, { "type": "TEMPLATE", "key": "arg1", "value": "estimate_shown" } ] } ], "triggerId": "13" },
+      { "name": "Event – hero_viewed", "type": "CUSTOM_EVENT", "customEventFilter": [ { "type": "EQUALS", "parameter": [ { "type": "TEMPLATE", "key": "arg0", "value": "{{DLV - event}}" }, { "type": "TEMPLATE", "key": "arg1", "value": "hero_viewed" } ] } ], "triggerId": "14" },
+      { "name": "Event – pageview", "type": "CUSTOM_EVENT", "customEventFilter": [ { "type": "EQUALS", "parameter": [ { "type": "TEMPLATE", "key": "arg0", "value": "{{DLV - event}}" }, { "type": "TEMPLATE", "key": "arg1", "value": "pageview" } ] } ], "triggerId": "15" }
+    ],
+    "tag": [
+      {
+        "name": "GA4 – Config",
+        "type": "ga4Config",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "measurement_id", "value": "{{GA4 Measurement ID}}" },
+          { "type": "BOOLEAN", "key": "send_page_view", "value": "true" }
+        ],
+        "firingTriggerId": ["2147483647"],
+        "tagId": "20"
+      },
+      {
+        "name": "GA4 – cta_clicked",
+        "type": "ga4Event",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "event_name", "value": "cta_clicked" },
+          { "type": "LIST", "key": "event_parameters", "list": [
+            { "type": "MAP", "map": [ { "type": "TEMPLATE", "key": "name", "value": "cta_name" }, { "type": "TEMPLATE", "key": "value", "value": "{{DLV - cta_name}}" } ] },
+            { "type": "MAP", "map": [ { "type": "TEMPLATE", "key": "name", "value": "location" }, { "type": "TEMPLATE", "key": "value", "value": "{{DLV - location}}" } ] }
+          ] }
+        ],
+        "firingTriggerId": ["10"],
+        "tagId": "21"
+      },
+      {
+        "name": "GA4 – call_clicked",
+        "type": "ga4Event",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "event_name", "value": "call_clicked" },
+          { "type": "LIST", "key": "event_parameters", "list": [
+            { "type": "MAP", "map": [ { "type": "TEMPLATE", "key": "name", "value": "location" }, { "type": "TEMPLATE", "key": "value", "value": "{{DLV - location}}" } ] }
+          ] }
+        ],
+        "firingTriggerId": ["11"],
+        "tagId": "22"
+      },
+      {
+        "name": "GA4 – booking_started",
+        "type": "ga4Event",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "event_name", "value": "booking_started" },
+          { "type": "LIST", "key": "event_parameters", "list": [
+            { "type": "MAP", "map": [ { "type": "TEMPLATE", "key": "name", "value": "mode" }, { "type": "TEMPLATE", "key": "value", "value": "{{DLV - mode}}" } ] },
+            { "type": "MAP", "map": [ { "type": "TEMPLATE", "key": "name", "value": "amount" }, { "type": "TEMPLATE", "key": "value", "value": "{{DLV - amount}}" } ] }
+          ] }
+        ],
+        "firingTriggerId": ["12"],
+        "tagId": "23"
+      },
+      {
+        "name": "GA4 – estimate_shown",
+        "type": "ga4Event",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "event_name", "value": "estimate_shown" },
+          { "type": "LIST", "key": "event_parameters", "list": [
+            { "type": "MAP", "map": [ { "type": "TEMPLATE", "key": "name", "value": "mode" }, { "type": "TEMPLATE", "key": "value", "value": "{{DLV - mode}}" } ] },
+            { "type": "MAP", "map": [ { "type": "TEMPLATE", "key": "name", "value": "amount" }, { "type": "TEMPLATE", "key": "value", "value": "{{DLV - amount}}" } ] },
+            { "type": "MAP", "map": [ { "type": "TEMPLATE", "key": "name", "value": "acts" }, { "type": "TEMPLATE", "key": "value", "value": "{{DLV - acts}}" } ] }
+          ] }
+        ],
+        "firingTriggerId": ["13"],
+        "tagId": "24"
+      },
+      {
+        "name": "GA4 – hero_viewed",
+        "type": "ga4Event",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "event_name", "value": "hero_viewed" }
+        ],
+        "firingTriggerId": ["14"],
+        "tagId": "25"
+      },
+      {
+        "name": "GA4 – pageview (custom)",
+        "type": "ga4Event",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "event_name", "value": "pageview" },
+          { "type": "LIST", "key": "event_parameters", "list": [
+            { "type": "MAP", "map": [ { "type": "TEMPLATE", "key": "name", "value": "page" }, { "type": "TEMPLATE", "key": "value", "value": "{{DLV - page}}" } ] }
+          ] }
+        ],
+        "firingTriggerId": ["15"],
+        "tagId": "26"
+      }
+    ]
+  }
+}
+
+
