@@ -4,7 +4,7 @@ import { Facebook } from 'lucide-react'
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-100 py-8 border-t">
+    <footer className="bg-secondary/5 py-8 border-t">
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-center mb-6">
           <Link href="/">
@@ -15,31 +15,31 @@ export default function Footer() {
             />
           </Link>
           <div className="flex space-x-6 mt-4">
-            <Link href="/services" className="text-gray-600 hover:text-[#002147]">
+            <Link href="/services" className="text-secondary/80 hover:text-secondary">
               Services
             </Link>
-            <Link href="/what-to-expect" className="text-gray-600 hover:text-[#002147]">
+            <Link href="/what-to-expect" className="text-secondary/80 hover:text-secondary">
               What to Expect
             </Link>
-            <Link href="/booking" className="text-gray-600 hover:text-[#002147]">
+            <Link href="/booking" className="text-secondary/80 hover:text-secondary">
               Book Now
             </Link>
-            <Link href="/testimonials" className="text-gray-600 hover:text-[#002147]">
+            <Link href="/testimonials" className="text-secondary/80 hover:text-secondary">
               Testimonials
             </Link>
-            <Link href="/faq" className="text-gray-600 hover:text-[#002147]">
+            <Link href="/faq" className="text-secondary/80 hover:text-secondary">
               FAQ
             </Link>
-            <Link href="/contact" className="text-gray-600 hover:text-[#002147]">
+            <Link href="/contact" className="text-secondary/80 hover:text-secondary">
               Contact
             </Link>
-            <Link href="/service-areas" className="text-gray-600 hover:text-[#002147]">
+            <Link href="/service-areas" className="text-secondary/80 hover:text-secondary">
               Service Areas
             </Link>
           </div>
         </div>
-        <div className="text-center text-gray-600">
-          <p className="text-xs font-medium text-[#002147] mb-2 opacity-80">
+        <div className="text-center text-secondary/80">
+          <p className="text-xs font-medium text-secondary mb-2 opacity-80">
   Our Promise: Fast, precise notary service—every time, no hassle.
 </p>
           <p className="text-sm">&copy; {new Date().getFullYear()} Houston Mobile Notary Pros. All rights reserved.</p>
@@ -51,23 +51,23 @@ export default function Footer() {
             contact@houstonmobilenotarypros.com
           </p>
           <div className="flex justify-center space-x-4 mt-4">
-            <Link href="/terms" className="text-xs text-gray-500 hover:text-[#002147] hover:underline">
+            <Link href="/terms" className="text-xs text-secondary/60 hover:text-secondary hover:underline">
               Terms & Conditions
             </Link>
-            <span className="text-xs text-gray-400">|</span>
-            <Link href="/privacy" className="text-xs text-gray-500 hover:text-[#002147] hover:underline">
+            <span className="text-xs text-secondary/40">|</span>
+            <Link href="/privacy" className="text-xs text-secondary/60 hover:text-secondary hover:underline">
               Privacy Policy
             </Link>
           </div>
           <div className="flex justify-center space-x-4 mt-6">
-            <Link href="https://www.facebook.com/HoustonMobileNotaryPros/" target="_blank" rel="noopener noreferrer" aria-label="Houston Mobile Notary Pros on Facebook" className="text-gray-600 hover:text-[#002147]">
+            <Link href="https://www.facebook.com/HoustonMobileNotaryPros/" target="_blank" rel="noopener noreferrer" aria-label="Houston Mobile Notary Pros on Facebook" className="text-secondary/80 hover:text-secondary">
               <Facebook className="h-6 w-6" />
             </Link>
             {/* Add other social media links here */}
           </div>
         </div>
         {/* Service Areas quick links */}
-        <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 text-xs text-gray-600">
+        <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 text-xs text-secondary/80">
           {[
             "Clear Lake City",
             "Pasadena",
@@ -90,7 +90,7 @@ export default function Footer() {
           ].map((city) => {
             const slug = city.toLowerCase().replace(/ /g, "-")
             return (
-              <Link key={city} href={`/service-areas/${slug}`} className="hover:text-[#002147]">
+              <Link key={city} href={`/service-areas/${slug}`} className="hover:text-secondary">
                 {city}
               </Link>
             )
