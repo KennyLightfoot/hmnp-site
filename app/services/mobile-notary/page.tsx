@@ -74,7 +74,7 @@ export default function MobileNotaryServicesPage() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Link href={`tel:${require('@/lib/phone').getBusinessTel()}`} onClick={() => require('@/lib/tracking').trackPhoneClick('services_mobile_notary_call')}>
+            <Link href={`tel:${require('@/lib/phone').getBusinessTel()}`}>
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147]">
                 Call Now: (832) 617-4285
                 <Phone className="ml-2 h-5 w-5" />

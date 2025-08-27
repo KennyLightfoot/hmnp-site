@@ -102,7 +102,7 @@ const GMBContactPage: NextPage = () => {
                     <Phone className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
                     <div>
                       <h3 className="text-xl font-bold text-[#002147] mb-1">Call Us</h3>
-                      <a href={`tel:${require('@/lib/phone').getBusinessTel()}`} onClick={() => require('@/lib/tracking').trackPhoneClick('lp_gmb_contact_call')} className="text-lg text-[#A52A2A] hover:underline font-semibold">
+                      <a href={`tel:${require('@/lib/phone').getBusinessTel()}`} className="text-lg text-[#A52A2A] hover:underline font-semibold">
                         (832) 617-4285
                       </a>
                       <p className="text-sm text-gray-600 mt-1">Available 7 days a week, 8 AM - 8 PM</p>

@@ -246,7 +246,7 @@ export default function HoustonMobileNotaryLandingPage() {
                   <Phone className="h-12 w-12 mx-auto mb-4" />
                   <h3 className="text-2xl font-bold mb-4">Need Immediate Service?</h3>
                   <p className="text-lg mb-6">Call us directly for same-day appointments and urgent notarizations throughout the Houston area.</p>
-                  <a href={`tel:${require('@/lib/phone').getBusinessTel()}`} onClick={() => require('@/lib/tracking').trackPhoneClick('lp_example_campaign_call')} className="bg-white text-[#A52A2A] px-8 py-4 rounded-lg font-bold hover:bg-slate-100 transition-colors inline-block text-lg">
+                  <a href={`tel:${require('@/lib/phone').getBusinessTel()}`} className="bg-white text-[#A52A2A] px-8 py-4 rounded-lg font-bold hover:bg-slate-100 transition-colors inline-block text-lg">
                     Call Now: (832) 617-4285
                   </a>
                 </div>
