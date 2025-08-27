@@ -46,9 +46,9 @@ function haversineMiles(a: Coordinates, b: Coordinates): number {
 }
 
 function estimateDrivingMiles(straightLineMiles: number): number {
-  // Conservative multiplier to approximate real-world driving distance
-  const multiplier = 1.2
-  return straightLineMiles * multiplier
+  // Use straight-line distance for consistency with published travel tiers
+  // (removing previous padding that could inflate estimates)
+  return straightLineMiles
 }
 
 async function geocodeZip(zip: string): Promise<Coordinates> {
@@ -90,16 +90,14 @@ function isAfterHours(date: Date): boolean {
 }
 
 function calcTieredBeyondFee(beyondMiles: number): number {
+  // Align with published fixed tiers:
+  // 0–20 mi included; 21–30 mi +$25; 31–40 mi +$45; 41–50 mi +$65
   if (beyondMiles <= 0) return 0
-  let remaining = beyondMiles
-  let fee = 0
-  for (const tier of TIERED_RATES) {
-    if (remaining <= 0) break
-    const applyMiles = Math.min(remaining, tier.upToMilesBeyond === Infinity ? remaining : tier.upToMilesBeyond)
-    fee += applyMiles * tier.ratePerMile
-    remaining -= applyMiles
-  }
-  return Math.round(fee)
+  if (beyondMiles <= 10) return 25
+  if (beyondMiles <= 20) return 45
+  if (beyondMiles <= 30) return 65
+  // Outside supported range
+  return 65
 }
 
 async function drivingMiles(origin: Coordinates, dest: Coordinates): Promise<number> {
