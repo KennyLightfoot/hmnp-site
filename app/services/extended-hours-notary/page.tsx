@@ -2,6 +2,7 @@ import Link from "next/link"
 import { ChevronRight, Clock, MapPin, CheckCircle, Shield, Users, Zap, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import EstimatorStrip from "@/components/EstimatorStrip"
 import { SERVICES_CONFIG } from "@/lib/services/config"
 
 // Define Base URL for metadata
@@ -61,7 +62,7 @@ export default function PriorityServicePage() {
       </div>
 
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-[#A52A2A] to-[#8B0000] text-white py-16">
+      <div className="bg-gradient-to-r from-primary to-primary text-white py-16">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
             Priority Mobile Notary
@@ -74,16 +75,19 @@ export default function PriorityServicePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/booking?service=priority">
-              <Button size="lg" className="bg-white text-[#A52A2A] hover:bg-gray-100">
+              <Button size="lg" className="bg-white text-primary hover:bg-gray-100">
                 Book Priority Service
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link href="/contact">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#A52A2A]">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
                 Emergency Contact
               </Button>
             </Link>
+          </div>
+          <div className="max-w-3xl mx-auto mt-6">
+            <EstimatorStrip defaultMode="MOBILE" />
           </div>
         </div>
       </div>
@@ -95,8 +99,8 @@ export default function PriorityServicePage() {
             {/* Service Overview */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl text-[#002147] flex items-center">
-                  <Zap className="mr-3 h-6 w-6 text-[#A52A2A]" />
+                <CardTitle className="text-2xl text-secondary flex items-center">
+                  <Zap className="mr-3 h-6 w-6 text-primary" />
                   Service Overview
                 </CardTitle>
               </CardHeader>

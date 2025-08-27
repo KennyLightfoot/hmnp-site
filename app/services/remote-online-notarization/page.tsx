@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { ChevronLeft, Check, Users, Monitor, Shield, Clock, Globe, Phone, Info, ExternalLink, ArrowRight, Zap, FileText, Video } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import EstimatorStrip from "@/components/EstimatorStrip"
 import { SERVICES_CONFIG } from "@/lib/services/config"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import MiniFAQ from "@/components/mini-faq"
@@ -138,6 +139,9 @@ export default function RemoteOnlineNotarizationPage() {
             <span className="inline-flex items-center rounded-full bg-[#002147]/5 border border-[#002147]/10 text-[#002147] px-3 py-1">KBA</span>
             <span className="inline-flex items-center rounded-full bg-[#002147]/5 border border-[#002147]/10 text-[#002147] px-3 py-1">AV recording</span>
             <span className="inline-flex items-center rounded-full bg-[#002147]/5 border border-[#002147]/10 text-[#002147] px-3 py-1">Transparent pricing</span>
+          </div>
+          <div className="max-w-3xl mx-auto mt-6">
+            <EstimatorStrip defaultMode="RON" />
           </div>
         </section>
 

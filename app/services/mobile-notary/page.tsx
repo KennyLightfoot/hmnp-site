@@ -2,6 +2,7 @@ import Link from "next/link"
 import { ChevronRight, MapPin, Clock, CheckCircle, Shield, Users, Car, ArrowRight, Phone, Calendar, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import EstimatorStrip from "@/components/EstimatorStrip"
 
 // Define Base URL for metadata
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com';
@@ -46,9 +47,9 @@ export default function MobileNotaryServicesPage() {
       <div className="border-b border-gray-200">
         <div className="container mx-auto px-4 py-4">
           <nav className="flex items-center space-x-2 text-sm text-gray-600">
-            <Link href="/" className="hover:text-[#A52A2A]">Home</Link>
+            <Link href="/" className="hover:text-primary">Home</Link>
             <ChevronRight className="h-4 w-4" />
-            <Link href="/services" className="hover:text-[#A52A2A]">Services</Link>
+            <Link href="/services" className="hover:text-primary">Services</Link>
             <ChevronRight className="h-4 w-4" />
             <span className="text-gray-900">Mobile Notary Services</span>
           </nav>
@@ -56,7 +57,7 @@ export default function MobileNotaryServicesPage() {
       </div>
 
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-[#002147] to-[#003366] text-white py-16">
+      <div className="bg-gradient-to-r from-secondary to-secondary text-white py-16">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
             Notary near you today — mobile to your door
@@ -69,17 +70,20 @@ export default function MobileNotaryServicesPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/booking?service=mobile-notary">
-              <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-white">
                 Book Mobile Notary Now - $75+
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link href={`tel:${require('@/lib/phone').getBusinessTel()}`}>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147]">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-secondary">
                 Call Now: (832) 617-4285
                 <Phone className="ml-2 h-5 w-5" />
               </Button>
             </Link>
+          </div>
+          <div className="max-w-3xl mx-auto mt-6">
+            <EstimatorStrip defaultMode="MOBILE" />
           </div>
           <div className="mt-2 text-xs text-blue-100">
             <Link href="/services/extras#travel-tiers" className="underline">See travel tiers</Link>
@@ -102,8 +106,8 @@ export default function MobileNotaryServicesPage() {
             {/* Service Overview */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl text-[#002147] flex items-center">
-                  <Car className="mr-3 h-6 w-6 text-[#A52A2A]" />
+                <CardTitle className="text-2xl text-secondary flex items-center">
+                  <Car className="mr-3 h-6 w-6 text-primary" />
                   Mobile Notary Services Overview
                 </CardTitle>
               </CardHeader>
@@ -123,8 +127,8 @@ export default function MobileNotaryServicesPage() {
             {/* Why Choose Mobile Notary */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl text-[#002147] flex items-center">
-                  <Shield className="mr-3 h-6 w-6 text-[#A52A2A]" />
+                <CardTitle className="text-2xl text-secondary flex items-center">
+                  <Shield className="mr-3 h-6 w-6 text-primary" />
                   Why Choose Mobile Notary Services?
                 </CardTitle>
               </CardHeader>
@@ -132,29 +136,29 @@ export default function MobileNotaryServicesPage() {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-3">
                     <div className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-[#A52A2A] mr-2 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
                       <span className="text-gray-700"><strong>Save Time:</strong> No travel, no waiting rooms, no parking hassles</span>
                     </div>
                     <div className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-[#A52A2A] mr-2 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
                       <span className="text-gray-700"><strong>Convenience:</strong> Service at your preferred location and time</span>
                     </div>
                     <div className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-[#A52A2A] mr-2 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
                       <span className="text-gray-700"><strong>Privacy:</strong> Confidential service in your own space</span>
                     </div>
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-[#A52A2A] mr-2 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
                       <span className="text-gray-700"><strong>Flexibility:</strong> Evening and weekend appointments available</span>
                     </div>
                     <div className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-[#A52A2A] mr-2 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
                       <span className="text-gray-700"><strong>Accessibility:</strong> Perfect for elderly or mobility-challenged clients</span>
                     </div>
                     <div className="flex items-start">
-                      <CheckCircle className="h-5 w-5 text-[#A52A2A] mr-2 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
                       <span className="text-gray-700"><strong>Professional:</strong> Same expertise as office visits</span>
                     </div>
                   </div>
@@ -165,12 +169,12 @@ export default function MobileNotaryServicesPage() {
             {/* Service Types */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl text-[#002147]">Mobile Notary Service Types</CardTitle>
+                <CardTitle className="text-2xl text-secondary">Mobile Notary Service Types</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-[#002147]">General Mobile Notarization</h3>
+                    <h3 className="text-lg font-semibold text-secondary">General Mobile Notarization</h3>
                     <ul className="space-y-2 text-gray-700">
                       <li>• Wills and estate planning documents</li>
                       <li>• Powers of attorney</li>
@@ -181,7 +185,7 @@ export default function MobileNotaryServicesPage() {
                     </ul>
                   </div>
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-[#002147]">Specialized Mobile Services</h3>
+                    <h3 className="text-lg font-semibold text-secondary">Specialized Mobile Services</h3>
                     <ul className="space-y-2 text-gray-700">
                       <li>• Loan signing (real estate closings)</li>
                       <li>• Hospital and nursing home visits</li>
@@ -198,35 +202,35 @@ export default function MobileNotaryServicesPage() {
             {/* How It Works */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl text-[#002147]">How Mobile Notary Service Works</CardTitle>
+                <CardTitle className="text-2xl text-secondary">How Mobile Notary Service Works</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
                   <div className="flex items-start space-x-4">
-                    <div className="bg-[#A52A2A] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">1</div>
+                    <div className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">1</div>
                     <div>
-                      <h4 className="font-semibold text-[#002147]">Book Your Appointment</h4>
+                      <h4 className="font-semibold text-secondary">Book Your Appointment</h4>
                       <p className="text-gray-700">Schedule online or call us. Choose your preferred date, time, and location.</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-4">
-                    <div className="bg-[#A52A2A] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">2</div>
+                    <div className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">2</div>
                     <div>
-                      <h4 className="font-semibold text-[#002147]">We Travel to You</h4>
+                      <h4 className="font-semibold text-secondary">We Travel to You</h4>
                       <p className="text-gray-700">Our certified notary travels to your specified location with all necessary equipment.</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-4">
-                    <div className="bg-[#A52A2A] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">3</div>
+                    <div className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">3</div>
                     <div>
-                      <h4 className="font-semibold text-[#002147]">Professional Service</h4>
+                      <h4 className="font-semibold text-secondary">Professional Service</h4>
                       <p className="text-gray-700">We verify identities, explain documents, and complete notarization properly.</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-4">
-                    <div className="bg-[#A52A2A] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">4</div>
+                    <div className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">4</div>
                     <div>
-                      <h4 className="font-semibold text-[#002147]">Complete & Secure</h4>
+                      <h4 className="font-semibold text-secondary">Complete & Secure</h4>
                       <p className="text-gray-700">Documents are properly notarized, sealed, and ready for immediate use.</p>
                     </div>
                   </div>
@@ -240,8 +244,8 @@ export default function MobileNotaryServicesPage() {
             {/* Service Areas */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg text-[#002147] flex items-center">
-                  <MapPin className="mr-2 h-5 w-5 text-[#A52A2A]" />
+                <CardTitle className="text-lg text-secondary flex items-center">
+                  <MapPin className="mr-2 h-5 w-5 text-primary" />
                   Mobile Service Areas
                 </CardTitle>
               </CardHeader>
@@ -264,8 +268,8 @@ export default function MobileNotaryServicesPage() {
             {/* Quick Service Guarantee */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg text-[#002147] flex items-center">
-                  <Clock className="mr-2 h-5 w-5 text-[#A52A2A]" />
+                <CardTitle className="text-lg text-secondary flex items-center">
+                  <Clock className="mr-2 h-5 w-5 text-primary" />
                   Service Guarantee
                 </CardTitle>
               </CardHeader>
@@ -283,8 +287,8 @@ export default function MobileNotaryServicesPage() {
             {/* Customer Testimonial */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg text-[#002147] flex items-center">
-                  <Star className="mr-2 h-5 w-5 text-[#A52A2A]" />
+                <CardTitle className="text-lg text-secondary flex items-center">
+                  <Star className="mr-2 h-5 w-5 text-primary" />
                   Customer Reviews
                 </CardTitle>
               </CardHeader>
@@ -323,24 +327,24 @@ export default function MobileNotaryServicesPage() {
             {/* Pricing */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg text-[#002147]">Mobile Service Pricing</CardTitle>
+                <CardTitle className="text-lg text-secondary">Mobile Service Pricing</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-700">Standard Mobile</span>
-                    <span className="font-semibold text-[#002147]">$75+ <Link href="/services/extras#travel-tiers" className="underline text-sm ml-1">See travel tiers</Link></span>
+                    <span className="font-semibold text-secondary">$75+ <Link href="/services/extras#travel-tiers" className="underline text-sm ml-1">See travel tiers</Link></span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-700">Extended Hours</span>
-                    <span className="font-semibold text-[#002147]">$125+</span>
+                    <span className="font-semibold text-secondary">$125+</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-700">Emergency Service</span>
-                    <span className="font-semibold text-[#002147]">$150+</span>
+                    <span className="font-semibold text-secondary">$150+</span>
                   </div>
                   <div className="text-xs text-gray-600 mt-3">
-                    Base pricing includes travel within 20 miles. Beyond that, tiered travel applies: 21–30 +$25; 31–40 +$45; 41–50 +$65. <Link href="/services/extras#travel-tiers" className="underline text-[#002147]">See travel tiers</Link>.
+                    Base pricing includes travel within 20 miles. Beyond that, tiered travel applies: 21–30 +$25; 31–40 +$45; 41–50 +$65. <Link href="/services/extras#travel-tiers" className="underline text-secondary">See travel tiers</Link>.
                   </div>
                 </div>
               </CardContent>
@@ -349,17 +353,17 @@ export default function MobileNotaryServicesPage() {
             {/* Contact */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg text-[#002147]">Ready to Book?</CardTitle>
+                <CardTitle className="text-lg text-secondary">Ready to Book?</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Link href="/booking?service=mobile-notary">
-                  <Button className="w-full bg-[#A52A2A] hover:bg-[#8B0000] text-white">
+                  <Button className="w-full bg-primary hover:bg-primary/90 text-white">
                     <Calendar className="mr-2 h-4 w-4" />
                     Book Mobile Notary
                   </Button>
                 </Link>
                 <Link href="/contact">
-                  <Button variant="outline" className="w-full border-[#002147] text-[#002147] hover:bg-[#002147] hover:text-white">
+                  <Button variant="outline" className="w-full border-secondary text-secondary hover:bg-secondary hover:text-white">
                     <Phone className="mr-2 h-4 w-4" />
                     Get Quote
                   </Button>

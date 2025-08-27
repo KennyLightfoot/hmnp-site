@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { ChevronLeft, Check, FileText, Users, Clock, Briefcase, Phone, Info, ExternalLink, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import EstimatorStrip from "@/components/EstimatorStrip"
 import { SERVICES_CONFIG } from "@/lib/services/config"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import MiniFAQ from "@/components/mini-faq"; // Assuming you have this component
@@ -103,6 +104,9 @@ export default function LoanSigningPage() {
           <span className="inline-flex items-center rounded-full bg-[#002147]/5 border border-[#002147]/10 text-[#002147] px-3 py-1">2‑hour window</span>
           <span className="inline-flex items-center rounded-full bg-[#002147]/5 border border-[#002147]/10 text-[#002147] px-3 py-1">30‑mile included</span>
           <span className="inline-flex items-center rounded-full bg-[#002147]/5 border border-[#002147]/10 text-[#002147] px-3 py-1">Scanbacks/courier</span>
+        </div>
+        <div className="max-w-3xl mx-auto mt-6">
+          <EstimatorStrip defaultMode="MOBILE" />
         </div>
       </section>
 
