@@ -248,7 +248,7 @@ export function bookingConfirmationEmail(
       <!-- Action Buttons -->
       <div style="text-align: center; margin: 30px 0;">
         <a href="${booking.bookingManagementLink}" class="button">📋 Manage Booking</a>
-        <a href="tel:+18326174285" class="button">📞 Call Us</a>
+        <a href="tel:${process.env.BUSINESS_PHONE ? `+1${String(process.env.BUSINESS_PHONE).replace(/\D/g,'')}` : '+18326174285'}" class="button">📞 Call Us</a>
       </div>
 
       <!-- What Happens Next -->
@@ -271,7 +271,7 @@ export function bookingConfirmationEmail(
         <p>Our team is here to help! Contact us anytime:</p>
         <ul>
           <li>📧 Email: <a href="mailto:support@houstonmobilenotarypros.com">support@houstonmobilenotarypros.com</a></li>
-          <li>📱 Phone: <a href="tel:+18326174285">(832) 617-4285</a></li>
+          <li>📱 Phone: <a href="tel:${process.env.BUSINESS_PHONE ? `+1${String(process.env.BUSINESS_PHONE).replace(/\D/g,'')}` : '+18326174285'}">${process.env.BUSINESS_PHONE || '(832) 617-4285'}</a></li>
           <li>💬 Text: <a href="sms:+18326174285">(832) 617-4285</a></li>
         </ul>
       </div>

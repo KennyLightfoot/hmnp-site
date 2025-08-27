@@ -341,7 +341,7 @@ export default function PaymentPage() {
               <h3 className="text-sm font-medium text-gray-900 mb-2">Need Help?</h3>
               <p className="text-sm text-gray-600">
                 If you're experiencing issues with payment, please contact our support team at{' '}
-                <a href="tel:+1234567890" className="text-[#002147] hover:underline">
+                <a href={`tel:${require('@/lib/phone').getBusinessTel()}`} className="text-[#002147] hover:underline">
                   (123) 456-7890
                 </a>{' '}
                 or email{' '}

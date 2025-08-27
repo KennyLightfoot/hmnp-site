@@ -298,7 +298,7 @@ export class ReviewCollectionAutomation {
             If you experienced any issues during your service, please don't hesitate to reach out 
             directly at <a href="mailto:contact@houstonmobilenotarypros.com" style="color: #A52A2A;">
             contact@houstonmobilenotarypros.com</a> or call us at 
-            <a href="tel:+18326174285" style="color: #A52A2A;">(832) 617-4285</a>.
+            <a href="tel:${process.env.BUSINESS_PHONE ? `+1${String(process.env.BUSINESS_PHONE).replace(/\D/g,'')}` : '+18326174285'}" style="color: #A52A2A;">${process.env.BUSINESS_PHONE || '(832) 617-4285'}</a>.
           </p>
           
           <p style="font-size: 16px; line-height: 1.6; color: #333;">
@@ -314,7 +314,7 @@ export class ReviewCollectionAutomation {
         <div style="background: #f8f9fa; padding: 20px 30px; text-align: center; color: #666; font-size: 14px;">
           <p style="margin: 0;">
             Houston Mobile Notary Pros • Professional • Reliable • Convenient<br>
-            <a href="tel:+18326174285" style="color: #A52A2A;">(832) 617-4285</a> • 
+            <a href="tel:${process.env.BUSINESS_PHONE ? `+1${String(process.env.BUSINESS_PHONE).replace(/\D/g,'')}` : '+18326174285'}" style="color: #A52A2A;">${process.env.BUSINESS_PHONE || '(832) 617-4285'}</a> • 
             <a href="mailto:contact@houstonmobilenotarypros.com" style="color: #A52A2A;">
               contact@houstonmobilenotarypros.com
             </a>

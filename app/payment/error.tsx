@@ -81,7 +81,7 @@ export default function PaymentError({
               </p>
               <div className="space-y-2">
                 <a
-                  href="tel:+1234567890"
+                  href={`tel:${require('@/lib/phone').getBusinessTel()}`}
                   className="block text-[#002147] hover:underline font-medium"
                 >
                   📞 (123) 456-7890

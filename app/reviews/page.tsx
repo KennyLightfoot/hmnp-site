@@ -197,7 +197,7 @@ export default function ReviewsPage() {
                   </p>
                   <div className="space-y-3">
                     <a
-                      href="tel:+18326174285"
+                      href={`tel:${require('@/lib/phone').getBusinessTel()}`}
                       className="flex items-center text-[#A52A2A] hover:text-red-700 transition-colors"
                     >
                       <span className="text-lg">📞</span>
