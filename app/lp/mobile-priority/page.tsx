@@ -12,10 +12,10 @@ export const dynamic = "force-static"
 export default function MobilePriorityPage() {
   return (
     <div className="min-h-screen bg-white">
-      <header className="bg-gradient-to-r from-[#002147] to-[#004080] text-white">
+      <header className="bg-gradient-to-r from-secondary to-secondary text-white">
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-3xl">
-            <div className="inline-block bg-[#A52A2A] px-4 py-2 rounded-full text-sm font-medium mb-6">
+            <div className="inline-block bg-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
               Priority Mobile Notary (Greater Houston)
             </div>
             <h1 className="text-4xl md:text-5xl font-bold leading-tight">
@@ -25,7 +25,7 @@ export default function MobilePriorityPage() {
               30‑mile included, 7–21 daily. Same‑day windows with accurate travel tiers.
             </p>
             <div className="mt-6 flex flex-wrap gap-3 items-center">
-              <Link href="/booking" className="inline-flex items-center justify-center bg-[#A52A2A] hover:bg-[#8B0000] text-white rounded-md px-5 py-3">
+              <Link href="/booking" className="inline-flex items-center justify-center bg-primary hover:bg-primary/90 text-white rounded-md px-5 py-3">
                 Book Mobile Now
               </Link>
               <span className="text-sm text-gray-200">Average same‑day: 2–4 hours</span>
@@ -46,7 +46,7 @@ export default function MobilePriorityPage() {
         <section className="py-12">
           <div className="container mx-auto px-4 grid md:grid-cols-3 gap-8">
             <div>
-              <h3 className="text-lg font-semibold text-[#002147] mb-2">Inclusions</h3>
+              <h3 className="text-lg font-semibold text-secondary mb-2">Inclusions</h3>
               <ul className="text-sm text-gray-700 space-y-2">
                 <li>• ≤4 docs, ≤2 signers</li>
                 <li>• 30‑mile included (priority tier)</li>
@@ -54,14 +54,14 @@ export default function MobilePriorityPage() {
               </ul>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-[#002147] mb-2">Service standards</h3>
+              <h3 className="text-lg font-semibold text-secondary mb-2">Service standards</h3>
               <ul className="text-sm text-gray-700 space-y-2">
                 <li>• Flexible rescheduling with ≥4 hours’ notice</li>
                 <li>• Live updates if timing shifts</li>
               </ul>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-[#002147] mb-2">Add‑ons</h3>
+              <h3 className="text-lg font-semibold text-secondary mb-2">Add‑ons</h3>
               <ul className="text-sm text-gray-700 space-y-2">
                 <li>• Extra docs/signers</li>
                 <li>• Witnesses (arranged in advance)</li>
@@ -73,7 +73,7 @@ export default function MobilePriorityPage() {
 
         <section className="py-12 border-t">
           <div className="container mx-auto px-4">
-            <h3 className="text-2xl font-semibold text-[#002147] mb-6">Travel tiers</h3>
+            <h3 className="text-2xl font-semibold text-secondary mb-6">Travel tiers</h3>
             <div className="text-sm text-gray-700">
               <ul className="list-disc ml-6 space-y-1">
                 <li>0–20 miles: included (Standard)</li>
@@ -87,7 +87,7 @@ export default function MobilePriorityPage() {
 
         <section className="py-12 border-t">
           <div className="container mx-auto px-4">
-            <h3 className="text-2xl font-semibold text-[#002147] mb-6">FAQ</h3>
+            <h3 className="text-2xl font-semibold text-secondary mb-6">FAQ</h3>
             <div className="grid md:grid-cols-2 gap-6 text-sm text-gray-700">
               <div>
                 <div className="font-medium mb-1">How fast can you arrive?</div>

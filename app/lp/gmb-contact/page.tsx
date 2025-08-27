@@ -7,13 +7,13 @@ import Link from "next/link";
 
 const GMBContactPage: NextPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-paper to-white">
       {/* Header Section */}
-      <header className="py-16 bg-gradient-to-r from-[#002147] to-[#00346e] text-white text-center">
+      <header className="py-16 bg-gradient-to-r from-secondary to-secondary text-white text-center">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
             <div className="flex justify-center items-center mb-6">
-              <div className="bg-[#A52A2A] p-3 rounded-full mr-4">
+              <div className="bg-primary p-3 rounded-full mr-4">
                 <Building className="h-8 w-8 text-white" />
               </div>
               <div className="flex items-center space-x-1">
@@ -36,17 +36,17 @@ const GMBContactPage: NextPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-center">
               <div className="flex flex-col items-center">
-                <Users className="h-8 w-8 text-yellow-400 mb-2" />
+                <Users className="h-8 w-8 text-brand mb-2" />
                 <div className="text-2xl font-bold">1,000+</div>
                 <div className="text-slate-300">Google Reviews</div>
               </div>
               <div className="flex flex-col items-center">
-                <Clock className="h-8 w-8 text-yellow-400 mb-2" />
+                <Clock className="h-8 w-8 text-brand mb-2" />
                 <div className="text-2xl font-bold">24/7</div>
                 <div className="text-slate-300">Response Time</div>
               </div>
               <div className="flex flex-col items-center">
-                <Shield className="h-8 w-8 text-yellow-400 mb-2" />
+                <Shield className="h-8 w-8 text-brand mb-2" />
                 <div className="text-2xl font-bold">Verified</div>
                 <div className="text-slate-300">Google Business</div>
               </div>
@@ -91,18 +91,18 @@ const GMBContactPage: NextPage = () => {
           <div className="space-y-10 order-1 lg:order-2">
             {/* Direct Contact Information */}
             <section>
-              <h2 className="text-3xl font-bold text-[#002147] mb-6 flex items-center">
-                <Phone className="h-8 w-8 text-[#A52A2A] mr-3" />
+              <h2 className="text-3xl font-bold text-secondary mb-6 flex items-center">
+                <Phone className="h-8 w-8 text-primary mr-3" />
                 Direct Contact Information
               </h2>
               
               <div className="space-y-6">
-                <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-[#A52A2A]">
+                <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-primary">
                   <div className="flex items-start">
-                    <Phone className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
+                    <Phone className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
                     <div>
-                      <h3 className="text-xl font-bold text-[#002147] mb-1">Call Us</h3>
-                      <a href={`tel:${require('@/lib/phone').getBusinessTel()}`} className="text-lg text-[#A52A2A] hover:underline font-semibold">
+                      <h3 className="text-xl font-bold text-secondary mb-1">Call Us</h3>
+                      <a href={`tel:${require('@/lib/phone').getBusinessTel()}`} className="text-lg text-primary hover:underline font-semibold">
                         (832) 617-4285
                       </a>
                       <p className="text-sm text-gray-600 mt-1">Available 7 days a week, 8 AM - 8 PM</p>
@@ -110,12 +110,12 @@ const GMBContactPage: NextPage = () => {
                   </div>
                 </div>
                 
-                <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-[#A52A2A]">
+                <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-primary">
                   <div className="flex items-start">
-                    <Mail className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
+                    <Mail className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
                     <div>
-                      <h3 className="text-xl font-bold text-[#002147] mb-1">Email Us</h3>
-                      <a href="mailto:contact@houstonmobilenotarypros.com" className="text-lg text-[#A52A2A] hover:underline font-semibold">
+                      <h3 className="text-xl font-bold text-secondary mb-1">Email Us</h3>
+                      <a href="mailto:contact@houstonmobilenotarypros.com" className="text-lg text-primary hover:underline font-semibold">
                         contact@houstonmobilenotarypros.com
                       </a>
                       <p className="text-sm text-gray-600 mt-1">We respond within 1 hour during business hours</p>
@@ -123,11 +123,11 @@ const GMBContactPage: NextPage = () => {
                   </div>
                 </div>
                 
-                <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-[#A52A2A]">
+                <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-primary">
                   <div className="flex items-start">
-                    <MapPin className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
+                    <MapPin className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
                     <div>
-                      <h3 className="text-xl font-bold text-[#002147] mb-1">Service Area</h3>
+                      <h3 className="text-xl font-bold text-secondary mb-1">Service Area</h3>
                       <p className="text-lg text-gray-700 mb-2">Greater Houston Area & Surrounding Counties</p>
                       <p className="text-sm text-gray-600">We come to you - home, office, hospital, or any location!</p>
                     </div>
@@ -138,8 +138,8 @@ const GMBContactPage: NextPage = () => {
 
             {/* Why Choose Us */}
             <section>
-              <h2 className="text-3xl font-bold text-[#002147] mb-6 flex items-center">
-                <Award className="h-8 w-8 text-[#A52A2A] mr-3" />
+              <h2 className="text-3xl font-bold text-secondary mb-6 flex items-center">
+                <Award className="h-8 w-8 text-primary mr-3" />
                 Why Google Users Choose Us
               </h2>
               
@@ -156,7 +156,7 @@ const GMBContactPage: NextPage = () => {
                 
                 <div className="bg-gradient-to-br from-white to-slate-50 p-6 rounded-xl shadow-md">
                   <div className="flex items-start">
-                    <Clock className="h-6 w-6 text-[#A52A2A] mr-3 mt-1 flex-shrink-0" />
+                    <Clock className="h-6 w-6 text-primary mr-3 mt-1 flex-shrink-0" />
                     <div>
                       <h3 className="font-bold text-lg text-[#002147] mb-1">Fast Response</h3>
                       <p className="text-gray-700">Same-day service available with 1-hour response time during business hours</p>
@@ -166,7 +166,7 @@ const GMBContactPage: NextPage = () => {
                 
                 <div className="bg-gradient-to-br from-white to-slate-50 p-6 rounded-xl shadow-md">
                   <div className="flex items-start">
-                    <Shield className="h-6 w-6 text-[#A52A2A] mr-3 mt-1 flex-shrink-0" />
+                    <Shield className="h-6 w-6 text-primary mr-3 mt-1 flex-shrink-0" />
                     <div>
                       <h3 className="font-bold text-lg text-[#002147] mb-1">Certified & Insured</h3>
                       <p className="text-gray-700">NNA certified, background screened, and fully insured for your protection</p>
@@ -176,7 +176,7 @@ const GMBContactPage: NextPage = () => {
                 
                 <div className="bg-gradient-to-br from-white to-slate-50 p-6 rounded-xl shadow-md">
                   <div className="flex items-start">
-                    <MapPin className="h-6 w-6 text-[#A52A2A] mr-3 mt-1 flex-shrink-0" />
+                    <MapPin className="h-6 w-6 text-primary mr-3 mt-1 flex-shrink-0" />
                     <div>
                       <h3 className="font-bold text-lg text-[#002147] mb-1">Mobile Convenience</h3>
                       <p className="text-gray-700">We come to your location - no need to travel or wait in lines</p>
@@ -188,33 +188,33 @@ const GMBContactPage: NextPage = () => {
 
             {/* Services Preview */}
             <section>
-              <h2 className="text-3xl font-bold text-[#002147] mb-6 flex items-center">
-                <CheckCircle className="h-8 w-8 text-[#A52A2A] mr-3" />
+              <h2 className="text-3xl font-bold text-secondary mb-6 flex items-center">
+                <CheckCircle className="h-8 w-8 text-primary mr-3" />
                 Our Services
               </h2>
               
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="bg-white p-4 rounded-lg shadow-md">
-                  <h3 className="font-bold text-[#002147] mb-2">Real Estate</h3>
+                  <h3 className="font-bold text-secondary mb-2">Real Estate</h3>
                   <p className="text-sm text-gray-600">Loan signings, deeds, mortgages</p>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-md">
-                  <h3 className="font-bold text-[#002147] mb-2">Legal Documents</h3>
+                  <h3 className="font-bold text-secondary mb-2">Legal Documents</h3>
                   <p className="text-sm text-gray-600">Wills, trusts, power of attorney</p>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-md">
-                  <h3 className="font-bold text-[#002147] mb-2">Business</h3>
+                  <h3 className="font-bold text-secondary mb-2">Business</h3>
                   <p className="text-sm text-gray-600">Contracts, agreements, corporate docs</p>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-md">
-                  <h3 className="font-bold text-[#002147] mb-2">Personal</h3>
+                  <h3 className="font-bold text-secondary mb-2">Personal</h3>
                   <p className="text-sm text-gray-600">Medical forms, applications, affidavits</p>
                 </div>
               </div>
             </section>
             
             {/* Google Reviews Highlight */}
-            <section className="bg-gradient-to-r from-[#002147] to-[#00346e] text-white p-6 rounded-xl">
+            <section className="bg-gradient-to-r from-secondary to-secondary text-white p-6 rounded-xl">
               <div className="flex items-center mb-4">
                 <Star className="h-6 w-6 mr-3 fill-yellow-400 text-yellow-400" />
                 <h3 className="text-xl font-bold">What Our Google Reviewers Say</h3>

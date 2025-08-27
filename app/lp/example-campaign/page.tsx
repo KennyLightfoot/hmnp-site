@@ -37,13 +37,13 @@ function CampaignLeadForm() {
 
 export default function HoustonMobileNotaryLandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-paper to-white">
       {/* Hero Section */}
-      <header className="py-16 bg-gradient-to-r from-[#002147] to-[#00346e] text-white">
+      <header className="py-16 bg-gradient-to-r from-secondary to-secondary text-white">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto text-center">
             <div className="flex justify-center items-center mb-6">
-              <div className="bg-[#A52A2A] p-3 rounded-full mr-4">
+              <div className="bg-primary p-3 rounded-full mr-4">
                 <Shield className="h-8 w-8 text-white" />
               </div>
               <div className="flex items-center space-x-1">
@@ -66,22 +66,22 @@ export default function HoustonMobileNotaryLandingPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 text-center">
               <div className="flex flex-col items-center">
-                <Users className="h-8 w-8 text-yellow-400 mb-2" />
+                <Users className="h-8 w-8 text-brand mb-2" />
                 <div className="text-2xl font-bold">1,000+</div>
                 <div className="text-slate-300">Happy Clients</div>
               </div>
               <div className="flex flex-col items-center">
-                <Star className="h-8 w-8 text-yellow-400 mb-2" />
+                <Star className="h-8 w-8 text-brand mb-2" />
                 <div className="text-2xl font-bold">4.9★</div>
                 <div className="text-slate-300">Average Rating</div>
               </div>
               <div className="flex flex-col items-center">
-                <Clock className="h-8 w-8 text-yellow-400 mb-2" />
+                <Clock className="h-8 w-8 text-brand mb-2" />
                 <div className="text-2xl font-bold">Same Day</div>
                 <div className="text-slate-300">Service Available</div>
               </div>
               <div className="flex flex-col items-center">
-                <Shield className="h-8 w-8 text-yellow-400 mb-2" />
+                <Shield className="h-8 w-8 text-brand mb-2" />
                 <div className="text-2xl font-bold">Certified</div>
                 <div className="text-slate-300">& Insured</div>
               </div>
@@ -98,15 +98,15 @@ export default function HoustonMobileNotaryLandingPage() {
             <div className="space-y-10">
               {/* Services Overview */}
               <section>
-                <h2 className="text-3xl font-bold text-[#002147] mb-6 flex items-center">
-                  <FileText className="h-8 w-8 text-[#A52A2A] mr-3" />
+                <h2 className="text-3xl font-bold text-secondary mb-6 flex items-center">
+                  <FileText className="h-8 w-8 text-primary mr-3" />
                   Complete Notary Services
                 </h2>
                 
                 <div className="grid md:grid-cols-2 gap-6">
-                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-[#A52A2A]">
-                    <Home className="h-8 w-8 text-[#A52A2A] mb-4" />
-                    <h3 className="font-bold text-lg mb-3 text-[#002147]">Real Estate Documents</h3>
+                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-primary">
+                    <Home className="h-8 w-8 text-primary mb-4" />
+                    <h3 className="font-bold text-lg mb-3 text-secondary">Real Estate Documents</h3>
                     <ul className="text-gray-700 space-y-1 text-sm">
                       <li>✓ Loan Signings & Closings</li>
                       <li>✓ Refinance Documents</li>
@@ -115,9 +115,9 @@ export default function HoustonMobileNotaryLandingPage() {
                     </ul>
                   </div>
                   
-                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-[#A52A2A]">
-                    <Shield className="h-8 w-8 text-[#A52A2A] mb-4" />
-                    <h3 className="font-bold text-lg mb-3 text-[#002147]">Legal Documents</h3>
+                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-primary">
+                    <Shield className="h-8 w-8 text-primary mb-4" />
+                    <h3 className="font-bold text-lg mb-3 text-secondary">Legal Documents</h3>
                     <ul className="text-gray-700 space-y-1 text-sm">
                       <li>✓ Wills & Trusts</li>
                       <li>✓ Power of Attorney</li>
@@ -126,9 +126,9 @@ export default function HoustonMobileNotaryLandingPage() {
                     </ul>
                   </div>
                   
-                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-[#A52A2A]">
-                    <Building2 className="h-8 w-8 text-[#A52A2A] mb-4" />
-                    <h3 className="font-bold text-lg mb-3 text-[#002147]">Business Documents</h3>
+                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-primary">
+                    <Building2 className="h-8 w-8 text-primary mb-4" />
+                    <h3 className="font-bold text-lg mb-3 text-secondary">Business Documents</h3>
                     <ul className="text-gray-700 space-y-1 text-sm">
                       <li>✓ Contracts & Agreements</li>
                       <li>✓ Corporate Resolutions</li>
@@ -137,9 +137,9 @@ export default function HoustonMobileNotaryLandingPage() {
                     </ul>
                   </div>
                   
-                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-[#A52A2A]">
-                    <FileText className="h-8 w-8 text-[#A52A2A] mb-4" />
-                    <h3 className="font-bold text-lg mb-3 text-[#002147]">Personal Documents</h3>
+                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-primary">
+                    <FileText className="h-8 w-8 text-primary mb-4" />
+                    <h3 className="font-bold text-lg mb-3 text-secondary">Personal Documents</h3>
                     <ul className="text-gray-700 space-y-1 text-sm">
                       <li>✓ Medical & Healthcare Forms</li>
                       <li>✓ School & College Applications</li>
@@ -152,15 +152,15 @@ export default function HoustonMobileNotaryLandingPage() {
 
               {/* Why Choose Us */}
               <section>
-                <h2 className="text-3xl font-bold text-[#002147] mb-6 flex items-center">
-                  <Award className="h-8 w-8 text-[#A52A2A] mr-3" />
+                <h2 className="text-3xl font-bold text-secondary mb-6 flex items-center">
+                  <Award className="h-8 w-8 text-primary mr-3" />
                   Why Houston Chooses Us
                 </h2>
                 
                 <div className="space-y-4">
                   <div className="bg-gradient-to-br from-white to-slate-50 p-6 rounded-xl shadow-md">
                     <div className="flex items-start">
-                      <MapPin className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
+                      <MapPin className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
                       <div>
                         <h3 className="font-bold text-lg text-[#002147] mb-1">Mobile Convenience</h3>
                         <p className="text-gray-700">We come to your location - home, office, hospital, or anywhere in the Greater Houston area. No travel required on your part.</p>
@@ -170,7 +170,7 @@ export default function HoustonMobileNotaryLandingPage() {
                   
                   <div className="bg-gradient-to-br from-white to-slate-50 p-6 rounded-xl shadow-md">
                     <div className="flex items-start">
-                      <Clock className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
+                      <Clock className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
                       <div>
                         <h3 className="font-bold text-lg text-[#002147] mb-1">Flexible Scheduling</h3>
                         <p className="text-gray-700">Same-day appointments available. Evening and weekend service to accommodate your busy schedule. We work around your timeline.</p>
@@ -180,7 +180,7 @@ export default function HoustonMobileNotaryLandingPage() {
                   
                   <div className="bg-gradient-to-br from-white to-slate-50 p-6 rounded-xl shadow-md">
                     <div className="flex items-start">
-                      <Shield className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
+                      <Shield className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
                       <div>
                         <h3 className="font-bold text-lg text-[#002147] mb-1">Certified & Insured</h3>
                         <p className="text-gray-700">NNA certified notaries, background screened, bonded, and fully insured. Your documents and privacy are completely protected.</p>
@@ -190,7 +190,7 @@ export default function HoustonMobileNotaryLandingPage() {
                   
                   <div className="bg-gradient-to-br from-white to-slate-50 p-6 rounded-xl shadow-md">
                     <div className="flex items-start">
-                      <Zap className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
+                      <Zap className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
                       <div>
                         <h3 className="font-bold text-lg text-[#002147] mb-1">Transparent Pricing</h3>
                         <p className="text-gray-700">Upfront pricing starting at $75 with no hidden fees. You know exactly what you'll pay before we arrive at your location.</p>
@@ -202,8 +202,8 @@ export default function HoustonMobileNotaryLandingPage() {
 
               {/* Client Testimonials */}
               <section>
-                <h2 className="text-3xl font-bold text-[#002147] mb-6 flex items-center">
-                  <Star className="h-8 w-8 text-[#A52A2A] mr-3" />
+                <h2 className="text-3xl font-bold text-secondary mb-6 flex items-center">
+                  <Star className="h-8 w-8 text-primary mr-3" />
                   What Our Clients Say
                 </h2>
                 
@@ -241,12 +241,12 @@ export default function HoustonMobileNotaryLandingPage() {
               </section>
 
               {/* Call to Action */}
-              <section className="bg-[#A52A2A] text-white p-8 rounded-xl">
+              <section className="bg-primary text-white p-8 rounded-xl">
                 <div className="text-center">
                   <Phone className="h-12 w-12 mx-auto mb-4" />
                   <h3 className="text-2xl font-bold mb-4">Need Immediate Service?</h3>
                   <p className="text-lg mb-6">Call us directly for same-day appointments and urgent notarizations throughout the Houston area.</p>
-                  <a href={`tel:${require('@/lib/phone').getBusinessTel()}`} className="bg-white text-[#A52A2A] px-8 py-4 rounded-lg font-bold hover:bg-slate-100 transition-colors inline-block text-lg">
+                  <a href={`tel:${require('@/lib/phone').getBusinessTel()}`} className="bg-white text-primary px-8 py-4 rounded-lg font-bold hover:bg-slate-100 transition-colors inline-block text-lg">
                     Call Now: (832) 617-4285
                   </a>
                 </div>
@@ -257,10 +257,10 @@ export default function HoustonMobileNotaryLandingPage() {
             <div className="lg:sticky lg:top-6">
               <div className="bg-white p-8 rounded-2xl shadow-2xl border border-slate-200">
                 <div className="text-center mb-6">
-                  <div className="bg-[#002147] text-white px-4 py-2 rounded-full inline-block mb-4 font-bold">
+                  <div className="bg-secondary text-white px-4 py-2 rounded-full inline-block mb-4 font-bold">
                     📋 PROFESSIONAL NOTARY SERVICE
                   </div>
-                  <div className="text-2xl font-bold text-[#002147] mb-2">Starting at $75</div>
+                  <div className="text-2xl font-bold text-secondary mb-2">Starting at $75</div>
                   <div className="text-gray-600">Mobile service • Same-day available • No hidden fees</div>
                 </div>
 
@@ -274,7 +274,7 @@ export default function HoustonMobileNotaryLandingPage() {
                 <div className="flex justify-center items-center space-x-4 mb-2">
                   <Shield className="h-4 w-4 text-green-600" />
                   <span>SSL Secured</span>
-                  <Award className="h-4 w-4 text-[#A52A2A]" />
+                  <Award className="h-4 w-4 text-primary" />
                   <span>NNA Certified</span>
                   <Star className="h-4 w-4 text-yellow-400" />
                   <span>4.9/5 Rated</span>

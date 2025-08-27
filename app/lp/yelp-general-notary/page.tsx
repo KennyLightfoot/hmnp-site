@@ -38,13 +38,13 @@ function YelpLeadForm() {
 
 export default function YelpGeneralNotaryLandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-paper to-white">
       {/* Hero Section */}
-      <header className="relative py-16 bg-gradient-to-r from-[#002147] to-[#00346e] text-white">
+      <header className="relative py-16 bg-gradient-to-r from-secondary to-secondary text-white">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto text-center">
             <div className="flex justify-center items-center mb-6">
-              <div className="bg-[#A52A2A] p-3 rounded-full mr-4">
+              <div className="bg-primary p-3 rounded-full mr-4">
                 <Award className="h-8 w-8 text-white" />
               </div>
               <div className="flex items-center space-x-1">
@@ -94,13 +94,13 @@ export default function YelpGeneralNotaryLandingPage() {
             <div className="space-y-10">
               {/* What Our Yelp Reviewers Say */}
               <section>
-                <h2 className="text-3xl font-bold text-[#002147] mb-6 flex items-center">
-                  <Star className="h-8 w-8 text-[#A52A2A] mr-3" />
+                <h2 className="text-3xl font-bold text-secondary mb-6 flex items-center">
+                  <Star className="h-8 w-8 text-primary mr-3" />
                   What Our Yelp Reviewers Love
                 </h2>
                 
                 <div className="grid gap-4 mb-8">
-                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-[#A52A2A]">
+                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-primary">
                     <div className="flex items-center mb-3">
                       {[1,2,3,4,5].map((star) => (
                         <Star key={star} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
@@ -110,7 +110,7 @@ export default function YelpGeneralNotaryLandingPage() {
                     <p className="text-gray-700 italic">"Exceptional service! They came to my office within 2 hours and were so professional. Made the whole process stress-free."</p>
                   </div>
                   
-                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-[#A52A2A]">
+                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-primary">
                     <div className="flex items-center mb-3">
                       {[1,2,3,4,5].map((star) => (
                         <Star key={star} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
@@ -124,14 +124,14 @@ export default function YelpGeneralNotaryLandingPage() {
 
               {/* Services Section */}
               <section>
-                <h2 className="text-3xl font-bold text-[#002147] mb-6 flex items-center">
-                  <CheckCircle className="h-8 w-8 text-[#A52A2A] mr-3" />
+                <h2 className="text-3xl font-bold text-secondary mb-6 flex items-center">
+                  <CheckCircle className="h-8 w-8 text-primary mr-3" />
                   Complete Notary Services
                 </h2>
                 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="bg-gradient-to-br from-white to-slate-50 p-6 rounded-xl shadow-md">
-                    <h3 className="font-bold text-lg mb-3 text-[#002147]">Real Estate Documents</h3>
+                    <h3 className="font-bold text-lg mb-3 text-secondary">Real Estate Documents</h3>
                     <ul className="text-gray-700 space-y-1 text-sm">
                       <li>• Loan Signings</li>
                       <li>• Purchase Agreements</li>
@@ -141,7 +141,7 @@ export default function YelpGeneralNotaryLandingPage() {
                   </div>
                   
                   <div className="bg-gradient-to-br from-white to-slate-50 p-6 rounded-xl shadow-md">
-                    <h3 className="font-bold text-lg mb-3 text-[#002147]">Legal Documents</h3>
+                    <h3 className="font-bold text-lg mb-3 text-secondary">Legal Documents</h3>
                     <ul className="text-gray-700 space-y-1 text-sm">
                       <li>• Wills & Trusts</li>
                       <li>• Power of Attorney</li>
@@ -151,7 +151,7 @@ export default function YelpGeneralNotaryLandingPage() {
                   </div>
                   
                   <div className="bg-gradient-to-br from-white to-slate-50 p-6 rounded-xl shadow-md">
-                    <h3 className="font-bold text-lg mb-3 text-[#002147]">Business Documents</h3>
+                    <h3 className="font-bold text-lg mb-3 text-secondary">Business Documents</h3>
                     <ul className="text-gray-700 space-y-1 text-sm">
                       <li>• Contracts & Agreements</li>
                       <li>• Corporate Resolutions</li>
@@ -161,7 +161,7 @@ export default function YelpGeneralNotaryLandingPage() {
                   </div>
                   
                   <div className="bg-gradient-to-br from-white to-slate-50 p-6 rounded-xl shadow-md">
-                    <h3 className="font-bold text-lg mb-3 text-[#002147]">Personal Documents</h3>
+                    <h3 className="font-bold text-lg mb-3 text-secondary">Personal Documents</h3>
                     <ul className="text-gray-700 space-y-1 text-sm">
                       <li>• Medical Forms</li>
                       <li>• School Applications</li>
@@ -174,14 +174,14 @@ export default function YelpGeneralNotaryLandingPage() {
 
               {/* Why Choose Us */}
               <section>
-                <h2 className="text-3xl font-bold text-[#002147] mb-6 flex items-center">
-                  <Shield className="h-8 w-8 text-[#A52A2A] mr-3" />
+                <h2 className="text-3xl font-bold text-secondary mb-6 flex items-center">
+                  <Shield className="h-8 w-8 text-primary mr-3" />
                   Why Yelp Reviewers Choose Us
                 </h2>
                 
                 <div className="space-y-4">
                   <div className="flex items-start">
-                    <MapPin className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
+                    <MapPin className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
                     <div>
                       <h3 className="font-bold text-lg text-[#002147] mb-1">We Come to You</h3>
                       <p className="text-gray-700">Service at your home, office, hospital, or any convenient location throughout the Greater Houston area.</p>
@@ -189,7 +189,7 @@ export default function YelpGeneralNotaryLandingPage() {
                   </div>
                   
                   <div className="flex items-start">
-                    <Clock className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
+                    <Clock className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
                     <div>
                       <h3 className="font-bold text-lg text-[#002147] mb-1">Fast & Flexible</h3>
                       <p className="text-gray-700">Same-day appointments available. Evening and weekend service to fit your schedule.</p>
@@ -197,7 +197,7 @@ export default function YelpGeneralNotaryLandingPage() {
                   </div>
                   
                   <div className="flex items-start">
-                    <Shield className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
+                    <Shield className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
                     <div>
                       <h3 className="font-bold text-lg text-[#002147] mb-1">Certified & Insured</h3>
                       <p className="text-gray-700">NNA certified, background screened, and fully insured for your peace of mind.</p>
@@ -205,7 +205,7 @@ export default function YelpGeneralNotaryLandingPage() {
                   </div>
                   
                   <div className="flex items-start">
-                    <Award className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
+                    <Award className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
                     <div>
                       <h3 className="font-bold text-lg text-[#002147] mb-1">Transparent Pricing</h3>
                       <p className="text-gray-700">Upfront pricing starting at ${SERVICES_CONFIG.STANDARD_NOTARY.basePrice}. No hidden fees or surprise charges.</p>
@@ -215,13 +215,13 @@ export default function YelpGeneralNotaryLandingPage() {
               </section>
 
               {/* Emergency Contact */}
-              <section className="bg-[#A52A2A] text-white p-6 rounded-xl">
+              <section className="bg-primary text-white p-6 rounded-xl">
                 <div className="flex items-center mb-4">
                   <Phone className="h-6 w-6 mr-3" />
                   <h3 className="text-xl font-bold">Need Immediate Service?</h3>
                 </div>
                 <p className="mb-4">Call us directly for same-day appointments and urgent notarizations.</p>
-                <a href={`tel:${require('@/lib/phone').getBusinessTel()}`} className="bg-white text-[#A52A2A] px-6 py-3 rounded-lg font-bold hover:bg-slate-100 transition-colors inline-block">
+                <a href={`tel:${require('@/lib/phone').getBusinessTel()}`} className="bg-white text-primary px-6 py-3 rounded-lg font-bold hover:bg-slate-100 transition-colors inline-block">
                   Call Now: (832) 617-4285
                 </a>
               </section>
