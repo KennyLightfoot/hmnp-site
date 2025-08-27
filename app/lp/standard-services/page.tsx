@@ -65,35 +65,35 @@ export default function StandardServicesLandingPage() {
         features={["Same‑day appointments", "Licensed, bonded, insured", "Mobile & online options"]}
       />
       <LazyEnhancedFAQSchema />
-      <header className="bg-gradient-to-r from-[#002147] to-[#003366] text-white">
+      <header className="bg-gradient-to-r from-secondary to-secondary text-white">
         <div className="container mx-auto px-4 py-16">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="inline-block bg-[#A52A2A] px-4 py-2 rounded-full text-sm font-medium mb-6">
+              <div className="inline-block bg-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
                 Standard Notary Services (Greater Houston)
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
                 {headline}
-                <span className="text-[#A52A2A]"> When and Where You Need</span>
+                <span className="text-primary"> When and Where You Need</span>
               </h1>
               <p className="text-lg text-blue-100 mb-6">
                 Mobile notary to your location, online notarization, and certified loan signings. Book same‑day appointments.
               </p>
               <div className="flex flex-wrap gap-4">
-                <a href="#form" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white px-8 py-3 rounded-lg font-semibold inline-flex items-center justify-center">
+                <a href="#form" className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg font-semibold inline-flex items-center justify-center">
                   {subCtaText}
                 </a>
-                <a href={`tel:${getBusinessTel()}`} className="border-2 border-white text-white hover:bg-white hover:text-[#002147] px-8 py-3 rounded-lg font-semibold inline-flex items-center justify-center" onClick={() => trackPhoneClick('lp_standard_services_hero')}>
+                <a href={`tel:${getBusinessTel()}`} className="border-2 border-white text-white hover:bg-white hover:text-secondary px-8 py-3 rounded-lg font-semibold inline-flex items-center justify-center" onClick={() => trackPhoneClick('lp_standard_services_hero')}>
                   Call {getBusinessPhoneFormatted()}
                 </a>
-                <a href={`sms:${getBusinessTel()}`} className="border-2 border-white/70 text-white/90 hover:bg-white hover:text-[#002147] px-8 py-3 rounded-lg font-semibold inline-flex items-center justify-center">
+                <a href={`sms:${getBusinessTel()}`} className="border-2 border-white/70 text-white/90 hover:bg-white hover:text-secondary px-8 py-3 rounded-lg font-semibold inline-flex items-center justify-center">
                   Text Us
                 </a>
               </div>
               <div className="mt-6 flex flex-wrap items-center gap-4 text-blue-100 text-sm">
-                <div className="flex items-center gap-2"><Star className="h-4 w-4 text-[#A52A2A]" /> 4.9★ average rating</div>
-                <div className="flex items-center gap-2"><BadgeCheck className="h-4 w-4 text-[#A52A2A]" /> Licensed • Bonded • Insured</div>
-                <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-[#A52A2A]" /> On‑Time Guarantee</div>
+                <div className="flex items-center gap-2"><Star className="h-4 w-4 text-primary" /> 4.9★ average rating</div>
+                <div className="flex items-center gap-2"><BadgeCheck className="h-4 w-4 text-primary" /> Licensed • Bonded • Insured</div>
+                <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-primary" /> On‑Time Guarantee</div>
               </div>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8">
@@ -158,15 +158,15 @@ export default function StandardServicesLandingPage() {
         <section className="py-14 bg-gray-50">
           <div className="container mx-auto px-4">
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-[#002147] mb-3">Our Core Services</h2>
+              <h2 className="text-3xl font-bold text-secondary mb-3">Our Core Services</h2>
               <p className="text-gray-600">Transparent pricing. Professional, on‑time service. Mobile and online options available.</p>
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
               <div className="bg-white p-6 rounded-xl shadow">
                 <div className="flex items-center gap-3 mb-3">
-                  <FileText className="h-6 w-6 text-[#002147]" />
-                  <h3 className="text-lg font-semibold text-[#002147]">General Notarization</h3>
+                  <FileText className="h-6 w-6 text-secondary" />
+                  <h3 className="text-lg font-semibold text-secondary">General Notarization</h3>
                 </div>
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li>• Acknowledgments, Jurats, Affidavits</li>
@@ -176,8 +176,8 @@ export default function StandardServicesLandingPage() {
               </div>
               <div className="bg-white p-6 rounded-xl shadow">
                 <div className="flex items-center gap-3 mb-3">
-                  <Building2 className="h-6 w-6 text-[#002147]" />
-                  <h3 className="text-lg font-semibold text-[#002147]">Loan Signing</h3>
+                  <Building2 className="h-6 w-6 text-secondary" />
+                  <h3 className="text-lg font-semibold text-secondary">Loan Signing</h3>
                 </div>
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li>• Purchases, Refinances, HELOCs</li>
@@ -187,8 +187,8 @@ export default function StandardServicesLandingPage() {
               </div>
               <div className="bg-white p-6 rounded-xl shadow">
                 <div className="flex items-center gap-3 mb-3">
-                  <Shield className="h-6 w-6 text-[#002147]" />
-                  <h3 className="text-lg font-semibold text-[#002147]">Online Notary (RON)</h3>
+                  <Shield className="h-6 w-6 text-secondary" />
+                  <h3 className="text-lg font-semibold text-secondary">Online Notary (RON)</h3>
                 </div>
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li>• Secure remote video notarization</li>
@@ -217,7 +217,7 @@ export default function StandardServicesLandingPage() {
           <div className="container mx-auto px-4 max-w-4xl">
             <div className="bg-white p-8 rounded-2xl shadow-xl">
               <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-[#002147]">Tell Us What You Need</h3>
+                <h3 className="text-2xl font-bold text-secondary">Tell Us What You Need</h3>
                 <p className="text-gray-600">We reply within 10–20 minutes during service hours.</p>
               </div>
               <Suspense fallback={<div className="p-8">
@@ -245,10 +245,10 @@ export default function StandardServicesLandingPage() {
       {/* Sticky CTA bar */}
       <div className="fixed inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur border-t shadow-sm">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-3 text-sm">
-          <div className="flex items-center gap-2 text-[#002147]"><Rocket className="h-4 w-4" /> Fast quote • Same‑day available</div>
+          <div className="flex items-center gap-2 text-secondary"><Rocket className="h-4 w-4" /> Fast quote • Same‑day available</div>
           <div className="flex items-center gap-2">
-            <a href="#form" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white px-4 py-2 rounded-md font-semibold">Get a quote</a>
-            <a href={`tel:${getBusinessTel()}`} className="text-[#002147] underline" onClick={() => trackPhoneClick('lp_standard_services_sticky_bar')}>Call now</a>
+            <a href="#form" className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md font-semibold">Get a quote</a>
+            <a href={`tel:${getBusinessTel()}`} className="text-secondary underline" onClick={() => trackPhoneClick('lp_standard_services_sticky_bar')}>Call now</a>
           </div>
         </div>
       </div>
