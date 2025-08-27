@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SERVICES_CONFIG } from "@/lib/services/config"
 import { PRICING_CONFIG } from "@/lib/pricing/base"
+import EstimatorStrip from "@/components/EstimatorStrip"
 
 // Define Base URL for metadata
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'; // Replace with your actual domain
@@ -62,7 +63,7 @@ export default function EssentialServicePage() {
       </div>
 
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-[#002147] to-[#003366] text-white py-16">
+      <div className="bg-gradient-to-r from-secondary to-secondary text-white py-16">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
             Essential Mobile Notary
@@ -75,16 +76,19 @@ export default function EssentialServicePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/booking?service=essential">
-              <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-white">
                 Book Appointment
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link href="/contact">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147]">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-secondary">
                 Get Quote
               </Button>
             </Link>
+          </div>
+          <div className="max-w-3xl mx-auto mt-6">
+            <EstimatorStrip defaultMode="MOBILE" />
           </div>
         </div>
       </div>
@@ -276,7 +280,7 @@ export default function EssentialServicePage() {
                   <p className="text-gray-700">info@houstonmobilenotarypros.com</p>
                 </div>
                 <Link href="/contact">
-                  <Button className="w-full bg-[#002147] hover:bg-[#003366] text-white">
+                  <Button className="w-full bg-secondary hover:bg-secondary/90 text-white">
                     Get Custom Quote
                   </Button>
                 </Link>
