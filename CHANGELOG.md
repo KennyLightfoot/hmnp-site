@@ -7,6 +7,16 @@
 - chore(phone): roll out phone util to hero, booking, FAQ, services, and LPs; add tel click tracking
 - fix(pricing): remove same-day surcharge for `STANDARD_NOTARY` in unified pricing engine
 
+### P0 Ads Prep (in progress)
+- feat(lp): add message-matched LPs for Paid Search
+  - `/lp/mobile-notary` (STANDARD_NOTARY preselected)
+  - `/lp/ron` (RON_SERVICES preselected)
+  - `/lp/loan-signing` (LOAN_SIGNING preselected)
+- feat(analytics): persist UTM/GCLID on first hit via `AttributionInit`
+- feat(dni): basic DNI scaffolding via env in `lib/phone.ts`
+- perf: prefetch `/booking` on LPs for faster CTA click
+- analytics: GA4 `estimate_requested` event in `components/EstimatorStrip.tsx`
+
 ## 2025-08-23
 
 - feat: Inline `enhanced_conversion_data` with `booking_complete` dataLayer push on `app/booking/success/page.tsx` to align with GTM variables DLV – value, currency, transaction_id, and enhanced_conversion_data.

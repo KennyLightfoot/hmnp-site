@@ -1,10 +1,15 @@
 "use client"
 
-// import Image from "next/image"
+import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { Menu, X } from "lucide-react"
 import { track } from "@/app/lib/analytics"
+import { persistAttribution, getAttribution } from "@/lib/utm"
+import dynamic from 'next/dynamic'
+const ExitIntentModal = dynamic(() => import('@/components/ExitIntentModal'), { ssr: false })
+
+const StickyCallButton = dynamic(() => import('@/components/StickyCallButton'), { ssr: false })
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -12,6 +17,7 @@ export default function Header() {
 
   // Handle scroll event to add shadow when scrolled
   useEffect(() => {
+    persistAttribution()
     const handleScroll = () => {
       setHasScrolled(window.scrollY > 10)
     }
@@ -34,8 +40,11 @@ export default function Header() {
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center" onClick={() => track('cta_clicked', { cta_name: 'Logo', location: 'header' })}>
-            <img src="/logo.png" alt="Houston Mobile Notary Pros" className="h-14 w-auto" />
+          <Link href="/" className="flex items-center" onClick={() => {
+            const a = getAttribution()
+            track('cta_click', { cta_name: 'Logo', location: 'header', ...a })
+          }}>
+            <Image src="/logo.png" alt="Houston Mobile Notary Pros" width={140} height={56} priority />
           </Link>
 
           {/* Mobile menu button */}
@@ -63,7 +72,7 @@ export default function Header() {
                   { href: '/login', label: 'Sign In' }
                 ].map((item) => (
                   <li key={item.href}>
-                    <Link href={item.href} className="text-white/80 hover:text-white" onClick={() => track('cta_clicked', { cta_name: item.label, location: 'header' })}>
+                    <Link href={item.href} className="text-white/80 hover:text-white" onClick={() => track('cta_click', { cta_name: item.label, location: 'header' })}>
                       {item.label}
                     </Link>
                   </li>
@@ -73,12 +82,14 @@ export default function Header() {
             <Link
               href="/booking"
               className="px-6 py-2 rounded-full transition-colors font-medium hover:shadow-md bg-primary text-white"
-              onClick={() => track('cta_clicked', { cta_name: 'Book', location: 'header' })}
+              onClick={() => track('cta_click', { cta_name: 'Book', location: 'header' })}
             >
               Book Now
             </Link>
           </div>
         </div>
+        <StickyCallButton />
+        <ExitIntentModal />
 
         {/* Mobile navigation */}
         {isMenuOpen && (
@@ -99,7 +110,7 @@ export default function Header() {
                   <Link
                     href={item.href}
                     className="text-white/90 hover:text-white block"
-                    onClick={() => { setIsMenuOpen(false); track('cta_clicked', { cta_name: item.label, location: 'header' }) }}
+                    onClick={() => { setIsMenuOpen(false); track('cta_click', { cta_name: item.label, location: 'header' }) }}
                   >
                     {item.label}
                   </Link>
@@ -109,7 +120,7 @@ export default function Header() {
                 <Link
                   href="/booking"
                   className="bg-primary text-white px-6 py-2 rounded-full transition-colors inline-block font-medium hover:shadow-md"
-                  onClick={() => { setIsMenuOpen(false); track('cta_clicked', { cta_name: 'Book', location: 'header' }) }}
+                  onClick={() => { setIsMenuOpen(false); track('cta_click', { cta_name: 'Book', location: 'header' }) }}
                 >
                   Book Now
                 </Link>

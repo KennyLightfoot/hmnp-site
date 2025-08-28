@@ -4,6 +4,10 @@ import LeadForm from "@/components/lead-form";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react"; // Import Suspense
 import Link from "next/link"
+import MobileDock from "@/components/MobileDock";
+import EstimatorStrip from "@/components/EstimatorStrip";
+import { track } from "@/app/lib/analytics";
+import { useVariant } from "@/app/lib/abTesting";
 
 // This internal component is needed because useSearchParams can only be used in Client Components
 function EstatePlanningLeadForm() {
@@ -41,10 +45,12 @@ function EstatePlanningLeadForm() {
 }
 
 export default function EstatePlanningLandingPage() {
+  const heroVariant = useVariant('estate_planning_hero', 'A') as 'A' | 'B'
+  const heroHeadline = heroVariant === 'A' ? 'Mobile Notary for Your Estate Planning' : 'Estate Planning Notarized, Done Right'
   return (
     <div className="container mx-auto px-4 py-12">
       <header className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-gray-800">Mobile Notary for Your Estate Planning</h1>
+        <h1 className="text-4xl font-bold text-secondary font-serif">{heroHeadline}</h1>
         <p className="text-xl text-gray-600 mt-4">
           Professional, convenient, and compassionate handling of your most important documents.
         </p>
@@ -55,6 +61,10 @@ export default function EstatePlanningLandingPage() {
           <EstatePlanningLeadForm />
         </Suspense>
       </section>
+
+      <div className="max-w-3xl mx-auto mt-8">
+        <EstimatorStrip defaultMode="MOBILE" />
+      </div>
 
       <section className="mt-12 text-center text-gray-700">
         <h2 className="text-3xl font-semibold mb-6">Our Estate Planning Package Includes:</h2>
@@ -94,11 +104,13 @@ export default function EstatePlanningLandingPage() {
         </p>
         <Link 
           href="/services/estate-planning" 
-          className="text-[#A52A2A] hover:underline font-medium"
+          onClick={() => track('cta_clicked', { cta_name: 'View Detailed Service Information', location: 'body', lp: 'estate-planning' })}
+          className="text-primary hover:underline font-medium"
         >
           View Detailed Service Information →
         </Link>
       </section>
+      <MobileDock />
     </div>
   );
 } 

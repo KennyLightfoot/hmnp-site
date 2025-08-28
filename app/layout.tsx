@@ -9,6 +9,8 @@ import GAConversionEvents from "@/components/analytics/GAConversionEvents"
 import { LoadingSpinner } from "@/components/ui/loading-states"
 import dynamic from 'next/dynamic'
 import Analytics from '@/components/Analytics'
+import SchemaInitializer from '@/components/SchemaInitializer'
+import AttributionInit from '@/components/analytics/AttributionInit'
 
 // Fonts now provided via CSS variables for Tailwind
 
@@ -78,6 +80,7 @@ const LazyFooter = dynamic(() => import('@/components/footer'), {
   loading: () => <div className="h-64 bg-gray-900 animate-pulse" />
 })
 
+
 export default function RootLayout({
   children,
 }: {
@@ -102,6 +105,9 @@ export default function RootLayout({
         <Suspense>
           <Analytics />
         </Suspense>
+        <AttributionInit />
+        {/* Initialize enhanced schema in browser */}
+        <SchemaInitializer />
         {process.env.NEXT_PUBLIC_GTM_ID && (
           <noscript>
             <iframe

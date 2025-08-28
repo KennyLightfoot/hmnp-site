@@ -152,6 +152,8 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
 
   const computedTotal = Number((validatedData as any)?.pricing?.totalPrice || 0)
   const uploadedDocs = Array.isArray((rawBody as any)?.uploadedDocs) ? (rawBody as any).uploadedDocs : null
+  const utmParameters = (rawBody as any)?.utmParameters || null
+  const referrer = typeof (rawBody as any)?.referrer === 'string' ? (rawBody as any).referrer : null
 
   const booking = await prisma.booking.create({
     data: {
@@ -164,7 +166,21 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
       depositStatus: 'PENDING',
       status: 'CONFIRMED',
       paymentMethod,
-      notes: `payment_method:${paymentMethod}`,
+      notes: [
+        `payment_method:${paymentMethod}`,
+        referrer ? `referrer:${referrer}` : null,
+        utmParameters?.utm_source ? `utm_source:${utmParameters.utm_source}` : null,
+        utmParameters?.utm_medium ? `utm_medium:${utmParameters.utm_medium}` : null,
+        utmParameters?.utm_campaign ? `utm_campaign:${utmParameters.utm_campaign}` : null,
+        utmParameters?.utm_term ? `utm_term:${utmParameters.utm_term}` : null,
+        utmParameters?.utm_content ? `utm_content:${utmParameters.utm_content}` : null,
+        utmParameters?.gclid ? `gclid:${utmParameters.gclid}` : null,
+        utmParameters?.msclkid ? `msclkid:${utmParameters.msclkid}` : null,
+        utmParameters?.fbclid ? `fbclid:${utmParameters.fbclid}` : null,
+      ].filter(Boolean).join('|'),
+      // Map primary attribution to available fields
+      leadSource: utmParameters?.utm_source || utmParameters?.gclid ? 'paid' : (utmParameters?.utm_source || 'website'),
+      campaignName: utmParameters?.utm_campaign || undefined,
       uploadedDocuments: uploadedDocs && uploadedDocs.length > 0 ? {
         create: uploadedDocs.map((d: any) => ({
           s3Key: d.key,

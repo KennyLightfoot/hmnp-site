@@ -5,6 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react"; // Import Suspense
 import Link from "next/link";
 import { CheckCircle, Clock, Shield, Users, Award, ArrowRight, FileText, MapPin } from "lucide-react";
+import EstimatorStrip from "@/components/EstimatorStrip";
+import MobileDock from "@/components/MobileDock";
+import { track } from "@/app/lib/analytics";
+import { useVariant } from "@/app/lib/abTesting";
 import { SERVICES_CONFIG } from "@/lib/services/config";
 
 // This internal component is needed because useSearchParams can only be used in Client Components
@@ -50,20 +54,25 @@ function CampaignLeadForm() {
 }
 
 export default function GoogleLoanSigningLandingPage() {
+  const heroVariant = useVariant('ls_hero', 'A') as 'A' | 'B'
+  const heroHeadline = heroVariant === 'A'
+    ? 'Expert Loan Signing Services'
+    : 'Error‑Free Loan Signings, On Your Schedule'
+  const primaryCtaText = heroVariant === 'A' ? 'Get Started Now' : 'Book Your Signing'
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-[#002147] to-[#003366] text-white">
+      <div className="bg-gradient-to-r from-secondary to-secondary text-white">
         <div className="container mx-auto px-4 py-16">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Column - Hero Content */}
             <div>
-              <div className="inline-block bg-[#A52A2A] px-4 py-2 rounded-full text-sm font-medium mb-6">
+              <div className="inline-block bg-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
                 ⭐ Houston's #1 Rated Loan Signing Service
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-                Expert Loan Signing Services
-                <span className="text-[#A52A2A]"> Ready When You Are</span>
+              <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight font-serif">
+                {heroHeadline}
+                <span className="text-primary"> Ready When You Are</span>
               </h1>
               <p className="text-xl text-blue-100 mb-8 leading-relaxed">
                 Need loan documents signed quickly and correctly? Our certified signing specialists handle 
@@ -73,29 +82,41 @@ export default function GoogleLoanSigningLandingPage() {
               {/* Key Benefits */}
               <div className="grid md:grid-cols-2 gap-4 mb-8">
                 <div className="flex items-center space-x-3">
-                  <CheckCircle className="h-5 w-5 text-[#A52A2A] flex-shrink-0" />
+                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
                   <span className="text-sm">NNA Certified Specialists • 30-mi included • +$25 evenings/weekends</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <CheckCircle className="h-5 w-5 text-[#A52A2A] flex-shrink-0" />
+                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
                   <span className="text-sm">Same-Day Availability</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <CheckCircle className="h-5 w-5 text-[#A52A2A] flex-shrink-0" />
+                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
                   <span className="text-sm">Mobile Service Available</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <CheckCircle className="h-5 w-5 text-[#A52A2A] flex-shrink-0" />
+                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
                   <span className="text-sm">RON Capable</span>
                 </div>
               </div>
 
+              <div className="mt-2 max-w-md">
+                <EstimatorStrip defaultMode="MOBILE" />
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-4">
-                <a href="#form" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white px-8 py-4 rounded-lg font-semibold text-center transition-colors inline-flex items-center justify-center">
-                  Get Started Now
+                <a
+                  href="#form"
+                  onClick={() => track('cta_clicked', { cta_name: primaryCtaText, variant: heroVariant, location: 'hero', lp: 'google-loan-signing' })}
+                  className="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-lg shadow font-semibold text-center transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40"
+                >
+                  {primaryCtaText}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </a>
-                <Link href="/services/loan-signing-specialist" className="border-2 border-white text-white hover:bg-white hover:text-[#002147] px-8 py-4 rounded-lg font-semibold text-center transition-colors">
+                <Link
+                  href="/services/loan-signing-specialist"
+                  onClick={() => track('cta_clicked', { cta_name: 'Learn More', location: 'hero_secondary', lp: 'google-loan-signing' })}
+                  className="border-2 border-white text-white hover:bg-white hover:text-secondary px-8 py-4 rounded-lg font-semibold text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40"
+                >
                   Learn More About Our Service
                 </Link>
               </div>
@@ -106,19 +127,19 @@ export default function GoogleLoanSigningLandingPage() {
               <h3 className="text-2xl font-bold mb-6 text-center">Trusted by Houston</h3>
               <div className="grid grid-cols-2 gap-6">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-[#A52A2A] mb-2">500+</div>
+                  <div className="text-3xl font-bold text-primary mb-2">500+</div>
                   <div className="text-sm text-blue-100">Loan Signings Completed</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-[#A52A2A] mb-2">24hr</div>
+                  <div className="text-3xl font-bold text-primary mb-2">24hr</div>
                   <div className="text-sm text-blue-100">Average Response Time</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-[#A52A2A] mb-2">4.9★</div>
+                  <div className="text-3xl font-bold text-primary mb-2">4.9★</div>
                   <div className="text-sm text-blue-100">Customer Rating</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-[#A52A2A] mb-2">7days</div>
+                  <div className="text-3xl font-bold text-primary mb-2">7days</div>
                   <div className="text-sm text-blue-100">Week Availability</div>
                 </div>
               </div>
@@ -131,7 +152,7 @@ export default function GoogleLoanSigningLandingPage() {
       <div className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-[#002147] mb-4">Comprehensive Loan Signing Services</h2>
+            <h2 className="text-3xl font-bold text-secondary mb-4 font-serif">Comprehensive Loan Signing Services</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               From refinances to purchases, we handle all types of loan documents with precision and professionalism.
             </p>
@@ -139,10 +160,10 @@ export default function GoogleLoanSigningLandingPage() {
 
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-white p-6 rounded-xl shadow-lg text-center">
-              <div className="bg-[#002147] p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+              <div className="bg-secondary p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <FileText className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-[#002147] mb-3">Refinance Signings</h3>
+              <h3 className="text-xl font-semibold text-secondary mb-3">Refinance Signings</h3>
               <p className="text-gray-600 mb-4">Complete refinance document packages handled with expertise and care.</p>
               <ul className="text-sm text-gray-500 text-left space-y-1">
                 <li>• Rate and term refinances</li>
@@ -152,10 +173,10 @@ export default function GoogleLoanSigningLandingPage() {
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-lg text-center">
-              <div className="bg-[#A52A2A] p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+              <div className="bg-primary p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <Users className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-[#002147] mb-3">Purchase Signings</h3>
+              <h3 className="text-xl font-semibold text-secondary mb-3">Purchase Signings</h3>
               <p className="text-gray-600 mb-4">Make your home buying experience smooth with our certified specialists.</p>
               <ul className="text-sm text-gray-500 text-left space-y-1">
                 <li>• Conventional purchases</li>
@@ -165,10 +186,10 @@ export default function GoogleLoanSigningLandingPage() {
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-lg text-center">
-              <div className="bg-[#002147] p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+              <div className="bg-secondary p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <Shield className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-[#002147] mb-3">Specialty Loans</h3>
+              <h3 className="text-xl font-semibold text-secondary mb-3">Specialty Loans</h3>
               <p className="text-gray-600 mb-4">Experienced with complex and specialty loan document types.</p>
               <ul className="text-sm text-gray-500 text-left space-y-1">
                 <li>• Reverse mortgages</li>
@@ -185,7 +206,7 @@ export default function GoogleLoanSigningLandingPage() {
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl font-bold text-[#002147] mb-6">
+              <h2 className="text-3xl font-bold text-secondary mb-6 font-serif">
                 Why Lenders & Title Companies Choose Us
               </h2>
               <p className="text-xl text-gray-600 mb-8">
@@ -194,50 +215,54 @@ export default function GoogleLoanSigningLandingPage() {
 
               <div className="space-y-6">
                 <div className="flex items-start space-x-4">
-                  <div className="bg-[#A52A2A] p-2 rounded-full flex-shrink-0">
+                  <div className="bg-primary p-2 rounded-full flex-shrink-0">
                     <Award className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-[#002147] mb-2">NNA Certified & Background Screened</h4>
+                    <h4 className="font-semibold text-secondary mb-2">NNA Certified & Background Screened</h4>
                     <p className="text-gray-600">All our loan signing agents are certified by the National Notary Association and undergo comprehensive background checks.</p>
                   </div>
                 </div>
 
                 <div className="flex items-start space-x-4">
-                  <div className="bg-[#A52A2A] p-2 rounded-full flex-shrink-0">
+                  <div className="bg-primary p-2 rounded-full flex-shrink-0">
                     <Clock className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-[#002147] mb-2">Fast Turnaround Times</h4>
+                    <h4 className="font-semibold text-secondary mb-2">Fast Turnaround Times</h4>
                     <p className="text-gray-600">Same-day appointments available with documents returned promptly via FedEx or scan-back.</p>
                   </div>
                 </div>
 
                 <div className="flex items-start space-x-4">
-                  <div className="bg-[#A52A2A] p-2 rounded-full flex-shrink-0">
+                  <div className="bg-primary p-2 rounded-full flex-shrink-0">
                     <MapPin className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-[#002147] mb-2">Statewide Coverage</h4>
+                    <h4 className="font-semibold text-secondary mb-2">Statewide Coverage</h4>
                     <p className="text-gray-600">Serving the greater Houston area with mobile notary services at your client's convenience.</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-[#002147] to-[#003366] p-8 rounded-2xl text-white">
+            <div className="bg-gradient-to-r from-secondary to-secondary p-8 rounded-2xl text-white">
               <h3 className="text-2xl font-bold mb-6">Ready to Get Started?</h3>
               <p className="text-blue-100 mb-6">
                 Join the hundreds of satisfied clients who trust us with their most important loan signings.
               </p>
               <div className="bg-white/10 backdrop-blur-sm p-6 rounded-lg mb-6">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-[#A52A2A] mb-2">${SERVICES_CONFIG.LOAN_SIGNING.basePrice}</div>
+                  <div className="text-3xl font-bold text-primary mb-2">${SERVICES_CONFIG.LOAN_SIGNING.basePrice}</div>
                   <div className="text-sm text-blue-100">Starting price for loan signings</div>
                   <div className="text-xs text-blue-200 mt-2">*Includes travel within {SERVICES_CONFIG.LOAN_SIGNING.includedRadius} miles</div>
                 </div>
               </div>
-              <a href="#form" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white px-6 py-3 rounded-lg font-semibold w-full text-center block transition-colors">
+              <a
+                href="#form"
+                onClick={() => track('cta_clicked', { cta_name: 'Book Your Signing Today', location: 'why_section', lp: 'google-loan-signing' })}
+                className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg shadow font-semibold w-full text-center block transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40"
+              >
                 Book Your Signing Today
               </a>
             </div>
@@ -250,7 +275,7 @@ export default function GoogleLoanSigningLandingPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-[#002147] mb-4">Connect With Our Loan Signing Specialists</h2>
+              <h2 className="text-3xl font-bold text-secondary mb-4 font-serif">Connect With Our Loan Signing Specialists</h2>
               <p className="text-xl text-gray-600">
                 Fill out the form below and we'll contact you within 2 hours to schedule your signing.
               </p>
@@ -266,22 +291,32 @@ export default function GoogleLoanSigningLandingPage() {
       </div>
 
       {/* Footer CTA */}
-      <div className="bg-[#002147] text-white py-12">
+      <div className="bg-secondary text-white py-12">
         <div className="container mx-auto px-4 text-center">
           <h3 className="text-2xl font-bold mb-4">Questions About Our Loan Signing Services?</h3>
           <p className="text-blue-100 mb-6">
             Our team is here to help. Contact us directly for immediate assistance.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white px-8 py-3 rounded-lg font-semibold transition-colors">
+            <Link
+              href="/contact"
+              onClick={() => track('cta_clicked', { cta_name: 'Contact Us', location: 'footer', lp: 'google-loan-signing' })}
+              className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg shadow font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40"
+            >
               Contact Us
             </Link>
-            <Link href="/services/loan-signing-specialist" className="border-2 border-white text-white hover:bg-white hover:text-[#002147] px-8 py-3 rounded-lg font-semibold transition-colors">
+            <Link
+              href="/services/loan-signing-specialist"
+              onClick={() => track('cta_clicked', { cta_name: 'View All Services', location: 'footer_secondary', lp: 'google-loan-signing' })}
+              className="border-2 border-white text-white hover:bg-white hover:text-secondary px-8 py-3 rounded-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40"
+            >
               View All Services
             </Link>
           </div>
         </div>
       </div>
+
+      <MobileDock />
     </div>
   );
 } 

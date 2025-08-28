@@ -4,15 +4,20 @@ import LeadForm from "@/components/lead-form";
 import { NextPage } from "next";
 import { Gift, ShieldCheck, Zap, Star, Users, Clock, CheckCircle, Phone, Award, Timer } from "lucide-react";
 import { SERVICES_CONFIG } from "@/lib/services/config";
+import MobileDock from "@/components/MobileDock";
+import { track } from "@/app/lib/analytics";
+import { useVariant } from "@/app/lib/abTesting";
 
 const FacebookCampaignPage: NextPage = () => {
+  const heroVariant = useVariant('fb_campaign_hero', 'A') as 'A' | 'B'
+  const primaryCtaText = heroVariant === 'A' ? 'Claim My 30% Discount!' : 'Get 30% Off Now'
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
-      <header className="py-16 bg-gradient-to-r from-[#002147] to-[#00346e] text-white text-center relative overflow-hidden">
+      <header className="py-16 bg-gradient-to-r from-secondary to-secondary text-white text-center relative overflow-hidden">
         <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-4xl mx-auto">
             <div className="flex justify-center items-center mb-6">
-              <div className="bg-[#A52A2A] p-3 rounded-full mr-4 animate-pulse">
+              <div className="bg-primary p-3 rounded-full mr-4 animate-pulse">
                 <Gift className="h-8 w-8 text-white" />
               </div>
               <div className="bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm">
@@ -20,7 +25,7 @@ const FacebookCampaignPage: NextPage = () => {
               </div>
             </div>
             
-            <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
+            <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 font-serif">
               Exclusive <span className="text-yellow-400">Facebook</span> Offer!<br />
               <span className="text-3xl md:text-4xl">Save 30% Today Only</span>
             </h1>
@@ -73,25 +78,25 @@ const FacebookCampaignPage: NextPage = () => {
                   <div className="text-center p-6 bg-white rounded-xl shadow-md">
                     <div className="text-3xl font-bold text-green-600 mb-2">30% OFF</div>
                     <div className="text-gray-600 mb-4">All Notary Services</div>
-                    <div className="text-2xl font-bold text-[#002147]">Starting at ${(SERVICES_CONFIG.STANDARD_NOTARY.basePrice * 0.7).toFixed(2)}</div>
+                    <div className="text-2xl font-bold text-secondary">Starting at ${(SERVICES_CONFIG.STANDARD_NOTARY.basePrice * 0.7).toFixed(2)}</div>
                     <div className="text-sm text-gray-500 line-through">Regular Price: ${SERVICES_CONFIG.STANDARD_NOTARY.basePrice}</div>
                   </div>
                   
                   <div className="space-y-4">
                     <div className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
+                      <CheckCircle className="h-5 w-5 text-primary mr-3" />
                       <span className="text-gray-700">Valid for Facebook users only</span>
                     </div>
                     <div className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
+                      <CheckCircle className="h-5 w-5 text-primary mr-3" />
                       <span className="text-gray-700">Mobile service to your location</span>
                     </div>
                     <div className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
+                      <CheckCircle className="h-5 w-5 text-primary mr-3" />
                       <span className="text-gray-700">Same-day appointments available</span>
                     </div>
                     <div className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
+                      <CheckCircle className="h-5 w-5 text-primary mr-3" />
                       <span className="text-gray-700">No hidden fees or charges</span>
                     </div>
                   </div>
@@ -107,47 +112,47 @@ const FacebookCampaignPage: NextPage = () => {
 
               {/* What You Get */}
               <section>
-                <h2 className="text-3xl font-bold text-[#002147] mb-6 flex items-center">
-                  <Zap className="h-8 w-8 text-[#A52A2A] mr-3" />
+                <h2 className="text-3xl font-bold text-secondary mb-6 flex items-center font-serif">
+                  <Zap className="h-8 w-8 text-primary mr-3" />
                   What's Included in Your Service
                 </h2>
                 
                 <div className="grid gap-4">
-                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-[#A52A2A]">
+                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-primary">
                     <div className="flex items-start">
-                      <ShieldCheck className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
+                      <ShieldCheck className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
                       <div>
-                        <h3 className="font-bold text-lg text-[#002147] mb-2">Professional Mobile Service</h3>
+                        <h3 className="font-bold text-lg text-secondary mb-2">Professional Mobile Service</h3>
                         <p className="text-gray-700">We come to your home, office, hospital, or any convenient location. No need to travel or wait in lines.</p>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-[#A52A2A]">
+                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-primary">
                     <div className="flex items-start">
-                      <Clock className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
+                      <Clock className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
                       <div>
-                        <h3 className="font-bold text-lg text-[#002147] mb-2">Fast & Flexible Scheduling</h3>
+                        <h3 className="font-bold text-lg text-secondary mb-2">Fast & Flexible Scheduling</h3>
                         <p className="text-gray-700">Same-day appointments available. Evening and weekend service to accommodate your busy schedule.</p>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-[#A52A2A]">
+                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-primary">
                     <div className="flex items-start">
-                      <Award className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
+                      <Award className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
                       <div>
-                        <h3 className="font-bold text-lg text-[#002147] mb-2">Certified & Insured</h3>
+                        <h3 className="font-bold text-lg text-secondary mb-2">Certified & Insured</h3>
                         <p className="text-gray-700">NNA certified notaries, background screened, and fully insured for your complete peace of mind.</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-[#A52A2A]">
+                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-primary">
                     <div className="flex items-start">
-                      <CheckCircle className="h-6 w-6 text-[#A52A2A] mr-4 mt-1 flex-shrink-0" />
+                      <CheckCircle className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
                       <div>
-                        <h3 className="font-bold text-lg text-[#002147] mb-2">All Document Types</h3>
+                        <h3 className="font-bold text-lg text-secondary mb-2">All Document Types</h3>
                         <p className="text-gray-700">Real estate, legal documents, business contracts, medical forms, and more. We handle it all professionally.</p>
                       </div>
                     </div>
@@ -157,8 +162,8 @@ const FacebookCampaignPage: NextPage = () => {
 
               {/* Social Proof */}
               <section>
-                <h2 className="text-3xl font-bold text-[#002147] mb-6 flex items-center">
-                  <Star className="h-8 w-8 text-[#A52A2A] mr-3" />
+                <h2 className="text-3xl font-bold text-secondary mb-6 flex items-center font-serif">
+                  <Star className="h-8 w-8 text-primary mr-3" />
                   What Facebook Users Are Saying
                 </h2>
                 
@@ -188,15 +193,18 @@ const FacebookCampaignPage: NextPage = () => {
               </section>
 
               {/* Urgency Call-to-Action */}
-              <section className="bg-[#A52A2A] text-white p-8 rounded-xl">
+              <section className="bg-primary text-white p-8 rounded-xl">
                 <div className="text-center">
                   <Timer className="h-12 w-12 mx-auto mb-4" />
                   <h3 className="text-2xl font-bold mb-4">Don't Miss This Facebook Exclusive!</h3>
                   <p className="text-lg mb-6">This 30% discount is only available for 24 hours and exclusively for Facebook users. Book now to secure your savings!</p>
-                  <div className="flex items-center justify-center space-x-4">
-                    <Phone className="h-5 w-5" />
-                    <span className="text-lg font-semibold">Need immediate help? Call: (832) 617-4285</span>
-                  </div>
+                  <a
+                    href="tel:+18326174285"
+                    onClick={() => track('call_clicked', { location: 'urgency_section', lp: 'facebook-campaign' })}
+                    className="inline-flex items-center justify-center bg-white text-primary hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition-colors"
+                  >
+                    <Phone className="mr-2 h-5 w-5" /> Call (832) 617-4285
+                  </a>
                 </div>
               </section>
             </div>
@@ -221,7 +229,7 @@ const FacebookCampaignPage: NextPage = () => {
                     "lead_source": "Facebook Ad - 30% Exclusive Offer",
                     "discount_claimed": "30_percent_facebook_exclusive"
                   }}
-                  submitButtonText="Claim My 30% Discount!"
+                  submitButtonText={primaryCtaText}
                   formTitle="Secure Your Facebook Discount"
                   formDescription="Fill in your details below to claim your exclusive 30% savings. Limited time offer!"
                   successRedirectUrl="/thank-you-fb-exclusive"
@@ -233,7 +241,7 @@ const FacebookCampaignPage: NextPage = () => {
               {/* Trust Indicators */}
               <div className="mt-6 text-center text-sm text-gray-600">
                 <div className="flex justify-center items-center space-x-4 mb-2">
-                  <ShieldCheck className="h-4 w-4 text-green-600" />
+                  <ShieldCheck className="h-4 w-4 text-primary" />
                   <span>SSL Secured</span>
                   <Star className="h-4 w-4 text-yellow-400" />
                   <span>4.9/5 Rated</span>
@@ -246,7 +254,7 @@ const FacebookCampaignPage: NextPage = () => {
       </main>
 
       {/* Final CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-green-500 to-green-600">
+      <section className="py-16 bg-gradient-to-r from-primary to-primary">
         <div className="container mx-auto px-6 text-center text-white">
           <h2 className="text-3xl font-bold mb-4">Ready to Save 30% on Professional Notary Service?</h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto">
@@ -268,6 +276,16 @@ const FacebookCampaignPage: NextPage = () => {
           </div>
         </div>
       </section>
+      <div className="py-6 text-center">
+        <a
+          href="tel:+18326174285"
+          onClick={() => track('call_clicked', { location: 'sticky_footer', lp: 'facebook-campaign' })}
+          className="inline-flex items-center justify-center bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg shadow font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40"
+        >
+          <Phone className="mr-2 h-5 w-5" /> Call (832) 617-4285
+        </a>
+      </div>
+      <MobileDock />
     </div>
   );
 };

@@ -8,6 +8,8 @@ import Reviews from "@/components/Reviews"
 import FaqStrip from "@/components/FaqStrip"
 import FinalCta from "@/components/FinalCta"
 import MobileDock from "@/components/MobileDock"
+import SocialProof from "@/components/SocialProof"
+import MicroTestimonials from "@/components/MicroTestimonials"
 
 export const metadata: Metadata = {
   title: "Mobile Notary Houston | Notary Near Me | 24/7 Loan Signing Agent",
@@ -42,7 +44,9 @@ export default function HomePage() {
   return (
     <main>
       <HeroBooking />
+      <SocialProof />
       <ValueRow />
+      <MicroTestimonials />
       <ServicesGrid />
       <HowItWorks />
       <ServiceArea />

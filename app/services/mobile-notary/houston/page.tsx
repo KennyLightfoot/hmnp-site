@@ -1,3 +1,7 @@
+import EstimatorStrip from '@/components/EstimatorStrip'
+
+// lightweight hero + estimator sits inside the full page below
+
 /**
  * Enhanced Houston Mobile Notary Page - Phase 6.1 Local SEO
  * Target: Capture Houston metro "near me" searches
@@ -193,6 +197,16 @@ const houstonServices = [
 export default function HoustonMobileNotaryPage() {
   return (
     <>
+      {/* Quick Estimator at top for conversions */}
+      <div className="bg-secondary text-white">
+        <div className="container mx-auto px-4 py-8">
+          <h1 className="text-3xl md:text-4xl font-bold">Mobile Notary in Houston — Book Today</h1>
+          <p className="mt-2 text-white/90">From $75 • 25‑mile radius • NNA certified • On‑time or we discount</p>
+        </div>
+      </div>
+      <section className="container mx-auto px-4 -mt-6">
+        <EstimatorStrip defaultMode="MOBILE" />
+      </section>
       {/* JSON-LD Schema */}
       <script
         type="application/ld+json"

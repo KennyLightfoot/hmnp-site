@@ -5,6 +5,9 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react"; // Import Suspense
 import Link from "next/link";
 import { CheckCircle, Building, Users, Clock, Shield, Award, ArrowRight, FileText, Briefcase, Star } from "lucide-react";
+import MobileDock from "@/components/MobileDock";
+import { track } from "@/app/lib/analytics";
+import { useVariant } from "@/app/lib/abTesting";
 
 // This internal component is needed because useSearchParams can only be used in Client Components
 function CampaignLeadForm() {
@@ -49,21 +52,23 @@ function CampaignLeadForm() {
 }
 
 export default function LinkedInB2BSolutionsLandingPage() {
+  const heroVariant = useVariant('li_b2b_hero', 'A') as 'A' | 'B'
+  const primaryCtaText = heroVariant === 'A' ? 'Get Enterprise Quote' : 'Request Enterprise Pricing'
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-[#002147] via-[#003366] to-[#004080] text-white">
+      <div className="bg-gradient-to-br from-secondary via-secondary to-secondary text-white">
         <div className="container mx-auto px-4 py-20">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Column - Hero Content */}
             <div>
-              <div className="inline-flex items-center bg-[#A52A2A] px-4 py-2 rounded-full text-sm font-medium mb-6">
+              <div className="inline-flex items-center bg-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
                 <Building className="h-4 w-4 mr-2" />
                 Enterprise Notary Solutions
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+              <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight font-serif">
                 Professional Notary Solutions 
-                <span className="text-[#A52A2A]"> Built for Business</span>
+                <span className="text-primary"> Built for Business</span>
               </h1>
               <p className="text-xl text-blue-100 mb-8 leading-relaxed">
                 Streamline your organization's notary needs with our comprehensive business solutions. 
@@ -92,11 +97,19 @@ export default function LinkedInB2BSolutionsLandingPage() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <a href="#form" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white px-8 py-4 rounded-lg font-semibold text-center transition-colors inline-flex items-center justify-center">
-                  Get Enterprise Quote
+                <a
+                  href="#form"
+                  onClick={() => track('cta_clicked', { cta_name: primaryCtaText, variant: heroVariant, location: 'hero', lp: 'linkedin-b2b-solutions' })}
+                  className="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-lg shadow font-semibold text-center transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40"
+                >
+                  {primaryCtaText}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </a>
-                <Link href="/services/business" className="border-2 border-white text-white hover:bg-white hover:text-[#002147] px-8 py-4 rounded-lg font-semibold text-center transition-colors">
+                <Link
+                  href="/services/business"
+                  onClick={() => track('cta_clicked', { cta_name: 'View Business Solutions', location: 'hero_secondary', lp: 'linkedin-b2b-solutions' })}
+                  className="border-2 border-white text-white hover:bg-white hover:text-secondary px-8 py-4 rounded-lg font-semibold text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40"
+                >
                   View Business Solutions
                 </Link>
               </div>
@@ -107,19 +120,19 @@ export default function LinkedInB2BSolutionsLandingPage() {
               <h3 className="text-2xl font-bold mb-6 text-center">Trusted by Houston Businesses</h3>
               <div className="grid grid-cols-2 gap-6 mb-8">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-[#A52A2A] mb-2">200+</div>
+                  <div className="text-3xl font-bold text-primary mb-2">200+</div>
                   <div className="text-sm text-blue-100">Corporate Clients</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-[#A52A2A] mb-2">5000+</div>
+                  <div className="text-3xl font-bold text-primary mb-2">5000+</div>
                   <div className="text-sm text-blue-100">Business Documents</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-[#A52A2A] mb-2">99.8%</div>
+                  <div className="text-3xl font-bold text-primary mb-2">99.8%</div>
                   <div className="text-sm text-blue-100">Accuracy Rate</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-[#A52A2A] mb-2">24hr</div>
+                  <div className="text-3xl font-bold text-primary mb-2">24hr</div>
                   <div className="text-sm text-blue-100">Response Time</div>
                 </div>
               </div>
@@ -128,13 +141,13 @@ export default function LinkedInB2BSolutionsLandingPage() {
                 <p className="text-sm text-blue-200 text-center mb-4">Certified & Insured for Enterprise</p>
                 <div className="flex justify-center space-x-4">
                   <div className="bg-white/10 p-2 rounded">
-                    <Shield className="h-6 w-6 text-[#A52A2A]" />
+                    <Shield className="h-6 w-6 text-primary" />
                   </div>
                   <div className="bg-white/10 p-2 rounded">
-                    <Award className="h-6 w-6 text-[#A52A2A]" />
+                    <Award className="h-6 w-6 text-primary" />
                   </div>
                   <div className="bg-white/10 p-2 rounded">
-                    <Star className="h-6 w-6 text-[#A52A2A]" />
+                    <Star className="h-6 w-6 text-primary" />
                   </div>
                 </div>
               </div>
@@ -147,7 +160,7 @@ export default function LinkedInB2BSolutionsLandingPage() {
       <div className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-[#002147] mb-4">Comprehensive Business Notary Services</h2>
+            <h2 className="text-3xl font-bold text-secondary mb-4 font-serif">Comprehensive Business Notary Services</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               From HR documentation to corporate agreements, we handle all your business notarization needs with enterprise-grade service and security.
             </p>
@@ -155,81 +168,81 @@ export default function LinkedInB2BSolutionsLandingPage() {
 
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-              <div className="bg-[#002147] p-4 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+              <div className="bg-secondary p-4 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
                 <Users className="h-10 w-10 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-[#002147] mb-4 text-center">HR & Employee Services</h3>
+              <h3 className="text-xl font-semibold text-secondary mb-4 text-center">HR & Employee Services</h3>
               <p className="text-gray-600 mb-6 text-center">Streamline your human resources processes with our dedicated HR notary services.</p>
               <ul className="space-y-3 text-sm text-gray-600">
                 <li className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-[#A52A2A] mr-3 flex-shrink-0" />
+                  <CheckCircle className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
                   I-9 Employment Verification
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-[#A52A2A] mr-3 flex-shrink-0" />
+                  <CheckCircle className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
                   Employee Background Checks
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-[#A52A2A] mr-3 flex-shrink-0" />
+                  <CheckCircle className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
                   Non-Disclosure Agreements
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-[#A52A2A] mr-3 flex-shrink-0" />
+                  <CheckCircle className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
                   Employment Contracts
                 </li>
               </ul>
             </div>
 
-            <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow border-2 border-[#A52A2A]">
-              <div className="bg-[#A52A2A] p-4 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+            <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow border-2 border-primary">
+              <div className="bg-primary p-4 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
                 <Briefcase className="h-10 w-10 text-white" />
               </div>
               <div className="text-center mb-4">
-                <span className="bg-[#A52A2A] text-white px-3 py-1 rounded-full text-xs font-semibold">MOST POPULAR</span>
+                <span className="bg-primary text-white px-3 py-1 rounded-full text-xs font-semibold">MOST POPULAR</span>
               </div>
-              <h3 className="text-xl font-semibold text-[#002147] mb-4 text-center">Corporate Documentation</h3>
+              <h3 className="text-xl font-semibold text-secondary mb-4 text-center">Corporate Documentation</h3>
               <p className="text-gray-600 mb-6 text-center">Professional handling of all your corporate legal documentation needs.</p>
               <ul className="space-y-3 text-sm text-gray-600">
                 <li className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-[#A52A2A] mr-3 flex-shrink-0" />
+                  <CheckCircle className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
                   Corporate Resolutions
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-[#A52A2A] mr-3 flex-shrink-0" />
+                  <CheckCircle className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
                   Board Meeting Minutes
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-[#A52A2A] mr-3 flex-shrink-0" />
+                  <CheckCircle className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
                   Partnership Agreements
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-[#A52A2A] mr-3 flex-shrink-0" />
+                  <CheckCircle className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
                   Commercial Contracts
                 </li>
               </ul>
             </div>
 
             <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-              <div className="bg-[#002147] p-4 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+              <div className="bg-secondary p-4 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
                 <FileText className="h-10 w-10 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-[#002147] mb-4 text-center">Specialized Services</h3>
+              <h3 className="text-xl font-semibold text-secondary mb-4 text-center">Specialized Services</h3>
               <p className="text-gray-600 mb-6 text-center">Advanced notary services for complex business requirements and compliance needs.</p>
               <ul className="space-y-3 text-sm text-gray-600">
                 <li className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-[#A52A2A] mr-3 flex-shrink-0" />
+                  <CheckCircle className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
                   Apostille Services
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-[#A52A2A] mr-3 flex-shrink-0" />
+                  <CheckCircle className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
                   International Documents
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-[#A52A2A] mr-3 flex-shrink-0" />
+                  <CheckCircle className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
                   Compliance Documentation
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-[#A52A2A] mr-3 flex-shrink-0" />
+                  <CheckCircle className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
                   Volume Processing
                 </li>
               </ul>
@@ -329,7 +342,7 @@ export default function LinkedInB2BSolutionsLandingPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-[#002147] mb-4">Ready to Streamline Your Business Notary Needs?</h2>
+              <h2 className="text-3xl font-bold text-secondary mb-4 font-serif">Ready to Streamline Your Business Notary Needs?</h2>
               <p className="text-xl text-gray-600">
                 Let's discuss how our enterprise solutions can support your business. We'll provide a custom quote within 24 hours.
               </p>
@@ -345,7 +358,7 @@ export default function LinkedInB2BSolutionsLandingPage() {
       </div>
 
       {/* Footer CTA */}
-      <div className="bg-[#002147] text-white py-16">
+      <div className="bg-secondary text-white py-16">
         <div className="container mx-auto px-4 text-center">
           <h3 className="text-3xl font-bold mb-4">Partner with Houston's Leading Business Notary Service</h3>
           <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
@@ -353,15 +366,24 @@ export default function LinkedInB2BSolutionsLandingPage() {
             Contact our enterprise team for immediate assistance.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white px-8 py-4 rounded-lg font-semibold transition-colors">
+            <Link
+              href="/contact"
+              onClick={() => track('cta_clicked', { cta_name: 'Contact Enterprise Team', location: 'footer', lp: 'linkedin-b2b-solutions' })}
+              className="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-lg shadow font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40"
+            >
               Contact Enterprise Team
             </Link>
-            <Link href="/services/business" className="border-2 border-white text-white hover:bg-white hover:text-[#002147] px-8 py-4 rounded-lg font-semibold transition-colors">
+            <Link
+              href="/services/business"
+              onClick={() => track('cta_clicked', { cta_name: 'View All Business Services', location: 'footer_secondary', lp: 'linkedin-b2b-solutions' })}
+              className="border-2 border-white text-white hover:bg-white hover:text-secondary px-8 py-4 rounded-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40"
+            >
               View All Business Services
             </Link>
           </div>
         </div>
       </div>
+      <MobileDock />
     </div>
   );
 } 

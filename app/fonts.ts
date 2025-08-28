@@ -4,6 +4,7 @@ export const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
+  preload: true
 })
 
 export const dmSerifDisplay = DM_Serif_Display({
@@ -11,6 +12,7 @@ export const dmSerifDisplay = DM_Serif_Display({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-dm-serif-display',
+  preload: true
 })
 
 

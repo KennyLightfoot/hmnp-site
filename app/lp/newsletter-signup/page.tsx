@@ -4,8 +4,13 @@ import LeadForm from "@/components/lead-form";
 import { NextPage } from "next";
 import Link from "next/link";
 import { MailOpen, CalendarCheck, Star, Gift, CheckCircle, ArrowRight, Bell, Users, Zap } from "lucide-react";
+import MobileDock from "@/components/MobileDock";
+import { track } from "@/app/lib/analytics";
+import { useVariant } from "@/app/lib/abTesting";
 
 const NewsletterSignupPage: NextPage = () => {
+  const heroVariant = useVariant('nl_signup_hero', 'A') as 'A' | 'B'
+  const primaryCtaText = heroVariant === 'A' ? 'Start Getting Insights' : 'Join The Newsletter'
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       {/* Hero Section */}
@@ -22,14 +27,14 @@ const NewsletterSignupPage: NextPage = () => {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               {/* Left Column - Value Proposition */}
               <div className="order-2 lg:order-1">
-                <div className="inline-flex items-center bg-[#A52A2A] text-white px-6 py-3 rounded-full text-sm font-medium mb-8">
+                <div className="inline-flex items-center bg-primary text-white px-6 py-3 rounded-full text-sm font-medium mb-8">
                   <Bell className="h-4 w-4 mr-2" />
                   Join 2,000+ Houston Residents
                 </div>
                 
-                <h1 className="text-4xl md:text-5xl font-bold text-[#002147] mb-6 leading-tight">
+                <h1 className="text-4xl md:text-5xl font-bold text-secondary mb-6 leading-tight font-serif">
                   Stay Ahead with Exclusive 
-                  <span className="text-[#A52A2A]"> Notary Insights</span>
+                  <span className="text-primary"> Notary Insights</span>
                 </h1>
                 
                 <p className="text-xl text-gray-600 mb-8 leading-relaxed">
@@ -40,31 +45,31 @@ const NewsletterSignupPage: NextPage = () => {
                 {/* Key Benefits */}
                 <div className="space-y-4 mb-8">
                   <div className="flex items-start space-x-4">
-                    <div className="bg-[#A52A2A] p-2 rounded-full flex-shrink-0">
+                    <div className="bg-primary p-2 rounded-full flex-shrink-0">
                       <Zap className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-[#002147] mb-1">Weekly Expert Tips</h4>
+                      <h4 className="font-semibold text-secondary mb-1">Weekly Expert Tips</h4>
                       <p className="text-gray-600 text-sm">Practical advice on document preparation, notary laws, and best practices from certified professionals.</p>
                     </div>
                   </div>
 
                   <div className="flex items-start space-x-4">
-                    <div className="bg-[#A52A2A] p-2 rounded-full flex-shrink-0">
+                    <div className="bg-primary p-2 rounded-full flex-shrink-0">
                       <Gift className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-[#002147] mb-1">Subscriber-Only Discounts</h4>
+                      <h4 className="font-semibold text-secondary mb-1">Subscriber-Only Discounts</h4>
                       <p className="text-gray-600 text-sm">Exclusive promotions and early access to special pricing on our notary services.</p>
                     </div>
                   </div>
 
                   <div className="flex items-start space-x-4">
-                    <div className="bg-[#A52A2A] p-2 rounded-full flex-shrink-0">
+                    <div className="bg-primary p-2 rounded-full flex-shrink-0">
                       <CalendarCheck className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-[#002147] mb-1">Priority Booking Alerts</h4>
+                      <h4 className="font-semibold text-secondary mb-1">Priority Booking Alerts</h4>
                       <p className="text-gray-600 text-sm">Be first to know about available time slots and get priority access to our calendar.</p>
                     </div>
                   </div>
@@ -108,10 +113,10 @@ const NewsletterSignupPage: NextPage = () => {
               <div className="order-1 lg:order-2">
                 <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
                   <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-[#002147] rounded-full mb-4">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-secondary rounded-full mb-4">
                       <MailOpen className="h-8 w-8 text-white" />
                     </div>
-                    <h2 className="text-2xl font-bold text-[#002147] mb-3">Join Our Community</h2>
+                    <h2 className="text-2xl font-bold text-secondary mb-3">Join Our Community</h2>
                     <p className="text-gray-600">
                       Get started with exclusive notary insights delivered to your inbox.
                     </p>
@@ -126,7 +131,7 @@ const NewsletterSignupPage: NextPage = () => {
                     }}
                     formTitle=""
                     formDescription=""
-                    submitButtonText="Start Getting Insights"
+                    submitButtonText={primaryCtaText}
                     successRedirectUrl="/newsletter-thank-you"
                     privacyPolicyLink="/privacy"
                   />
@@ -134,7 +139,7 @@ const NewsletterSignupPage: NextPage = () => {
                   <div className="mt-6 pt-6 border-t border-gray-100">
                     <p className="text-xs text-gray-500 text-center leading-relaxed">
                       By subscribing, you agree to receive our newsletter and promotional emails. 
-                      You can unsubscribe at any time. Read our <Link href="/privacy" className="text-[#A52A2A] hover:underline">Privacy Policy</Link>.
+                      You can unsubscribe at any time. Read our <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
                     </p>
                   </div>
                 </div>
@@ -157,10 +162,10 @@ const NewsletterSignupPage: NextPage = () => {
 
             <div className="grid md:grid-cols-3 gap-8">
               <div className="text-center p-8 bg-gray-50 rounded-xl hover:shadow-lg transition-shadow">
-                <div className="w-16 h-16 bg-[#002147] rounded-full mx-auto mb-6 flex items-center justify-center">
+                <div className="w-16 h-16 bg-secondary rounded-full mx-auto mb-6 flex items-center justify-center">
                   <Star className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold text-[#002147] mb-4">Expert Guidance</h3>
+                <h3 className="text-xl font-semibold text-secondary mb-4">Expert Guidance</h3>
                 <p className="text-gray-600 mb-4">
                   Monthly deep-dives into notary best practices, document preparation tips, and regulatory updates from our certified professionals.
                 </p>
@@ -172,14 +177,14 @@ const NewsletterSignupPage: NextPage = () => {
                 </ul>
               </div>
 
-              <div className="text-center p-8 bg-gray-50 rounded-xl hover:shadow-lg transition-shadow border-2 border-[#A52A2A]">
-                <div className="w-16 h-16 bg-[#A52A2A] rounded-full mx-auto mb-6 flex items-center justify-center">
+              <div className="text-center p-8 bg-gray-50 rounded-xl hover:shadow-lg transition-shadow border-2 border-primary">
+                <div className="w-16 h-16 bg-primary rounded-full mx-auto mb-6 flex items-center justify-center">
                   <Gift className="h-8 w-8 text-white" />
                 </div>
                 <div className="text-center mb-4">
-                  <span className="bg-[#A52A2A] text-white px-3 py-1 rounded-full text-xs font-semibold">MOST VALUABLE</span>
+                  <span className="bg-primary text-white px-3 py-1 rounded-full text-xs font-semibold">MOST VALUABLE</span>
                 </div>
-                <h3 className="text-xl font-semibold text-[#002147] mb-4">Exclusive Offers</h3>
+                <h3 className="text-xl font-semibold text-secondary mb-4">Exclusive Offers</h3>
                 <p className="text-gray-600 mb-4">
                   Subscriber-only promotions, early bird pricing, and special packages not available to the general public.
                 </p>
@@ -192,10 +197,10 @@ const NewsletterSignupPage: NextPage = () => {
               </div>
 
               <div className="text-center p-8 bg-gray-50 rounded-xl hover:shadow-lg transition-shadow">
-                <div className="w-16 h-16 bg-[#002147] rounded-full mx-auto mb-6 flex items-center justify-center">
+                <div className="w-16 h-16 bg-secondary rounded-full mx-auto mb-6 flex items-center justify-center">
                   <Bell className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold text-[#002147] mb-4">Timely Updates</h3>
+                <h3 className="text-xl font-semibold text-secondary mb-4">Timely Updates</h3>
                 <p className="text-gray-600 mb-4">
                   Stay informed about service changes, new offerings, and important announcements that affect your notary needs.
                 </p>
@@ -216,7 +221,7 @@ const NewsletterSignupPage: NextPage = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold text-[#002147] mb-4">What Our Subscribers Say</h2>
+              <h2 className="text-3xl font-bold text-secondary mb-4 font-serif">What Our Subscribers Say</h2>
               <p className="text-xl text-gray-600">
                 Join thousands of Houston residents who trust our insights.
               </p>
@@ -236,11 +241,11 @@ const NewsletterSignupPage: NextPage = () => {
                   The tips saved me time and made the whole process much smoother."
                 </p>
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-[#002147] rounded-full flex items-center justify-center text-white font-semibold mr-3">
+                  <div className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-white font-semibold mr-3">
                     S
                   </div>
                   <div>
-                    <div className="font-semibold text-[#002147]">Sarah Chen</div>
+                    <div className="font-semibold text-secondary">Sarah Chen</div>
                     <div className="text-sm text-gray-500">Estate Planning Client</div>
                   </div>
                 </div>
@@ -259,11 +264,11 @@ const NewsletterSignupPage: NextPage = () => {
                   just by being a newsletter subscriber. The content is always helpful too."
                 </p>
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-[#A52A2A] rounded-full flex items-center justify-center text-white font-semibold mr-3">
+                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-semibold mr-3">
                     M
                   </div>
                   <div>
-                    <div className="font-semibold text-[#002147]">Michael Rodriguez</div>
+                    <div className="font-semibold text-secondary">Michael Rodriguez</div>
                     <div className="text-sm text-gray-500">Business Owner</div>
                   </div>
                 </div>
@@ -282,11 +287,11 @@ const NewsletterSignupPage: NextPage = () => {
                   I always know I'm working with current information and best practices."
                 </p>
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-[#002147] rounded-full flex items-center justify-center text-white font-semibold mr-3">
+                  <div className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-white font-semibold mr-3">
                     A
                   </div>
                   <div>
-                    <div className="font-semibold text-[#002147]">Amanda Foster</div>
+                    <div className="font-semibold text-secondary">Amanda Foster</div>
                     <div className="text-sm text-gray-500">Real Estate Agent</div>
                   </div>
                 </div>
@@ -297,7 +302,7 @@ const NewsletterSignupPage: NextPage = () => {
       </div>
 
       {/* Final CTA */}
-      <div className="py-20 bg-gradient-to-r from-[#002147] to-[#003366] text-white">
+      <div className="py-20 bg-gradient-to-r from-secondary to-secondary text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-6">Ready to Become a More Informed Client?</h2>
@@ -315,18 +320,24 @@ const NewsletterSignupPage: NextPage = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="#" onClick={(e) => { e.preventDefault(); document.querySelector('form')?.scrollIntoView({ behavior: 'smooth' }); }} 
-                 className="bg-[#A52A2A] hover:bg-[#8B0000] text-white px-8 py-4 rounded-lg font-semibold transition-colors inline-flex items-center justify-center">
-                Get Started Now
+              <a
+                href="#"
+                onClick={(e) => { e.preventDefault(); document.querySelector('form')?.scrollIntoView({ behavior: 'smooth' }); track('cta_clicked', { cta_name: primaryCtaText, location: 'final_cta', lp: 'newsletter-signup' }) }} 
+                className="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-lg shadow font-semibold transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40">
+                {primaryCtaText}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </a>
-              <Link href="/services" className="border-2 border-white text-white hover:bg-white hover:text-[#002147] px-8 py-4 rounded-lg font-semibold transition-colors">
+              <Link
+                href="/services"
+                onClick={() => track('cta_clicked', { cta_name: 'Learn About Our Services', location: 'final_cta_secondary', lp: 'newsletter-signup' })}
+                className="border-2 border-white text-white hover:bg-white hover:text-secondary px-8 py-4 rounded-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40">
                 Learn About Our Services
               </Link>
             </div>
           </div>
         </div>
       </div>
+      <MobileDock />
     </div>
   );
 };

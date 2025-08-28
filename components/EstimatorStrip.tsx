@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { track } from '@/app/lib/analytics'
 
@@ -18,10 +18,37 @@ export default function EstimatorStrip({ defaultMode = 'MOBILE' as 'MOBILE' | 'R
   const [isLoading, setIsLoading] = useState(false)
   const [estimate, setEstimate] = useState<EstimateResponse | null>(null)
 
+  // Prefill from localStorage and persist changes
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('booking_prefs') || '{}') as { zip?: string; acts?: number; mode?: 'MOBILE' | 'RON' }
+      if (saved.zip) setZip(saved.zip)
+      if (typeof saved.acts === 'number' && saved.acts > 0) setActs(saved.acts)
+      if (saved.mode === 'MOBILE' || saved.mode === 'RON') setMode(saved.mode)
+    } catch {}
+  }, [])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('booking_prefs', JSON.stringify({ zip, acts, mode }))
+    } catch {}
+  }, [zip, acts, mode])
+
   async function getEstimate() {
     setIsLoading(true)
     setEstimate(null)
     try {
+      try {
+        const gtag = (window as any).gtag as undefined | ((...args: any[]) => void)
+        if (gtag) {
+          gtag('event', 'estimate_requested', {
+            event_category: 'engagement',
+            mode,
+            zip,
+            acts,
+          })
+        }
+      } catch {}
       const res = await fetch('/api/estimate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode, zip, acts }) })
       const data: EstimateResponse = await res.json()
       if (data.ok) {

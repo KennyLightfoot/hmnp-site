@@ -68,6 +68,7 @@ import { BUSINESS_RULES_CONFIG } from '../../lib/business-rules/config';
 
 // Validation schema
 import { z } from 'zod';
+import { getAttribution } from '@/lib/utm';
 
 const CreateBookingSchema = z.object({
   serviceType: z.string().min(1, 'Please select a service'),
@@ -659,6 +660,16 @@ export default function BookingForm({
         },
         uploadedDocs: Array.isArray((watchedValues as any)?.uploadedDocs) ? (watchedValues as any).uploadedDocs : undefined
       };
+      // Attach UTM/source attribution
+      try {
+        const a = getAttribution()
+        if (a && Object.keys(a).length) {
+          bookingData.utmParameters = a
+        }
+        if (typeof window !== 'undefined' && document.referrer) {
+          bookingData.referrer = document.referrer
+        }
+      } catch {}
       // Attach reservationId if we have one from scheduling step
       if (reservationIdFromState) {
         bookingData.reservationId = reservationIdFromState;

@@ -26,8 +26,11 @@ export const POST = withBookingSecurity(async (request: NextRequest) => {
       body = await request.json().catch(() => ({}))
     }
     const validatedData = bookingSchemas.createBookingFromForm.parse(body);
+    // Preserve attribution for CRM enrichment
+    const utmParameters = (body as any)?.utmParameters || undefined
+    const referrer = (body as any)?.referrer || undefined
 
-    const { booking, service } = await createBookingFromForm({ validatedData, rawBody: body });
+    const { booking, service } = await createBookingFromForm({ validatedData, rawBody: { ...body, utmParameters, referrer } });
     const bookingId = (booking as any)?.id;
     const scheduled = (booking as any)?.scheduledDateTime;
     const totalAmount = (booking as any)?.priceAtBooking;

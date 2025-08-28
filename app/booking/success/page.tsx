@@ -8,6 +8,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
+import { getAttribution } from '@/lib/utm';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -124,12 +125,14 @@ export default function BookingSuccessPage() {
 
         // Initialize dataLayer and push single booking_complete event with enhanced data inline
         (window as any).dataLayer = (window as any).dataLayer || [];
+        const utm = getAttribution();
         (window as any).dataLayer.push({
           event: 'booking_complete',
           value,
           currency,
           transaction_id: booking.id,
           service: booking.serviceType,
+          ...utm,
           enhanced_conversion_data: enhanced,
         });
 
@@ -385,6 +388,51 @@ export default function BookingSuccessPage() {
           >
             <Phone className="h-4 w-4 mr-2" />
             Contact Support
+          </Button>
+        </div>
+
+        {/* Post-conversion helpers */}
+        <div className="mt-6 grid sm:grid-cols-2 gap-4">
+          <Button
+            variant="outline"
+            onClick={async () => {
+              try {
+                const to = prompt('Enter your mobile number to receive your booking link by SMS:') || ''
+                if (!to) return
+                const link = typeof window !== 'undefined' ? window.location.href : ''
+                const hdrs: Record<string,string> = { 'Content-Type': 'application/json' }
+                const key = process.env.NEXT_PUBLIC_SMS_API_KEY || ''
+                if (key) hdrs['x-api-key'] = key
+                await fetch('/api/sms/send', { method: 'POST', headers: hdrs, body: JSON.stringify({ to, body: `Your HMNP booking link: ${link}` }) })
+                try {
+                  ;(window as any).dataLayer = (window as any).dataLayer || []
+                  ;(window as any).dataLayer.push({ event: 'sms_link_sent', location: 'booking_success' })
+                } catch {}
+                alert('Sent! Check your phone for the link.')
+              } catch {}
+            }}
+          >
+            Text me my booking link
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              try {
+                const title = 'Notary Appointment – HMNP'
+                const start = booking?.scheduledDateTime ? new Date(booking.scheduledDateTime) : null
+                const end = start ? new Date(start.getTime() + 60*60*1000) : null
+                const toIso = (d: Date) => d.toISOString().replace(/[-:]|\.\d{3}/g, '')
+                const details = 'Booked with Houston Mobile Notary Pros.'
+                if (start && end) {
+                  const href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${toIso(start)}/${toIso(end)}&details=${encodeURIComponent(details)}`
+                  window.open(href, '_blank')
+                } else {
+                  alert('Add-to-calendar available after scheduling time is set.')
+                }
+              } catch {}
+            }}
+          >
+            Add to Google Calendar
           </Button>
         </div>
 

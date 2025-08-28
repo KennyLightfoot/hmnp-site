@@ -5,6 +5,9 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react"; // Import Suspense
 import Link from "next/link";
 import { CheckCircle, Clock, Gift, Star, ArrowRight, Percent, Calendar, Phone } from "lucide-react";
+import MobileDock from "@/components/MobileDock";
+import { track } from "@/app/lib/analytics";
+import { useVariant } from "@/app/lib/abTesting";
 
 // This internal component is needed because useSearchParams can only be used in Client Components
 function CampaignLeadForm() {
@@ -49,10 +52,12 @@ function CampaignLeadForm() {
 }
 
 export default function FacebookSpringPromoLandingPage() {
+  const heroVariant = useVariant('fb_spring_hero', 'A') as 'A' | 'B'
+  const primaryCtaText = heroVariant === 'A' ? 'Claim Your 25% Discount' : 'Get My Spring Discount'
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-[#A52A2A] via-[#8B0000] to-[#660000] text-white relative overflow-hidden">
+      <div className="bg-gradient-to-br from-primary via-primary to-primary text-white relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-10 w-20 h-20 border-2 border-white rounded-full"></div>
@@ -70,7 +75,7 @@ export default function FacebookSpringPromoLandingPage() {
                 🌸 Exclusive Facebook Spring Offer
               </div>
               
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+              <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight font-serif">
                 Spring Into 
                 <span className="text-yellow-300"> Savings!</span>
               </h1>
@@ -105,11 +110,19 @@ export default function FacebookSpringPromoLandingPage() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <a href="#form" className="bg-yellow-400 hover:bg-yellow-300 text-black px-8 py-4 rounded-lg font-bold text-center transition-colors inline-flex items-center justify-center shadow-lg">
-                  Claim Your 25% Discount
+                <a
+                  href="#form"
+                  onClick={() => track('cta_clicked', { cta_name: primaryCtaText, variant: heroVariant, location: 'hero', lp: 'facebook-spring-promo' })}
+                  className="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-lg shadow font-bold text-center transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40"
+                >
+                  {primaryCtaText}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </a>
-                <a href="tel:+1234567890" className="border-2 border-white text-white hover:bg-white hover:text-[#A52A2A] px-8 py-4 rounded-lg font-semibold text-center transition-colors inline-flex items-center justify-center">
+                <a
+                  href="tel:+18326174285"
+                  onClick={() => track('call_clicked', { location: 'hero', lp: 'facebook-spring-promo' })}
+                  className="border-2 border-white text-white hover:bg-white hover:text-secondary px-8 py-4 rounded-lg font-semibold text-center transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40"
+                >
                   <Phone className="mr-2 h-5 w-5" />
                   Call Now
                 </a>
@@ -119,32 +132,32 @@ export default function FacebookSpringPromoLandingPage() {
             {/* Right Column - Offer Details */}
             <div className="bg-white text-gray-800 p-8 rounded-2xl shadow-2xl">
               <div className="text-center mb-6">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-[#A52A2A] rounded-full mb-4">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full mb-4">
                   <Gift className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-[#002147] mb-2">Spring Special Includes</h3>
+                <h3 className="text-2xl font-bold text-secondary mb-2 font-serif">Spring Special Includes</h3>
                 <p className="text-gray-600">Everything you need at 25% off regular pricing</p>
               </div>
 
               <div className="space-y-4 mb-6">
                 <div className="flex items-center space-x-3">
-                  <CheckCircle className="h-5 w-5 text-[#A52A2A] flex-shrink-0" />
+                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
                   <span>Professional mobile notary service</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <CheckCircle className="h-5 w-5 text-[#A52A2A] flex-shrink-0" />
+                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
                   <span>Travel to your location included</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <CheckCircle className="h-5 w-5 text-[#A52A2A] flex-shrink-0" />
+                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
                   <span>All document types accepted</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <CheckCircle className="h-5 w-5 text-[#A52A2A] flex-shrink-0" />
+                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
                   <span>Same-day availability</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <CheckCircle className="h-5 w-5 text-[#A52A2A] flex-shrink-0" />
+                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
                   <span>NNA certified notaries</span>
                 </div>
               </div>
@@ -183,26 +196,26 @@ export default function FacebookSpringPromoLandingPage() {
 
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-white p-6 rounded-xl shadow-lg text-center">
-              <div className="w-16 h-16 bg-[#002147] rounded-full mx-auto mb-4 flex items-center justify-center">
+              <div className="w-16 h-16 bg-secondary rounded-full mx-auto mb-4 flex items-center justify-center">
                 <span className="text-2xl font-bold text-white">1K+</span>
               </div>
-              <h3 className="text-xl font-semibold text-[#002147] mb-2">Happy Customers</h3>
+              <h3 className="text-xl font-semibold text-secondary mb-2">Happy Customers</h3>
               <p className="text-gray-600">Trusted by over 1,000 Houston residents for their notary needs.</p>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-lg text-center">
-              <div className="w-16 h-16 bg-[#A52A2A] rounded-full mx-auto mb-4 flex items-center justify-center">
+              <div className="w-16 h-16 bg-primary rounded-full mx-auto mb-4 flex items-center justify-center">
                 <span className="text-2xl font-bold text-white">24h</span>
               </div>
-              <h3 className="text-xl font-semibold text-[#002147] mb-2">Fast Response</h3>
+              <h3 className="text-xl font-semibold text-secondary mb-2">Fast Response</h3>
               <p className="text-gray-600">Average response time of 24 hours or less for all appointments.</p>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-lg text-center">
-              <div className="w-16 h-16 bg-[#002147] rounded-full mx-auto mb-4 flex items-center justify-center">
+              <div className="w-16 h-16 bg-secondary rounded-full mx-auto mb-4 flex items-center justify-center">
                 <span className="text-2xl font-bold text-white">7</span>
               </div>
-              <h3 className="text-xl font-semibold text-[#002147] mb-2">Days a Week</h3>
+              <h3 className="text-xl font-semibold text-secondary mb-2">Days a Week</h3>
               <p className="text-gray-600">Available every day of the week to serve your busy schedule.</p>
             </div>
           </div>
@@ -213,7 +226,7 @@ export default function FacebookSpringPromoLandingPage() {
       <div className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-[#002147] mb-4">All Services Included in Spring Promotion</h2>
+            <h2 className="text-3xl font-bold text-secondary mb-4 font-serif">All Services Included in Spring Promotion</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Take advantage of 25% off any of our professional notary services during this limited-time spring offer.
             </p>
@@ -221,34 +234,34 @@ export default function FacebookSpringPromoLandingPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="text-center p-6 border border-gray-200 rounded-lg hover:shadow-lg transition-shadow">
-              <div className="w-12 h-12 bg-[#A52A2A] rounded-full mx-auto mb-4 flex items-center justify-center">
+              <div className="w-12 h-12 bg-primary rounded-full mx-auto mb-4 flex items-center justify-center">
                 <CheckCircle className="h-6 w-6 text-white" />
               </div>
-              <h4 className="font-semibold text-[#002147] mb-2">General Notary</h4>
+              <h4 className="font-semibold text-secondary mb-2">General Notary</h4>
               <p className="text-sm text-gray-600">POAs, affidavits, contracts, and standard documents</p>
             </div>
 
             <div className="text-center p-6 border border-gray-200 rounded-lg hover:shadow-lg transition-shadow">
-              <div className="w-12 h-12 bg-[#A52A2A] rounded-full mx-auto mb-4 flex items-center justify-center">
+              <div className="w-12 h-12 bg-primary rounded-full mx-auto mb-4 flex items-center justify-center">
                 <CheckCircle className="h-6 w-6 text-white" />
               </div>
-              <h4 className="font-semibold text-[#002147] mb-2">Real Estate</h4>
+              <h4 className="font-semibold text-secondary mb-2">Real Estate</h4>
               <p className="text-sm text-gray-600">Deeds, mortgage documents, and property transfers</p>
             </div>
 
             <div className="text-center p-6 border border-gray-200 rounded-lg hover:shadow-lg transition-shadow">
-              <div className="w-12 h-12 bg-[#A52A2A] rounded-full mx-auto mb-4 flex items-center justify-center">
+              <div className="w-12 h-12 bg-primary rounded-full mx-auto mb-4 flex items-center justify-center">
                 <CheckCircle className="h-6 w-6 text-white" />
               </div>
-              <h4 className="font-semibold text-[#002147] mb-2">Estate Planning</h4>
+              <h4 className="font-semibold text-secondary mb-2">Estate Planning</h4>
               <p className="text-sm text-gray-600">Wills, trusts, and healthcare directives</p>
             </div>
 
             <div className="text-center p-6 border border-gray-200 rounded-lg hover:shadow-lg transition-shadow">
-              <div className="w-12 h-12 bg-[#A52A2A] rounded-full mx-auto mb-4 flex items-center justify-center">
+              <div className="w-12 h-12 bg-primary rounded-full mx-auto mb-4 flex items-center justify-center">
                 <CheckCircle className="h-6 w-6 text-white" />
               </div>
-              <h4 className="font-semibold text-[#002147] mb-2">Business Docs</h4>
+              <h4 className="font-semibold text-secondary mb-2">Business Docs</h4>
               <p className="text-sm text-gray-600">Corporate agreements, contracts, and business forms</p>
             </div>
           </div>
@@ -256,11 +269,11 @@ export default function FacebookSpringPromoLandingPage() {
       </div>
 
       {/* Form Section */}
-      <div id="form" className="py-16 bg-gradient-to-r from-[#002147] to-[#003366] text-white">
+      <div id="form" className="py-16 bg-gradient-to-r from-secondary to-secondary text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <div className="inline-flex items-center bg-[#A52A2A] px-6 py-3 rounded-full text-sm font-medium mb-6">
+              <div className="inline-flex items-center bg-primary px-6 py-3 rounded-full text-sm font-medium mb-6">
                 <Calendar className="h-5 w-5 mr-2" />
                 Limited Time Offer
               </div>
@@ -286,23 +299,32 @@ export default function FacebookSpringPromoLandingPage() {
       </div>
 
       {/* Final CTA */}
-      <div className="bg-[#A52A2A] text-white py-12">
+      <div className="bg-primary text-white py-12">
         <div className="container mx-auto px-4 text-center">
           <h3 className="text-2xl font-bold mb-4">Still Have Questions About Our Spring Promotion?</h3>
           <p className="text-white/90 mb-6 max-w-2xl mx-auto">
             Our friendly team is standing by to answer your questions and help you take advantage of this limited-time offer.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="tel:+1234567890" className="bg-white text-[#A52A2A] hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold transition-colors inline-flex items-center justify-center">
+            <a
+              href="tel:+18326174285"
+              onClick={() => track('call_clicked', { location: 'footer', lp: 'facebook-spring-promo' })}
+              className="bg-white text-primary hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40"
+            >
               <Phone className="mr-2 h-5 w-5" />
               Call Now for Instant Help
             </a>
-            <Link href="/contact" className="border-2 border-white text-white hover:bg-white hover:text-[#A52A2A] px-8 py-3 rounded-lg font-semibold transition-colors">
+            <Link
+              href="/contact"
+              onClick={() => track('cta_clicked', { cta_name: 'Send Us a Message', location: 'footer_secondary', lp: 'facebook-spring-promo' })}
+              className="border-2 border-white text-white hover:bg-white hover:text-primary px-8 py-3 rounded-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40"
+            >
               Send Us a Message
             </Link>
           </div>
         </div>
       </div>
+      <MobileDock />
     </div>
   );
 } 

@@ -1,10 +1,3 @@
-/**
- * Notification Send API Endpoint
- * Houston Mobile Notary Pros - Phase 2
- * 
- * Provides API access to send notifications programmatically
- */
-
 import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { headers } from 'next/headers';
