@@ -1,84 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
+import { UnifiedPricingEngine } from "@/lib/pricing/unified-pricing-engine"
+import { estimateDistanceFromAddress as estimateMiles, SERVICE_AREA_CONFIG } from "@/lib/config/maps"
 
 export const runtime = "nodejs"
-
-// Configuration with sensible defaults; can be overridden via env
-const ORIGIN_COORDS = {
-  lat: parseFloat(process.env.HMNP_ORIGIN_LAT || "29.3833"), // Texas City
-  lng: parseFloat(process.env.HMNP_ORIGIN_LNG || "-94.9025"),
-}
-
-const INCLUDED_RADIUS_MILES = {
-  STANDARD_NOTARY: 20,
-  EXTENDED_HOURS: 30,
-}
-
-const BASES = {
-  MOBILE_STANDARD: 75,
-  MOBILE_AFTERHOURS: 125,
-  RON_PER_ACT: 25,
-  IN_PERSON_PER_ACT: 10,
-}
-
-const TIERED_RATES: { upToMilesBeyond: number; ratePerMile: number }[] = [
-  { upToMilesBeyond: 10, ratePerMile: 2.0 },
-  { upToMilesBeyond: 30, ratePerMile: 2.5 },
-  { upToMilesBeyond: Infinity, ratePerMile: 3.0 },
-]
-
-type Coordinates = { lat: number; lng: number }
-
-function toRad(v: number): number {
-  return (v * Math.PI) / 180
-}
-
-function haversineMiles(a: Coordinates, b: Coordinates): number {
-  const R = 3958.8 // Earth radius in miles
-  const dLat = toRad(b.lat - a.lat)
-  const dLon = toRad(b.lng - a.lng)
-  const lat1 = toRad(a.lat)
-  const lat2 = toRad(b.lat)
-  const h =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2)
-  const c = 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h))
-  return R * c
-}
-
-function estimateDrivingMiles(straightLineMiles: number): number {
-  // Use straight-line distance for consistency with published travel tiers
-  // (removing previous padding that could inflate estimates)
-  return straightLineMiles
-}
-
-async function geocodeZip(zip: string): Promise<Coordinates> {
-  // Prefer Mapbox when token provided; else fallback to OSM Nominatim
-  const mapboxToken = process.env.MAPBOX_TOKEN
-  if (mapboxToken) {
-    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-      zip
-    )}.json?types=postcode&access_token=${mapboxToken}`
-    const res = await fetch(url)
-    if (!res.ok) throw new Error("Failed to geocode ZIP (Mapbox)")
-    const data = await res.json()
-    const hit = data.features?.[0]
-    if (!hit) throw new Error("ZIP code not found")
-    const [lng, lat] = hit.center
-    return { lat, lng }
-  }
-
-  // OSM fallback
-  const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=us&postalcode=${encodeURIComponent(
-    zip
-  )}`
-  const res = await fetch(url, { headers: { "User-Agent": "hmnp-site/estimate-route" } })
-  if (!res.ok) throw new Error("Failed to geocode ZIP (OSM)")
-  const data = (await res.json()) as Array<{ lat: string; lon: string }>
-  if (!data || data.length === 0) throw new Error("ZIP code not found")
-  const first = data[0]
-  if (!first || first.lat == null || first.lon == null) throw new Error("ZIP code not found")
-  return { lat: parseFloat(first.lat), lng: parseFloat(first.lon) }
-}
 
 function isAfterHours(date: Date): boolean {
   const hour = date.getHours()
@@ -89,33 +13,18 @@ function isAfterHours(date: Date): boolean {
   return !inBusinessHours
 }
 
-function calcTieredBeyondFee(beyondMiles: number): number {
-  // Align with published fixed tiers:
-  // 0–20 mi included; 21–30 mi +$25; 31–40 mi +$45; 41–50 mi +$65
-  if (beyondMiles <= 0) return 0
-  if (beyondMiles <= 10) return 25
-  if (beyondMiles <= 20) return 45
-  if (beyondMiles <= 30) return 65
-  // Outside supported range
-  return 65
-}
-
-async function drivingMiles(origin: Coordinates, dest: Coordinates): Promise<number> {
-  const straight = haversineMiles(origin, dest)
-  return estimateDrivingMiles(straight)
-}
-
 export async function POST(req: NextRequest) {
   try {
     const { mode, zip, acts = 1, when } = await req.json()
     const date = when ? new Date(when) : new Date()
 
     if (mode === "RON") {
-      const total = Math.max(1, acts) * BASES.RON_PER_ACT
+      // Keep RON estimate simple and consistent with published pricing
+      const total = Math.max(1, acts) * 25
       return NextResponse.json({
         ok: true,
         mode: "RON",
-        breakdown: [{ label: "Online notarizations", amount: BASES.RON_PER_ACT, qty: Math.max(1, acts) }],
+        breakdown: [{ label: "Online notarizations", amount: 25, qty: Math.max(1, acts) }],
         total,
       })
     }
@@ -124,26 +33,42 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "A valid 5-digit ZIP code is required." }, { status: 400 })
     }
 
-    const dest = await geocodeZip(zip)
-    const miles = await drivingMiles(ORIGIN_COORDS, dest)
-    const afterHours = isAfterHours(date)
-    const included = afterHours ? INCLUDED_RADIUS_MILES.EXTENDED_HOURS : INCLUDED_RADIUS_MILES.STANDARD_NOTARY
-    const beyond = Math.max(0, miles - included)
-    const travelFee = calcTieredBeyondFee(beyond)
-    const base = afterHours ? BASES.MOBILE_AFTERHOURS : BASES.MOBILE_STANDARD
-    const notaryFees = Math.max(1, acts) * BASES.IN_PERSON_PER_ACT
-    const total = base + notaryFees + travelFee
+    // Map mode/time to service type
+    const serviceType = isAfterHours(date) ? 'EXTENDED_HOURS' : 'STANDARD_NOTARY'
+
+    // Offline-friendly distance estimate from base (77591)
+    const miles = estimateMiles(String(zip))
+
+    // Use UnifiedPricingEngine for accurate base + time-based pricing and tiered travel fees
+    const pricing = await UnifiedPricingEngine.calculateTransparentPricing({
+      serviceType: serviceType as any,
+      documentCount: Math.max(1, Number(acts) || 1),
+      signerCount: 1,
+      address: String(zip),
+      // Omit scheduledDateTime to avoid auto same-day surcharges in quick estimates
+      customerType: 'new',
+      requestId: `estimate_${Date.now()}`
+    })
+
+    // Build a compact breakdown for the estimator UI from the transparent result
+    const breakdown: Array<{ label: string; amount: number }> = []
+    breakdown.push({ label: serviceType === 'EXTENDED_HOURS' ? 'Mobile base (after-hours)' : 'Mobile base', amount: pricing.basePrice })
+    // Per-act in-person notarizations ($10 each)
+    const notaryFees = Math.max(1, Number(acts) || 1) * 10
+    breakdown.push({ label: 'In-person notarizations', amount: notaryFees })
+    if ((pricing.breakdown as any).travelFee?.amount) {
+      const included = serviceType === 'EXTENDED_HOURS' ? SERVICE_AREA_CONFIG.RADII.EXTENDED : SERVICE_AREA_CONFIG.RADII.STANDARD
+      breakdown.push({ label: `Travel beyond ${included}mi`, amount: (pricing.breakdown as any).travelFee.amount })
+    }
+    // Collapse time-based surcharges into one line for the strip
+    // We omit time-based surcharges in this quick estimator
 
     return NextResponse.json({
       ok: true,
       mode: "MOBILE",
       miles: Math.round(miles * 10) / 10,
-      breakdown: [
-        { label: afterHours ? "Mobile base (after-hours)" : "Mobile base", amount: base },
-        { label: `In-person notarizations`, amount: notaryFees },
-        ...(travelFee > 0 ? [{ label: `Travel beyond ${included}mi`, amount: travelFee }] : []),
-      ],
-      total,
+      breakdown,
+      total: pricing.totalPrice + notaryFees,
     })
   } catch (e) {
     return NextResponse.json({ ok: false, error: (e as Error).message }, { status: 400 })
