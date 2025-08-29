@@ -4,6 +4,8 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { track } from "@/app/lib/analytics"
 import { useVariant } from "@/app/lib/abTesting"
 import { getBusinessTel, getBusinessPhoneFormatted } from "@/lib/phone"
@@ -25,6 +27,10 @@ export default function HeroBooking() {
   const [estimate, setEstimate] = useState<EstimateResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [eta, setEta] = useState<string | null>(null)
+  const [phone, setPhone] = useState("")
+  const [sending, setSending] = useState(false)
+  const [sendMsg, setSendMsg] = useState<string | null>(null)
+  const [pricingOpen, setPricingOpen] = useState(false)
 
   useEffect(() => {
     track("hero_viewed")
@@ -59,36 +65,8 @@ export default function HeroBooking() {
     } catch {}
   }, [zip, acts])
 
-  // Fetch earliest ETA window for current mode
-  useEffect(() => {
-    async function fetchEta() {
-      try {
-        const today = new Date().toISOString().slice(0,10)
-        const serviceType = mode === 'RON' ? 'RON_SERVICES' : 'STANDARD_NOTARY'
-        const res = await fetch(`/api/v2/availability?serviceType=${serviceType}&date=${today}&timezone=America/Chicago`, { cache: 'no-store' })
-        const data = await res.json()
-        const slots = (data?.availableSlots || []) as Array<{ startTime?: string; start?: string; available?: boolean }>
-        const nowTs = Date.now()
-        const first = slots
-          .filter(s => s.available !== false)
-          .map(s => s.startTime || (s as any).start)
-          .filter(Boolean)
-          .map((iso: string) => new Date(iso).getTime())
-          .filter(ts => ts >= nowTs)
-          .sort((a,b) => a - b)[0]
-        if (first) {
-          const d = new Date(first)
-          const label = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-          setEta(label)
-        } else {
-          setEta(null)
-        }
-      } catch {
-        setEta(null)
-      }
-    }
-    fetchEta()
-  }, [mode])
+  // We no longer surface a specific "earliest arrival" time in the hero.
+  useEffect(() => { setEta(null) }, [mode])
 
   async function getEstimate() {
     try {
@@ -144,16 +122,43 @@ export default function HeroBooking() {
       <div className="container mx-auto px-4 py-16 md:py-24 grid md:grid-cols-2 gap-10 items-center">
         <div>
           <h1 className="text-4xl md:text-5xl font-serif mb-2">{currentHeadline}</h1>
-          {eta && (
-            <p className="text-white/80 mb-2">Earliest arrival: {eta}</p>
-          )}
+          <p className="text-white/80 mb-2">Typically within 1–2 hours.</p>
           <p className="text-white/80 mb-2">Same‑day, 20–30 mi included.</p>
-          <p className="text-white/80 mb-6">From $75 • No hidden fees.</p>
+          <p className="text-white/80 mb-6">
+            From $75 • No hidden fees. {" "}
+            <Dialog open={pricingOpen} onOpenChange={setPricingOpen}>
+              <DialogTrigger asChild>
+                <button className="underline underline-offset-4 hover:text-white" onClick={() => track('cta_click', { cta_name: 'See full pricing', location: 'hero' })}>See full pricing</button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>Transparent Pricing</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3 text-sm text-[#0F1419]">
+                  <div className="flex items-center justify-between"><span>Mobile notarization (first seal)</span><span>$10</span></div>
+                  <div className="flex items-center justify-between"><span>Each additional seal</span><span>$10</span></div>
+                  <div className="flex items-center justify-between"><span>Travel up to 25 miles</span><span>Included</span></div>
+                  <div className="flex items-center justify-between"><span>Evenings/weekends</span><span>+$25</span></div>
+                  <div className="flex items-center justify-between"><span>Loan signing (package)</span><span>From $125</span></div>
+                  <p className="text-xs text-[#0F1419]/70">Final price depends on distance, time, and document count. You’ll see your estimate instantly.</p>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </p>
           <div className="flex flex-wrap gap-3 text-sm text-white/70 mb-8">
             <span className="px-3 py-1 rounded-full bg-white/10">4.9★ Rated</span>
             <span className="px-3 py-1 rounded-full bg-white/10">500+ jobs</span>
             <span className="px-3 py-1 rounded-full bg-white/10">25‑mile radius</span>
-            <span className="px-3 py-1 rounded-full bg-white/10">NNA Certified & Insured</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="px-3 py-1 rounded-full bg-white/10 cursor-help">NNA Certified & Insured</span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="max-w-xs text-xs">NNA certification means the notary completed background checks and training via the National Notary Association.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           <div className="bg-white/5 backdrop-blur rounded-2xl p-4 md:p-5">
@@ -217,7 +222,12 @@ export default function HeroBooking() {
               </div>
             )}
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 mt-4">
+          <div className="flex flex-col sm:flex-row gap-3 mt-4 items-start">
+            <div className="text-sm text-white/80 order-2 sm:order-1">
+              <span className="font-medium">Questions? Call or text</span>
+              <span className="mx-1">•</span>
+              <span>Open now</span>
+            </div>
             <Link href="/booking" className="inline-flex">
               <Button className="bg-primary text-white h-12 px-6" onClick={() => track('cta_click', { cta_name: ctaText(), location: 'hero' })}>{ctaText()}</Button>
             </Link>
@@ -231,6 +241,44 @@ export default function HeroBooking() {
               </Button>
             </a>
           </div>
+          <p className="mt-2 text-xs text-white/80">Trusted by 500+ neighbors.</p>
+          <div className="mt-4 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+            <input
+              className="px-3 py-2 rounded-lg bg-white text-[#0F1419] placeholder:text-[#0F1419]/60 w-full sm:w-64"
+              placeholder="Your mobile number"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value.replace(/[^0-9+]/g, '').slice(0, 16))}
+              inputMode="tel"
+            />
+            <Button
+              className="h-10 px-4 bg-white text-[#0F1419] hover:bg-white/90"
+              disabled={sending || phone.length < 10}
+              onClick={async () => {
+                try {
+                  setSending(true)
+                  setSendMsg(null)
+                  const res = await fetch('/api/sms/send', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'x-api-key': process.env.NEXT_PUBLIC_SMS_API_KEY || ''
+                    },
+                    body: JSON.stringify({ to: phone, message: 'Here is your booking link: ' + (typeof window !== 'undefined' ? window.location.origin + '/booking' : 'https://houstonmobilenotarypros.com/booking') })
+                  })
+                  if (!res.ok) throw new Error('Failed to send')
+                  track('sms_link_sent', { location: 'hero' })
+                  setSendMsg('Sent! Check your phone for the link.')
+                } catch {
+                  setSendMsg('Could not send. Please call or try again.')
+                } finally {
+                  setSending(false)
+                }
+              }}
+            >
+              {sending ? 'Sending…' : 'Text me the booking link'}
+            </Button>
+          </div>
+          {sendMsg && <p className="mt-1 text-xs text-white/80">{sendMsg}</p>}
           <div className="flex flex-wrap items-center gap-2 mt-3 text-xs text-white/80">
             <span className="px-2 py-1 rounded bg-white/10">NNA Certified</span>
             <span className="px-2 py-1 rounded bg-white/10">Bonded & Insured</span>

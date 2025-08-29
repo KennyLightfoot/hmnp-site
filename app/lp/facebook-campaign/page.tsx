@@ -199,11 +199,11 @@ const FacebookCampaignPage: NextPage = () => {
                   <h3 className="text-2xl font-bold mb-4">Don't Miss This Facebook Exclusive!</h3>
                   <p className="text-lg mb-6">This 30% discount is only available for 24 hours and exclusively for Facebook users. Book now to secure your savings!</p>
                   <a
-                    href="tel:+18326174285"
+                    href={`tel:${require('@/lib/phone').getBusinessTel()}`}
                     onClick={() => track('call_clicked', { location: 'urgency_section', lp: 'facebook-campaign' })}
-                    className="inline-flex items-center justify-center bg-white text-primary hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition-colors"
+                    className="inline-flex items-center justify-center bg-white text_primary hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition-colors"
                   >
-                    <Phone className="mr-2 h-5 w-5" /> Call (832) 617-4285
+                    <Phone className="mr-2 h-5 w-5" /> Call {require('@/lib/phone').getBusinessPhoneFormatted()}
                   </a>
                 </div>
               </section>
@@ -278,11 +278,11 @@ const FacebookCampaignPage: NextPage = () => {
       </section>
       <div className="py-6 text-center">
         <a
-          href="tel:+18326174285"
+          href={`tel:${require('@/lib/phone').getBusinessTel()}`}
           onClick={() => track('call_clicked', { location: 'sticky_footer', lp: 'facebook-campaign' })}
           className="inline-flex items-center justify-center bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg shadow font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40"
         >
-          <Phone className="mr-2 h-5 w-5" /> Call (832) 617-4285
+          <Phone className="mr-2 h-5 w-5" /> Call {require('@/lib/phone').getBusinessPhoneFormatted()}
         </a>
       </div>
       <MobileDock />

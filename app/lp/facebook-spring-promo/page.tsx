@@ -119,12 +119,12 @@ export default function FacebookSpringPromoLandingPage() {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </a>
                 <a
-                  href="tel:+18326174285"
+                  href={`tel:${require('@/lib/phone').getBusinessTel()}`}
                   onClick={() => track('call_clicked', { location: 'hero', lp: 'facebook-spring-promo' })}
                   className="border-2 border-white text-white hover:bg-white hover:text-secondary px-8 py-4 rounded-lg font-semibold text-center transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40"
                 >
                   <Phone className="mr-2 h-5 w-5" />
-                  Call Now
+                  Call {require('@/lib/phone').getBusinessPhoneFormatted()}
                 </a>
               </div>
             </div>
@@ -307,12 +307,12 @@ export default function FacebookSpringPromoLandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="tel:+18326174285"
+              href={`tel:${require('@/lib/phone').getBusinessTel()}`}
               onClick={() => track('call_clicked', { location: 'footer', lp: 'facebook-spring-promo' })}
               className="bg-white text-primary hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold transition-colors inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40"
             >
               <Phone className="mr-2 h-5 w-5" />
-              Call Now for Instant Help
+              Call {require('@/lib/phone').getBusinessPhoneFormatted()}
             </a>
             <Link
               href="/contact"

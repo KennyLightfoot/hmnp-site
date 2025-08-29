@@ -97,7 +97,7 @@ export default function WebsterMobileNotaryPage() {
               </ol>
             </div>
           </div>
-          <p className="mt-6 text-sm text-gray-600">Urgent need? Call now: <a className="underline" href="tel:+18326174285">(832) 617‑4285</a></p>
+          <p className="mt-6 text-sm text-gray-600">Urgent need? Call now: <a className="underline" href={`tel:${require('@/lib/phone').getBusinessTel()}`}>{require('@/lib/phone').getBusinessPhoneFormatted()}</a></p>
         </div>
       </section>
 

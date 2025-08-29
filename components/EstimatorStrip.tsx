@@ -17,6 +17,7 @@ export default function EstimatorStrip({ defaultMode = 'MOBILE' as 'MOBILE' | 'R
   const [mode, setMode] = useState<'MOBILE' | 'RON'>(defaultMode)
   const [isLoading, setIsLoading] = useState(false)
   const [estimate, setEstimate] = useState<EstimateResponse | null>(null)
+  const [optimistic, setOptimistic] = useState<EstimateResponse | null>(null)
 
   // Prefill from localStorage and persist changes
   useEffect(() => {
@@ -37,6 +38,10 @@ export default function EstimatorStrip({ defaultMode = 'MOBILE' as 'MOBILE' | 'R
   async function getEstimate() {
     setIsLoading(true)
     setEstimate(null)
+    try {
+      // optimistic cue
+      setOptimistic({ ok: true, mode, miles: undefined, total: undefined })
+    } catch {}
     try {
       try {
         const gtag = (window as any).gtag as undefined | ((...args: any[]) => void)
@@ -68,8 +73,13 @@ export default function EstimatorStrip({ defaultMode = 'MOBILE' as 'MOBILE' | 'R
         <input className="px-3 py-2 rounded-lg border bg-white" placeholder="ZIP" value={zip} onChange={(e) => setZip(e.target.value.replace(/[^0-9]/g, '').slice(0,5))} maxLength={5} />
         <input className="px-3 py-2 rounded-lg border bg-white" placeholder="# acts" value={acts} onChange={(e) => setActs(Math.max(1, parseInt(e.target.value || '1', 10)))} />
         <Button className="bg-primary text-white" onClick={getEstimate}>{isLoading ? '...' : 'Estimate'}</Button>
-        {estimate?.ok && (
-          <div className="ml-auto text-secondary">Est. ${estimate.total}{estimate.miles != null ? ` (~${estimate.miles} mi)` : ''}</div>
+        {(isLoading || estimate?.ok || optimistic?.ok) && (
+          <div className="ml-auto text-secondary">
+            {isLoading && <span className="inline-block w-24 h-4 bg-secondary/10 rounded animate-pulse" />}
+            {!isLoading && (estimate || optimistic)?.ok && (
+              <span>Est. {(estimate?.total ?? '').toString()}{estimate?.miles != null ? ` (~${estimate.miles} mi)` : ''}</span>
+            )}
+          </div>
         )}
       </div>
     </div>

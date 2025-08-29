@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { track } from "@/app/lib/analytics"
+import TelLink from "@/components/TelLink"
 
 export default function FinalCta() {
   return (
@@ -13,9 +14,9 @@ export default function FinalCta() {
           <Link href="/booking" className="inline-flex" onClick={() => track('cta_clicked', { cta_name: 'Book Now', location: 'final_cta' })}>
             <Button className="bg-white text-secondary hover:bg-white/90 h-12 px-6">Book Now</Button>
           </Link>
-          <a href="tel:18326174285" className="inline-flex" onClick={() => track('call_clicked', { location: 'final_cta' })}>
-            <Button className="bg-primary hover:bg-primary/90 h-12 px-6">Call (832) 617-4285</Button>
-          </a>
+          <TelLink className="inline-flex" location="final_cta">
+            <Button className="bg-primary hover:bg-primary/90 h-12 px-6">Call {"(dynamic)"}</Button>
+          </TelLink>
         </div>
       </div>
     </section>

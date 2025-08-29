@@ -62,14 +62,9 @@ export default function Header() {
               <ul className="flex space-x-6 items-center">
                 {[
                   { href: '/services', label: 'Services' },
-                  { href: '/ron/how-it-works', label: 'RON' },
-                  { href: '/service-areas', label: 'Service Areas' },
-                  { href: '/what-to-expect', label: 'What to Expect' },
-                  { href: '/testimonials', label: 'Testimonials' },
-                  { href: '/faq', label: 'FAQ' },
-                  { href: '/blog', label: 'Blog' },
-                  { href: '/contact', label: 'Contact' },
-                  { href: '/login', label: 'Sign In' }
+                  { href: '/pricing', label: 'Pricing' },
+                  { href: '/service-areas', label: 'Areas' },
+                  { href: '/faq', label: 'FAQs' },
                 ].map((item) => (
                   <li key={item.href}>
                     <Link href={item.href} className="text-white/80 hover:text-white" onClick={() => track('cta_click', { cta_name: item.label, location: 'header' })}>
@@ -97,14 +92,9 @@ export default function Header() {
             <ul className="flex flex-col space-y-4">
               {[
                 { href: '/services', label: 'Services' },
-                { href: '/ron/how-it-works', label: 'RON' },
-                { href: '/service-areas', label: 'Service Areas' },
-                { href: '/what-to-expect', label: 'What to Expect' },
-                { href: '/testimonials', label: 'Testimonials' },
-                { href: '/faq', label: 'FAQ' },
-                { href: '/blog', label: 'Blog' },
-                { href: '/contact', label: 'Contact' },
-                { href: '/login', label: 'Sign In' },
+                { href: '/pricing', label: 'Pricing' },
+                { href: '/service-areas', label: 'Areas' },
+                { href: '/faq', label: 'FAQs' },
               ].map((item) => (
                 <li key={item.href}>
                   <Link
