@@ -1,99 +1,133 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { CheckCircle, MapPin, Clock, Shield } from "lucide-react"
-import { OneTapCalling } from "@/components/mobile/one-tap-calling"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CheckCircle, Star } from "lucide-react"
 
 export function HeroSection() {
   return (
-    <section className="relative bg-gradient-to-br from-background via-muted/30 to-background py-20 lg:py-32">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+    <section className="relative bg-[#002147] text-white py-20 lg:py-32 overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transform -skew-y-12"></div>
+      </div>
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="grid lg:grid-cols-2 gap-12 items-start">
           {/* Content */}
           <div className="space-y-8">
+            <Badge className="bg-[#A52A2A] hover:bg-[#A52A2A]/90 text-white border-none">
+              Professional Mobile Notary Services
+            </Badge>
+
             <div className="space-y-4">
-              <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
-                ⭐ #1 Rated Mobile Notary in Houston
-              </Badge>
-              <h1 className="text-4xl lg:text-6xl font-bold text-balance leading-tight">
-                Your Trusted <span className="text-primary">Mobile Notary</span> in Houston
+              <h1 className="text-4xl lg:text-5xl font-bold text-balance leading-tight">
+                Same-Day Mobile Notary. No Surprises.
               </h1>
-              <p className="text-xl text-muted-foreground text-pretty max-w-2xl">
-                Professional notary services that come to you. From real estate closings to business documents, we
-                provide secure, convenient notarization anywhere in the Houston area.
+              <p className="text-lg text-blue-100 text-pretty max-w-2xl">
+                Transparent $75 flat rate (4 docs, 2 signers, 20 miles). If we're late to your workday, you get $25 off.
               </p>
             </div>
 
-            {/* Trust Indicators */}
-            <div className="flex flex-wrap gap-6 text-sm">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <span>Licensed & Bonded</span>
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div className="text-center">
+                <div className="text-blue-200">Covered anywhere</div>
               </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-primary" />
-                <span>60-Mile Service Area</span>
+              <div className="text-center">
+                <div className="text-blue-200">24/7 on-demand</div>
               </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-accent" />
-                <span>7AM-9PM Daily</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-green-600" />
-                <span>$1M E&O Insurance</span>
+              <div className="text-center">
+                <div className="text-blue-200">Transparent pricing</div>
               </div>
             </div>
 
-            {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-lg px-8">
-                <Link href="/booking">Book Mobile Notary</Link>
+              <Button size="lg" className="bg-[#A52A2A] hover:bg-[#A52A2A]/90 text-white text-lg px-8">
+                Book Mobile Notary
               </Button>
-              <Button asChild variant="outline" size="lg" className="text-lg px-8 bg-transparent">
-                <Link href="/ron">Try RON Services</Link>
+              <Button
+                variant="outline"
+                size="lg"
+                className="text-white border-white hover:bg-white hover:text-[#002147] text-lg px-8 bg-transparent"
+              >
+                Get Free e-Notary Now
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="text-white border-white hover:bg-white hover:text-[#002147] text-lg px-8 bg-transparent"
+              >
+                Travel Zones
               </Button>
             </div>
 
-            <div className="md:hidden">
-              <div className="text-center py-4">
-                <p className="text-sm text-muted-foreground mb-3">Need immediate assistance?</p>
-                <OneTapCalling variant="primary" size="lg" />
+            <div className="grid grid-cols-3 gap-8 pt-8">
+              <div className="text-center">
+                <div className="text-blue-200 text-sm">Priority arrival windows at any</div>
+                <div className="text-white font-medium">location</div>
+              </div>
+              <div className="text-center">
+                <div className="text-blue-200 text-sm">Live text updates + on-time tracking</div>
+              </div>
+              <div className="text-center">
+                <div className="text-blue-200 text-sm">Pay on site — card or cash accepted</div>
               </div>
             </div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-8 pt-8 border-t">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">5,000+</div>
-                <div className="text-sm text-muted-foreground">Documents Notarized</div>
+            <div className="flex items-center gap-4 pt-4">
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                ))}
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">24/7</div>
-                <div className="text-sm text-muted-foreground">RON Available</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">99%</div>
-                <div className="text-sm text-muted-foreground">Client Satisfaction</div>
-              </div>
+              <div className="text-sm text-blue-200">Trusted by 500+ clients in the Houston area</div>
             </div>
           </div>
 
-          {/* Hero Image */}
           <div className="relative">
-            <div className="aspect-[4/3] rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 p-8 flex items-center justify-center">
-              <img
-                src="/professional-notary-with-documents-and-seal-in-mod.png"
-                alt="Professional notary providing mobile services"
-                className="rounded-lg shadow-2xl w-full h-full object-cover"
-              />
-            </div>
-            {/* Floating Elements */}
-            <div className="absolute -top-4 -right-4 bg-background border shadow-lg rounded-lg p-4">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium">Available Now</span>
-              </div>
-            </div>
+            <Card className="bg-white text-gray-900 shadow-2xl">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-[#002147] rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-bold">H</span>
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Mobile Notary</CardTitle>
+                    <p className="text-sm text-gray-600">We come to you</p>
+                  </div>
+                </div>
+                <Badge className="bg-[#A52A2A] text-white w-fit">Professional Service</Badge>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span>Available 7 days a week</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span>Fast response times</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span>Licensed professionals</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span>Serving all of Houston</span>
+                  </div>
+                </div>
+
+                <div className="border-t pt-4">
+                  <div className="text-2xl font-bold text-[#002147]">$75</div>
+                  <div className="text-sm text-gray-600">Standard rate</div>
+                </div>
+
+                <Button asChild className="w-full bg-[#002147] hover:bg-[#002147]/90 text-white">
+                  <Link href="/booking">Book now available</Link>
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

@@ -1,94 +1,102 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { MapPin, Video, FileText, Clock, DollarSign, Users } from "lucide-react"
+import { MapPin, Video, FileText, Clock, Users, CheckCircle } from "lucide-react"
 import { SwipeableServices } from "@/components/mobile/swipeable-services"
 
 export function ServicesSection() {
   const services = [
     {
       icon: MapPin,
-      title: "Mobile Notary",
-      description: "We come to your location for convenient, professional notarization services.",
-      features: ["Same-day availability", "60-mile service area", "All document types"],
-      pricing: "Starting at $50",
+      title: "Mobile Standard",
+      subtitle: "from $75",
+      description: "Professional mobile notary service that comes to your location.",
+      features: [
+        "For one client, On-site",
+        "Priority arrival windows at any location",
+        "Up to 20 Travel Credit Guarantee",
+      ],
+      buttonText: "Book Now",
+      buttonVariant: "destructive" as const,
       popular: false,
       href: "/booking?service=mobile",
     },
     {
-      icon: Video,
-      title: "Remote Online Notarization (RON)",
-      description: "Secure online notarization available 24/7 from anywhere in Texas.",
-      features: ["24/7 availability", "Instant scheduling", "Secure video platform"],
-      pricing: "Starting at $25",
-      popular: true,
-      href: "/ron",
+      icon: Clock,
+      title: "Extended Mobile (Urgent)",
+      subtitle: "from $125",
+      description: "Priority service with extended hours and faster response times.",
+      features: ["30 mins included", "2-3 day", "Up to 30 Travel Credit Guarantee"],
+      buttonText: "Book Now",
+      buttonVariant: "default" as const,
+      popular: false,
+      href: "/booking?service=extended",
     },
     {
       icon: FileText,
-      title: "Loan Signing Specialist",
-      description: "Expert handling of mortgage documents, refinances, and real estate closings.",
-      features: ["Certified LSS", "Real estate expertise", "Title company approved"],
-      pricing: "Flat $150 fee",
+      title: "Loan Signing",
+      subtitle: "from $175",
+      description: "Specialized loan document signing with certified expertise.",
+      features: ["Loan packages: 24 hours", "On-site included", "Experienced loan document and wire"],
+      buttonText: "Book Now",
+      buttonVariant: "default" as const,
       popular: false,
       href: "/booking?service=loan-signing",
+    },
+    {
+      icon: Video,
+      title: "Remote Online Notarization (RON)",
+      subtitle: "from $35",
+      description: "Secure online notarization available 24/7 from anywhere.",
+      features: ["Texas compliant, credential analysis", "SSL encrypted", "Identity verification", "24/7 availability"],
+      buttonText: "Book Now",
+      buttonVariant: "default" as const,
+      popular: false,
+      href: "/ron",
     },
   ]
 
   return (
-    <section id="services" className="py-20 bg-muted/30">
+    <section id="services" className="py-20 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="md:hidden">
           <SwipeableServices />
         </div>
 
         <div className="hidden md:block">
-          <div className="text-center space-y-4 mb-16">
-            <Badge variant="outline" className="text-primary border-primary/20">
-              Our Services
-            </Badge>
-            <h2 className="text-3xl lg:text-5xl font-bold text-balance">Professional Notary Services</h2>
-            <p className="text-xl text-muted-foreground text-pretty max-w-3xl mx-auto">
-              Choose from our comprehensive range of notary services designed to meet your specific needs, whether you
-              need us to come to you or prefer the convenience of online notarization.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
             {services.map((service) => {
               const IconComponent = service.icon
               return (
-                <Card
-                  key={service.title}
-                  className={`relative ${service.popular ? "ring-2 ring-accent shadow-lg" : ""}`}
-                >
-                  {service.popular && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent">Most Popular</Badge>
-                  )}
+                <Card key={service.title} className="relative border-gray-200 hover:shadow-lg transition-shadow">
                   <CardHeader className="text-center pb-4">
-                    <div className="mx-auto w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                      <IconComponent className="h-6 w-6 text-primary" />
+                    <div className="mx-auto w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                      <IconComponent className="h-6 w-6 text-[#002147]" />
                     </div>
-                    <CardTitle className="text-xl">{service.title}</CardTitle>
-                    <CardDescription className="text-base">{service.description}</CardDescription>
+                    <CardTitle className="text-lg font-semibold">{service.title}</CardTitle>
+                    <div className="text-lg font-bold text-[#A52A2A]">{service.subtitle}</div>
+                    <CardDescription className="text-sm text-gray-600">{service.description}</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-accent">{service.pricing}</div>
-                    </div>
+                  <CardContent className="space-y-3">
                     <ul className="space-y-2">
                       {service.features.map((feature, index) => (
-                        <li key={index} className="flex items-center gap-2 text-sm">
-                          <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                          {feature}
+                        <li key={index} className="flex items-start gap-2 text-sm">
+                          <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>{feature}</span>
                         </li>
                       ))}
                     </ul>
                   </CardContent>
                   <CardFooter>
-                    <Button asChild className="w-full" variant={service.popular ? "default" : "outline"}>
-                      <Link href={service.href}>{service.popular ? "Get Started" : "Learn More"}</Link>
+                    <Button
+                      asChild
+                      className={`w-full ${
+                        service.buttonVariant === "destructive"
+                          ? "bg-[#A52A2A] hover:bg-[#A52A2A]/90 text-white"
+                          : "bg-[#002147] hover:bg-[#002147]/90 text-white"
+                      }`}
+                    >
+                      <Link href={service.href}>{service.buttonText}</Link>
                     </Button>
                   </CardFooter>
                 </Card>
@@ -97,27 +105,31 @@ export function ServicesSection() {
           </div>
         </div>
 
-        {/* Additional Services */}
-        <div className="mt-16 grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="text-center space-y-2">
-            <Clock className="h-8 w-8 text-primary mx-auto" />
-            <h3 className="font-semibold">Extended Hours</h3>
-            <p className="text-sm text-muted-foreground">Available 7AM-9PM daily for your convenience</p>
+        <div className="grid md:grid-cols-3 gap-8 text-center">
+          <div className="space-y-3">
+            <div className="mx-auto w-16 h-16 bg-[#002147] rounded-full flex items-center justify-center">
+              <Clock className="h-8 w-8 text-white" />
+            </div>
+            <h3 className="font-semibold text-lg">Essential Services</h3>
+            <p className="text-sm text-gray-600">
+              Flexible rescheduling: Full refund with 4-hour notice making it easy to adjust your schedule.
+            </p>
           </div>
-          <div className="text-center space-y-2">
-            <Users className="h-8 w-8 text-primary mx-auto" />
-            <h3 className="font-semibold">Multiple Signers</h3>
-            <p className="text-sm text-muted-foreground">Handle up to 4 signers per appointment</p>
+          <div className="space-y-3">
+            <div className="mx-auto w-16 h-16 bg-[#002147] rounded-full flex items-center justify-center">
+              <Users className="h-8 w-8 text-white" />
+            </div>
+            <h3 className="font-semibold text-lg">Priority Services</h3>
+            <p className="text-sm text-gray-600">
+              Live support: Real-time during service hours, quick support if timing shifts.
+            </p>
           </div>
-          <div className="text-center space-y-2">
-            <DollarSign className="h-8 w-8 text-primary mx-auto" />
-            <h3 className="font-semibold">Transparent Pricing</h3>
-            <p className="text-sm text-muted-foreground">No hidden fees, flat-rate pricing structure</p>
-          </div>
-          <div className="text-center space-y-2">
-            <FileText className="h-8 w-8 text-primary mx-auto" />
-            <h3 className="font-semibold">All Document Types</h3>
-            <p className="text-sm text-muted-foreground">Wills, contracts, affidavits, and more</p>
+          <div className="space-y-3">
+            <div className="mx-auto w-16 h-16 bg-[#A52A2A] rounded-full flex items-center justify-center">
+              <FileText className="h-8 w-8 text-white" />
+            </div>
+            <h3 className="font-semibold text-lg">Need Same-Day Service?</h3>
+            <p className="text-sm text-gray-600">Call us at (832) 777-0000</p>
           </div>
         </div>
       </div>
