@@ -1,169 +1,70 @@
+import type React from "react"
 import type { Metadata } from "next"
-import { dmSerifDisplay, inter } from './fonts'
-import "./globals.css"
-import { Providers } from "./providers"
+import { GeistSans } from "geist/font/sans"
+import { GeistMono } from "geist/font/mono"
+import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
-import Script from "next/script"
-import GAPathTracker from "@/components/analytics/GAPathTracker"
-import GAConversionEvents from "@/components/analytics/GAConversionEvents"
-import { LoadingSpinner } from "@/components/ui/loading-states"
-import dynamic from 'next/dynamic'
-import Analytics from '@/components/Analytics'
-import SchemaInitializer from '@/components/SchemaInitializer'
-import AttributionInit from '@/components/analytics/AttributionInit'
-
-// Fonts now provided via CSS variables for Tailwind
+import "./globals.css"
 
 export const metadata: Metadata = {
-  title: {
-    default: "Houston Mobile Notary Pros | Professional Mobile Notary Services",
-    template: "%s | Houston Mobile Notary Pros"
+  title: "Houston Mobile Notary Pros - Professional Mobile Notary Services",
+  description:
+    "Professional mobile notary service in Houston, TX. On-site notarization, remote online notarization (RON), and loan signing specialists. Available 7am-9pm daily.",
+  keywords:
+    "mobile notary Houston, notary services Texas, RON remote notarization, loan signing agent, document notarization",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Houston Mobile Notary Pros",
   },
-  description: "Professional mobile notary services in Houston. Same-day appointments, loan signings, real estate closings, and more. Licensed, insured, and trusted by thousands.",
-  keywords: ["Houston notary", "mobile notary", "loan signing", "real estate notary", "document notarization", "same day notary"],
-  authors: [{ name: "Houston Mobile Notary Pros" }],
-  creator: "Houston Mobile Notary Pros",
-  publisher: "Houston Mobile Notary Pros",
   formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
+    telephone: true,
   },
-  metadataBase: new URL('https://houstonmobilenotarypros.com'),
-  alternates: {
-    canonical: '/',
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: "cover",
   },
   openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: 'https://houstonmobilenotarypros.com',
-    title: 'Houston Mobile Notary Pros | Professional Mobile Notary Services',
-    description: 'Professional mobile notary services in Houston. Same-day appointments, loan signings, real estate closings, and more.',
-    siteName: 'Houston Mobile Notary Pros',
-    images: [
-      {
-        url: '/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Houston Mobile Notary Pros',
-      },
-    ],
+    title: "Houston Mobile Notary Pros - Professional Mobile Notary Services",
+    description:
+      "Professional mobile notary service in Houston, TX. On-site notarization, remote online notarization (RON), and loan signing specialists.",
+    type: "website",
+    locale: "en_US",
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Houston Mobile Notary Pros | Professional Mobile Notary Services',
-    description: 'Professional mobile notary services in Houston. Same-day appointments, loan signings, real estate closings, and more.',
-    images: ['/og-image.jpg'],
+    card: "summary_large_image",
+    title: "Houston Mobile Notary Pros - Professional Mobile Notary Services",
+    description:
+      "Professional mobile notary service in Houston, TX. On-site notarization, remote online notarization (RON), and loan signing specialists.",
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
-  verification: {
-    google: 'your-google-verification-code',
-  },
+  generator: "v0.app",
 }
-
-// Lazy load heavy components
-const LazyHeader = dynamic(() => import('@/components/header'), {
-  loading: () => <div className="h-16 bg-white border-b animate-pulse" />
-})
-
-const LazyFooter = dynamic(() => import('@/components/footer'), {
-  loading: () => <div className="h-64 bg-gray-900 animate-pulse" />
-})
-
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode
-}) {
+}>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${dmSerifDisplay.variable}`}>
-      {process.env.NEXT_PUBLIC_GTM_ID && (
-        <Script id="gtm-base" strategy="beforeInteractive">{`
-          (function(w,d,s,l,i){
-            w[l]=w[l]||[];
-            w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});
-            var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
-            j.async=true;
-            j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
-            f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer','${process.env.NEXT_PUBLIC_GTM_ID}');
-        `}</Script>
-      )}
-      <body>
-        <Suspense>
-          <Analytics />
-        </Suspense>
-        <AttributionInit />
-        {/* Initialize enhanced schema in browser */}
-        <SchemaInitializer />
-        {process.env.NEXT_PUBLIC_GTM_ID && (
-          <noscript>
-            <iframe
-              src={`https://www.googletagmanager.com/ns.html?id=${process.env.NEXT_PUBLIC_GTM_ID}`}
-              height="0"
-              width="0"
-              style={{ display: 'none', visibility: 'hidden' }}
-            />
-          </noscript>
-        )}
-        {/* Google Analytics / Google Ads via gtag.js (no GTM) */}
-        {(() => {
-          const adsConversionId = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID || '';
-          const adsAccountId = adsConversionId ? adsConversionId.split('/')[0] : '';
-          const gaId = process.env.NEXT_PUBLIC_GA_ID;
-          const shouldLoadGtagDirect = (gaId || adsAccountId) && !process.env.NEXT_PUBLIC_GTM_ID;
-          if (!shouldLoadGtagDirect) return null;
-          return (
-          <Suspense fallback={null}>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${gaId || adsAccountId}`}
-              strategy="afterInteractive"
-            />
-            <Script id="ga4" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                ${gaId ? `gtag('config', '${gaId}', { page_path: window.location.pathname });` : ''}
-                ${adsAccountId ? `gtag('config', '${adsAccountId}');` : ''}
-              `}
-            </Script>
-            <GAPathTracker />
-            <GAConversionEvents />
-          </Suspense>
-          );
-        })()}
-        <Providers>
-          <Suspense fallback={<LoadingSpinner size="lg" />}>
-            <LazyHeader />
-          </Suspense>
-          
-          <main className="min-h-screen">
-            <Suspense fallback={
-              <div className="flex items-center justify-center min-h-[400px]">
-                <LoadingSpinner size="lg" />
-              </div>
-            }>
-              {children}
-            </Suspense>
-          </main>
-          
-          <Suspense fallback={<div className="h-64 bg-gray-900 animate-pulse" />}>
-            <LazyFooter />
-          </Suspense>
-        </Providers>
+    <html lang="en">
+      <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="HMNP" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="msapplication-TileColor" content="#91a3b0" />
+        <meta name="theme-color" content="#91a3b0" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
+      </head>
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
+        <Suspense fallback={null}>{children}</Suspense>
+        <Analytics />
       </body>
     </html>
   )

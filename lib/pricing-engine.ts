@@ -1,623 +1,296 @@
-/**
- * Championship Booking System - Smart Pricing Engine
- * Houston Mobile Notary Pros
- * 
- * This is the core pricing engine that powers the conversion-optimized booking system.
- * Built for 95%+ booking completion rates and 40%+ higher conversion.
- */
+export interface PricingInput {
+  serviceId: string
+  numberOfSigners: number
+  numberOfDocuments: number
+  distanceMiles: number
+  urgencyLevel: "standard" | "priority" | "emergency"
+  isWeekend?: boolean
+  isHoliday?: boolean
+  isAfterHours?: boolean
+  isNightService?: boolean
+  requiresWitness?: boolean
+  witnessType?: "standard" | "sourced"
+}
 
-import { getErrorMessage } from '@/lib/utils/error-utils';
-import { logger } from './logger';
-import { SERVICES, PRICING_CONFIG, getServiceBasePrice } from '@/lib/pricing/base'
-import { calculateSurcharges } from '@/lib/pricing/surcharges'
-import { calculateDiscounts } from '@/lib/pricing/discounts'
-import { detectUpsellOpportunities } from '@/lib/pricing/upsells'
-import { generatePricingBreakdown } from '@/lib/pricing/breakdown'
-import { calculatePricingConfidence } from '@/lib/pricing/confidence'
-import { cacheResult } from '@/lib/pricing/cache'
-import { PricingCalculationError, PricingCalculationParams, PricingCalculationParamsSchema, PricingResult } from '@/lib/pricing/types'
-import type { UpsellSuggestion, PricingBreakdown, PricingConfidence } from '@/lib/pricing/types'
-import { UnifiedDistanceService } from '@/lib/maps/unified-distance-service'
-import { redis } from '@/lib/redis'
+export interface PricingResult {
+  basePrice: number
+  travelFee: number
+  urgencyFee: number
+  weekendFee: number
+  afterHoursFee: number
+  nightServiceFee: number
+  extraSignerFee: number
+  extraDocumentFee: number
+  witnessFee: number
+  totalPrice: number
+  breakdown: PricingBreakdown[]
+  isWithinServiceArea: boolean
+  maxServiceRadius: number
+}
 
-// types now in lib/pricing/types
+export interface PricingBreakdown {
+  description: string
+  amount: number
+  type: "base" | "travel" | "urgency" | "extra" | "fee"
+}
 
-/**
- * Championship Pricing Engine - The Heart of Our System
- * 
- * This class handles all pricing calculations, upsell detection,
- * and conversion optimization logic.
- */
-export class PricingEngine {
-  private readonly requestId: string;
+const SERVICE_CONFIGS = {
+  "quick-stamp": {
+    basePrice: 50,
+    maxDocuments: 1,
+    maxSigners: 1,
+    includedRadius: 10,
+    maxRadius: 20,
+    extraDocumentFee: 10,
+    extraSignerFee: 10,
+  },
+  "mobile-notary": {
+    basePrice: 75,
+    maxDocuments: 4,
+    maxSigners: 2,
+    includedRadius: 20,
+    maxRadius: 40,
+    extraDocumentFee: 10,
+    extraSignerFee: 5,
+  },
+  "extended-hours": {
+    basePrice: 100,
+    maxDocuments: 4,
+    maxSigners: 2,
+    includedRadius: 30,
+    maxRadius: 60,
+    extraDocumentFee: 10,
+    extraSignerFee: 5,
+  },
+  "loan-signing": {
+    basePrice: 150,
+    maxDocuments: 999, // Unlimited
+    maxSigners: 4,
+    includedRadius: 30,
+    maxRadius: 60,
+    extraDocumentFee: 0, // Unlimited documents
+    extraSignerFee: 15,
+  },
+  "ron-service": {
+    basePrice: 25,
+    maxDocuments: 999,
+    maxSigners: 1,
+    includedRadius: 0, // No travel
+    maxRadius: 0,
+    extraDocumentFee: 0,
+    extraSignerFee: 10,
+    sealFee: 5,
+  },
+}
 
-  constructor(requestId?: string) {
-    this.requestId = requestId || `pricing_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+export function calculatePricing(input: PricingInput): PricingResult {
+  const config = SERVICE_CONFIGS[input.serviceId as keyof typeof SERVICE_CONFIGS]
+  if (!config) {
+    throw new Error(`Unknown service ID: ${input.serviceId}`)
   }
 
-  /**
-   * Main pricing calculation method
-   * This is where the magic happens - championship-level pricing logic
-   */
-  async calculateBookingPrice(params: PricingCalculationParams): Promise<PricingResult> {
-    try {
-      // Validate inputs with Zod
-      const validatedParams = PricingCalculationParamsSchema.parse(params);
-      
-      logger.info('Pricing calculation started', { 
-        requestId: this.requestId, 
-        serviceType: validatedParams.serviceType 
-      });
+  const breakdown: PricingBreakdown[] = []
+  let totalPrice = 0
 
-      // Get base service price
-      const basePrice = getServiceBasePrice(validatedParams.serviceType);
-      
-      // DISABLED: Calculate travel fees if location provided
-      // Travel fee calculation temporarily disabled to simplify booking system
-      let travelData = { fee: 0, distance: 0, withinArea: true };
-      // if (validatedParams.location && validatedParams.location.address) {
-      //   try {
-      //     travelData = await this.calculateTravelFee(validatedParams.serviceType, validatedParams.location as { address: string; latitude?: number; longitude?: number });
-      //   } catch (error) {
-      //     logger.warn('Travel fee calculation failed, using fallback', { 
-      //       error: getErrorMessage(error),
-      //       requestId: this.requestId 
-      //     });
-      //     // Fallback to estimated travel fee
-      //     travelData = { fee: 10, distance: 20, withinArea: false };
-      //   }
-      // }
-      
-      // Apply time-based and situational surcharges
-      const surcharges = calculateSurcharges(
-        validatedParams.serviceType,
-        validatedParams.scheduledDateTime,
-        validatedParams.options
-      );
-      
-      // Check for applicable discounts
-      let discounts = 0;
-      try {
-        discounts = await calculateDiscounts(
-          validatedParams.promoCode,
-          validatedParams.customerEmail,
-          validatedParams.referralCode,
-          validatedParams.documentCount,
-          validatedParams.serviceType
-        );
-      } catch (error) {
-        logger.warn('Discount calculation failed', { 
-          error: getErrorMessage(error),
-          requestId: this.requestId 
-        });
-        // Continue without discounts
-      }
-      
-      // Detect upsell opportunities - Conversion gold!
-      const upsellSuggestions = detectUpsellOpportunities(validatedParams, travelData);
-      
-      const total = Math.max(0, basePrice + travelData.fee + surcharges - discounts);
-      
-      // Generate detailed breakdown for transparency
-      const breakdown = generatePricingBreakdown(
-        basePrice, 
-        travelData.fee, 
-        surcharges, 
-        discounts,
-        travelData
-      );
+  // Base service price
+  const basePrice = config.basePrice
+  totalPrice += basePrice
+  breakdown.push({
+    description: "Base Service Fee",
+    amount: basePrice,
+    type: "base",
+  })
 
-      // Calculate confidence metrics
-      const confidence = calculatePricingConfidence(validatedParams, travelData);
-
-      const result: PricingResult = {
-        basePrice,
-        travelFee: travelData.fee,
-        surcharges,
-        discounts,
-        total,
-        breakdown,
-        upsellSuggestions,
-        confidence,
-        metadata: {
-          calculatedAt: new Date().toISOString(),
-          version: '2.0.0',
-          factors: this.getPricingFactors(validatedParams, travelData),
-          requestId: this.requestId
-        }
-      };
-
-      // Cache result for performance
-      await cacheResult(validatedParams, result);
-
-      logger.info('Pricing calculation completed', { 
-        requestId: this.requestId, 
-        total: result.total,
-        upsells: result.upsellSuggestions.length
-      });
-
-      return result;
-      
-    } catch (error) {
-      logger.error('Pricing calculation failed', { 
-        params: this.sanitizeParams(params), 
-        error: getErrorMessage(error),
-        requestId: this.requestId
-      });
-      
-      // Return fallback pricing to prevent complete failure
-      const fallbackResult: PricingResult = {
-        basePrice: 75,
-        travelFee: 0,
-        surcharges: 0,
-        discounts: 0,
-        total: 75,
-        breakdown: {
-          lineItems: [{
-            description: 'Standard Notary Service (Fallback)',
-            amount: 75,
-            type: 'base'
-          }],
-          transparency: {
-            travelCalculation: 'Fallback pricing due to calculation error',
-            surchargeExplanation: 'Standard pricing applied'
-          }
-        },
-        upsellSuggestions: [],
-        confidence: {
-          level: 'low',
-          factors: ['Calculation error occurred', 'Using fallback pricing']
-        },
-        metadata: {
-          calculatedAt: new Date().toISOString(),
-          version: '2.0.0',
-          factors: { error: getErrorMessage(error) },
-          requestId: this.requestId
-        }
-      };
-      
-      logger.warn('Returning fallback pricing', { 
-        requestId: this.requestId,
-        fallbackTotal: fallbackResult.total
-      });
-      
-      return fallbackResult;
-    }
+  // RON seal fees
+  if (input.serviceId === "ron-service") {
+    const sealFee = config.sealFee * Math.max(1, input.numberOfDocuments)
+    totalPrice += sealFee
+    breakdown.push({
+      description: `Seal Fee (${Math.max(1, input.numberOfDocuments)} seal${input.numberOfDocuments > 1 ? "s" : ""})`,
+      amount: sealFee,
+      type: "fee",
+    })
   }
 
-  /**
-   * Get base price for service type
-   */
-  // helpers now imported
+  // Travel fee calculation
+  let travelFee = 0
+  const isWithinServiceArea = input.distanceMiles <= config.maxRadius
 
-  /**
-   * Calculate travel fees based on distance and service type
-   * This includes the smart service area validation
-   */
-  private async calculateTravelFee(
-    serviceType: string, 
-    location: { address: string; latitude?: number; longitude?: number }
-  ): Promise<{ fee: number; distance: number; withinArea: boolean }> {
-    try {
-      const service = SERVICES[serviceType as keyof typeof SERVICES];
-      if (!service) {
-        throw new PricingCalculationError(`Invalid service type for travel calc: ${serviceType}`);
-      }
-      
-      // Skip travel calculation for RON services
-      if (serviceType === 'RON_SERVICES') {
-        return { fee: 0, distance: 0, withinArea: true };
-      }
+  if (input.serviceId !== "ron-service" && input.distanceMiles > config.includedRadius) {
+    const extraMiles = input.distanceMiles - config.includedRadius
+    travelFee = Math.ceil(extraMiles * 0.5) // $0.50 per mile
+    totalPrice += travelFee
+    breakdown.push({
+      description: `Travel Fee (${extraMiles.toFixed(1)} miles beyond included radius)`,
+      amount: travelFee,
+      type: "travel",
+    })
+  }
 
-      // Calculate distance using UnifiedDistanceService for consistency
-      const distanceResult = await UnifiedDistanceService.calculateDistance(
-        location.address,
-        serviceType
-      );
+  // Extra signer fees
+  let extraSignerFee = 0
+  if (input.numberOfSigners > config.maxSigners) {
+    const extraSigners = input.numberOfSigners - config.maxSigners
+    extraSignerFee = extraSigners * config.extraSignerFee
+    totalPrice += extraSignerFee
+    breakdown.push({
+      description: `Extra Signer Fee (${extraSigners} additional signer${extraSigners > 1 ? "s" : ""})`,
+      amount: extraSignerFee,
+      type: "extra",
+    })
+  }
 
-      const distance = distanceResult.distance.miles || 0;
-      const withinArea = distance <= service.includedRadius;
-      
-      // Calculate excess distance fee
-      const excessDistance = Math.max(0, distance - service.includedRadius);
-      const fee = Math.round(excessDistance * service.feePerMile * 100) / 100;
+  // Extra document fees
+  let extraDocumentFee = 0
+  if (input.numberOfDocuments > config.maxDocuments && config.extraDocumentFee > 0) {
+    const extraDocuments = input.numberOfDocuments - config.maxDocuments
+    extraDocumentFee = extraDocuments * config.extraDocumentFee
+    totalPrice += extraDocumentFee
+    breakdown.push({
+      description: `Extra Document Fee (${extraDocuments} additional document${extraDocuments > 1 ? "s" : ""})`,
+      amount: extraDocumentFee,
+      type: "extra",
+    })
+  }
 
-      return { fee, distance, withinArea };
-      
-    } catch (error: any) {
-      logger.warn('Travel fee calculation failed, using fallback', { 
-        serviceType, 
-        location: location.address,
-        error: getErrorMessage(error) 
-      });
-      
-      // Fallback to estimated fee for graceful degradation
-      return { fee: 10, distance: 20, withinArea: false };
+  // Urgency fees
+  let urgencyFee = 0
+  if (input.urgencyLevel === "priority") {
+    urgencyFee = 25
+  } else if (input.urgencyLevel === "emergency") {
+    urgencyFee = 50
+  }
+
+  if (urgencyFee > 0) {
+    totalPrice += urgencyFee
+    breakdown.push({
+      description: `${input.urgencyLevel.charAt(0).toUpperCase() + input.urgencyLevel.slice(1)} Service Fee`,
+      amount: urgencyFee,
+      type: "urgency",
+    })
+  }
+
+  // Weekend fee
+  let weekendFee = 0
+  if (input.isWeekend && input.serviceId !== "extended-hours") {
+    weekendFee = 40
+    totalPrice += weekendFee
+    breakdown.push({
+      description: "Weekend Service Fee",
+      amount: weekendFee,
+      type: "fee",
+    })
+  }
+
+  // After hours fee (for extended hours service)
+  let afterHoursFee = 0
+  if (input.isAfterHours && input.serviceId === "extended-hours") {
+    afterHoursFee = 25
+    totalPrice += afterHoursFee
+    breakdown.push({
+      description: "After Hours Service Fee",
+      amount: afterHoursFee,
+      type: "fee",
+    })
+  }
+
+  // Night service fee (9pm-7am)
+  let nightServiceFee = 0
+  if (input.isNightService) {
+    nightServiceFee = 50
+    totalPrice += nightServiceFee
+    breakdown.push({
+      description: "Night Service Fee (9pm-7am)",
+      amount: nightServiceFee,
+      type: "fee",
+    })
+  }
+
+  // Witness fees
+  let witnessFee = 0
+  if (input.requiresWitness) {
+    witnessFee = input.witnessType === "sourced" ? 50 : 0
+    if (witnessFee > 0) {
+      totalPrice += witnessFee
+      breakdown.push({
+        description: "Witness Sourcing Fee",
+        amount: witnessFee,
+        type: "fee",
+      })
     }
   }
 
-  /**
-   * Calculate surcharges based on timing and special circumstances
-   */
-  private calculateSurcharges(
-    serviceType: string,
-    scheduledDateTime: string,
-    options: { priority?: boolean; weatherAlert?: boolean; sameDay?: boolean }
-  ): number {
-    let total = 0;
-    const date = new Date(scheduledDateTime);
-    const hour = date.getHours();
-    const dayOfWeek = date.getDay();
-
-    // After hours surcharge (outside extended hours)
-    if (serviceType === 'STANDARD_NOTARY' && (hour < 9 || hour >= 17)) {
-      total += PRICING_CONFIG.surcharges.afterHours;
-    }
-
-    // Weekend surcharge
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-      total += PRICING_CONFIG.surcharges.weekend;
-    }
-
-    // Priority booking surcharge
-    if (options.priority) {
-      total += PRICING_CONFIG.surcharges.priority;
-    }
-
-    // Same day is free but tracked
-    if (options.sameDay) {
-      total += PRICING_CONFIG.surcharges.sameDay;
-    }
-
-    return total;
-  }
-
-  /**
-   * Calculate applicable discounts
-   * This is where we build customer loyalty!
-   */
-  private async calculateDiscounts(
-    promoCode?: string,
-    customerEmail?: string,
-    referralCode?: string,
-    documentCount?: number,
-    serviceType?: string
-  ): Promise<number> {
-    let total = 0;
-
-    // First-time customer discount
-    if (customerEmail && await this.isFirstTimeCustomer(customerEmail)) {
-      total += PRICING_CONFIG.discounts.firstTime;
-    }
-
-    // Referral discount
-    if (referralCode) {
-      total += PRICING_CONFIG.discounts.referral;
-    }
-
-    // Volume discount for standard service with multiple docs
-    if (serviceType === 'STANDARD_NOTARY' && documentCount && documentCount >= 3) {
-      const stdService = SERVICES['STANDARD_NOTARY'];
-      const basePrice = stdService?.price ?? 0;
-      total += Math.round(basePrice * PRICING_CONFIG.discounts.volume);
-    }
-
-    // Promo code discount (would integrate with PromoCode table)
-    if (promoCode) {
-      // This would query the database for valid promo codes
-      // For now, we'll implement a simple check
-      const promoDiscount = await this.getPromoCodeDiscount(promoCode);
-      total += promoDiscount;
-    }
-
-    return total;
-  }
-
-  /**
-   * Detect upsell opportunities - This is conversion gold!
-   * The secret sauce for 40%+ higher conversion rates
-   */
-  private detectUpsellOpportunities(
-    params: PricingCalculationParams, 
-    travelData: { fee: number; distance: number; withinArea: boolean }
-  ): UpsellSuggestion[] {
-    const suggestions: UpsellSuggestion[] = [];
-    const scheduledTime = new Date(params.scheduledDateTime);
-    const hour = scheduledTime.getHours();
-
-    // Time-based upsells - evening appointments
-    if (hour >= 17 && params.serviceType === "STANDARD_NOTARY") {
-      suggestions.push({
-        type: 'service_upgrade',
-        fromService: 'STANDARD_NOTARY',
-        toService: 'EXTENDED_HOURS',
-        priceIncrease: 25,
-        headline: "⚡ Evening Appointment Available",
-        benefit: "Available until 9pm + handles up to 5 documents",
-        urgency: "Next available evening slot",
-        conversionBoost: "Priority booking guaranteed"
-      });
-    }
-
-    // Document count upsells - value optimization
-    if (params.documentCount > 2 && params.serviceType === "STANDARD_NOTARY") {
-      const savings = (params.documentCount - 2) * 15; // Assumed per-doc fee
-      suggestions.push({
-        type: 'service_upgrade',
-        fromService: 'STANDARD_NOTARY', 
-        toService: 'EXTENDED_HOURS',
-        priceIncrease: 25,
-        headline: "💰 Better Value for Multiple Documents",
-        benefit: `Covers up to 5 documents (you have ${params.documentCount})`,
-        savings: Math.max(0, savings - 25),
-        conversionBoost: "More documents, better price per document"
-      });
-    }
-
-    // Geographic upsells - travel optimization
-    if (travelData.distance > 15 && params.serviceType === "STANDARD_NOTARY") {
-      const currentTravelFee = travelData.fee;
-      const extendedTravelSavings = Math.max(0, (travelData.distance - 20) * 0.50);
-      
-      suggestions.push({
-        type: 'service_upgrade',
-        headline: "🚗 Extended Hours Includes More Travel",
-        benefit: "20-mile radius included (reduces your travel fees)",
-        priceIncrease: 25,
-        savings: Math.round(extendedTravelSavings * 100) / 100,
-        fromService: 'STANDARD_NOTARY',
-        toService: 'EXTENDED_HOURS'
-      });
-    }
-
-    // Loan document detection
-    if (params.documentCount > 5 || this.detectLoanDocuments(params)) {
-      suggestions.push({
-        type: 'service_upgrade',
-        fromService: params.serviceType,
-        toService: 'LOAN_SIGNING',
-        priceIncrease: (SERVICES['LOAN_SIGNING']?.price ?? 0) - (SERVICES[params.serviceType as keyof typeof SERVICES]?.price ?? 0),
-        headline: "🏠 Loan Signing Specialist",
-        benefit: "Unlimited documents + real estate expertise + title company coordination",
-        conversionBoost: "Flat fee regardless of document count"
-      });
-    }
-
-    // Priority booking add-on
-    if (!params.options?.priority && this.isWithinPriorityTimeframe(params.scheduledDateTime)) {
-      suggestions.push({
-        type: 'add_on',
-        priceIncrease: PRICING_CONFIG.surcharges.priority,
-        headline: "⚡ Priority Booking",
-        benefit: "Next available appointment within 2 hours",
-        condition: "subject to availability",
-        urgency: "Limited slots available"
-      });
-    }
-
-    return suggestions;
-  }
-
-  /**
-   * Generate detailed pricing breakdown for transparency
-   * Transparency builds trust = higher conversions
-   */
-  private generatePricingBreakdown(
-    basePrice: number, 
-    travelFee: number, 
-    surcharges: number, 
-    discounts: number,
-    travelData: { distance: number; withinArea: boolean }
-  ): PricingBreakdown {
-    const lineItems = [
-      { description: 'Base Service Fee', amount: basePrice, type: 'base' as const }
-    ];
-
-    if (travelFee > 0) {
-      lineItems.push({ 
-        description: `Travel Fee (${travelData.distance.toFixed(1)} miles)`, 
-        amount: travelFee, 
-        type: 'base' as const 
-      });
-    }
-
-    if (surcharges > 0) {
-      lineItems.push({ 
-        description: 'Service Surcharges', 
-        amount: surcharges, 
-        type: 'base' as const 
-      });
-    }
-
-    if (discounts > 0) {
-      lineItems.push({ 
-        description: 'Discounts Applied', 
-        amount: -discounts, 
-        type: 'base' as const 
-      });
-    }
-
-    return {
-      lineItems,
-      transparency: {
-        travelCalculation: travelFee > 0 
-          ? `Based on ${travelData.distance.toFixed(1)} miles from ZIP ${PRICING_CONFIG.baseLocation}` 
-          : undefined,
-        surchargeExplanation: surcharges > 0 
-          ? 'After-hours, weekend, or priority service fees' 
-          : undefined,
-        discountSource: discounts > 0 
-          ? 'Customer loyalty discounts applied' 
-          : undefined
-      }
-    };
-  }
-
-  /**
-   * Calculate pricing confidence for conversion optimization
-   */
-  private calculatePricingConfidence(
-    params: PricingCalculationParams,
-    travelData: { withinArea: boolean }
-  ): PricingConfidence {
-    const factors = [];
-    let level: 'high' | 'medium' | 'low' = 'high';
-
-    if (travelData.withinArea) {
-      factors.push('Within service area');
-    } else {
-      factors.push('Extended service area');
-      level = 'medium';
-    }
-
-    if (params.serviceType === 'LOAN_SIGNING') {
-      factors.push('Flat-rate pricing');
-    }
-
-    if (params.serviceType === 'RON_SERVICES') {
-      factors.push('No travel required');
-      factors.push('24/7 availability');
-    }
-
-    return {
-      level,
-      factors,
-      competitiveAdvantage: level === 'high' 
-        ? 'Best value in Houston metro area' 
-        : 'Competitive pricing with premium service'
-    };
-  }
-
-  /**
-   * Helper methods
-   */
-  private getPricingFactors(
-    params: PricingCalculationParams, 
-    travelData: { distance: number; withinArea: boolean }
-  ): Record<string, any> {
-    return {
-      serviceType: params.serviceType,
-      documentCount: params.documentCount,
-      signerCount: params.signerCount,
-      distance: travelData.distance,
-      withinServiceArea: travelData.withinArea,
-      scheduledTime: params.scheduledDateTime,
-      options: params.options
-    };
-  }
-
-  private sanitizeParams(params: any): any {
-    const sanitized = { ...params };
-    if (sanitized.customerEmail) {
-      sanitized.customerEmail = sanitized.customerEmail.replace(/(.{2}).*(@.*)/, '$1***$2');
-    }
-    return sanitized;
-  }
-
-  private async isFirstTimeCustomer(email: string): Promise<boolean> {
-    try {
-      const cacheKey = `first_time_${email}`;
-      const cached = await redis.get(cacheKey);
-      
-      if (cached !== null) {
-        return cached === 'true';
-      }
-
-      // This would query the database for existing bookings
-      // For now, we'll cache and return a default
-      const isFirstTime = true; // Database query would go here
-      
-      await redis.setex(cacheKey, 3600, isFirstTime.toString()); // Cache for 1 hour
-      return isFirstTime;
-      
-    } catch (error) {
-      logger.warn('First-time customer check failed', { email, error: getErrorMessage(error) });
-      return false; // Default to not first-time on error
-    }
-  }
-
-  private async getPromoCodeDiscount(code: string): Promise<number> {
-    try {
-      const cacheKey = `promo_${code}`;
-      const cached = await redis.get(cacheKey);
-      
-      if (cached !== null) {
-        return parseInt(cached, 10);
-      }
-
-      // This would query the PromoCode table
-      // For now, we'll implement some common codes
-      const commonCodes: Record<string, number> = {
-        'WELCOME15': 15,
-        'NEWCLIENT': 20,
-        'SAVE10': 10
-      };
-
-      const discount = commonCodes[code.toUpperCase()] || 0;
-      
-      await redis.setex(cacheKey, 1800, discount.toString()); // Cache for 30 minutes
-      return discount;
-      
-    } catch (error) {
-      logger.warn('Promo code check failed', { code, error: getErrorMessage(error) });
-      return 0;
-    }
-  }
-
-  private detectLoanDocuments(params: PricingCalculationParams): boolean {
-    // This would analyze document types or count
-    return params.documentCount > 10 || (params.signerCount > 2);
-  }
-
-  private isWithinPriorityTimeframe(scheduledDateTime: string): boolean {
-    const scheduled = new Date(scheduledDateTime);
-    const now = new Date();
-    const hoursUntil = (scheduled.getTime() - now.getTime()) / (1000 * 60 * 60);
-    
-    return hoursUntil <= 24; // Within 24 hours
-  }
-
-  private async cacheResult(params: PricingCalculationParams, result: PricingResult): Promise<void> {
-    try {
-      const cacheKey = `pricing_${this.hashParams(params)}`;
-      
-      // Use proper Redis client method
-      if (typeof redis.setex === 'function') {
-        await redis.setex(cacheKey, 300, JSON.stringify(result));
-      } else if (typeof redis.set === 'function') {
-        await redis.set(cacheKey, JSON.stringify(result), 300);
-      }
-      
-      logger.info('Pricing result cached successfully', { 
-        cacheKey, 
-        ttl: 300,
-        method: typeof redis.setex === 'function' ? 'setex' : 'set-EX'
-      });
-      
-    } catch (error) {
-      logger.warn('Failed to cache pricing result', { 
-        error: getErrorMessage(error),
-        redisClient: Object.getOwnPropertyNames(redis).join(', ')
-      });
-    }
-  }
-
-  private hashParams(params: PricingCalculationParams): string {
-    return Buffer.from(JSON.stringify(params)).toString('base64').slice(0, 32);
+  return {
+    basePrice,
+    travelFee,
+    urgencyFee,
+    weekendFee,
+    afterHoursFee,
+    nightServiceFee,
+    extraSignerFee,
+    extraDocumentFee,
+    witnessFee,
+    totalPrice,
+    breakdown,
+    isWithinServiceArea,
+    maxServiceRadius: config.maxRadius,
   }
 }
 
-/**
- * Factory function for creating pricing engine instances
- */
-export function createPricingEngine(requestId?: string): PricingEngine {
-  return new PricingEngine(requestId);
+// Distance calculation using Google Maps API
+export async function calculateDistance(
+  origin: string,
+  destination: string,
+): Promise<{ distance: number; duration: number; status: string }> {
+  try {
+    const response = await fetch("/api/calculate-distance", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ origin, destination }),
+    })
+
+    if (!response.ok) {
+      throw new Error("Failed to calculate distance")
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error("Distance calculation error:", error)
+    // Fallback to estimated distance
+    return {
+      distance: 15, // Default estimate
+      duration: 30, // 30 minutes
+      status: "estimated",
+    }
+  }
 }
 
-/**
- * Convenience function for quick pricing calculations
- */
-export async function calculateBookingPrice(params: PricingCalculationParams): Promise<PricingResult> {
-  const engine = createPricingEngine();
-  return engine.calculateBookingPrice(params);
+// Validate service constraints
+export function validateServiceConstraints(input: PricingInput): string[] {
+  const config = SERVICE_CONFIGS[input.serviceId as keyof typeof SERVICE_CONFIGS]
+  const errors: string[] = []
+
+  if (!config) {
+    errors.push("Invalid service selected")
+    return errors
+  }
+
+  // Check distance limits
+  if (input.distanceMiles > config.maxRadius) {
+    errors.push(`Service location is beyond our ${config.maxRadius}-mile service area`)
+  }
+
+  // Check signer limits for specific services
+  if (input.serviceId === "quick-stamp" && input.numberOfSigners > 1) {
+    errors.push("Quick-Stamp Local service is limited to 1 signer")
+  }
+
+  // Check document limits for specific services
+  if (input.serviceId === "quick-stamp" && input.numberOfDocuments > 1) {
+    errors.push("Quick-Stamp Local service is limited to 1 document")
+  }
+
+  return errors
 }

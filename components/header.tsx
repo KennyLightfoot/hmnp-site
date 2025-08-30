@@ -1,123 +1,98 @@
 "use client"
 
-import Image from "next/image"
+import { useState } from "react"
 import Link from "next/link"
-import { useState, useEffect } from "react"
-import { Menu, X } from "lucide-react"
-import { track } from "@/app/lib/analytics"
-import { persistAttribution, getAttribution } from "@/lib/utm"
-import dynamic from 'next/dynamic'
-const ExitIntentModal = dynamic(() => import('@/components/ExitIntentModal'), { ssr: false })
+import { Button } from "@/components/ui/button"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Menu, Phone, Clock } from "lucide-react"
 
-const StickyCallButton = dynamic(() => import('@/components/StickyCallButton'), { ssr: false })
+export function Header() {
+  const [isOpen, setIsOpen] = useState(false)
 
-export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [hasScrolled, setHasScrolled] = useState(false)
-
-  // Handle scroll event to add shadow when scrolled
-  useEffect(() => {
-    persistAttribution()
-    const handleScroll = () => {
-      setHasScrolled(window.scrollY > 10)
-    }
-
-    // Add scroll event listener
-    window.addEventListener("scroll", handleScroll)
-
-    // Check initial scroll position
-    handleScroll()
-
-    // Clean up event listener
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  const navigation = [
+    { name: "Services", href: "#services" },
+    { name: "About", href: "#about" },
+    { name: "Contact", href: "#contact" },
+    { name: "RON Services", href: "/ron" },
+  ]
 
   return (
-    <header
-      className={`sticky top-0 w-full z-50 transition-all duration-300 backdrop-blur supports-[backdrop-filter]:bg-secondary/80 ${
-        hasScrolled ? 'bg-secondary/95 border-b border-black/10 shadow-sm' : 'bg-secondary/70'
-      } text-white`}
-    >
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center" onClick={() => {
-            const a = getAttribution()
-            track('cta_click', { cta_name: 'Logo', location: 'header', ...a })
-          }}>
-            <Image src="/logo.png" alt="Houston Mobile Notary Pros" width={140} height={56} priority />
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center space-x-2">
+            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">HM</span>
+            </div>
+            <span className="font-bold text-lg text-foreground">Houston Mobile Notary Pros</span>
           </Link>
 
-          {/* Mobile menu button */}
-          <button
-            className="md:hidden focus:outline-none"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-          >
-            {isMenuOpen ? <X className="h-6 w-6 text-white" /> : <Menu className="h-6 w-6 text-white" />}
-          </button>
-
-          {/* Desktop navigation and CTA */}
-          <div className="hidden md:flex items-center justify-between flex-1 ml-6">
-            <nav>
-              <ul className="flex space-x-6 items-center">
-                {[
-                  { href: '/services', label: 'Services' },
-                  { href: '/pricing', label: 'Pricing' },
-                  { href: '/service-areas', label: 'Areas' },
-                  { href: '/faq', label: 'FAQs' },
-                ].map((item) => (
-                  <li key={item.href}>
-                    <Link href={item.href} className="text-white/80 hover:text-white" onClick={() => track('cta_click', { cta_name: item.label, location: 'header' })}>
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-            <Link
-              href="/booking"
-              className="px-6 py-2 rounded-full transition-colors font-medium hover:shadow-md bg-primary text-white"
-              onClick={() => track('cta_click', { cta_name: 'Book', location: 'header' })}
-            >
-              Book Now
-            </Link>
-          </div>
-        </div>
-        <StickyCallButton />
-        <ExitIntentModal />
-
-        {/* Mobile navigation */}
-        {isMenuOpen && (
-          <nav className="md:hidden mt-4 pb-2">
-            <ul className="flex flex-col space-y-4">
-              {[
-                { href: '/services', label: 'Services' },
-                { href: '/pricing', label: 'Pricing' },
-                { href: '/service-areas', label: 'Areas' },
-                { href: '/faq', label: 'FAQs' },
-              ].map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className="text-white/90 hover:text-white block"
-                    onClick={() => { setIsMenuOpen(false); track('cta_click', { cta_name: item.label, location: 'header' }) }}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-              <li>
-                <Link
-                  href="/booking"
-                  className="bg-primary text-white px-6 py-2 rounded-full transition-colors inline-block font-medium hover:shadow-md"
-                  onClick={() => { setIsMenuOpen(false); track('cta_click', { cta_name: 'Book', location: 'header' }) }}
-                >
-                  Book Now
-                </Link>
-              </li>
-            </ul>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {item.name}
+              </Link>
+            ))}
           </nav>
-        )}
+
+          {/* Contact Info & CTA */}
+          <div className="hidden lg:flex items-center space-x-4">
+            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <Phone className="h-4 w-4" />
+              <span>(713) 555-0123</span>
+            </div>
+            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              <span>7AM-9PM Daily</span>
+            </div>
+            <Button asChild className="bg-accent hover:bg-accent/90">
+              <Link href="/booking">Book Now</Link>
+            </Button>
+          </div>
+
+          {/* Mobile Menu */}
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+              <nav className="flex flex-col space-y-4 mt-8">
+                {navigation.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+                <div className="pt-4 border-t">
+                  <div className="flex items-center space-x-2 text-sm text-muted-foreground mb-2">
+                    <Phone className="h-4 w-4" />
+                    <span>(713) 555-0123</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-sm text-muted-foreground mb-4">
+                    <Clock className="h-4 w-4" />
+                    <span>7AM-9PM Daily</span>
+                  </div>
+                  <Button asChild className="w-full bg-accent hover:bg-accent/90">
+                    <Link href="/booking">Book Now</Link>
+                  </Button>
+                </div>
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </header>
   )

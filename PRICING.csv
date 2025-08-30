@@ -1,8 +1,0 @@
-service_id,display_name,base_price_usd,included_radius_mi,fee_per_mile_usd,max_documents,default_duration_min,business_hours,ron_notarial_fee_usd,seal_price_usd
-STANDARD_NOTARY,Standard Mobile Notary,75,20,tiered,4,60,"Mon-Fri 9-17",
-EXTENDED_HOURS,Extended Hours Mobile,125,30,tiered,4,60,"Daily 7-21",
-LOAN_SIGNING,Loan Signing Specialist,175,30,tiered,999,90,"Mon-Fri 8-18",
-RON_SERVICES,Remote Online Notarization,25,0,0,10,30,"24/7",10,5
-BUSINESS_ESSENTIALS,Business Subscription - Essentials,125,30,tiered,10,60,"Mon-Fri 9-17",
-BUSINESS_GROWTH,Business Subscription - Growth,349,50,tiered,50,60,"Mon-Fri 9-17",
-
