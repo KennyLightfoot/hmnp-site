@@ -10,11 +10,11 @@ export default function LoanSigningLP() {
   const tel = getBusinessTel()
   return (
     <div className="min-h-screen bg-white">
-      <section className="bg-secondary text-white">
-        <div className="container mx-auto px-4 py-12 md:py-16">
+      <section className="bg-gradient-to-r from-secondary/95 to-secondary text-white">
+        <div className="container mx-auto px-4 py-16 md:py-20">
           <div className="max-w-3xl">
-            <h1 className="text-3xl md:text-5xl font-bold">Certified Loan Signing — On‑Time, NNA Certified</h1>
-            <p className="mt-3 text-white/90">From $125 • Purchase, Refi, HELOC • Experienced, reliable, insured</p>
+            <h1 className="text-4xl md:text-5xl font-serif tracking-tight">Certified Loan Signing — On‑Time, NNA Certified</h1>
+            <p className="mt-3 text-base md:text-lg text-white/90">From $125 • Purchase, Refi, HELOC • Experienced, reliable, insured</p>
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
               <Link href="/booking?serviceType=LOAN_SIGNING" className="inline-flex">
                 <Button className="bg-white text-secondary hover:bg-white/90 h-12 px-6">Book Loan Signing</Button>
@@ -31,22 +31,22 @@ export default function LoanSigningLP() {
           </div>
         </div>
       </section>
-      <section className="container mx-auto px-4 -mt-6">
+      <section className="container mx-auto px-4 -mt-8">
         <EstimatorStrip defaultMode="MOBILE" />
       </section>
       <MicroTestimonials />
       <PrefetchBooking />
-      <section className="container mx-auto px-4 py-10">
+      <section className="container mx-auto px-4 py-14">
         <div className="grid md:grid-cols-3 gap-6">
-          <div className="p-5 border rounded-xl">
+          <div className="p-5 border rounded-xl shadow">
             <h3 className="font-semibold">Coverage</h3>
             <p className="text-sm text-black/70">Greater Houston. We meet at homes, offices, or title companies.</p>
           </div>
-          <div className="p-5 border rounded-xl">
+          <div className="p-5 border rounded-xl shadow">
             <h3 className="font-semibold">Pricing</h3>
             <p className="text-sm text-black/70">From $125. Clear pricing for travel and scanbacks if needed.</p>
           </div>
-          <div className="p-5 border rounded-xl">
+          <div className="p-5 border rounded-xl shadow">
             <h3 className="font-semibold">Trusted</h3>
             <p className="text-sm text-black/70">Background‑checked, insured, and highly rated by clients.</p>
           </div>
