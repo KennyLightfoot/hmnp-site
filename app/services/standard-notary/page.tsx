@@ -63,15 +63,15 @@ export default function EssentialServicePage() {
       </div>
 
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-secondary to-secondary text-white py-16">
+      <div className="bg-gradient-to-r from-secondary/95 to-secondary text-white py-20">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+          <h1 className="text-4xl md:text-5xl font-serif tracking-tight mb-4">
             Essential Mobile Notary
           </h1>
-          <p className="text-xl md:text-2xl mb-4 text-blue-100">
+          <p className="text-xl md:text-2xl mb-3 text-blue-100">
             Professional notarization services for your everyday document needs
           </p>
-          <p className="text-lg mb-8 text-blue-100 max-w-3xl mx-auto">
+          <p className="text-base md:text-lg mb-10 text-blue-100 max-w-3xl mx-auto">
             From wills and powers of attorney to affidavits and general documents, we bring calm, clarity, and precision to your doorstep. Experience notarization that gives you peace of mind.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -170,7 +170,7 @@ export default function EssentialServicePage() {
             </div>
 
             {/* Pricing Section */}
-            <Card>
+            <Card id="travel-tiers">
               <CardHeader>
                 <CardTitle className="text-2xl text-[#002147] text-center">
                   Transparent Pricing

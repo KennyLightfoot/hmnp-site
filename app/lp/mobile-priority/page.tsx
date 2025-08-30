@@ -12,16 +12,16 @@ export const dynamic = "force-static"
 export default function MobilePriorityPage() {
   return (
     <div className="min-h-screen bg-white">
-      <header className="bg-gradient-to-r from-secondary to-secondary text-white">
-        <div className="container mx-auto px-4 py-16">
+      <header className="bg-gradient-to-r from-secondary/95 to-secondary text-white">
+        <div className="container mx-auto px-4 py-20">
           <div className="max-w-3xl">
             <div className="inline-block bg-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
               Priority Mobile Notary (Greater Houston)
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold leading-tight">
+            <h1 className="text-4xl md:text-5xl font-serif tracking-tight leading-tight">
               Mobile notary to you in 60–120 minutes (priority) — from $125.
             </h1>
-            <p className="mt-4 text-lg text-gray-100">
+            <p className="mt-3 text-base md:text-lg text-gray-100">
               30‑mile included, 7–21 daily. Same‑day windows with accurate travel tiers.
             </p>
             <div className="mt-6 flex flex-wrap gap-3 items-center">
