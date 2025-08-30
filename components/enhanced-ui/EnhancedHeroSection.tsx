@@ -121,7 +121,7 @@ export default function EnhancedHeroSection() {
             sizes="100vw"
             className="object-cover opacity-40"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-secondary/80 via-secondary/60 to-secondary/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-secondary/90 via-secondary/70 to-secondary/90" />
         </motion.div>
       </div>
 
@@ -172,16 +172,11 @@ export default function EnhancedHeroSection() {
                 <motion.div
                   key={index}
                   className="flex items-center gap-3"
-                  initial={{ opacity: 0, x: -20 }}
+                  initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 + index * 0.1 }}
                 >
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "linear", delay: index * 0.5 }}
-                  >
-                    <item.icon className={`h-5 w-5 ${item.color}`} />
-                  </motion.div>
+                  <item.icon className={`h-5 w-5 ${item.color}`} />
                   <p className="text-white/90 text-lg">{item.text}</p>
                 </motion.div>
               ))}
@@ -216,9 +211,9 @@ export default function EnhancedHeroSection() {
 
             {/* Enhanced Trust Badges */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.6 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
               className="mb-8"
             >
               <TrustBadgeCarousel />
@@ -325,7 +320,7 @@ export default function EnhancedHeroSection() {
                         <span>Online notarizations from ${estimate.total}</span>
                       ) : (
                         <span>
-                          Est. total ${estimate.total} {estimate.miles != null && `(~${estimate.miles} mi)`}
+                          Estimated total ${estimate.total} {estimate.miles != null && `(~${estimate.miles} mi)`}
                         </span>
                       )}
                     </div>
@@ -343,6 +338,9 @@ export default function EnhancedHeroSection() {
                       </InteractiveButton>
                     </Link>
                   </div>
+                  <p className="mt-2 text-xs text-white/70">
+                    Transparent pricing: first 20–30 miles included by service; travel tiers apply beyond. Final price confirmed at booking.
+                  </p>
                 </motion.div>
               )}
 
@@ -481,32 +479,24 @@ export default function EnhancedHeroSection() {
       </div>
 
       {/* Floating Action Elements */}
-      <motion.div
-        className="fixed bottom-6 right-6 z-50"
-        initial={{ scale: 0, rotate: 180 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ delay: 2, duration: 0.6, type: "spring" }}
-      >
+      {/* Reduce floating motion to keep above-the-fold calm */}
+      <div className="fixed bottom-6 right-6 z-50">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <motion.button
-                className="w-14 h-14 bg-primary rounded-full shadow-2xl flex items-center justify-center text-white"
-                whileHover={{ scale: 1.1, rotate: 15 }}
-                whileTap={{ scale: 0.9 }}
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
+              <button
+                className="w-14 h-14 bg-primary rounded-full shadow-2xl flex items-center justify-center text-white hover:scale-105 transition-transform"
                 onClick={() => setShowAdvancedCalc(!showAdvancedCalc)}
               >
                 <Sparkles className="h-6 w-6" />
-              </motion.button>
+              </button>
             </TooltipTrigger>
             <TooltipContent>
               <p>Advanced Price Calculator</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      </motion.div>
+      </div>
     </section>
   )
 }
