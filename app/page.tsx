@@ -1,6 +1,5 @@
 import { Metadata } from 'next'
-import HeroBooking from "@/components/HeroBooking"
-import EnhancedHeroSection from "@/components/enhanced-ui/EnhancedHeroSection"
+import HeroSection from "@/components/hero-section"
 import ValueRow from "@/components/ValueRow"
 import ServicesGrid from "@/components/ServicesGrid"
 import HowItWorks from "@/components/HowItWorks"
@@ -48,8 +47,8 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <main>
-      {/* Enhanced Hero Section with modern animations and interactions */}
-      <EnhancedHeroSection />
+      {/* Simple Hero Section - restored from commit f05266 */}
+      <HeroSection />
       
       {/* Rest of the homepage content */}
       <SocialProof />
