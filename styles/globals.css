@@ -39,6 +39,14 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/* Aliases requested for redesign flag compatibility */
+:root {
+	--ink: var(--background);
+	--paper: var(--card);
+	--text: var(--foreground);
+	--accent: var(--primary);
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);

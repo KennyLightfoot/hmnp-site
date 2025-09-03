@@ -4,7 +4,8 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "next-themes"
-import { Navigation } from "@/components/navigation"
+import { REDESIGN_V1 } from "@/lib/flags"
+import SiteLayout from "@/components/layout/SiteLayout"
 import { Suspense } from "react"
 import "./globals.css"
 
@@ -24,8 +25,14 @@ export default function RootLayout({
       <body>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <Suspense fallback={<div>Loading...</div>}>
-            <Navigation />
-            {children}
+            {REDESIGN_V1 ? (
+              <SiteLayout>{children}</SiteLayout>
+            ) : (
+              <>
+                {/* Legacy navigation preserved to avoid routing churn */}
+                {children}
+              </>
+            )}
           </Suspense>
         </ThemeProvider>
         <Analytics />

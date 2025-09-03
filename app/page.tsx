@@ -3,10 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle, Clock, Shield, MapPin, Phone, Star } from "lucide-react"
 import Link from "next/link"
+import { REDESIGN_V1 } from "@/lib/flags"
+import Hero from "@/components/hero/Hero"
 
 export default function HomePage() {
   return (
     <div className="min-h-screen">
+      {REDESIGN_V1 && <Hero />}
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-background to-muted/20 py-20 px-4">
         <div className="max-w-7xl mx-auto">
