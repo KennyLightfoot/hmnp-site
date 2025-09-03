@@ -95,22 +95,18 @@ export default function EventRegistrationForm({ eventName, eventId }: EventRegis
     };
     delete payload.selectedEventId; // Clean up schema-only field if needed
 
-    console.log('Event Registration Submitted:', payload);
-
     try {
-      // TODO: Implement actual API call to /api/events/register
-      // const response = await fetch('/api/events/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(payload),
-      // });
+      const response = await fetch('/api/events/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-      // if (!response.ok) {
-      //   const errorData = await response.json();
-      //   throw new Error(errorData.message || 'Event registration failed.');
-      // }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || 'Event registration failed.');
+      }
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
       setSubmissionStatus('success');
       reset({
         eventName: eventName || '',

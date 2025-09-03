@@ -87,23 +87,17 @@ export default function SupportTicketForm() {
     if (data.fileUpload && data.fileUpload.length > 0 && data.fileUpload[0]) {
       formData.append('attachment', data.fileUpload[0]);
     }
-
-    console.log('Support Ticket Submitted:', Object.fromEntries(formData.entries())); // Placeholder for actual submission
-
     try {
-      // TODO: Implement actual API call to /api/support/create-ticket
-      // This endpoint would handle file uploads to S3 and then save ticket data.
-      // const response = await fetch('/api/support/create-ticket', {
-      //   method: 'POST',
-      //   body: formData, // Use FormData for file uploads
-      // });
+      const response = await fetch('/api/support/create-ticket', {
+        method: 'POST',
+        body: formData,
+      });
 
-      // if (!response.ok) {
-      //   const errorData = await response.json();
-      //   throw new Error(errorData.message || 'Something went wrong.');
-      // }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || 'Something went wrong.');
+      }
 
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
       setSubmissionStatus('success');
       reset();
     } catch (error: any) {

@@ -10,7 +10,7 @@ interface SupportTicketRequestBody {
   issueCategory: string;
   description: string;
   urgency: 'Low' | 'Medium' | 'High' | 'Critical';
-  fileUpload?: any; // Placeholder for file handling logic
+  fileUpload?: File;
 }
 
 // GHL Custom Fields (from GHL_SETUP_GUIDE.md Section 4.C):
@@ -31,36 +31,50 @@ interface SupportTicketRequestBody {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+const fileSchema = z
+  .instanceof(File)
+  .refine(file => file.size <= 5 * 1024 * 1024, 'Max file size is 5MB.')
+  .refine(
+    file => ['image/jpeg', 'image/png', 'application/pdf'].includes(file.type),
+    'Only JPG, PNG, or PDF files are allowed.'
+  );
+
 const schema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   phone: z.string().optional(),
   issueCategory: z.string().min(1),
   description: z.string().min(1),
-  urgency: z.enum(['Low','Medium','High','Critical']),
-  fileUpload: z.any().optional(),
+  urgency: z.enum(['Low', 'Medium', 'High', 'Critical']),
+  fileUpload: fileSchema.optional(),
 });
 
 export const POST = withRateLimit('public', 'support_create_ticket')(async (request: Request) => {
   try {
-    // Note: Handling multipart/form-data for file uploads requires different parsing
-    // For now, we'll assume JSON and a placeholder for fileUpload
-    // In a real app, use a library like 'formidable' or Next.js specific handlers for FormData
-    const json = await request.json();
-    const parsed = schema.safeParse(json);
+    const formData = await request.formData();
+    const file = formData.get('attachment');
+
+    const parsed = schema.safeParse({
+      name: formData.get('name') ?? '',
+      email: formData.get('email') ?? '',
+      phone: formData.get('phone') || undefined,
+      issueCategory: formData.get('issueCategory') ?? '',
+      description: formData.get('description') ?? '',
+      urgency: formData.get('urgency') ?? '',
+      fileUpload: file instanceof File ? file : undefined,
+    });
+
     if (!parsed.success) {
-      return NextResponse.json({ message: 'Validation failed', errors: parsed.error.flatten().fieldErrors }, { status: 400 });
-    }
-    const body = parsed.data as SupportTicketRequestBody;
-
-    const { name, email, phone, issueCategory, description, urgency, fileUpload } = body;
-
-    // Basic validation
-    if (!name || !email || !issueCategory || !description || !urgency) {
-      return NextResponse.json({ message: 'Missing required fields.' }, { status: 400 });
+      return NextResponse.json(
+        { message: 'Validation failed', errors: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
     }
 
-    console.log('Received support ticket submission:', body);
+    const { name, email, phone, issueCategory, description, urgency, fileUpload } =
+      parsed.data as SupportTicketRequestBody;
+
+    console.log('Received support ticket submission:', parsed.data);
 
     // --- Placeholder File Upload Logic ---
     let fileAttachmentLink = '';
@@ -100,7 +114,13 @@ export const POST = withRateLimit('public', 'support_create_ticket')(async (requ
     console.log('GHL ACTION (Placeholder): Trigger GHL workflow for new support ticket (e.g., internal notification, client auto-reply).');
     // --- End Placeholder GHL Integration Logic ---
 
-    return NextResponse.json({ message: 'Support ticket submitted successfully!', data: { ...body, fileAttachmentLinkIfProcessed: fileAttachmentLink } }, { status: 201 });
+    return NextResponse.json(
+      {
+        message: 'Support ticket submitted successfully!',
+        data: { ...parsed.data, fileAttachmentLinkIfProcessed: fileAttachmentLink },
+      },
+      { status: 201 }
+    );
 
   } catch (error) {
     console.error('Error processing support ticket submission:', error);
