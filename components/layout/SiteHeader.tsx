@@ -24,6 +24,7 @@ const nav = [
 
 export default function SiteHeader() {
 	const [logoSrc, setLogoSrc] = useState("/assets/logo.svg");
+	const [servicesOpen, setServicesOpen] = useState(false);
 	return (
 		<header className="sticky top-0 z-50 bg-[var(--ink)]/70 backdrop-blur border-b border-white/10">
 			<div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-6">
@@ -34,11 +35,35 @@ export default function SiteHeader() {
 				<nav className="ml-auto hidden md:flex items-center gap-5">
 					{nav.map((item: any) =>
 						"children" in item ? (
-							<div key={item.label} className="relative group">
-								<button className="text-white/85 hover:text-white">{item.label}</button>
-								<div className="absolute hidden group-hover:block bg-[var(--ink)] border border-white/10 rounded-xl mt-2 p-2">
+							<div key={item.label} className="relative">
+								<button
+									aria-haspopup="menu"
+									aria-expanded={servicesOpen}
+									onClick={() => setServicesOpen((s) => !s)}
+									onKeyDown={(e) => {
+										if (e.key === "Escape") setServicesOpen(false);
+										if (e.key === "ArrowDown") setServicesOpen(true);
+									}}
+									className="text-white/85 hover:text-white"
+								>
+									{item.label}
+								</button>
+								<div
+									role="menu"
+									className={`absolute ${servicesOpen ? "block" : "hidden"} bg-[var(--ink)] border border-white/10 rounded-xl mt-2 p-2`}
+									onMouseLeave={() => setServicesOpen(false)}
+								>
 									{item.children!.map((c: any) => (
-										<Link key={c.href} href={c.href} className="block px-3 py-2 text-white/85 hover:text-white" onClick={() => dl("nav_click", { to: c.href })}>
+										<Link
+											key={c.href}
+											href={c.href}
+											role="menuitem"
+											className="block px-3 py-2 text-white/85 hover:text-white"
+											onClick={() => {
+												dl("nav_click", { to: c.href });
+												setServicesOpen(false);
+											}}
+										>
 											{c.label}
 										</Link>
 									))}
