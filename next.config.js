@@ -12,6 +12,9 @@ const nextConfig = {
   trailingSlash: false,
   generateBuildId: () => 'phase3-optimized-build',
   
+  // Disable static export to prevent 404 page generation issues
+  output: 'standalone',
+  
   // Performance optimizations
   compress: true,
   poweredByHeader: false,

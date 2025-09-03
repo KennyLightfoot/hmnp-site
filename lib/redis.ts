@@ -34,6 +34,11 @@ class RedisClient {
   }
 
   private async ensureInitialized(): Promise<void> {
+    if (process.env.SILENCE_SERVER_INIT_LOGS === '1') {
+      // Skip Redis initialization entirely during silenced builds
+      this.isConnected = false;
+      return;
+    }
     if (this.client && this.isConnected) {
       return;
     }
@@ -151,28 +156,38 @@ class RedisClient {
     if (!this.client || typeof this.client.on !== 'function') return;
 
     this.client.on('connect', () => {
-      logger.info('Redis connected successfully');
+      if (!process.env.SILENCE_SERVER_INIT_LOGS) {
+        logger.info('Redis connected successfully');
+      }
       this.isConnected = true;
       this.connectionAttempts = 0;
     });
 
     this.client.on('ready', () => {
-      logger.info('Redis ready for commands');
+      if (!process.env.SILENCE_SERVER_INIT_LOGS) {
+        logger.info('Redis ready for commands');
+      }
     });
 
     this.client.on('error', (error) => {
-      logger.error('Redis connection error', error instanceof Error ? error : new Error(String(error)));
+      if (!process.env.SILENCE_SERVER_INIT_LOGS) {
+        logger.error('Redis connection error', error instanceof Error ? error : new Error(String(error)));
+      }
       this.isConnected = false;
       this.scheduleReconnect();
     });
 
     this.client.on('close', () => {
-      logger.warn('Redis connection closed');
+      if (!process.env.SILENCE_SERVER_INIT_LOGS) {
+        logger.warn('Redis connection closed');
+      }
       this.isConnected = false;
     });
 
     this.client.on('reconnecting', (time: number) => {
-      logger.info(`Redis reconnecting in ${time}ms`);
+      if (!process.env.SILENCE_SERVER_INIT_LOGS) {
+        logger.info(`Redis reconnecting in ${time}ms`);
+      }
     });
   }
 

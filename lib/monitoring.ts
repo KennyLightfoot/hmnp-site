@@ -523,9 +523,12 @@ export const wrapApiRoute = monitoring.wrapApiRoute.bind(monitoring);
 
 // Initialize monitoring on import
 if (typeof window === 'undefined') {
-  // Server-side initialization
-  logger.info('Monitoring system initialized', {
-    environment: process.env.NODE_ENV,
-    timestamp: new Date(),
-  });
+  // Skip noisy initialization in CI/build environments
+  if (!process.env.SILENCE_SERVER_INIT_LOGS) {
+    // Server-side initialization
+    logger.info('Monitoring system initialized', {
+      environment: process.env.NODE_ENV,
+      timestamp: new Date(),
+    });
+  }
 } 
