@@ -64,7 +64,7 @@ export function OptimizedLayout({ children }: OptimizedLayoutProps) {
     <ErrorBoundary>
       <div className="min-h-screen bg-white">
         {/* Slim service-area band */}
-        <div className="w-full bg-[#002147] text-white text-xs sm:text-sm py-2">
+        <div className="w-full bg-secondary text-white text-xs sm:text-sm py-2">
           <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row gap-1 sm:gap-4 items-center justify-center">
             <span>Standard: 20 mi included</span>
             <span className="hidden sm:inline">•</span>

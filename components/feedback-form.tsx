@@ -87,7 +87,7 @@ export default function FeedbackForm() {
       <div className="p-4 md:p-6 border rounded-lg shadow-md bg-white text-center">
         <h2 className="text-2xl font-semibold text-green-600 mb-4">Thank You!</h2>
         <p className="text-gray-700">Your feedback has been successfully submitted. We appreciate you taking the time to share your thoughts and help us improve our services.</p>
-        <Button onClick={() => setSubmissionStatus('idle')} className="mt-6 bg-[#002147] hover:bg-[#001730] text-white">
+        <Button onClick={() => setSubmissionStatus('idle')} className="mt-6 bg-secondary hover:bg-secondary-dark text-white">
           Submit Another Feedback
         </Button>
       </div>
@@ -163,7 +163,7 @@ export default function FeedbackForm() {
         <Button 
           type="submit" 
           disabled={submissionStatus === 'submitting'}
-          className="w-full bg-[#A52A2A] hover:bg-[#8B0000] text-white py-2.5 px-4 rounded-md font-semibold transition-colors duration-150 ease-in-out flex items-center justify-center"
+          className="w-full bg-primary hover:bg-primary-dark text-white py-2.5 px-4 rounded-md font-semibold transition-colors duration-150 ease-in-out flex items-center justify-center"
         >
           {submissionStatus === 'submitting' ? (
             <>

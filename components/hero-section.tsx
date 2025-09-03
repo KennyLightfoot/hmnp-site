@@ -25,13 +25,13 @@ export default function HeroSection() {
           placeholder="blur"
           blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#002147]/90 to-[#002147]/70"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-secondary/90 to-secondary/70"></div>
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 text-white">
-            <div className="inline-block bg-[#A52A2A] px-4 py-2 rounded-full">
+            <div className="inline-block bg-primary px-4 py-2 rounded-full">
               <span className="text-white font-medium">Professional Mobile Notary Services</span>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
@@ -52,7 +52,7 @@ export default function HeroSection() {
             </div>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link href="/booking">
-                <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white w-full sm:w-auto">
+                <Button size="lg" className="bg-primary hover:bg-primary-dark text-white w-full sm:w-auto">
                   Book Mobile Notary
                 </Button>
               </Link>
@@ -109,10 +109,10 @@ export default function HeroSection() {
             </div>
             <div className="flex items-center pt-2">
               <div className="flex -space-x-2">
-                <div className="w-8 h-8 rounded-full bg-[#A52A2A] flex items-center justify-center text-white text-xs">
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs">
                   JD
                 </div>
-                <div className="w-8 h-8 rounded-full bg-[#91A3B0] flex items-center justify-center text-white text-xs">
+                <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white text-xs">
                   SM
                 </div>
                 <div className="w-8 h-8 rounded-full bg-white text-[#002147] flex items-center justify-center text-xs">
@@ -126,13 +126,13 @@ export default function HeroSection() {
           </div>
           <div className="relative">
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 backdrop-blur-sm bg-white/95">
-              <div className="absolute top-0 right-0 bg-[#A52A2A] text-white px-4 py-1 text-sm font-medium rounded-bl-lg">
+              <div className="absolute top-0 right-0 bg-primary text-white px-4 py-1 text-sm font-medium rounded-bl-lg">
                 Professional Service
               </div>
 
               <div className="p-6 pt-10">
                 <div className="flex items-center mb-6">
-                  <div className="w-12 h-12 bg-[#002147] rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-secondary rounded-full flex items-center justify-center">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="24"
@@ -240,7 +240,7 @@ export default function HeroSection() {
                       <p className="text-sm text-gray-500">Starting at</p>
                       <p className="text-2xl font-bold text-[#002147]">$75</p>
                     </div>
-                    <div className="bg-[#002147] text-white px-3 py-1 rounded-full">
+                    <div className="bg-secondary text-white px-3 py-1 rounded-full">
                       <span className="text-sm font-medium">Same-day available</span>
                     </div>
                   </div>
@@ -249,8 +249,8 @@ export default function HeroSection() {
             </div>
 
             {/* Decorative elements */}
-            <div className="absolute -top-6 -left-6 w-24 h-24 bg-[#91A3B0]/30 rounded-full blur-md"></div>
-            <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#A52A2A]/20 rounded-full blur-md"></div>
+            <div className="absolute -top-6 -left-6 w-24 h-24 bg-accent/30 rounded-full blur-md"></div>
+            <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-primary/20 rounded-full blur-md"></div>
           </div>
         </div>
       </div>

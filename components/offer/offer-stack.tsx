@@ -69,14 +69,14 @@ export default function OfferStack() {
                 <ul className="text-sm text-gray-700 space-y-2">
                   {offer.points.map((p) => (
                     <li key={p} className="flex items-start gap-2">
-                      <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-[#A52A2A]"></span>
+                      <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-primary"></span>
                       <span>{p}</span>
                     </li>
                   ))}
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button asChild className={offer.highlight ? "bg-[#A52A2A] hover:bg-[#8B0000]" : "bg-[#002147] hover:bg-[#001a38]"}>
+                <Button asChild className={offer.highlight ? "bg-primary hover:bg-primary-dark" : "bg-secondary hover:bg-secondary-darker"}>
                   <Link href={offer.href}>Book Now</Link>
                 </Button>
               </CardFooter>

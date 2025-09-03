@@ -150,7 +150,7 @@ export default function FAQClientPageOptimized() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <a
                     href="/contact"
-                    className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-[#002147] hover:bg-[#003366] transition-colors"
+                    className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-secondary hover:bg-secondary-light transition-colors"
                   >
                     Contact Us
                   </a>

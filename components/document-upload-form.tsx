@@ -132,7 +132,7 @@ export default function DocumentUploadForm() {
         <p className="text-gray-600 text-sm">
           Thank you for using Houston Mobile Notary Pros for your secure document needs.
         </p>
-        <Button onClick={() => setSubmissionStatus('idle')} className="mt-6 bg-[#002147] hover:bg-[#001730] text-white">
+        <Button onClick={() => setSubmissionStatus('idle')} className="mt-6 bg-secondary hover:bg-secondary-dark text-white">
           Upload Another Document
         </Button>
       </div>
@@ -189,7 +189,7 @@ export default function DocumentUploadForm() {
 
         <div>
           <Label htmlFor="fileUpload" className="block text-sm font-medium text-gray-700 mb-1">Document to Upload</Label>
-          <Input id="fileUpload" type="file" {...register('fileUpload')} className={`w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#002147] file:text-white hover:file:bg-[#001730] ${errors.fileUpload ? 'border-red-500 ring-red-500' : ''}`} />
+          <Input id="fileUpload" type="file" {...register('fileUpload')} className={`w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-secondary file:text-white hover:file:bg-secondary-dark ${errors.fileUpload ? 'border-red-500 ring-red-500' : ''}`} />
           <p className="mt-1 text-xs text-muted-foreground">Accepted types: {ACCEPTED_FILE_TYPES_STRING}. Max size: {MAX_FILE_SIZE / (1024*1024)}MB.</p>
           {errors.fileUpload && <p className="mt-1 text-xs text-red-600">{errors.fileUpload.message}</p>}
           {selectedFile && selectedFile.length > 0 && selectedFile[0] && <p className="mt-1 text-xs text-green-600">Selected file: {selectedFile[0].name} ({(selectedFile[0].size / (1024)).toFixed(1)} KB)</p>}
@@ -217,7 +217,7 @@ export default function DocumentUploadForm() {
         <Button 
           type="submit" 
           disabled={submissionStatus === 'submitting'}
-          className="w-full bg-[#A52A2A] hover:bg-[#8B0000] text-white py-2.5 px-4 rounded-md font-semibold transition-colors duration-150 ease-in-out flex items-center justify-center"
+          className="w-full bg-primary hover:bg-primary-dark text-white py-2.5 px-4 rounded-md font-semibold transition-colors duration-150 ease-in-out flex items-center justify-center"
         >
           {submissionStatus === 'submitting' ? (
             <>

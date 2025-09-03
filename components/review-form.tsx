@@ -239,7 +239,7 @@ export function ReviewForm({ serviceName }: ReviewFormProps) {
       </div>
 
       <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
-        <Button type="submit" disabled={loading} className="bg-[#002147] hover:bg-[#001a38]">
+        <Button type="submit" disabled={loading} className="bg-secondary hover:bg-secondary-darker">
           {loading ? "Submitting Review..." : "Submit Review"}
         </Button>
 

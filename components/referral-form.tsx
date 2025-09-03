@@ -94,7 +94,7 @@ export default function ReferralForm() {
         <p className="text-gray-600 text-sm">
           We will reach out to them shortly, keeping your recommendation in mind.
         </p>
-        <Button onClick={() => setSubmissionStatus('idle')} className="mt-6 bg-[#002147] hover:bg-[#001730] text-white">
+        <Button onClick={() => setSubmissionStatus('idle')} className="mt-6 bg-secondary hover:bg-secondary-dark text-white">
           Submit Another Referral
         </Button>
       </div>
@@ -169,7 +169,7 @@ export default function ReferralForm() {
         <Button 
           type="submit" 
           disabled={submissionStatus === 'submitting'}
-          className="w-full bg-[#A52A2A] hover:bg-[#8B0000] text-white py-2.5 px-4 rounded-md font-semibold transition-colors duration-150 ease-in-out flex items-center justify-center"
+          className="w-full bg-primary hover:bg-primary-dark text-white py-2.5 px-4 rounded-md font-semibold transition-colors duration-150 ease-in-out flex items-center justify-center"
         >
           {submissionStatus === 'submitting' ? (
             <>

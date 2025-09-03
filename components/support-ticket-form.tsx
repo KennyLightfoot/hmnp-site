@@ -122,7 +122,7 @@ export default function SupportTicketForm() {
         <p className="text-gray-600 text-sm">
           We will review your request and get back to you as soon as possible. Please check your email for a confirmation and ticket ID.
         </p>
-        <Button onClick={() => setSubmissionStatus('idle')} className="mt-6 bg-[#002147] hover:bg-[#001730] text-white">
+        <Button onClick={() => setSubmissionStatus('idle')} className="mt-6 bg-secondary hover:bg-secondary-dark text-white">
           Submit Another Ticket
         </Button>
       </div>
@@ -196,7 +196,7 @@ export default function SupportTicketForm() {
 
         <div>
           <Label htmlFor="fileUpload" className="block text-sm font-medium text-gray-700 mb-1">Attach File (Optional)</Label>
-          <Input id="fileUpload" type="file" {...register('fileUpload')} className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#002147] file:text-white hover:file:bg-[#001730]" />
+          <Input id="fileUpload" type="file" {...register('fileUpload')} className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-secondary file:text-white hover:file:bg-secondary-dark" />
           <p className="mt-1 text-xs text-muted-foreground">Max file size: 5MB. Allowed types: JPG, PNG, PDF. Your backend will need S3 integration for secure storage.</p>
           {errors.fileUpload && <p className="mt-1 text-xs text-red-600">{errors.fileUpload.message}</p>}
           {selectedFile && selectedFile.length > 0 && selectedFile[0] && <p className="mt-1 text-xs text-green-600">Selected file: {selectedFile[0].name}</p>}
@@ -211,7 +211,7 @@ export default function SupportTicketForm() {
         <Button 
           type="submit" 
           disabled={submissionStatus === 'submitting'}
-          className="w-full bg-[#A52A2A] hover:bg-[#8B0000] text-white py-2.5 px-4 rounded-md font-semibold transition-colors duration-150 ease-in-out flex items-center justify-center"
+          className="w-full bg-primary hover:bg-primary-dark text-white py-2.5 px-4 rounded-md font-semibold transition-colors duration-150 ease-in-out flex items-center justify-center"
         >
           {submissionStatus === 'submitting' ? (
             <>

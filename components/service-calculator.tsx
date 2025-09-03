@@ -134,7 +134,7 @@ export default function ServiceCalculator() {
 
   return (
     <Card className="w-full max-w-3xl mx-auto shadow-md">
-      <CardHeader className="bg-[#002147] text-white">
+      <CardHeader className="bg-secondary text-white">
         <div className="flex items-center gap-2">
           <Calculator className="h-6 w-6" />
           <CardTitle>Service Pricing Calculator</CardTitle>
@@ -336,7 +336,7 @@ export default function ServiceCalculator() {
           <p>All services comply with Texas notary fee regulations.</p>
         </div>
         <div className="flex justify-center w-full">
-          <Button className="bg-[#A52A2A] hover:bg-[#8B0000]">Book This Service</Button>
+          <Button className="bg-primary hover:bg-primary-dark">Book This Service</Button>
         </div>
       </CardFooter>
     </Card>

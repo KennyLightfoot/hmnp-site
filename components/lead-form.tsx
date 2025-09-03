@@ -422,7 +422,7 @@ export default function LeadForm({
         <Button 
           type="submit" 
           disabled={form.formState.isSubmitting} 
-          className="w-full bg-[#002147] hover:bg-[#001a38] text-white text-lg py-3"
+          className="w-full bg-secondary hover:bg-secondary-darker text-white text-lg py-3"
         >
           {form.formState.isSubmitting ? (
             <>
