@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 import { dl } from "@/lib/datalayer";
 
 const nav = [
@@ -22,11 +23,12 @@ const nav = [
 ];
 
 export default function SiteHeader() {
+	const [logoSrc, setLogoSrc] = useState("/assets/logo.svg");
 	return (
 		<header className="sticky top-0 z-50 bg-[var(--ink)]/70 backdrop-blur border-b border-white/10">
 			<div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-6">
 				<Link href="/" className="flex items-center gap-2" onClick={() => dl("nav_click", { to: "/" })}>
-					<Image src="/assets/logo.svg" alt="Houston Mobile Notary Pros" width={36} height={36} />
+					<Image src={logoSrc} alt="Houston Mobile Notary Pros" width={36} height={36} onError={() => setLogoSrc("/logo.png")} />
 					<span className="text-white font-medium">HMNP</span>
 				</Link>
 				<nav className="ml-auto hidden md:flex items-center gap-5">
