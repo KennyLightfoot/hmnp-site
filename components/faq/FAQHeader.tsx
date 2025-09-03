@@ -39,7 +39,7 @@ export function FAQHeader({ totalQuestions, answeredToday = 47 }: FAQHeaderProps
         <Card className="hover:shadow-lg transition-shadow border-2 hover:border-[#002147]/20">
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
-              <div className="bg-[#002147] text-white p-3 rounded-full">
+              <div className="bg-secondary text-white p-3 rounded-full">
                 <Phone className="h-5 w-5" />
               </div>
               <div className="text-left">
@@ -54,7 +54,7 @@ export function FAQHeader({ totalQuestions, answeredToday = 47 }: FAQHeaderProps
         <Card className="hover:shadow-lg transition-shadow border-2 hover:border-[#002147]/20">
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
-              <div className="bg-[#A52A2A] text-white p-3 rounded-full">
+              <div className="bg-primary text-white p-3 rounded-full">
                 <Mail className="h-5 w-5" />
               </div>
               <div className="text-left">
@@ -68,7 +68,7 @@ export function FAQHeader({ totalQuestions, answeredToday = 47 }: FAQHeaderProps
       </div>
 
       {/* CTA Section */}
-      <div className="bg-gradient-to-r from-[#002147] to-[#003366] text-white p-8 rounded-2xl">
+      <div className="bg-gradient-to-r from-secondary to-secondary-light text-white p-8 rounded-2xl">
         <h2 className="text-2xl font-bold mb-4">Need Immediate Assistance?</h2>
         <p className="text-blue-100 mb-6 max-w-md mx-auto">
           Our certified notary team is ready to help with your urgent document needs.

@@ -461,7 +461,7 @@ export default function AIChatWidget({
         } w-80 md:w-96 transition-all duration-300 ease-in-out`}>
           
           {/* Header */}
-          <CardHeader className="bg-gradient-to-r from-[#002147] to-[#003366] text-white p-4 rounded-t-lg">
+          <CardHeader className="bg-gradient-to-r from-secondary to-secondary-light text-white p-4 rounded-t-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Bot className="h-5 w-5 text-[#A52A2A]" />
@@ -537,7 +537,7 @@ export default function AIChatWidget({
                     <div
                       className={`max-w-[80%] p-3 rounded-lg ${
                         message.type === 'user'
-                          ? 'bg-[#A52A2A] text-white'
+                          ? 'bg-primary text-white'
                           : 'bg-gray-100 text-gray-900'
                       }`}
                     >
@@ -627,7 +627,7 @@ export default function AIChatWidget({
                   <Button
                     type="submit"
                     disabled={isLoading || !inputMessage.trim()}
-                    className="bg-[#A52A2A] hover:bg-[#8B0000] px-3"
+                    className="bg-primary hover:bg-primary-dark px-3"
                   >
                     <Send className="h-4 w-4" />
                   </Button>
@@ -644,7 +644,7 @@ export default function AIChatWidget({
         className={`h-14 w-14 rounded-full shadow-lg transition-all duration-300 hover:scale-110 ${
           isOpen 
             ? 'bg-gray-500 hover:bg-gray-600' 
-            : 'bg-[#A52A2A] hover:bg-[#8B0000]'
+            : 'bg-primary hover:bg-primary-dark'
         }`}
       >
         {isOpen ? (

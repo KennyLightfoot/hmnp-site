@@ -33,10 +33,14 @@ const config: Config = {
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "#A52A2A", // Auburn (Primary brand color)
+          dark: "#8B0000",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
           DEFAULT: "#002147", // Oxford Blue (Secondary brand color)
+          dark: "#001730",
+          darker: "#001a38",
+          light: "#003366",
           foreground: "hsl(var(--secondary-foreground))",
         },
         accent: {

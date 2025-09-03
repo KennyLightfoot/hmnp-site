@@ -2,11 +2,11 @@ import { Clock, Calendar, Phone } from "lucide-react"
 
 export default function ServiceHoursBanner() {
   return (
-    <section className="bg-[#002147] text-white py-5">
+    <section className="bg-secondary text-white py-5">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center">
-            <div className="bg-[#91A3B0] p-2 rounded-full mr-3">
+            <div className="bg-accent p-2 rounded-full mr-3">
               <Clock className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -16,7 +16,7 @@ export default function ServiceHoursBanner() {
           </div>
 
           <div className="flex items-center">
-            <div className="bg-[#91A3B0] p-2 rounded-full mr-3">
+            <div className="bg-accent p-2 rounded-full mr-3">
               <Calendar className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -26,7 +26,7 @@ export default function ServiceHoursBanner() {
           </div>
 
           <div className="flex items-center">
-            <div className="bg-[#A52A2A] p-2 rounded-full mr-3">
+            <div className="bg-primary p-2 rounded-full mr-3">
               <Phone className="h-5 w-5 text-white" />
             </div>
             <div>

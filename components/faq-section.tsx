@@ -21,7 +21,7 @@ export default function FaqSection({ faqs }: FaqSectionProps) {
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <div className="inline-block bg-[#002147]/10 px-4 py-2 rounded-full mb-4">
+          <div className="inline-block bg-secondary/10 px-4 py-2 rounded-full mb-4">
             <span className="text-[#002147] font-medium">FAQ</span>
           </div>
           <h2 className="text-3xl font-bold text-[#002147] mb-4">Frequently Asked Questions</h2>
@@ -40,7 +40,7 @@ export default function FaqSection({ faqs }: FaqSectionProps) {
                 <p className="text-gray-600 text-sm">We're here to help with any questions you may have.</p>
               </div>
               <Link href="/faq">
-                <Button className="bg-[#002147] hover:bg-[#001a38]">
+                <Button className="bg-secondary hover:bg-secondary-darker">
                   View All FAQs
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>

@@ -183,7 +183,7 @@ export default function ReviewDisplay({
         <p className="text-red-600">Error loading reviews: {error}</p>
         <button
           onClick={() => fetchReviews()}
-          className="mt-4 px-4 py-2 bg-[#A52A2A] text-white rounded-lg hover:bg-red-700 transition-colors"
+          className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-red-700 transition-colors"
         >
           Try Again
         </button>
@@ -215,7 +215,7 @@ export default function ReviewDisplay({
 
       {/* Aggregate Rating Summary */}
       {showAggregateRating && aggregateRating && (
-        <div className="bg-gradient-to-r from-[#002147] to-blue-900 text-white rounded-xl p-6 mb-8">
+        <div className="bg-gradient-to-r from-secondary to-blue-900 text-white rounded-xl p-6 mb-8">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-2xl font-bold mb-2">Customer Reviews</h3>
@@ -248,7 +248,7 @@ export default function ReviewDisplay({
             {/* Review Header */}
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#002147] to-blue-800 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                <div className="w-12 h-12 bg-gradient-to-br from-secondary to-blue-800 rounded-full flex items-center justify-center text-white font-semibold text-lg">
                   {review.reviewerName.charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -262,7 +262,7 @@ export default function ReviewDisplay({
                       </span>
                     )}
                     {review.isFeatured && (
-                      <span className="bg-[#A52A2A] text-white text-xs px-2 py-1 rounded-full font-medium">
+                      <span className="bg-primary text-white text-xs px-2 py-1 rounded-full font-medium">
                         Featured
                       </span>
                     )}
@@ -345,7 +345,7 @@ export default function ReviewDisplay({
           <button
             onClick={loadMore}
             disabled={loading}
-            className="px-6 py-3 bg-[#A52A2A] text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Loading...' : 'Load More Reviews'}
           </button>

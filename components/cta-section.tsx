@@ -4,7 +4,7 @@ import { Phone, Mail } from "lucide-react"
 
 export default function CtaSection() {
   return (
-    <section className="py-16 bg-[#002147]">
+    <section className="py-16 bg-secondary">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">
@@ -16,7 +16,7 @@ export default function CtaSection() {
 
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
             <Link href="/booking">
-              <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white w-full sm:w-auto">
+              <Button size="lg" className="bg-primary hover:bg-primary-dark text-white w-full sm:w-auto">
                 Book Now
               </Button>
             </Link>

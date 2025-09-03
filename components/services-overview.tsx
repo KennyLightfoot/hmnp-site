@@ -14,7 +14,7 @@ export default function ServicesOverview() {
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <div className="inline-block bg-[#002147]/10 px-4 py-2 rounded-full mb-4">
+          <div className="inline-block bg-secondary/10 px-4 py-2 rounded-full mb-4">
             <span className="text-[#002147] font-medium">Our Services</span>
           </div>
           <h2 className="text-3xl font-bold text-[#002147] mb-4">Professional Notary Solutions</h2>
@@ -28,9 +28,9 @@ export default function ServicesOverview() {
           {/* Essential Service */}
           <article>
             <Card className="shadow-md hover:shadow-lg transition-all duration-300 border-t-4 border-t-[#002147]">
-              <CardHeader className="bg-[#002147]/5 pb-2">
+              <CardHeader className="bg-secondary/5 pb-2">
                 <div className="flex items-center mb-2">
-                  <div className="bg-[#002147] p-2 rounded-full mr-3">
+                  <div className="bg-secondary p-2 rounded-full mr-3">
                     <FileText className="h-5 w-5 text-white" />
                   </div>
                   <CardTitle className="text-[#002147]">Essential Mobile Package</CardTitle>
@@ -65,7 +65,7 @@ export default function ServicesOverview() {
                 <Link href="/services/standard-notary" className="w-full">
                   <Button
                     variant="outline"
-                    className="w-full border-[#002147] text-[#002147] hover:bg-[#002147] hover:text-white"
+                    className="w-full border-[#002147] text-[#002147] hover:bg-secondary hover:text-white"
                   >
                     Learn More
                   </Button>
@@ -77,10 +77,10 @@ export default function ServicesOverview() {
           {/* Priority Service */}
           <article>
             <Card className="shadow-xl hover:shadow-2xl transition-all duration-300 border-t-4 border-t-[#A52A2A] relative">
-              <div className="absolute top-0 right-0 bg-[#A52A2A] text-white px-3 py-1 text-xs font-medium rounded-bl-lg -mt-1">
+              <div className="absolute top-0 right-0 bg-primary text-white px-3 py-1 text-xs font-medium rounded-bl-lg -mt-1">
                 MOST POPULAR
               </div>
-              <CardHeader className="bg-[#A52A2A] text-white pb-2">
+              <CardHeader className="bg-primary text-white pb-2">
                 <div className="flex items-center mb-2">
                   <div className="bg-white p-2 rounded-full mr-3">
                     <Clock className="h-5 w-5 text-[#A52A2A]" />
@@ -115,7 +115,7 @@ export default function ServicesOverview() {
               </CardContent>
               <CardFooter className="pt-4 pb-6">
                 <Link href="/services/extended-hours-notary" className="w-full">
-                  <Button className="w-full bg-[#A52A2A] hover:bg-[#8B0000]">Learn More</Button>
+                  <Button className="w-full bg-primary hover:bg-primary-dark">Learn More</Button>
                 </Link>
               </CardFooter>
             </Card>
@@ -124,9 +124,9 @@ export default function ServicesOverview() {
           {/* Loan Signing */}
           <article>
             <Card className="shadow-md hover:shadow-lg transition-all duration-300 border-t-4 border-t-[#002147]">
-              <CardHeader className="bg-[#002147]/5 pb-2">
+              <CardHeader className="bg-secondary/5 pb-2">
                 <div className="flex items-center mb-2">
-                  <div className="bg-[#002147] p-2 rounded-full mr-3">
+                  <div className="bg-secondary p-2 rounded-full mr-3">
                     <Users className="h-5 w-5 text-white" />
                   </div>
                   <CardTitle className="text-[#002147]">Loan Signing Services</CardTitle>
@@ -161,7 +161,7 @@ export default function ServicesOverview() {
                 <Link href="/services/loan-signing-specialist" className="w-full">
                   <Button
                     variant="outline"
-                    className="w-full border-[#002147] text-[#002147] hover:bg-[#002147] hover:text-white"
+                    className="w-full border-[#002147] text-[#002147] hover:bg-secondary hover:text-white"
                   >
                     Learn More
                   </Button>
@@ -173,7 +173,7 @@ export default function ServicesOverview() {
 
         <div className="text-center mt-12">
           <Link href="/services">
-            <Button className="bg-[#002147] hover:bg-[#001a38]">
+            <Button className="bg-secondary hover:bg-secondary-darker">
               View All Services
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>

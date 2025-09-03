@@ -239,7 +239,7 @@ function TestimonialCard({ testimonial, featured = false, compact = false }: Tes
       )}
     >
       {(featured || testimonial.featured) && (
-        <div className="bg-[#A52A2A] text-white text-center py-1 text-sm font-medium">
+        <div className="bg-primary text-white text-center py-1 text-sm font-medium">
           Featured Review
         </div>
       )}
@@ -409,7 +409,7 @@ export default function UnifiedTestimonials({
               className={cn(
                 'h-2 w-2 rounded-full mx-1',
                 index === Math.floor(currentIndex / (isMobile ? 1 : itemsToShow))
-                  ? 'bg-[#A52A2A]'
+                  ? 'bg-primary'
                   : 'bg-gray-300 hover:bg-gray-400'
               )}
               onClick={() => setCurrentIndex(index * (isMobile ? 1 : itemsToShow))}
@@ -426,7 +426,7 @@ export default function UnifiedTestimonials({
       <section className={cn('py-16 bg-gray-50', className)}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <div className="inline-block bg-[#91A3B0]/20 px-4 py-2 rounded-full mb-4">
+            <div className="inline-block bg-accent/20 px-4 py-2 rounded-full mb-4">
               <span className="text-[#002147] font-medium">Client Testimonials</span>
             </div>
             <h2 className="text-3xl font-bold text-[#002147] mb-4">{title}</h2>
@@ -435,7 +435,7 @@ export default function UnifiedTestimonials({
 
           {showStats && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-              <div className="bg-[#002147] text-white p-8 rounded-lg text-center">
+              <div className="bg-secondary text-white p-8 rounded-lg text-center">
                 <div className="flex justify-center mb-2">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star key={star} className="h-6 w-6 text-yellow-400 fill-yellow-400" />
@@ -444,11 +444,11 @@ export default function UnifiedTestimonials({
                 <p className="text-4xl font-bold mb-2">{stats.averageRating}/5</p>
                 <p className="text-sm">Average Rating</p>
               </div>
-              <div className="bg-[#A52A2A] text-white p-8 rounded-lg text-center">
+              <div className="bg-primary text-white p-8 rounded-lg text-center">
                 <div className="text-4xl font-bold mb-2">{stats.totalReviews}+</div>
                 <p className="text-sm">Satisfied Clients</p>
               </div>
-              <div className="bg-[#91A3B0] text-white p-8 rounded-lg text-center">
+              <div className="bg-accent text-white p-8 rounded-lg text-center">
                 <div className="text-4xl font-bold mb-2">{stats.fiveStarPercentage}%</div>
                 <p className="text-sm">5-Star Reviews</p>
               </div>
@@ -478,7 +478,7 @@ export default function UnifiedTestimonials({
 
           <div className="text-center">
             <Link href="/testimonials">
-              <Button variant="outline" className="border-[#002147] text-[#002147] hover:bg-[#002147] hover:text-white">
+              <Button variant="outline" className="border-[#002147] text-[#002147] hover:bg-secondary hover:text-white">
                 View All Testimonials
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -500,7 +500,7 @@ export default function UnifiedTestimonials({
 
         {/* Stats Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-          <div className="bg-[#002147] text-white p-8 rounded-lg text-center">
+          <div className="bg-secondary text-white p-8 rounded-lg text-center">
             <div className="flex justify-center mb-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star key={star} className="h-6 w-6 text-yellow-400 fill-yellow-400" />
@@ -509,11 +509,11 @@ export default function UnifiedTestimonials({
             <p className="text-4xl font-bold mb-2">{stats.averageRating}/5</p>
             <p className="text-sm">Average Rating</p>
           </div>
-          <div className="bg-[#A52A2A] text-white p-8 rounded-lg text-center">
+          <div className="bg-primary text-white p-8 rounded-lg text-center">
             <div className="text-4xl font-bold mb-2">{stats.totalReviews}+</div>
             <p className="text-sm">Satisfied Clients</p>
           </div>
-          <div className="bg-[#91A3B0] text-white p-8 rounded-lg text-center">
+          <div className="bg-accent text-white p-8 rounded-lg text-center">
             <div className="text-4xl font-bold mb-2">{stats.fiveStarPercentage}%</div>
             <p className="text-sm">5-Star Reviews</p>
           </div>
@@ -578,7 +578,7 @@ export default function UnifiedTestimonials({
         </div>
 
         {/* Final CTA */}
-        <div className="bg-[#A52A2A] text-white p-8 rounded-lg text-center">
+        <div className="bg-primary text-white p-8 rounded-lg text-center">
           <h2 className="text-2xl font-bold mb-4">Experience Our Award-Winning Service</h2>
           <p className="mb-6 max-w-2xl mx-auto">
             Join our hundreds of satisfied clients and experience the convenience and professionalism of Houston Mobile
