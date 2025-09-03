@@ -1,4 +1,4 @@
-// import Image from "next/image"
+import Image from "next/image"
 import Link from "next/link"
 import { Facebook } from 'lucide-react'
 
@@ -9,7 +9,13 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2">
             <Link href="/" className="inline-flex items-center gap-3">
-              <img src="/logo.png" alt="Houston Mobile Notary Pros" className="h-10 w-auto" />
+              <Image
+                src="/logo.png"
+                alt="Houston Mobile Notary Pros"
+                width={500}
+                height={500}
+                className="h-10 w-auto"
+              />
               <span className="sr-only">Houston Mobile Notary Pros</span>
             </Link>
             <p className="mt-4 text-sm text-secondary/80 max-w-sm">
