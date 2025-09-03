@@ -56,25 +56,20 @@ export default function FeedbackForm() {
   const onSubmit = async (data: FeedbackFormValues) => {
     setSubmissionStatus('submitting');
     setServerError(null);
-    console.log('Feedback Form Submitted:', data); // Placeholder for actual submission
-
     try {
-      // TODO: Replace with actual API call to /api/feedback or /api/testimonials
-      // const response = await fetch('/api/feedback', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(data),
-      // });
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
 
-      // if (!response.ok) {
-      //   const errorData = await response.json();
-      //   throw new Error(errorData.message || 'Something went wrong.');
-      // }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || 'Something went wrong.');
+      }
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
       setSubmissionStatus('success');
-      reset(); 
+      reset();
       setCurrentRating(0); // Reset star display
     } catch (error: any) {
       setSubmissionStatus('error');
