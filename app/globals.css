@@ -7,7 +7,9 @@
   --paper: #F7F7F5;
   --text-primary: #121212;
   --text-secondary: rgba(18, 18, 18, 0.7);
-  --accent: #A52A2A;
+  --primary: #A52A2A;
+  --secondary: #002147;
+  --accent: #91A3B0;
   --radius: 16px;
   --shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   color-scheme: light;
@@ -32,16 +34,16 @@ h1, h2, h3 { font-family: var(--font-dm-serif-display); }
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 211 100% 14%;
+    --primary: 0 59% 41%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 0 59% 41%;
+    --secondary: 212 100% 14%;
     --secondary-foreground: 210 40% 98%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
+    --accent: 205 16% 63%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
@@ -64,17 +66,17 @@ h1, h2, h3 { font-family: var(--font-dm-serif-display); }
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 0 59% 41%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 212 100% 14%;
     --secondary-foreground: 210 40% 98%;
 
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 205 16% 63%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
