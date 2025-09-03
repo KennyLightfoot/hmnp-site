@@ -1,11 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import dynamic from "next/dynamic"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle, Calendar, MapPin, Phone, Mail, Download, Home } from "lucide-react"
+
+const BookingCompleteBeacon = dynamic(() => import("@/components/analytics/BookingCompleteBeacon"), { ssr: false })
 
 export default function BookingSuccessPage() {
   const searchParams = useSearchParams()
@@ -49,6 +52,7 @@ export default function BookingSuccessPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <BookingCompleteBeacon bookingId={bookingId || undefined} />
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-2xl mx-auto">
           {/* Success Header */}

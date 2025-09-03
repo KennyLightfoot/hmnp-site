@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import dynamic from "next/dynamic"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -60,6 +61,8 @@ const services = [
   },
 ]
 
+const BookingStartBeacon = dynamic(() => import("@/components/analytics/BookingStartBeacon"), { ssr: false })
+
 export default function BookingPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -78,6 +81,7 @@ export default function BookingPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <BookingStartBeacon />
       {/* Header */}
       <div className="bg-primary text-primary-foreground py-8">
         <div className="container mx-auto px-4">

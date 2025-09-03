@@ -4,12 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { dl } from "@/lib/datalayer";
+import HeroViewBeacon from "@/components/analytics/HeroViewBeacon";
 
 export default function Hero() {
 	const [src, setSrc] = useState("/images/hero/houston-downtown.jpg");
 
 	return (
 		<section className="relative isolate">
+			<HeroViewBeacon />
 			<div className="relative h-[50svh] md:h-[62svh] lg:h-[72svh]">
 				<Image
 					src={src}
