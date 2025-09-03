@@ -1,264 +1,127 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
 
 :root {
-  --ink: #0F1419;
-  --paper: #F7F7F5;
-  --text-primary: #121212;
-  --text-secondary: rgba(18, 18, 18, 0.7);
-  --accent: #A52A2A;
-  --radius: 16px;
-  --shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  color-scheme: light;
+  /* Updated color tokens to match Houston Mobile Notary brand colors */
+  --background: oklch(1 0 0); /* White background for clarity */
+  --foreground: oklch(0.145 0 0); /* Dark text for contrast */
+  --card: oklch(0.98 0 0); /* Light card background */
+  --card-foreground: oklch(0.145 0 0); /* Dark text on cards */
+  --popover: oklch(1 0 0); /* White for popover elements */
+  --popover-foreground: oklch(0.145 0 0); /* Dark text in popovers */
+  --primary: oklch(0.4 0.15 25); /* Auburn (#A52A2A) for primary actions */
+  --primary-foreground: oklch(1 0 0); /* White text on primary buttons */
+  --secondary: oklch(0.15 0.08 240); /* Oxford Blue (#002147) for secondary actions */
+  --secondary-foreground: oklch(1 0 0); /* White text on secondary buttons */
+  --muted: oklch(0.65 0.02 220); /* Cadet Gray (#91A3B0) for muted elements */
+  --muted-foreground: oklch(0.4 0 0); /* Darker text on muted backgrounds */
+  --accent: oklch(0.15 0.08 240); /* Oxford Blue for accents and links */
+  --accent-foreground: oklch(1 0 0); /* White text on accent elements */
+  --destructive: oklch(0.55 0.22 25); /* Error red */
+  --destructive-foreground: oklch(1 0 0); /* White text on destructive actions */
+  --border: oklch(0.92 0 0); /* Light border */
+  --input: oklch(0.98 0 0); /* Light input background */
+  --ring: oklch(0.4 0.15 25); /* Auburn focus ring */
+  --chart-1: oklch(0.4 0.15 25); /* Auburn for charts */
+  --chart-2: oklch(0.15 0.08 240); /* Oxford Blue for charts */
+  --chart-3: oklch(0.65 0.02 220); /* Cadet Gray for charts */
+  --chart-4: oklch(0.35 0.12 25); /* Darker Auburn variant */
+  --chart-5: oklch(0.2 0.06 240); /* Darker Oxford Blue variant */
+  --radius: 0.5rem; /* Rounded corners */
+  --sidebar: oklch(1 0 0); /* White sidebar */
+  --sidebar-foreground: oklch(0.145 0 0); /* Dark sidebar text */
+  --sidebar-primary: oklch(0.4 0.15 25); /* Auburn for primary sidebar elements */
+  --sidebar-primary-foreground: oklch(1 0 0); /* White text on primary sidebar */
+  --sidebar-accent: oklch(0.15 0.08 240); /* Oxford Blue for sidebar accents */
+  --sidebar-accent-foreground: oklch(1 0 0); /* White text on sidebar accents */
+  --sidebar-border: oklch(0.92 0 0); /* Light sidebar border */
+  --sidebar-ring: oklch(0.4 0.15 25); /* Auburn focus ring for sidebar */
 }
 
-body {
-  color: var(--text-primary);
-  background: white;
+.dark {
+  /* Updated dark mode tokens to maintain brand consistency */
+  --background: oklch(0.08 0 0); /* Very dark background */
+  --foreground: oklch(0.98 0 0); /* Light text */
+  --card: oklch(0.12 0 0); /* Dark card background */
+  --card-foreground: oklch(0.98 0 0); /* Light text on cards */
+  --popover: oklch(0.08 0 0); /* Dark popover */
+  --popover-foreground: oklch(0.98 0 0); /* Light text in popovers */
+  --primary: oklch(0.45 0.15 25); /* Slightly lighter Auburn for dark mode */
+  --primary-foreground: oklch(1 0 0); /* White text */
+  --secondary: oklch(0.25 0.08 240); /* Lighter Oxford Blue for dark mode */
+  --secondary-foreground: oklch(1 0 0); /* White text */
+  --muted: oklch(0.2 0 0); /* Dark muted background */
+  --muted-foreground: oklch(0.7 0.02 220); /* Lighter Cadet Gray text */
+  --accent: oklch(0.25 0.08 240); /* Lighter Oxford Blue for accents */
+  --accent-foreground: oklch(1 0 0); /* White text on accents */
+  --destructive: oklch(0.5 0.2 25); /* Error red for dark mode */
+  --destructive-foreground: oklch(1 0 0); /* White text */
+  --border: oklch(0.2 0 0); /* Dark border */
+  --input: oklch(0.12 0 0); /* Dark input background */
+  --ring: oklch(0.45 0.15 25); /* Auburn focus ring */
+  --chart-1: oklch(0.45 0.15 25); /* Auburn for charts */
+  --chart-2: oklch(0.25 0.08 240); /* Oxford Blue for charts */
+  --chart-3: oklch(0.7 0.02 220); /* Cadet Gray for charts */
+  --chart-4: oklch(0.4 0.12 25); /* Auburn variant */
+  --chart-5: oklch(0.3 0.06 240); /* Oxford Blue variant */
+  --sidebar: oklch(0.08 0 0); /* Dark sidebar */
+  --sidebar-foreground: oklch(0.98 0 0); /* Light sidebar text */
+  --sidebar-primary: oklch(0.45 0.15 25); /* Auburn for primary sidebar */
+  --sidebar-primary-foreground: oklch(1 0 0); /* White text */
+  --sidebar-accent: oklch(0.25 0.08 240); /* Oxford Blue for sidebar accents */
+  --sidebar-accent-foreground: oklch(1 0 0); /* White text */
+  --sidebar-border: oklch(0.2 0 0); /* Dark sidebar border */
+  --sidebar-ring: oklch(0.45 0.15 25); /* Auburn focus ring */
 }
 
-/* Apply serif font to headings */
-h1, h2, h3 { font-family: var(--font-dm-serif-display); }
-
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 211 100% 14%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 0 59% 41%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-  }
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
-  }
-}
-
-@layer components {
-  /* Google Maps Mobile Optimization */
-  .map-container {
-    @apply w-full h-full relative;
-  }
-  
-  .map-container .gm-style {
-    @apply rounded-lg;
-  }
-  
-  /* Mobile-optimized map controls */
-  @media (max-width: 768px) {
-    .map-container .gm-style .gm-style-cc {
-      @apply text-xs;
-    }
-    
-    .map-container .gm-style .gm-fullscreen-control {
-      @apply right-2 top-2;
-    }
-    
-    .map-container .gm-style .gm-zoom-control {
-      @apply right-2 bottom-16;
-    }
-  }
-  
-  /* Service area circle styling */
-  .service-area-circle {
-    @apply opacity-80;
-  }
-  
-  /* Map marker hover effects */
-  .map-marker {
-    @apply transition-transform duration-200 hover:scale-110 cursor-pointer;
-  }
-  
-  /* Map loading state */
-  .map-loading {
-    @apply flex items-center justify-center bg-gray-100 rounded-lg animate-pulse;
-  }
-  
-  /* Address autocomplete styling */
-  .pac-container {
-    @apply rounded-lg shadow-lg border-0;
-    z-index: 9999 !important;
-  }
-  
-  .pac-item {
-    @apply px-4 py-3 border-b border-gray-100 cursor-pointer;
-  }
-  
-  .pac-item:hover {
-    @apply bg-gray-50;
-  }
-  
-  .pac-item-selected {
-    @apply bg-blue-50;
-  }
-  
-  /* Mobile touch optimization for map interactions */
-  @media (max-width: 768px) {
-    .map-container {
-      @apply touch-pan-x touch-pan-y;
-    }
-    
-    /* Larger touch targets for mobile */
-    .map-container button {
-      @apply min-w-10 min-h-10;
-    }
-  }
-}
-
-/* PWA specific styles */
-@layer utilities {
-  .pwa-safe-area {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
-  
-  .pwa-status-bar {
-    padding-top: max(env(safe-area-inset-top), 44px);
-  }
-  
-  .pwa-bottom-navigation {
-    padding-bottom: max(env(safe-area-inset-bottom), 20px);
-  }
-}
-
-/* Offline indicator */
-.offline-indicator {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: #f59e0b;
-  color: white;
-  text-align: center;
-  padding: 8px;
-  z-index: 9999;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* Install prompt styles */
-.install-prompt {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  right: 20px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  z-index: 9998;
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-@media (min-width: 768px) {
-  .install-prompt {
-    left: auto;
-    right: 20px;
-    max-width: 320px;
-  }
-}
-
-/* Smooth animations for PWA */
-.pwa-transition {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Loading states for offline content */
-.offline-skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite;
-}
-
-@keyframes loading {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-/* Touch-friendly interactive elements */
-@media (pointer: coarse) {
-  .touch-target {
-    min-height: 44px;
-    min-width: 44px;
-  }
-}
-
-/* Print styles for PWA */
-@media print {
-  .no-print {
-    display: none !important;
-  }
-  
-  .print-friendly {
-    color: black !important;
-    background: white !important;
   }
 }
