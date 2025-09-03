@@ -6,6 +6,7 @@
 - chore(phone): centralize phone via `lib/phone.ts` and use on LP + thank-you
 - chore(phone): roll out phone util to hero, booking, FAQ, services, and LPs; add tel click tracking
 - fix(pricing): remove same-day surcharge for `STANDARD_NOTARY` in unified pricing engine
+- fix(payments): align Stripe apiVersion to `2025-08-27.basil` to satisfy SDK types and fix Vercel build (`lib/stripe.ts`)
 
 ### P0 Ads Prep (in progress)
 - feat(lp): add message-matched LPs for Paid Search
@@ -101,7 +102,7 @@ GTM setup reference:
 - feat(services): introduce `lib/services/config.ts` as single source of truth for services (IDs, base prices, limits, durations, hours) and `lib/services/map.ts` for mapping and calendar integration
 - refactor(pricing): unify pricing engines to consume centralized config (`lib/pricing-engine.ts`, `lib/pricing/unified-pricing-engine.ts`, `lib/business-rules/pricing-engine.ts`)
 - refactor(ui): `InteractivePricingCalculator` now imports centralized base prices; removed excluded services from `ServiceSelector` (ESTATE_PLANNING, SPECIALTY_NOTARY, BUSINESS_SOLUTIONS)
-- feat(RON): codify RON pricing as $25 base + $10 notarial (itemized in config), keep $5 per seal
+- feat(RON): codify pricing as $25 base + $10 notarial (itemized in config), keep $5 per seal
 - refactor(calendar): `unified-booking-calendar` now derives durations from centralized config and maps service types via `toServiceId`
 - chore(availability): set `app/api/booking/availability` as canonical; updated client deduped fetcher to target it; availability business hours now pulled from centralized config
 - fix(payments): booking create defaults to PAYMENT_PENDING until Stripe webhook confirms
