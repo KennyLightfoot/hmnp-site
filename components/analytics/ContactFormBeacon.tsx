@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { dl } from "@/lib/datalayer";
 
-/** Listens for submit on #contact-form and pushes form_submit_contact */
+/** Listens for submit on #contact-form and pushes form_submit_contact (no PII) */
 export default function ContactFormBeacon({ selector = "#contact-form" }: { selector?: string }) {
 	useEffect(() => {
 		if (typeof document === "undefined") return;
@@ -10,13 +10,7 @@ export default function ContactFormBeacon({ selector = "#contact-form" }: { sele
 		if (!form) return;
 
 		const handler = () => {
-			const fd = new FormData(form);
-			dl("form_submit_contact", {
-				source: "contact_page",
-				name: fd.get("name") ?? undefined,
-				email: fd.get("email") ?? undefined,
-				phone: fd.get("phone") ?? undefined,
-			});
+			dl("form_submit_contact", { source: "contact_page" });
 		};
 
 		form.addEventListener("submit", handler);
