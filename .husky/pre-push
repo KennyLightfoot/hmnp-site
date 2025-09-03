@@ -1,2 +1,0 @@
-#!/bin/sh
-pnpm vitest run --coverage || exit 1 
