@@ -1,320 +1,289 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { CheckCircle, Clock, Shield, MapPin, Phone, Star } from "lucide-react"
 import Link from "next/link"
-import { REDESIGN_V1 } from "@/lib/flags"
-import Hero from "@/components/hero/Hero"
+import Image from "next/image"
+import { Metadata } from 'next'
+import {
+  MapPin,
+  Clock,
+  Award,
+  CheckCircle,
+  ArrowRight,
+  Shield,
+  Calendar,
+  FileText,
+  Users,
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+
+import MiniFAQ from "@/components/mini-faq"
+import HeroSection from "@/components/hero-section"
+import SameDaySlotCounter from "@/components/urgency/same-day-slot-counter"
+import OfferStack from "@/components/offer/offer-stack"
+import PolicyStrip from "@/components/guarantees/policy-strip"
+import ServiceHoursBanner from "@/components/service-hours-banner"
+import ServicesOverview from "@/components/services-overview"
+import WhyChooseUs from "@/components/why-choose-us"
+import ServiceArea from "@/components/service-area"
+import UnifiedTestimonials from "@/components/testimonials/unified-testimonials"
+import FaqSection from "@/components/faq-section"
+import CtaSection from "@/components/cta-section"
+
+export const metadata: Metadata = {
+  title: "Mobile Notary Houston | Notary Near Me | 24/7 Loan Signing Agent",
+  description: "Need a notary near you in Houston? We come to you! Mobile notary services, loan signing agent, RON, and emergency notarization. Book online now.",
+  keywords:
+    "mobile notary Houston, notary near me, Houston notary, notary public, loan signing agent, traveling notary, notary services, electronic notary, mobile notary near me, after hours notary, emergency notary Houston, RON notary, remote online notarization",
+  openGraph: {
+    title: "Mobile Notary Houston | Notary Near Me | Houston Mobile Notary Pros",
+    description: "Need a notary near you in Houston? We come to you! Mobile notary services, loan signing agent, RON, and emergency notarization available 24/7.",
+    url: "/", // Assuming this is the root URL
+    siteName: 'Houston Mobile Notary Pros',
+    images: [
+      {
+        url: '/og-image.jpg', // Ensure this image exists in /public
+        width: 1200,
+        height: 630,
+        alt: 'Houston Mobile Notary Pros',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Mobile Notary Houston | Notary Near Me | 24/7 Service",
+    description: "Need a notary near you in Houston? We come to you! Mobile notary services, loan signing agent, RON, and emergency notarization available now.",
+    images: [`/og-image.jpg`], // Must be an absolute URL relative to the domain
+  },
+}
 
 export default function HomePage() {
-  return (
-    <div className="min-h-screen">
-      {REDESIGN_V1 && <Hero />}
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-background to-muted/20 py-20 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <Badge variant="secondary" className="text-sm font-medium">
-                  Licensed & Insured in Texas
-                </Badge>
-                <h1 className="text-4xl lg:text-6xl font-bold text-balance leading-tight">
-                  Professional Mobile Notary Services in <span className="text-primary">Houston</span>
-                </h1>
-                <p className="text-xl text-muted-foreground text-pretty leading-relaxed">
-                  We come to you! Fast, reliable notary services available 7 days a week. From quick documents to loan
-                  signings, we make notarization convenient and secure.
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="text-lg px-8 py-6" asChild>
-                  <Link href="/booking">Book Appointment Now</Link>
-                </Button>
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-transparent" asChild>
-                  <Link href="/pricing">View Pricing</Link>
-                </Button>
-              </div>
-
-              {/* Trust Indicators */}
-              <div className="flex flex-wrap items-center gap-6 pt-4">
-                <div className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-primary" />
-                  <span className="text-sm font-medium">Licensed & Bonded</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-primary" />
-                  <span className="text-sm font-medium">Same-Day Service</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  <span className="text-sm font-medium">30-Mile Radius</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative">
-              <img
-                src="/professional-notary-with-documents-and-seal-in-mod.jpg"
-                alt="Professional mobile notary service"
-                className="rounded-lg shadow-2xl"
-              />
-              {/* Floating RON Badge */}
-              <div className="absolute -top-4 -right-4 bg-secondary text-secondary-foreground px-4 py-2 rounded-lg shadow-lg">
-                <div className="text-sm font-semibold">24/7 RON Available</div>
-                <div className="text-xs opacity-90">Remote Online Notarization</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Services Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-balance">Choose Your Service Level</h2>
-            <p className="text-xl text-muted-foreground text-pretty max-w-2xl mx-auto">
-              Transparent pricing with no hidden fees. Select the service that fits your needs.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Quick-Stamp Local */}
-            <Card className="relative hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Quick-Stamp Local</CardTitle>
-                  <Badge variant="outline">Most Popular</Badge>
-                </div>
-                <div className="text-3xl font-bold text-primary">$50</div>
-                <CardDescription>Perfect for simple documents</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Up to 1 document
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Up to 2 stamps
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    10-mile radius
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Same-day service
-                  </li>
-                </ul>
-                <Button className="w-full" asChild>
-                  <Link href="/booking?service=quick-stamp">Book Now</Link>
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Standard Mobile */}
-            <Card className="relative hover:shadow-lg transition-shadow border-primary">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Standard Mobile</CardTitle>
-                  <Badge className="bg-primary text-primary-foreground">Recommended</Badge>
-                </div>
-                <div className="text-3xl font-bold text-primary">$75</div>
-                <CardDescription>Great for multiple documents</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Up to 4 documents
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Up to 2 signers
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    20-mile radius
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Priority scheduling
-                  </li>
-                </ul>
-                <Button className="w-full" asChild>
-                  <Link href="/booking?service=standard">Book Now</Link>
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Extended Hours */}
-            <Card className="relative hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-lg">Extended Hours</CardTitle>
-                <div className="text-3xl font-bold text-primary">$100</div>
-                <CardDescription>Evening & weekend service</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Up to 4 documents
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Up to 2 signers
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    30-mile radius
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    7am-9pm daily
-                  </li>
-                </ul>
-                <Button className="w-full" asChild>
-                  <Link href="/booking?service=extended">Book Now</Link>
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Loan Signing */}
-            <Card className="relative hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-lg">Loan Signing</CardTitle>
-                <div className="text-3xl font-bold text-primary">$150</div>
-                <CardDescription>Real estate professionals</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Unlimited documents
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Up to 4 signers
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    2-hour appointment
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Certified specialist
-                  </li>
-                </ul>
-                <Button className="w-full" asChild>
-                  <Link href="/booking?service=loan-signing">Book Now</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* RON Services */}
-          <div className="mt-12">
-            <Card className="bg-secondary text-secondary-foreground">
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl">Remote Online Notarization (RON)</CardTitle>
-                <CardDescription className="text-secondary-foreground/80">
-                  Available 24/7 from anywhere in Texas
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-center space-y-6">
-                <div className="flex items-center justify-center gap-8">
-                  <div>
-                    <div className="text-3xl font-bold">$25</div>
-                    <div className="text-sm opacity-80">per session</div>
-                  </div>
-                  <div className="text-2xl font-light">+</div>
-                  <div>
-                    <div className="text-3xl font-bold">$5</div>
-                    <div className="text-sm opacity-80">per seal</div>
-                  </div>
-                </div>
-                <Button variant="outline" size="lg" className="bg-background text-foreground hover:bg-muted" asChild>
-                  <Link href="/ron">Start RON Session</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Why Choose Us Section */}
-      <section className="py-20 px-4 bg-muted/20">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-balance">Why Houston Trusts Us</h2>
-            <p className="text-xl text-muted-foreground text-pretty max-w-2xl mx-auto">
-              Over 5 years serving Houston with professional, reliable notary services.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                <Shield className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold">Licensed & Insured</h3>
-              <p className="text-muted-foreground">
-                Fully licensed Texas notary with $100,000 E&O insurance for your protection.
-              </p>
-            </div>
-
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                <Clock className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold">Available 7 Days</h3>
-              <p className="text-muted-foreground">
-                Extended hours 7am-9pm daily, plus 24/7 RON services for your convenience.
-              </p>
-            </div>
-
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                <Star className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold">5-Star Service</h3>
-              <p className="text-muted-foreground">
-                Consistently rated 5 stars by clients for professionalism and reliability.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-primary text-primary-foreground">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <h2 className="text-3xl lg:text-4xl font-bold text-balance">Ready to Get Your Documents Notarized?</h2>
-          <p className="text-xl opacity-90 text-pretty">
-            Book your appointment now and we'll come to you. Fast, professional, and convenient.
+  // FAQ items for the MiniFAQ component
+  const faqs = [
+    {
+      id: "what-is-notary",
+      question: "What is a mobile notary?",
+      answer: (
+        <p>
+          A mobile notary is a state-commissioned notary public who travels to your location to perform notarial acts.
+          This service saves you time and hassle by bringing the notary to your home, office, or other convenient
+          location.
+        </p>
+      ),
+    },
+    {
+      id: "service-area",
+      question: "What areas do you serve?",
+      answer: (
+        <div>
+          <p>
+            We cover up to 50 miles from ZIP code 77591 across Greater Houston. Included travel:
+            Standard Mobile includes 20 miles; Extended Hours and Loan Signing include 30 miles.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary" className="text-lg px-8 py-6" asChild>
-              <Link href="/booking">Book Appointment</Link>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="text-lg px-8 py-6 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary bg-transparent"
-              asChild
-            >
-              <Link href="tel:+1234567890">
-                <Phone className="h-5 w-5 mr-2" />
-                Call Now
+          <ul className="list-disc ml-6 mt-2">
+            <li>0–20 miles: included (Standard)</li>
+            <li>21–30 miles: +$25 (Extended/Loan include 30)</li>
+            <li>31–40 miles: +$45</li>
+            <li>41–50 miles: +$65 (maximum service area)</li>
+          </ul>
+          
+        </div>
+      ),
+    },
+    {
+      id: "id-requirements",
+      question: "What forms of ID do you accept?",
+      answer: (
+        <p>
+          We accept government-issued photo IDs such as driver's licenses, passports, military IDs, and state ID cards.
+          The ID must be current (not expired) and contain a photograph, physical description, signature, and serial
+          number.
+        </p>
+      ),
+    },
+  ]
+
+  return (
+    <>
+      {/* Hero Section with Background Image - Removed */}
+      {/* <section className="relative py-20 md:py-28 overflow-hidden"> ... </section> */}
+      <HeroSection />
+
+      {/* Service Hours Banner - Simplified */}
+      <ServiceHoursBanner />
+
+      {/* Offer Stack replacing generic overview */}
+      <OfferStack />
+
+      <PolicyStrip />
+
+      {/* Why Choose Us - Simplified */}
+      <WhyChooseUs />
+
+      {/* Our Commitment Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-[#002147] mb-4">
+              🛡️ Our Commitment to You
+            </h2>
+            <p className="text-lg text-gray-700 max-w-3xl mx-auto">
+              We believe every signature tells a story—and it deserves to be handled with care, clarity, and precision. 
+              Our work is not just about documents. It's about peace of mind.
+            </p>
+            <p className="text-md text-gray-600 max-w-3xl mx-auto mt-4">
+              To see how these commitments translate into a smooth and transparent experience for you, 
+              we invite you to learn about{" "}
+              <Link href="/what-to-expect" className="text-[#A52A2A] hover:underline font-medium">
+                what to expect during your appointment
+              </Link>.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-12 items-start">
+            <div>
+              <h3 className="text-2xl font-semibold text-[#002147] mb-6">Core Beliefs</h3>
+              <ul className="space-y-4 text-gray-700">
+                <li className="flex items-start">
+                  <CheckCircle className="h-6 w-6 text-[#A52A2A] mr-3 flex-shrink-0 mt-1" />
+                  <span><strong>Every Signature Carries Weight:</strong> We don't handle paper—we handle people's futures.</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-6 w-6 text-[#A52A2A] mr-3 flex-shrink-0 mt-1" />
+                  <span><strong>Clarity Creates Confidence:</strong> We don't just present documents. We explain, guide, and educate.</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-6 w-6 text-[#A52A2A] mr-3 flex-shrink-0 mt-1" />
+                  <span><strong>Precision Is Non-Negotiable:</strong> Accuracy isn't a feature—it's our default.</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-6 w-6 text-[#A52A2A] mr-3 flex-shrink-0 mt-1" />
+                  <span><strong>Professionalism Is a Ritual, Not a Performance:</strong> Clean appearance. Calm tone. Courteous manner. Every time.</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-6 w-6 text-[#A52A2A] mr-3 flex-shrink-0 mt-1" />
+                  <span><strong>Time is Sacred:</strong> We don't waste a second—yours or ours.</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-6 w-6 text-[#A52A2A] mr-3 flex-shrink-0 mt-1" />
+                  <span><strong>We're the Calm in Critical Moments:</strong> Legal stress, real estate rush, family crisis—we show up with care.</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-6 w-6 text-[#A52A2A] mr-3 flex-shrink-0 mt-1" />
+                  <span><strong>We Don't Earn Trust Once:</strong> Every signing is a living reference. We win trust again each time.</span>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-2xl font-semibold text-[#002147] mb-6">Code of Conduct</h3>
+              <ul className="space-y-3 text-gray-700">
+                <li className="flex items-center">✅ Arrive early</li>
+                <li className="flex items-center">✅ Dress professionally</li>
+                <li className="flex items-center">✅ Explain without ego</li>
+                <li className="flex items-center">✅ Check every detail twice</li>
+                <li className="flex items-center">✅ Secure your confidentiality</li>
+                <li className="flex items-center">✅ Guide with calm clarity</li>
+                <li className="flex items-center">✅ Follow through after the signing</li>
+                <li className="flex items-center">✅ Serve with presence and pride</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-lg text-gray-700 mb-4">
+              Want peace of mind with your next signing?
+            </p>
+            <Button asChild size="lg" className="bg-[#A52A2A] hover:bg-opacity-80 text-white">
+              <Link href="/booking">
+                Book Your Service Now
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
           </div>
         </div>
       </section>
-    </div>
+
+      {/* Service Area - Fixed with proper map */}
+      <ServiceArea />
+
+      {/* Testimonials - Simplified - Removed */}
+      {/* <section className="py-16 bg-gray-50"> ... </section> */}
+              <UnifiedTestimonials variant="section" showStats={true} />
+
+      {/* FAQ Section - Simplified - Removed */}
+      {/* <section className="py-16 bg-white"> ... </section> */}
+      <FaqSection faqs={faqs} />
+
+      {/* Special Offers Section */}
+      <section className="py-12 md:py-16 bg-blue-50">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold text-[#002147] mb-8">
+            Exclusive Savings & Rewards!
+          </h2>
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="bg-white p-6 rounded-lg shadow-lg text-left">
+              <h3 className="text-2xl font-semibold text-[#A52A2A] mb-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-7 w-7"><path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 1 1 0-8c-2 0-4 1.33-6 4Z"/><path d="M12 12v-2"/><path d="M12 12v2"/><path d="M12 12H2"/><path d="M12 12h10"/></svg> {/* Sparkles Icon */}
+                First-Time Client Discount
+              </h3>
+              <p className="text-gray-700 mb-2">
+                New to Houston Mobile Notary Pros? Welcome aboard! Enjoy <strong>$25 OFF</strong> your very first service with us.
+              </p>
+              <p className="text-gray-600 text-sm">
+                Simply use code <strong className="text-[#002147] bg-yellow-200 px-1 rounded">FIRST25</strong> during your booking.
+              </p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-lg text-left">
+              <h3 className="text-2xl font-semibold text-[#A52A2A] mb-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-7 w-7"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg> {/* Users Icon (simplified gift/users) */}
+                Refer a Friend & You Both Save!
+              </h3>
+              <p className="text-gray-700 mb-2">
+                Love our convenient notary services? Share the love! When you refer a new client, and they complete their first booking, <strong>you both receive a $25 discount</strong>.
+              </p>
+              <p className="text-gray-600 text-sm">
+                Ensure your friend mentions your full name when they book their appointment.
+              </p>
+            </div>
+          </div>
+          <div className="mt-10">
+            <Button asChild size="lg" className="bg-[#A52A2A] hover:bg-opacity-80 text-white px-8 py-3">
+              <Link href="/booking">
+                Book Now & Save <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Updated Service Showcase - SOP Pricing */}
+      <div className="grid md:grid-cols-3 gap-8">
+        <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+          <h3 className="text-xl font-semibold text-[#002147] mb-3">Standard Mobile Notary</h3>
+          <div className="text-3xl font-bold text-[#A52A2A] mb-2">$75</div>
+          <p className="text-gray-600 mb-4">Professional service • ≤ 4 docs • ≤ 2 signers • ≤ 20 mi travel</p>
+          <Link href="/booking">
+            <Button className="bg-[#002147] hover:bg-[#001a38] text-white">
+              Book Now
+            </Button>
+          </Link>
+        </div>
+        
+        <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+          <h3 className="text-xl font-semibold text-[#002147] mb-3">Loan Signing Specialist</h3>
+          <div className="text-3xl font-bold text-[#A52A2A] mb-2">$175</div>
+          <p className="text-gray-600 mb-4">Real estate closings • Flat fee • ≤ 4 signers • Expert handling</p>
+          <Link href="/booking">
+            <Button className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
+              Book Now
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* CTA Section - Simplified */}
+      <CtaSection />
+    </>
   )
 }

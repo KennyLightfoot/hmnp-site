@@ -1,0 +1,166 @@
+{
+  "name": "Houston Mobile Notary Pros",
+  "short_name": "HMNP Booking",
+  "description": "Professional mobile notary services in Houston with real-time booking, pricing, and PWA offline capability",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#002147",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en-US",
+  "categories": ["business", "productivity", "utilities"],
+  "screenshots": [
+    {
+      "src": "/screenshots/dashboard-mobile.svg",
+      "sizes": "430x932",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "Customer Dashboard - Mobile"
+    },
+    {
+      "src": "/screenshots/booking-mobile.svg", 
+      "sizes": "430x932",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "Book Service - Mobile"
+    },
+    {
+      "src": "/screenshots/dashboard-desktop.svg",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "form_factor": "wide",
+      "label": "Customer Dashboard - Desktop"
+    }
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.svg",
+      "sizes": "72x72",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-96x96.svg",
+      "sizes": "96x96", 
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.svg",
+      "sizes": "128x128",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.svg",
+      "sizes": "144x144",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.svg",
+      "sizes": "152x152",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-384x384.svg",
+      "sizes": "384x384",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Book Appointment",
+      "short_name": "Book Now",
+      "description": "Quick book notary appointment",
+      "url": "/booking",
+      "icons": [{ "src": "/icons/shortcut-book.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Standard Notary",
+      "short_name": "Standard",
+      "description": "Quick book standard notary service",
+      "url": "/booking?service=standard-notary",
+      "icons": [{ "src": "/icons/shortcut-book.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Loan Signing",
+      "short_name": "Loan Docs",
+      "description": "Quick book loan signing specialist",
+      "url": "/booking?service=loan-signing",
+      "icons": [{ "src": "/icons/shortcut-bookings.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "My Bookings",
+      "short_name": "Dashboard", 
+      "description": "View booking history and status",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icons/shortcut-bookings.svg", "sizes": "96x96" }]
+    }
+  ],
+  "share_target": {
+    "action": "/booking",
+    "method": "GET",
+    "params": {
+      "title": "service",
+      "text": "notes",
+      "url": "ref"
+    }
+  },
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "mailto",
+      "url": "/contact?email=%s"
+    },
+    {
+      "protocol": "tel",
+      "url": "/contact?phone=%s"
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://houstonmobilenotarypros.com/manifest.json"
+    }
+  ]
+} 

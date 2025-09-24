@@ -1,0 +1,239 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { withAuth, AuthConfig } from '@/lib/auth/unified-middleware';
+import { hasPermission, Actions, Resources } from '@/lib/auth/permissions';
+import { prisma } from '@/lib/db';
+import { z } from 'zod';
+import { Role } from '@prisma/client';
+import bcrypt from 'bcrypt';
+import { withRateLimit } from '@/lib/security/rate-limiting';
+
+// User creation schema
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_+\-=]{8,128}$/;
+const NAME_REGEX = /^[a-zA-Z\s\-'\.]{1,100}$/; // Names with common characters
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/; // Stricter email pattern
+
+const createUserSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, 'Name is required')
+    .max(100, 'Name must be 100 characters or less')
+    .regex(NAME_REGEX, 'Name contains invalid characters'),
+  email: z
+    .string()
+    .trim()
+    .min(1, 'Email address is required')
+    .email('Please enter a valid email address')
+    .max(254, 'Email address is too long')
+    .regex(EMAIL_REGEX, 'Email address format is invalid')
+    .refine((email) => !email.includes('..'), 'Email address format is invalid')
+    .refine((email) => !email.startsWith('.') && !email.endsWith('.'), 'Email address format is invalid'),
+  role: z.enum(['ADMIN', 'STAFF', 'NOTARY', 'CLIENT'], {
+    errorMap: () => ({ message: 'Please select a valid user role' })
+  }),
+  password: z
+    .string()
+    .trim()
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password must be 128 characters or less')
+    .regex(PASSWORD_REGEX, 'Password must contain at least one letter, one number, and only allowed special characters')
+    .optional(),
+  sendInvite: z.boolean().default(true),
+});
+
+// User update schema
+const updateUserSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, 'Name is required')
+    .max(100, 'Name must be 100 characters or less')
+    .regex(NAME_REGEX, 'Name contains invalid characters')
+    .optional(),
+  email: z
+    .string()
+    .trim()
+    .min(1, 'Email address is required')
+    .email('Please enter a valid email address')
+    .max(254, 'Email address is too long')
+    .regex(EMAIL_REGEX, 'Email address format is invalid')
+    .refine((email) => !email.includes('..'), 'Email address format is invalid')
+    .refine((email) => !email.startsWith('.') && !email.endsWith('.'), 'Email address format is invalid')
+    .optional(),
+  role: z.enum(['ADMIN', 'STAFF', 'NOTARY', 'CLIENT'], {
+    errorMap: () => ({ message: 'Please select a valid user role' })
+  }).optional(),
+});
+
+/**
+ * GET /api/auth/users
+ * List all users (Admin/Staff only)
+ */
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export const GET = withRateLimit('admin', 'auth_users_get')(async (request: NextRequest) => {
+  return withAuth(request, async ({ user, context }) => {
+    if (!context.isAuthenticated) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    // Check permission to view users
+    if (!hasPermission(user, Actions.READ, Resources.USER)) {
+      return NextResponse.json({ error: 'Permission denied' }, { status: 403 });
+    }
+
+    try {
+      const { searchParams } = new URL(request.url);
+      const page = parseInt(searchParams.get('page') || '1');
+      const limit = parseInt(searchParams.get('limit') || '20');
+      const role = searchParams.get('role') as Role | null;
+      const search = searchParams.get('search');
+
+      // Build where clause
+      const whereClause: any = {};
+      
+      if (role) {
+        whereClause.role = role;
+      }
+
+      if (search) {
+        whereClause.OR = [
+          { name: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } },
+        ];
+      }
+
+      const [users, total] = await Promise.all([
+        prisma.user.findMany({
+          where: whereClause,
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            createdAt: true,
+            updatedAt: true,
+            emailVerified: true,
+            // Don't include password in response
+          },
+          orderBy: { createdAt: 'desc' },
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+        prisma.user.count({ where: whereClause }),
+      ]);
+
+      return NextResponse.json({
+        users,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit),
+        },
+        filters: {
+          role,
+          search,
+        }
+      });
+
+    } catch (error) {
+      console.error('User list error:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch users' },
+        { status: 500 }
+      );
+    }
+  }, AuthConfig.staffOrAdmin());
+})
+
+/**
+ * POST /api/auth/users
+ * Create new user (Admin only)
+ */
+export const POST = withRateLimit('admin', 'auth_users_post')(async (request: NextRequest) => {
+  return withAuth(request, async ({ user, context }) => {
+    if (!context.isAuthenticated) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    // Check permission to create users
+    if (!hasPermission(user, Actions.CREATE, Resources.USER)) {
+      return NextResponse.json({ error: 'Permission denied' }, { status: 403 });
+    }
+
+    try {
+      const body = await request.json();
+      const validatedData = createUserSchema.parse(body);
+
+      // Check if user already exists
+      const existingUser = await prisma.user.findUnique({
+        where: { email: validatedData.email }
+      });
+
+      if (existingUser) {
+        return NextResponse.json(
+          { error: 'User with this email already exists' },
+          { status: 400 }
+        );
+      }
+
+      // Prepare user data
+      const userData: any = {
+        name: validatedData.name,
+        email: validatedData.email,
+        role: validatedData.role as Role,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      // Hash password if provided
+      if (validatedData.password) {
+        userData.password = await bcrypt.hash(validatedData.password, 12);
+      }
+
+      // Create user
+      const newUser = await prisma.user.create({
+        data: userData,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          emailVerified: true,
+        }
+      });
+
+      // TODO: Send invitation email if sendInvite is true
+      if (validatedData.sendInvite) {
+        console.log(`TODO: Send invitation email to ${newUser.email}`);
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: 'User created successfully',
+        user: newUser,
+      }, { status: 201 });
+
+    } catch (error) {
+      console.error('User creation error:', error);
+
+      if (error instanceof z.ZodError) {
+        return NextResponse.json({
+          error: 'Validation failed',
+          details: error.errors.map(e => ({
+            field: e.path.join('.'),
+            message: e.message,
+          })),
+        }, { status: 400 });
+      }
+
+      return NextResponse.json(
+        { error: 'Failed to create user' },
+        { status: 500 }
+      );
+    }
+  }, AuthConfig.adminOnly());
+})
