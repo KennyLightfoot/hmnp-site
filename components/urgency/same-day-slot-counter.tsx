@@ -58,6 +58,7 @@ export default function SameDaySlotCounter({
   const [count, setCount] = useState<number | null>(null)
   const [source, setSource] = useState<string | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
+  const [lastSuccessful, setLastSuccessful] = useState<{ count: number; timestamp: number } | null>(null)
 
   const dateStr = useMemo(() => getTodayInBusinessTz(), [])
 
@@ -70,10 +71,10 @@ export default function SameDaySlotCounter({
       const data = (await res.json()) as AvailabilityResponse
       const slots = (data?.availableSlots || []).filter(s => s.available)
       setCount(slots.length)
+      setLastSuccessful({ count: slots.length, timestamp: Date.now() })
       setSource(data?.metadata?.source)
     } catch (e: any) {
       setError(e?.message || "Failed to load")
-      setCount(null)
     }
   }
 
@@ -88,16 +89,40 @@ export default function SameDaySlotCounter({
     }
   }, [dateStr, serviceType, refreshMs])
 
+  const displayCount = typeof count === "number" ? count : lastSuccessful?.count ?? null
+  const isStale = typeof count !== "number" && !!lastSuccessful
+
+  const relativeTimestamp = useMemo(() => {
+    if (!lastSuccessful) return null
+    const diffSeconds = Math.max(0, Math.round((Date.now() - lastSuccessful.timestamp) / 1000))
+    if (diffSeconds < 45) return 'just now'
+    if (diffSeconds < 90) return 'about a minute ago'
+    if (diffSeconds < 3600) {
+      const minutes = Math.round(diffSeconds / 60)
+      return `${minutes} minute${minutes === 1 ? '' : 's'} ago`
+    }
+    const hours = Math.round(diffSeconds / 3600)
+    return `${hours} hour${hours === 1 ? '' : 's'} ago`
+  }, [lastSuccessful])
+
   return (
     <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm ${className}`}>
-      <span className="inline-flex h-2.5 w-2.5 rounded-full bg-green-500"></span>
-      {typeof count === "number" ? (
+      <span className={`inline-flex h-2.5 w-2.5 rounded-full ${displayCount !== null ? 'bg-green-500' : 'bg-amber-400'}`}></span>
+      {displayCount !== null ? (
         <span>
-          Same-day mobile slots left today: <strong>{count}</strong>
+          Same-day mobile slots left today: <strong>{displayCount}</strong>
           {source ? <span className="ml-1 text-xs text-gray-500">({source})</span> : null}
+          {relativeTimestamp ? (
+            <span className="ml-1 text-xs text-gray-500">
+              {isStale ? `Last checked ${relativeTimestamp}` : `Updated ${relativeTimestamp}`}
+            </span>
+          ) : null}
+          {error && isStale ? (
+            <span className="ml-1 text-xs text-amber-600">Refreshing availability…</span>
+          ) : null}
         </span>
       ) : error ? (
-        <span className="text-gray-600">Limited availability — check calendar</span>
+        <span className="text-gray-600">We’re confirming today’s openings — tap “Book” to see live availability.</span>
       ) : (
         <span className="text-gray-600">Checking today’s slots…</span>
       )}

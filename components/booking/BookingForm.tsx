@@ -158,7 +158,8 @@ function normalizeTimeTo24h(input: string): string | null {
 const STEP_FIELD_MAPPING: { [step: number]: string[] } = {
   0: ['serviceType'],
   1: ['customer.name', 'customer.email'],
-  2: ['location.address', 'location.city', 'location.state', 'location.zipCode'],
+  // Step 2: allow address to be skipped so we can capture the lead first
+  2: [],
   3: [], // documents optional
   4: ['scheduling.preferredDate', 'scheduling.preferredTime'],
   5: []
@@ -775,7 +776,17 @@ export default function BookingForm({
       (window as any).dataLayer = (window as any).dataLayer || [];
       (window as any).dataLayer.push({ event: 'booking_error', reason: 'validation', fields });
     } catch {}
-    setErrorMessage('Please complete all required fields to continue');
+    let message = 'Please complete all required fields to continue';
+    const customerErrors = errors?.customer;
+    const locationErrors = errors?.location;
+
+    if (customerErrors?.name || customerErrors?.email) {
+      message = 'Add your name and email so we can hold a spot for you.';
+    } else if (locationErrors?.address || locationErrors?.city || locationErrors?.state || locationErrors?.zipCode) {
+      message = 'Add your meeting address so we can dispatch a mobile notary.';
+    }
+
+    setErrorMessage(message);
   }, []);
 
   // Stable callback for interactive pricing sidebar (must not be created conditionally)

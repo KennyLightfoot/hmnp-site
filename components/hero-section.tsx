@@ -1,15 +1,76 @@
 "use client" // Assuming client-side interactivity like Link might be needed
 
+import { FormEvent, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Input } from "@/components/ui/input"
 import SameDaySlotCounter from "@/components/urgency/same-day-slot-counter"
 import { getBusinessTel } from "@/lib/phone"
 import { trackPhoneClick } from "@/lib/tracking"
 
 export default function HeroSection() {
+  const [quoteName, setQuoteName] = useState("")
+  const [quoteContact, setQuoteContact] = useState("")
+  const [quoteStatus, setQuoteStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
+  const [quoteMessage, setQuoteMessage] = useState<string | null>(null)
+
+  const handleQuickQuote = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    const trimmedName = quoteName.trim()
+    const trimmedContact = quoteContact.trim()
+
+    if (!trimmedName || !trimmedContact) {
+      setQuoteStatus("error")
+      setQuoteMessage("Add your name and phone or email and we'll follow up within minutes.")
+      return
+    }
+
+    const payload: Record<string, unknown> = {
+      firstName: trimmedName.split(" ")[0] || trimmedName,
+      lastName: trimmedName.includes(" ") ? trimmedName.split(" ").slice(1).join(" ") : undefined,
+      callRequestReason: "Hero quick quote request",
+      tags: ["Lead:QuickQuote", "Source:Hero"],
+    }
+
+    if (trimmedContact.includes("@")) {
+      payload.email = trimmedContact
+    } else {
+      payload.phone = trimmedContact.replace(/[^+\d]/g, "") || trimmedContact
+    }
+
+    if (typeof window !== "undefined") {
+      payload.landingPageUrl = window.location.href
+    }
+
+    setQuoteStatus("loading")
+    setQuoteMessage("Sending…")
+
+    try {
+      const response = await fetch("/api/submit-ad-lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Request failed: ${response.status}`)
+      }
+
+      setQuoteStatus("success")
+      setQuoteMessage("Thanks! A mobile notary will text or email you in just a few minutes.")
+      setQuoteName("")
+      setQuoteContact("")
+    } catch (error) {
+      console.error("Quick quote lead failed", error)
+      setQuoteStatus("error")
+      setQuoteMessage("Sorry, that didn't go through. Call or text us and we'll help right away.")
+    }
+  }
+
   return (
     <section className="relative py-20 md:py-28 overflow-hidden">
       {/* Background Image with Overlay */}
@@ -41,7 +102,8 @@ export default function HeroSection() {
             {/* Removed hard guarantee banner for softer positioning */}
             
             <p className="text-xl text-gray-100">
-              Transparent $75 flat rate (4 docs, 2 signers, 20 miles). If we’re late to your window, you get $25 off.
+              Mobile notarization starts at $75 with the same transparent breakdown you’ll see when you book. Every add-on and
+              travel tier is shown before you pay.
             </p>
             {/* Trust bar */}
             <div className="flex flex-wrap gap-2 pt-1">
@@ -49,6 +111,27 @@ export default function HeroSection() {
               <Badge className="bg-white/10 text-white border-white/20">KBA</Badge>
               <Badge className="bg-white/10 text-white border-white/20">AV recording</Badge>
               <Badge className="bg-white/10 text-white border-white/20">Transparent pricing</Badge>
+            </div>
+            <div className="bg-white/10 border border-white/15 rounded-xl p-4 text-sm text-gray-100">
+              <div className="font-semibold text-white">What you’ll see at checkout</div>
+              <dl className="mt-2 space-y-1">
+                <div className="flex items-center justify-between gap-3">
+                  <dt>Standard mobile notary</dt>
+                  <dd className="font-semibold text-white">$75 base · 20 mi included</dd>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <dt>Evening / weekend mobile</dt>
+                  <dd className="font-semibold text-white">$125 base · 30 mi included</dd>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <dt>Loan signing specialist</dt>
+                  <dd className="font-semibold text-white">$175 base · 30 mi included</dd>
+                </div>
+                <div className="text-xs text-gray-200 pt-2">
+                  Travel tiers: +$25 (21–30 mi), +$45 (31–40 mi), +$65 (41–50 mi). Extras like rush arrival or additional
+                  documents are listed in the summary before you confirm.
+                </div>
+              </dl>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link href="/booking">
@@ -91,6 +174,50 @@ export default function HeroSection() {
                 See all areas we serve
               </Link>
             </p>
+            <form onSubmit={handleQuickQuote} className="mt-4 bg-white/10 border border-white/20 rounded-xl p-4 space-y-3">
+              <div>
+                <p className="text-sm font-semibold text-white">Need a quote first?</p>
+                <p className="text-xs text-gray-200">Drop your name and phone or email — we’ll send the exact total and next
+                  arrival window without the long form.</p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Input
+                  value={quoteName}
+                  onChange={(event) => setQuoteName(event.target.value)}
+                  placeholder="Your name"
+                  className="bg-white text-gray-900 placeholder:text-gray-500"
+                  aria-label="Your name"
+                />
+                <Input
+                  value={quoteContact}
+                  onChange={(event) => setQuoteContact(event.target.value)}
+                  placeholder="Phone or email"
+                  className="bg-white text-gray-900 placeholder:text-gray-500"
+                  aria-label="Phone or email"
+                />
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="bg-white text-[#A52A2A] hover:bg-gray-100"
+                  disabled={quoteStatus === "loading"}
+                >
+                  {quoteStatus === "loading" ? "Sending…" : "Text me the quote"}
+                </Button>
+              </div>
+              {quoteMessage && (
+                <p
+                  className={`text-xs ${
+                    quoteStatus === "success"
+                      ? "text-emerald-200"
+                      : quoteStatus === "error"
+                        ? "text-amber-200"
+                        : "text-gray-200"
+                  }`}
+                >
+                  {quoteMessage}
+                </p>
+              )}
+            </form>
             {/* Quick value bullets */}
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-gray-100">
               <div className="bg-white/10 border border-white/20 rounded-lg px-4 py-3">Priority arrival windows all day</div>

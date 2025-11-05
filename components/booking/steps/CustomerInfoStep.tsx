@@ -50,11 +50,14 @@ export default function CustomerInfoStep({
   const [isValidating, setIsValidating] = useState(false);
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [leadStatus, setLeadStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [leadMessage, setLeadMessage] = useState<string | null>(null);
 
   // Watch form values
   const watchedName = watch('customer.name') || customer.name || '';
   const watchedEmail = watch('customer.email') || customer.email || '';
   const watchedPhone = watch('customer.phone') || customer.phone || '';
+  const watchedServiceType = watch('serviceType') || '';
 
   // Mobile detection
   useEffect(() => {
@@ -115,6 +118,57 @@ export default function CustomerInfoStep({
   const handlePhoneChange = (value: string) => {
     const formatted = formatPhoneNumber(value);
     handleInputChange('phone', formatted);
+  };
+
+  const submitQuickQuoteLead = async () => {
+    const trimmedName = watchedName.trim();
+    const cleanedPhone = watchedPhone.replace(/\D/g, '');
+    const hasValidPhone = cleanedPhone.length >= 7;
+    const hasEmail = Boolean(watchedEmail.trim());
+
+    if (!trimmedName || (!hasValidPhone && !hasEmail)) {
+      setLeadStatus('error');
+      setLeadMessage('Add your name plus a phone number or email so we can follow up.');
+      return;
+    }
+
+    const [firstName, ...rest] = trimmedName.split(' ');
+    const payload: Record<string, unknown> = {
+      firstName: firstName || trimmedName,
+      lastName: rest.length ? rest.join(' ') : undefined,
+      email: hasEmail ? watchedEmail.trim() : undefined,
+      phone: hasValidPhone ? cleanedPhone : undefined,
+      callRequestReason: watchedServiceType
+        ? `Quick quote request from booking step (${watchedServiceType})`
+        : 'Quick quote request from booking step',
+      tags: ['Lead:QuickQuote', 'Source:BookingStep'],
+    };
+
+    if (typeof window !== 'undefined') {
+      payload.landingPageUrl = window.location.href;
+    }
+
+    setLeadStatus('loading');
+    setLeadMessage('Sending…');
+
+    try {
+      const response = await fetch('/api/submit-ad-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Lead request failed (${response.status})`);
+      }
+
+      setLeadStatus('success');
+      setLeadMessage('All set! We saved your details and will text or email a quote shortly.');
+    } catch (error) {
+      console.error('Quick quote request failed', error);
+      setLeadStatus('error');
+      setLeadMessage('Something went wrong. Call or text us and we will help immediately.');
+    }
   };
 
   const hasErrors = errors?.customer || formErrors?.customer;
@@ -253,6 +307,39 @@ export default function CustomerInfoStep({
                 We'll only call for urgent updates or appointment changes
               </p>
             </div>
+
+            <Card className="border-blue-100 bg-blue-50">
+              <CardContent className="p-4 space-y-2">
+                <div>
+                  <p className="text-sm font-semibold text-blue-900">Need a quote before you finish?</p>
+                  <p className="text-xs text-blue-800">
+                    Tap below and we’ll send the confirmed price and next callback window without needing your address yet.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="bg-white text-blue-700 border border-blue-200 hover:bg-blue-100"
+                  onClick={submitQuickQuoteLead}
+                  disabled={leadStatus === 'loading'}
+                >
+                  {leadStatus === 'loading' ? 'Sending…' : 'Request quick quote'}
+                </Button>
+                {leadMessage && (
+                  <p
+                    className={`text-xs ${
+                      leadStatus === 'success'
+                        ? 'text-green-700'
+                        : leadStatus === 'error'
+                          ? 'text-amber-700'
+                          : 'text-blue-800'
+                    }`}
+                  >
+                    {leadMessage}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </CardContent>
       </Card>
