@@ -1,6 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Metadata } from 'next'
+import Script from 'next/script'
 import {
   MapPin,
   Clock,
@@ -11,9 +12,16 @@ import {
   Calendar,
   FileText,
   Users,
+  Info,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 import MiniFAQ from "@/components/mini-faq"
 import HeroSection from "@/components/hero-section"
@@ -106,6 +114,88 @@ export default function HomePage() {
 
   return (
     <>
+      {/* LocalBusiness + Service Schema for SEO */}
+      <Script
+        id="local-business-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            "@id": "https://houstonmobilenotarypros.com/#organization",
+            "name": "Houston Mobile Notary Pros",
+            "image": "https://houstonmobilenotarypros.com/logo.png",
+            "telephone": "+1-713-XXX-XXXX",
+            "email": "contact@houstonmobilenotarypros.com",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "Houston",
+              "addressLocality": "Houston",
+              "addressRegion": "TX",
+              "postalCode": "77002",
+              "addressCountry": "US"
+            },
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": 29.7604,
+              "longitude": -95.3698
+            },
+            "url": "https://houstonmobilenotarypros.com",
+            "priceRange": "$$",
+            "areaServed": {
+              "@type": "GeoCircle",
+              "geoMidpoint": {
+                "@type": "GeoCoordinates",
+                "latitude": 29.7604,
+                "longitude": -95.3698
+              },
+              "geoRadius": "50 miles"
+            },
+            "openingHours": "Mo-Su 00:00-23:59",
+            "hasOfferCatalog": {
+              "@type": "OfferCatalog",
+              "name": "Mobile Notary Services",
+              "itemListElement": [
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Service",
+                    "name": "Standard Mobile Notary",
+                    "description": "Professional mobile notary service including travel to your location",
+                    "provider": {
+                      "@id": "https://houstonmobilenotarypros.com/#organization"
+                    }
+                  },
+                  "priceSpecification": {
+                    "@type": "PriceSpecification",
+                    "price": "75.00",
+                    "priceCurrency": "USD",
+                    "description": "Starting price includes travel (up to 20 mi), up to 4 documents, up to 2 signers"
+                  }
+                },
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Service",
+                    "name": "Loan Signing Services",
+                    "description": "Real estate loan closing and signing agent services",
+                    "provider": {
+                      "@id": "https://houstonmobilenotarypros.com/#organization"
+                    }
+                  },
+                  "priceSpecification": {
+                    "@type": "PriceSpecification",
+                    "price": "175.00",
+                    "priceCurrency": "USD",
+                    "description": "Flat fee for standard loan closings and reverse mortgages, up to 4 signers"
+                  }
+                }
+              ]
+            }
+          })
+        }}
+      />
+      
       {/* Hero Section with Background Image - Removed */}
       {/* <section className="relative py-20 md:py-28 overflow-hidden"> ... </section> */}
       <HeroSection />
@@ -269,7 +359,28 @@ export default function HomePage() {
       <div className="grid md:grid-cols-3 gap-8">
         <div className="bg-white p-6 rounded-lg shadow-lg text-center">
           <h3 className="text-xl font-semibold text-[#002147] mb-3">Standard Mobile Notary</h3>
-          <div className="text-3xl font-bold text-[#A52A2A] mb-2">Starting at $75</div>
+          <div className="text-3xl font-bold text-[#A52A2A] mb-2 flex items-center justify-center gap-2">
+            <span>Starting at $75</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="h-4 w-4 text-gray-400 cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p className="text-sm"><strong>Base package includes:</strong></p>
+                  <ul className="text-xs mt-1 space-y-1">
+                    <li>• Travel to your location (up to 20 mi)</li>
+                    <li>• Up to 4 documents notarized</li>
+                    <li>• Up to 2 signers</li>
+                    <li>• Professional mobile service</li>
+                  </ul>
+                  <p className="text-xs mt-2 text-gray-500">
+                    Travel tiers: 21-30 mi (+$25), 31-40 mi (+$45), 41-50 mi (+$65)
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           <p className="text-gray-600 mb-4">Professional service • ≤ 4 docs • ≤ 2 signers • ≤ 20 mi travel</p>
           <p className="text-xs text-gray-500 mb-4">All fees shown upfront - no surprises</p>
           <Link href="/booking">

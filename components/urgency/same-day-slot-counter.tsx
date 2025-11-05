@@ -115,8 +115,8 @@ export default function SameDaySlotCounter({
   }
 
   return (
-    <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm ${className}`}>
-      <span className={`inline-flex h-2.5 w-2.5 rounded-full ${error && cachedCount !== null ? 'bg-yellow-500' : 'bg-green-500'}`}></span>
+    <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm min-h-[2rem] ${className}`}>
+      <span className={`inline-flex h-2.5 w-2.5 rounded-full flex-shrink-0 ${error && cachedCount !== null ? 'bg-yellow-500' : 'bg-green-500'}`}></span>
       {typeof count === "number" ? (
         <span>
           Same-day mobile slots left today: <strong>{count}</strong>

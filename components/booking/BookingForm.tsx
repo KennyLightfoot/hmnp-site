@@ -1060,18 +1060,25 @@ export default function BookingForm({
               <a 
                 href={`tel:${require('@/lib/phone').getBusinessTel()}`} 
                 className="text-blue-700 underline text-sm"
-                onMouseDown={() => {
-                  // Use onMouseDown for iOS to fire before navigation
-                  try {
-                    const { callClicked } = require('@/lib/analytics/lead-events');
-                    callClicked({
-                      source_component: 'mobile_cta',
-                      service_type: watchedValues.serviceType || 'unknown',
-                    });
-                  } catch (e) {
-                    console.error('Analytics tracking failed:', e);
-                  }
-                }}
+                onMouseDown={(() => {
+                  // Debounce to prevent double-fire on accidental double-taps
+                  let lastTap = 0;
+                  return () => {
+                    const now = Date.now();
+                    if (now - lastTap > 600) {
+                      try {
+                        const { callClicked } = require('@/lib/analytics/lead-events');
+                        callClicked({
+                          source_component: 'mobile_cta',
+                          service_type: watchedValues.serviceType || 'unknown',
+                        });
+                      } catch (e) {
+                        console.error('Analytics tracking failed:', e);
+                      }
+                    }
+                    lastTap = now;
+                  };
+                })()}
               >
                 Call Now
               </a>

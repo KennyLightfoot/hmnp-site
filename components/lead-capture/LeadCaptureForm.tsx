@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
-import { getLeadAttributionData } from '@/lib/tracking/lead-events';
+import { getTrackingContext } from '@/lib/analytics/events';
 
 interface LeadCaptureFormProps {
   onSuccess?: (data: any) => void;
@@ -71,8 +71,8 @@ export function LeadCaptureForm({
     setErrorMessage('');
     
     try {
-      // Get attribution data
-      const attribution = getLeadAttributionData();
+      // Get attribution data with event_id
+      const ctx = getTrackingContext();
       
       // Submit to API
       const response = await fetch('/api/submit-ad-lead', {
@@ -82,7 +82,15 @@ export function LeadCaptureForm({
         },
         body: JSON.stringify({
           ...formData,
-          ...attribution,
+          event_id: ctx.event_id,
+          utm_source: ctx.utm?.utm_source,
+          utm_medium: ctx.utm?.utm_medium,
+          utm_campaign: ctx.utm?.utm_campaign,
+          utm_term: ctx.utm?.utm_term,
+          utm_content: ctx.utm?.utm_content,
+          device: ctx.device,
+          page: ctx.path,
+          referrer: ctx.ref,
           source,
         }),
       });

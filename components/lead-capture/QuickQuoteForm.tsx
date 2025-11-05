@@ -54,6 +54,27 @@ export function QuickQuoteForm({ className = '' }: QuickQuoteFormProps) {
           onError={handleError}
           submitButtonText="Get My Free Quote"
         />
+        
+        {/* FAQ Deep Link */}
+        <div className="mt-4 pt-4 border-t border-blue-200">
+          <p className="text-sm text-blue-800 text-center">
+            Have questions?{' '}
+            <a 
+              href="/faq#pricing" 
+              className="font-medium underline hover:text-blue-900"
+              onClick={() => {
+                try {
+                  const { trackClick } = require('@/lib/analytics/events');
+                  trackClick('faq_link_click', { source: 'quick_quote_form', anchor: 'pricing' });
+                } catch (e) {
+                  console.error('Analytics tracking failed:', e);
+                }
+              }}
+            >
+              What affects my price?
+            </a>
+          </p>
+        </div>
       </LeadCaptureCard>
       
       {/* Trust Indicators */}

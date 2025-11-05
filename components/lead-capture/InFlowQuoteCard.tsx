@@ -42,33 +42,37 @@ export function InFlowQuoteCard({ bookingData, className = '' }: InFlowQuoteCard
   useEffect(() => {
     if (!cardRef.current || hasTrackedView) return;
     
-    let timeoutId: NodeJS.Timeout;
+    const el = cardRef.current;
+    let timeoutId: NodeJS.Timeout | null = null;
     
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-            // Card is 50%+ visible, wait 750ms before tracking
-            timeoutId = setTimeout(() => {
-              if (!hasTrackedView) {
-                leadInflowRequested({
-                  source_component: 'inflow_quote_card',
-                  service_type: bookingData.serviceType as any || 'unknown',
-                  partial_fields: Object.keys(bookingData).filter(k => bookingData[k as keyof typeof bookingData]),
-                });
-                setHasTrackedView(true);
-              }
-            }, 750);
-          } else {
-            // Card moved out of view, cancel pending tracking
-            if (timeoutId) clearTimeout(timeoutId);
+        const entry = entries[0];
+        if (entry && entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+          // Card is 50%+ visible, wait 750ms before tracking
+          timeoutId = setTimeout(() => {
+            if (!hasTrackedView) {
+              leadInflowRequested({
+                source_component: 'inflow_quote_card',
+                service_type: bookingData.serviceType as any || 'unknown',
+                partial_fields: Object.keys(bookingData).filter(k => bookingData[k as keyof typeof bookingData]),
+              });
+              setHasTrackedView(true);
+              observer.unobserve(el); // Stop observing after tracking
+            }
+          }, 750);
+        } else {
+          // Card moved out of view, cancel pending tracking
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
           }
-        });
+        }
       },
-      { threshold: 0.5 }
+      { threshold: [0.5] }
     );
     
-    observer.observe(cardRef.current);
+    observer.observe(el);
     
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
