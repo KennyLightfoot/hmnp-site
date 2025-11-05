@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
-import { trackLead, type LeadTrackingData } from "@/lib/tracking";
+import { trackLead } from "@/lib/analytics/events";
 
 // Zod Schema for visible form fields
 const leadFormSchema = z.object({
@@ -156,16 +156,11 @@ export default function LeadForm({
         form.reset();
       }
 
-      // Track form submission for analytics using our comprehensive tracking system
-      const trackingData: LeadTrackingData = {
-        lead_source: customFields.lead_source || campaignName || 'website_form',
-        service_type: customFields.service_type || 'general_notary',
-        estimated_value: 75, // Default service value
-        campaign_name: campaignName,
-        ad_platform: customFields.cf_ad_platform
-      };
-      
-      trackLead(trackingData);
+      // Track form submission for analytics
+      trackLead('quick_quote', {
+        source_component: 'lead_form',
+        service_type: customFields.service_type || 'unknown',
+      });
 
     } catch (error) {
       const errorMessage = error instanceof Error ? getErrorMessage(error) : "An unknown error occurred.";
