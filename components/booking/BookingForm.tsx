@@ -1060,12 +1060,14 @@ export default function BookingForm({
               <a 
                 href={`tel:${require('@/lib/phone').getBusinessTel()}`} 
                 className="text-blue-700 underline text-sm"
-                onClick={() => {
+                onMouseDown={() => {
+                  // Use onMouseDown for iOS to fire before navigation
                   try {
-                    // Track mobile CTA call click
-                    if (typeof window !== 'undefined' && (window as any).trackMobileCTA) {
-                      (window as any).trackMobileCTA('call', 'booking_sticky_cta');
-                    }
+                    const { callClicked } = require('@/lib/analytics/lead-events');
+                    callClicked({
+                      source_component: 'mobile_cta',
+                      service_type: watchedValues.serviceType || 'unknown',
+                    });
                   } catch (e) {
                     console.error('Analytics tracking failed:', e);
                   }

@@ -9,7 +9,7 @@
 import React, { useEffect } from 'react';
 import { LeadCaptureCard } from './LeadCaptureCard';
 import { LeadCaptureForm } from './LeadCaptureForm';
-import { trackQuickQuoteView, trackLeadSubmit } from '@/lib/tracking/lead-events';
+import { leadQuickQuoteViewed, leadQuickQuoteSubmitted } from '@/lib/analytics/lead-events';
 
 interface QuickQuoteFormProps {
   className?: string;
@@ -18,18 +18,23 @@ interface QuickQuoteFormProps {
 export function QuickQuoteForm({ className = '' }: QuickQuoteFormProps) {
   // Track form view on mount
   useEffect(() => {
-    trackQuickQuoteView('homepage');
+    leadQuickQuoteViewed({ 
+      source_component: 'quick_quote_home',
+      service_type: 'unknown'
+    });
   }, []);
   
   const handleSuccess = (data: any) => {
-    // Track lead submission
-    trackLeadSubmit('quick_quote', {
+    // Track lead submission with event_id for future server-side dedupe
+    const eventId = leadQuickQuoteSubmitted({
+      source_component: 'quick_quote_home',
+      service_type: data.serviceType || 'unknown',
       name: data.name,
       email: data.email,
       phone: data.phone,
     });
     
-    console.log('[QuickQuote] Lead submitted successfully:', data);
+    console.log('[QuickQuote] Lead submitted successfully:', { data, eventId });
   };
   
   const handleError = (error: string) => {

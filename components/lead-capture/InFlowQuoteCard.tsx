@@ -6,12 +6,13 @@
  * Uses partial booking data already entered
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { LeadCaptureCard } from './LeadCaptureCard';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
-import { trackInFlowQuoteRequest, trackLeadSubmit, getLeadAttributionData } from '@/lib/tracking/lead-events';
+import { leadInflowRequested } from '@/lib/analytics/lead-events';
+import { getTrackingContext } from '@/lib/analytics/events';
 
 interface InFlowQuoteCardProps {
   bookingData: {
@@ -34,10 +35,54 @@ export function InFlowQuoteCard({ bookingData, className = '' }: InFlowQuoteCard
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [hasTrackedView, setHasTrackedView] = useState(false);
+  
+  // Track impression via IntersectionObserver (only when ~50% visible for ≥ 750ms)
+  useEffect(() => {
+    if (!cardRef.current || hasTrackedView) return;
+    
+    let timeoutId: NodeJS.Timeout;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+            // Card is 50%+ visible, wait 750ms before tracking
+            timeoutId = setTimeout(() => {
+              if (!hasTrackedView) {
+                leadInflowRequested({
+                  source_component: 'inflow_quote_card',
+                  service_type: bookingData.serviceType as any || 'unknown',
+                  partial_fields: Object.keys(bookingData).filter(k => bookingData[k as keyof typeof bookingData]),
+                });
+                setHasTrackedView(true);
+              }
+            }, 750);
+          } else {
+            // Card moved out of view, cancel pending tracking
+            if (timeoutId) clearTimeout(timeoutId);
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+    
+    observer.observe(cardRef.current);
+    
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      observer.disconnect();
+    };
+  }, [bookingData, hasTrackedView]);
   
   const handleQuoteRequest = async () => {
-    // Track the intent
-    trackInFlowQuoteRequest(bookingData);
+    // Track the submit action with event_id
+    const eventId = leadInflowRequested({
+      source_component: 'inflow_quote_card',
+      service_type: bookingData.serviceType as any || 'unknown',
+      partial_fields: Object.keys(bookingData).filter(k => bookingData[k as keyof typeof bookingData]),
+    });
     
     // Validate we have contact info
     if (!bookingData.email && !bookingData.phone) {
@@ -52,7 +97,7 @@ export function InFlowQuoteCard({ bookingData, className = '' }: InFlowQuoteCard
     
     try {
       // Get attribution data
-      const attribution = getLeadAttributionData();
+      const ctx = getTrackingContext();
       
       // Submit partial booking data as a quote request
       const response = await fetch('/api/submit-ad-lead', {
@@ -66,7 +111,13 @@ export function InFlowQuoteCard({ bookingData, className = '' }: InFlowQuoteCard
           phone: bookingData.phone,
           serviceType: bookingData.serviceType,
           message: `Quote requested mid-booking (Step ${bookingData.currentStep}). Location: ${bookingData.location?.address || 'Not provided yet'}`,
-          ...attribution,
+          event_id: eventId,
+          utm_source: ctx.utm?.utm_source,
+          utm_medium: ctx.utm?.utm_medium,
+          utm_campaign: ctx.utm?.utm_campaign,
+          device: ctx.device,
+          page: ctx.path,
+          referrer: ctx.ref,
           source: 'in_flow_quote',
         }),
       });
@@ -79,14 +130,6 @@ export function InFlowQuoteCard({ bookingData, className = '' }: InFlowQuoteCard
       
       // Success!
       setSubmitStatus('success');
-      
-      // Track the submission
-      trackLeadSubmit('in_flow_quote', {
-        name: bookingData.name,
-        email: bookingData.email,
-        phone: bookingData.phone,
-        serviceType: bookingData.serviceType,
-      });
       
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
@@ -103,7 +146,7 @@ export function InFlowQuoteCard({ bookingData, className = '' }: InFlowQuoteCard
   }
   
   return (
-    <div className={className}>
+    <div className={className} ref={cardRef}>
       <LeadCaptureCard
         title="Need a Quote Before You Finish?"
         description="We'll text/email your estimate based on what you've entered so far. You can continue booking or wait for our response."

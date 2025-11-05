@@ -41,7 +41,7 @@ export default function HeroSection() {
             {/* Removed hard guarantee banner for softer positioning */}
             
             <p className="text-xl text-gray-100">
-              Transparent $75 flat rate (4 docs, 2 signers, 20 miles). If we’re late to your window, you get $25 off.
+              Mobile notarization starting at $75 (includes travel, 4 docs, 2 signers, up to 20 miles). If we're late to your window, you get $25 off.
             </p>
             {/* Trust bar */}
             <div className="flex flex-wrap gap-2 pt-1">

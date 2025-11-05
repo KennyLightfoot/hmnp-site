@@ -15,6 +15,7 @@ const leadSchema = z.object({
   serviceType: z.string().optional(),
   message: z.string().optional(),
   // Attribution data
+  event_id: z.string().optional(), // For server-side tracking dedupe
   utm_source: z.string().optional(),
   utm_medium: z.string().optional(),
   utm_campaign: z.string().optional(),
@@ -23,6 +24,7 @@ const leadSchema = z.object({
   device: z.string().optional(),
   page: z.string().optional(),
   referrer: z.string().optional(),
+  source: z.string().optional(), // quick_quote, in_flow_quote, etc.
 }).refine(
   (data) => data.email || data.phone,
   {
