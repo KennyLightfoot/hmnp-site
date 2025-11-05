@@ -29,18 +29,34 @@ class UnifiedDatabaseConnection {
 
   public static getInstance(): PrismaClient {
     if (!UnifiedDatabaseConnection.instance) {
-      UnifiedDatabaseConnection.instance = global.__prisma || new PrismaClient({
-        log: UnifiedDatabaseConnection.getLogLevel(),
-        errorFormat: 'pretty',
-      });
+      // During build time or in preview mode, use a mock client that doesn't connect
+      const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build';
+      const isPreviewMode = process.env.PREVIEW_UI_ONLY === 'true';
+      
+      if (isBuildTime || isPreviewMode) {
+        // Return a proxy that throws helpful errors
+        UnifiedDatabaseConnection.instance = new Proxy({} as PrismaClient, {
+          get(target, prop) {
+            if (prop === '$disconnect') {
+              return async () => {};
+            }
+            throw new Error(`Database operations are disabled during ${isBuildTime ? 'build time' : 'preview mode'}`);
+          }
+        });
+      } else {
+        UnifiedDatabaseConnection.instance = global.__prisma || new PrismaClient({
+          log: UnifiedDatabaseConnection.getLogLevel(),
+          errorFormat: 'pretty',
+        });
 
-      // Store in global for hot reload in development
-      if (process.env.NODE_ENV === 'development') {
-        global.__prisma = UnifiedDatabaseConnection.instance;
+        // Store in global for hot reload in development
+        if (process.env.NODE_ENV === 'development') {
+          global.__prisma = UnifiedDatabaseConnection.instance;
+        }
+
+        // Setup graceful shutdown handlers
+        UnifiedDatabaseConnection.setupShutdownHandlers();
       }
-
-      // Setup graceful shutdown handlers
-      UnifiedDatabaseConnection.setupShutdownHandlers();
     }
 
     return UnifiedDatabaseConnection.instance;

@@ -58,6 +58,9 @@ export default function SameDaySlotCounter({
   const [count, setCount] = useState<number | null>(null)
   const [source, setSource] = useState<string | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
+  // Caching state for resilience
+  const [cachedCount, setCachedCount] = useState<number | null>(null)
+  const [lastChecked, setLastChecked] = useState<Date | null>(null)
 
   const dateStr = useMemo(() => getTodayInBusinessTz(), [])
 
@@ -69,11 +72,21 @@ export default function SameDaySlotCounter({
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = (await res.json()) as AvailabilityResponse
       const slots = (data?.availableSlots || []).filter(s => s.available)
-      setCount(slots.length)
+      const slotCount = slots.length
+      
+      // Update current count and cache it
+      setCount(slotCount)
+      setCachedCount(slotCount)
+      setLastChecked(new Date())
       setSource(data?.metadata?.source)
     } catch (e: any) {
       setError(e?.message || "Failed to load")
-      setCount(null)
+      // Don't clear count on error - keep showing cached value
+      if (cachedCount !== null) {
+        setCount(cachedCount)
+      } else {
+        setCount(null)
+      }
     }
   }
 
@@ -88,18 +101,41 @@ export default function SameDaySlotCounter({
     }
   }, [dateStr, serviceType, refreshMs])
 
+  // Format last checked time
+  const formatLastChecked = (date: Date | null): string => {
+    if (!date) return ''
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMin = Math.floor(diffMs / 60000)
+    
+    if (diffMin < 1) return 'just now'
+    if (diffMin < 60) return `${diffMin} min ago`
+    const diffHrs = Math.floor(diffMin / 60)
+    return `${diffHrs} hr${diffHrs > 1 ? 's' : ''} ago`
+  }
+
   return (
     <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm ${className}`}>
-      <span className="inline-flex h-2.5 w-2.5 rounded-full bg-green-500"></span>
+      <span className={`inline-flex h-2.5 w-2.5 rounded-full ${error && cachedCount !== null ? 'bg-yellow-500' : 'bg-green-500'}`}></span>
       {typeof count === "number" ? (
         <span>
           Same-day mobile slots left today: <strong>{count}</strong>
-          {source ? <span className="ml-1 text-xs text-gray-500">({source})</span> : null}
+          {error && cachedCount !== null ? (
+            <span className="ml-1 text-xs text-gray-500">(Last checked: {formatLastChecked(lastChecked)})</span>
+          ) : source ? (
+            <span className="ml-1 text-xs text-gray-500">({source})</span>
+          ) : null}
         </span>
       ) : error ? (
-        <span className="text-gray-600">Limited availability — check calendar</span>
+        cachedCount !== null ? (
+          <span className="text-gray-600">
+            Last checked: <strong>{cachedCount}</strong> slots available {formatLastChecked(lastChecked)}
+          </span>
+        ) : (
+          <span className="text-gray-600">We're confirming today's openings...</span>
+        )
       ) : (
-        <span className="text-gray-600">Checking today’s slots…</span>
+        <span className="text-gray-600">Checking today's slots…</span>
       )}
     </div>
   )

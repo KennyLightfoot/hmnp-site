@@ -179,14 +179,25 @@ export const CreateBookingSchema = z.object({
   bookingSource: z.string().default('website'),
   userAgent: z.string().optional(),
   ipAddress: z.string().optional(),
-  utmParameters: z.record(z.string()).optional()
+  utmParameters: z.record(z.string()).optional(),
+  
+  // Flow control - allow skipping validation for early steps
+  currentStep: z.number().optional(),
+  isPreviewMode: z.boolean().optional().default(false)
 }).refine((data) => {
+  // Skip location validation if:
+  // 1. We're in preview/quote mode
+  // 2. We're not at the final review step (step 5)
+  if (data.isPreviewMode === true || (data.currentStep && data.currentStep < 5)) {
+    return true;
+  }
+  
   // RON services don't need location
   if (data.serviceType === 'RON_SERVICES') {
     return data.locationType === 'REMOTE_ONLINE';
   }
   
-  // All other services need location details
+  // At final step, all other services need location details
   return data.location !== undefined;
 }, {
   message: "Location is required for in-person services",

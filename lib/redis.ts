@@ -55,6 +55,16 @@ class RedisClient {
   }
 
   private async initialize() {
+    // Skip Redis during build time or preview mode
+    const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build';
+    const isPreviewMode = process.env.PREVIEW_UI_ONLY === 'true';
+    
+    if (isBuildTime || isPreviewMode) {
+      logger.info('Redis disabled during build/preview mode');
+      this.isConnected = false;
+      return;
+    }
+
     try {
       const redisConfig: RedisConfig = {
         maxRetriesPerRequest: 1, // Reduce retries to fail faster

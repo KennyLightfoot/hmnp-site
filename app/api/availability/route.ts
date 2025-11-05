@@ -1,12 +1,17 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { DateTime } from "luxon";
-import type { TimeSlot } from "@/lib/types/booking";
-import { getAvailableSlots, getCalendars, testCalendarConnection } from "@/lib/ghl-calendar";
-import { getCalendarIdForService } from "@/lib/ghl/calendar-mapping";
-import { withRateLimit } from '@/lib/security/rate-limiting';
 import { z } from 'zod';
+import { isPreviewUiOnly } from '@/lib/preview'
 
 // Fallback mock function if GHL is not available
+type TimeSlot = {
+  startTime: string
+  endTime: string
+  duration: number
+  available: boolean
+  demand?: 'low' | 'moderate' | 'high'
+}
+
 function generateMockSlots(date: DateTime): TimeSlot[] {
   const slots: TimeSlot[] = [];
   const startHour = 9;
@@ -45,7 +50,7 @@ const querySchema = z.object({
   serviceType: z.string().optional(),
 });
 
-export const GET = withRateLimit('public', 'availability')(async (request: NextRequest) => {
+export const GET = async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
   const parsed = querySchema.safeParse({
     date: searchParams.get('date'),
@@ -58,6 +63,12 @@ export const GET = withRateLimit('public', 'availability')(async (request: NextR
   
   console.log(`📅 Availability request: date=${dateStr}, serviceType=${serviceType}`);
   
+  // In UI preview, return a deterministic mock and avoid any external clients
+  if (isPreviewUiOnly) {
+    const requestedDate = DateTime.fromISO(dateStr, { zone: "America/Chicago" });
+    const availableSlots = generateMockSlots(requestedDate)
+    return NextResponse.json({ availableSlots, metadata: { source: 'preview-mock' } })
+  }
   // centralized rate limiting applied via middleware above
   
   // Create cache key
@@ -75,111 +86,73 @@ export const GET = withRateLimit('public', 'availability')(async (request: NextR
   if (!requestedDate.isValid)
     return NextResponse.json({ error: "Invalid date format. Use YYYY-MM-DD." }, { status: 400 });
   
-    try {
-    let availableSlots: TimeSlot[] = [];
+  try {
+    // Dynamically import heavy modules only when not in preview
+    const [{ withRateLimit }, { getAvailableSlots, testCalendarConnection }, { getCalendarIdForService }] = await Promise.all([
+      import('@/lib/security/rate-limiting'),
+      import('@/lib/ghl-calendar'),
+      import('@/lib/ghl/calendar-mapping'),
+    ])
+
+    const handler = withRateLimit('public', 'availability')(async () => {
+      let availableSlots: TimeSlot[] = [];
       let source: 'ghl' | 'mock' = 'mock';
-    
-    // Try to get real availability from GHL calendars with timeout
-    try {
-      // Test GHL connection first with timeout
-      console.log('🔍 Testing GHL connection...');
-      const connectionPromise = testCalendarConnection();
-      const isConnected = await Promise.race([
-        connectionPromise,
-        new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000)) // 5 second timeout
-      ]);
-      
-      console.log(`🔍 GHL connection result: ${isConnected}`);
-      
-      if (isConnected) {
-        // Get service type from query params (default to STANDARD_NOTARY)
-        const serviceType = searchParams.get("serviceType") || "STANDARD_NOTARY";
-        
-        try {
-          // Get the specific calendar ID for this service type
-          const calendarId = getCalendarIdForService(serviceType);
-          console.log(`📅 Using calendar ID for ${serviceType}: ${calendarId}`);
-          
-          // Get start and end of the requested date
-          const startOfDay = requestedDate.startOf('day');
-          const endOfDay = requestedDate.endOf('day');
-          
-          // Get available slots from GHL with timeout
-          const slotsPromise = getAvailableSlots(
-            calendarId,
-            startOfDay.toISO(),
-            endOfDay.toISO(),
-            60 // 60-minute duration
-          );
-          
-          const ghlSlots = await Promise.race([
-            slotsPromise,
-            new Promise<any[]>((resolve) => setTimeout(() => resolve([]), 10000)) // 10 second timeout
-          ]);
-          
-          // Transform GHL slots to our TimeSlot format
-          availableSlots = ghlSlots.map((slot: any) => ({
-            startTime: slot.startTime || slot.start,
-            endTime: slot.endTime || slot.end,
-            duration: slot.duration || 60,
-            demand: slot.demand || 'low',
-            available: slot.available !== false
-          } as TimeSlot));
-          source = availableSlots.length > 0 ? 'ghl' : 'mock';
-          
-          console.log(`✅ GHL availability fetched for ${dateStr} (${serviceType}): ${availableSlots.length} slots`);
-          
-          // If GHL returns empty slots, fall back to mock data
-          if (availableSlots.length === 0) {
-            console.log(`⚠️ GHL returned empty slots, falling back to mock data`);
+
+      try {
+        console.log('🔍 Testing GHL connection...');
+        const isConnected = await Promise.race([
+          testCalendarConnection(),
+          new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000))
+        ]);
+
+        console.log(`🔍 GHL connection result: ${isConnected}`);
+        if (isConnected) {
+          const svcType = searchParams.get("serviceType") || "STANDARD_NOTARY";
+          try {
+            const calendarId = getCalendarIdForService(svcType);
+            console.log(`📅 Using calendar ID for ${svcType}: ${calendarId}`);
+            const startOfDay = requestedDate.startOf('day');
+            const endOfDay = requestedDate.endOf('day');
+            const ghlSlots = await Promise.race([
+              getAvailableSlots(calendarId, startOfDay.toISO(), endOfDay.toISO(), 60),
+              new Promise<any[]>((resolve) => setTimeout(() => resolve([]), 10000))
+            ]);
+            availableSlots = ghlSlots.map((slot: any) => ({
+              startTime: slot.startTime || slot.start,
+              endTime: slot.endTime || slot.end,
+              duration: slot.duration || 60,
+              demand: slot.demand || 'low',
+              available: slot.available !== false
+            }));
+            source = availableSlots.length > 0 ? 'ghl' : 'mock';
+            if (availableSlots.length === 0) {
+              availableSlots = generateMockSlots(requestedDate);
+              source = 'mock';
+            }
+          } catch (calendarError) {
+            console.warn(`Calendar mapping failed for ${svcType}, falling back to mock data:`, calendarError);
             availableSlots = generateMockSlots(requestedDate);
             source = 'mock';
           }
-        } catch (calendarError) {
-          console.warn(`Calendar mapping failed for ${serviceType}, falling back to mock data:`, calendarError);
-          console.log(`🔧 Calendar error details:`, {
-            serviceType,
-            error: calendarError instanceof Error ? calendarError.message : String(calendarError),
-            stack: calendarError instanceof Error ? calendarError.stack : undefined
-          });
+        } else {
+          console.warn('GHL connection failed, falling back to mock data');
           availableSlots = generateMockSlots(requestedDate);
           source = 'mock';
         }
-      } else {
-        console.warn('GHL connection failed, falling back to mock data');
+      } catch (ghlError) {
+        console.warn('GHL availability fetch failed, falling back to mock data:', ghlError);
         availableSlots = generateMockSlots(requestedDate);
-        source = 'mock';
       }
-    } catch (ghlError) {
-      console.warn('GHL availability fetch failed, falling back to mock data:', ghlError);
-      availableSlots = generateMockSlots(requestedDate);
-    }
-    
-    const response = { availableSlots, metadata: { source } };
-    
-    console.log(`✅ Availability response for ${dateStr}:`, {
-      serviceType,
-      slotCount: availableSlots.length,
-      cacheKey,
-      response
-    });
-    
-    // Cache the response
-    cache.set(cacheKey, {
-      data: response,
-      expires: now + (5 * 60 * 1000) // 5 minutes
-    });
-    
-    // Clean old entries
-    for (const [key, value] of cache.entries()) {
-      if (value.expires <= now) {
-        cache.delete(key);
-      }
-    }
 
-  return NextResponse.json(response);
+      const response = { availableSlots, metadata: { source } };
+      cache.set(cacheKey, { data: response, expires: now + (5 * 60 * 1000) });
+      for (const [key, value] of cache.entries()) if (value.expires <= now) cache.delete(key);
+      return NextResponse.json(response);
+    })
+
+    return handler(request as any)
   } catch (error) {
     console.error("Error fetching availability:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
-});
+}

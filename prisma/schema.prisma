@@ -1,0 +1,268 @@
+// Minimal Prisma schema for UI preview build
+// This is a temporary schema to allow the build to succeed
+// Replace with your actual production schema when ready
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum Role {
+  USER
+  NOTARY
+  ADMIN
+  SUPERADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum PaymentProvider {
+  STRIPE
+  MANUAL
+  OTHER
+}
+
+enum NotificationType {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
+  BOOKING_CONFIRMATION
+  BOOKING_REMINDER
+  PAYMENT_CONFIRMATION
+  BOOKING_CANCELLED
+}
+
+enum NotificationMethod {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  DELIVERED
+  READ
+}
+
+enum AssignmentStatus {
+  REQUESTED
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  ON_HOLD
+}
+
+enum LocationType {
+  HOME
+  OFFICE
+  HOSPITAL
+  NURSING_HOME
+  JAIL
+  OTHER
+}
+
+enum ServiceType {
+  STANDARD_NOTARY
+  MOBILE_NOTARY
+  LOAN_SIGNING
+  RON
+  WITNESS
+  APOSTILLE
+  TRANSLATION
+  OTHER
+}
+
+// ============================================================================
+// MODELS
+// ============================================================================
+
+model User {
+  id                String         @id @default(cuid())
+  email             String         @unique
+  emailVerified     DateTime?
+  name              String?
+  firstName         String?
+  lastName          String?
+  phone             String?
+  password          String?
+  role              Role           @default(USER)
+  twoFactorEnabled  Boolean        @default(false)
+  twoFactorSecret   String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  
+  // Relations
+  bookingsAsSigner     Booking[]       @relation("UserBookings")
+  bookingsAsNotary     Booking[]       @relation("NotaryBookings")
+  notifications        Notification[]
+  assignments          Assignment[]
+  comments             Comment[]
+  
+  @@map("users")
+}
+
+model Service {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  description String?
+  type        ServiceType @default(STANDARD_NOTARY)
+  basePrice   Float       @default(0)
+  active      Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  // Relations
+  bookings    Booking[]
+  
+  @@map("services")
+}
+
+model Booking {
+  id                  String        @id @default(cuid())
+  signerId            String
+  notaryId            String?
+  serviceId           String
+  status              BookingStatus @default(PENDING)
+  scheduledDateTime   DateTime?
+  completedAt         DateTime?
+  locationType        LocationType  @default(HOME)
+  serviceAddress      String?
+  numberOfSigners     Int           @default(1)
+  documentCount       Int           @default(1)
+  specialInstructions String?
+  totalAmount         Float         @default(0)
+  travelFee           Float         @default(0)
+  metadata            Json?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  
+  // Relations
+  signer              User          @relation("UserBookings", fields: [signerId], references: [id], onDelete: Cascade)
+  notary              User?         @relation("NotaryBookings", fields: [notaryId], references: [id])
+  service             Service       @relation(fields: [serviceId], references: [id])
+  payments            Payment[]
+  notifications       Notification[]
+  
+  @@index([signerId])
+  @@index([notaryId])
+  @@index([serviceId])
+  @@index([status])
+  @@index([scheduledDateTime])
+  @@map("bookings")
+}
+
+model Payment {
+  id                  String          @id @default(cuid())
+  bookingId           String
+  amount              Float
+  currency            String          @default("USD")
+  status              PaymentStatus   @default(PENDING)
+  provider            PaymentProvider @default(STRIPE)
+  providerPaymentId   String?
+  providerIntentId    String?
+  metadata            Json?
+  refundedAmount      Float           @default(0)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  
+  // Relations
+  booking             Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  @@index([bookingId])
+  @@index([status])
+  @@index([providerPaymentId])
+  @@map("payments")
+}
+
+model Notification {
+  id            String             @id @default(cuid())
+  type          NotificationType
+  method        NotificationMethod
+  recipientId   String
+  bookingId     String?
+  subject       String?
+  content       String?
+  metadata      Json?
+  sentAt        DateTime?
+  status        NotificationStatus @default(PENDING)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  
+  // Relations
+  recipient     User               @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  booking       Booking?           @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  @@index([recipientId])
+  @@index([bookingId])
+  @@index([status])
+  @@map("notifications")
+}
+
+model Assignment {
+  id              String           @id @default(cuid())
+  title           String
+  description     String?
+  status          AssignmentStatus @default(REQUESTED)
+  assigneeId      String?
+  dueDate         DateTime?
+  completedAt     DateTime?
+  metadata        Json?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  // Relations
+  assignee        User?            @relation(fields: [assigneeId], references: [id])
+  comments        Comment[]
+  
+  @@index([assigneeId])
+  @@index([status])
+  @@map("assignments")
+}
+
+model Comment {
+  id            String     @id @default(cuid())
+  content       String
+  authorId      String
+  assignmentId  String
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
+  // Relations
+  author        User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  assignment    Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  
+  @@index([authorId])
+  @@index([assignmentId])
+  @@map("comments")
+}
+
+

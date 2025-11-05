@@ -66,84 +66,132 @@
   }
 }
 
+@theme {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+}
+
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 }
 
 @layer components {
   /* Google Maps Mobile Optimization */
   .map-container {
-    @apply w-full h-full relative;
+    width: 100%;
+    height: 100%;
+    position: relative;
   }
   
   .map-container .gm-style {
-    @apply rounded-lg;
+    border-radius: 0.5rem;
   }
   
   /* Mobile-optimized map controls */
   @media (max-width: 768px) {
     .map-container .gm-style .gm-style-cc {
-      @apply text-xs;
+      font-size: 0.75rem;
+      line-height: 1rem; /* text-xs */
     }
     
     .map-container .gm-style .gm-fullscreen-control {
-      @apply right-2 top-2;
+      right: 0.5rem; /* right-2 */
+      top: 0.5rem;   /* top-2 */
     }
     
     .map-container .gm-style .gm-zoom-control {
-      @apply right-2 bottom-16;
+      right: 0.5rem;   /* right-2 */
+      bottom: 4rem;    /* bottom-16 */
     }
   }
   
   /* Service area circle styling */
   .service-area-circle {
-    @apply opacity-80;
+    opacity: 0.8; /* opacity-80 */
   }
   
   /* Map marker hover effects */
   .map-marker {
-    @apply transition-transform duration-200 hover:scale-110 cursor-pointer;
+    transition-property: transform;
+    transition-duration: 200ms; /* duration-200 */
+    cursor: pointer; /* cursor-pointer */
+  }
+  .map-marker:hover {
+    transform: scale(1.10); /* hover:scale-110 */
   }
   
   /* Map loading state */
   .map-loading {
-    @apply flex items-center justify-center bg-gray-100 rounded-lg animate-pulse;
+    display: flex; /* flex */
+    align-items: center; /* items-center */
+    justify-content: center; /* justify-center */
+    background-color: #f3f4f6; /* bg-gray-100 */
+    border-radius: 0.5rem;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; /* animate-pulse */
   }
   
   /* Address autocomplete styling */
   .pac-container {
-    @apply rounded-lg shadow-lg border-0;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* shadow-lg */
+    border: 0; /* border-0 */
+    border-radius: 0.5rem;
     z-index: 9999 !important;
   }
   
   .pac-item {
-    @apply px-4 py-3 border-b border-gray-100 cursor-pointer;
+    padding: 0.75rem 1rem; /* py-3 px-4 */
+    border-bottom: 1px solid #f3f4f6; /* border-b border-gray-100 */
+    cursor: pointer;
   }
   
   .pac-item:hover {
-    @apply bg-gray-50;
+    background-color: #f9fafb; /* bg-gray-50 */
   }
   
   .pac-item-selected {
-    @apply bg-blue-50;
+    background-color: #eff6ff; /* bg-blue-50 */
   }
   
   /* Mobile touch optimization for map interactions */
   @media (max-width: 768px) {
     .map-container {
-      @apply touch-pan-x touch-pan-y;
+      touch-action: pan-x pan-y; /* touch-pan-x touch-pan-y */
     }
     
     /* Larger touch targets for mobile */
     .map-container button {
-      @apply min-w-10 min-h-10;
+      min-width: 2.5rem; /* min-w-10 */
+      min-height: 2.5rem; /* min-h-10 */
     }
   }
+}
+
+/* Pulse animation to mimic Tailwind animate-pulse */
+@keyframes pulse {
+  50% { opacity: .5; }
 }
 
 /* PWA specific styles */

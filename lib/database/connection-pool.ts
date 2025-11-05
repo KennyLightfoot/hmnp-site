@@ -316,8 +316,10 @@ export const dbPool = DatabaseConnectionPool?.getInstance();
 // Export the Prisma client from the pool
 export const prisma = dbPool?.getClient();
 
-// Initialize connection on module load
-if (process?.env?.NODE_ENV !== 'test') {
+// Initialize connection on module load (skip during build)
+const isBuildTime = process?.env?.NEXT_PHASE === 'phase-production-build';
+const isPreviewMode = process?.env?.PREVIEW_UI_ONLY === 'true';
+if (process?.env?.NODE_ENV !== 'test' && !isBuildTime && !isPreviewMode) {
   dbPool?.connect().catch((error) => {
     logger?.error('Failed to initialize database connection pool on startup', {
       error: error instanceof Error ? getErrorMessage(error) : 'Unknown error'

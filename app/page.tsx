@@ -27,6 +27,7 @@ import ServiceArea from "@/components/service-area"
 import UnifiedTestimonials from "@/components/testimonials/unified-testimonials"
 import FaqSection from "@/components/faq-section"
 import CtaSection from "@/components/cta-section"
+import { QuickQuoteForm } from "@/components/lead-capture/QuickQuoteForm"
 
 export const metadata: Metadata = {
   title: "Mobile Notary Houston | Notary Near Me | 24/7 Loan Signing Agent",
@@ -116,6 +117,13 @@ export default function HomePage() {
       <OfferStack />
 
       <PolicyStrip />
+
+      {/* Quick Quote Form - Lead Capture */}
+      <section className="py-12 bg-white">
+        <div className="container mx-auto px-4">
+          <QuickQuoteForm />
+        </div>
+      </section>
 
       {/* Why Choose Us - Simplified */}
       <WhyChooseUs />
@@ -261,8 +269,9 @@ export default function HomePage() {
       <div className="grid md:grid-cols-3 gap-8">
         <div className="bg-white p-6 rounded-lg shadow-lg text-center">
           <h3 className="text-xl font-semibold text-[#002147] mb-3">Standard Mobile Notary</h3>
-          <div className="text-3xl font-bold text-[#A52A2A] mb-2">$75</div>
+          <div className="text-3xl font-bold text-[#A52A2A] mb-2">Starting at $75</div>
           <p className="text-gray-600 mb-4">Professional service • ≤ 4 docs • ≤ 2 signers • ≤ 20 mi travel</p>
+          <p className="text-xs text-gray-500 mb-4">All fees shown upfront - no surprises</p>
           <Link href="/booking">
             <Button className="bg-[#002147] hover:bg-[#001a38] text-white">
               Book Now
@@ -272,8 +281,9 @@ export default function HomePage() {
         
         <div className="bg-white p-6 rounded-lg shadow-lg text-center">
           <h3 className="text-xl font-semibold text-[#002147] mb-3">Loan Signing Specialist</h3>
-          <div className="text-3xl font-bold text-[#A52A2A] mb-2">$175</div>
+          <div className="text-3xl font-bold text-[#A52A2A] mb-2">Starting at $175</div>
           <p className="text-gray-600 mb-4">Real estate closings • Flat fee • ≤ 4 signers • Expert handling</p>
+          <p className="text-xs text-gray-500 mb-4">Transparent pricing - what you see is what you pay</p>
           <Link href="/booking">
             <Button className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
               Book Now

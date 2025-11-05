@@ -28,6 +28,7 @@ import {
   Zap,
   Star
 } from 'lucide-react';
+import { InFlowQuoteCard } from '@/components/lead-capture/InFlowQuoteCard';
 
 interface CustomerInfoStepProps {
   customer?: {
@@ -35,6 +36,14 @@ interface CustomerInfoStepProps {
     email?: string;
     phone?: string;
   };
+  serviceType?: string;
+  location?: {
+    address?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+  };
+  currentStep?: number;
   onUpdate?: (updates: any) => void;
   errors?: any;
   pricing?: any;
@@ -42,6 +51,9 @@ interface CustomerInfoStepProps {
 
 export default function CustomerInfoStep({ 
   customer = {}, 
+  serviceType,
+  location,
+  currentStep,
   onUpdate, 
   errors, 
   pricing 
@@ -55,6 +67,8 @@ export default function CustomerInfoStep({
   const watchedName = watch('customer.name') || customer.name || '';
   const watchedEmail = watch('customer.email') || customer.email || '';
   const watchedPhone = watch('customer.phone') || customer.phone || '';
+  const watchedServiceType = watch('serviceType') || serviceType;
+  const watchedLocation = watch('location') || location;
 
   // Mobile detection
   useEffect(() => {
@@ -286,6 +300,21 @@ export default function CustomerInfoStep({
           )}
         </CardContent>
       </Card>
+
+      {/* 🚀 IN-FLOW QUOTE CARD - Lead Capture Mid-Booking */}
+      {(watchedName || watchedEmail || watchedPhone) && (
+        <InFlowQuoteCard
+          bookingData={{
+            name: watchedName,
+            email: watchedEmail,
+            phone: watchedPhone,
+            serviceType: watchedServiceType,
+            currentStep: currentStep || 2,
+            location: watchedLocation,
+          }}
+          className="my-6"
+        />
+      )}
 
       {/* 🚀 MOBILE-OPTIMIZED TIPS */}
       {isMobile && (

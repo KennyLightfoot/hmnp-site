@@ -239,6 +239,7 @@ export default function HeroSection() {
                     <div>
                       <p className="text-sm text-gray-500">Starting at</p>
                       <p className="text-2xl font-bold text-[#002147]">$75</p>
+                      <p className="text-xs text-gray-600 mt-1">Transparent pricing. What you see is what you pay.</p>
                     </div>
                     <div className="bg-[#002147] text-white px-3 py-1 rounded-full">
                       <span className="text-sm font-medium">Same-day available</span>

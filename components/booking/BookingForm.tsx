@@ -63,8 +63,7 @@ import InteractivePricingCalculator from './InteractivePricingCalculator';
 // import StickySummary from './StickySummary';
 
 // Business Rules Integration
-import { validateBusinessRules } from '../../lib/business-rules/engine';
-import { BUSINESS_RULES_CONFIG } from '../../lib/business-rules/config';
+// Business rules validation is disabled on the client to avoid bundling server-only modules
 
 // Validation schema
 import { z } from 'zod';
@@ -427,57 +426,9 @@ export default function BookingForm({
 
   // Business Rules validation function
   const validateCurrentStepBusinessRules = useCallback(async () => {
-    setIsValidatingBusinessRules(true);
-    
-    try {
-      // Service Area validation (Location step)
-      if (currentStep === 2 && watchedValues.location?.address && watchedValues.serviceType !== 'RON_SERVICES') {
-        const result = await validateBusinessRules({
-          serviceType: watchedValues.serviceType,
-          location: { address: watchedValues.location.address },
-          documentCount: 1, // Default for now
-          ghlContactId: undefined
-        });
-        
-        setBusinessRulesValidation({
-          isValid: result.isValid,
-          violations: result.violations,
-          recommendations: result.ghlActions.tags || [],
-          serviceAreaWarning: result.violations.find(v => v.includes('distance')) || undefined
-        });
-        
-        return result.isValid;
-      }
-      
-      // Document Limits validation (Service Details step if exists)
-      if (currentStep === 1 && watchedValues.serviceType) {
-        const serviceLimits = BUSINESS_RULES_CONFIG.documentLimits.serviceLimits;
-        const limit = serviceLimits[watchedValues.serviceType as keyof typeof serviceLimits];
-        
-        if (limit) {
-          const documentCount = 1; // Default, could be enhanced to get from form
-          const isWithinLimits = documentCount <= limit.base;
-          
-          if (!isWithinLimits) {
-            setBusinessRulesValidation({
-              isValid: false,
-              violations: [`This service is limited to ${limit.base} document(s)`],
-              recommendations: [`Extra documents will incur $${limit.extraFee} per document`],
-              extraFees: (documentCount - limit.base) * limit.extraFee
-            });
-            return false;
-          }
-        }
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Business rules validation error:', error);
-      return true; // Don't block on business rules errors
-    } finally {
-      setIsValidatingBusinessRules(false);
-    }
-  }, [currentStep, watchedValues]);
+    // No-op on client; always allow continuation
+    return true;
+  }, []);
 
   // Enhanced navigation with loading states
   const nextStep = useCallback(async () => {
@@ -506,23 +457,7 @@ export default function BookingForm({
           return;
         }
 
-        // 2. Business Rules validation (new) - Make it non-blocking for now
-        try {
-          const businessRulesValid = await validateCurrentStepBusinessRules();
-          
-          if (!businessRulesValid) {
-            console.warn('Business rules validation failed, but allowing continuation');
-            // Don't block the user, just show a warning
-            setBusinessRulesValidation({
-              isValid: false,
-              violations: ['Some business rules were not met, but you can continue'],
-              recommendations: ['Contact us if you have questions about service area or document limits']
-            });
-          }
-        } catch (error) {
-          console.warn('Business rules validation error, allowing continuation:', error);
-          // Don't block on business rules errors
-        }
+        // 2. Business Rules validation disabled on client; allow continuation
 
         // 3. Track step completion for AI
         setCompletedSteps(prev => [...prev, currentStep]);
@@ -1113,7 +1048,7 @@ export default function BookingForm({
         </button>
       )}
 
-      {/* 📌 Sticky mobile CTA with total */}
+      {/* 📌 Sticky mobile CTA with total - Simplified to Book + Call */}
       {currentStep < BOOKING_STEPS.length - 1 && (
         <div className="xl:hidden fixed bottom-0 left-0 right-0 border-t bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/70 z-40">
           <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -1122,8 +1057,38 @@ export default function BookingForm({
               <div className="text-lg font-semibold text-gray-900">${Number(totalPrice || 0).toFixed(2)}</div>
             </div>
             <div className="flex items-center gap-3">
-              <a href={`tel:${require('@/lib/phone').getBusinessTel()}`} className="text-blue-700 underline text-sm">Call Now</a>
-              <Button type="button" onClick={nextStep} disabled={!isCurrentStepValid || isSubmitting || isNavigating} className="min-h-[44px] px-6 bg-blue-600 hover:bg-blue-700 text-white">
+              <a 
+                href={`tel:${require('@/lib/phone').getBusinessTel()}`} 
+                className="text-blue-700 underline text-sm"
+                onClick={() => {
+                  try {
+                    // Track mobile CTA call click
+                    if (typeof window !== 'undefined' && (window as any).trackMobileCTA) {
+                      (window as any).trackMobileCTA('call', 'booking_sticky_cta');
+                    }
+                  } catch (e) {
+                    console.error('Analytics tracking failed:', e);
+                  }
+                }}
+              >
+                Call Now
+              </a>
+              <Button 
+                type="button" 
+                onClick={() => {
+                  try {
+                    // Track mobile CTA book click
+                    if (typeof window !== 'undefined' && (window as any).trackMobileCTA) {
+                      (window as any).trackMobileCTA('book', 'booking_sticky_cta');
+                    }
+                  } catch (e) {
+                    console.error('Analytics tracking failed:', e);
+                  }
+                  nextStep();
+                }} 
+                disabled={!isCurrentStepValid || isSubmitting || isNavigating} 
+                className="min-h-[44px] px-6 bg-blue-600 hover:bg-blue-700 text-white"
+              >
                 Continue
                 <ChevronRight className="h-4 w-4 ml-2" />
               </Button>

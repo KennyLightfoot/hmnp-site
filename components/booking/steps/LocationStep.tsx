@@ -459,6 +459,15 @@ export default function LocationStep({
           </CardHeader>
           <CardContent className="space-y-4">
             
+            {/* Skip-Ahead Messaging for Browsers/Quote Shoppers */}
+            <Alert className="border-blue-200 bg-blue-50">
+              <AlertCircle className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-800">
+                <strong>Just browsing?</strong> You can skip ahead and request a quote without entering your full address yet. 
+                We'll help you with pricing and you can provide details later.
+              </AlertDescription>
+            </Alert>
+            
             {/* Street Address */}
             <div className="space-y-2">
               <Label htmlFor="location.address" className="text-sm font-medium">Street Address *</Label>
