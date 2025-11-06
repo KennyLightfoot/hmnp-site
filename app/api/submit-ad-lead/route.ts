@@ -109,7 +109,7 @@ async function sendToGHL(leadData: any, retryCount = 0): Promise<{ success: bool
         };
     
     const response = await fetch(endpoint, {
-      method: 'POST',
+        method: 'POST',
       headers,
       body: JSON.stringify(payload),
       signal: controller.signal,
