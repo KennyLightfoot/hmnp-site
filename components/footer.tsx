@@ -50,7 +50,7 @@ export default function Footer() {
 
         <div className="mt-10 flex flex-col md:flex-row items-center justify-between gap-4 border-t pt-6">
           <div className="text-xs text-secondary/70">
-            &copy; {new Date().getFullYear()} Houston Mobile Notary Pros. All rights reserved.
+            &copy; {new Date().getFullYear()} Houston Mobile Notary Pros LLC. All rights reserved.
           </div>
           <div className="flex items-center gap-4">
             <Link href="/terms" className="text-xs text-secondary/60 hover:text-secondary hover:underline">Terms</Link>

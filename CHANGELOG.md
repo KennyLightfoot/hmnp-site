@@ -1,5 +1,9 @@
 ## 2025-11-06
 
+- docs(env): add GA4/GTM/Ads vars + business hours/DNI to `docs/ENV.CONSOLIDATED.EXAMPLE`
+- seo(schema): set `legalName` to "Houston Mobile Notary Pros LLC", adjust service-area and hours in `components/structured-data.tsx`
+- seo(nap): update footer copyright to "Houston Mobile Notary Pros LLC"
+- seo/citations: align `lib/citations/citation-manager.ts` with official NAP (LLC, email, hours, Texas City center)
 - perf: tune Next image config (inline disposition + mobile device sizes) to reduce LCP on phones
 - feat(rum): add `app/instrumentation.ts` + `/api/rum` endpoint with optional Upstash storage for Core Web Vitals
 - perf(pricing): lazy-load calculator, comparison table, and trust badges with server JSON-LD + daily revalidation

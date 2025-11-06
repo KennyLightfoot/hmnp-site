@@ -22,8 +22,8 @@ export const metadata: Metadata = {
   description: "Professional mobile notary services in Houston. Same-day appointments, loan signings, real estate closings, and more. Licensed, insured, and trusted by thousands.",
   keywords: ["Houston notary", "mobile notary", "loan signing", "real estate notary", "document notarization", "same day notary"],
   authors: [{ name: "Houston Mobile Notary Pros" }],
-  creator: "Houston Mobile Notary Pros",
-  publisher: "Houston Mobile Notary Pros",
+  creator: "Houston Mobile Notary Pros LLC",
+  publisher: "Houston Mobile Notary Pros LLC",
   formatDetection: {
     email: false,
     address: false,

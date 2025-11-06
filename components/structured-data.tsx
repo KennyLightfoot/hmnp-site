@@ -12,6 +12,7 @@ export function StructuredData({ nonce }: StructuredDataProps) {
     "@type": "LocalBusiness",
     additionalType: "https://schema.org/Notary",
     name: "Houston Mobile Notary Pros",
+    legalName: "Houston Mobile Notary Pros LLC",
     slogan: "Flawless the first time—or we pay the redraw fee",
     image: "/og-image.jpg",
     "@id": "https://houstonmobilenotarypros.com/",
@@ -20,16 +21,16 @@ export function StructuredData({ nonce }: StructuredDataProps) {
     priceRange: "$$",
     address: {
       "@type": "PostalAddress",
-      streetAddress: "Based in Pearland Area",
-      addressLocality: "Houston",
+      streetAddress: "Service-area business (no public storefront)",
+      addressLocality: "Texas City",
       addressRegion: "TX",
       postalCode: "77591",
       addressCountry: "US",
     },
     geo: {
       "@type": "GeoCoordinates",
-      latitude: 29.5630556,
-      longitude: -95.2861111,
+      latitude: 29.3838,
+      longitude: -94.9027,
     },
     areaServed: [
       {
@@ -77,34 +78,24 @@ export function StructuredData({ nonce }: StructuredDataProps) {
       "@type": "GeoCircle",
       "geoMidpoint": {
         "@type": "GeoCoordinates",
-        "latitude": 29.5630556,
-        "longitude": -95.2861111
+        "latitude": 29.3838,
+        "longitude": -94.9027
       },
-      "geoRadius": "20 miles"
+      "geoRadius": "25 miles"
     },
     openingHoursSpecification: [
       {
         "@type": "OpeningHoursSpecification",
-        name: "Essential Service Hours",
         dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
         opens: "09:00",
-        closes: "17:00",
+        closes: "18:00"
       },
       {
         "@type": "OpeningHoursSpecification",
-        name: "Priority Service Hours",
-        dayOfWeek: [
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-          "Sunday",
-        ],
-        opens: "07:00",
-        closes: "21:00",
-      },
+        dayOfWeek: ["Saturday"],
+        opens: "09:00",
+        closes: "16:00"
+      }
     ],
     sameAs: [
       "https://www.facebook.com/HoustonMobileNotaryPros/"

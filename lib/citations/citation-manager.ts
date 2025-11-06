@@ -108,11 +108,11 @@ export class CitationManager {
    */
   private initializeBusinessInfo(): BusinessInfo {
     return {
-      name: 'Houston Mobile Notary Pros',
-      address: 'Serving Houston Metro Area (25-mile radius from Pearland, TX 77591)',
+      name: 'Houston Mobile Notary Pros LLC',
+      address: 'Service-area business • Texas City, TX 77591 (25-mile radius)',
       phone: '832-617-4285',
       website: 'https://houstonmobilenotarypros.com',
-      email: 'houstonmobilenotarypros@gmail.com',
+      email: 'contact@houstonmobilenotarypros.com',
       description: 'Professional mobile notary services serving Houston, Pearland, Sugar Land, and surrounding areas within 25 miles. Licensed notary public providing convenient on-site notarization, loan signing services, and Remote Online Notarization (RON). Available 24/7 for emergency notary services.',
       categories: [
         'Mobile Notary Public',
@@ -125,18 +125,18 @@ export class CitationManager {
       ],
       serviceArea: {
         radius: 25,
-        center: { lat: 29.5633, lng: -95.2088 }, // Pearland, TX
+        center: { lat: 29.3838, lng: -94.9027 }, // Texas City, TX
         cities: [...new Set(LOCAL_SEO_ZIP_CODES.map(location => location.city))],
         zipCodes: LOCAL_SEO_ZIP_CODES.map(location => location.zipCode)
       },
       hours: {
-        monday: { open: '08:00', close: '20:00' },
-        tuesday: { open: '08:00', close: '20:00' },
-        wednesday: { open: '08:00', close: '20:00' },
-        thursday: { open: '08:00', close: '20:00' },
-        friday: { open: '08:00', close: '20:00' },
-        saturday: { open: '09:00', close: '18:00' },
-        sunday: { open: '10:00', close: '17:00' }
+        monday: { open: '09:00', close: '18:00' },
+        tuesday: { open: '09:00', close: '18:00' },
+        wednesday: { open: '09:00', close: '18:00' },
+        thursday: { open: '09:00', close: '18:00' },
+        friday: { open: '09:00', close: '18:00' },
+        saturday: { open: '09:00', close: '16:00' },
+        sunday: null
       },
       socialMedia: {
         facebook: 'https://facebook.com/houstonmobilenotarypros',
