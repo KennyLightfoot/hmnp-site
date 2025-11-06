@@ -1,3 +1,14 @@
+## 2025-11-06
+
+- perf: tune Next image config (inline disposition + mobile device sizes) to reduce LCP on phones
+- feat(rum): add `app/instrumentation.ts` + `/api/rum` endpoint with optional Upstash storage for Core Web Vitals
+- perf(pricing): lazy-load calculator, comparison table, and trust badges with server JSON-LD + daily revalidation
+- feat(booking): defer AI assistant/pricing sidebar, add Redis-backed Idempotency-Key support, standardize funnel events
+- feat(ui): ship reusable `StickyMobileCTA` and mount it across pricing/services/LP layouts
+- seo: embed SSR JSON-LD for pricing + key service pages (mobile notary, loan signing, RON, priority)
+- ci: ran `pnpm lint` and `ANALYZE=true pnpm build` (bundle reports in `.next/**/*bundle-analysis.html`)
+- docs(plan): expand SOP/RevOps emphasis and to-dos in `hm.plan.md`
+
 ## 2025-08-27
 
 - fix(lp): fill testimonial star icons on Standard Services LP (`app/lp/standard-services/testimonials.client.tsx`)
