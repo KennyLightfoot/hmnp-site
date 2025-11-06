@@ -10,7 +10,7 @@ export default function GAPathTracker() {
   useEffect(() => {
     if (typeof window === "undefined") return
     const gtag = (window as any).gtag as undefined | ((...args: any[]) => void)
-    const gaId = process.env.NEXT_PUBLIC_GA_ID
+    const gaId = process.env.NEXT_PUBLIC_GA4_ID
     if (!gaId) return
 
     const query = searchParams?.toString()

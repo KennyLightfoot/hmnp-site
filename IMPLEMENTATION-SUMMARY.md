@@ -156,7 +156,7 @@ Add to `.env.local`:
 GHL_QUOTE_WEBHOOK_URL=https://your-ghl-webhook-url.com/webhook/quote-requests
 
 # Analytics (if not already configured)
-NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
+NEXT_PUBLIC_GA4_ID=G-XXXXXXXXXX
 NEXT_PUBLIC_META_PIXEL_ID=XXXXXXXXXXXXXXXXX
 ```
 
