@@ -18,11 +18,11 @@ export async function appendAuditLog(event: AuditEvent) {
   const { bookingId, entity, action, performedBy, data } = event
   let prevHash: string | undefined
   if (bookingId) {
-    const last = await prisma.auditLog.findFirst({ where: { bookingId }, orderBy: { timestamp: 'desc' } })
+    const last = await (prisma as any).auditLog.findFirst({ where: { bookingId }, orderBy: { timestamp: 'desc' } })
     prevHash = last?.hash || undefined
   }
   const hash = computeHash({ bookingId, entity, action, performedBy, data, timestamp: Date.now() }, prevHash)
-  return prisma.auditLog.create({
+  return (prisma as any).auditLog.create({
     data: {
       bookingId,
       entity,
