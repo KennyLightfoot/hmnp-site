@@ -8,4 +8,12 @@ export function track(eventName: string, props: EventProps = {}) {
   })
 }
 
+export function trackBookingFunnel(stage: string, props: EventProps = {}) {
+  track('booking_funnel', {
+    funnel_stage: stage,
+    ts: Date.now(),
+    ...props,
+  })
+}
+
 

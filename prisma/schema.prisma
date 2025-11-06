@@ -587,6 +587,21 @@ model SystemLog {
   @@index([timestamp])
 }
 
+model AuditLog {
+  id          String   @id @default(cuid())
+  bookingId   String?
+  entity      String
+  action      String
+  performedBy String?
+  timestamp   DateTime @default(now())
+  data        Json?
+  prevHash    String?
+  hash        String
+  Booking     Booking? @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId, timestamp])
+}
+
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model daily_metrics {

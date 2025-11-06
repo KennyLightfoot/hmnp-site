@@ -1,0 +1,30 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Install deps
+        run: pnpm install --ignore-scripts --frozen-lockfile
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps
+      - name: Build
+        run: pnpm build:safe
+        env:
+          NEXT_PUBLIC_BASE_URL: ${{ secrets.LIVE_BASE_URL || 'http://localhost:3000' }}
+      - name: Run E2E
+        run: pnpm test:e2e
+

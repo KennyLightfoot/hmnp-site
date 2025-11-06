@@ -1,0 +1,34 @@
+name: Lighthouse CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  lhci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Install deps
+        run: pnpm install --ignore-scripts --frozen-lockfile
+      - name: Build
+        run: pnpm build:safe
+        env:
+          NEXT_PUBLIC_BASE_URL: ${{ secrets.LIVE_BASE_URL || 'http://localhost:3000' }}
+      - name: Run LHCI
+        run: pnpm ci:lhci
+        env:
+          NEXT_PUBLIC_BASE_URL: ${{ secrets.LIVE_BASE_URL || 'http://localhost:3000' }}
+
+

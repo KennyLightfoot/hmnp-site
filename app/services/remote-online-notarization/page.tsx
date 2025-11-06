@@ -5,7 +5,6 @@ import EstimatorStrip from "@/components/EstimatorStrip"
 import { SERVICES_CONFIG } from "@/lib/services/config"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import MiniFAQ from "@/components/mini-faq"
-import ServiceSchema from "@/components/schema/ServiceSchema"
 
 // Define Base URL for metadata
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com';
@@ -41,6 +40,71 @@ export const metadata = {
     title: "Remote Online Notarization Texas | 24/7 RON Services | HMNP",
     description: "Need documents notarized online in Texas? Our secure RON platform is available 24/7 statewide. $25/session + $5/seal. Book instantly!",
     images: [`${BASE_URL}/og-image.jpg`],
+  },
+}
+
+const remoteOnlineSchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "Remote Online Notarization (RON) Texas",
+  description:
+    "Secure, Texas-compliant remote online notarization with credential analysis, KBA, and digital seal. Available statewide 24/7.",
+  serviceType: "Remote Online Notarization",
+  url: "https://houstonmobilenotarypros.com/services/remote-online-notarization",
+  provider: {
+    "@type": "LocalBusiness",
+    name: "Houston Mobile Notary Pros",
+    url: "https://houstonmobilenotarypros.com",
+    telephone: "+1-832-617-4285",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Houston",
+      addressRegion: "TX",
+      postalCode: "77591",
+      addressCountry: "US",
+    },
+  },
+  areaServed: [
+    { "@type": "State", name: "Texas", addressCountry: "US" },
+  ],
+  offers: {
+    "@type": "Offer",
+    price: "35.00",
+    priceCurrency: "USD",
+    description: "RON session includes credential analysis, KBA, and digital journal entry.",
+    availability: "https://schema.org/InStock",
+  },
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "RON Enhancements",
+    itemListElement: [
+      {
+        "@type": "Offer",
+        name: "Additional Notarial Seal",
+        price: "10.00",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+      },
+      {
+        "@type": "Offer",
+        name: "Rush After-Hours Convenience Fee",
+        price: "10.00",
+        priceCurrency: "USD",
+        availability: "https://schema.org/LimitedAvailability",
+      },
+      {
+        "@type": "Offer",
+        name: "Business Agreements with Multiple Signers",
+        price: "55.00",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+      },
+    ],
+  },
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.9",
+    reviewCount: "247",
   },
 }
 
@@ -95,30 +159,9 @@ const ronFaqs = [
 export default function RemoteOnlineNotarizationPage() {
   return (
     <>
-      <ServiceSchema
-        serviceName="Remote Online Notarization (RON) Services"
-        description="Secure Remote Online Notarization services available 24/7 across Texas. Professional digital notarization with credential analysis, KBA verification, and tamper-evident technology."
-        priceRange="$25-$50"
-        serviceType="NotaryService"
-        serviceUrl="/services/remote-online-notarization"
-        areaServed={['Texas', 'Houston, TX', 'Dallas, TX', 'Austin, TX', 'San Antonio, TX']}
-        hoursAvailable={{
-          dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-          opens: '00:00',
-          closes: '23:59'
-        }}
-        features={[
-          'Credential Analysis Included',
-          'Knowledge-Based Authentication (KBA)',
-          'Audio-Video Recording',
-          'Tamper-Evident Digital Seal',
-          'Secure Document Storage',
-          'Texas Law Compliant'
-        ]}
-        additionalInfo={{
-          isOnlineService: true,
-          certificationsRequired: true
-        }}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(remoteOnlineSchema) }}
       />
       <div className="container mx-auto px-4 py-12">
         <Link href="/services" className="flex items-center text-[#002147] hover:text-[#A52A2A] mb-8">

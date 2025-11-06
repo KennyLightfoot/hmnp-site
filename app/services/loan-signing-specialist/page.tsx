@@ -5,7 +5,6 @@ import EstimatorStrip from "@/components/EstimatorStrip"
 import { SERVICES_CONFIG } from "@/lib/services/config"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import MiniFAQ from "@/components/mini-faq"; // Assuming you have this component
-import ServiceSchema from "@/components/schema/ServiceSchema"
 
 // Define Base URL for metadata
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com';
@@ -41,6 +40,74 @@ export const metadata = {
     title: "Loan Signing Specialist Houston: Certified Pros You Can Trust | HMNP",
     description: "Need a Loan Signing Specialist in Houston? We handle all loan types, RON, and courier returns with precision. Book with the paperwork pros!",
     images: [`${BASE_URL}/og-image.jpg`],
+  },
+}
+
+const loanSigningSchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "Houston Loan Signing Specialist",
+  description:
+    "Certified loan signing agents handling purchase, refinance, HELOC, and reverse mortgage packages with courier drop-off included.",
+  serviceType: "Loan Signing",
+  url: "https://houstonmobilenotarypros.com/services/loan-signing-specialist",
+  provider: {
+    "@type": "LocalBusiness",
+    name: "Houston Mobile Notary Pros",
+    url: "https://houstonmobilenotarypros.com",
+    telephone: "+1-832-617-4285",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Houston",
+      addressRegion: "TX",
+      postalCode: "77591",
+      addressCountry: "US",
+    },
+  },
+  areaServed: [
+    { "@type": "City", name: "Houston", addressRegion: "TX", addressCountry: "US" },
+    { "@type": "City", name: "Pearland", addressRegion: "TX", addressCountry: "US" },
+    { "@type": "City", name: "Sugar Land", addressRegion: "TX", addressCountry: "US" },
+    { "@type": "City", name: "Galveston", addressRegion: "TX", addressCountry: "US" },
+  ],
+  offers: {
+    "@type": "Offer",
+    price: "150.00",
+    priceCurrency: "USD",
+    availability: "https://schema.org/InStock",
+    description: "Loan signing package includes printing, travel up to 30 miles, and document courier return.",
+  },
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Loan Signing Enhancements",
+    itemListElement: [
+      {
+        "@type": "Offer",
+        name: "Scanbacks",
+        price: "15.00",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+      },
+      {
+        "@type": "Offer",
+        name: "Rush Print and Courier",
+        price: "20.00",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+      },
+      {
+        "@type": "Offer",
+        name: "Remote Online Loan Signing",
+        price: "110.00",
+        priceCurrency: "USD",
+        availability: "https://schema.org/LimitedAvailability",
+      },
+    ],
+  },
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.9",
+    reviewCount: "247",
   },
 }
 
@@ -86,6 +153,10 @@ const loanSigningFaqs = [
 export default function LoanSigningPage() {
   return (
     <div className="container mx-auto px-4 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(loanSigningSchema) }}
+      />
       <Link href="/services" className="flex items-center text-[#002147] hover:text-[#A52A2A] mb-8">
         <ChevronLeft className="mr-2 h-4 w-4" />
         Back to All Services
@@ -276,15 +347,6 @@ export default function LoanSigningPage() {
         </div>
       </div>
 
-      <ServiceSchema
-        serviceName="Loan Signing Specialist"
-        description="Certified loan signing agents with same‑day dispatch, 2‑hour windows, 30‑mile included, and scanbacks/courier add‑ons."
-        price="$175"
-        serviceType="ProfessionalService"
-        serviceUrl="/services/loan-signing-specialist"
-        areaServed={["Houston, TX", "Greater Houston Area"]}
-        features={["2‑hour window", "30‑mile included", "Scanbacks/courier"]}
-      />
     </div>
   )
 }

@@ -299,7 +299,11 @@ export const POST = withRateLimit('public', 'contact_form')(async (request: Requ
 
     if (ghlContactId) {
       try {
-        await addTagsToContact(ghlContactId, ["Source:Website_Contact_Form", "Lead_Status:New_Inquiry"]);
+        const tags = ["Source:Website_Contact_Form", "Lead_Status:New_Inquiry"]
+        if (smsConsent) {
+          tags.push(process.env.GHL_SMS_CONSENT_TAG || 'Consent:SMS_OptIn')
+        }
+        await addTagsToContact(ghlContactId, tags);
         const noteContent = `Subject: ${subject}\n\nMessage: ${message}\n\nSMS Consent: ${smsConsent ? "Yes" : "No"}\nPreferred Call Time: ${preferredCallTime || 'N/A'}\nCall Request Reason: ${callRequestReason || 'N/A'}`;
         await createNoteForGHL(ghlContactId, noteContent);
         await triggerGHLWorkflow(ghlContactId);

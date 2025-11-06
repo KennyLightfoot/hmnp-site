@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 const nextConfig = {
   productionBrowserSourceMaps: false,
   // Remove TypeScript ignore - enable proper type checking
@@ -25,7 +27,8 @@ const nextConfig = {
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,
-    contentDispositionType: 'attachment',
+    contentDispositionType: 'inline',
+    deviceSizes: [360, 414, 768, 1024, 1440],
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   

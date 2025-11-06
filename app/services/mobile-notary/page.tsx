@@ -40,9 +40,79 @@ export const metadata = {
   },
 }
 
+const mobileNotarySchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "Mobile Notary Services in Houston",
+  description:
+    "Licensed mobile notary traveling to homes, offices, hospitals, and care facilities across Greater Houston with same-day availability.",
+  serviceType: "Mobile Notary",
+  url: "https://houstonmobilenotarypros.com/services/mobile-notary",
+  provider: {
+    "@type": "LocalBusiness",
+    name: "Houston Mobile Notary Pros",
+    url: "https://houstonmobilenotarypros.com",
+    telephone: "+1-832-617-4285",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Houston",
+      addressRegion: "TX",
+      postalCode: "77591",
+      addressCountry: "US",
+    },
+    priceRange: "$$",
+  },
+  areaServed: [
+    { "@type": "City", name: "Houston", addressRegion: "TX", addressCountry: "US" },
+    { "@type": "City", name: "Pearland", addressRegion: "TX", addressCountry: "US" },
+    { "@type": "City", name: "Sugar Land", addressRegion: "TX", addressCountry: "US" },
+    { "@type": "City", name: "League City", addressRegion: "TX", addressCountry: "US" },
+    { "@type": "City", name: "Galveston", addressRegion: "TX", addressCountry: "US" },
+  ],
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Mobile Notary Packages",
+    itemListElement: [
+      {
+        "@type": "Offer",
+        name: "Standard Mobile Notary",
+        description: "Up to 4 documents, 2 signers, and 20 miles of travel included.",
+        price: "75.00",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+      },
+      {
+        "@type": "Offer",
+        name: "Extended Travel Mobile Notary",
+        description: "Tiered travel pricing up to 50 miles from 77591.",
+        price: "95.00",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+      },
+      {
+        "@type": "Offer",
+        name: "Same-Day Priority Mobile Notary",
+        description: "Expedited mobile notary arrival within 1-2 hours (based on availability).",
+        price: "125.00",
+        priceCurrency: "USD",
+        availability: "https://schema.org/LimitedAvailability",
+      },
+    ],
+  },
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.9",
+    reviewCount: "247",
+  },
+}
+
 export default function MobileNotaryServicesPage() {
   return (
     <div className="min-h-screen bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(mobileNotarySchema) }}
+      />
       {/* Breadcrumb */}
       <div className="border-b border-gray-200">
         <div className="container mx-auto px-4 py-4">

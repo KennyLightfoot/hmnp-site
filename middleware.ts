@@ -23,6 +23,17 @@ export async function middleware(request: NextRequest) {
   // RBAC redirect logic for protected routes
   const protectedRoutes = ["/portal", "/admin"];
   if (protectedRoutes.some((p) => pathname.startsWith(p))) {
+    // Optional IP allowlist for /admin
+    if (pathname.startsWith('/admin')) {
+      const allowlist = (process.env.ADMIN_IP_ALLOWLIST || '').split(',').map(s => s.trim()).filter(Boolean)
+      if (allowlist.length > 0) {
+        const xff = request.headers.get('x-forwarded-for') || ''
+        const ip = (xff.split(',')[0] || '').trim() || request.headers.get('x-real-ip') || ''
+        if (!ip || !allowlist.includes(ip)) {
+          return new NextResponse('Forbidden', { status: 403 })
+        }
+      }
+    }
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     if (!token) {
       return NextResponse.redirect(new URL("/login", request.url));

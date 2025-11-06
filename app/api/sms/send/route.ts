@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
-import { sendSms } from '@/lib/sms'
+import { sendSms, checkSmsConsent } from '@/lib/sms'
+import { findContactByPhone } from '@/lib/ghl/contacts'
 
 // naive in-memory token bucket per ip (build-time single instance only; fine for our use)
 const rateMap = new Map<string, { count: number; resetAt: number }>()
@@ -29,10 +30,26 @@ export async function POST(req: Request) {
       bucket.count += 1
       rateMap.set(ip, bucket)
     }
-    const { to, body } = await req.json()
+    const { to, body, email } = await req.json()
     if (!to || !body) return NextResponse.json({ error: 'Missing to or body' }, { status: 400 })
     const phone = String(to).replace(/[^+\d]/g, '')
     if (!/^\+?\d{10,15}$/.test(phone)) return NextResponse.json({ error: 'Invalid phone' }, { status: 400 })
+    // Consent gate: prefer email; if absent, attempt GHL lookup by phone
+    let allowed = true
+    if (typeof email === 'string' && email.trim()) {
+      allowed = await checkSmsConsent(email.trim())
+    } else {
+      try {
+        const contact = await findContactByPhone(phone)
+        const tags: string[] = Array.isArray(contact?.tags) ? contact.tags : []
+        const consentTag = process.env.GHL_SMS_CONSENT_TAG || 'Consent:SMS_OptIn'
+        allowed = tags.includes(consentTag)
+      } catch {
+        allowed = false
+      }
+    }
+    if (!allowed) return NextResponse.json({ error: 'No SMS consent on file' }, { status: 403 })
+
     const result = await sendSms({ to: phone.startsWith('+') ? phone : `+1${phone}`.replace('++','+'), body: String(body).slice(0, 480) })
     if (!result.success) return NextResponse.json({ error: result.error || 'Failed to send' }, { status: 502 })
     return NextResponse.json({ ok: true, messageId: result.messageId })

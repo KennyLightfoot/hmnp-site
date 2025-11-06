@@ -87,12 +87,17 @@ export default function PrivacyPolicyPage() {
             We will retain your personal information collected for our notary journal for a minimum of seven (7) years, as required by Texas law or best practices. Other personal information will be retained only for as long as necessary for the purposes set out in this privacy policy, unless a longer retention period is required or permitted by law. Secure deletion protocols are followed for information beyond its required retention period.
           </p>
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">6. Policy for Children</h2>
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">6. SMS Consent</h2>
+          <p>
+            We only send SMS messages where you have explicitly opted in. We log the timestamp, source, IP address, and user agent of your consent. You can opt out at any time by replying STOP. Reply HELP for assistance. Msg & data rates may apply.
+          </p>
+
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">7. Policy for Children</h2>
           <p>
             We do not knowingly solicit information from or market to children under the age of 13. If you become aware of any data we have collected from children under age 13, please contact us using the contact information provided below.
           </p>
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">7. Your Privacy Rights</h2>
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">8. Your Privacy Rights</h2>
           <p>
             Depending on your location, you may have certain rights regarding your personal information, such as the right to access, correct, or request deletion of your personal data. Please contact us to inquire about or exercise these rights. Note that certain information, such as notary journal entries, must be retained as required by law.
           </p>
@@ -105,12 +110,12 @@ export default function PrivacyPolicyPage() {
           </p>
           */}
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">8. Changes to This Privacy Policy</h2> { /* Adjust heading number if cookie section is included */} 
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">9. Changes to This Privacy Policy</h2> { /* Adjust heading number if cookie section is included */} 
           <p>
             We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date. You are advised to review this Privacy Policy periodically for any changes.
           </p>
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">9. Contact Us</h2> { /* Adjust heading number if cookie section is included */} 
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">10. Contact Us</h2> { /* Adjust heading number if cookie section is included */} 
           <p>If you have questions or comments about this Privacy Policy, please contact us at:</p>
           <p>
             <strong>Houston Mobile Notary Pros</strong><br />

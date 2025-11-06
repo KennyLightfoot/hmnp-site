@@ -14,6 +14,7 @@ This document outlines the comprehensive security measures, policies, and proced
 
 #### **Authentication & Authorization**
 - **Two-Factor Authentication (2FA)**: TOTP-based 2FA for all admin accounts
+- **Admin IP Allowlist**: Optional IP allowlist enforced for `/admin` via `ADMIN_IP_ALLOWLIST`
 - **JWT Tokens**: Short-lived access tokens (15 minutes) with refresh token rotation
 - **Role-Based Access Control (RBAC)**: CLIENT, NOTARY, ADMIN roles with granular permissions
 - **Session Management**: Redis-backed session storage with automatic expiration
@@ -56,7 +57,7 @@ This document outlines the comprehensive security measures, policies, and proced
 - **Sentry Integration**: Real-time error tracking and performance monitoring
 - **Better Stack Logging**: Centralized log management and analysis
 - **Security Alerts**: Automated alerting for security events
-- **Audit Logging**: Comprehensive audit trail for all actions
+- **Audit Logging**: Comprehensive audit trail for all actions (immutable hash chain via `AuditLog`)
 
 ---
 

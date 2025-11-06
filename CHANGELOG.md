@@ -8,6 +8,10 @@
 - seo: embed SSR JSON-LD for pricing + key service pages (mobile notary, loan signing, RON, priority)
 - ci: ran `pnpm lint` and `ANALYZE=true pnpm build` (bundle reports in `.next/**/*bundle-analysis.html`)
 - docs(plan): expand SOP/RevOps emphasis and to-dos in `hm.plan.md`
+- feat(consent): add `/api/consent/sms`, GHL consent tags/fields, and SMS gating
+- docs: add `docs/SMS_10DLC_COMPLIANCE.md`, `docs/VENDOR_DPA_STATUS.md`, `docs/ON_CALL_SLA.md`, `docs/STATUS_PAGE.md`, `docs/BACKUP_RESTORE_DR.md`
+- ci: add Lighthouse CI workflow and a11y/perf gates, E2E workflow run
+- feat(security): admin IP allowlist via `ADMIN_IP_ALLOWLIST`; immutable `AuditLog` with chained hashes
 
 ## 2025-08-27
 

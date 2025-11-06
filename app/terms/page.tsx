@@ -117,6 +117,11 @@ export default function TermsPage() {
             The content on our website is for informational purposes only. We strive for accuracy but do not guarantee that the information is complete or error-free. Your use of the website is at your own risk.
           </p>
 
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">11a. SMS Messaging Terms</h2>
+          <p>
+            By opting in, you consent to receive SMS messages from us related to your inquiries, bookings, and service updates. Consent is not a condition of purchase. Message frequency varies. You may opt out at any time by replying STOP. Reply HELP for help. Msg & data rates may apply. Consent is logged with timestamp, source, IP, and user agent.
+          </p>
+
           <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">12. Intellectual Property</h2>
           <p>
             All content on this website, including text, graphics, logos, and images, is the property of Houston Mobile Notary Pros or its content suppliers and protected by copyright and other intellectual property laws.

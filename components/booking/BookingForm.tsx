@@ -15,11 +15,13 @@
  */
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { DateTime } from 'luxon';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { trackBookingFunnel } from '@/app/lib/analytics';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -53,13 +55,23 @@ import EnhancedSchedulingStep from './steps/EnhancedSchedulingStep';
 import ReviewStep from './steps/ReviewStep';
 import InPersonDocumentsStep from './steps/InPersonDocumentsStep';
 
-// Import AI Booking Assistant
-import AIBookingAssistant from './AIBookingAssistant';
+// Import AI Booking Assistant (lazy loaded)
+const AIBookingAssistant = dynamic(() => import('./AIBookingAssistant'), {
+  ssr: false,
+  loading: () => null,
+});
 
 // Import transparent pricing components
 import { useBookingPricing } from '../../hooks/use-transparent-pricing';
 import { CompactPricingDisplay } from './EnhancedPricingDisplay';
-import InteractivePricingCalculator from './InteractivePricingCalculator';
+const InteractivePricingCalculator = dynamic(() => import('./InteractivePricingCalculator'), {
+  ssr: false,
+  loading: () => (
+    <div className="hidden lg:block">
+      <div className="h-[480px] w-full rounded-2xl border border-dashed border-gray-200 bg-gray-100 animate-pulse" />
+    </div>
+  ),
+});
 // import StickySummary from './StickySummary';
 
 // Business Rules Integration
@@ -275,6 +287,14 @@ export default function BookingForm({
     },
     mode: 'onChange'
   });
+
+  useEffect(() => {
+    trackBookingFunnel('booking_view', {
+      serviceType: form.getValues('serviceType'),
+      source: 'booking_page',
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Enhanced state management
   const [currentStep, setCurrentStep] = useState(initialStep);
@@ -526,6 +546,12 @@ export default function BookingForm({
           // Don't block on business rules errors
         }
 
+        if (currentStep === 0) {
+          trackBookingFunnel('booking_start', {
+            serviceType: watchedValues.serviceType,
+          });
+        }
+
         // 3. Track step completion for AI
         setCompletedSteps(prev => [...prev, currentStep]);
         setUserActions(prev => [...prev, `completed_step_${currentStep}`]);
@@ -576,6 +602,12 @@ export default function BookingForm({
         serviceType: data?.serviceType,
         hasDate: !!data?.scheduling?.preferredDate,
         hasTime: !!data?.scheduling?.preferredTime
+      });
+
+      trackBookingFunnel('submit', {
+        serviceType: data.serviceType,
+        hasDate: !!data?.scheduling?.preferredDate,
+        hasTime: !!data?.scheduling?.preferredTime,
       });
       
       // Prepare booking payload for API
@@ -721,6 +753,11 @@ export default function BookingForm({
         console.info('[BOOKING] Booking created OK');
         const result = await response.json();
         const bookingId = result?.booking?.id || '';
+
+        trackBookingFunnel('success', {
+          bookingId,
+          serviceType: data?.serviceType,
+        });
 
         setSuccessMessage('Booking created successfully! Redirecting to confirmation...');
 

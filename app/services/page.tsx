@@ -50,6 +50,84 @@ export const metadata = {
   },
 }
 
+const servicesSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Houston Mobile Notary Services",
+  description:
+    "Mobile notary, loan signing, remote online notarization, and extended hours support throughout Greater Houston.",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      item: {
+        "@type": "Service",
+        name: "Mobile Notary Services",
+        description: "Traveling notary within 20-30 miles for homes, offices, hospitals, and more.",
+        url: "https://houstonmobilenotarypros.com/services/mobile-notary",
+        serviceType: "Mobile Notary",
+        offers: {
+          "@type": "Offer",
+          price: "75.00",
+          priceCurrency: "USD",
+          availability: "https://schema.org/InStock",
+        },
+      },
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      item: {
+        "@type": "Service",
+        name: "Loan Signing Specialist",
+        description: "Certified loan signing agents handling purchases, refinances, HELOCs, and reverse mortgages.",
+        url: "https://houstonmobilenotarypros.com/services/loan-signing-specialist",
+        serviceType: "Loan Signing",
+        offers: {
+          "@type": "Offer",
+          price: "150.00",
+          priceCurrency: "USD",
+          availability: "https://schema.org/InStock",
+        },
+      },
+    },
+    {
+      "@type": "ListItem",
+      position: 3,
+      item: {
+        "@type": "Service",
+        name: "Remote Online Notarization",
+        description: "Texas-compliant RON sessions for clients needing digital notarization statewide.",
+        url: "https://houstonmobilenotarypros.com/services/remote-online-notarization",
+        serviceType: "Remote Online Notarization",
+        offers: {
+          "@type": "Offer",
+          price: "35.00",
+          priceCurrency: "USD",
+          availability: "https://schema.org/InStock",
+        },
+      },
+    },
+    {
+      "@type": "ListItem",
+      position: 4,
+      item: {
+        "@type": "Service",
+        name: "Extended Hours & Emergency Notary",
+        description: "After-hours notarization for urgent needs across the Houston metro area.",
+        url: "https://houstonmobilenotarypros.com/services/extended-hours-notary",
+        serviceType: "Mobile Notary",
+        offers: {
+          "@type": "Offer",
+          price: "100.00",
+          priceCurrency: "USD",
+          availability: "https://schema.org/LimitedAvailability",
+        },
+      },
+    },
+  ],
+}
+
 export default function ServicesPage() {
   const formatHours = (hours: { start: number; end: number; days: number[] }) => {
     if (hours.start === 0 && hours.end === 24 && hours.days.length === 7) {
@@ -296,6 +374,10 @@ export default function ServicesPage() {
 
   return (
     <div className="container mx-auto px-4 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(servicesSchema) }}
+      />
       {/* Hero Section */}
       <section className="hero text-center mb-16">
   <h1 className="text-4xl font-bold text-[#002147] mb-4">

@@ -45,9 +45,81 @@ export const metadata = {
   },
 }
 
+const prioritySchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "Extended Hours Mobile Notary",
+  description:
+    "Priority mobile notary with 2-hour response windows available 7am-9pm across Greater Houston.",
+  serviceType: "Mobile Notary",
+  url: "https://houstonmobilenotarypros.com/services/extended-hours-notary",
+  provider: {
+    "@type": "LocalBusiness",
+    name: "Houston Mobile Notary Pros",
+    url: "https://houstonmobilenotarypros.com",
+    telephone: "+1-832-617-4285",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Houston",
+      addressRegion: "TX",
+      postalCode: "77591",
+      addressCountry: "US",
+    },
+  },
+  areaServed: [
+    { "@type": "City", name: "Houston", addressRegion: "TX", addressCountry: "US" },
+    { "@type": "City", name: "Pearland", addressRegion: "TX", addressCountry: "US" },
+    { "@type": "City", name: "Sugar Land", addressRegion: "TX", addressCountry: "US" },
+    { "@type": "City", name: "Missouri City", addressRegion: "TX", addressCountry: "US" },
+  ],
+  offers: {
+    "@type": "Offer",
+    price: "100.00",
+    priceCurrency: "USD",
+    availability: "https://schema.org/LimitedAvailability",
+    description: "Priority notary arrival within a 2-hour window, travel up to 30 miles included.",
+  },
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Priority Notary Enhancements",
+    itemListElement: [
+      {
+        "@type": "Offer",
+        name: "Weekend Surcharge",
+        price: "40.00",
+        priceCurrency: "USD",
+        availability: "https://schema.org/LimitedAvailability",
+      },
+      {
+        "@type": "Offer",
+        name: "Additional Documents",
+        price: "10.00",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+      },
+      {
+        "@type": "Offer",
+        name: "Additional Signers",
+        price: "5.00",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+      },
+    ],
+  },
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.9",
+    reviewCount: "247",
+  },
+}
+
 export default function PriorityServicePage() {
   return (
     <div className="min-h-screen bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(prioritySchema) }}
+      />
       {/* Breadcrumb */}
       <div className="border-b border-gray-200">
         <div className="container mx-auto px-4 py-4">

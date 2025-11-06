@@ -173,6 +173,11 @@ VERTEX_RAG_CORPUS=projects/your-project/locations/us-central1/ragCorpora/hmnp-no
    curl http://localhost:3000/api/bookings/pending-payments
    ```
 
+### **Performance & Analytics Tooling**
+- **Real User Monitoring (RUM):** set `NEXT_PUBLIC_ENABLE_RUM=true` locally to emit vitals, and `ENABLE_RUM_STORAGE=true` with Upstash credentials to persist metrics in `/api/rum`.
+- **Bundle analysis:** run `ANALYZE=true pnpm build` to produce client/server bundle reports under `.next/**/bundle-analysis.html` (open in a browser for profiling).
+- **Linting gate:** run `pnpm lint` before commits to catch type-safe issues that `next build --no-lint` would otherwise skip.
+
 ## 🔧 **API Endpoints**
 
 ### **Core Booking Endpoints**

@@ -1,13 +1,38 @@
 import Link from "next/link"
 import { Metadata } from "next"
+import dynamic from "next/dynamic"
 import { Calculator, DollarSign, MapPin, Clock, Shield, Star, CheckCircle, Zap, Users, Award, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import SimplePricingCalculator from "@/components/pricing/SimplePricingCalculator"
-import ServiceComparisonTable from "@/components/pricing/ServiceComparisonTable"
 import PricingFAQ from "@/components/pricing/PricingFAQ"
-import TrustBadges from "@/components/ui/TrustBadges"
+import StickyMobileCTA from "@/components/ui/StickyMobileCTA"
+import PricingFunnelTracker from "@/components/analytics/PricingFunnelTracker"
+
+const SimplePricingCalculator = dynamic(() => import("@/components/pricing/SimplePricingCalculator"), {
+  loading: () => (
+    <div className="h-64 w-full rounded-2xl border border-dashed border-gray-200 bg-gray-100 animate-pulse" />
+  )
+})
+
+const ServiceComparisonTable = dynamic(() => import("@/components/pricing/ServiceComparisonTable"), {
+  loading: () => (
+    <div className="h-96 w-full rounded-2xl border border-dashed border-gray-200 bg-gray-100 animate-pulse" />
+  )
+})
+
+const TrustBadges = dynamic(() => import("@/components/ui/TrustBadges"), {
+  loading: () => (
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <div
+          key={`trust-badge-skeleton-${index}`}
+          className="h-24 rounded-2xl border border-dashed border-gray-200 bg-gray-100 animate-pulse"
+        />
+      ))}
+    </div>
+  )
+})
 
 export const metadata: Metadata = {
   title: "Transparent Mobile Notary Pricing | Houston Mobile Notary Pros",
@@ -16,9 +41,114 @@ export const metadata: Metadata = {
   keywords: "mobile notary pricing, notary fees, Houston notary costs, transparent pricing, same-day notary",
 }
 
+export const revalidate = 86400
+
+const pricingSchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "Houston Mobile Notary Pricing",
+  description:
+    "Transparent, upfront pricing for mobile notary, loan signing, and remote online notarization services across the Houston metro area.",
+  url: "https://houstonmobilenotarypros.com/pricing",
+  serviceType: [
+    "Mobile Notary",
+    "Loan Signing",
+    "Remote Online Notarization",
+  ],
+  areaServed: [
+    { "@type": "City", name: "Houston", addressRegion: "TX", addressCountry: "US" },
+    { "@type": "City", name: "Pearland", addressRegion: "TX", addressCountry: "US" },
+    { "@type": "City", name: "Sugar Land", addressRegion: "TX", addressCountry: "US" },
+    { "@type": "City", name: "Missouri City", addressRegion: "TX", addressCountry: "US" },
+    { "@type": "City", name: "Galveston", addressRegion: "TX", addressCountry: "US" },
+  ],
+  provider: {
+    "@type": "LocalBusiness",
+    name: "Houston Mobile Notary Pros",
+    url: "https://houstonmobilenotarypros.com",
+    telephone: "+1-832-617-4285",
+    image: "https://houstonmobilenotarypros.com/logo.png",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Houston",
+      addressRegion: "TX",
+      postalCode: "77591",
+      addressCountry: "US",
+    },
+  },
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Mobile Notary Packages",
+    itemListElement: [
+      {
+        "@type": "Offer",
+        name: "Quick-Stamp Local",
+        description: "Fast, single-document notarization within 10 miles.",
+        price: "50.00",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        itemOffered: {
+          "@type": "Service",
+          name: "Quick-Stamp Local Mobile Notary",
+          serviceType: "Mobile Notary",
+        },
+      },
+      {
+        "@type": "Offer",
+        name: "Standard Mobile Notary",
+        description: "Professional mobile notary with travel up to 20 miles included.",
+        price: "75.00",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        itemOffered: {
+          "@type": "Service",
+          name: "Standard Mobile Notary",
+          serviceType: "Mobile Notary",
+        },
+      },
+      {
+        "@type": "Offer",
+        name: "Extended Hours Mobile Notary",
+        description: "Evening and weekend availability with 30 miles of travel included.",
+        price: "100.00",
+        priceCurrency: "USD",
+        availability: "https://schema.org/LimitedAvailability",
+        itemOffered: {
+          "@type": "Service",
+          name: "Extended Hours Mobile Notary",
+          serviceType: "Mobile Notary",
+        },
+      },
+      {
+        "@type": "Offer",
+        name: "Loan Signing Specialist",
+        description: "Certified loan signing agent for mortgage packages with FedEx drop included.",
+        price: "150.00",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        itemOffered: {
+          "@type": "Service",
+          name: "Loan Signing Service",
+          serviceType: "Loan Signing",
+        },
+      },
+    ],
+  },
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.9",
+    reviewCount: "247",
+  },
+}
+
 export default function PricingPage() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen pb-28 md:pb-0">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingSchema) }}
+      />
+      <PricingFunnelTracker />
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-[#002147]/5 via-[#A52A2A]/5 to-[#002147]/5 py-20">
         <div className="container mx-auto px-4 text-center">
@@ -250,6 +380,12 @@ export default function PricingPage() {
           </div>
         </div>
       </section>
+
+      <StickyMobileCTA
+        headline="Instant mobile notary quotes on your phone"
+        subheadline="Tap to book online or call for immediate assistance"
+        analyticsContext="sticky_mobile_pricing"
+      />
     </main>
   )
 }

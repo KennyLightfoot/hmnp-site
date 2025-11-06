@@ -16,6 +16,19 @@ export async function findContactByEmail(email: string, locationId?: string) {
   }
 }
 
+export async function findContactByPhone(phone: string, locationId?: string) {
+  const locationIdToUse = locationId || LOCATION_ID
+  const normalized = String(phone || '').replace(/[^+\d]/g, '')
+  const query = new URLSearchParams({ query: normalized, ...(locationIdToUse ? { locationId: locationIdToUse } : {}) }).toString()
+  try {
+    const data = await ghlApiRequest(`/contacts?${query}`, { method: 'GET' })
+    return Array.isArray(data?.contacts) && data.contacts.length ? data.contacts[0] : null
+  } catch (error: any) {
+    if ((error as any).ghlError?.statusCode === 404) return null
+    throw new Error(`Failed to search contact by phone: ${getErrorMessage(error)}`)
+  }
+}
+
 export async function createContact(contactData: any, locationId?: string) {
   const locationIdToUse = locationId || LOCATION_ID
   if (!locationIdToUse) throw new Error('No location ID provided or available in environment.')
