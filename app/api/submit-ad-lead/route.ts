@@ -54,29 +54,64 @@ const leadSchema = z.object({
  */
 async function sendToGHL(leadData: any, retryCount = 0): Promise<{ success: boolean; shouldRetry: boolean }> {
   const webhookUrl = process.env.GHL_QUOTE_WEBHOOK_URL;
+  const apiKey = process.env.GHL_API_KEY;
+  const locationId = process.env.GHL_LOCATION_ID;
   const maxRetries = 2;
   
-  if (!webhookUrl) {
-    console.warn('[GHL] Webhook URL not configured - skipping CRM sync');
+  // Fallback: If no webhook URL but have API credentials, use contacts API
+  if (!webhookUrl && !apiKey) {
+    console.warn('[GHL] Neither webhook URL nor API key configured - skipping CRM sync');
     return { success: false, shouldRetry: false };
+  }
+  
+  // Use webhook if available, otherwise use API
+  const useWebhook = !!webhookUrl;
+  const endpoint = useWebhook 
+    ? webhookUrl 
+    : `https://services.leadconnectorhq.com/contacts/`;
+  
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  
+  if (!useWebhook && apiKey) {
+    headers['Authorization'] = `Bearer ${apiKey}`;
   }
   
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
     
-    const response = await fetch(webhookUrl, {
+    const payload = useWebhook 
+      ? {
+          ...leadData,
+          pipeline: 'Quote Request',
+          stage: 'New Lead',
+          source: leadData.utm_source || 'website',
+          timestamp: new Date().toISOString(),
+        }
+      : {
+          // GHL Contacts API format
+          locationId: locationId,
+          firstName: leadData.name?.split(' ')[0] || leadData.name,
+          lastName: leadData.name?.split(' ').slice(1).join(' ') || '',
+          email: leadData.email,
+          phone: leadData.phone,
+          source: leadData.utm_source || 'website',
+          tags: ['quote-request', 'ad-lead'],
+          customFields: [
+            { id: 'service_type', value: leadData.serviceType || 'unknown' },
+            { id: 'utm_source', value: leadData.utm_source || '' },
+            { id: 'utm_campaign', value: leadData.utm_campaign || '' },
+            { id: 'device', value: leadData.device || '' },
+            { id: 'event_id', value: leadData.event_id || '' },
+          ],
+        };
+    
+    const response = await fetch(endpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        ...leadData,
-        pipeline: 'Quote Request',
-        stage: 'New Lead',
-        source: leadData.utm_source || 'website',
-        timestamp: new Date().toISOString(),
-      }),
+      headers,
+      body: JSON.stringify(payload),
       signal: controller.signal,
     });
     
@@ -103,6 +138,7 @@ async function sendToGHL(leadData: any, retryCount = 0): Promise<{ success: bool
     }
     
     console.log('[GHL] Lead sent successfully', { 
+      method: useWebhook ? 'webhook' : 'api',
       event_id: leadData.event_id, 
       source: leadData.source,
       retryCount 
