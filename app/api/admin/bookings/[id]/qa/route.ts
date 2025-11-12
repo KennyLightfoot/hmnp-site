@@ -18,8 +18,11 @@ const qaUpdateSchema = z.object({
 })
 
 async function ensureAdmin(session: Awaited<ReturnType<typeof getServerSession>>) {
-  const role = (session?.user as any)?.role as Role | undefined
-  if (!session?.user || (role !== Role.ADMIN && role !== Role.STAFF)) {
+  if (!session || !(session as any)?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const role = ((session as any).user as any)?.role as Role | undefined
+  if (role !== Role.ADMIN && role !== Role.STAFF) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   return null
