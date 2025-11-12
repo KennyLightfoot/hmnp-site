@@ -1,5 +1,16 @@
 ## 2025-11-12
 
+- docs(sop): add `docs/SOP_v2.md`, dispatch playbook, QA checklists, and contractor onboarding kit for HMNP SOP v2 rollout
+- feat(lps): refresh `/lp/mobile-notary`, `/lp/ron`, `/lp/mobile-priority`, and `/lp/gmb-contact` with paid-search copy, form routing, and review messaging
+- feat(lps): add `/lp/lsa-mobile-notary` and align Google Ads, GBP, LSA, and Yelp landing pages with SOP v2 pricing, deposits, and availability messaging
+- feat(ads): enhance `LeadForm` tracking overrides, pass estimated values, and create real GHL opportunities for `/api/submit-ad-lead` submissions
+- feat(automation): hook booking status changes into GHL follow-up engine, enable deposit/reminder/review sequences, and enrich reminders with reschedule/cancel/payment links
+- feat(contractors): weight auto-dispatch by preferred ZIPs/availability windows, expand notary profiles, and ship admin payout summaries via `/api/admin/payouts`
+- feat(analytics): publish `/api/analytics/weekly-report`, wire admin RUM SLO dashboard, and surface weekly owner snapshot metrics
+- perf(bundle): lazily load estimator/testimonials on paid LPs and add `docs/performance/BUNDLE_CUT_LIST.md` to track future bundle trims
+- feat(dispatch): introduce auto-dispatch engine with distance scoring, new `DispatchAssignment` model, scheduler job, and booking hook
+- feat(payouts): add contractor payout ledger models, weekly payout generator, and scheduler integration
+- feat(seo): publish 10 new service-area pages (Baytown, Channelview, Humble, Kingwood, Katy, Cypress, Spring, Tomball, Richmond, Rosenberg) with city data/FAQ content
 - chore(phone): unify call CTAs through `lib/phone` helpers across FAQ, contact, service areas, footer, layouts, and CTA components; add text CTA coverage with SMS helper
 - feat(phone): add `getSmsHref`/formatters, expose SMS/DNI env vars, and document in environment examples plus Vercel production config
 - chore(analytics): enrich StickyMobileCTA GTM events with dynamic tel payload and update GTM checklist to reference `getBusinessTel`

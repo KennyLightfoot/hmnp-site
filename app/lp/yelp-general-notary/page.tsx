@@ -14,12 +14,15 @@ function YelpLeadForm() {
     cf_ad_campaign_name: "Yelp General Notary Q3",
     cf_ad_id: searchParams?.get("ad_id") || "", 
     cf_ad_group_id: searchParams?.get("adgroup_id") || "",
+    estimated_value: "90",
   };
 
   const adSpecificTags = [
     "AdLead:Yelp",
     "AdCampaign:YelpGeneralNotaryQ3",
-    "Status:New_Ad_Lead"
+    "Status:New_Ad_Lead",
+    "ServiceInterest:MobileNotary",
+    "Channel:Yelp"
   ];
 
   return (
@@ -32,6 +35,13 @@ function YelpLeadForm() {
       formTitle="Book Houston's Top-Rated Notary"
       formDescription="Join hundreds of satisfied Yelp reviewers - get professional mobile notary service at your location."
       submitButtonText="Book My Appointment Now"
+      trackingOverrides={{
+        lead_source: "yelp",
+        service_type: "mobile-notary",
+        estimated_value: 90,
+        campaign_name: "Yelp General Notary Q3",
+        ad_platform: "yelp",
+      }}
     />
   );
 }

@@ -1,6 +1,8 @@
 import Link from "next/link"
+import { Suspense } from "react"
 import SameDaySlotCounter from "@/components/urgency/same-day-slot-counter"
 import ServiceSchema from "@/components/schema/ServiceSchema"
+import LeadForm from "@/components/lead-form"
 
 export const metadata = {
   title: "Priority Mobile Notary – 60–120 Minutes In‑Zone | From $125",
@@ -10,6 +12,21 @@ export const metadata = {
 export const dynamic = "force-static"
 
 export default function MobilePriorityPage() {
+  const priorityLeadFormProps = {
+    apiEndpoint: "/api/submit-ad-lead",
+    tags: ["AdLead:GoogleLSA", "ServiceInterest:MobileNotary", "Channel:GoogleLSA"],
+    customFields: {
+      cf_ad_platform: "GoogleLSA",
+      cf_ad_campaign_name: "Google LSA Priority Mobile",
+      cf_ad_id: "google-lsa-priority",
+    },
+    campaignName: "Google LSA Priority Mobile",
+    successRedirectUrl: "/thank-you-ads",
+    submitButtonText: "Hold My Priority Slot",
+    formTitle: "Need a Notary in the Next 2 Hours?",
+    formDescription: "Provide the appointment details and we’ll dispatch within 60–120 minutes when available.",
+  } as const
+
   return (
     <div className="min-h-screen bg-white">
       <header className="bg-gradient-to-r from-secondary/95 to-secondary text-white">
@@ -81,6 +98,24 @@ export default function MobilePriorityPage() {
                 <li>31–40 miles: +$45</li>
                 <li>41–50 miles: +$65 (max range)</li>
               </ul>
+            </div>
+          </div>
+        </section>
+
+        <section id="form" className="py-16 bg-slate-50 border-t">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-serif font-semibold text-secondary">Priority Dispatch Request</h2>
+                <p className="mt-3 text-lg text-slate-600">
+                  Google Local Services lead? Submit the form and dispatch confirms via text in minutes (7 AM – 9 PM).
+                </p>
+              </div>
+              <div className="bg-white border border-slate-200 rounded-2xl shadow-xl p-6 md:p-10">
+                <Suspense fallback={<div className="text-center py-10 text-slate-500">Loading priority request form…</div>}>
+                  <LeadForm {...priorityLeadFormProps} />
+                </Suspense>
+              </div>
             </div>
           </div>
         </section>

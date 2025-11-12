@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { dmSerifDisplay, inter } from './fonts'
 import "./globals.css"
 import { Providers } from "./providers"
@@ -12,6 +12,12 @@ import SchemaInitializer from '@/components/SchemaInitializer'
 import AttributionInit from '@/components/analytics/AttributionInit'
 
 // Fonts now provided via CSS variables for Tailwind
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+}
 
 export const metadata: Metadata = {
   title: {
@@ -65,8 +71,46 @@ export const metadata: Metadata = {
   verification: {
     google: 'your-google-verification-code',
   },
+  manifest: "/manifest.json",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#002147" },
+    { media: "(prefers-color-scheme: dark)", color: "#002147" },
+  ],
+  icons: {
+    icon: [
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180" },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+  },
 }
 
+const ORGANIZATION_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": "https://houstonmobilenotarypros.com/#organization",
+  name: "Houston Mobile Notary Pros LLC",
+  url: "https://houstonmobilenotarypros.com",
+  logo: "https://houstonmobilenotarypros.com/logo.png",
+  sameAs: [
+    "https://www.facebook.com/HoustonMobileNotaryPros/",
+  ],
+  contactPoint: [
+    {
+      "@type": "ContactPoint",
+      telephone: "+1-832-617-4285",
+      contactType: "customer service",
+      areaServed: "US",
+      availableLanguage: ["en"]
+    }
+  ]
+}
 // Lazy load heavy components
 const LazyHeader = dynamic(() => import('@/components/header'), {
   loading: () => <div className="h-16 bg-white border-b animate-pulse" />
@@ -142,6 +186,10 @@ export default function RootLayout({
         <Suspense>
           <Analytics />
         </Suspense>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_SCHEMA) }}
+        />
         <AttributionInit />
         {/* Initialize enhanced schema in browser */}
         <SchemaInitializer />
@@ -177,7 +225,7 @@ export default function RootLayout({
             <LazyHeader />
           </Suspense>
           
-          <main className="min-h-screen">
+          <main className="min-h-dvh">
             <Suspense fallback={
               <div className="container mx-auto px-4 py-12 space-y-6 animate-pulse">
                 <div className="h-10 bg-gray-200 rounded-lg" />

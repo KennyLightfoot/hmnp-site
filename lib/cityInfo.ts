@@ -96,4 +96,72 @@ export const CITY_INFO: Record<string, CityInfo> = {
     zipCodes: ["77511", "77578", "77584"],
     landmarks: ["Brazoria National Wildlife Refuge", "Brazoria County Courthouse", "Angleton Fairgrounds"],
   },
+  baytown: {
+    zipCodes: ["77520", "77521", "77523"],
+    landmarks: ["Baytown Nature Center", "Houston Methodist Baytown", "Pirates Bay Waterpark"],
+  },
+  channelview: {
+    zipCodes: ["77530"],
+    landmarks: ["Sheldon Lake State Park", "San Jacinto River", "Channelview ISD Stadium"],
+  },
+  humble: {
+    zipCodes: ["77338", "77346", "77396"],
+    landmarks: ["Deerbrook Mall", "Humble Civic Center", "Lake Houston"],
+  },
+  kingwood: {
+    zipCodes: ["77339", "77345"],
+    landmarks: ["Kingwood Town Center", "East End Park", "Kingwood Medical Center"],
+  },
+  katy: {
+    zipCodes: ["77449", "77450", "77494"],
+    landmarks: ["Katy Mills Mall", "Typhoon Texas", "Memorial Hermann Katy"],
+  },
+  cypress: {
+    zipCodes: ["77429", "77433"],
+    landmarks: ["Towne Lake Boardwalk", "Bridgeland", "Cypress Park & Ride"],
+  },
+  spring: {
+    zipCodes: ["77373", "77379", "77388"],
+    landmarks: ["Old Town Spring", "Mercer Botanic Gardens", "Hurricane Harbor Splashtown"],
+  },
+  tomball: {
+    zipCodes: ["77375", "77377"],
+    landmarks: ["Tomball Regional Medical Center", "Historic Depot Plaza", "Burroughs Park"],
+  },
+  richmond: {
+    zipCodes: ["77469", "77406", "77407"],
+    landmarks: ["George Ranch Historical Park", "OakBend Medical Center", "Downtown Richmond Square"],
+  },
+  rosenberg: {
+    zipCodes: ["77471"],
+    landmarks: ["Brazos Town Center", "Fort Bend County Fairgrounds", "Rosenberg Railroad Museum"],
+  },
+  "the-woodlands": {
+    zipCodes: ["77380", "77381", "77382"],
+    landmarks: ["The Woodlands Mall", "Market Street", "Memorial Hermann The Woodlands"],
+  },
+  "river-oaks": {
+    zipCodes: ["77019", "77027"],
+    landmarks: ["River Oaks District", "Highland Village", "River Oaks Country Club"],
+  },
+  "west-university": {
+    zipCodes: ["77005", "77030"],
+    landmarks: ["Rice University", "West University Place City Hall", "Texas Children's Hospital"],
+  },
+  bellaire: {
+    zipCodes: ["77401", "77081"],
+    landmarks: ["Evelyn's Park", "Bellaire City Hall", "Houston Methodist Bellaire"],
+  },
+  "midtown-houston": {
+    zipCodes: ["77002", "77006"],
+    landmarks: ["Midtown Park", "Ensemble Theatre", "Bagby Park"],
+  },
+  "medical-center": {
+    zipCodes: ["77030", "77054"],
+    landmarks: ["MD Anderson Cancer Center", "Texas Children's Hospital", "Houston Methodist Hospital"],
+  },
+  "houston-heights": {
+    zipCodes: ["77008", "77009"],
+    landmarks: ["Heights Mercantile", "White Oak Music Hall", "Lawndale Art Center Heights"],
+  },
 }

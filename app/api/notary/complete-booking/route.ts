@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { Role, BookingStatus } from '@prisma/client';
+import { triggerStatusChangeFollowUps } from '@/lib/follow-up-automation';
 
 export async function POST(request: NextRequest) {
   try {
@@ -78,11 +79,15 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // TODO: In a production system, you might want to:
-    // 1. Send completion notification to client
-    // 2. Update GHL contact status
-    // 3. Trigger follow-up workflows
-    // 4. Log the completion in audit trail
+    try {
+      await triggerStatusChangeFollowUps(
+        updatedBooking.id,
+        BookingStatus.COMPLETED,
+        booking.status
+      );
+    } catch (automationError) {
+      console.error('Error triggering follow-up automation:', automationError);
+    }
 
     return NextResponse.json({
       success: true,

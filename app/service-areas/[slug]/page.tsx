@@ -11,6 +11,8 @@ import ServiceAreaJSONLD from "@/components/service-area-jsonld"
 import FaqSection from "@/components/faq-section"
 import { notFound } from "next/navigation"
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://houstonmobilenotarypros.com"
+
 interface PageProps {
   params: Promise<{ slug: string }>
 }
@@ -44,9 +46,37 @@ export default async function ServiceAreaDynamicPage({ params }: PageProps) {
   if (!area) notFound()
   const info = CITY_INFO[resolvedParams.slug]
   const faqs = CITY_FAQS[resolvedParams.slug] || []
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: `${BASE_URL}/`
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Service Areas",
+        item: `${BASE_URL}/service-areas`
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: area.cityName,
+        item: `${BASE_URL}/service-areas/${area.slug}`
+      }
+    ]
+  }
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <ServiceAreaJSONLD area={area} faqs={faqs} />
       <section className="relative py-20 md:py-28 bg-[#002147] text-white text-center overflow-hidden">
         <div className="container mx-auto px-4 relative z-10">

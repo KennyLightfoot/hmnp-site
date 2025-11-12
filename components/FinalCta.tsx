@@ -18,6 +18,25 @@ export default function FinalCta() {
             <Button className="bg-primary hover:bg-primary/90 h-12 px-6">Call {"(dynamic)"}</Button>
           </TelLink>
         </div>
+        <p className="mt-6 text-sm text-white/80">
+          Prefer to explore first? Browse our{" "}
+          <Link href="/services" className="underline text-white hover:text-white/80">
+            mobile notary services
+          </Link>
+          , compare{" "}
+          <Link href="/pricing" className="underline text-white hover:text-white/80">
+            transparent pricing
+          </Link>
+          , or find availability in{" "}
+          <Link href="/service-areas/league-city" className="underline text-white hover:text-white/80">
+            League City
+          </Link>{" "}
+          and{" "}
+          <Link href="/service-areas/pearland" className="underline text-white hover:text-white/80">
+            Pearland
+          </Link>
+          .
+        </p>
       </div>
     </section>
   )

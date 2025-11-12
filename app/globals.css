@@ -18,6 +18,11 @@ body {
   background: white;
 }
 
+html, body {
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
 /* Apply serif font to headings */
 h1, h2, h3 { font-family: var(--font-dm-serif-display); }
 

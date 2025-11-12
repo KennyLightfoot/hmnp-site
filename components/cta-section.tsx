@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Phone, Mail } from "lucide-react"
 import { getBusinessPhoneFormatted, getBusinessTel, getSmsHref, getSmsNumberFormatted } from "@/lib/phone"
+import { track } from "@/app/lib/analytics"
 
 export default function CtaSection() {
   return (
@@ -46,7 +47,13 @@ export default function CtaSection() {
               <p className="text-sm text-gray-300">Available 7am-9pm daily</p>
               <p className="text-xs text-gray-300 mt-2">
                 Prefer texting?{" "}
-                <a href={getSmsHref()} className="underline">
+                <a
+                  href={getSmsHref()}
+                  className="underline"
+                  onClick={() => {
+                    try { track('sms_click', { location: 'cta_section', sms: getSmsNumberFormatted() }) } catch {}
+                  }}
+                >
                   Text {getSmsNumberFormatted()}
                 </a>
               </p>

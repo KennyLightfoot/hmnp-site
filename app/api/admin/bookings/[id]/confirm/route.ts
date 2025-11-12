@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { getQueues } from '@/lib/queue/config';
 import { prisma } from '@/lib/db';
 import { Role, BookingStatus } from '@prisma/client';
-import { BookingAutomationService } from '@/lib/booking-automation';
+import { triggerStatusChangeFollowUps } from '@/lib/follow-up-automation';
 
 export async function POST(
   request: Request,
@@ -39,6 +39,7 @@ export async function POST(
     }
 
     // Update the booking status to CONFIRMED
+    const previousStatus = booking.status;
     const updatedBooking = await prisma.booking.update({
       where: { id: bookingId },
       data: { 
@@ -61,6 +62,16 @@ export async function POST(
         serviceName: booking.service?.name,
         scheduledAt: booking.scheduledDateTime,
       });
+    }
+
+    try {
+      await triggerStatusChangeFollowUps(
+        updatedBooking.id,
+        BookingStatus.CONFIRMED,
+        previousStatus
+      );
+    } catch (automationError) {
+      console.error('Failed to trigger confirmation follow-up automation:', automationError);
     }
 
     // Create a system log entry

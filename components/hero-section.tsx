@@ -182,18 +182,25 @@ export default function HeroSection() {
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Input
+                  type="text"
                   value={quoteName}
                   onChange={(event) => setQuoteName(event.target.value)}
                   placeholder="Your name"
                   className="bg-white text-gray-900 placeholder:text-gray-500"
                   aria-label="Your name"
+                  autoComplete="name"
+                  enterKeyHint="next"
                 />
                 <Input
+                  type="text"
                   value={quoteContact}
                   onChange={(event) => setQuoteContact(event.target.value)}
                   placeholder="Phone or email"
                   className="bg-white text-gray-900 placeholder:text-gray-500"
                   aria-label="Phone or email"
+                  autoComplete="tel"
+                  inputMode="tel"
+                  enterKeyHint="send"
                 />
                 <Button
                   type="submit"

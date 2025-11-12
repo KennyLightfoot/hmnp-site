@@ -8,6 +8,8 @@ import { SERVICE_AREAS } from "@/lib/serviceAreas"
 import TrustBadges from "@/components/ui/TrustBadges"
 import { getBusinessPhoneFormatted, getBusinessTel } from "@/lib/phone"
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://houstonmobilenotarypros.com"
+
 export const metadata: Metadata = {
   title: "Mobile Notary Service Areas | Houston Mobile Notary Pros",
   description:
@@ -70,9 +72,32 @@ const enhancedServiceAreas = [
   }
 ]
 
+const serviceAreasBreadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: `${BASE_URL}/`
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "Service Areas",
+      item: `${BASE_URL}/service-areas`
+    }
+  ]
+}
+
 export default function ServiceAreasIndexPage() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-dvh">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceAreasBreadcrumbSchema) }}
+      />
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-[#002147]/5 via-[#A52A2A]/5 to-[#002147]/5 py-20">
         <div className="container mx-auto px-4 text-center">

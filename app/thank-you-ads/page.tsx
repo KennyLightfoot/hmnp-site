@@ -1,7 +1,15 @@
 "use client";
 
+import type { Metadata } from "next";
 import { useEffect } from 'react';
 import { getBusinessTel, getBusinessPhoneFormatted } from '@/lib/phone';
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function ThankYouAdsPage() {
   useEffect(() => {

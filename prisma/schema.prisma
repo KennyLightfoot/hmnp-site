@@ -92,6 +92,8 @@ model Booking {
   User_Booking_signerIdToUser User?                  @relation("Booking_signerIdToUser", fields: [signerId], references: [id])
   NotarizationDocument        NotarizationDocument[]
   uploadedDocuments           BookingUploadedDocument[]
+  dispatchAssignments         DispatchAssignment[]
+  qaRecord                    BookingQARecord?
   NotificationLog             NotificationLog[]
   payments                    Payment[]
   PricingAuditLog             PricingAuditLog[]
@@ -144,6 +146,27 @@ model BookingUploadedDocument {
   @@index([bookingId])
 }
 
+model BookingQARecord {
+  id                          String    @id @default(cuid())
+  bookingId                   String    @unique
+  qaUserId                    String?
+  status                      QAStatus  @default(PENDING)
+  journalEntryVerified        Boolean   @default(false)
+  sealPhotoVerified           Boolean   @default(false)
+  documentCountVerified       Boolean   @default(false)
+  clientConfirmationVerified  Boolean   @default(false)
+  closeoutFormVerified        Boolean   @default(false)
+  notes                       String?
+  followUpAction              String?
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
+
+  booking                     Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  qaUser                      User?     @relation(fields: [qaUserId], references: [id])
+
+  @@index([qaUserId])
+}
+
 model Payment {
   id              String          @id @default(cuid())
   bookingId       String
@@ -164,6 +187,41 @@ model Payment {
   @@index([status])
   @@index([paymentIntentId])
   @@index([provider])
+}
+
+model ContractorPayout {
+  id           String                 @id @default(cuid())
+  notaryId     String
+  periodStart  DateTime
+  periodEnd    DateTime
+  status       ContractorPayoutStatus @default(PENDING)
+  totalAmount  Decimal                @default(0) @db.Decimal(10, 2)
+  generatedAt  DateTime?              @default(now())
+  finalizedAt  DateTime?
+  notes        String?
+  entries      ContractorPayoutEntry[]
+
+  notary       User                   @relation(fields: [notaryId], references: [id])
+
+  @@index([notaryId, periodStart, periodEnd])
+  @@unique([notaryId, periodStart, periodEnd])
+}
+
+model ContractorPayoutEntry {
+  id          String                      @id @default(cuid())
+  payoutId    String
+  bookingId   String?
+  entryType   ContractorPayoutEntryType
+  description String?
+  amount      Decimal                     @db.Decimal(10, 2)
+  metadata    Json?
+  createdAt   DateTime                    @default(now())
+
+  payout      ContractorPayout            @relation(fields: [payoutId], references: [id], onDelete: Cascade)
+  booking     Booking?                    @relation(fields: [bookingId], references: [id])
+
+  @@index([payoutId])
+  @@index([bookingId])
 }
 
 model SupportTicket {
@@ -285,6 +343,10 @@ model User {
   feature_flags                  feature_flags[]
   notary_journal                 notary_journal[]
   notary_profiles                notary_profiles?
+  dispatchAssignmentsAsNotary    DispatchAssignment[]     @relation("DispatchNotary")
+  dispatchAssignmentsCreated     DispatchAssignment[]     @relation("DispatchAssignedBy")
+  contractorPayouts              ContractorPayout[]
+  qaReviews                      BookingQARecord[]
   twoFactor                      UserTwoFactor?
 }
 
@@ -888,10 +950,14 @@ model notary_profiles {
   commission_number       String?   @db.VarChar(50)
   commission_expiry       DateTime? @db.Date
   base_address            String?
+  base_zip                String?   @db.VarChar(10)
   service_radius_miles    Int?      @default(25)
   is_active               Boolean?  @default(true)
   emergency_contact       String?   @db.VarChar(20)
   preferred_service_types String[]
+  preferred_zip_codes     String[]  @default([])
+  preferred_start_hour    Int?      @default(8)
+  preferred_end_hour      Int?      @default(20)
   daily_capacity          Int?      @default(8)
   created_at              DateTime? @default(now()) @db.Timestamptz(6)
   updated_at              DateTime? @default(now()) @db.Timestamptz(6)
@@ -899,6 +965,24 @@ model notary_profiles {
 
   @@index([is_active], map: "idx_notary_profiles_active")
   @@index([user_id], map: "idx_notary_profiles_user_id")
+}
+
+model DispatchAssignment {
+  id           String   @id @default(cuid())
+  bookingId    String
+  notaryId     String
+  assignedById String?
+  assignedAt   DateTime @default(now())
+  score        Float?
+  notes        String?
+
+  Booking    Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  Notary     User    @relation("DispatchNotary", fields: [notaryId], references: [id])
+  assignedBy User?   @relation("DispatchAssignedBy", fields: [assignedById], references: [id])
+
+  @@index([bookingId])
+  @@index([notaryId])
+  @@index([assignedAt])
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -974,6 +1058,27 @@ enum PaymentMethod {
   CARD
   ACH
   OTHER
+}
+
+enum ContractorPayoutStatus {
+  PENDING
+  APPROVED
+  PAID
+}
+
+enum ContractorPayoutEntryType {
+  BASE
+  TRAVEL_SHARE
+  URGENCY_BONUS
+  WITNESS_SPLIT
+  ADJUSTMENT
+}
+
+enum QAStatus {
+  PENDING
+  IN_PROGRESS
+  FLAGGED
+  COMPLETE
 }
 
 enum DiscountType {

@@ -10,7 +10,13 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2">
             <Link href="/" className="inline-flex items-center gap-3">
-              <img src="/logo.png" alt="Houston Mobile Notary Pros" className="h-10 w-auto" />
+              <img
+                src="/logo.png"
+                alt="Houston Mobile Notary Pros"
+                className="h-10 w-auto"
+                loading="lazy"
+                decoding="async"
+              />
               <span className="sr-only">Houston Mobile Notary Pros</span>
             </Link>
             <p className="mt-4 text-sm text-secondary/80 max-w-sm">
@@ -39,17 +45,19 @@ export default function Footer() {
             <h4 className="text-sm font-semibold text-secondary mb-3">Areas</h4>
             <ul className="space-y-2 text-sm text-secondary/80">
               {[
-                "Texas City",
-                "Webster",
-                "League City",
-                "Pearland",
-                "Sugar Land",
-              ].map((city) => {
-                const slug = city.toLowerCase().replace(/ /g, "-")
-                return (
-                  <li key={city}><Link href={`/service-areas/${slug}`} className="hover:text-secondary">{city}</Link></li>
-                )
-              })}
+                { label: "Houston", slug: "houston" },
+                { label: "Texas City", slug: "texas-city" },
+                { label: "League City", slug: "league-city" },
+                { label: "Pearland", slug: "pearland" },
+                { label: "Sugar Land", slug: "sugar-land" },
+                { label: "Pasadena", slug: "pasadena" },
+              ].map((area) => (
+                <li key={area.slug}>
+                  <Link href={`/service-areas/${area.slug}`} className="hover:text-secondary">
+                    {area.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>

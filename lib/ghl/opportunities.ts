@@ -10,8 +10,8 @@ export async function createOpportunity(contactId: string, opportunityData: any,
   const locationIdToUse = locationId || LOCATION_ID
   if (!locationIdToUse) throw new Error('No location ID provided or available in environment.')
   const payload: any = { locationId: locationIdToUse, contactId, ...opportunityData }
-  if (PIPELINE_ID) payload.pipelineId = PIPELINE_ID
-  if (PIPELINE_STAGE_ID) payload.pipelineStageId = PIPELINE_STAGE_ID
+  if (!payload.pipelineId && PIPELINE_ID) payload.pipelineId = PIPELINE_ID
+  if (!payload.pipelineStageId && PIPELINE_STAGE_ID) payload.pipelineStageId = PIPELINE_STAGE_ID
   try {
     return await ghlApiRequest('/opportunities', { method: 'POST', body: JSON.stringify(payload) })
   } catch (error) {

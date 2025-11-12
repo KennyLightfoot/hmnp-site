@@ -1,9 +1,17 @@
 "use client";
 
+import type { Metadata } from "next";
 import { NextPage } from 'next';
 import Link from 'next/link';
 import { CheckCircle, ExternalLink, Home, MessageSquare, Users } from 'lucide-react'; // Added more icons
 import { useEffect } from 'react'; // For tracking scripts
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 const ThankYouFacebookPage: NextPage = () => {
   // Placeholder for Facebook Pixel event tracking (e.g., Lead event)

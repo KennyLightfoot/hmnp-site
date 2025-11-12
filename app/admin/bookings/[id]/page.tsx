@@ -7,6 +7,7 @@ import { notFound, redirect } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import DeleteUploadedDocButton from '@/components/admin/DeleteUploadedDocButton'
+import { QAChecklistCard } from '@/components/admin/QAChecklistCard'
 
 export default async function AdminBookingDetail({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
@@ -22,7 +23,8 @@ export default async function AdminBookingDetail({ params }: { params: Promise<{
       service: true,
       uploadedDocuments: {
         orderBy: { uploadedAt: 'desc' }
-      }
+      },
+      qaRecord: true,
     }
   })
   if (!booking) return notFound()
@@ -34,7 +36,23 @@ export default async function AdminBookingDetail({ params }: { params: Promise<{
         <p className="text-sm text-muted-foreground">{booking.service?.name} · {booking.status}</p>
       </div>
 
-      <Card>
+      <div className="grid lg:grid-cols-2 gap-6">
+        <QAChecklistCard
+          bookingId={booking.id}
+          initialQa={booking.qaRecord ? {
+            status: booking.qaRecord.status,
+            journalEntryVerified: booking.qaRecord.journalEntryVerified,
+            sealPhotoVerified: booking.qaRecord.sealPhotoVerified,
+            documentCountVerified: booking.qaRecord.documentCountVerified,
+            clientConfirmationVerified: booking.qaRecord.clientConfirmationVerified,
+            closeoutFormVerified: booking.qaRecord.closeoutFormVerified,
+            notes: booking.qaRecord.notes,
+            followUpAction: booking.qaRecord.followUpAction,
+            updatedAt: booking.qaRecord.updatedAt?.toISOString()
+          } : null}
+        />
+
+        <Card>
         <CardHeader>
           <CardTitle>Uploaded Documents</CardTitle>
           <CardDescription>Files provided during booking (in-person)</CardDescription>
@@ -62,7 +80,8 @@ export default async function AdminBookingDetail({ params }: { params: Promise<{
             </div>
           )}
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   )
 }

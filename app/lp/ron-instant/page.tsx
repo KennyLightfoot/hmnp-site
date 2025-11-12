@@ -114,9 +114,9 @@ export default function RonInstantPage() {
           <div className="container mx-auto px-4">
             <h3 className="text-2xl font-semibold text-secondary mb-6">In‑product screenshots</h3>
             <div className="grid md:grid-cols-3 gap-6 text-sm text-gray-700">
-              <img src="/screenshots/booking.svg" alt="Booking flow" className="border rounded-lg" />
-              <img src="/screenshots/verification.svg" alt="Verification flow" className="border rounded-lg" />
-              <img src="/screenshots/session.svg" alt="RON session" className="border rounded-lg" />
+              <img src="/screenshots/booking.svg" alt="Booking flow" className="border rounded-lg" loading="lazy" decoding="async" />
+              <img src="/screenshots/verification.svg" alt="Verification flow" className="border rounded-lg" loading="lazy" decoding="async" />
+              <img src="/screenshots/session.svg" alt="RON session" className="border rounded-lg" loading="lazy" decoding="async" />
             </div>
           </div>
         </section>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { upsertContact, GhlContact, GhlCustomField } from '@/lib/ghl';
+import { createOpportunity as createGhlOpportunity } from '@/lib/ghl/opportunities';
 import { withRateLimit } from '@/lib/security/rate-limiting';
 import { z } from 'zod';
 
@@ -30,16 +31,6 @@ const missingFields = Object.entries(GHL_CUSTOM_FIELDS)
 if (missingFields.length > 0) {
   console.warn(`⚠️ Missing GHL custom field IDs: ${missingFields.join(', ')}`);
   console.warn('Ad tracking may be incomplete without these environment variables');
-}
-
-// Placeholder for opportunity creation
-async function createOpportunity(opportunityData: Record<string, unknown>): Promise<Record<string, unknown>> {
-  console.log("Placeholder: createOpportunity called with", opportunityData);
-  if (!process.env.GHL_AD_LEADS_PIPELINE_ID || !process.env.GHL_NEW_AD_LEAD_STAGE_ID) {
-    console.warn('Skipping opportunity creation: Pipeline/Stage IDs not configured in .env');
-    return { id: 'mock_opportunity_id_skipped_env_config' };
-  }
-  return { id: 'mock_opportunity_id_created' }; 
 }
 
 const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY;
@@ -186,15 +177,44 @@ export const POST = withRateLimit('public', 'submit_ad_lead')(async (request: Ne
     const newAdLeadStageId = process.env.GHL_NEW_AD_LEAD_STAGE_ID;
 
     if (adLeadsPipelineId && newAdLeadStageId) {
+      const serviceInterestTag = Array.isArray(tags)
+        ? tags.find(tag => tag.startsWith('ServiceInterest:'))
+        : undefined;
+      const normalizedServiceInterest = serviceInterestTag
+        ? serviceInterestTag.split(':')[1]?.trim().toLowerCase()
+        : undefined;
+
+      let estimatedValue = 75;
+      if (customFieldsFromProps?.estimated_value) {
+        const parsed = Number(customFieldsFromProps.estimated_value);
+        if (!Number.isNaN(parsed)) {
+          estimatedValue = parsed;
+        }
+      } else if (normalizedServiceInterest === 'ron') {
+        estimatedValue = 45;
+      } else if (
+        normalizedServiceInterest === 'loan signing' ||
+        normalizedServiceInterest === 'loan_signing' ||
+        normalizedServiceInterest === 'loansigning'
+      ) {
+        estimatedValue = 150;
+      } else if (
+        normalizedServiceInterest === 'mobile-notary' ||
+        normalizedServiceInterest === 'mobilenotary'
+      ) {
+        estimatedValue = 95;
+      }
+
       const opportunityData = {
         name: `${firstName || 'Lead'} ${lastName || ''} - ${campaignName || customFieldsFromProps?.cf_ad_platform || 'Ad Campaign'}`.trim(),
         pipelineId: adLeadsPipelineId,
-        stageId: newAdLeadStageId,
+        pipelineStageId: newAdLeadStageId,
         status: 'open',
-        contactId: contactId,
+        source: customFieldsFromProps?.cf_ad_platform || campaignName || 'Ad Campaign',
+        monetaryValue: estimatedValue,
       };
       try {
-        await createOpportunity(opportunityData);
+        await createGhlOpportunity(contactId, opportunityData);
         console.log(`Opportunity created for contact ${contactId} in pipeline ${adLeadsPipelineId}`);
       } catch (oppError) {
         console.error(`Failed to create opportunity for contact ${contactId}:`, oppError);

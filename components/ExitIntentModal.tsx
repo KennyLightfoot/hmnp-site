@@ -57,7 +57,16 @@ export default function ExitIntentModal() {
           }}
           className="flex gap-2"
         >
-          <input name="phone" placeholder="Mobile number" inputMode="tel" className="flex-1 rounded border px-3 py-2" required />
+          <input
+            name="phone"
+            placeholder="Mobile number"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            enterKeyHint="send"
+            className="flex-1 rounded border px-3 py-2"
+            required
+          />
           <button type="submit" className="rounded bg-[#002147] text-white px-4 py-2">Text me</button>
         </form>
         <button className="mt-3 text-sm text-gray-500" onClick={() => setOpen(false)}>No thanks</button>

@@ -62,9 +62,12 @@ const GMBContactPage: NextPage = () => {
             <div className="bg-white p-8 rounded-2xl shadow-2xl border border-slate-200">
               <LeadForm
                 apiEndpoint="/api/submit-ad-lead"
-                tags={["gmb_lead", "organic_search", "direct_contact_inquiry"]}
+                tags={["gmb_lead", "AdLead:GBP", "ServiceInterest:MobileNotary"]}
                 customFields={{
-                  "lead_source": "Google My Business - Contact Page"
+                  cf_ad_platform: "GoogleBusinessProfile",
+                  cf_ad_campaign_name: "GBP Direct Inbound",
+                  cf_ad_id: "google-business-profile",
+                  estimated_value: "85",
                 }}
                 submitButtonText="Get Your Quote Now"
                 formTitle="Quick Contact Form"
@@ -72,6 +75,13 @@ const GMBContactPage: NextPage = () => {
                 successRedirectUrl="/contact/thank-you-gmb"
                 privacyPolicyLink="/privacy"
                 termsOfServiceLink="/terms"
+                trackingOverrides={{
+                  lead_source: "google_business_profile",
+                  service_type: "mobile-notary",
+                  estimated_value: 85,
+                  campaign_name: "GBP Direct Inbound",
+                  ad_platform: "google_business_profile",
+                }}
               />
             </div>
             

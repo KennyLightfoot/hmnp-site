@@ -19,6 +19,8 @@ import { logger } from '@/lib/logger';
 import { getBullQueueClient } from '@/lib/bullmq';
 import { getQueueClient, getQueueWorker } from '@/lib/queue';
 import { differenceInHours, differenceInMinutes, addHours } from 'date-fns';
+import { autoDispatchPendingBookings } from '@/lib/dispatch/auto-dispatch';
+import { generateWeeklyContractorPayouts } from '@/lib/payouts/payout-service';
 
 interface ScheduledJobConfig {
   name: string;
@@ -129,6 +131,24 @@ export class UnifiedScheduler {
       retryOnFailure: false,
       maxRetries: 0,
       description: 'System health monitoring'
+    },
+    {
+      name: 'auto-dispatch-bookings',
+      schedule: '*/5 * * * *', // Every 5 minutes
+      handler: this.handleAutoDispatch.bind(this),
+      enabled: true,
+      retryOnFailure: true,
+      maxRetries: 2,
+      description: 'Automated notary dispatch for upcoming bookings'
+    },
+    {
+      name: 'weekly-contractor-payouts',
+      schedule: '0 7 * * 1', // Mondays at 07:00
+      handler: this.handleWeeklyPayouts.bind(this),
+      enabled: true,
+      retryOnFailure: true,
+      maxRetries: 1,
+      description: 'Generate contractor payout ledger for previous week'
     }
   ];
   
@@ -559,6 +579,23 @@ export class UnifiedScheduler {
     } catch (error) {
       logger.error('Health check failed', 'UNIFIED_SCHEDULER', error as Error);
     }
+  }
+
+  private async handleAutoDispatch(): Promise<void> {
+    const results = await autoDispatchPendingBookings()
+    const assigned = results.filter((r) => r.assigned).length
+    logger.info('Auto-dispatch run completed', 'UNIFIED_SCHEDULER', {
+      attempted: results.length,
+      assigned,
+    })
+  }
+
+  private async handleWeeklyPayouts(): Promise<void> {
+    const payouts = await generateWeeklyContractorPayouts(new Date())
+    logger.info('Weekly contractor payouts generated', 'UNIFIED_SCHEDULER', {
+      payouts: payouts.length,
+      totalAmount: payouts.reduce((sum, payout) => sum + payout.totalAmount, 0),
+    })
   }
   
   /**

@@ -1,9 +1,17 @@
 "use client";
 
+import type { Metadata } from "next";
 import { NextPage } from 'next';
 import Link from 'next/link';
 import { MailCheck, Home, Users, FileText, MessageCircle } from 'lucide-react'; // Added more relevant icons
 import { useEffect } from 'react';
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 const ThankYouGMBPage: NextPage = () => {
   // Placeholder for analytics event tracking (e.g., GMB Contact Form Submission)

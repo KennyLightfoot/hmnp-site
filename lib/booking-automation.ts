@@ -10,6 +10,8 @@ import { prisma } from './prisma';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { logger } from './logger';
 import { redis } from './redis';
+import { triggerStatusChangeFollowUps } from '@/lib/follow-up-automation';
+import { BookingStatus } from '@prisma/client';
 
 // Types for booking automation
 interface BookingCompletionData {
@@ -141,6 +143,7 @@ export class BookingAutomationService {
       }
 
       // Update booking status and details
+      const previousStatus = booking.status as BookingStatus;
       const updatedBooking = await prisma.booking.update({
         where: { id: bookingId },
         data: {
@@ -180,7 +183,7 @@ export class BookingAutomationService {
       });
 
       // Trigger post-completion workflows
-      await this.triggerPostCompletionWorkflows(updatedBooking, 'manual');
+      await this.triggerPostCompletionWorkflows(updatedBooking, 'manual', previousStatus);
 
       logger.info('Manual completion successful', {
         bookingId,
@@ -239,7 +242,8 @@ export class BookingAutomationService {
     logger.info('Auto-completing by scheduled time', { bookingId: booking.id });
 
     // Update booking to completed
-    await prisma.booking.update({
+    const previousStatus = booking.status as BookingStatus | undefined;
+    const updatedBooking = await prisma.booking.update({
       where: { id: booking.id },
       data: {
         status: 'COMPLETED',
@@ -248,7 +252,7 @@ export class BookingAutomationService {
       }
     });
 
-    await this.triggerPostCompletionWorkflows(booking, 'auto_time');
+    await this.triggerPostCompletionWorkflows(updatedBooking, 'auto_time', previousStatus);
     return true;
   }
 
@@ -258,7 +262,8 @@ export class BookingAutomationService {
   private static async completeByNotaryCheckin(booking: any, metadata: any): Promise<boolean> {
     logger.info('Auto-completing by notary check-in', { bookingId: booking.id });
 
-    await prisma.booking.update({
+    const previousStatus = booking.status as BookingStatus | undefined;
+    const updatedBooking = await prisma.booking.update({
       where: { id: booking.id },
       data: {
         status: 'COMPLETED',
@@ -268,7 +273,7 @@ export class BookingAutomationService {
       }
     });
 
-    await this.triggerPostCompletionWorkflows(booking, 'auto_checkin');
+    await this.triggerPostCompletionWorkflows(updatedBooking, 'auto_checkin', previousStatus);
     return true;
   }
 
@@ -278,7 +283,8 @@ export class BookingAutomationService {
   private static async completeByDocumentUpload(booking: any, metadata: any): Promise<boolean> {
     logger.info('Auto-completing by document upload', { bookingId: booking.id });
 
-    await prisma.booking.update({
+    const previousStatus = booking.status as BookingStatus | undefined;
+    const updatedBooking = await prisma.booking.update({
       where: { id: booking.id },
       data: {
         status: 'COMPLETED',
@@ -287,7 +293,7 @@ export class BookingAutomationService {
       }
     });
 
-    await this.triggerPostCompletionWorkflows(booking, 'auto_documents');
+    await this.triggerPostCompletionWorkflows(updatedBooking, 'auto_documents', previousStatus);
     return true;
   }
 
@@ -299,7 +305,8 @@ export class BookingAutomationService {
 
     // Only auto-complete if it's a prepaid service
     if (booking.paymentStatus === 'COMPLETED' && booking.balanceDue <= 0) {
-      await prisma.booking.update({
+      const previousStatus = booking.status as BookingStatus | undefined;
+      const updatedBooking = await prisma.booking.update({
         where: { id: booking.id },
         data: {
           status: 'COMPLETED',
@@ -308,7 +315,7 @@ export class BookingAutomationService {
         }
       });
 
-      await this.triggerPostCompletionWorkflows(booking, 'auto_payment');
+      await this.triggerPostCompletionWorkflows(updatedBooking, 'auto_payment', previousStatus);
       return true;
     }
 
@@ -343,7 +350,7 @@ export class BookingAutomationService {
   /**
    * Trigger workflows after completion
    */
-  private static async triggerPostCompletionWorkflows(booking: any, completionType: string): Promise<void> {
+  private static async triggerPostCompletionWorkflows(booking: any, completionType: string, previousStatus?: BookingStatus): Promise<void> {
     try {
       // Cache key for workflow tracking
       const workflowKey = `completion_workflows:${booking.id}`;
@@ -387,6 +394,19 @@ export class BookingAutomationService {
         successfulWorkflows: results.filter(r => r.status === 'fulfilled').length,
         failedWorkflows: results.filter(r => r.status === 'rejected').length
       });
+
+      try {
+        await triggerStatusChangeFollowUps(
+          booking.id,
+          BookingStatus.COMPLETED,
+          previousStatus
+        );
+      } catch (followUpError) {
+        logger.warn('Failed to trigger follow-up automation after completion', {
+          bookingId: booking.id,
+          error: getErrorMessage(followUpError)
+        });
+      }
 
     } catch (error) {
       logger.error('Failed to trigger post-completion workflows', {

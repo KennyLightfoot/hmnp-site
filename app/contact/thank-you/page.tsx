@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { CheckCircle } from 'lucide-react';
 import type { Metadata } from "next";
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: "Message Sent | Houston Mobile Notary Pros",
@@ -14,6 +15,16 @@ export const metadata: Metadata = {
 export default function ContactThankYouPage() {
   return (
     <div className="container mx-auto px-4 py-16 flex justify-center">
+      <Script
+        id="contact-thankyou-conversions"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            try { if (window.fbq) { window.fbq('track', 'Lead'); } } catch(e) {}
+            try { if (window.gtag) { window.gtag('event', 'generate_lead', { event_category: 'lead', event_label: 'contact_form' }); } } catch(e) {}
+          `,
+        }}
+      />
       <div className="max-w-lg w-full bg-white p-8 md:p-12 rounded-lg shadow-lg text-center border border-gray-200">
         <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-6" />
         <h1 className="text-3xl font-bold text-[#002147] mb-4">Thank You!</h1>

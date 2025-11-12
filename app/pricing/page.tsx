@@ -9,6 +9,8 @@ import PricingFAQ from "@/components/pricing/PricingFAQ"
 import StickyMobileCTA from "@/components/ui/StickyMobileCTA"
 import PricingFunnelTracker from "@/components/analytics/PricingFunnelTracker"
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://houstonmobilenotarypros.com"
+
 const SimplePricingCalculator = dynamic(() => import("@/components/pricing/SimplePricingCalculator"), {
   loading: () => (
     <div className="h-64 w-full rounded-2xl border border-dashed border-gray-200 bg-gray-100 animate-pulse" />
@@ -141,12 +143,35 @@ const pricingSchema = {
   },
 }
 
+const pricingBreadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: `${BASE_URL}/`
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "Pricing",
+      item: `${BASE_URL}/pricing`
+    }
+  ]
+}
+
 export default function PricingPage() {
   return (
-    <main className="min-h-screen pb-28 md:pb-0">
+    <main className="min-h-dvh pb-28 md:pb-0">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingBreadcrumbSchema) }}
       />
       <PricingFunnelTracker />
       {/* Hero Section */}

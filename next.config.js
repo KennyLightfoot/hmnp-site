@@ -249,6 +249,26 @@ const nextConfig = {
         destination: '/services/specialty/:path*',
         permanent: true,
       },
+      {
+        source: '/mobile-notary',
+        destination: '/services/mobile-notary',
+        permanent: true,
+      },
+      {
+        source: '/loan-signing',
+        destination: '/services/loan-signing-specialist',
+        permanent: true,
+      },
+      {
+        source: '/ron',
+        destination: '/services/remote-online-notarization',
+        permanent: true,
+      },
+      {
+        source: '/service-areas/houston-notary',
+        destination: '/service-areas/houston',
+        permanent: true,
+      },
     ];
   },
   

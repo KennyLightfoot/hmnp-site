@@ -62,7 +62,8 @@ interface LeadFormProps {
   termsOfServiceLink?: string;
   // UTMs will be automatically collected and sent.
   // Add any other props you might need, like campaign name for internal logic
-  campaignName?: string; 
+  campaignName?: string;
+  trackingOverrides?: Partial<LeadTrackingData>;
 }
 
 export default function LeadForm({
@@ -78,6 +79,7 @@ export default function LeadForm({
   privacyPolicyLink,
   termsOfServiceLink,
   campaignName,
+  trackingOverrides = {},
 }: LeadFormProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -157,14 +159,63 @@ export default function LeadForm({
       }
 
       // Track form submission for analytics using our comprehensive tracking system
-      const trackingData: LeadTrackingData = {
-        lead_source: customFields.lead_source || campaignName || 'website_form',
-        service_type: customFields.service_type || 'general_notary',
-        estimated_value: 75, // Default service value
-        campaign_name: campaignName,
-        ad_platform: customFields.cf_ad_platform
+      const customFieldsSafe = customFields ?? {};
+
+      const serviceInterestTag = tags.find(tag => tag.startsWith('ServiceInterest:'));
+      const channelTag = tags.find(tag => tag.startsWith('Channel:'));
+      const normalizedServiceInterest = serviceInterestTag
+        ? serviceInterestTag.split(':')[1]?.trim().toLowerCase()
+        : undefined;
+      const normalizedChannel = channelTag ? channelTag.split(':')[1]?.trim().toLowerCase() : undefined;
+
+      const serviceTypeMap: Record<string, string> = {
+        ron: 'remote-online-notarization',
+        'loan signing': 'loan-signing-specialist',
+        'loan_signing': 'loan-signing-specialist',
+        loansigning: 'loan-signing-specialist',
+        'mobilepriority': 'mobile-notary-priority',
+        'mobile-notary': 'mobile-notary',
+        mobilenotary: 'mobile-notary',
+        'standard_notary': 'standard-notary',
       };
-      
+
+      const mappedServiceType = normalizedServiceInterest
+        ? serviceTypeMap[normalizedServiceInterest] || normalizedServiceInterest
+        : undefined;
+
+      const defaultServiceType = trackingOverrides.service_type
+        || (customFieldsSafe.service_type ? customFieldsSafe.service_type : undefined)
+        || mappedServiceType
+        || 'general_notary';
+
+      const defaultLeadSource =
+        trackingOverrides.lead_source
+        || customFieldsSafe.lead_source
+        || normalizedChannel
+        || campaignName
+        || 'website_form';
+
+      const defaultAdPlatform =
+        trackingOverrides.ad_platform
+        || customFieldsSafe.cf_ad_platform
+        || normalizedChannel
+        || 'organic';
+
+      const defaultEstimatedValue =
+        trackingOverrides.estimated_value
+        ?? (customFieldsSafe.estimated_value ? Number(customFieldsSafe.estimated_value) : undefined)
+        ?? (defaultServiceType.includes('loan') ? 150
+            : defaultServiceType.includes('remote') ? 35
+            : 75);
+
+      const trackingData: LeadTrackingData = {
+        lead_source: defaultLeadSource,
+        service_type: defaultServiceType,
+        estimated_value: defaultEstimatedValue,
+        campaign_name: trackingOverrides.campaign_name || campaignName,
+        ad_platform: defaultAdPlatform,
+      };
+
       trackLead(trackingData);
 
     } catch (error) {

@@ -57,11 +57,53 @@ interface AnalyticsData {
   };
 }
 
+interface RumMetric {
+  name: string;
+  count: number;
+  average: number;
+  passRate: number;
+  sloThreshold: number | null;
+  ratings: Record<string, number>;
+}
+
+interface RumSummary {
+  metrics: RumMetric[];
+  sampleCount: number;
+  timeWindowDays: number;
+}
+
+const SLO_TARGET = 0.85;
+
+interface WeeklyReport {
+  periodStart: string;
+  periodEnd: string;
+  bookings: {
+    total: number;
+    completed: number;
+    completionRate: number;
+    averageValue: number;
+  };
+  payments: {
+    total: number;
+    successful: number;
+    successRate: number;
+  };
+  leads: {
+    supportTickets: number;
+  };
+  reviews: {
+    total: number;
+  };
+  rum: RumSummary;
+}
+
 export default function AdminAnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [timeRange, setTimeRange] = useState('30d');
   const [refreshing, setRefreshing] = useState(false);
+  const [rumSummary, setRumSummary] = useState<RumSummary | null>(null);
+  const [weeklyReport, setWeeklyReport] = useState<WeeklyReport | null>(null);
 
   useEffect(() => {
     loadAnalytics();
@@ -113,11 +155,25 @@ export default function AdminAnalyticsPage() {
         }
       };
 
+      const rumPromise = fetch('/api/analytics/rum/summary')
+        .then((response) => response.ok ? response.json() : null)
+        .catch(() => null);
+
+      const weeklyReportPromise = fetch('/api/analytics/weekly-report')
+        .then((response) => response.ok ? response.json() : null)
+        .catch(() => null);
+
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       setData(mockData);
+
+      const [rumData, weeklyData] = await Promise.all([rumPromise, weeklyReportPromise]);
+      setRumSummary(rumData);
+      setWeeklyReport(weeklyData);
     } catch (error) {
       console.error('Failed to load analytics:', error);
+      setRumSummary(null);
+      setWeeklyReport(null);
     } finally {
       setLoading(false);
     }
@@ -144,6 +200,20 @@ export default function AdminAnalyticsPage() {
   const formatPercentage = (value: number) => {
     return `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
   };
+
+  const formatPassRate = (value: number) => `${(value * 100).toFixed(1)}%`;
+
+  const formatMetricValue = (name: string, value: number) => {
+    if (name === 'CLS') {
+      return value.toFixed(3);
+    }
+    return `${value.toFixed(0)} ms`;
+  };
+
+  const weeklyPassRate =
+    weeklyReport && weeklyReport.rum.metrics.length
+      ? weeklyReport.rum.metrics.reduce((sum, metric) => sum + metric.passRate, 0) / weeklyReport.rum.metrics.length
+      : 0;
 
   if (loading) {
     return (
@@ -211,6 +281,100 @@ export default function AdminAnalyticsPage() {
             </Button>
           </div>
         </div>
+
+        {weeklyReport && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Weekly Owner Snapshot</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {`Period: ${new Date(weeklyReport.periodStart).toLocaleDateString()} – ${new Date(weeklyReport.periodEnd).toLocaleDateString()}`}
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Bookings completed</p>
+                  <p className="text-2xl font-semibold">
+                    {weeklyReport.bookings.completed}/{weeklyReport.bookings.total}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Completion {(weeklyReport.bookings.completionRate * 100).toFixed(1)}%
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Average booking value</p>
+                  <p className="text-2xl font-semibold">
+                    {formatCurrency(weeklyReport.bookings.averageValue || 0)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Payment success {(weeklyReport.payments.successRate * 100).toFixed(1)}%
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Support tickets</p>
+                  <p className="text-2xl font-semibold">{weeklyReport.leads.supportTickets}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Reviews collected {weeklyReport.reviews.total}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">RUM performance</p>
+                  <p className="text-2xl font-semibold">{formatPassRate(weeklyPassRate)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Samples {weeklyReport.rum.sampleCount} · Target {(SLO_TARGET * 100).toFixed(0)}%
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {rumSummary && rumSummary.metrics?.length > 0 && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Real User Monitoring (Core Web Vitals)</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Tracking {rumSummary.sampleCount} samples from the last {rumSummary.timeWindowDays} days. Target pass rate ≥ {formatPassRate(SLO_TARGET)}.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-3">
+                {rumSummary.metrics.map((metric) => {
+                  const compliant = metric.passRate >= SLO_TARGET;
+                  return (
+                    <div key={metric.name} className="border rounded-lg p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-gray-900">{metric.name}</h3>
+                        <Badge className={compliant ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-rose-500 hover:bg-rose-600'}>
+                          {formatPassRate(metric.passRate)}
+                        </Badge>
+                      </div>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <p>Average: <span className="font-medium text-gray-900">{formatMetricValue(metric.name, metric.average)}</span></p>
+                        {metric.sloThreshold !== null && (
+                          <p>SLO threshold: {formatMetricValue(metric.name, metric.sloThreshold)}</p>
+                        )}
+                        <p>Samples: {metric.count}</p>
+                      </div>
+                      {Object.keys(metric.ratings || {}).length > 0 && (
+                        <div className="text-xs text-muted-foreground">
+                          <p className="font-medium text-gray-700 mb-1">Ratings</p>
+                          <div className="flex gap-2 flex-wrap">
+                            {Object.entries(metric.ratings).map(([rating, count]) => (
+                              <Badge key={rating} variant="outline">
+                                {rating}: {count}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Overview Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

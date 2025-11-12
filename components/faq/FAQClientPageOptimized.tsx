@@ -7,6 +7,8 @@ import { FAQSection } from "./FAQSection";
 import { categories, faqs } from "./data";
 import FAQSchema from "@/components/faq-schema";
 import { getBusinessPhoneFormatted, getBusinessTel, getSmsHref, getSmsNumberFormatted } from "@/lib/phone";
+import { track } from "@/app/lib/analytics";
+import { getAttribution } from "@/lib/utm";
 import type { FAQFilters } from "./types";
 
 /**
@@ -126,6 +128,12 @@ export default function FAQClientPageOptimized() {
                   <a
                     href={getSmsHref()}
                     className="inline-flex items-center justify-center px-6 py-3 border-2 border-[#002147]/40 text-base font-medium rounded-lg text-[#002147] bg-white/70 hover:bg-gray-50 transition-colors"
+                    onClick={() => {
+                      try {
+                        const a = getAttribution?.() || {};
+                        track('sms_click', { location: 'faq_bottom', sms: getSmsNumberFormatted(), ...a });
+                      } catch {}
+                    }}
                   >
                     Text {getSmsNumberFormatted()}
                   </a>

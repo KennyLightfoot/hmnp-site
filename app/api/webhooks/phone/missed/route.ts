@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { sendSms } from '@/lib/sms'
+import { sendMissedCallTextback } from '@/lib/ghl/automation-service'
 
 export async function POST(req: Request) {
   const secret = process.env.MISSED_CALL_WEBHOOK_SECRET
@@ -12,8 +12,7 @@ export async function POST(req: Request) {
     const duration = Number(body?.duration || 0)
     if (!from) return NextResponse.json({ ok: true })
     if (status.toLowerCase().includes('missed') || duration === 0) {
-      const link = `${process.env.NEXT_PUBLIC_BASE_URL || ''}/booking?utm_source=call&utm_medium=sms-textback`
-      await sendSms({ to: from.startsWith('+') ? from : `+1${from}`.replace('++','+'), body: `Sorry we missed you — book your nearest notary here: ${link}` })
+      await sendMissedCallTextback(from, { source: body?.direction || 'Phone', bookingId: body?.bookingId })
     }
     return NextResponse.json({ ok: true })
   } catch (e: any) {

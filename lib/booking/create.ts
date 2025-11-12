@@ -9,6 +9,7 @@ import type { Service } from '@prisma/client'
 import { PaymentMethod, BookingStatus, ServiceType } from '@prisma/client'
 import { logger } from '@/lib/logger'
 import { RONService } from '@/lib/proof/api'
+import { autoDispatchBooking } from '@/lib/dispatch/auto-dispatch'
 
 export interface CreateBookingInput {
   validatedData: any
@@ -286,6 +287,12 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
 
   // Fire and forget
   await processBookingJob(booking.id)
+
+  try {
+    await autoDispatchBooking(booking.id)
+  } catch (dispatchError) {
+    try { console.warn('[DISPATCH] Auto-assign failed', (dispatchError as any)?.message || String(dispatchError)) } catch {}
+  }
 
   // Best-effort GHL appointment (can be disabled via env)
   try {

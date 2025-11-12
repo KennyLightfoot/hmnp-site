@@ -1,5 +1,7 @@
 'use client';
 
+import type { Metadata } from "next";
+
 /**
  * Booking Success Page - Confirmation
  * Houston Mobile Notary Pros
@@ -26,6 +28,13 @@ import {
   Loader2,
   FileText
 } from 'lucide-react';
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 interface BookingDetails {
   id: string;

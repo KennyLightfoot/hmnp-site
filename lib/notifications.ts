@@ -3,6 +3,7 @@ import { getErrorMessage } from '@/lib/utils/error-utils';
 import { sendEmail } from '@/lib/email';
 import { sendSms, checkSmsConsent } from '@/lib/sms';
 import { findContactByEmail } from '@/lib/ghl/contacts';
+import { buildBookingLinks } from '@/lib/ghl/automation-service';
 import { NotificationType, NotificationMethod, NotificationStatus, BookingStatus } from '@prisma/client';
 import { withRetry } from '@/lib/utils/retry';
 import { logger } from '@/lib/logger';
@@ -965,11 +966,21 @@ export const sendAppointmentReminder = async (
     addressShort: booking.addressCity || 'TBD'
   };
 
-  const smsMessage = appointmentReminderSms(
+  const links = buildBookingLinks(booking);
+  const depositOutstanding = (booking as any)?.depositStatus && (booking as any)?.depositStatus !== 'COMPLETED';
+
+  let smsMessage = appointmentReminderSms(
     { firstName: recipient.firstName },
     bookingDetails,
     reminderType
   );
+  smsMessage += ` Need to adjust? ${links.rescheduleLink}`;
+  if (reminderType === '24hr') {
+    smsMessage += ` Cancel: ${links.cancelLink}`;
+  }
+  if (depositOutstanding) {
+    smsMessage += ` Deposit: ${links.paymentLink}`;
+  }
 
   // Create email content
   let timeDescription = '';
@@ -996,30 +1007,70 @@ export const sendAppointmentReminder = async (
       </div>
       
       <p>Please ensure you have all required documents and identification ready for your appointment.</p>
+      ${depositOutstanding ? `<p><strong>Deposit required:</strong> Please secure your appointment by completing your deposit <a href="${links.paymentLink}" style="color:#A52A2A;">here</a>.</p>` : ''}
+      <div style="margin: 24px 0; display: flex; flex-wrap: wrap; gap: 12px;">
+        <a href="${links.rescheduleLink}" style="background-color:#A52A2A;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;display:inline-block;">Reschedule Appointment</a>
+        <a href="${links.cancelLink}" style="border:1px solid #A52A2A;color:#A52A2A;padding:10px 18px;border-radius:6px;text-decoration:none;display:inline-block;">Cancel Appointment</a>
+        ${depositOutstanding ? `<a href="${links.paymentLink}" style="background-color:#002147;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;display:inline-block;">Complete Deposit</a>` : ''}
+      </div>
       <p>If you need to reschedule or have any questions, please contact us as soon as possible.</p>
       
       <p>Best regards,<br>Houston Mobile Notary Pros</p>
     </div>
   `;
 
-  const content = {
-    subject: `Reminder: Your notary appointment ${timeDescription}`,
-    message: smsMessage,
-    metadata: {
-      reminderType,
-      serviceId: booking.serviceId,
-      scheduledDateTime: booking.scheduledDateTime?.toISOString()
-    }
-  };
+  const results: Array<{
+    method: NotificationMethod;
+    success: boolean;
+    error?: string;
+    notificationId?: string;
+  }> = [];
 
-  return await NotificationService.sendNotification({
+  const emailResult = await NotificationService.sendNotification({
     bookingId,
     type: typeMap[reminderType],
     recipient,
     content: {
-      ...content,
-      message: emailHtml // Use HTML for email, SMS template for SMS
+      subject: `Reminder: Your notary appointment ${timeDescription}`,
+      message: emailHtml,
+      metadata: {
+        reminderType,
+        channel: 'email',
+        paymentLink: links.paymentLink,
+        rescheduleLink: links.rescheduleLink
+      }
     },
-    methods: [NotificationMethod.EMAIL, NotificationMethod.SMS]
+    methods: [NotificationMethod.EMAIL]
   });
+
+  if (emailResult?.results) {
+    results.push(...emailResult.results);
+  }
+
+  if (recipient.phone) {
+    const smsResult = await NotificationService.sendNotification({
+      bookingId,
+      type: typeMap[reminderType],
+      recipient,
+      content: {
+        subject: undefined,
+        message: smsMessage,
+        metadata: {
+          reminderType,
+          channel: 'sms',
+          rescheduleLink: links.rescheduleLink,
+          cancelLink: links.cancelLink,
+          paymentLink: links.paymentLink
+        }
+      },
+      methods: [NotificationMethod.SMS]
+    });
+
+    if (smsResult?.results) {
+      results.push(...smsResult.results);
+    }
+  }
+
+  const overallSuccess = results.some(r => r.success);
+  return { success: overallSuccess, results };
 }; 

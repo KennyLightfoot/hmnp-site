@@ -49,9 +49,12 @@ export default function Header() {
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden focus:outline-none"
+            type="button"
+            className="md:hidden rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-secondary"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-nav"
           >
             {isMenuOpen ? <X className="h-6 w-6 text-white" /> : <Menu className="h-6 w-6 text-white" />}
           </button>
@@ -88,7 +91,7 @@ export default function Header() {
 
         {/* Mobile navigation */}
         {isMenuOpen && (
-          <nav className="md:hidden mt-4 pb-2">
+          <nav id="mobile-nav" className="md:hidden mt-4 pb-2">
             <ul className="flex flex-col space-y-4">
               {[
                 { href: '/services', label: 'Services' },

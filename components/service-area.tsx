@@ -51,50 +51,46 @@ export default function ServiceArea() {
                 <span className="text-secondary font-medium">Service Coverage</span>
               </div>
               <h2 className="text-3xl font-bold text-secondary mb-4">We Come to You in Greater Houston</h2>
-              <p className="text-gray-700 mb-6">Texas City, Houston, The Woodlands, Katy, Sugar Land, Galveston, League City, Pearland, and Baytown.</p>
+              <p className="text-gray-700 mb-6">
+                Texas City, Houston, Sugar Land, Galveston, League City, Pearland, Friendswood, and Pasadena.
+              </p>
 
               <div className="grid grid-cols-2 gap-6 mb-8">
                 <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
                   <h3 className="font-semibold text-secondary mb-2 border-b border-gray-200 pb-2">North & West</h3>
                   <ul className="space-y-2">
-                    <li className="flex items-center">
-                      <MapPin className="text-primary mr-2 h-4 w-4" />
-                      <span>Houston</span>
-                    </li>
-                    <li className="flex items-center">
-                      <MapPin className="text-[#A52A2A] mr-2 h-4 w-4" />
-                      <span>The Woodlands</span>
-                    </li>
-                    <li className="flex items-center">
-                      <MapPin className="text-[#A52A2A] mr-2 h-4 w-4" />
-                      <span>Katy</span>
-                    </li>
-                    <li className="flex items-center">
-                      <MapPin className="text-[#A52A2A] mr-2 h-4 w-4" />
-                      <span>Sugar Land</span>
-                    </li>
+                    {[
+                      { label: "Houston", slug: "houston" },
+                      { label: "Sugar Land", slug: "sugar-land" },
+                      { label: "Friendswood", slug: "friendswood" },
+                      { label: "League City", slug: "league-city" },
+                    ].map((area) => (
+                      <li key={area.slug} className="flex items-center">
+                        <MapPin className="text-primary mr-2 h-4 w-4" />
+                        <Link href={`/service-areas/${area.slug}`} className="hover:underline">
+                          {area.label}
+                        </Link>
+                      </li>
+                    ))}
                   </ul>
                 </div>
 
                 <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
                   <h3 className="font-semibold text-secondary mb-2 border-b border-gray-200 pb-2">South & East</h3>
                   <ul className="space-y-2">
-                    <li className="flex items-center">
-                      <MapPin className="text-primary mr-2 h-4 w-4" />
-                      <span>Galveston</span>
-                    </li>
-                    <li className="flex items-center">
-                      <MapPin className="text-[#A52A2A] mr-2 h-4 w-4" />
-                      <span>League City</span>
-                    </li>
-                    <li className="flex items-center">
-                      <MapPin className="text-[#A52A2A] mr-2 h-4 w-4" />
-                      <span>Pearland</span>
-                    </li>
-                    <li className="flex items-center">
-                      <MapPin className="text-[#A52A2A] mr-2 h-4 w-4" />
-                      <span>Baytown</span>
-                    </li>
+                    {[
+                      { label: "Galveston", slug: "galveston" },
+                      { label: "Texas City", slug: "texas-city" },
+                      { label: "Pearland", slug: "pearland" },
+                      { label: "Pasadena", slug: "pasadena" },
+                    ].map((area) => (
+                      <li key={area.slug} className="flex items-center">
+                        <MapPin className="text-primary mr-2 h-4 w-4" />
+                        <Link href={`/service-areas/${area.slug}`} className="hover:underline">
+                          {area.label}
+                        </Link>
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </div>

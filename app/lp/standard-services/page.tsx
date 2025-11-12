@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, Clock, Shield, MapPin, FileText, Building2, Phone, Star, BadgeCheck, Rocket } from "lucide-react";
 import { getBusinessPhoneFormatted, getBusinessTel, getSmsHref, getSmsNumberFormatted } from "@/lib/phone";
+import { track } from "@/app/lib/analytics";
 import { trackPhoneClick } from "@/lib/tracking";
 import ServiceSchema from "@/components/schema/ServiceSchema";
 import EnhancedFAQSchema from "@/components/enhanced-faq-schema";
@@ -86,7 +87,13 @@ export default function StandardServicesLandingPage() {
                 <a href={`tel:${getBusinessTel()}`} className="border-2 border-white text-white hover:bg-white hover:text-secondary px-8 py-3 rounded-lg font-semibold inline-flex items-center justify-center" onClick={() => trackPhoneClick('lp_standard_services_hero')}>
                   Call {getBusinessPhoneFormatted()}
                 </a>
-                <a href={getSmsHref()} className="border-2 border-white/70 text-white/90 hover:bg-white hover:text-secondary px-8 py-3 rounded-lg font-semibold inline-flex items-center justify-center">
+                <a
+                  href={getSmsHref()}
+                  className="border-2 border-white/70 text-white/90 hover:bg-white hover:text-secondary px-8 py-3 rounded-lg font-semibold inline-flex items-center justify-center"
+                  onClick={() => {
+                    try { track('sms_click', { location: 'lp_standard_services_hero', sms: getSmsNumberFormatted() }) } catch {}
+                  }}
+                >
                   Text {getSmsNumberFormatted()}
                 </a>
               </div>

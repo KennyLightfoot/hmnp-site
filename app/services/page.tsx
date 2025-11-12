@@ -128,6 +128,25 @@ const servicesSchema = {
   ],
 }
 
+const servicesBreadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: `${BASE_URL}/`
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "Services",
+      item: `${BASE_URL}/services`
+    }
+  ]
+}
+
 export default function ServicesPage() {
   const formatHours = (hours: { start: number; end: number; days: number[] }) => {
     if (hours.start === 0 && hours.end === 24 && hours.days.length === 7) {
@@ -377,6 +396,10 @@ export default function ServicesPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(servicesSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(servicesBreadcrumbSchema) }}
       />
       {/* Hero Section */}
       <section className="hero text-center mb-16">

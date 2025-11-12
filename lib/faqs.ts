@@ -109,5 +109,73 @@ export const CITY_FAQS: Record<string, FAQ[]> = {
     { question: "Do you travel to Jack Brooks Park?", answer: "Absolutely—park pavilions and parking lots are common meeting spots in Hitchcock." },
     { question: "Any surcharge for 77563?", answer: "No, Hitchcock 77563 is within our standard travel radius—no extra fee." },
   ],
+  baytown: [
+    { question: "Can you notarize at Baytown Nature Center or refinery offices?", answer: "Yes. We frequently meet clients at Baytown Nature Center, refinery administrative buildings, and nearby coffee shops for discreet signings." },
+    { question: "Do you accommodate 24/7 refinery shifts?", answer: "Absolutely. We offer overnight and early-morning appointments to match Baytown's rotating shift schedules." },
+  ],
+  channelview: [
+    { question: "Will you travel to petrochemical yards in Channelview?", answer: "Yes, secured facilities along the San Jacinto River are within our service area—just arrange gate access in advance." },
+    { question: "Can you meet at Sheldon Lake State Park?", answer: "Park entrances and public picnic areas make convenient spots for Channelview signings." },
+  ],
+  humble: [
+    { question: "Do you handle hospital notarizations near Humble?", answer: "We meet families at Memorial Hermann Northeast Hospital and Kingwood Emergency Rooms with proper ID for each signer." },
+    { question: "Evening loan signings in Atascocita?", answer: "Yes, we host NNA-certified agents who can accommodate evening HELOC and refinance packages across Humble and Atascocita." },
+  ],
+  kingwood: [
+    { question: "Can you come to Kingwood's village clubhouses?", answer: "Yes, community clubhouses and Kingwood Town Center offices are common meeting locations—we arrive early to secure signing space." },
+    { question: "Is there a travel fee for Kings River or Kings Point?", answer: "No additional fee—those neighborhoods fall within our 20-mile standard radius." },
+  ],
+  katy: [
+    { question: "Do you offer mobile notary support for Energy Corridor commuters?", answer: "We schedule morning and lunchtime appointments along I-10 so you can notarize documents without missing work." },
+    { question: "Can you meet at Katy Mills or LaCenterra?", answer: "Yes, we routinely meet clients at Katy Mills Mall, LaCenterra, and area libraries—just pick the spot that works best." },
+  ],
+  cypress: [
+    { question: "Are Towne Lake and Bridgeland within your coverage?", answer: "Absolutely. We navigate gated communities and will meet at your home, amenity center, or a nearby cafe." },
+    { question: "Do you notarize for Cypress-Fairbanks ISD employees?", answer: "Yes, we support HR onboarding, I-9 verification, and school documents across the Cypress area." },
+  ],
+  spring: [
+    { question: "Do you service Old Town Spring businesses?", answer: "Yes, we walk historic Main Street to meet boutique owners and vendors for quick notarizations." },
+    { question: "How fast can you arrive in the Rayford/Grand Parkway area?", answer: "Most Spring appointments are confirmed within 90 minutes, including locations near the Grand Parkway and Exxon campus." },
+  ],
+  tomball: [
+    { question: "Will you travel to Tomball Regional Medical Center?", answer: "Yes, hospital notarizations are available—please confirm the patient has valid ID and witnesses if required." },
+    { question: "Can you meet at Tomball's Depot Plaza?", answer: "We can meet downtown at Depot Plaza, local coffee shops, or your acreage property—whatever is most convenient." },
+  ],
+  richmond: [
+    { question: "Do you handle estate documents in Pecan Grove?", answer: "Yes, estate planning and trust signings in Pecan Grove and Harvest Green are a daily part of our Richmond route." },
+    { question: "Is George Ranch Historical Park a meeting option?", answer: "We can meet at the visitor center or parking lots before events—just schedule at least two hours ahead." },
+  ],
+  rosenberg: [
+    { question: "Can you notarize at the Fort Bend County Fairgrounds?", answer: "Yes, we serve vendors and exhibitors on-site during events—outdoor tables or RV offices work perfectly." },
+    { question: "What about factory and distribution center appointments?", answer: "Rosenberg industrial parks are within range. Provide gate instructions and we’ll handle employee or HR notarizations on schedule." },
+  ],
+  "the-woodlands": [
+    { question: "Do you meet at The Woodlands hospitals?", answer: "Yes, we routinely visit Memorial Hermann The Woodlands, St. Luke’s, and MD Anderson The Woodlands for bedside notarizations—valid ID is required for each signer." },
+    { question: "Can you come to gated villages like Sterling Ridge or Creekside?", answer: "Absolutely. Provide gate access instructions and we’ll meet you at home, the village center, or Hughes Landing." },
+  ],
+  "river-oaks": [
+    { question: "Do you handle estate signings in River Oaks homes?", answer: "Yes, our notaries are experienced with wealth management and estate planning documents—witnesses can be coordinated upon request." },
+    { question: "Is discreet service available for corporate offices?", answer: "We offer concierge-style visits to River Oaks District, Highland Village, and private law offices with minimal disruption." },
+  ],
+  "west-university": [
+    { question: "Can you meet at Rice University or West U libraries?", answer: "Yes, campus libraries, coffee shops, and civic buildings in West University Place are common meeting locations." },
+    { question: "Do you serve the Texas Medical Center housing towers?", answer: "We meet residents and families in TMC housing, Ronald McDonald House, and nearby apartments with short notice." },
+  ],
+  bellaire: [
+    { question: "Do you offer same-day notarization in Bellaire 77401?", answer: "Yes, most Bellaire requests are handled within two hours, including post office and city permits." },
+    { question: "Can you meet at Evelyn’s Park or local hospitals?", answer: "Absolutely—parks, hospitals, and municipal buildings in Bellaire are within our core service zone." },
+  ],
+  "midtown-houston": [
+    { question: "Do you visit Midtown co-working spaces?", answer: "Yes, we frequent WeWork, Station Houston, and other co-working hubs—just book a conference room or lobby table." },
+    { question: "Can you accommodate late-evening signings?", answer: "Midtown appointments are available through 10 PM, perfect for restaurant and nightlife staff schedules." },
+  ],
+  "medical-center": [
+    { question: "What is required for hospital notarizations in the Texas Medical Center?", answer: "Ensure the signer has valid photo ID and is alert; we’ll bring witness forms if the hospital cannot provide staff witnesses." },
+    { question: "Do you handle medical power of attorney documents?", answer: "Yes, MPOA, HIPAA releases, and advanced directives are notarized daily across the TMC campuses." },
+  ],
+  "houston-heights": [
+    { question: "Do you service historic homes and townhomes in The Heights?", answer: "We’re familiar with gated townhomes and historic residences—driveway or porch signings are common." },
+    { question: "Weekend availability for Heights-area businesses?", answer: "Yes, we support weekend markets, boutique owners, and homebuyers with Saturday and Sunday appointments." },
+  ],
   // End of city FAQs
 }

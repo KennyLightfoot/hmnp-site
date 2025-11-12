@@ -185,8 +185,11 @@ export default function HeroBooking() {
                 value={zip}
                 onChange={(e) => setZip(e.target.value.replace(/[^0-9]/g, '').slice(0, 5))}
                 onBlur={() => zip && track('zip_submit', { zip })}
+                type="text"
                 inputMode="numeric"
                 maxLength={5}
+                autoComplete="postal-code"
+                enterKeyHint="next"
               />
               <input
                 className="col-span-2 md:col-span-1 px-3 py-3 rounded-lg bg-white text-[#0F1419]"
@@ -194,7 +197,10 @@ export default function HeroBooking() {
                 value={acts}
                 onChange={(e) => setActs(Math.max(1, parseInt(e.target.value || "1", 10)))}
                 onBlur={() => track('acts_submit', { acts })}
+                type="number"
                 inputMode="numeric"
+                autoComplete="off"
+                enterKeyHint="next"
               />
               <Button onClick={getEstimate} className="col-span-2 md:col-span-2 bg-primary hover:bg-primary/90 h-12">
                 {isLoading ? "Calculating..." : "Get Instant Estimate"}
@@ -248,7 +254,10 @@ export default function HeroBooking() {
               placeholder="Your mobile number"
               value={phone}
               onChange={(e) => setPhone(e.target.value.replace(/[^0-9+]/g, '').slice(0, 16))}
+              type="tel"
               inputMode="tel"
+              autoComplete="tel"
+              enterKeyHint="send"
             />
             <Button
               className="h-10 px-4 bg-white text-[#0F1419] hover:bg-white/90"
