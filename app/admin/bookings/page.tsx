@@ -51,21 +51,35 @@ export default async function AdminBookingsPage() {
           email: true,
         },
       },
-      qaRecord: {
-        select: {
-          status: true,
-          updatedAt: true,
-          journalEntryVerified: true,
-          sealPhotoVerified: true,
-          documentCountVerified: true,
-          clientConfirmationVerified: true,
-          closeoutFormVerified: true,
-        },
-      },
     },
   })
 
+  // Fetch QA records separately using raw query to avoid Prisma type issues
+  const qaRecords = await Promise.all(
+    qaCandidates.map(async (booking) => {
+      try {
+        const qa = await (prisma as any).bookingQARecord.findUnique({
+          where: { bookingId: booking.id },
+          select: {
+            status: true,
+            updatedAt: true,
+            journalEntryVerified: true,
+            sealPhotoVerified: true,
+            documentCountVerified: true,
+            clientConfirmationVerified: true,
+            closeoutFormVerified: true,
+          },
+        })
+        return { bookingId: booking.id, qa }
+      } catch {
+        return { bookingId: booking.id, qa: null }
+      }
+    })
+  )
+
+  const qaMap = new Map(qaRecords.map((r) => [r.bookingId, r.qa]))
   const qaQueue = qaCandidates
+    .map((booking) => ({ ...booking, qaRecord: qaMap.get(booking.id) || null }))
     .filter((booking) => !booking.qaRecord || booking.qaRecord.status !== 'COMPLETE')
     .slice(0, 10)
 
