@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       try {
         await redis.ping()
         const key = `rum:${metric.name}:${metric.id ?? randomUUID()}`
-        stored = (await redis.set(key, JSON.stringify(enrichedMetric), 'EX', 60 * 60 * 24 * 7)) === 'OK'
+        stored = await redis.set(key, JSON.stringify(enrichedMetric), 60 * 60 * 24 * 7)
       } catch (error) {
         logger.error('Failed to persist RUM metric', error as Error)
       }
