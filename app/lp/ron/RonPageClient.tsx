@@ -46,7 +46,7 @@ const ronLeadFormProps = {
     campaign_name: 'RON Instant Campaign',
     ad_platform: 'google_ads',
   },
-} as const;
+};
 
 export default function RonPageClient() {
   const phone = getBusinessPhoneFormatted();
