@@ -1,6 +1,8 @@
 import Script from "next/script"
+import { getBusinessPhoneFormatted } from "@/lib/phone"
 
 export default function FAQSchema() {
+  const phoneDisplay = getBusinessPhoneFormatted()
   return (
     <Script
       id="faq-schema"
@@ -55,7 +57,7 @@ export default function FAQSchema() {
               name: "How do I schedule an appointment?",
               acceptedAnswer: {
                 "@type": "Answer",
-                text: "You can schedule an appointment through our online booking system (available 24/7), by phone at (832) 617-4285 during business hours (Monday-Friday, 8am-6pm), by email to contact@houstonmobilenotarypros.com, or through our contact form. For Priority Service (2-hour response time), we recommend booking online or by phone for the fastest confirmation.",
+                text: `You can schedule an appointment through our online booking system (available 24/7), by phone at ${phoneDisplay} during business hours (Monday-Friday, 8am-6pm), by email to contact@houstonmobilenotarypros.com, or through our contact form. For Priority Service (2-hour response time), we recommend booking online or by phone for the fastest confirmation.`,
               },
             },
             {

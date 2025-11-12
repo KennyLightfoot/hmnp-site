@@ -242,7 +242,7 @@ Your site automatically pushes these events to `dataLayer`. Make sure GTM is con
 {
   event: 'click_to_call',
   event_category: 'engagement',
-  event_label: 'tel:+18326174285'
+  event_label: `tel:${getBusinessTel()}`
 }
 ```
 **GTM Action Required:** Optional - Create GA4 Event tag to track this
@@ -399,7 +399,7 @@ dataLayer.push({
 dataLayer.push({
   event: 'click_to_call',
   event_category: 'engagement',
-  event_label: 'tel:+18326174285'
+  event_label: `tel:${getBusinessTel()}`
 });
 ```
 
@@ -428,4 +428,6 @@ If something isn't working:
 2. Check browser console for errors
 3. Verify environment variables are set in Vercel
 4. Make sure container is published after any changes
+
+
 

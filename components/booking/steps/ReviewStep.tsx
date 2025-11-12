@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { getBusinessTel } from '@/lib/phone';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { 
   CheckCircle, 
@@ -442,7 +443,7 @@ export default function ReviewStep({
             console.log('Alternative payment method:', method);
           }}
           onContactSupport={() => {
-            window.open('tel:+17135550123', '_blank');
+            window.open(`tel:${getBusinessTel()}`, '_blank');
           }}
           onCancel={() => {
             setShowPaymentRecovery(false);

@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
-import { Mail, Phone, MapPin, Clock, Facebook } from "lucide-react"
+import { Mail, Phone, MapPin, Clock, Facebook, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import ContactForm from "@/components/contact-form"
+import { getBusinessPhoneFormatted, getBusinessTel, getSmsHref, getSmsNumberFormatted } from "@/lib/phone"
 
 // Define Base URL for metadata
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'; // Replace with your actual domain
@@ -45,6 +46,11 @@ export const metadata: Metadata = {
 }
 
 export default function ContactPage() {
+  const phoneDisplay = getBusinessPhoneFormatted()
+  const businessTel = getBusinessTel()
+  const smsHref = getSmsHref()
+  const smsDisplay = getSmsNumberFormatted()
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="text-center mb-12">
@@ -63,7 +69,11 @@ export default function ContactPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
-            <p className="text-xl font-bold mb-2">(832) 617-4285</p>
+            <p className="text-xl font-bold mb-2">
+              <a href={`tel:${businessTel}`} className="underline">
+                {phoneDisplay}
+              </a>
+            </p>
             <p className="text-gray-600 mb-4">For immediate assistance or to book by phone</p>
             <div className="text-sm text-gray-500">
               <p className="flex items-center">
@@ -71,6 +81,12 @@ export default function ContactPage() {
                 Monday-Friday: 8am-6pm
               </p>
               <p className="mt-1">Weekend calls returned promptly</p>
+              <p className="flex items-center mt-3">
+                <MessageCircle className="mr-2 h-4 w-4" />
+                <a href={smsHref} className="underline">
+                  Text {smsDisplay}
+                </a>
+              </p>
             </div>
           </CardContent>
         </Card>

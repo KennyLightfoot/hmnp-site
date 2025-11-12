@@ -1,6 +1,7 @@
 // import Image from "next/image"
 import Link from "next/link"
 import { Facebook } from 'lucide-react'
+import { getBusinessPhoneFormatted, getBusinessTel } from "@/lib/phone"
 
 export default function Footer() {
   return (
@@ -16,7 +17,12 @@ export default function Footer() {
               Fast, precise mobile notarization across Houston. Licensed, bonded, and insured.
             </p>
             <div className="mt-4 text-sm text-secondary/80">
-              <p><span className="font-medium">Phone:</span> (832) 617-4285</p>
+              <p>
+                <span className="font-medium">Phone:</span>{" "}
+                <a href={`tel:${getBusinessTel()}`} className="underline hover:text-secondary">
+                  {getBusinessPhoneFormatted()}
+                </a>
+              </p>
               <p><span className="font-medium">Email:</span> contact@houstonmobilenotarypros.com</p>
             </div>
           </div>

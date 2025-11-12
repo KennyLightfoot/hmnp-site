@@ -26,6 +26,7 @@ import {
   Monitor,
   ChevronRight
 } from 'lucide-react';
+import { getBusinessTel } from '@/lib/phone';
 
 // ============================================================================
 // ERROR TYPES AND MESSAGES
@@ -297,7 +298,7 @@ export function ErrorDisplay({
               
               {error.contactSupport && (
                 <Button
-                  onClick={() => window.open('tel:+17135551234', '_self')}
+                  onClick={() => window.open(`tel:${getBusinessTel()}`, '_self')}
                   variant="outline"
                   size="sm"
                   className="flex items-center space-x-1"
@@ -397,7 +398,7 @@ export function ErrorBoundaryFallback({
             </Button>
 
             <Button
-              onClick={() => window.open('tel:+17135551234', '_self')}
+              onClick={() => window.open(`tel:${getBusinessTel()}`, '_self')}
               variant="outline"
               className="w-full"
             >

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { SERVICE_AREAS } from "@/lib/serviceAreas"
 import TrustBadges from "@/components/ui/TrustBadges"
+import { getBusinessPhoneFormatted, getBusinessTel } from "@/lib/phone"
 
 export const metadata: Metadata = {
   title: "Mobile Notary Service Areas | Houston Mobile Notary Pros",
@@ -115,6 +116,12 @@ export default function ServiceAreasIndexPage() {
               <Link href="#areas">
                 <Map className="h-5 w-5 mr-2" />
                 View All Areas
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" className="h-12 px-8 border-white/70 text-white hover:bg-white hover:text-[#002147]" asChild>
+              <Link href={`tel:${getBusinessTel()}`}>
+                <Phone className="h-5 w-5 mr-2" />
+                Call {getBusinessPhoneFormatted()}
               </Link>
             </Button>
           </div>
@@ -317,9 +324,9 @@ export default function ServiceAreasIndexPage() {
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147]" asChild>
-                  <Link href="tel:+1281936-1234">
+                  <Link href={`tel:${getBusinessTel()}`}>
                     <Phone className="h-5 w-5 mr-2" />
-                    Call Us Directly
+                    Call {getBusinessPhoneFormatted()}
                   </Link>
                 </Button>
               </div>

@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, Clock, Shield, MapPin, FileText, Building2, Phone, Star, BadgeCheck, Rocket } from "lucide-react";
-import { getBusinessPhoneFormatted, getBusinessTel } from "@/lib/phone";
+import { getBusinessPhoneFormatted, getBusinessTel, getSmsHref, getSmsNumberFormatted } from "@/lib/phone";
 import { trackPhoneClick } from "@/lib/tracking";
 import ServiceSchema from "@/components/schema/ServiceSchema";
 import EnhancedFAQSchema from "@/components/enhanced-faq-schema";
@@ -86,8 +86,8 @@ export default function StandardServicesLandingPage() {
                 <a href={`tel:${getBusinessTel()}`} className="border-2 border-white text-white hover:bg-white hover:text-secondary px-8 py-3 rounded-lg font-semibold inline-flex items-center justify-center" onClick={() => trackPhoneClick('lp_standard_services_hero')}>
                   Call {getBusinessPhoneFormatted()}
                 </a>
-                <a href={`sms:${getBusinessTel()}`} className="border-2 border-white/70 text-white/90 hover:bg-white hover:text-secondary px-8 py-3 rounded-lg font-semibold inline-flex items-center justify-center">
-                  Text Us
+                <a href={getSmsHref()} className="border-2 border-white/70 text-white/90 hover:bg-white hover:text-secondary px-8 py-3 rounded-lg font-semibold inline-flex items-center justify-center">
+                  Text {getSmsNumberFormatted()}
                 </a>
               </div>
               <div className="mt-6 flex flex-wrap items-center gap-4 text-blue-100 text-sm">

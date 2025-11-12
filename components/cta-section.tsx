@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Phone, Mail } from "lucide-react"
+import { getBusinessPhoneFormatted, getBusinessTel, getSmsHref, getSmsNumberFormatted } from "@/lib/phone"
 
 export default function CtaSection() {
   return (
@@ -37,8 +38,18 @@ export default function CtaSection() {
                 <Phone className="mr-3 h-5 w-5 text-[#91A3B0]" />
                 <h3 className="font-semibold">Call Us</h3>
               </div>
-              <p className="text-lg">(832) 617-4285</p>
+              <p className="text-lg">
+                <a href={`tel:${getBusinessTel()}`} className="underline">
+                  {getBusinessPhoneFormatted()}
+                </a>
+              </p>
               <p className="text-sm text-gray-300">Available 7am-9pm daily</p>
+              <p className="text-xs text-gray-300 mt-2">
+                Prefer texting?{" "}
+                <a href={getSmsHref()} className="underline">
+                  Text {getSmsNumberFormatted()}
+                </a>
+              </p>
             </div>
 
             <div className="bg-white/10 p-4 rounded-lg">

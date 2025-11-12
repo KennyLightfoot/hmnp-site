@@ -2,6 +2,7 @@
 // Adds basic DNI (dynamic number insertion) support by source/campaign
 
 const RAW_PHONE = (process.env.NEXT_PUBLIC_PHONE_NUMBER || process.env.BUSINESS_PHONE || '832-617-4285').trim();
+const RAW_SMS_PHONE = (process.env.NEXT_PUBLIC_SMS_NUMBER || process.env.BUSINESS_SMS_PHONE || '281-991-7475').trim();
 
 type DniSource = 'google' | 'facebook' | 'yelp' | 'direct' | 'other'
 
@@ -32,6 +33,24 @@ export function normalizeToDigits(input: string): string {
   return (input || '').replace(/\D/g, '');
 }
 
+function digitsToE164(digits: string): string {
+  if (!digits) return '';
+  if (digits.length === 10) return `+1${digits}`;
+  if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
+  return `+${digits}`;
+}
+
+function formatUsPhone(digits: string, fallback: string): string {
+  if (digits.length === 10) {
+    return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+  }
+  if (digits.length === 11 && digits.startsWith('1')) {
+    const d = digits.slice(1);
+    return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
+  }
+  return fallback;
+}
+
 export function getBusinessPhone(): string {
   if (typeof window !== 'undefined') {
     const bySource = pickDniNumberByAttribution()
@@ -42,21 +61,28 @@ export function getBusinessPhone(): string {
 
 export function getBusinessTel(): string {
   const digits = normalizeToDigits(getBusinessPhone());
-  const e164 = digits.length === 10 ? `+1${digits}` : (digits.startsWith('1') && digits.length === 11 ? `+${digits}` : `+1${digits}`);
-  return e164;
+  return digitsToE164(digits) || digitsToE164(normalizeToDigits(RAW_PHONE));
 }
 
 export function getBusinessPhoneFormatted(): string {
   // Format as (XXX) XXX-XXXX for display
   const digits = normalizeToDigits(getBusinessPhone());
-  if (digits.length === 10) {
-    return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
-  }
-  if (digits.length === 11 && digits.startsWith('1')) {
-    const d = digits.slice(1);
-    return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
-  }
-  return getBusinessPhone(); // fallback as-is
+  return formatUsPhone(digits, getBusinessPhone());
+}
+
+export function getSmsTel(): string {
+  const digits = normalizeToDigits(RAW_SMS_PHONE);
+  return digitsToE164(digits) || digitsToE164(normalizeToDigits(RAW_SMS_PHONE));
+}
+
+export function getSmsHref(): string {
+  const tel = getSmsTel();
+  return tel ? `sms:${tel}` : 'sms:';
+}
+
+export function getSmsNumberFormatted(): string {
+  const digits = normalizeToDigits(RAW_SMS_PHONE);
+  return formatUsPhone(digits, RAW_SMS_PHONE);
 }
 
 

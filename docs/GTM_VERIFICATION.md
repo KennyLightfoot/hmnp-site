@@ -63,3 +63,7 @@ console.log('GTM ID from env:', process.env?.NEXT_PUBLIC_GTM_ID || 'Not accessib
 - [ ] Real-time GA4 shows visitors
 - [ ] No console errors related to GTM
 
+
+
+
+

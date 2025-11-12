@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { preloadLazyComponents } from '@/components/lazy/LazyComponents';
+import { getBusinessPhoneFormatted, getBusinessTel } from '@/lib/phone';
 
 interface OptimizedLayoutProps {
   children: React.ReactNode;
@@ -177,7 +178,12 @@ export function OptimizedLayout({ children }: OptimizedLayoutProps) {
                   Contact Info
                 </h4>
                 <div className="space-y-2 text-gray-600">
-                  <p>📞 (281) 991-7475</p>
+                  <p>
+                    📞{" "}
+                    <a href={`tel:${getBusinessTel()}`} className="underline">
+                      {getBusinessPhoneFormatted()}
+                    </a>
+                  </p>
                   <p>📧 info@houstonmobilenotarypros.com</p>
                   <p>📍 Serving Greater Houston Area</p>
                 </div>

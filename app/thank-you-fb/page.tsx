@@ -17,7 +17,7 @@ const ThankYouFacebookPage: NextPage = () => {
     // Google Ads Conversion Tracking
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'conversion', {
-        'send_to': process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID || 'AW-CONVERSION_ID/CONVERSION_LABEL'
+        'send_to': process.env.NEXT_PUBLIC_GOOGLE_ADS_SEND_TO || process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID || 'AW-17079349538/CONVERSION_LABEL'
       });
       console.log("Google Ads: Conversion event tracked.");
     }

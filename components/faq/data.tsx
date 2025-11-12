@@ -1,5 +1,6 @@
 import { HelpCircle, Clock, Filter, ChevronRight, FileText, Shield } from "lucide-react";
 import type { FAQ, FAQCategory } from "./types";
+import { getBusinessPhoneFormatted, getBusinessTel } from "@/lib/phone";
 
 // FAQ categories
 export const categories: FAQCategory[] = [
@@ -402,7 +403,11 @@ export const faqs: FAQ[] = [
           </div>
         </div>
         <p className="mt-4 text-sm text-gray-600">
-          <strong>Need help deciding?</strong> Call us at (832) 617-4285 and we'll recommend the best service for your situation.
+          <strong>Need help deciding?</strong> Call us at{" "}
+          <a href={`tel:${getBusinessTel()}`} className="underline">
+            {getBusinessPhoneFormatted()}
+          </a>{" "}
+          and we'll recommend the best service for your situation.
         </p>
       </div>
     ),
@@ -482,7 +487,11 @@ export const faqs: FAQ[] = [
           </div>
         </div>
         <p className="mt-4 text-sm text-gray-600">
-          Contact us at (832) 617-4285 to discuss payment plan options for your specific needs.
+          Contact us at{" "}
+          <a href={`tel:${getBusinessTel()}`} className="underline">
+            {getBusinessPhoneFormatted()}
+          </a>{" "}
+          to discuss payment plan options for your specific needs.
         </p>
         <div className="mt-4 p-3 bg-yellow-50 rounded-md">
           <p className="text-sm text-yellow-800">
@@ -568,7 +577,11 @@ export const faqs: FAQ[] = [
         </p>
         <div className="mt-4 p-3 bg-blue-50 rounded-md">
           <p className="text-sm text-blue-800">
-            <strong>Tip:</strong> Call us directly at (281) 991-7475 for urgent requests.
+            <strong>Tip:</strong> Call us directly at{" "}
+            <a href={`tel:${getBusinessTel()}`} className="underline">
+              {getBusinessPhoneFormatted()}
+            </a>{" "}
+            for urgent requests.
           </p>
         </div>
       </div>

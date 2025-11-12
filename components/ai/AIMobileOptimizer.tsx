@@ -29,6 +29,7 @@ import {
   Star,
   ArrowUp
 } from 'lucide-react';
+import { getBusinessPhoneFormatted, getBusinessTel, getSmsHref, getSmsNumberFormatted } from '@/lib/phone';
 
 interface AIMobileOptimizerProps {
   isMobile: boolean;
@@ -77,7 +78,7 @@ const MOBILE_QUICK_ACTIONS = [
     id: 'call_now',
     label: 'Call Now',
     icon: Phone,
-    action: 'tel:+1234567890', // Replace with actual number
+    action: '',
     priority: 'high',
     conversion: true
   },
@@ -101,7 +102,7 @@ const MOBILE_QUICK_ACTIONS = [
     id: 'text_us',
     label: 'Text Us',
     icon: MessageCircle,
-    action: 'sms:+1234567890', // Replace with actual number
+    action: '',
     priority: 'medium',
     conversion: false
   }
@@ -117,6 +118,7 @@ export default function AIMobileOptimizer({
   // Mobile-specific state
   const [isListening, setIsListening] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
+  const [quickActions, setQuickActions] = useState(MOBILE_QUICK_ACTIONS);
   const [lastScrollTime, setLastScrollTime] = useState(Date.now());
   const [touchStartTime, setTouchStartTime] = useState(0);
   const [shakeDetected, setShakeDetected] = useState(false);
@@ -126,6 +128,28 @@ export default function AIMobileOptimizer({
   const touchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const shakeTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  useEffect(() => {
+    setQuickActions(actions =>
+      actions.map(action => {
+        if (action.id === 'call_now') {
+          return {
+            ...action,
+            action: `tel:${getBusinessTel()}`,
+            label: `Call ${getBusinessPhoneFormatted()}`,
+          };
+        }
+        if (action.id === 'text_us') {
+          return {
+            ...action,
+            action: getSmsHref(),
+            label: `Text ${getSmsNumberFormatted()}`,
+          };
+        }
+        return action;
+      })
+    );
+  }, []);
 
   // Only render on mobile devices
   if (!isMobile) return null;
@@ -325,7 +349,7 @@ export default function AIMobileOptimizer({
             </div>
             
             <div className="space-y-2">
-              {MOBILE_QUICK_ACTIONS.map((action) => {
+              {quickActions.map((action) => {
                 const IconComponent = action.icon;
                 return (
                   <Button

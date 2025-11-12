@@ -6,6 +6,7 @@ import { FAQSearch } from "./FAQSearch";
 import { FAQSection } from "./FAQSection";
 import { categories, faqs } from "./data";
 import FAQSchema from "@/components/faq-schema";
+import { getBusinessPhoneFormatted, getBusinessTel, getSmsHref, getSmsNumberFormatted } from "@/lib/phone";
 import type { FAQFilters } from "./types";
 
 /**
@@ -117,10 +118,16 @@ export default function FAQClientPageOptimized() {
                     Contact Us
                   </a>
                   <a
-                    href="tel:+12819917475"
+                    href={`tel:${getBusinessTel()}`}
                     className="inline-flex items-center justify-center px-6 py-3 border-2 border-[#002147] text-base font-medium rounded-lg text-[#002147] bg-white hover:bg-gray-50 transition-colors"
                   >
-                    Call (281) 991-7475
+                    Call {getBusinessPhoneFormatted()}
+                  </a>
+                  <a
+                    href={getSmsHref()}
+                    className="inline-flex items-center justify-center px-6 py-3 border-2 border-[#002147]/40 text-base font-medium rounded-lg text-[#002147] bg-white/70 hover:bg-gray-50 transition-colors"
+                  >
+                    Text {getSmsNumberFormatted()}
                   </a>
                 </div>
               </div>

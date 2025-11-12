@@ -21,7 +21,7 @@ interface StickyMobileCTAProps {
   analyticsContext?: string
 }
 
-function pushAnalyticsEvent(action: string, context: string) {
+function pushAnalyticsEvent(action: string, context: string, extras?: Record<string, unknown>) {
   if (typeof window === 'undefined') return
   try {
     const dataLayer = (window as any).dataLayer || []
@@ -30,6 +30,7 @@ function pushAnalyticsEvent(action: string, context: string) {
       cta_action: action,
       cta_context: context,
       ts: Date.now(),
+      ...(extras || {}),
     })
     ;(window as any).dataLayer = dataLayer
     trackBookingFunnel('cta_click', {
@@ -96,7 +97,11 @@ export default function StickyMobileCTA({
               size="lg"
               className="w-full sm:w-auto"
               asChild
-              onClick={() => pushAnalyticsEvent('call_click', analyticsContext)}
+              onClick={() =>
+                pushAnalyticsEvent('call_click', analyticsContext, {
+                  cta_value: finalSecondaryHref.startsWith('tel:') ? finalSecondaryHref : undefined,
+                })
+              }
             >
               <a href={finalSecondaryHref}>
                 <Phone className="mr-2 h-4 w-4" />

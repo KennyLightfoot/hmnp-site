@@ -1,4 +1,5 @@
 import { Clock, Calendar, Phone } from "lucide-react"
+import { getBusinessPhoneFormatted, getBusinessTel } from "@/lib/phone"
 
 export default function ServiceHoursBanner() {
   return (
@@ -31,7 +32,12 @@ export default function ServiceHoursBanner() {
             </div>
             <div>
               <p className="text-white text-sm font-medium">Need Same-Day Service?</p>
-              <p className="text-white/80 text-xs">Call (832) 617-4285</p>
+              <p className="text-white/80 text-xs">
+                Call{" "}
+                <a href={`tel:${getBusinessTel()}`} className="underline text-white">
+                  {getBusinessPhoneFormatted()}
+                </a>
+              </p>
             </div>
           </div>
         </div>

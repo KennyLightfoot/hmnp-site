@@ -1,3 +1,10 @@
+## 2025-11-12
+
+- chore(phone): unify call CTAs through `lib/phone` helpers across FAQ, contact, service areas, footer, layouts, and CTA components; add text CTA coverage with SMS helper
+- feat(phone): add `getSmsHref`/formatters, expose SMS/DNI env vars, and document in environment examples plus Vercel production config
+- chore(analytics): enrich StickyMobileCTA GTM events with dynamic tel payload and update GTM checklist to reference `getBusinessTel`
+- chore(content): refresh FAQ schema/data and contact messaging to display the correct call/text numbers dynamically
+
 ## 2025-11-06
 
 - feat(consent): add Consent Mode v2 default (denied) + updater hook in `app/layout.tsx` prior to GTM load

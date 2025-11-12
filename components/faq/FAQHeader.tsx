@@ -4,6 +4,7 @@ import { Phone, Mail, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
+import { getBusinessPhoneFormatted, getBusinessTel } from "@/lib/phone";
 
 interface FAQHeaderProps {
   totalQuestions: number;
@@ -83,9 +84,12 @@ export function FAQHeader({ totalQuestions, answeredToday = 47 }: FAQHeaderProps
           <Button 
             variant="outline" 
             className="border-white text-white hover:bg-white hover:text-[#002147]"
+            asChild
           >
-            <Phone className="mr-2 h-4 w-4" />
-            Call (281) 991-7475
+            <a href={`tel:${getBusinessTel()}`}>
+              <Phone className="mr-2 h-4 w-4" />
+              Call {getBusinessPhoneFormatted()}
+            </a>
           </Button>
         </div>
       </div>
