@@ -30,22 +30,12 @@ export default async function AdminBookingsPage() {
     }
   })
 
-  const qaQueue = await prisma.booking.findMany({
+  const qaCandidates = await prisma.booking.findMany({
     where: {
       status: BookingStatus.COMPLETED,
-      OR: [
-        { qaRecord: null },
-        {
-          qaRecord: {
-            status: {
-              not: 'COMPLETE',
-            },
-          },
-        },
-      ],
     },
     orderBy: [{ scheduledDateTime: 'desc' }],
-    take: 10,
+    take: 25,
     select: {
       id: true,
       customerName: true,
@@ -74,6 +64,10 @@ export default async function AdminBookingsPage() {
       },
     },
   })
+
+  const qaQueue = qaCandidates
+    .filter((booking) => !booking.qaRecord || booking.qaRecord.status !== 'COMPLETE')
+    .slice(0, 10)
 
   return (
     <div className="container mx-auto py-6">
