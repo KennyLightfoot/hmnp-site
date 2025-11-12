@@ -54,6 +54,7 @@ google-calendar-key.json
 
 # Virtual environment
 venv/
+.venv/
 .env
 
 # Google Ads config (keep outside repo)
