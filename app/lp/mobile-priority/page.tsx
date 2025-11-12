@@ -24,8 +24,8 @@ export default function MobilePriorityPage() {
     successRedirectUrl: "/thank-you-ads",
     submitButtonText: "Hold My Priority Slot",
     formTitle: "Need a Notary in the Next 2 Hours?",
-    formDescription: "Provide the appointment details and we’ll dispatch within 60–120 minutes when available.",
-  } as const
+    formDescription: "Provide the appointment details and we'll dispatch within 60–120 minutes when available.",
+  }
 
   return (
     <div className="min-h-screen bg-white">
