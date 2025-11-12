@@ -24,10 +24,13 @@ export default async function AdminBookingDetail({ params }: { params: Promise<{
       uploadedDocuments: {
         orderBy: { uploadedAt: 'desc' }
       },
-      qaRecord: true,
     }
   })
   if (!booking) return notFound()
+
+  const qaRecord = await prisma.bookingQARecord.findUnique({
+    where: { bookingId: id }
+  })
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -39,16 +42,16 @@ export default async function AdminBookingDetail({ params }: { params: Promise<{
       <div className="grid lg:grid-cols-2 gap-6">
         <QAChecklistCard
           bookingId={booking.id}
-          initialQa={booking.qaRecord ? {
-            status: booking.qaRecord.status,
-            journalEntryVerified: booking.qaRecord.journalEntryVerified,
-            sealPhotoVerified: booking.qaRecord.sealPhotoVerified,
-            documentCountVerified: booking.qaRecord.documentCountVerified,
-            clientConfirmationVerified: booking.qaRecord.clientConfirmationVerified,
-            closeoutFormVerified: booking.qaRecord.closeoutFormVerified,
-            notes: booking.qaRecord.notes,
-            followUpAction: booking.qaRecord.followUpAction,
-            updatedAt: booking.qaRecord.updatedAt?.toISOString()
+          initialQa={qaRecord ? {
+            status: qaRecord.status,
+            journalEntryVerified: qaRecord.journalEntryVerified,
+            sealPhotoVerified: qaRecord.sealPhotoVerified,
+            documentCountVerified: qaRecord.documentCountVerified,
+            clientConfirmationVerified: qaRecord.clientConfirmationVerified,
+            closeoutFormVerified: qaRecord.closeoutFormVerified,
+            notes: qaRecord.notes,
+            followUpAction: qaRecord.followUpAction,
+            updatedAt: qaRecord.updatedAt?.toISOString()
           } : null}
         />
 
