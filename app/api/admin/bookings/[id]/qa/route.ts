@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { QAStatus, Role } from '@prisma/client'
+import { Role } from '@prisma/client'
 
 const qaUpdateSchema = z.object({
   journalEntryVerified: z.boolean().optional(),
@@ -12,7 +12,7 @@ const qaUpdateSchema = z.object({
   documentCountVerified: z.boolean().optional(),
   clientConfirmationVerified: z.boolean().optional(),
   closeoutFormVerified: z.boolean().optional(),
-  status: z.nativeEnum(QAStatus).optional(),
+  status: z.enum(['PENDING', 'IN_PROGRESS', 'FLAGGED', 'COMPLETE']).optional(),
   notes: z.string().max(2000).optional(),
   followUpAction: z.string().max(2000).optional(),
 })

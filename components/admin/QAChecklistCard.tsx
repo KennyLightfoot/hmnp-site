@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useTransition } from 'react'
-import { QAStatus } from '@prisma/client'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -16,6 +15,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
+
+type QAStatus = 'PENDING' | 'IN_PROGRESS' | 'FLAGGED' | 'COMPLETE'
 
 const STATUS_LABELS: Record<QAStatus, string> = {
   PENDING: 'Pending',
@@ -43,7 +44,7 @@ export function QAChecklistCard({ bookingId, initialQa }: ChecklistProps) {
   const { toast } = useToast()
   const [isPending, startTransition] = useTransition()
 
-  const [status, setStatus] = useState<QAStatus>(initialQa?.status ?? QAStatus.PENDING)
+  const [status, setStatus] = useState<QAStatus>(initialQa?.status ?? 'PENDING')
   const [journalEntry, setJournalEntry] = useState(initialQa?.journalEntryVerified ?? false)
   const [sealPhoto, setSealPhoto] = useState(initialQa?.sealPhotoVerified ?? false)
   const [documentCount, setDocumentCount] = useState(initialQa?.documentCountVerified ?? false)

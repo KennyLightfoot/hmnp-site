@@ -4,7 +4,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { getErrorMessage } from '@/lib/utils/error-utils'
-import { BookingStatus, QAStatus, Role } from '@prisma/client'
+import { BookingStatus, Role } from '@prisma/client'
+
+type QAStatus = 'PENDING' | 'IN_PROGRESS' | 'FLAGGED' | 'COMPLETE'
 
 function ensureAdmin(session: Awaited<ReturnType<typeof getServerSession>>) {
   const role = (session?.user as any)?.role as Role | undefined
@@ -24,24 +26,14 @@ export async function GET(request: NextRequest) {
     const limitParam = searchParams.get('limit')
     const limit = limitParam ? Math.min(Math.max(parseInt(limitParam, 10) || 10, 1), 50) : 10
 
-    const pending = await prisma.booking.findMany({
+    const completed = await prisma.booking.findMany({
       where: {
         status: BookingStatus.COMPLETED,
-        OR: [
-          { qaRecord: null },
-          {
-            qaRecord: {
-              status: {
-                not: QAStatus.COMPLETE,
-              },
-            },
-          },
-        ],
       },
       orderBy: {
         scheduledDateTime: 'desc',
       },
-      take: limit,
+      take: limit * 2, // Fetch more to filter client-side
       select: {
         id: true,
         customerName: true,
@@ -58,19 +50,37 @@ export async function GET(request: NextRequest) {
             email: true,
           },
         },
-        qaRecord: {
-          select: {
-            status: true,
-            journalEntryVerified: true,
-            sealPhotoVerified: true,
-            documentCountVerified: true,
-            clientConfirmationVerified: true,
-            closeoutFormVerified: true,
-            updatedAt: true,
-          },
-        },
       },
     })
+
+    // Fetch QA records separately
+    const qaRecords = await Promise.all(
+      completed.map(async (booking) => {
+        try {
+          const qa = await (prisma as any).bookingQARecord.findUnique({
+            where: { bookingId: booking.id },
+            select: {
+              status: true,
+              journalEntryVerified: true,
+              sealPhotoVerified: true,
+              documentCountVerified: true,
+              clientConfirmationVerified: true,
+              closeoutFormVerified: true,
+              updatedAt: true,
+            },
+          })
+          return { bookingId: booking.id, qa }
+        } catch {
+          return { bookingId: booking.id, qa: null }
+        }
+      })
+    )
+
+    const qaMap = new Map(qaRecords.map((r) => [r.bookingId, r.qa]))
+    const pending = completed
+      .map((booking) => ({ ...booking, qaRecord: qaMap.get(booking.id) || null }))
+      .filter((booking) => !booking.qaRecord || booking.qaRecord.status !== 'COMPLETE')
+      .slice(0, limit)
 
     const data = pending.map((booking) => ({
       id: booking.id,
@@ -84,7 +94,7 @@ export async function GET(request: NextRequest) {
             email: booking.User_Booking_notaryIdToUser.email,
           }
         : null,
-      qaStatus: booking.qaRecord?.status ?? QAStatus.PENDING,
+      qaStatus: (booking.qaRecord?.status as QAStatus) ?? 'PENDING',
       checklist: booking.qaRecord
         ? {
             journalEntryVerified: booking.qaRecord.journalEntryVerified,
