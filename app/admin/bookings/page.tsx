@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { BookingStatus, QAStatus, Role } from '@prisma/client'
+import { BookingStatus, Role } from '@prisma/client'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -38,7 +38,7 @@ export default async function AdminBookingsPage() {
         {
           qaRecord: {
             status: {
-              not: QAStatus.COMPLETE,
+              not: 'COMPLETE',
             },
           },
         },
@@ -111,7 +111,7 @@ export default async function AdminBookingsPage() {
                         {booking.service?.name ? <span className="text-muted-foreground"> · {booking.service.name}</span> : null}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        Completed: {scheduled} · QA Status: {qa?.status ?? QAStatus.PENDING}
+                        Completed: {scheduled} · QA Status: {qa?.status ?? 'PENDING'}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         Notary: {booking.User_Booking_notaryIdToUser?.name || 'Unassigned'} ({booking.User_Booking_notaryIdToUser?.email || '—'})
