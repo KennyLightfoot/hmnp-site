@@ -35,7 +35,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 
   const { id } = await context.params
 
-  const record = await prisma.bookingQARecord.findUnique({
+  const record = await (prisma as any).bookingQARecord.findUnique({
     where: { bookingId: id },
   })
 
@@ -59,7 +59,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
 
   const data = parsed.data
 
-  const record = await prisma.bookingQARecord.upsert({
+  const record = await (prisma as any).bookingQARecord.upsert({
     where: { bookingId: id },
     create: {
       bookingId: id,
