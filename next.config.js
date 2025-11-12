@@ -217,6 +217,41 @@ const nextConfig = {
     return config;
   },
   
+  async redirects() {
+    return [
+      {
+        source: '/services/extended-hours',
+        destination: '/services/extended-hours-notary',
+        permanent: true,
+      },
+      {
+        source: '/services/extended-hours/:path*',
+        destination: '/services/extended-hours-notary/:path*',
+        permanent: true,
+      },
+      {
+        source: '/services/ron',
+        destination: '/services/remote-online-notarization',
+        permanent: true,
+      },
+      {
+        source: '/services/ron/:path*',
+        destination: '/services/remote-online-notarization/:path*',
+        permanent: true,
+      },
+      {
+        source: '/services/specialty-notary-service',
+        destination: '/services/specialty',
+        permanent: true,
+      },
+      {
+        source: '/services/specialty-notary-service/:path*',
+        destination: '/services/specialty/:path*',
+        permanent: true,
+      },
+    ];
+  },
+  
   // Headers for performance and security
   async headers() {
     return [

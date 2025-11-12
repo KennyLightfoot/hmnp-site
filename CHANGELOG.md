@@ -1,9 +1,17 @@
 ## 2025-11-06
 
+- feat(consent): add Consent Mode v2 default (denied) + updater hook in `app/layout.tsx` prior to GTM load
 - docs(env): add GA4/GTM/Ads vars + business hours/DNI to `docs/ENV.CONSOLIDATED.EXAMPLE`
 - seo(schema): set `legalName` to "Houston Mobile Notary Pros LLC", adjust service-area and hours in `components/structured-data.tsx`
 - seo(nap): update footer copyright to "Houston Mobile Notary Pros LLC"
 - seo/citations: align `lib/citations/citation-manager.ts` with official NAP (LLC, email, hours, Texas City center)
+- feat(automation): add Ads conversion creation and bootstrap scripts:
+  - `scripts/ads/create_conversions.py` (Booking, Calls from ads, Click-to-call website)
+  - `scripts/ads/bootstrap_account.py` (orchestrates conversions and assets)
+  - `scripts/ads/generate_google_ads_yaml.py` (writes google-ads.yaml from env)
+  - `scripts/ads/link_ga4_property.py` (GA4↔Ads link via Analytics Admin)
+  - `scripts/ads/requirements.txt` updated (adds PyYAML)
+  - `scripts/README.AUTOMATION.md` quick start
 - perf: tune Next image config (inline disposition + mobile device sizes) to reduce LCP on phones
 - feat(rum): add `app/instrumentation.ts` + `/api/rum` endpoint with optional Upstash storage for Core Web Vitals
 - perf(pricing): lazy-load calculator, comparison table, and trust badges with server JSON-LD + daily revalidation
@@ -16,6 +24,11 @@
 - docs: add `docs/SMS_10DLC_COMPLIANCE.md`, `docs/VENDOR_DPA_STATUS.md`, `docs/ON_CALL_SLA.md`, `docs/STATUS_PAGE.md`, `docs/BACKUP_RESTORE_DR.md`
 - ci: add Lighthouse CI workflow and a11y/perf gates, E2E workflow run
 - feat(security): admin IP allowlist via `ADMIN_IP_ALLOWLIST`; immutable `AuditLog` with chained hashes
+- fix(seo): make service-area pages self-referential, add legacy `/services` redirects, and stop layout defaulting every page to the root canonical
+- fix(seo/faq): serve the optimized FAQ component on `/faq` so the FAQ content and schema render instead of the RON landing copy
+- seo(schema): embed homepage LocalBusiness JSON-LD, testimonials review schema, and reuse the structured data helper across pages
+- perf(ux): drop artificial FAQ loading delays and swap global Suspense fallbacks to lightweight skeletons instead of blocking spinners
+- feat(analytics): wire up Google Tag Manager with Consent Mode defaults and noscript fallback in `app/layout.tsx`
 
 ## 2025-08-27
 

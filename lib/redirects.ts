@@ -38,6 +38,16 @@ export const SERVICE_REDIRECTS: RedirectMapping[] = [
     destination: '/services/extended-hours-notary/:path*',
     permanent: true,
   },
+  {
+    source: '/services/extended-hours',
+    destination: '/services/extended-hours-notary',
+    permanent: true,
+  },
+  {
+    source: '/services/extended-hours/:path*',
+    destination: '/services/extended-hours-notary/:path*',
+    permanent: true,
+  },
   
   // Basic → Standard Notary
   {
@@ -54,12 +64,22 @@ export const SERVICE_REDIRECTS: RedirectMapping[] = [
   // Premium → Specialty Notary Service
   {
     source: '/services/premium',
-    destination: '/services/specialty-notary-service',
+    destination: '/services/specialty',
     permanent: true,
   },
   {
     source: '/services/premium/:path*',
-    destination: '/services/specialty-notary-service/:path*',
+    destination: '/services/specialty/:path*',
+    permanent: true,
+  },
+  {
+    source: '/services/ron',
+    destination: '/services/remote-online-notarization',
+    permanent: true,
+  },
+  {
+    source: '/services/ron/:path*',
+    destination: '/services/remote-online-notarization/:path*',
     permanent: true,
   },
   

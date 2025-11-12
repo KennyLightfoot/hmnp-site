@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import FAQClientPage from "./FAQClientPage"
+import FAQClientPage from "@/components/faq/FAQClientPageOptimized"
 
 // Define Base URL for metadata
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'; // Replace with your actual domain

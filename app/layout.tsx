@@ -6,7 +6,6 @@ import { Suspense } from "react"
 import Script from "next/script"
 import GAPathTracker from "@/components/analytics/GAPathTracker"
 import GAConversionEvents from "@/components/analytics/GAConversionEvents"
-import { LoadingSpinner } from "@/components/ui/loading-states"
 import dynamic from 'next/dynamic'
 import Analytics from '@/components/Analytics'
 import SchemaInitializer from '@/components/SchemaInitializer'
@@ -30,9 +29,6 @@ export const metadata: Metadata = {
     telephone: false,
   },
   metadataBase: new URL('https://houstonmobilenotarypros.com'),
-  alternates: {
-    canonical: '/',
-  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
@@ -86,9 +82,63 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const gtmId = process.env.NEXT_PUBLIC_GTM_ID
+
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${dmSerifDisplay.variable}`}>
       <body>
+        {/* Consent Mode v2 default (denied) + updater hook. Must run before GTM. */}
+        <Script id="consent-mode-default" strategy="beforeInteractive">
+          {`
+            (function() {
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              // Default: denied until user grants via banner
+              gtag('consent', 'default', {
+                'ad_user_data': 'denied',
+                'ad_personalization': 'denied',
+                'ad_storage': 'denied',
+                'analytics_storage': 'denied',
+                'functionality_storage': 'granted',
+                'security_storage': 'granted'
+              });
+              // Optional: expose updater for your banner to call
+              window.hmnpConsentUpdate = function(granted) {
+                try {
+                  gtag('consent', 'update', granted ? {
+                    'ad_user_data': 'granted',
+                    'ad_personalization': 'granted',
+                    'ad_storage': 'granted',
+                    'analytics_storage': 'granted'
+                  } : {
+                    'ad_user_data': 'denied',
+                    'ad_personalization': 'denied',
+                    'ad_storage': 'denied',
+                    'analytics_storage': 'denied'
+                  });
+                } catch(_) {}
+              };
+            })();
+          `}
+        </Script>
+        {gtmId ? (
+          <>
+            <Script id="gtm-base" strategy="afterInteractive">
+              {`
+                (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+                })(window,document,'script','dataLayer','${gtmId}');
+              `}
+            </Script>
+            <noscript
+              dangerouslySetInnerHTML={{
+                __html: `<iframe src="https://www.googletagmanager.com/ns.html?id=${gtmId}" height="0" width="0" style="display:none;visibility:hidden"></iframe>`
+              }}
+            />
+          </>
+        ) : null}
         <Suspense>
           <Analytics />
         </Suspense>
@@ -123,14 +173,19 @@ export default function RootLayout({
           );
         })()}
         <Providers>
-          <Suspense fallback={<LoadingSpinner size="lg" />}>
+          <Suspense fallback={<div className="h-16 bg-white border-b animate-pulse" />}>
             <LazyHeader />
           </Suspense>
           
           <main className="min-h-screen">
             <Suspense fallback={
-              <div className="flex items-center justify-center min-h-[400px]">
-                <LoadingSpinner size="lg" />
+              <div className="container mx-auto px-4 py-12 space-y-6 animate-pulse">
+                <div className="h-10 bg-gray-200 rounded-lg" />
+                <div className="h-64 bg-gray-100 rounded-2xl" />
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="h-48 bg-gray-100 rounded-2xl" />
+                  <div className="h-48 bg-gray-100 rounded-2xl" />
+                </div>
               </div>
             }>
               {children}

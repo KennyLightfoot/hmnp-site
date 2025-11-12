@@ -12,6 +12,15 @@ export const metadata: Metadata = {
   description:
     "Browse all cities and areas we serve for mobile notary and loan signing services throughout Greater Houston and the Gulf Coast. Fast, reliable service in your area.",
   keywords: "Houston mobile notary, service areas, mobile notary near me, notary service areas, Houston metro notary",
+  alternates: {
+    canonical: "/service-areas",
+  },
+  openGraph: {
+    url: "/service-areas",
+    title: "Mobile Notary Service Areas | Houston Mobile Notary Pros",
+    description:
+      "Browse all cities and areas we serve for mobile notary and loan signing services throughout Greater Houston and the Gulf Coast. Fast, reliable service in your area.",
+  },
 }
 
 // Enhanced service area data with local positioning

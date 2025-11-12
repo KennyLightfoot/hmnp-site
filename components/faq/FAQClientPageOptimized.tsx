@@ -29,17 +29,6 @@ export default function FAQClientPageOptimized() {
     showPopularOnly: false,
   });
 
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Simulate loading for better UX (in real app, this would be data fetching)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
   // Handle URL hash navigation to specific FAQ
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.hash) {
@@ -51,34 +40,7 @@ export default function FAQClientPageOptimized() {
         }
       }, 100);
     }
-  }, [isLoading]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="animate-pulse space-y-8">
-            {/* Header skeleton */}
-            <div className="text-center space-y-4">
-              <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto"></div>
-              <div className="h-12 bg-gray-200 rounded w-2/3 mx-auto"></div>
-              <div className="h-6 bg-gray-200 rounded w-1/2 mx-auto"></div>
-            </div>
-            
-            {/* Search skeleton */}
-            <div className="h-24 bg-gray-200 rounded-lg"></div>
-            
-            {/* FAQ items skeleton */}
-            <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className="h-16 bg-gray-200 rounded-lg"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  }, []);
 
   // Filter FAQs based on current filters
   const filteredFAQs = faqs.filter(faq => {

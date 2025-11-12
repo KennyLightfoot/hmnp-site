@@ -1,7 +1,7 @@
 import Script from "next/script"
 
 interface StructuredDataProps {
-  nonce: string;
+  nonce?: string;
 }
 
 export function StructuredData({ nonce }: StructuredDataProps) {

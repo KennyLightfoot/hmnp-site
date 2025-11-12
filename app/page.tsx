@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import { StructuredData } from "@/components/structured-data"
 import HeroSection from "@/components/hero-section"
 import ValueRow from "@/components/ValueRow"
 import ServicesGrid from "@/components/ServicesGrid"
@@ -20,6 +21,9 @@ export const metadata: Metadata = {
   description: "Need a notary near you in Houston? We come to you! Mobile notary services, loan signing agent, RON, and emergency notarization. Book online now.",
   keywords:
     "mobile notary Houston, notary near me, Houston notary, notary public, loan signing agent, traveling notary, notary services, electronic notary, mobile notary near me, after hours notary, emergency notary Houston, RON notary, remote online notarization",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "Mobile Notary Houston | Notary Near Me | Houston Mobile Notary Pros",
     description: "Need a notary near you in Houston? We come to you! Mobile notary services, loan signing agent, RON, and emergency notarization available 24/7.",
@@ -47,6 +51,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <main>
+      <StructuredData />
       {/* Simple Hero Section - restored from commit f05266 */}
       <HeroSection />
       
