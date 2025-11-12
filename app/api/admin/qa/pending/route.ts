@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getServerSession, Session } from 'next-auth'
 
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
@@ -8,7 +8,7 @@ import { BookingStatus, Role } from '@prisma/client'
 
 type QAStatus = 'PENDING' | 'IN_PROGRESS' | 'FLAGGED' | 'COMPLETE'
 
-function ensureAdmin(session: Awaited<ReturnType<typeof getServerSession>>) {
+function ensureAdmin(session: Session | null) {
   const role = (session?.user as any)?.role as Role | undefined
   if (!session?.user || (role !== Role.ADMIN && role !== Role.STAFF)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
