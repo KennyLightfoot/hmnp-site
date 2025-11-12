@@ -51,7 +51,7 @@ export async function getRumSummary(): Promise<RumSummary> {
 
   const grouped = filtered.reduce<Record<string, typeof filtered>>((acc, metric) => {
     if (!acc[metric.name]) acc[metric.name] = []
-    acc[metric.name].push(metric)
+    acc[metric.name]!.push(metric)
     return acc
   }, {})
 
