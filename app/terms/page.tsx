@@ -39,14 +39,100 @@ export default function TermsPage() {
             Our role is strictly limited to acting as an impartial witness in performing notarial acts as prescribed by Texas law. We are not attorneys and do not provide legal advice. We cannot explain the contents of documents or the legal implications of signing them. For Loan Signings, we are prohibited from explaining loan terms.
           </p>
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">2. Service Area</h2>
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">2. Legal Disclaimer and Limitations</h2>
+          <div className="bg-red-50 border-l-4 border-red-600 p-6 my-4 rounded">
+            <p className="font-bold text-red-900 text-lg mb-3">
+              REQUIRED STATUTORY DISCLAIMER (Texas Government Code §406.017)
+            </p>
+            <p className="text-red-800 font-semibold italic text-base mb-4">
+              "I AM NOT AN ATTORNEY LICENSED TO PRACTICE LAW IN TEXAS AND MAY NOT GIVE LEGAL ADVICE OR ACCEPT FEES FOR LEGAL ADVICE."
+            </p>
+          </div>
+
+          <p className="font-semibold text-[#002147] mb-2">We Are Not Attorneys</p>
+          <p>
+            Houston Mobile Notary Pros and our notaries public are <strong>NOT attorneys</strong> licensed to practice law in Texas. We are prohibited by law from providing legal advice, legal opinions, or legal services of any kind. We cannot and will not act as your legal representative or advocate.
+          </p>
+
+          <p className="font-semibold text-[#002147] mt-4 mb-2">What We CANNOT Do</p>
+          <p>The following activities are strictly prohibited and we will not engage in them:</p>
+          <ul className="list-disc pl-6 space-y-2 mt-2">
+            <li><strong>Provide Legal Advice:</strong> We cannot explain what your documents mean, interpret legal language, or advise you on the legal implications of signing documents.</li>
+            <li><strong>Explain Document Contents:</strong> We cannot explain the contents, terms, conditions, or effects of any document you are signing.</li>
+            <li><strong>Recommend Actions:</strong> We cannot recommend whether you should or should not sign a document, or advise you on what documents you need.</li>
+            <li><strong>Prepare Legal Documents:</strong> We cannot prepare, draft, or fill in legal documents beyond adding notarial wording (certificates) as required by law.</li>
+            <li><strong>Select Notarization Type:</strong> We cannot advise which type of notarization (acknowledgment, jurat, etc.) is needed for your document. You must know what type you need or consult an attorney.</li>
+            <li><strong>Explain Loan Terms:</strong> For loan signings, we are specifically prohibited from explaining loan terms, interest rates, payment schedules, or any other loan-related information.</li>
+            <li><strong>Provide Financial Advice:</strong> We cannot provide financial advice, investment advice, or tax advice.</li>
+            <li><strong>Represent You Legally:</strong> We cannot represent you in legal proceedings, negotiations, or disputes.</li>
+            <li><strong>Act as an Advocate:</strong> We must remain impartial and cannot act as an advocate for any party in a transaction.</li>
+            <li><strong>Accept Fees for Legal Services:</strong> We cannot accept any fees for legal advice or legal services, as this would constitute the unauthorized practice of law.</li>
+          </ul>
+
+          <p className="font-semibold text-[#002147] mt-4 mb-2">What We CAN Do</p>
+          <p>Our role is strictly limited to performing notarial acts as authorized by Texas law:</p>
+          <ul className="list-disc pl-6 space-y-2 mt-2">
+            <li><strong>Verify Identity:</strong> We can verify your identity using acceptable forms of identification.</li>
+            <li><strong>Witness Signatures:</strong> We can witness you signing documents in our presence.</li>
+            <li><strong>Administer Oaths:</strong> We can administer oaths and affirmations as required by law.</li>
+            <li><strong>Complete Notarial Certificates:</strong> We can complete and attach notarial certificates (acknowledgments, jurats, etc.) to your documents.</li>
+            <li><strong>Maintain Notary Journal:</strong> We can record notarial acts in our official notary journal as required by Texas law.</li>
+            <li><strong>Explain Notarization Process:</strong> We can explain the notarization process itself, notary requirements, and logistics of our services.</li>
+            <li><strong>Ensure Willingness:</strong> We can verify that you are signing willingly and without coercion.</li>
+            <li><strong>Refuse Service:</strong> We can refuse to notarize if required by law or if we suspect fraud, coercion, or other illegal activity.</li>
+          </ul>
+
+          <p className="font-semibold text-[#002147] mt-4 mb-2">Consult an Attorney</p>
+          <p>
+            If you have questions about:
+          </p>
+          <ul className="list-disc pl-6 space-y-1 mt-2">
+            <li>What your documents mean or their legal effects</li>
+            <li>Whether you should sign a document</li>
+            <li>What type of notarization you need</li>
+            <li>What documents you need for your situation</li>
+            <li>Legal implications of your transaction</li>
+            <li>Loan terms, interest rates, or payment schedules</li>
+            <li>Estate planning, business formation, or other legal matters</li>
+          </ul>
+          <p className="mt-2">
+            <strong>You must consult with a licensed attorney.</strong> We cannot and will not provide legal advice. If you need a referral to an attorney, we can provide contact information for local bar associations or legal referral services.
+          </p>
+
+          <p className="font-semibold text-[#002147] mt-4 mb-2">Unauthorized Practice of Law</p>
+          <p>
+            Providing legal advice or legal services without a license constitutes the unauthorized practice of law, which is a criminal offense in Texas. We strictly adhere to our role as notaries public and will not engage in any activity that could be construed as the practice of law.
+          </p>
+
+          <p className="font-semibold text-[#002147] mt-4 mb-2">No Attorney-Client Relationship</p>
+          <p>
+            By using our services, you acknowledge and agree that no attorney-client relationship is created between you and Houston Mobile Notary Pros or any of our notaries. We are not your attorneys, legal advisors, or legal representatives.
+          </p>
+
+          <p className="font-semibold text-[#002147] mt-4 mb-2">Your Responsibility</p>
+          <p>
+            You are solely responsible for:
+          </p>
+          <ul className="list-disc pl-6 space-y-1 mt-2">
+            <li>Understanding the contents and legal effects of documents you sign</li>
+            <li>Consulting with an attorney if you have legal questions</li>
+            <li>Ensuring documents are properly prepared and complete</li>
+            <li>Knowing what type of notarization is required for your documents</li>
+            <li>Making informed decisions about signing documents</li>
+          </ul>
+
+          <p className="mt-4">
+            <strong>By using our services, you acknowledge that you have read, understood, and agree to this Legal Disclaimer and Limitations section.</strong>
+          </p>
+
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">3. Service Area</h2>
           <ul className="list-disc pl-6 space-y-1">
             <li><strong>Primary Service Area:</strong> 20-mile radius from ZIP code 77591.</li>
             <li><strong>Extended Service Area:</strong> 20-50 miles from ZIP code 77591. Tiered travel applies beyond the included 20 miles: 21–30 +$25; 31–40 +$45; 41–50 +$65.</li>
             <li>We reserve the right to decline service outside our defined service areas or adjust fees based on travel time and distance. Service availability is subject to notary availability.</li>
           </ul>
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">3. Service Hours</h2>
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">4. Service Hours</h2>
            <ul className="list-disc pl-6 space-y-1">
             <li><strong>Essential Services:</strong> Generally available 9:00 AM - 5:00 PM, Monday - Friday.</li>
             <li><strong>Priority Services:</strong> Generally available 7:00 AM - 9:00 PM, Daily.</li>
@@ -55,7 +141,7 @@ export default function TermsPage() {
             <li>Availability is subject to change and notary schedules. We are closed on Federal Holidays listed in the Appendix.</li>
           </ul>
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">4. Booking and Appointments</h2>
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">5. Booking and Appointments</h2>
            <ul className="list-disc pl-6 space-y-1">
             <li>Appointments can be requested via our website booking system or by contacting us directly.</li>
             <li>To secure an appointment, you must provide: full legal name(s) of signer(s), document type(s)/count, service type, physical signing location address, and preferred appointment window.</li>
@@ -63,7 +149,7 @@ export default function TermsPage() {
             <li><strong>Extended Hours Notary:</strong> Confirmation requires an available 2-hour window.</li>
           </ul>
 
-          <h2 id="fees-and-payment" className="text-2xl font-semibold text-[#002147] mt-6 mb-2">5. Fees and Payment</h2>
+          <h2 id="fees-and-payment" className="text-2xl font-semibold text-[#002147] mt-6 mb-2">6. Fees and Payment</h2>
           <ul className="list-disc pl-6 space-y-1">
             <li><strong>Notarial Act Fees:</strong> Fees for specific notarial acts (e.g., Acknowledgments, Jurats) are charged per notarization/signature as permitted by Texas Government Code §406.024. Our current fees are listed on our website and/or provided during booking.</li>
             <li><strong>Service Fees:</strong> Mobile service, travel, administrative, after-hours, weekend, and other non-notarial fees are charged separately from notarial act fees, as permitted by §406.024(c). These will be itemized in your quote and invoice.</li>
@@ -75,14 +161,14 @@ export default function TermsPage() {
             <li><strong>Corporate Accounts:</strong> May be eligible for Net-15 billing subject to credit approval, potentially altering deposit requirements.</li>
           </ul>
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">6. Cancellation and No-Show Policy</h2>
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">7. Cancellation and No-Show Policy</h2>
           <ul className="list-disc pl-6 space-y-1">
             <li><strong>Cancellation Notice:</strong> Please provide at least <strong>four (4) hours</strong> notice prior to your scheduled appointment time if you need to cancel or reschedule. You can notify us via phone or email using the contact information provided.</li>
             <li><strong>Late Cancellation / No-Show Fee:</strong> If you cancel with less than four (4) hours notice, fail to appear for your appointment, or if the signing cannot proceed due to reasons within your control (e.g., lack of required valid ID, absence of signer, unprepared documents preventing notarization), a <strong>$50.00 cancellation/no-show fee</strong> will be charged.</li>
             <li><strong>Fee Application:</strong> This $50.00 fee will be deducted from the deposit paid. Your $25.00 deposit will be applied towards this fee, and the remaining $25.00 will be charged to the credit card on file. If the appointment is successfully completed after rescheduling, this fee does not apply to the rescheduled appointment (though a new deposit may be required for the new time).</li>
           </ul>
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">7. Signer Requirements</h2>
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">8. Signer Requirements</h2>
           <ul className="list-disc pl-6 space-y-1">
             <li><strong>Presence:</strong> All signers must be physically present at the agreed-upon time and location.</li>
             <li><strong>Identification:</strong> Each signer must present valid, unexpired, government-issued photo identification (e.g., Driver's License, State ID Card, US Passport) acceptable under Texas law. The name on the ID must reasonably match the name on the document.</li>
@@ -91,7 +177,7 @@ export default function TermsPage() {
             <li><strong>Witnesses:</strong> If your document requires witnesses in addition to the notary, you must provide your own witnesses who meet state requirements (generally, they must be known to the signer, have valid ID, and have no financial interest in the transaction).</li>
           </ul>
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">8. Refusal of Service</h2>
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">9. Refusal of Service</h2>
           <p>We reserve the right to refuse service if:</p>
           <ul className="list-disc pl-6 space-y-1">
             <li>The signer cannot provide valid identification.</li>
@@ -102,42 +188,42 @@ export default function TermsPage() {
             <li>Payment (deposit or final) cannot be secured.</li>
           </ul>
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">9. Limitation of Liability</h2>
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">10. Limitation of Liability</h2>
           <p>
             Our liability is limited to the fees paid for the specific Service rendered. We maintain Errors & Omissions (E&O) insurance with a coverage limit of $100,000 per claim, as relevant to notarial acts. We are not liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the Services. This limitation applies regardless of whether the alleged liability is based on contract, tort, negligence, strict liability, or any other basis.
           </p>
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">10. Confidentiality</h2>
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">11. Confidentiality</h2>
           <p>
             We adhere to strict confidentiality standards regarding your documents and personal information, except as required by law (e.g., notary journal entries, legal process). Please see our <Link href="/privacy" className="text-[#A52A2A] hover:underline">Privacy Policy</Link> for details on how we handle your data.
           </p>
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">11. Website Use</h2>
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">12. Website Use</h2>
           <p>
             The content on our website is for informational purposes only. We strive for accuracy but do not guarantee that the information is complete or error-free. Your use of the website is at your own risk.
           </p>
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">11a. SMS Messaging Terms</h2>
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">12a. SMS Messaging Terms</h2>
           <p>
             By opting in, you consent to receive SMS messages from us related to your inquiries, bookings, and service updates. Consent is not a condition of purchase. Message frequency varies. You may opt out at any time by replying STOP. Reply HELP for help. Msg & data rates may apply. Consent is logged with timestamp, source, IP, and user agent.
           </p>
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">12. Intellectual Property</h2>
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">13. Intellectual Property</h2>
           <p>
             All content on this website, including text, graphics, logos, and images, is the property of Houston Mobile Notary Pros or its content suppliers and protected by copyright and other intellectual property laws.
           </p>
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">13. Governing Law and Dispute Resolution</h2>
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">14. Governing Law and Dispute Resolution</h2>
           <p>
             These Terms shall be governed by the laws of the State of Texas, without regard to its conflict of law principles. Any dispute arising from these Terms or the Services shall ideally be resolved through good-faith negotiation first. If negotiation fails, disputes may be pursued through mediation or binding arbitration in Harris County, Texas, before resorting to litigation. [Consider consulting legal counsel on the best dispute resolution clause].
           </p>
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">14. Changes to Terms</h2>
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">15. Changes to Terms</h2>
           <p>
             We reserve the right to modify these Terms at any time. We will post the revised Terms on this page and update the "Last Updated" date. Your continued use of the website or Services after changes constitutes your acceptance of the new Terms.
           </p>
 
-          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">15. Contact Information</h2>
+          <h2 className="text-2xl font-semibold text-[#002147] mt-6 mb-2">16. Contact Information</h2>
           <p>For any questions regarding these Terms, please contact us:</p>
           <p>
             <strong>Houston Mobile Notary Pros</strong><br />
