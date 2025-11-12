@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { Role, type BookingQARecord } from '@prisma/client'
+import { Role } from '@prisma/client'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -30,7 +30,7 @@ export default async function AdminBookingDetail({ params }: { params: Promise<{
 
   const qaRecord = await (prisma as any).bookingQARecord.findUnique({
     where: { bookingId: id }
-  }) as BookingQARecord | null
+  })
 
   return (
     <div className="container mx-auto py-6 space-y-6">
