@@ -22,7 +22,7 @@ const MicroTestimonials = dynamic(() => import('@/components/MicroTestimonials')
 
 const mobileLeadFormProps = {
   apiEndpoint: '/api/submit-ad-lead',
-  tags: ['AdLead:PaidSearch', 'ServiceInterest:MobileNotary', 'Channel:Google'],
+  tags: ['AdLead:PaidSearch', 'ServiceInterest:MobileNotary', 'Channel:Google'] as string[],
   customFields: {
     cf_ad_platform: 'GoogleAds',
     cf_ad_campaign_name: 'Mobile Notary Paid Search',
@@ -42,7 +42,7 @@ const mobileLeadFormProps = {
     campaign_name: 'Mobile Notary Paid Search',
     ad_platform: 'google_ads',
   },
-} as const;
+};
 
 export default function MobileNotaryPageClient() {
   const phone = getBusinessPhoneFormatted();
