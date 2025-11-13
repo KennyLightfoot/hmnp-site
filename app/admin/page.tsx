@@ -7,6 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CalendarDays, Users, CreditCard, Bell, AlertCircle, Activity } from "lucide-react";
 import Link from "next/link";
 
+// Force dynamic rendering to prevent SSR issues with client components
+export const dynamic = 'force-dynamic'
+
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
 

@@ -13,6 +13,9 @@ import { notFound } from "next/navigation"
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://houstonmobilenotarypros.com"
 
+// Force dynamic rendering to prevent SSR issues with client components
+export const dynamic = 'force-dynamic'
+
 interface PageProps {
   params: Promise<{ slug: string }>
 }
