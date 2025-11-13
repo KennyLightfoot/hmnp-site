@@ -1,11 +1,11 @@
-import {HelpCircleIcon} from '@sanity/icons'
+import {DocumentTextIcon} from '@sanity/icons'
 import {defineArrayMember, defineField, defineType} from 'sanity'
 
 export const helpArticleType = defineType({
   name: 'helpArticle',
   title: 'Help Article',
   type: 'document',
-  icon: HelpCircleIcon,
+  icon: DocumentTextIcon,
   fields: [
     defineField({
       name: 'title',
@@ -96,4 +96,10 @@ export const helpArticleType = defineType({
     },
   ],
 })
+
+
+
+
+
+
 
