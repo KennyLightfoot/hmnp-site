@@ -35,11 +35,15 @@ export interface PricingCache {
 
 export class PWAManager {
   private registration: ServiceWorkerRegistration | null = null;
-  private isOnline = navigator.onLine;
+  private isOnline: boolean = true; // Default to true, will be updated when listeners are set up
   private syncQueue: OfflineBooking[] = [];
 
   constructor() {
-    this.setupOnlineStatusListeners();
+    // Only setup listeners if we're in a browser environment
+    if (typeof window !== 'undefined') {
+      this.isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+      this.setupOnlineStatusListeners();
+    }
   }
 
   /**
@@ -223,6 +227,8 @@ export class PWAManager {
    * Get app installation prompt
    */
   async getInstallPrompt(): Promise<BeforeInstallPromptEvent | null> {
+    if (typeof window === 'undefined') return null;
+    
     return new Promise((resolve) => {
       window.addEventListener('beforeinstallprompt', (event) => {
         event.preventDefault();
@@ -238,7 +244,7 @@ export class PWAManager {
    * Request notification permission
    */
   async requestNotificationPermission(): Promise<NotificationPermission> {
-    if (!('Notification' in window)) {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
       return 'denied';
     }
 
@@ -289,6 +295,8 @@ export class PWAManager {
    * Private: Setup online/offline status listeners
    */
   private setupOnlineStatusListeners(): void {
+    if (typeof window === 'undefined') return;
+    
     window.addEventListener('online', () => {
       console.log('[PWA] Back online');
       this.isOnline = true;
@@ -339,7 +347,7 @@ export class PWAManager {
    * Private: Show update notification
    */
   private showUpdateNotification(): void {
-    if ('Notification' in window && Notification.permission === 'granted') {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
       new Notification('App Update Available', {
         body: 'A new version of the app is available. Please refresh to update.',
         icon: '/icons/icon-192x192.svg',
@@ -369,19 +377,40 @@ export class PWAManager {
   }
 }
 
-// Global PWA Manager instance
-export const pwaManager = new PWAManager();
+// Global PWA Manager instance - only create in browser environment
+let pwaManagerInstance: PWAManager | null = null;
 
-// Auto-register service worker
-if (typeof window !== 'undefined') {
-  pwaManager.registerServiceWorker().then((success) => {
-    if (success) {
-      console.log('[PWA] PWA functionality enabled');
-    } else {
-      console.log('[PWA] PWA functionality unavailable');
-    }
-  });
-}
+export const pwaManager = ((): PWAManager => {
+  if (typeof window === 'undefined') {
+    // Return a no-op instance for SSR
+    return {
+      registerServiceWorker: async () => false,
+      storeOfflineBooking: async () => false,
+      getOfflineBookings: async () => [],
+      syncOfflineBookings: async () => ({ success: false, synced: 0, total: 0 }),
+      cachePricingCalculation: async () => {},
+      getCachedPricing: async () => null,
+      isOffline: () => false,
+      getInstallPrompt: async () => null,
+      requestNotificationPermission: async () => 'denied' as NotificationPermission,
+      showNotification: async () => {},
+    } as PWAManager;
+  }
+  
+  if (!pwaManagerInstance) {
+    pwaManagerInstance = new PWAManager();
+    // Auto-register service worker
+    pwaManagerInstance.registerServiceWorker().then((success) => {
+      if (success) {
+        console.log('[PWA] PWA functionality enabled');
+      } else {
+        console.log('[PWA] PWA functionality unavailable');
+      }
+    });
+  }
+  
+  return pwaManagerInstance;
+})();
 
 // Types for better TypeScript support
 interface BeforeInstallPromptEvent extends Event {

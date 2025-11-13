@@ -42,18 +42,24 @@ export interface PWAFeatures {
 export class PWAManager {
   private installPrompt: PWAInstallPrompt | null = null;
   private swRegistration: ServiceWorkerRegistration | null = null;
-  private isOnline = navigator.onLine;
+  private isOnline: boolean = true; // Default to true, will be updated when listeners are set up
   private offlineQueue: OfflineBookingData[] = [];
 
   constructor() {
-    this.initializePWA();
-    this.setupEventListeners();
+    // Only initialize if we're in a browser environment
+    if (typeof window !== 'undefined') {
+      this.isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+      this.initializePWA();
+      this.setupEventListeners();
+    }
   }
 
   /**
    * Initialize PWA functionality
    */
   private async initializePWA(): Promise<void> {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') return;
+    
     try {
       // Register service worker
       if ('serviceWorker' in navigator) {
@@ -88,6 +94,8 @@ export class PWAManager {
    * Setup event listeners
    */
   private setupEventListeners(): void {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    
     // Online/offline status
     window.addEventListener('online', () => {
       this.isOnline = true;
@@ -123,6 +131,19 @@ export class PWAManager {
    * Check PWA feature support
    */
   getPWAFeatures(): PWAFeatures {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined' || typeof document === 'undefined') {
+      return {
+        installPrompt: false,
+        pushNotifications: false,
+        backgroundSync: false,
+        offlineCapability: false,
+        webShare: false,
+        cameraAccess: false,
+        locationAccess: false,
+        fullscreen: false
+      };
+    }
+    
     return {
       installPrompt: !!this.installPrompt,
       pushNotifications: 'PushManager' in window && 'Notification' in window,
@@ -163,7 +184,7 @@ export class PWAManager {
    * Request push notification permission
    */
   async requestNotificationPermission(): Promise<NotificationPermission> {
-    if (!('Notification' in window)) {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
       throw new Error('Notifications not supported');
     }
 
@@ -201,8 +222,8 @@ export class PWAManager {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           subscription,
-          userAgent: navigator.userAgent,
-          platform: navigator.platform
+          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+          platform: typeof navigator !== 'undefined' ? navigator.platform : ''
         })
       });
 
@@ -310,10 +331,10 @@ export class PWAManager {
    * Share content using Web Share API
    */
   async shareContent(data: { title: string; text: string; url?: string; files?: File[] }): Promise<boolean> {
-    if (!('share' in navigator)) {
+    if (typeof navigator === 'undefined' || !('share' in navigator)) {
       // Fallback to clipboard
       try {
-        if ('clipboard' in navigator) {
+        if (typeof navigator !== 'undefined' && 'clipboard' in navigator) {
           await (navigator as any).clipboard.writeText(data.url || data.text);
           this.showToast('Link copied to clipboard');
           return true;
@@ -340,7 +361,7 @@ export class PWAManager {
    */
   async getUserLocation(): Promise<{ latitude: number; longitude: number; accuracy: number }> {
     return new Promise((resolve, reject) => {
-      if (!('geolocation' in navigator)) {
+      if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
         reject(new Error('Geolocation not supported'));
         return;
       }
@@ -369,6 +390,10 @@ export class PWAManager {
    * Take photo using camera
    */
   async takePhoto(): Promise<File> {
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices || typeof document === 'undefined') {
+      throw new Error('Camera access not available');
+    }
+    
     const stream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: 'environment',
@@ -405,6 +430,10 @@ export class PWAManager {
    * Toggle fullscreen mode
    */
   async toggleFullscreen(): Promise<boolean> {
+    if (typeof document === 'undefined') {
+      return false;
+    }
+    
     try {
       if (document.fullscreenElement) {
         await document.exitFullscreen();
@@ -439,15 +468,17 @@ export class PWAManager {
     this.showToast('App installed successfully!');
     
     // Track installation
-    fetch('/api/analytics/pwa-install', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-        platform: navigator.platform
-      })
-    }).catch(() => {}); // Silent fail
+    if (typeof navigator !== 'undefined') {
+      fetch('/api/analytics/pwa-install', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          timestamp: new Date().toISOString(),
+          userAgent: navigator.userAgent,
+          platform: navigator.platform
+        })
+      }).catch(() => {}); // Silent fail
+    }
   }
 
   /**
@@ -468,7 +499,11 @@ export class PWAManager {
   private handleServiceWorkerUpdate(): void {
     this.showToast('App update available', {
       action: 'Reload',
-      callback: () => window.location.reload()
+      callback: () => {
+        if (typeof window !== 'undefined') {
+          window.location.reload();
+        }
+      }
     });
   }
 
@@ -541,6 +576,10 @@ export class PWAManager {
    * Convert VAPID key for push subscription
    */
   private urlBase64ToUint8Array(base64String: string): Uint8Array {
+    if (typeof window === 'undefined') {
+      throw new Error('window.atob not available');
+    }
+    
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
     const base64 = (base64String + padding)
       .replace(/-/g, '+')
@@ -574,5 +613,40 @@ export class PWAManager {
   }
 }
 
-// Singleton instance
-export const pwaManager = new PWAManager();
+// Singleton instance - only create in browser environment
+let pwaManagerInstance: PWAManager | null = null;
+
+export const pwaManager = ((): PWAManager => {
+  if (typeof window === 'undefined') {
+    // Return a no-op instance for SSR
+    return {
+      installPWA: async () => ({ success: false }),
+      requestNotificationPermission: async () => 'denied' as NotificationPermission,
+      storeOfflineBooking: async () => '',
+      getOfflineBookings: async () => [],
+      syncOfflineData: async () => ({ success: false, synced: 0, failed: 0 }),
+      shareContent: async () => false,
+      getUserLocation: async () => { throw new Error('Not available'); },
+      takePhoto: async () => { throw new Error('Not available'); },
+      toggleFullscreen: async () => false,
+      getPWAFeatures: () => ({
+        installPrompt: false,
+        pushNotifications: false,
+        backgroundSync: false,
+        offlineCapability: false,
+        webShare: false,
+        cameraAccess: false,
+        locationAccess: false,
+        fullscreen: false
+      }),
+      isAppOnline: () => true,
+      getOfflineQueueStatus: () => ({ count: 0, pendingSync: 0 }),
+    } as PWAManager;
+  }
+  
+  if (!pwaManagerInstance) {
+    pwaManagerInstance = new PWAManager();
+  }
+  
+  return pwaManagerInstance;
+})();

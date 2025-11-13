@@ -48,8 +48,8 @@ function StandardServicesLeadForm() {
 }
 
 export default function StandardServicesLandingPage() {
-  const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
-  const abVariant = params.get('ab');
+  const searchParams = useSearchParams();
+  const abVariant = searchParams?.get('ab');
   const isVariantA = abVariant === 'variant_a';
   const headline = isVariantA ? 'Skip the Trip — We Come To You' : 'Reliable Notary Services';
   const subCtaText = isVariantA ? 'Get My Fast Quote' : 'Get Started';
