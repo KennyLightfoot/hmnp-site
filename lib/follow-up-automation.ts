@@ -89,7 +89,7 @@ function decimalToNumber(value: any): number | null {
 function getFirstName(name?: string | null): string {
   if (!name) return 'there';
   const parts = name.trim().split(/\s+/);
-  return parts.length ? parts[0] : 'there';
+  return parts[0] ?? 'there';
 }
 
 function formatDate(date: Date | null | undefined): string | null {
