@@ -2,6 +2,9 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { FileQuestion } from "lucide-react"
 
+// Force dynamic rendering to prevent SSR issues
+export const dynamic = 'force-dynamic';
+
 export default function NotFound() {
   return (
     <div className="container mx-auto px-4 py-12">

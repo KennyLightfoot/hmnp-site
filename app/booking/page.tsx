@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   keywords: 'Houston notary, mobile notary, document notarization, loan signing, same day notary'
 };
 
+// Force dynamic rendering to prevent SSR issues with client components
+export const dynamic = 'force-dynamic';
+
 export default function BookingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
