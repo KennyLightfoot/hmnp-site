@@ -1,19 +1,15 @@
 /**
- * Custom postinstall hook that skips Prisma generation when not needed.
+ * Custom postinstall hook that generates Prisma Client.
  *
- * Vercel builds (and other CI systems) can set `SKIP_PRISMA_GENERATE=true`
- * to bypass `prisma generate`, which currently fails because the schema
- * references models that are still being refactored. Local development
- * keeps the default behaviour so the Prisma client is generated.
+ * Vercel builds and CI systems will generate Prisma Client unless explicitly
+ * skipped via `SKIP_PRISMA_GENERATE=true` environment variable.
  */
 import { execSync } from 'node:child_process'
 
-const skip =
-  process.env.SKIP_PRISMA_GENERATE === 'true' ||
-  process.env.VERCEL === '1'
+const skip = process.env.SKIP_PRISMA_GENERATE === 'true'
 
 if (skip) {
-  console.log('[postinstall] Skipping `prisma generate` (SKIP_PRISMA_GENERATE/VERCEL set).')
+  console.log('[postinstall] Skipping `prisma generate` (SKIP_PRISMA_GENERATE set).')
   process.exit(0)
 }
 

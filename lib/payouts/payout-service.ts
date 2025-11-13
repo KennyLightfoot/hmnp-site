@@ -1,26 +1,8 @@
-import { BookingStatus, Prisma } from '@prisma/client'
+import { BookingStatus, ContractorPayoutEntryType, ContractorPayoutStatus, Prisma } from '@prisma/client'
 import { endOfWeek, startOfWeek, subWeeks } from 'date-fns'
 
 import { prisma } from '../prisma'
 import { logger } from '../logger'
-
-// Define enums locally to work around stale Prisma Client on Vercel
-const ContractorPayoutStatusEnum = {
-  PENDING: 'PENDING',
-  APPROVED: 'APPROVED',
-  PAID: 'PAID',
-} as const
-
-const ContractorPayoutEntryTypeEnum = {
-  BASE: 'BASE',
-  TRAVEL_SHARE: 'TRAVEL_SHARE',
-  URGENCY_BONUS: 'URGENCY_BONUS',
-  WITNESS_SPLIT: 'WITNESS_SPLIT',
-  ADJUSTMENT: 'ADJUSTMENT',
-} as const
-
-type ContractorPayoutStatus = typeof ContractorPayoutStatusEnum[keyof typeof ContractorPayoutStatusEnum]
-type ContractorPayoutEntryType = typeof ContractorPayoutEntryTypeEnum[keyof typeof ContractorPayoutEntryTypeEnum]
 
 const BASE_SPLIT = Number(process.env.CONTRACTOR_BASE_SPLIT ?? 0.5)
 const TRAVEL_SPLIT = Number(process.env.CONTRACTOR_TRAVEL_SPLIT ?? 0.7)
@@ -72,7 +54,7 @@ function getWeeklyWindow(referenceDate: Date = new Date()) {
 }
 
 async function createOrResetPayout(notaryId: string, periodStart: Date, periodEnd: Date) {
-  const payout = await (prisma as any).contractorPayout.upsert({
+  const payout = await prisma.contractorPayout.upsert({
     where: {
       notaryId_periodStart_periodEnd: {
         notaryId,
@@ -84,18 +66,18 @@ async function createOrResetPayout(notaryId: string, periodStart: Date, periodEn
       notaryId,
       periodStart,
       periodEnd,
-      status: ContractorPayoutStatusEnum.PENDING,
+      status: ContractorPayoutStatus.PENDING,
       totalAmount: new Prisma.Decimal(0),
     },
     update: {
-      status: ContractorPayoutStatusEnum.PENDING,
+      status: ContractorPayoutStatus.PENDING,
       totalAmount: new Prisma.Decimal(0),
       notes: null,
       finalizedAt: null,
     },
   })
 
-  await (prisma as any).contractorPayoutEntry.deleteMany({ where: { payoutId: payout.id } })
+  await prisma.contractorPayoutEntry.deleteMany({ where: { payoutId: payout.id } })
 
   return payout
 }
@@ -173,28 +155,28 @@ export async function generateWeeklyContractorPayouts(referenceDate: Date = new 
       const witnessShare = witnessShareEligible ? roundCurrency(witnessFee * WITNESS_SPLIT) : 0
 
       if (basePay > 0) {
-        entries.push(buildEntry(payout.id, bookingId, ContractorPayoutEntryTypeEnum.BASE, basePay, 'Base service pay', {
+        entries.push(buildEntry(payout.id, bookingId, ContractorPayoutEntryType.BASE, basePay, 'Base service pay', {
           service: booking.service?.serviceType ?? booking.service?.name,
         }))
         subtotal += basePay
       }
 
       if (travelShare > 0) {
-        entries.push(buildEntry(payout.id, bookingId, ContractorPayoutEntryTypeEnum.TRAVEL_SHARE, travelShare, 'Travel distance share', {
+        entries.push(buildEntry(payout.id, bookingId, ContractorPayoutEntryType.TRAVEL_SHARE, travelShare, 'Travel distance share', {
           travelFee,
         }))
         subtotal += travelShare
       }
 
       if (urgencyBonus > 0) {
-        entries.push(buildEntry(payout.id, bookingId, ContractorPayoutEntryTypeEnum.URGENCY_BONUS, urgencyBonus, 'Urgency/after-hours bonus', {
+        entries.push(buildEntry(payout.id, bookingId, ContractorPayoutEntryType.URGENCY_BONUS, urgencyBonus, 'Urgency/after-hours bonus', {
           urgencyLevel: booking.urgency_level,
         }))
         subtotal += urgencyBonus
       }
 
       if (witnessShare > 0) {
-        entries.push(buildEntry(payout.id, bookingId, ContractorPayoutEntryTypeEnum.WITNESS_SPLIT, witnessShare, 'Witness coordination share'))
+        entries.push(buildEntry(payout.id, bookingId, ContractorPayoutEntryType.WITNESS_SPLIT, witnessShare, 'Witness coordination share'))
         subtotal += witnessShare
       }
     }
@@ -203,11 +185,11 @@ export async function generateWeeklyContractorPayouts(referenceDate: Date = new 
       continue
     }
 
-    await (prisma as any).contractorPayoutEntry.createMany({
+    await prisma.contractorPayoutEntry.createMany({
       data: entries,
     })
 
-    await (prisma as any).contractorPayout.update({
+    await prisma.contractorPayout.update({
       where: { id: payout.id },
       data: {
         totalAmount: new Prisma.Decimal(roundCurrency(subtotal)),
@@ -239,7 +221,7 @@ export async function getPayoutSummary(options: {
 } = {}): Promise<PayoutSummary[]> {
   const { periodStart, periodEnd, limit = 20 } = options
 
-  const whereClause: any = {}
+  const whereClause: Prisma.ContractorPayoutWhereInput = {}
   if (periodStart) {
     whereClause.periodStart = { gte: periodStart }
   }
@@ -247,7 +229,7 @@ export async function getPayoutSummary(options: {
     whereClause.periodEnd = { lte: periodEnd }
   }
 
-  const payouts = await (prisma as any).contractorPayout.findMany({
+  const payouts = await prisma.contractorPayout.findMany({
     where: whereClause,
     orderBy: { periodEnd: 'desc' },
     take: limit,
@@ -265,7 +247,7 @@ export async function getPayoutSummary(options: {
     },
   })
 
-  return payouts.map((payout) => ({
+  return payouts.map((payout: any) => ({
     id: payout.id,
     notaryId: payout.notaryId,
     notaryName: payout.notary?.name ?? null,

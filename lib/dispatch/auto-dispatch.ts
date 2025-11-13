@@ -183,9 +183,9 @@ async function buildDispatchCandidates(booking: Prisma.BookingGetPayload<{ inclu
       continue
     }
 
-    const baseZip = extractZip((profile as any).base_zip || (profile as any).base_address)
-    const preferredZipCodes = Array.isArray((profile as any).preferred_zip_codes)
-      ? (profile as any).preferred_zip_codes.filter((zip: string) => typeof zip === 'string' && zip.trim().length >= 5)
+    const baseZip = extractZip(profile.base_zip || profile.base_address)
+    const preferredZipCodes = Array.isArray(profile.preferred_zip_codes)
+      ? profile.preferred_zip_codes.filter((zip: string) => typeof zip === 'string' && zip.trim().length >= 5)
       : []
     const preferredZipListDefined = preferredZipCodes.length > 0
     const preferredZipHit = Boolean(bookingZip && preferredZipCodes.includes(bookingZip))
@@ -207,8 +207,8 @@ async function buildDispatchCandidates(booking: Prisma.BookingGetPayload<{ inclu
     const scheduledHour = getCentralHour(booking.scheduledDateTime)
     const availabilityPenalty = calculateAvailabilityPenalty(
       scheduledHour,
-      (profile as any).preferred_start_hour,
-      (profile as any).preferred_end_hour
+      profile.preferred_start_hour,
+      profile.preferred_end_hour
     )
 
     const { count: assignmentsToday, conflicts } = await getAssignmentsForDay(userId, booking.scheduledDateTime)
@@ -294,7 +294,7 @@ export async function autoDispatchBooking(bookingId: string, options: DispatchOp
       include: { service: true },
     })
 
-    await (tx as any).dispatchAssignment.create({
+    await tx.dispatchAssignment.create({
       data: {
         bookingId,
         notaryId: topCandidate.userId,
