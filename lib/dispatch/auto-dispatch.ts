@@ -294,7 +294,7 @@ export async function autoDispatchBooking(bookingId: string, options: DispatchOp
       include: { service: true },
     })
 
-    await tx.dispatchAssignment.create({
+    await (tx as any).dispatchAssignment.create({
       data: {
         bookingId,
         notaryId: topCandidate.userId,
