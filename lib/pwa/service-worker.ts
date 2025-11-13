@@ -377,36 +377,22 @@ export class PWAManager {
   }
 }
 
-// Global PWA Manager instance - only create in browser environment
+// Global PWA Manager instance - safe to create in SSR since constructor has guards
 let pwaManagerInstance: PWAManager | null = null;
 
 export const pwaManager = ((): PWAManager => {
-  if (typeof window === 'undefined') {
-    // Return a no-op instance for SSR
-    return {
-      registerServiceWorker: async () => false,
-      storeOfflineBooking: async () => false,
-      getOfflineBookings: async () => [],
-      syncOfflineBookings: async () => ({ success: false, synced: 0, total: 0 }),
-      cachePricingCalculation: async () => {},
-      getCachedPricing: async () => null,
-      isOffline: () => false,
-      getInstallPrompt: async () => null,
-      requestNotificationPermission: async () => 'denied' as NotificationPermission,
-      showNotification: async () => {},
-    } as PWAManager;
-  }
-  
   if (!pwaManagerInstance) {
     pwaManagerInstance = new PWAManager();
-    // Auto-register service worker
-    pwaManagerInstance.registerServiceWorker().then((success) => {
-      if (success) {
-        console.log('[PWA] PWA functionality enabled');
-      } else {
-        console.log('[PWA] PWA functionality unavailable');
-      }
-    });
+    // Auto-register service worker (only runs in browser due to constructor guards)
+    if (typeof window !== 'undefined') {
+      pwaManagerInstance.registerServiceWorker().then((success) => {
+        if (success) {
+          console.log('[PWA] PWA functionality enabled');
+        } else {
+          console.log('[PWA] PWA functionality unavailable');
+        }
+      });
+    }
   }
   
   return pwaManagerInstance;

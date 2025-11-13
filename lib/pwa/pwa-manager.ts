@@ -613,37 +613,10 @@ export class PWAManager {
   }
 }
 
-// Singleton instance - only create in browser environment
+// Singleton instance - safe to create in SSR since constructor has guards
 let pwaManagerInstance: PWAManager | null = null;
 
 export const pwaManager = ((): PWAManager => {
-  if (typeof window === 'undefined') {
-    // Return a no-op instance for SSR
-    return {
-      installPWA: async () => ({ success: false }),
-      requestNotificationPermission: async () => 'denied' as NotificationPermission,
-      storeOfflineBooking: async () => '',
-      getOfflineBookings: async () => [],
-      syncOfflineData: async () => ({ success: false, synced: 0, failed: 0 }),
-      shareContent: async () => false,
-      getUserLocation: async () => { throw new Error('Not available'); },
-      takePhoto: async () => { throw new Error('Not available'); },
-      toggleFullscreen: async () => false,
-      getPWAFeatures: () => ({
-        installPrompt: false,
-        pushNotifications: false,
-        backgroundSync: false,
-        offlineCapability: false,
-        webShare: false,
-        cameraAccess: false,
-        locationAccess: false,
-        fullscreen: false
-      }),
-      isAppOnline: () => true,
-      getOfflineQueueStatus: () => ({ count: 0, pendingSync: 0 }),
-    } as PWAManager;
-  }
-  
   if (!pwaManagerInstance) {
     pwaManagerInstance = new PWAManager();
   }
