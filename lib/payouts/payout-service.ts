@@ -72,7 +72,7 @@ function getWeeklyWindow(referenceDate: Date = new Date()) {
 }
 
 async function createOrResetPayout(notaryId: string, periodStart: Date, periodEnd: Date) {
-  const payout = await prisma.contractorPayout.upsert({
+  const payout = await (prisma as any).contractorPayout.upsert({
     where: {
       notaryId_periodStart_periodEnd: {
         notaryId,
@@ -95,7 +95,7 @@ async function createOrResetPayout(notaryId: string, periodStart: Date, periodEn
     },
   })
 
-  await prisma.contractorPayoutEntry.deleteMany({ where: { payoutId: payout.id } })
+  await (prisma as any).contractorPayoutEntry.deleteMany({ where: { payoutId: payout.id } })
 
   return payout
 }
@@ -203,11 +203,11 @@ export async function generateWeeklyContractorPayouts(referenceDate: Date = new 
       continue
     }
 
-    await prisma.contractorPayoutEntry.createMany({
+    await (prisma as any).contractorPayoutEntry.createMany({
       data: entries,
     })
 
-    await prisma.contractorPayout.update({
+    await (prisma as any).contractorPayout.update({
       where: { id: payout.id },
       data: {
         totalAmount: new Prisma.Decimal(roundCurrency(subtotal)),
@@ -239,7 +239,7 @@ export async function getPayoutSummary(options: {
 } = {}): Promise<PayoutSummary[]> {
   const { periodStart, periodEnd, limit = 20 } = options
 
-  const whereClause: Prisma.ContractorPayoutWhereInput = {}
+  const whereClause: any = {}
   if (periodStart) {
     whereClause.periodStart = { gte: periodStart }
   }
@@ -247,7 +247,7 @@ export async function getPayoutSummary(options: {
     whereClause.periodEnd = { lte: periodEnd }
   }
 
-  const payouts = await prisma.contractorPayout.findMany({
+  const payouts = await (prisma as any).contractorPayout.findMany({
     where: whereClause,
     orderBy: { periodEnd: 'desc' },
     take: limit,
