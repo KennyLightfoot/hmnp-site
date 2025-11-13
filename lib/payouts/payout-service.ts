@@ -247,7 +247,7 @@ export async function getPayoutSummary(options: {
     },
   })
 
-  return payouts.map((payout: any) => ({
+  return payouts.map((payout) => ({
     id: payout.id,
     notaryId: payout.notaryId,
     notaryName: payout.notary?.name ?? null,
@@ -257,7 +257,7 @@ export async function getPayoutSummary(options: {
     status: payout.status,
     totalAmount: roundCurrency(decimalToNumber(payout.totalAmount)),
     entryCount: payout.entries.length,
-    entries: payout.entries.map((entry) => ({
+    entries: payout.entries.map((entry: Prisma.ContractorPayoutEntryGetPayload<{}>) => ({
       id: entry.id,
       bookingId: entry.bookingId,
       entryType: entry.entryType,
