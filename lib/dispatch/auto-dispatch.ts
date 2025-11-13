@@ -31,7 +31,7 @@ const DISTANCE_CONFLICT_THRESHOLD_MINUTES = 90
 function extractZip(value?: string | null): string | null {
   if (!value) return null
   const match = value.match(/(\d{5})/)
-  return match ? match[1] : null
+  return match?.[1] ?? null
 }
 
 function calculateCandidateScore(
