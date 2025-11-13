@@ -183,7 +183,7 @@ async function buildDispatchCandidates(booking: Prisma.BookingGetPayload<{ inclu
       continue
     }
 
-    const baseZip = extractZip(profile.base_zip || profile.base_address)
+    const baseZip = extractZip((profile as any).base_zip || (profile as any).base_address)
     const preferredZipCodes = Array.isArray((profile as any).preferred_zip_codes)
       ? (profile as any).preferred_zip_codes.filter((zip: string) => typeof zip === 'string' && zip.trim().length >= 5)
       : []
