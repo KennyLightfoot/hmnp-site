@@ -111,7 +111,7 @@ async function cacheDistance(originZip: string, destinationZip: string, distance
       update: {
         distance_miles: new Prisma.Decimal(distance),
         duration_minutes: null,
-        google_maps_response: null,
+        google_maps_response: Prisma.JsonNull,
         last_calculated: new Date(),
         hit_count: { increment: 1 },
       },
@@ -120,7 +120,7 @@ async function cacheDistance(originZip: string, destinationZip: string, distance
         destination_address: destinationZip,
         distance_miles: new Prisma.Decimal(distance),
         duration_minutes: null,
-        google_maps_response: null,
+        google_maps_response: Prisma.JsonNull,
       },
     })
   } catch (error) {
