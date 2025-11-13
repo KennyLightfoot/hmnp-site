@@ -250,7 +250,7 @@ async function buildDispatchCandidates(booking: Prisma.BookingGetPayload<{ inclu
 export async function autoDispatchBooking(bookingId: string, options: DispatchOptions = {}) {
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
-    include: { service: true, dispatchAssignments: true },
+    include: { service: true },
   })
 
   if (!booking) {
@@ -335,7 +335,6 @@ export async function autoDispatchPendingBookings(options: DispatchOptions = {})
     },
     include: {
       service: true,
-      dispatchAssignments: true,
     },
   })
 
