@@ -45,7 +45,7 @@ const fallbackDistances: Record<string, Record<string, number>> = {
 function sanitizeZip(value?: string | null): string | null {
   if (!value) return null
   const match = String(value).match(/(\d{5})/)
-  return match ? match[1] : null
+  return match?.[1] ?? null
 }
 
 function getFallbackDistance(origin: string, destination: string): number {
