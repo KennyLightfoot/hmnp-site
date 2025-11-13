@@ -6,6 +6,7 @@
 import { prisma } from './prisma';
 import { BookingStatus } from '@prisma/client';
 import { logger, logBookingEvent } from './logger';
+import { getErrorMessage } from './utils/error-utils';
 import * as ghl from './ghl/api';
 import { addContactToWorkflow } from './ghl/management';
 import { updateBookingStatus } from './integration-example';
@@ -159,8 +160,9 @@ async function ensureBookingContact(booking: any): Promise<{ contactId: string |
       phone: contactPhone ? normalizePhone(contactPhone) : null,
     };
   } catch (error) {
-    logger.warn('ensureBookingContact lookup failed', 'FOLLOW_UP', error as Error, {
+    logger.warn('ensureBookingContact lookup failed', 'FOLLOW_UP', {
       bookingId: booking?.id,
+      error: getErrorMessage(error),
     });
     return { contactId: null, phone: null };
   }
