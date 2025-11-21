@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Car, Video, BookOpen, BarChart3, Settings, LogOut } from 'lucide-react';
+import { Car, Video, BookOpen, BarChart3, Settings, LogOut, Clipboard } from 'lucide-react';
 import { Role } from '@prisma/client';
 
 export const metadata: Metadata = {
@@ -90,6 +90,13 @@ export default async function NotaryLayout({ children }: NotaryLayoutProps) {
                 Journal & Audit
               </Link>
               <div className="border-t border-gray-200 my-4"></div>
+              <Link
+                href="/notary/job-offers"
+                className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 hover:text-[#A52A2A] transition-colors"
+              >
+                <Clipboard className="h-4 w-4 mr-3" />
+                Job Offers
+              </Link>
               <Link
                 href="/notary/analytics"
                 className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 hover:text-[#A52A2A] transition-colors"

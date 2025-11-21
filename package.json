@@ -172,6 +172,7 @@
     "react-dom": "^19.1.1",
     "react-hook-form": "^7.62.0",
     "react-hot-toast": "^2.6.0",
+    "react-markdown": "^10.1.0",
     "react-resizable-panels": "^3.0.4",
     "recharts": "^2.15.4",
     "remark": "^15.0.1",
@@ -190,7 +191,9 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@axe-core/cli": "^4.10.0",
     "@eslint/js": "^9.33.0",
+    "@lhci/cli": "^0.13.0",
     "@playwright/test": "^1.54.2",
     "@sanity/icons": "^3.7.4",
     "@sanity/image-url": "^1.1.0",
@@ -203,8 +206,6 @@
     "@types/supertest": "^6.0.3",
     "@vitejs/plugin-react": "^4.7.0",
     "@vitest/coverage-v8": "^3.2.4",
-    "@axe-core/cli": "^4.10.0",
-    "@lhci/cli": "^0.13.0",
     "cross-env": "^7.0.3",
     "eslint": "^9.33.0",
     "eslint-config-next": "^15.4.6",

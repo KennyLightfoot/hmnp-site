@@ -3,6 +3,8 @@
 
 This document supersedes prior SOP versions and codifies all operational policies required for contractor-led delivery of Mobile Notary and Remote Online Notary (RON) services. Policies here inherit from `SOP_ENHANCED.md` and incorporate the RevOps initiatives for hands-off execution.
 
+**Updated:** Includes network notary hiring, onboarding, and job distribution procedures (First-Come-First-Serve system).
+
 ## 1. Intake & Qualification
 
 ### 1.1 Required Intake Fields
@@ -26,7 +28,39 @@ This document supersedes prior SOP versions and codifies all operational policie
 
 ## 2. Dispatch & Scheduling
 
-### 2.1 Auto-Assignment Logic
+### 2.1 Network Notary Assignment (First-Come-First-Serve)
+
+**When to Use Network Distribution:**
+- Booking marked "Send to Network" by admin/staff
+- No specific notary assigned
+- Booking requires mobile notary service
+- Standard or extended-hours service types
+
+**Eligibility Criteria for Network Notaries:**
+1. Active notary commission (not expired)
+2. Valid E&O insurance (not expired)
+3. Onboarding status: COMPLETE
+4. Availability status: AVAILABLE
+5. Geographic match:
+   - State licensed matches booking state
+   - Service radius covers booking location
+   - Preferred ZIP codes match (if specified)
+
+**Job Offer Process:**
+1. System creates `JobOffer` records for all eligible notaries
+2. Offers expire after 30 minutes (configurable)
+3. Notaries receive email notification with job details
+4. First notary to accept gets the assignment
+5. All other offers automatically cancelled
+6. Booking assigned to accepting notary
+7. Customer notified of notary assignment
+
+**Manual Assignment Override:**
+- Admin/staff can manually assign specific notary at any time
+- Manual assignment cancels all pending offers
+- Use when specific notary expertise required or customer preference
+
+### 2.2 Auto-Assignment Logic (Legacy/Manual)
 1. Identify eligible contractors within service radius (default 15 miles, extend to 50 miles with travel tiers).
 2. Filter by skill profile (`standard`, `extended-hours`, `loan-signing-specialist`, `ron-agent`).
 3. Match availability window, considering travel buffer (15 minutes default).
@@ -36,14 +70,16 @@ This document supersedes prior SOP versions and codifies all operational policie
    - SLA performance score (descending),
    - Least recently assigned.
 
-### 2.2 Escalation Tree
+### 2.3 Escalation Tree
 - **Contractor No-Show**: reassign within 10 minutes, notify client via SMS + email, log incident.
 - **Client No-Show**: follow cancellation policy (Section 3) and submit QA note.
 - **Document Issues**: escalate to dispatch lead; use template communications in `docs/Dispatch_Templates.md`.
+- **Network Offer Expired**: If no notary accepts within 30 minutes, escalate to manual assignment or extend offer window.
 
-### 2.3 Communication Templates
+### 2.4 Communication Templates
 - Stored in GHL sequences and mirrored in `docs/Dispatch_Templates.md`.
 - Include SMS/email copy for confirmations, reminders, reassignments, and closures.
+- Network notaries receive job offer emails with booking details and expiration time.
 
 ## 3. Payment & Policies
 
@@ -95,14 +131,134 @@ This document supersedes prior SOP versions and codifies all operational policie
 4. Client satisfaction confirmation logged.
 5. Closeout form submitted via web app QA workflow.
 
-## 5. Post-Service & Reviews
+## 5. Network Notary Management
+
+### 5.1 Notary Application & Hiring Process
+
+**Application Submission:**
+- Applications submitted via `/work-with-us` public page
+- Required information:
+  - Personal details (name, email, phone)
+  - Notary commission details (number, state, expiry)
+  - States licensed and counties served
+  - Service types offered
+  - E&O insurance information
+  - Years of experience
+  - Availability preferences
+
+**Application Review:**
+- Admin reviews applications in `/admin/notary-applications`
+- Status workflow: PENDING → UNDER_REVIEW → APPROVED/REJECTED → CONVERTED
+- Review criteria:
+  - Valid commission in target service areas
+  - E&O insurance coverage
+  - Experience level appropriate for service types
+  - Geographic coverage matches business needs
+
+**Conversion to User Account:**
+- Approved applications converted to user accounts with NOTARY role
+- Notary profile automatically created with application data
+- Temporary password generated and sent via email
+- Onboarding status set to IN_PROGRESS
+
+### 5.2 Notary Onboarding Checklist
+
+**Required Steps (all must be completed):**
+1. **Commission Verification**
+   - Upload commission certificate
+   - Verify commission number and expiry date
+   - Confirm state(s) of commission
+
+2. **E&O Insurance**
+   - Upload insurance certificate
+   - Provide provider name, policy number, expiry date
+   - Minimum coverage: $25,000 (verify current requirements)
+
+3. **Background Check**
+   - Complete background check verification
+   - Upload background check document
+   - Status must be APPROVED before activation
+
+4. **W-9 Form**
+   - Submit W-9 form for tax purposes
+   - Required for contractor payments
+   - Upload signed form
+
+5. **Profile Completion**
+   - Set base address and ZIP code
+   - Define service radius (default: 25 miles)
+   - Specify states licensed and counties served
+   - Set availability preferences (hours, days)
+   - Add languages spoken and special certifications
+
+**Onboarding Completion:**
+- Notary completes checklist and submits for review
+- Admin reviews completed profile
+- Admin activates notary (sets `is_active: true`, `onboarding_status: COMPLETE`)
+- Notary can now receive job offers
+
+### 5.3 Job Offer System
+
+**Offer Creation:**
+- Triggered when booking marked "Send to Network"
+- System identifies eligible notaries based on:
+  - Active commission and E&O insurance
+  - Geographic coverage (state, ZIP, service radius)
+  - Availability status (must be AVAILABLE)
+  - Onboarding status (must be COMPLETE)
+
+**Offer Distribution:**
+- All eligible notaries receive offer simultaneously
+- Email notification sent with:
+  - Booking details (service, time, location, price)
+  - Expiration time (default: 30 minutes)
+  - Link to accept/decline in notary portal
+
+**Acceptance Process:**
+- First-come-first-serve: first notary to accept gets assignment
+- Atomic transaction ensures only one acceptance
+- Other offers automatically cancelled
+- Booking assigned to accepting notary
+- Customer notified of notary assignment
+
+**Offer Expiration:**
+- Offers expire after 30 minutes (configurable)
+- Expired offers cannot be accepted
+- If no acceptance: escalate to manual assignment or extend window
+
+**Rate Limiting:**
+- Maximum 5 job offer acceptances per minute per notary
+- Prevents abuse and ensures fair distribution
+- Rate limit headers included in API responses
+
+### 5.4 Notary Profile Management
+
+**Availability Status:**
+- AVAILABLE: Active and accepting offers
+- BUSY: Temporarily unavailable (has active bookings)
+- UNAVAILABLE: Not accepting new offers
+- ON_LEAVE: Extended absence (vacation, etc.)
+
+**Profile Updates:**
+- Notaries can update availability, service areas, preferences
+- Changes take effect immediately for new offers
+- Existing offers not affected by status changes
+
+**Performance Tracking:**
+- Acceptance rate
+- Completion rate
+- Customer satisfaction scores
+- Response time to offers
+- No-show incidents
+
+## 6. Post-Service & Reviews
 
 - Automated receipt and payment confirmation immediately.
 - Review request triggered 24 hours post-service (GHL automation).
 - Reactivation campaigns at 7 days (upsell) and 30 days (repeat business).
 - Negative feedback auto-escalates to QA lead.
 
-## 6. Compliance & Data Governance
+## 7. Compliance & Data Governance
 
 - Maintain Texas fee schedule compliance.
 - Retain digital records for 7 years with scheduled purge + verification.

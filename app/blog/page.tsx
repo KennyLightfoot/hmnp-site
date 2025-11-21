@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getSortedPostsData, PostData } from '@/lib/posts'
+import { getAllBlogs, type BlogPost } from '@/lib/blogs'
 import { format } from 'date-fns'
 import type { Metadata } from "next"
 import { Calendar, User, Clock, ArrowRight, BookOpen, Star, TrendingUp, FileText, Search } from 'lucide-react'
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
 }
 
 export default function BlogIndex() {
-  const allPostsData = getSortedPostsData()
+  const allPostsData = getAllBlogs()
   
   // Blog categories for filtering
   const blogCategories = [
@@ -66,43 +66,17 @@ export default function BlogIndex() {
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-[#002147]/5 via-[#A52A2A]/5 to-[#002147]/5 py-20">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-serif text-[#002147] tracking-tight mb-6">
-            HMNP Blog
+          <h1 className="text-4xl md:text-5xl font-bold text-[#002147] tracking-tight mb-6">
+            Houston Mobile Notary Pros Blog
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Stay informed with the latest notary industry insights, helpful tips, and updates from Houston Mobile Notary Pros
+            Simple, straight-to-the-point guides on notarizations, loan signings, and
+            real-life paperwork in Texas City, Webster, Clear Lake, and Greater Houston.
+            Learn what to expect, how to avoid delays, and when it makes sense to call a mobile notary.
           </p>
-          
-          {/* Blog Stats */}
-          <div className="grid md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-8">
-            <div className="flex flex-col items-center">
-              <div className="text-3xl font-bold text-[#A52A2A]">{allPostsData.length}</div>
-              <div className="text-sm text-gray-600">Total Posts</div>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="text-3xl font-bold text-[#A52A2A]">500+</div>
-              <div className="text-sm text-gray-600">Monthly Readers</div>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="text-3xl font-bold text-[#A52A2A]">4.9★</div>
-              <div className="text-sm text-gray-600">Reader Rating</div>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="text-3xl font-bold text-[#A52A2A]">Weekly</div>
-              <div className="text-sm text-gray-600">New Content</div>
-            </div>
-          </div>
-
-          {/* Search and Filter */}
-          <div className="max-w-2xl mx-auto">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input 
-                placeholder="Search blog posts..." 
-                className="pl-10 pr-4 py-3 border-2 border-[#002147]/20 focus:border-[#A52A2A]"
-              />
-            </div>
-          </div>
+          <Button asChild className="mt-4 bg-[#A52A2A] hover:bg-[#8B0000]" size="lg">
+            <Link href="/booking">Book a mobile notary</Link>
+          </Button>
         </div>
       </section>
 
@@ -134,11 +108,11 @@ export default function BlogIndex() {
                   </div>
                 </div>
                 <CardTitle className="text-2xl md:text-3xl text-[#002147] mb-3">
-                  <Link href={`/blog/${featuredPost.id}`} className="hover:text-[#A52A2A] transition-colors duration-200">
+                  <Link href={`/blog/${featuredPost.slug}`} className="hover:text-[#A52A2A] transition-colors duration-200">
                     {featuredPost.title}
                   </Link>
                 </CardTitle>
-                <p className="text-lg text-gray-600 leading-relaxed">{featuredPost.excerpt}</p>
+                <p className="text-lg text-gray-600 leading-relaxed">{featuredPost.metaDescription || featuredPost.summary}</p>
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="flex items-center justify-between">
@@ -147,7 +121,7 @@ export default function BlogIndex() {
                     <span className="text-sm text-gray-600">Featured content</span>
                   </div>
                   <Button className="bg-[#A52A2A] hover:bg-[#8B0000]" asChild>
-                    <Link href={`/blog/${featuredPost.id}`}>
+                    <Link href={`/blog/${featuredPost.slug}`}>
                       Read Full Article
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Link>
@@ -195,9 +169,9 @@ export default function BlogIndex() {
           </div>
 
           <div className="grid gap-8 max-w-6xl mx-auto">
-            {regularPosts.map(({ id, date, title, excerpt, author }: PostData) => (
+            {regularPosts.map(({ slug, date, title, summary, metaDescription, author }: BlogPost) => (
               <Card 
-                key={id} 
+                key={slug} 
                 className="border border-gray-200 hover:border-[#002147]/30 transition-all duration-300 hover:shadow-lg"
               >
                 <CardContent className="p-6">
@@ -218,12 +192,12 @@ export default function BlogIndex() {
                     </div>
                     
                     <h2 className="text-2xl font-semibold text-[#002147] mb-3 hover:text-[#A52A2A] transition-colors duration-200">
-                      <Link href={`/blog/${id}`} className="hover:underline">
+                      <Link href={`/blog/${slug}`} className="hover:underline">
                         {title}
                       </Link>
                     </h2>
                     
-                    <p className="text-gray-700 mb-4 leading-relaxed">{excerpt}</p>
+                    <p className="text-gray-700 mb-4 leading-relaxed">{summary || metaDescription}</p>
                     
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -231,7 +205,7 @@ export default function BlogIndex() {
                         <span className="text-sm text-gray-600">Notary Tips</span>
                       </div>
                       <Link 
-                        href={`/blog/${id}`} 
+                        href={`/blog/${slug}`} 
                         className="text-[#002147] font-medium hover:text-[#A52A2A] transition-colors duration-200 flex items-center gap-1"
                       >
                         Read more
