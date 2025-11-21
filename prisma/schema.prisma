@@ -102,6 +102,7 @@ model Booking {
   reviews                     Review[]
   contractorPayoutEntries     ContractorPayoutEntry[]
   auditLogs                   AuditLog[]
+  jobOffers                   JobOffer[]
   stripeSessionId             String?                @unique // AC-5
   proofSessionUrl             String?                @db.Text
   // Payment lifecycle (booking-level)
@@ -111,6 +112,9 @@ model Booking {
   paidAt                      DateTime?
   paidMarkedByUserId          String?
   paidNotes                   String?
+  // Network distribution fields
+  sendToNetwork               Boolean?                 @default(false)
+  networkOfferExpiresAt       DateTime?
 
   @@index([scheduledDateTime])
   @@index([status])
@@ -132,6 +136,8 @@ model Booking {
   @@index([travelFee], map: "idx_booking_travel_fee")
   @@index([urgency_level], map: "idx_booking_urgency")
   @@index([witness_type], map: "idx_booking_witness_type")
+  @@index([sendToNetwork], map: "idx_booking_send_to_network")
+  @@index([networkOfferExpiresAt], map: "idx_booking_network_offer_expires")
 }
 
 model BookingUploadedDocument {
@@ -350,6 +356,9 @@ model User {
   contractorPayouts              ContractorPayout[]
   qaReviews                      BookingQARecord[]
   twoFactor                      UserTwoFactor?
+  notaryApplications             NotaryApplication[]
+  notaryApplicationsReviewedBy   NotaryApplication[]      @relation("NotaryApplicationReviewedBy")
+  jobOffers                      JobOffer[]               @relation("JobOfferNotary")
 }
 
 model UserTwoFactor {
@@ -963,10 +972,29 @@ model notary_profiles {
   daily_capacity          Int?      @default(8)
   created_at              DateTime? @default(now()) @db.Timestamptz(6)
   updated_at              DateTime? @default(now()) @db.Timestamptz(6)
+  // Enhanced fields for network notaries
+  onboarding_status       NotaryOnboardingStatus @default(PENDING)
+  eo_insurance_provider   String?   @db.VarChar(200)
+  eo_insurance_policy     String?   @db.VarChar(100)
+  eo_insurance_expiry     DateTime? @db.Date
+  eo_insurance_document_url String? @db.Text
+  background_check_status BackgroundCheckStatus @default(PENDING)
+  background_check_date   DateTime? @db.Date
+  background_check_document_url String? @db.Text
+  w9_on_file              Boolean?  @default(false)
+  w9_document_url         String?   @db.Text
+  states_licensed          String[]  @default([])
+  counties_served          String[]  @default([])
+  languages_spoken        String[]  @default([])
+  years_experience         Int?
+  special_certifications  String[]  @default([])
+  availability_status      NotaryAvailabilityStatus @default(AVAILABLE)
   User                    User      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([is_active], map: "idx_notary_profiles_active")
   @@index([user_id], map: "idx_notary_profiles_user_id")
+  @@index([onboarding_status], map: "idx_notary_profiles_onboarding")
+  @@index([availability_status], map: "idx_notary_profiles_availability")
 }
 
 model DispatchAssignment {
@@ -985,6 +1013,72 @@ model DispatchAssignment {
   @@index([bookingId])
   @@index([notaryId])
   @@index([assignedAt])
+}
+
+model NotaryApplication {
+  id                    String                    @id @default(cuid())
+  firstName             String
+  lastName              String
+  email                 String                    @unique
+  phone                 String
+  commissionNumber     String?
+  commissionState      String?
+  commissionExpiry      DateTime?                 @db.Date
+  statesLicensed        String[]
+  countiesServed        String[]
+  yearsExperience       Int?
+  serviceTypes          String[]
+  languagesSpoken       String[]
+  specialCertifications String[]
+  eoInsuranceProvider    String?
+  eoInsurancePolicy     String?
+  eoInsuranceExpiry     DateTime?                 @db.Date
+  baseAddress           String?
+  baseZip               String?
+  serviceRadiusMiles   Int?                      @default(25)
+  availabilityNotes     String?                   @db.Text
+  whyInterested         String?                  @db.Text
+  references            String?                  @db.Text
+  resumeUrl             String?                  @db.Text
+  status                NotaryApplicationStatus  @default(PENDING)
+  reviewedById           String?
+  reviewedAt            DateTime?
+  reviewNotes           String?                  @db.Text
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+  // If approved and converted to User account
+  convertedToUserId     String?                 @unique
+  convertedAt           DateTime?
+
+  reviewedBy            User?                    @relation("NotaryApplicationReviewedBy", fields: [reviewedById], references: [id])
+  convertedToUser       User?                    @relation(fields: [convertedToUserId], references: [id])
+
+  @@index([status], map: "idx_notary_application_status")
+  @@index([email], map: "idx_notary_application_email")
+  @@index([createdAt], map: "idx_notary_application_created")
+}
+
+model JobOffer {
+  id                    String          @id @default(cuid())
+  bookingId             String
+  notaryId              String
+  status                JobOfferStatus  @default(PENDING)
+  expiresAt             DateTime
+  notifiedAt            DateTime?
+  acceptedAt            DateTime?
+  declinedAt            DateTime?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  notes                 String?         @db.Text
+
+  Booking               Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  Notary                User            @relation("JobOfferNotary", fields: [notaryId], references: [id])
+
+  @@index([bookingId], map: "idx_job_offer_booking")
+  @@index([notaryId], map: "idx_job_offer_notary")
+  @@index([status], map: "idx_job_offer_status")
+  @@index([expiresAt], map: "idx_job_offer_expires")
+  @@unique([bookingId, notaryId], map: "unique_booking_notary_offer")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -1196,4 +1290,43 @@ enum witness_source {
   customer_provided
   staff_provided
   proof_provided
+}
+
+enum NotaryApplicationStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  CONVERTED
+}
+
+enum NotaryOnboardingStatus {
+  PENDING
+  IN_PROGRESS
+  DOCUMENTS_PENDING
+  COMPLETE
+  SUSPENDED
+}
+
+enum BackgroundCheckStatus {
+  PENDING
+  IN_PROGRESS
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum NotaryAvailabilityStatus {
+  AVAILABLE
+  BUSY
+  UNAVAILABLE
+  ON_LEAVE
+}
+
+enum JobOfferStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  CANCELLED
 }
