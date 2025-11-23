@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withRateLimit } from '@/lib/security/rate-limiting';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '@/lib/database-connection';
+import { Prisma } from '@prisma/client';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -21,10 +22,13 @@ export const GET = withRateLimit('admin', 'check_schema')(async () => {
     console.log('📋 Service table structure:', tableStructure);
     
     // Try different column name variations
+    // SECURITY FIX: Use Prisma.sql for safe parameterized queries
+    // Note: Column names cannot be parameterized, but since these are hardcoded admin-only values,
+    // this is safe. For user input, we would need to whitelist column names.
     const testQueries = [
-      { name: 'durationMinutes', query: `SELECT "durationMinutes" FROM "Service" LIMIT 1` },
-      { name: 'duration_minutes', query: `SELECT "duration_minutes" FROM "Service" LIMIT 1` },
-      { name: 'duration', query: `SELECT "duration" FROM "Service" LIMIT 1` },
+      { name: 'durationMinutes', column: 'durationMinutes' },
+      { name: 'duration_minutes', column: 'duration_minutes' },
+      { name: 'duration', column: 'duration' },
     ];
     
     const results: Record<string, string> = {};
@@ -32,7 +36,9 @@ export const GET = withRateLimit('admin', 'check_schema')(async () => {
     for (const test of testQueries) {
       try {
         await prisma.$queryRaw`SELECT 1 FROM "Service" LIMIT 1`;
-        const result = await prisma.$executeRaw`${test.query}`;
+        // SECURITY NOTE: Column names are hardcoded admin values, not user input
+        // Using Prisma.sql template literal is safe here since column is from our controlled array
+        const result = await prisma.$queryRaw(Prisma.sql`SELECT ${Prisma.raw(`"${test.column}"`)} FROM "Service" LIMIT 1`);
         results[test.name as keyof typeof results] = 'EXISTS';
       } catch (error) {
         results[test.name as keyof typeof results] = error instanceof Error ? getErrorMessage(error) : 'FAILED';
