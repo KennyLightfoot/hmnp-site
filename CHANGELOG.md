@@ -11,6 +11,9 @@
 - Updated sitemap entries to cover the primary service details and city pages while avoiding parameterized URLs.
 - Lazy-loaded heavy components (`BookingForm`, `TrustBadges`) to reduce initial JS/CSS payload on high-traffic routes.
 - Added richer supporting content (additional city links, specialized service callouts, FAQ quick links) to improve text-to-HTML ratios on money pages.
+- Rebuilt the legal experience so `/privacy-policy` and `/terms-of-service` serve dedicated Next.js pages, added in-app redirects from legacy `/privacy` + `/terms`, and updated every form/footer/link plus sitemap/next-sitemap config to reference the new canonical routes.
+- Refreshed `app/contact/page.tsx` with dynamic form loading, deeper explanatory copy, and an internal resource grid to improve text-to-HTML ratios and distribute crawl equity.
+- Cleaned up `public/llms.txt` to follow the emerging LLM directives format (crawl-delay, usage-policy, per-bot allowance) and regenerated static sitemap assets to reflect the new URLs.
 
 ## [Unreleased] - Notary Network & Hiring System
 
@@ -83,6 +86,7 @@
 ### Changed
 - Updated admin navigation to include notary applications management
 - Updated notary portal navigation to include job offers section
+- Added `/hiring`, `/jobs`, and `/notary-jobs` redirects to `/work-with-us`, surfaced the hiring page in the footer, and listed it in `app/sitemap.ts` so public recruiting routes stay discoverable.
 
 ### Fixed
 - Rate limiter now awaits async key generation so session-aware throttling works in builds

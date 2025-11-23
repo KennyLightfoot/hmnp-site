@@ -31,6 +31,16 @@ export default function Footer() {
               </p>
               <p><span className="font-medium">Email:</span> contact@houstonmobilenotarypros.com</p>
             </div>
+            <div className="mt-6">
+              <h4 className="text-sm font-semibold text-secondary mb-3">Opportunities</h4>
+              <ul className="space-y-2 text-sm text-secondary/80">
+                <li>
+                  <Link href="/work-with-us" className="hover:text-secondary">
+                    Work With Us
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
           <div>
             <h4 className="text-sm font-semibold text-secondary mb-3">Services</h4>
@@ -67,8 +77,8 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} Houston Mobile Notary Pros LLC. All rights reserved.
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/terms" className="text-xs text-secondary/60 hover:text-secondary hover:underline">Terms</Link>
-            <Link href="/privacy" className="text-xs text-secondary/60 hover:text-secondary hover:underline">Privacy</Link>
+            <Link href="/terms-of-service" className="text-xs text-secondary/60 hover:text-secondary hover:underline">Terms</Link>
+            <Link href="/privacy-policy" className="text-xs text-secondary/60 hover:text-secondary hover:underline">Privacy</Link>
             <Link href="https://www.facebook.com/HoustonMobileNotaryPros/" target="_blank" rel="noopener noreferrer" aria-label="Houston Mobile Notary Pros on Facebook" className="text-secondary/80 hover:text-secondary">
               <Facebook className="h-5 w-5" />
             </Link>
