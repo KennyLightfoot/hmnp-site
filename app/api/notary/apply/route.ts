@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { NotaryApplicationStatus } from '@/lib/prisma-types'
 import { z } from 'zod'
 import { logger } from '@/lib/logger'
 
@@ -88,7 +89,7 @@ export async function POST(request: NextRequest) {
         whyInterested: validatedData.whyInterested,
         references: validatedData.references,
         resumeUrl: validatedData.resumeUrl || null,
-        status: 'PENDING',
+        status: NotaryApplicationStatus.PENDING,
       },
     })
 

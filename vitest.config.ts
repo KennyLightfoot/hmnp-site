@@ -63,13 +63,27 @@ export default defineConfig({
         'app/**/loading.tsx',
         'app/**/error.tsx',
       ],
-      // Global reasonable thresholds – we'll raise these as coverage improves
+      // Global coverage thresholds - targeting 70-80%+ coverage
       thresholds: {
         global: {
-          branches: 20,
-          functions: 20,
-          lines: 20,
-          statements: 20,
+          branches: 70,
+          functions: 70,
+          lines: 70,
+          statements: 70,
+        },
+        // Per-file thresholds for critical files
+        // Note: lib/pricing-engine.ts is legacy (only used in tests) - no strict threshold
+        'lib/booking-validation.ts': {
+          branches: 80,
+          functions: 80,
+          lines: 80,
+          statements: 80,
+        },
+        'lib/slot-reservation.ts': {
+          branches: 100,
+          functions: 100,
+          lines: 100,
+          statements: 100,
         },
       },
     },

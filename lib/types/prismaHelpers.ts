@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import type { Prisma } from '@/lib/prisma-types';
 
 /**
  * Central location for Prisma-derived TypeScript helpers so we stop hand-rolling

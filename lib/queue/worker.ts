@@ -1,4 +1,4 @@
-import { NotificationType, NotificationMethod, BookingStatus } from '@prisma/client';
+import { NotificationType, NotificationMethod, BookingStatus } from '@/lib/prisma-types';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { NotificationService } from '../notifications';
 import { getQueues } from './config';

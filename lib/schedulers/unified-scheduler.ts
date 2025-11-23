@@ -12,7 +12,7 @@
 
 import cron from 'node-cron';
 import { prisma } from '@/lib/database-connection';
-import { BookingStatus, NotificationType } from '@prisma/client';
+import { BookingStatus, NotificationType } from '@/lib/prisma-types';
 import { NotificationService } from '@/lib/notifications';
 import { sendAppointmentReminder } from '@/lib/notifications';
 import { logger } from '@/lib/logger';

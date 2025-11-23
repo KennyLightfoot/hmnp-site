@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect, notFound } from 'next/navigation';
-import { Role, Assignment } from "@prisma/client";
+import { Role, Assignment } from "@/lib/prisma-types";
 import { prisma } from "@/lib/db";
 import { AssignmentForm } from "@/components/portal/AssignmentForm";
 

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
+import { Prisma } from "@/lib/prisma-types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -149,7 +150,13 @@ export default async function CustomerDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {pastBookings.filter(b => b.status === 'COMPLETED').length}
+              {pastBookings.filter((b: Prisma.BookingGetPayload<{
+                include: {
+                  service: true;
+                  User_Booking_signerIdToUser: true;
+                  payments: true;
+                };
+              }>) => b.status === 'COMPLETED').length}
             </div>
           </CardContent>
         </Card>
@@ -195,7 +202,13 @@ export default async function CustomerDashboard() {
               </CardContent>
             </Card>
           ) : (
-            upcomingBookings.map((booking) => (
+            upcomingBookings.map((booking: Prisma.BookingGetPayload<{
+              include: {
+                service: true;
+                User_Booking_signerIdToUser: true;
+                payments: true;
+              };
+            }>) => (
               <Card key={booking.id} className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -284,7 +297,13 @@ export default async function CustomerDashboard() {
               </CardContent>
             </Card>
           ) : (
-            pastBookings.map((booking) => (
+            pastBookings.map((booking: Prisma.BookingGetPayload<{
+              include: {
+                service: true;
+                User_Booking_signerIdToUser: true;
+                payments: true;
+              };
+            }>) => (
               <Card key={booking.id} className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between">

@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { Role } from '@prisma/client'
+import { JobOfferStatus, Role } from '@/lib/prisma-types'
+
+type JobOfferStatusValue = (typeof JobOfferStatus)[keyof typeof JobOfferStatus]
+
+const isJobOfferStatus = (value: string): value is JobOfferStatusValue => {
+  return Object.values(JobOfferStatus).includes(value as JobOfferStatusValue)
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,14 +23,18 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status') || 'PENDING'
+    const statusParam = searchParams.get('status')
+    const status =
+      statusParam && isJobOfferStatus(statusParam)
+        ? statusParam
+        : JobOfferStatus.PENDING
 
     const offers = await prisma.jobOffer.findMany({
       where: {
         notaryId: session.user.id,
-        status: status as any,
+        status,
         expiresAt: {
-          gte: status === 'PENDING' ? new Date() : undefined,
+          gte: status === JobOfferStatus.PENDING ? new Date() : undefined,
         },
       },
       include: {

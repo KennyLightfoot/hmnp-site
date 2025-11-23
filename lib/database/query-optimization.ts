@@ -6,7 +6,8 @@
 import { prisma } from '@/lib/database-connection';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { cache } from '@/lib/cache';
-import { Prisma, BookingStatus, ServiceType } from '@prisma/client';
+import type { Prisma } from '@/lib/prisma-types';
+import { BookingStatus, ServiceType } from '@/lib/prisma-types';
 
 // ============================================================================
 // OPTIMIZED SERVICE QUERIES

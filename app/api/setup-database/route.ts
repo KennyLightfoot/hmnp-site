@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@/lib/prisma-types';
 
 const prisma = new PrismaClient();
 
@@ -185,14 +185,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       count: settings.length,
-      settings: settings.reduce((acc, setting) => {
+      settings: settings.reduce((acc: Record<string, { value: string | null; dataType: string | null; description: string | null }>, setting: { key: string; value: string | null; dataType: string | null; description: string | null }) => {
         acc[setting.key] = {
           value: setting.value,
           dataType: setting.dataType,
           description: setting.description
         };
         return acc;
-      }, {} as Record<string, any>)
+      }, {} as Record<string, { value: string | null; dataType: string | null; description: string | null }>)
     });
     
   } catch (error) {

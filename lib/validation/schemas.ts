@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import { BookingStatus, LocationType, ServiceType } from '@prisma/client';
+import { BookingStatus, LocationType, ServiceType } from '@/lib/prisma-types';
 
 // ============================================================================
 // COMMON VALIDATION PATTERNS

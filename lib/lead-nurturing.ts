@@ -1,6 +1,6 @@
 import { prisma } from './prisma'
 import { getErrorMessage } from './utils/error-utils';
-import { BookingStatus, NotificationType, NotificationMethod } from '@prisma/client'
+import { BookingStatus, NotificationType, NotificationMethod } from '@/lib/prisma-types'
 import { NotificationService } from './notifications'
 import { getContactsByTag, getContactByEmail, addTagsToContactByEmail } from './ghl'
 import { logger } from './logger'
@@ -797,7 +797,7 @@ P.S. Many clients tell us they wish they had known about our services earlier. D
       }
     })
 
-    return enrollments.map(log => ({
+    return enrollments.map((log: (typeof enrollments)[number]) => ({
       id: log.id,
       contactEmail: log.recipientEmail,
       sequenceId: (log.metadata as any)?.sequenceId,

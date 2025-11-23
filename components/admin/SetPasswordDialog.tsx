@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react';
-import { Role } from '@prisma/client';
+import { Role } from '@/lib/prisma-types';
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

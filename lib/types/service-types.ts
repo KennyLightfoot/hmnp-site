@@ -4,7 +4,7 @@
  * Provides mapping functions for consistent service type handling
  */
 
-import { ServiceType as PrismaServiceType } from '@prisma/client';
+import { ServiceType as PrismaServiceType } from '@/lib/prisma-types';
 
 // Frontend service type (SOP COMPLIANT - ONLY APPROVED TYPES)
 export type FrontendServiceType = 

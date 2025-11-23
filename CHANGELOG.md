@@ -2,6 +2,30 @@
 
 ## [Unreleased] - Notary Network & Hiring System
 
+### Changed
+- **Pricing Engine Cleanup**
+  - Removed unused `PricingEngine` import from `lib/business-rules/engine.ts`
+  - Refactored `components/service-calculator.tsx` to use `UnifiedPricingEngine` via API instead of legacy `PricingEngine`
+  - Relaxed coverage thresholds for legacy `lib/pricing-engine.ts` (now only used in tests)
+  - Created `docs/pricing-engine-classification.md` documenting pricing engine usage across the codebase
+  - Primary pricing engine is now `UnifiedPricingEngine` which powers the main booking flow
+
+### Fixed
+- **TypeScript Type Errors**
+  - Fixed 142 TypeScript errors across 46 files
+  - Standardized Prisma imports to use `@/lib/prisma-types` instead of direct `@prisma/client` imports
+  - Added proper type annotations to admin UI components (bookings, notary applications, notifications, users, workers)
+  - Fixed implicit `any` types in API routes by adding explicit type annotations for map/filter/reduce callbacks
+  - Fixed Prisma transaction type annotations in API routes
+  - Fixed error handler type guards for Prisma errors
+  - Fixed booking worker Prisma namespace import
+  - All files now properly import enums and types from centralized `@/lib/prisma-types` module
+  - Added a dedicated shim + tsconfig path mapping so `@prisma/client` resolves to the generated `.prisma/client` types under isolated compilation
+  - Typed notary job-offer flows, onboarding screens/APIs, and customer support integration logic to remove the remaining implicit `any` usage and stringly-typed enum checks
+  - Note: Run `pnpm prisma:generate` to regenerate Prisma client if type errors persist
+
+## [Unreleased] - Notary Network & Hiring System
+
 ### Added
 - **Notary Application System**
   - Public hiring page at `/work-with-us` for notaries to apply
@@ -47,6 +71,12 @@
 ### Changed
 - Updated admin navigation to include notary applications management
 - Updated notary portal navigation to include job offers section
+
+### Fixed
+- Rate limiter now awaits async key generation so session-aware throttling works in builds
+- Admin notary application detail + convert route now follow Next.js 15 async params contract to restore builds
+- Fixed TypeScript build error in `lib/services/job-offer-service.ts` by ensuring Prisma `Booking` interface augmentation properly merges with base type using triple-slash reference directive
+- Fixed TypeScript build errors in admin server components (e.g. `app/admin/alerts/page.tsx`, `app/admin/bookings/[id]/page.tsx`, `app/admin/bookings/page.tsx`) by avoiding direct enum/model imports from `@prisma/client`—string literals like `'ADMIN'`/`'STAFF'` gate access, status comparisons use raw strings, and data shapes are derived from Prisma client helpers—to keep Next.js isolated compilation happy
 
 ### Technical Details
 - Created `lib/services/job-offer-service.ts` for job offer business logic

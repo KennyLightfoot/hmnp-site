@@ -1,16 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { Role } from '@prisma/client'
+import { Role } from '@/lib/prisma-types'
 import { declineJobOffer } from '@/lib/services/job-offer-service'
 import { logger } from '@/lib/logger'
 import { rateLimiters } from '@/lib/middleware/rate-limit'
 
+type DeclineRouteContext = {
+  params: Promise<{ id: string }>
+}
+
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: DeclineRouteContext
 ) {
   try {
+    const { id: offerId } = await context.params
+
     // Rate limiting
     const rateLimitResponse = await rateLimiters.jobOfferAccept(request)
     if (rateLimitResponse) {
@@ -27,7 +33,7 @@ export async function POST(
       )
     }
 
-    const result = await declineJobOffer(params.id, session.user.id)
+    const result = await declineJobOffer(offerId, session.user.id)
 
     if (!result.success) {
       return NextResponse.json(

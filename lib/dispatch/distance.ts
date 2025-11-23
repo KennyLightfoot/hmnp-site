@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client'
+import { Prisma } from '@/lib/prisma-types'
 import { prisma } from '../prisma'
 import { getCleanApiKey } from '@/lib/config/maps'
 import { getErrorMessage } from '@/lib/utils/error-utils'

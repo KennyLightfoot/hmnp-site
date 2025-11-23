@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { Role } from '@prisma/client'
+import { Role } from '@/lib/prisma-types'
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3'
 
 export const runtime = 'nodejs'

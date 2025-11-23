@@ -1,7 +1,6 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { Role } from '@prisma/client'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,8 +10,8 @@ import { QAChecklistCard } from '@/components/admin/QAChecklistCard'
 
 export default async function AdminBookingDetail({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
-  const role = (session?.user as any)?.role as Role | undefined
-  if (!session?.user || (role !== Role.ADMIN && role !== Role.STAFF)) {
+  const role = (session?.user as any)?.role as string | undefined
+  if (!session?.user || (role !== 'ADMIN' && role !== 'STAFF')) {
     redirect('/portal')
   }
   const { id } = await params
@@ -65,7 +64,7 @@ export default async function AdminBookingDetail({ params }: { params: Promise<{
             <p className="text-sm text-muted-foreground">No documents uploaded.</p>
           ) : (
             <div className="space-y-2">
-              {booking.uploadedDocuments.map((doc) => (
+              {booking.uploadedDocuments.map((doc: (typeof booking.uploadedDocuments)[number]) => (
                 <div key={doc.id} className="flex items-center justify-between text-sm">
                   <div className="truncate max-w-[70%]" title={doc.filename}>
                     {doc.filename}

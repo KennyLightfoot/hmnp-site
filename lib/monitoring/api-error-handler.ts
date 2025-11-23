@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { trackError } from '@/lib/utils/errorTracking';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@/lib/prisma-types';
 
 /**
  * Standardized API error response format
@@ -74,35 +74,37 @@ export function categorizeError(error: unknown): {
   }
 
   // Handle Prisma errors
-  if (error instanceof Prisma.PrismaClientKnownRequestError) {
-    switch (error.code) {
-      case 'P2002':
+  if (error && typeof error === 'object' && 'code' in error) {
+    const prismaError = error as { code: string; meta?: { target?: string[] } };
+    if (prismaError.code === 'P2002') {
         return {
           status: 409,
           code: 'UNIQUE_CONSTRAINT_VIOLATION',
           message: 'A record with this information already exists',
-          details: { field: error.meta?.target },
+        details: { field: prismaError.meta?.target },
         };
-      case 'P2025':
+    }
+    if (prismaError.code === 'P2025') {
         return {
           status: 404,
           code: 'RECORD_NOT_FOUND',
           message: 'The requested record was not found',
         };
-      case 'P2003':
+    }
+    if (prismaError.code === 'P2003') {
         return {
           status: 400,
           code: 'FOREIGN_KEY_CONSTRAINT',
           message: 'Invalid reference to related record',
         };
-      default:
+    }
+    // Default Prisma error handling
         return {
           status: 500,
           code: 'DATABASE_ERROR',
           message: 'Database operation failed',
           details: process.env.NODE_ENV === 'development' ? getErrorMessage(error) : undefined,
         };
-    }
   }
 
   // Handle Prisma validation errors
@@ -279,7 +281,7 @@ export async function withDatabaseErrorHandling<T>(
         component: 'database',
         action: 'prisma_error',
         metadata: {
-          code: error.code,
+          code: (error as Prisma.PrismaClientKnownRequestError).code,
           context,
         },
       });

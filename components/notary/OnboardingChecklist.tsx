@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, Circle, Upload, FileText } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { NotaryOnboardingStatus } from '@prisma/client'
+import { NotaryOnboardingStatus } from '@/lib/prisma-types'
 
 interface OnboardingItem {
   id: string

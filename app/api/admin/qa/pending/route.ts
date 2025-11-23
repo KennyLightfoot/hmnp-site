@@ -4,9 +4,8 @@ import { getServerSession, Session } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { getErrorMessage } from '@/lib/utils/error-utils'
-import { BookingStatus, Role } from '@prisma/client'
-
-type QAStatus = 'PENDING' | 'IN_PROGRESS' | 'FLAGGED' | 'COMPLETE'
+import { BookingStatus, QAStatus, Role } from '@/lib/prisma-types'
+import type { Prisma } from '@/lib/prisma-types'
 
 function ensureAdmin(session: Session | null) {
   const role = (session?.user as any)?.role as Role | undefined
@@ -15,6 +14,38 @@ function ensureAdmin(session: Session | null) {
   }
   return null
 }
+
+const bookingSelect = {
+  id: true,
+  customerName: true,
+  scheduledDateTime: true,
+  service: {
+    select: {
+      name: true,
+    },
+  },
+  User_Booking_notaryIdToUser: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  },
+} satisfies Prisma.BookingSelect
+
+type CompletedBooking = Prisma.BookingGetPayload<{ select: typeof bookingSelect }>
+
+const qaSelect = {
+  status: true,
+  journalEntryVerified: true,
+  sealPhotoVerified: true,
+  documentCountVerified: true,
+  clientConfirmationVerified: true,
+  closeoutFormVerified: true,
+  updatedAt: true,
+} satisfies Prisma.BookingQARecordSelect
+
+type QARecord = Prisma.BookingQARecordGetPayload<{ select: typeof qaSelect }>
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,7 +57,7 @@ export async function GET(request: NextRequest) {
     const limitParam = searchParams.get('limit')
     const limit = limitParam ? Math.min(Math.max(parseInt(limitParam, 10) || 10, 1), 50) : 10
 
-    const completed = await prisma.booking.findMany({
+    const completed: CompletedBooking[] = await prisma.booking.findMany({
       where: {
         status: BookingStatus.COMPLETED,
       },
@@ -34,40 +65,16 @@ export async function GET(request: NextRequest) {
         scheduledDateTime: 'desc',
       },
       take: limit * 2, // Fetch more to filter client-side
-      select: {
-        id: true,
-        customerName: true,
-        scheduledDateTime: true,
-        service: {
-          select: {
-            name: true,
-          },
-        },
-        User_Booking_notaryIdToUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
+      select: bookingSelect,
     })
 
     // Fetch QA records separately
     const qaRecords = await Promise.all(
-      completed.map(async (booking) => {
+      completed.map(async (booking): Promise<{ bookingId: string; qa: QARecord | null }> => {
         try {
-          const qa = await (prisma as any).bookingQARecord.findUnique({
+          const qa = await prisma.bookingQARecord.findUnique({
             where: { bookingId: booking.id },
-            select: {
-              status: true,
-              journalEntryVerified: true,
-              sealPhotoVerified: true,
-              documentCountVerified: true,
-              clientConfirmationVerified: true,
-              closeoutFormVerified: true,
-              updatedAt: true,
-            },
+            select: qaSelect,
           })
           return { bookingId: booking.id, qa }
         } catch {
@@ -76,10 +83,12 @@ export async function GET(request: NextRequest) {
       })
     )
 
-    const qaMap = new Map(qaRecords.map((r) => [r.bookingId, r.qa]))
+    const qaMap = new Map<string, QARecord | null>(
+      qaRecords.map((record) => [record.bookingId, record.qa]),
+    )
     const pending = completed
-      .map((booking) => ({ ...booking, qaRecord: qaMap.get(booking.id) || null }))
-      .filter((booking) => !booking.qaRecord || booking.qaRecord.status !== 'COMPLETE')
+      .map((booking) => ({ ...booking, qaRecord: qaMap.get(booking.id) ?? null }))
+      .filter((booking) => !booking.qaRecord || booking.qaRecord.status !== QAStatus.COMPLETE)
       .slice(0, limit)
 
     const data = pending.map((booking) => ({

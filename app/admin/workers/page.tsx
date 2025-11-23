@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from 'next/navigation';
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/prisma-types";
 import {
   Table,
   TableBody,

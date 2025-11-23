@@ -14,7 +14,7 @@ import { webhookProcessor } from '@/lib/webhook-processor';
 import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import { addJob } from '@/lib/queue/queue-config';
-import { BookingStatus } from '@prisma/client';
+import { BookingStatus } from '@/lib/prisma-types';
 
 // Stripe webhook event types we handle
 const HANDLED_EVENTS = [

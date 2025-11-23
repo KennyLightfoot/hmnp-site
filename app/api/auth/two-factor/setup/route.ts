@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, AuthConfig } from '@/lib/auth/unified-middleware';
 import { TwoFactorService } from '@/lib/auth/two-factor';
 import { withRateLimit } from '@/lib/security/rate-limiting';
-import { Role } from '@prisma/client';
+import { Role } from '@/lib/prisma-types';
 
 /**
  * GET /api/auth/two-factor/setup

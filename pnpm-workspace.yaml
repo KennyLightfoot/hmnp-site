@@ -1,10 +1,12 @@
 packages:
   - .
+
 onlyBuiltDependencies:
   - '@prisma/client'
   - '@prisma/engines'
   - '@sentry/cli'
   - bcrypt
+  - chromedriver
   - esbuild
   - msgpackr-extract
   - prisma

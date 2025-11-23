@@ -2,13 +2,26 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { redirect } from 'next/navigation'
-import { Role } from '@prisma/client'
+import { JobOfferStatus, Role } from '@/lib/prisma-types'
+import type { Prisma } from '@/lib/prisma-types'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Clock, MapPin, DollarSign, Calendar, User, FileText } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils/date-utils'
 import JobOfferActions from '@/components/notary/JobOfferActions'
+
+const jobOfferInclude = {
+  Booking: {
+    include: {
+      service: true,
+    },
+  },
+} satisfies Prisma.JobOfferInclude
+
+type JobOfferWithBooking = Prisma.JobOfferGetPayload<{
+  include: typeof jobOfferInclude
+}>
 
 export default async function NotaryJobOffersPage() {
   const session = await getServerSession(authOptions)
@@ -18,38 +31,26 @@ export default async function NotaryJobOffersPage() {
     redirect('/portal')
   }
 
-  const offers = await prisma.jobOffer.findMany({
+  const offers: JobOfferWithBooking[] = await prisma.jobOffer.findMany({
     where: {
       notaryId: session.user.id,
-      status: 'PENDING',
+      status: JobOfferStatus.PENDING,
       expiresAt: {
         gte: new Date(),
       },
     },
-    include: {
-      Booking: {
-        include: {
-          service: true,
-        },
-      },
-    },
+    include: jobOfferInclude,
     orderBy: {
       createdAt: 'desc',
     },
   })
 
-  const acceptedOffers = await prisma.jobOffer.findMany({
+  const acceptedOffers: JobOfferWithBooking[] = await prisma.jobOffer.findMany({
     where: {
       notaryId: session.user.id,
-      status: 'ACCEPTED',
+      status: JobOfferStatus.ACCEPTED,
     },
-    include: {
-      Booking: {
-        include: {
-          service: true,
-        },
-      },
-    },
+    include: jobOfferInclude,
     orderBy: {
       acceptedAt: 'desc',
     },
@@ -79,6 +80,7 @@ export default async function NotaryJobOffersPage() {
             {offers.map((offer) => {
               const booking = offer.Booking
               const timeUntilExpiry = Math.max(0, Math.floor((offer.expiresAt.getTime() - Date.now()) / 1000 / 60))
+              const bookingPrice = booking.priceAtBooking ? booking.priceAtBooking.toNumber().toFixed(2) : '0.00'
 
               return (
                 <Card key={offer.id} className="hover:shadow-md transition-shadow">
@@ -132,7 +134,7 @@ export default async function NotaryJobOffersPage() {
                           <div>
                             <p className="text-sm font-medium">Price</p>
                             <p className="text-sm text-gray-600">
-                              ${booking.priceAtBooking.toNumber().toFixed(2)}
+                              ${bookingPrice}
                             </p>
                           </div>
                         </div>
@@ -168,6 +170,7 @@ export default async function NotaryJobOffersPage() {
           <div className="grid gap-4">
             {acceptedOffers.map((offer) => {
               const booking = offer.Booking
+              const bookingPrice = booking.priceAtBooking ? booking.priceAtBooking.toNumber().toFixed(2) : '0.00'
               return (
                 <Card key={offer.id} className="bg-green-50 border-green-200">
                   <CardHeader>
@@ -196,7 +199,7 @@ export default async function NotaryJobOffersPage() {
                       <div>
                         <p className="text-sm font-medium">Price</p>
                         <p className="text-sm text-gray-600">
-                          ${booking.priceAtBooking.toNumber().toFixed(2)}
+                        ${bookingPrice}
                         </p>
                       </div>
                     </div>

@@ -4,7 +4,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/db';
-import { Role } from '@prisma/client';
+import { Role } from '@/lib/prisma-types';
 
 export interface AuthUser {
   id: string;

@@ -328,7 +328,7 @@ class ComprehensiveMonitoring {
         },
       });
 
-      return stats.reduce((acc, stat) => {
+      return stats.reduce((acc: Record<string, number>, stat: (typeof stats)[number]) => {
         acc[stat.status.toLowerCase()] = stat._count;
         return acc;
       }, {} as Record<string, number>);

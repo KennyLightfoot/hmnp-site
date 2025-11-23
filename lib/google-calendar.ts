@@ -1,5 +1,5 @@
 import { google } from 'googleapis';
-import { BookingStatus } from '@prisma/client';
+import { BookingStatus } from '@/lib/prisma-types';
 
 export class GoogleCalendarService {
   private calendar;

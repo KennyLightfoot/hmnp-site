@@ -5,7 +5,7 @@
 
 import { prisma } from '@/lib/database-connection';
 import { getErrorMessage } from '@/lib/utils/error-utils';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@/lib/prisma-types';
 
 export interface HealthCheckResult {
   name: string;

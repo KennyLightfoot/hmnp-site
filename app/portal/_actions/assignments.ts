@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { Role, AssignmentStatus, Assignment } from "@prisma/client";
+import { Role, AssignmentStatus, Assignment, Prisma } from "@/lib/prisma-types";
 import { revalidatePath } from "next/cache";
 import { logger } from '@/lib/logger';
 
@@ -39,7 +39,7 @@ export async function updateAssignmentStatus(
 
   try {
     // Use a transaction to ensure atomicity
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Update the assignment status
       const updatedAssignment = await tx.assignment.update({
         where: { id: assignmentId },

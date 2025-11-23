@@ -148,7 +148,7 @@ export class ConversationTracker {
         orderBy: { createdAt: 'desc' }
       });
 
-      const conversationEntries: ConversationEntry[] = interactions.map(interaction => ({
+      const conversationEntries: ConversationEntry[] = interactions.map((interaction: (typeof interactions)[number]) => ({
         id: interaction.id,
         customerEmail: interaction.customerEmail,
         customerName,

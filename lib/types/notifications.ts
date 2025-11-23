@@ -2,7 +2,7 @@
  * TypeScript type definitions for notification service
  */
 
-import { NotificationType, NotificationMethod } from '@prisma/client';
+import { NotificationType, NotificationMethod } from '@/lib/prisma-types';
 import { NotificationRecipient, NotificationContent } from './prisma';
 
 /**

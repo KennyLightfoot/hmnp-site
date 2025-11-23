@@ -6,7 +6,7 @@
  */
 
 import { prisma } from '@/lib/database-connection';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '@/lib/prisma-types';
 
 // Optimized booking queries with selective loading
 export const bookingQueries = {

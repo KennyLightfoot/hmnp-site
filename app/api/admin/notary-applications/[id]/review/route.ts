@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { Role, NotaryApplicationStatus } from '@prisma/client'
+import { Role, NotaryApplicationStatus } from '@/lib/prisma-types'
 import { z } from 'zod'
 import { logger } from '@/lib/logger'
 
@@ -11,11 +11,17 @@ const reviewSchema = z.object({
   reviewNotes: z.string().optional(),
 })
 
+type ReviewContext = {
+  params: Promise<{ id: string }>
+}
+
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: ReviewContext
 ) {
   try {
+    const { id: applicationId } = await context.params
+
     const session = await getServerSession(authOptions)
     const userRole = (session?.user as any)?.role
 
@@ -30,7 +36,7 @@ export async function POST(
     const validatedData = reviewSchema.parse(body)
 
     const application = await prisma.notaryApplication.findUnique({
-      where: { id: params.id },
+      where: { id: applicationId },
     })
 
     if (!application) {
@@ -41,7 +47,7 @@ export async function POST(
     }
 
     const updatedApplication = await prisma.notaryApplication.update({
-      where: { id: params.id },
+      where: { id: applicationId },
       data: {
         status: validatedData.status as NotaryApplicationStatus,
         reviewedById: session.user.id,

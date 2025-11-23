@@ -12,7 +12,7 @@ import {
   User,
   Booking,
   Service as PrismaService
-} from '@prisma/client';
+} from '@/lib/prisma-types';
 
 /**
  * Booking model with related entities - matches actual Prisma structure

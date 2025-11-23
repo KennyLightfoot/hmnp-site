@@ -5,8 +5,8 @@ import { clearCalendarCache } from '@/lib/ghl-calendar'
 import { createContact as createGhlContact, findContactByEmail, addTagsToContact } from '@/lib/ghl/contacts'
 import { addContactToWorkflow, createAppointment } from '@/lib/ghl/management'
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping'
-import type { Service } from '@prisma/client'
-import { PaymentMethod, BookingStatus, ServiceType } from '@prisma/client'
+import type { Service } from '@/lib/prisma-types'
+import { PaymentMethod, BookingStatus, ServiceType } from '@/lib/prisma-types'
 import { logger } from '@/lib/logger'
 import { RONService } from '@/lib/proof/api'
 import { autoDispatchBooking } from '@/lib/dispatch/auto-dispatch'
@@ -60,7 +60,7 @@ async function hasOverlap(startTime: Date, serviceType: ServiceType, bufferMinut
     include: { service: true },
   })
 
-  const overlapFound = existing.some((b) => {
+  const overlapFound = existing.some((b: (typeof existing)[number]) => {
     const existingStart = b.scheduledDateTime as Date
     const existingDuration = (b as any)?.service?.durationMinutes ?? 60
     const existingEnd = new Date(existingStart.getTime() + (existingDuration + bufferMinutes) * 60 * 1000)

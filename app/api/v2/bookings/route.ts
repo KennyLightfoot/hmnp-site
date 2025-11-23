@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { Role, LocationType } from '@prisma/client';
+import { Role, LocationType, Payment, Prisma } from '@/lib/prisma-types';
 import { withRateLimit } from '@/lib/security/rate-limiting';
 import { z } from 'zod';
 
@@ -68,7 +68,12 @@ export const GET = withRateLimit('public', 'bookings_v2')(async (request: NextRe
     });
     
     // Format bookings for frontend compatibility
-    const formattedBookings = bookings.map(booking => {
+    const formattedBookings = bookings.map((booking: Prisma.BookingGetPayload<{
+      include: {
+        service: true;
+        payments: true;
+      };
+    }>) => {
       const customerPhone = 'N/A'; // Phone field doesn't exist in User model
       const user = null; // User relation doesn't exist in this include
       const specialInstructions = booking.notes || '';
@@ -111,7 +116,7 @@ export const GET = withRateLimit('public', 'bookings_v2')(async (request: NextRe
           depositAmount: booking.service.depositAmount ? Number(booking.service.depositAmount) : null,
         } : null,
         user: user,
-        payments: booking.payments.map(payment => ({
+        payments: booking.payments.map((payment: Payment) => ({
           ...payment,
           amount: Number(payment.amount),
         })),

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 import { withRateLimit } from '@/lib/security/rate-limiting';
 import { withAuthSecurity } from '@/lib/security/comprehensive-security';
 import bcrypt from 'bcrypt';
-import { Role } from '@prisma/client';
+import { Role } from '@/lib/prisma-types';
 import { randomUUID } from 'crypto';
 import { z } from 'zod';
 

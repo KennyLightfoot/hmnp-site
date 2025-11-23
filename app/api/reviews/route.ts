@@ -171,7 +171,7 @@ export const GET = withRateLimit('public', 'reviews_get')(async (request: NextRe
         totalReviews: aggregations._count.rating || 0,
         minRating: aggregations._min.rating || 0,
         maxRating: aggregations._max.rating || 0,
-        ratingDistribution: ratingDistribution.reduce((acc, curr) => {
+        ratingDistribution: ratingDistribution.reduce((acc: Record<number, number>, curr: { rating: number; _count: { rating: number } }) => {
           acc[curr.rating as keyof typeof acc] = curr._count.rating;
           return acc;
         }, {} as Record<number, number>)

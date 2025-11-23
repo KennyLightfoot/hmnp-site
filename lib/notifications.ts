@@ -4,7 +4,7 @@ import { sendEmail } from '@/lib/email';
 import { sendSms, checkSmsConsent } from '@/lib/sms';
 import { findContactByEmail } from '@/lib/ghl/contacts';
 import { buildBookingLinks } from '@/lib/ghl/automation-service';
-import { NotificationType, NotificationMethod, NotificationStatus, BookingStatus } from '@prisma/client';
+import { NotificationType, NotificationMethod, NotificationStatus, BookingStatus } from '@/lib/prisma-types';
 import { withRetry } from '@/lib/utils/retry';
 import { logger } from '@/lib/logger';
 

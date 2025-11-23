@@ -6,7 +6,7 @@ import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/prisma-types";
 import { randomUUID } from "crypto";
 import { logger } from '@/lib/logger';
 

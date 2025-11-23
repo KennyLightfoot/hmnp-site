@@ -4,7 +4,7 @@
  * Optimized for production with pooling, error handling, and edge compatibility
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@/lib/prisma-types';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 
 declare global {
@@ -132,7 +132,7 @@ class UnifiedDatabaseConnection {
     operations: (client: PrismaClient) => Promise<T>
   ): Promise<T> {
     const client = UnifiedDatabaseConnection.getInstance();
-    return client.$transaction(async (tx) => {
+    return client.$transaction(async (tx: Prisma.TransactionClient) => {
       return operations(tx as PrismaClient);
     });
   }
@@ -151,4 +151,4 @@ export const transaction = UnifiedDatabaseConnection.transaction;
 export { UnifiedDatabaseConnection };
 
 // Type exports for convenience
-export type { PrismaClient } from '@prisma/client';
+export type { PrismaClient } from '@/lib/prisma-types';

@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getQueues } from '@/lib/queue/config';
 import { prisma } from '@/lib/db';
-import { Role } from '@prisma/client';
+import { Role } from '@/lib/prisma-types';
 
 export async function POST() {
   // Check authentication and authorization

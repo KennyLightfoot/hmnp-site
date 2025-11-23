@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/db';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { NotificationService } from '@/lib/notifications';
-import { NotificationType, NotificationMethod } from '@prisma/client';
+import { NotificationType, NotificationMethod } from '@/lib/prisma-types';
 import { realTimeStatusUpdateEmail } from '@/lib/email/templates';
 import { logger } from '@/lib/logger';
 
@@ -370,7 +370,7 @@ export class RealTimeStatusService {
       }
     });
 
-    return statusUpdates?.map(update => {
+    return statusUpdates?.map((update: (typeof statusUpdates)[number]) => {
       const metadata = update?.metadata as any;
       return {
         bookingId,

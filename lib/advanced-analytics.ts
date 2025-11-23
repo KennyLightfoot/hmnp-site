@@ -498,7 +498,7 @@ class AdvancedAnalytics {
       }
     });
 
-    return customers?.slice(0, 10).map(customer => ({
+    return customers?.slice(0, 10).map((customer: any) => ({
       customerId: customer?.id,
       churnProbability: Math?.random() * 0.8, // 0-80% churn probability
       riskFactors: ['Decreased usage', 'No recent bookings', 'Price sensitivity'],

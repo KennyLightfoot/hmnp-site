@@ -1,4 +1,4 @@
-import { Role } from '@prisma/client';
+import { Role } from '@/lib/prisma-types';
 import { AuthUser, GuestUser } from './unified-middleware';
 
 /**

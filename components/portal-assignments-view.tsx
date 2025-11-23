@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Assignment } from "@prisma/client"
+import { Assignment } from "@/lib/prisma-types"
 import AssignmentsFilterControls from "@/components/assignments-filter-controls"
 import { getStatusBadgeStyle, formatDateShort } from "@/lib/assignmentUtils"
 import { PaginationControls } from "@/components/ui/pagination-controls"

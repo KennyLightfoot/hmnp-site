@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Role } from '@prisma/client';
+import { Role } from '@/lib/prisma-types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
@@ -64,7 +64,7 @@ export function UserRoleSelect({ userId, currentRole }: UserRoleSelectProps) {
   };
 
   // Get all possible roles for the dropdown
-  const roleOptions = Object.values(Role);
+  const roleOptions: Role[] = Object.values(Role) as Role[];
 
   return (
     <Select
@@ -76,7 +76,7 @@ export function UserRoleSelect({ userId, currentRole }: UserRoleSelectProps) {
         <SelectValue placeholder="Select role" />
       </SelectTrigger>
       <SelectContent>
-        {roleOptions.map((role) => (
+        {roleOptions.map((role: Role) => (
           <SelectItem key={role} value={role}>
             {/* Simple formatting for display */}
             {role.charAt(0) + role.slice(1).toLowerCase()}

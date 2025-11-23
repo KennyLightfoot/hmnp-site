@@ -7,7 +7,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/database-connection';
 import { proofAPI, CreateTransactionRequest } from '@/lib/proof/api';
 import { logger } from '@/lib/logger';
-import { LocationType, BookingStatus } from '@prisma/client';
+import { LocationType, BookingStatus } from '@/lib/prisma-types';
 
 /**
  * POST /api/proof/transactions

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
-import { AssignmentStatus } from "@prisma/client"
+import { AssignmentStatus } from "@/lib/prisma-types"
 
 interface Body {
   status?: AssignmentStatus

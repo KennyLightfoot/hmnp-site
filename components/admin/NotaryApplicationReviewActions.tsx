@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, CheckCircle, XCircle, UserPlus } from 'lucide-react'
-import { NotaryApplicationStatus } from '@prisma/client'
+import { NotaryApplicationStatus } from '@/lib/prisma-types'
 
 interface NotaryApplicationReviewActionsProps {
   applicationId: string

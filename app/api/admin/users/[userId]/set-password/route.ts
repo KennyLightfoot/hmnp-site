@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { Role } from '@prisma/client';
+import { Role } from '@/lib/prisma-types';
 import bcrypt from 'bcrypt';
 
 const SALT_ROUNDS = 10; // Standard recommendation for bcrypt

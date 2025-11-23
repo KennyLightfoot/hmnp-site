@@ -3,7 +3,7 @@
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Role } from '@prisma/client'; // Assuming Role enum is available
+import { Role } from '@/lib/prisma-types'; // Assuming Role enum is available
 
 export default function RegisterPage() {
   const [name, setName] = useState('');

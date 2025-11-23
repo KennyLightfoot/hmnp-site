@@ -11,7 +11,7 @@ import { getErrorMessage } from '@/lib/utils/error-utils';
 import { logger } from './logger';
 import { redis } from './redis';
 import { triggerStatusChangeFollowUps } from '@/lib/follow-up-automation';
-import { BookingStatus } from '@prisma/client';
+import { BookingStatus } from '@/lib/prisma-types';
 
 // Types for booking automation
 interface BookingCompletionData {

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Role } from '@prisma/client';
+import { Role } from '@/lib/prisma-types';
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -83,7 +83,7 @@ export function InviteUserDialog() {
     }
   };
 
-  const roleOptions = Object.values(Role);
+  const roleOptions: Role[] = Object.values(Role) as Role[];
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -126,7 +126,7 @@ export function InviteUserDialog() {
                     <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent>
-                    {roleOptions.map((r) => (
+                    {roleOptions.map((r: Role) => (
                     <SelectItem key={r} value={r}>
                         {r.charAt(0) + r.slice(1).toLowerCase()}
                     </SelectItem>

@@ -3,7 +3,7 @@ import { withAuth, AuthConfig } from '@/lib/auth/unified-middleware';
 import { hasPermission, Actions, Resources } from '@/lib/auth/permissions';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
-import { Role } from '@prisma/client';
+import { Role } from '@/lib/prisma-types';
 import { withRateLimit } from '@/lib/security/rate-limiting';
 
 // User update schema

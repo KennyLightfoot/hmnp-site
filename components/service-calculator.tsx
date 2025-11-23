@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
-import { PricingEngine } from "@/lib/pricing-engine"
 
 export default function ServiceCalculator() {
   const [serviceType, setServiceType] = useState("standard-notary")
@@ -51,17 +50,9 @@ export default function ServiceCalculator() {
     }
   }
 
-  // Calculate pricing whenever inputs change
+  // Calculate pricing whenever inputs change using UnifiedPricingEngine via API
   useEffect(() => {
     const apiServiceType = mapServiceTypeToAPI(serviceType)
-    const pricingEngine = new PricingEngine()
-    
-    // Create a mock location for now - in real app this would come from user input
-    const mockLocation = {
-      address: "Houston, TX",
-      latitude: 29.7604,
-      longitude: -95.3698
-    }
     
     // Create scheduled date time (next business day at 2pm)
     const tomorrow = new Date()
@@ -69,38 +60,48 @@ export default function ServiceCalculator() {
     tomorrow.setHours(14, 0, 0, 0)
     const scheduledDateTime = tomorrow.toISOString()
     
-    pricingEngine.calculateBookingPrice({
-      serviceType: apiServiceType,
-      location: mockLocation,
-      scheduledDateTime,
-      documentCount: extraDocuments + 1, // At least 1 document
-      signerCount: numberOfSigners,
-      options: {
-        priority: isAfterHours,
-        sameDay: false,
-        weatherAlert: false
-      }
-    }).then(result => {
-      setPricing({
-        price: result.basePrice,
-        discount: result.discounts,
-        finalPrice: result.total,
-        promoCodeDiscount: 0, // Would come from promo code input
-        depositAmount: Math.round(result.total * 0.25), // 25% deposit
-        depositRequired: result.total > 100,
-      })
-    }).catch(error => {
-      console.error('Pricing calculation failed:', error)
-      // Set default pricing on error
-      setPricing({
-        price: 75,
-        discount: 0,
-        finalPrice: 75,
-        promoCodeDiscount: 0,
-        depositAmount: 19,
-        depositRequired: false,
-      })
+    // Use unified pricing engine via API endpoint
+    fetch('/api/pricing/transparent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        serviceType: apiServiceType,
+        address: 'Houston, TX', // Mock location
+        documentCount: extraDocuments + 1, // At least 1 document
+        signerCount: numberOfSigners,
+        scheduledDateTime,
+        customerType: 'new',
+      }),
     })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.totalPrice) {
+          const totalPrice = data.totalPrice || 0
+          const discounts = data.breakdown?.discounts?.reduce((sum: number, d: any) => sum + (d.amount || 0), 0) || 0
+          setPricing({
+            price: data.basePrice || totalPrice,
+            discount: Math.abs(discounts),
+            finalPrice: totalPrice,
+            promoCodeDiscount: 0, // Would come from promo code input
+            depositAmount: Math.round(totalPrice * 0.25), // 25% deposit
+            depositRequired: totalPrice > 100,
+          })
+        } else {
+          throw new Error('Invalid pricing response')
+        }
+      })
+      .catch(error => {
+        console.error('Pricing calculation failed:', error)
+        // Set default pricing on error
+        setPricing({
+          price: 75,
+          discount: 0,
+          finalPrice: 75,
+          promoCodeDiscount: 0,
+          depositAmount: 19,
+          depositRequired: false,
+        })
+      })
   }, [
     serviceType,
     numberOfSigners,

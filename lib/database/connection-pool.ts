@@ -3,7 +3,7 @@
  * Optimizes database connections for performance and reliability
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@/lib/prisma-types';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { logger } from '@/lib/logger';
 

@@ -5,7 +5,7 @@
  * for the booking system with proper retry logic and alerting.
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@/lib/prisma-types';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { randomUUID } from 'crypto';
 

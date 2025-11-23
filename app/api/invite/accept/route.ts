@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // 5. Update the user's password and mark email as verified in a transaction
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0]) => {
       await tx.user.update({
         where: { id: invitationToken.userId! }, // userId is checked above
         data: {

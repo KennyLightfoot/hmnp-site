@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { Role, AlertStatus } from '@prisma/client';
+import { Role, AlertStatus } from '@/lib/prisma-types';
 
 export async function POST() {
   // Check authentication and authorization
@@ -24,7 +24,7 @@ export async function POST() {
         resolvedAt: new Date(),
         resolvedBy: (session.user as any).email || 'admin',
       }
-    }).catch(error => {
+    }).catch((error: unknown) => {
       // If the table doesn't exist yet, this will error
       console.log('Error updating systemAlert table:', error);
       return { count: 0 };

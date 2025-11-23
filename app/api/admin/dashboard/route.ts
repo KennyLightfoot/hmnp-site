@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '@/lib/database-connection';
-import { BookingStatus } from '@prisma/client';
+import { BookingStatus } from '@/lib/prisma-types';
 import { cache, cacheTTL } from '@/lib/cache';
 import { logger } from '@/lib/logger';
 import { testRunner } from '@/lib/test-runner';
@@ -129,7 +129,7 @@ async function getBookingStatistics() {
   });
 
   // Get service names for the top services
-  const serviceIds = serviceGrouped.map(item => item.serviceId);
+  const serviceIds = serviceGrouped.map((item: { serviceId: string }) => item.serviceId);
   const services = await prisma.service.findMany({
     where: {
       id: { in: serviceIds }
@@ -141,10 +141,10 @@ async function getBookingStatistics() {
   });
 
   // Combine the data
-  const serviceStats = serviceGrouped.map(item => ({
+  const serviceStats = serviceGrouped.map((item: { serviceId: string; _count: { serviceId: number } }) => ({
     serviceId: item.serviceId,
     _count: item._count,
-    service: services.find(service => service.id === item.serviceId)
+    service: services.find((service: { id: string; name: string }) => service.id === item.serviceId)
   }));
 
   // Get upcoming bookings
@@ -175,7 +175,7 @@ async function getBookingStatistics() {
     : 0;
 
   return {
-    statusDistribution: statusCounts.reduce((acc, item) => {
+    statusDistribution: statusCounts.reduce((acc: Record<string, number>, item: { status: string; _count: { status: number } }) => {
       acc[item.status as keyof typeof acc] = item._count.status;
       return acc;
     }, {} as Record<string, number>),
@@ -342,7 +342,7 @@ async function getRecentActivity() {
   });
 
   return {
-    recentBookings: recentBookings.map(booking => ({
+    recentBookings: recentBookings.map((booking: typeof recentBookings[number]) => ({
       id: booking.id,
       customerName: booking.User_Booking_signerIdToUser?.name || 'Guest',
       serviceName: booking.service?.name || 'Unknown',

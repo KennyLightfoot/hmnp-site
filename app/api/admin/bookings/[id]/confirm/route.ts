@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getQueues } from '@/lib/queue/config';
 import { prisma } from '@/lib/db';
-import { Role, BookingStatus } from '@prisma/client';
+import { Role, BookingStatus } from '@/lib/prisma-types';
 import { triggerStatusChangeFollowUps } from '@/lib/follow-up-automation';
 
 export async function POST(

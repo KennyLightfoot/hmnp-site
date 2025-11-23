@@ -4,6 +4,7 @@
  */
 
 import { prisma } from '@/lib/database-connection';
+import { Prisma } from '@/lib/prisma-types';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { cache } from '@/lib/cache';
 import { getDatabaseHealth } from '@/lib/database/connection-pool';
@@ -205,7 +206,7 @@ async function testTransactionSafety(): Promise<TestResult> {
   
   try {
     // Test a simple transaction
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const userCount = await tx.user.count();
       const serviceCount = await tx.service.count();
       return { userCount, serviceCount };

@@ -10,7 +10,7 @@ import { getErrorMessage } from '../../lib/utils/error-utils';
 import { logger } from '../../lib/logger';
 import { redis } from '../../lib/redis';
 import { addJob } from '../../lib/queue/queue-config';
-import { PaymentStatus } from '@prisma/client';
+import { PaymentStatus } from '@/lib/prisma-types';
 
 export interface PaymentRetryConfig {
   maxRetries: number;

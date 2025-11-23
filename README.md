@@ -178,6 +178,25 @@ VERTEX_RAG_CORPUS=projects/your-project/locations/us-central1/ragCorpora/hmnp-no
 - **Bundle analysis:** run `ANALYZE=true pnpm build` to produce client/server bundle reports under `.next/**/bundle-analysis.html` (open in a browser for profiling).
 - **Linting gate:** run `pnpm lint` before commits to catch type-safe issues that `next build --no-lint` would otherwise skip.
 
+### **Type-Checking Workflow (stop the “fix-one-error” loop)**
+Before you ever run a full Next.js build, run the standalone TypeScript compiler and fix *all* errors in one pass:
+
+```bash
+# Single pass – mirrors the Next.js type phase without doing any bundling
+pnpm type-check
+
+# Continuous feedback while you edit (runs tsc --watch --noEmit)
+pnpm type-check:watch
+```
+
+Both scripts are already wired into CI via `pnpm ci:verify`, so the expectation is:
+1. `pnpm type-check`
+2. `pnpm lint`
+3. `pnpm test:ci` (optional locally, required in CI)
+4. Only then run `pnpm build` / `pnpm build:safe`
+
+This flow makes TypeScript failures reproducible without waiting 20+ seconds for Next.js to bundle. If `pnpm type-check` passes, `next build --no-lint` should only surface webpack/runtime issues (fonts, network, etc.), not incremental TS surprises.
+
 ## 🔧 **API Endpoints**
 
 ### **Core Booking Endpoints**

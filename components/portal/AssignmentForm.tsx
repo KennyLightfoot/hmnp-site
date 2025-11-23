@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { assignmentSchema, AssignmentFormData } from '@/lib/validations';
-import { User, Role, Assignment } from '@prisma/client';
+import { User, Role, Assignment } from '@/lib/prisma-types';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea"; // If needed for description/notes later

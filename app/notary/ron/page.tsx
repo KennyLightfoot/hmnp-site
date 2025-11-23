@@ -18,7 +18,7 @@ import {
   Play,
   Calendar
 } from 'lucide-react';
-import { BookingStatus, LocationType } from '@prisma/client';
+import { BookingStatus, LocationType } from '@/lib/prisma-types';
 
 interface RONBooking {
   id: string;

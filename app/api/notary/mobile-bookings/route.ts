@@ -2,7 +2,46 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { Role, BookingStatus, LocationType } from '@prisma/client';
+import { Role, BookingStatus, LocationType } from '@/lib/prisma-types';
+import type { Prisma } from '@/lib/prisma-types';
+
+type LocationTypeValue = (typeof LocationType)[keyof typeof LocationType];
+type BookingStatusValue = (typeof BookingStatus)[keyof typeof BookingStatus];
+
+const isLocationType = (value: string): value is LocationTypeValue => {
+  return Object.values(LocationType).includes(value as LocationTypeValue);
+};
+
+const isBookingStatus = (value: string): value is BookingStatusValue => {
+  return Object.values(BookingStatus).includes(value as BookingStatusValue);
+};
+
+const bookingInclude = {
+  service: {
+    select: {
+      id: true,
+      name: true,
+      durationMinutes: true,
+      basePrice: true,
+    },
+  },
+  User_Booking_signerIdToUser: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  },
+  User_Booking_notaryIdToUser: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  },
+} satisfies Prisma.BookingInclude;
+
+type MobileBooking = Prisma.BookingGetPayload<{ include: typeof bookingInclude }>;
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,20 +57,24 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const locationType = searchParams.get('locationType') as LocationType;
-    const status = searchParams.get('status');
+    const locationTypeParam = searchParams.get('locationType');
+    const statusParam = searchParams.get('status');
     const date = searchParams.get('date');
 
-    const whereClause: any = {
-      locationType: locationType || LocationType.CLIENT_SPECIFIED_ADDRESS,
+    const locationType = locationTypeParam && isLocationType(locationTypeParam)
+      ? locationTypeParam
+      : LocationType.CLIENT_SPECIFIED_ADDRESS;
+
+    const whereClause: Prisma.BookingWhereInput = {
+      locationType,
     };
 
     if (userWithRole.role === Role.NOTARY) {
       whereClause.notaryId = userWithRole.id;
     }
 
-    if (status && status !== 'all') {
-      whereClause.status = status as BookingStatus;
+    if (statusParam && statusParam !== 'all' && isBookingStatus(statusParam)) {
+      whereClause.status = statusParam;
     }
 
     if (date && date !== 'all') {
@@ -62,38 +105,23 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const bookings = await prisma.booking.findMany({
+    const bookings: MobileBooking[] = await prisma.booking.findMany({
       where: whereClause,
-      include: {
-        service: {
-          select: {
-            id: true,
-            name: true,
-            durationMinutes: true,
-            basePrice: true,
-          },
-        },
-        User_Booking_signerIdToUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        User_Booking_notaryIdToUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
+      include: bookingInclude,
       orderBy: {
         scheduledDateTime: 'asc',
       },
     });
 
-    const formattedBookings = bookings.map(booking => ({
+    const formattedBookings = bookings.map((booking) => {
+      const serviceBasePrice = booking.service?.basePrice
+        ? Number(booking.service.basePrice)
+        : null;
+      const finalPrice = booking.priceAtBooking
+        ? Number(booking.priceAtBooking)
+        : serviceBasePrice;
+
+      return {
       id: booking.id,
       signerName: booking.User_Booking_signerIdToUser?.name || 'Unknown',
       signerEmail: booking.User_Booking_signerIdToUser?.email || '',
@@ -103,17 +131,20 @@ export async function GET(request: NextRequest) {
       addressZip: booking.addressZip,
       scheduledDateTime: booking.scheduledDateTime?.toISOString(),
       status: booking.status,
-      service: {
-        name: booking.service.name,
-        duration: booking.service.durationMinutes,
-      },
-      finalPrice: Number(booking.priceAtBooking || booking.service.basePrice),
+        service: booking.service
+          ? {
+              name: booking.service.name,
+              duration: booking.service.durationMinutes,
+            }
+          : null,
+        finalPrice,
       notes: booking.notes,
       mileageMiles: booking.mileage_miles,
       estimatedCompletionTime: booking.estimated_completion_time?.toISOString(),
       notaryTravelTimeMinutes: booking.notary_travel_time_minutes,
       locationNotes: booking.locationNotes,
-    }));
+      };
+    });
 
     return NextResponse.json({
       success: true,

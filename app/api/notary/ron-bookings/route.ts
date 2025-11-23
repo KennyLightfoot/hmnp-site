@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { Role, BookingStatus, LocationType } from '@prisma/client';
+import { Role, BookingStatus, LocationType, Prisma } from '@/lib/prisma-types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -46,7 +46,13 @@ export async function GET(request: NextRequest) {
       ],
     });
 
-    const formattedBookings = bookings.map(booking => ({
+    const formattedBookings = bookings.map((booking: Prisma.BookingGetPayload<{
+      include: {
+        service: true;
+        User_Booking_signerIdToUser: true;
+        User_Booking_notaryIdToUser: true;
+      };
+    }>) => ({
       id: booking.id,
       signerName: booking.User_Booking_signerIdToUser?.name || 'Unknown',
       signerEmail: booking.User_Booking_signerIdToUser?.email || '',

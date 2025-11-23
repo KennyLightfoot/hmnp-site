@@ -5,14 +5,18 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { Payment, Prisma } from '@/lib/prisma-types';
+
+type BookingContext = {
+  params: Promise<{ id: string }>
+}
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: BookingContext
 ) {
   try {
-    const params = await context.params;
-    const bookingId = params.id;
+    const { id: bookingId } = await context.params;
     
     if (!bookingId) {
       return NextResponse.json(
@@ -117,7 +121,7 @@ export async function GET(
       specialInstructions: null, // specialInstructions doesn't exist on Booking model
       internalNotes: null, // internalNotes doesn't exist on Booking model
       user: booking.User_Booking_signerIdToUser,
-      payments: booking.payments.map(payment => ({
+      payments: booking.payments.map((payment: typeof booking.payments[number]) => ({
         ...payment,
         amount: Number(payment.amount),
       })),

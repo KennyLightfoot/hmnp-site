@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Car, Video, BookOpen, BarChart3, Settings, LogOut, Clipboard } from 'lucide-react';
-import { Role } from '@prisma/client';
+import { Role } from '@/lib/prisma-types';
 
 export const metadata: Metadata = {
   title: 'Notary Portal | Houston Mobile Notary Pros',

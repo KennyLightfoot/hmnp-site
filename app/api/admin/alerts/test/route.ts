@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { Role, AlertSeverity } from '@prisma/client';
+import { Role, AlertSeverity } from '@/lib/prisma-types';
 import { getQueues } from '@/lib/queue/config';
 
 export async function POST() {

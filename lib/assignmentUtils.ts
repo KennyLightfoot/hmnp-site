@@ -1,4 +1,4 @@
-import { AssignmentStatus } from "@prisma/client";
+import { AssignmentStatus } from "@/lib/prisma-types";
 import { type VariantProps } from "class-variance-authority"; // Import VariantProps
 import { badgeVariants } from "@/components/ui/badge"; // Import badgeVariants type source if needed
 

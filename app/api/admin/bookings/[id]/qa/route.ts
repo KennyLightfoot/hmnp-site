@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { Role } from '@prisma/client'
+import { Role } from '@/lib/prisma-types'
 
 const qaUpdateSchema = z.object({
   journalEntryVerified: z.boolean().optional(),

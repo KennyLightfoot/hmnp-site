@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { Role } from '@prisma/client'
+import { Role } from '@/lib/prisma-types'
 
 // POST /api/admin/users/[userId]/two-factor/reset
 export async function POST(

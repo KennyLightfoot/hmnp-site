@@ -3,7 +3,7 @@ import { withAuth, AuthConfig } from '@/lib/auth/unified-middleware';
 import { TwoFactorService } from '@/lib/auth/two-factor';
 import { withRateLimit } from '@/lib/security/rate-limiting';
 import { z } from 'zod';
-import { Role } from '@prisma/client';
+import { Role } from '@/lib/prisma-types';
 
 const verifySchema = z.object({
   token: z.string().trim().min(6, 'Token must be at least 6 characters').max(8, 'Token must be at most 8 characters'),

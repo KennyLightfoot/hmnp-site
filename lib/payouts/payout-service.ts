@@ -1,4 +1,4 @@
-import { BookingStatus, ContractorPayoutEntryType, ContractorPayoutStatus, Prisma } from '@prisma/client'
+import { BookingStatus, ContractorPayoutEntryType, ContractorPayoutStatus, Prisma } from '@/lib/prisma-types'
 import { endOfWeek, startOfWeek, subWeeks } from 'date-fns'
 
 import { prisma } from '../prisma'
@@ -125,7 +125,7 @@ export async function generateWeeklyContractorPayouts(referenceDate: Date = new 
     },
   })
 
-  const grouped = completedBookings.reduce<Record<string, typeof completedBookings>>((acc, booking) => {
+  const grouped = completedBookings.reduce<Record<string, typeof completedBookings>>((acc: Record<string, typeof completedBookings>, booking: (typeof completedBookings)[number]) => {
     const notaryId = booking.notaryId as string
     if (!acc[notaryId]) acc[notaryId] = []
     acc[notaryId].push(booking)
@@ -140,7 +140,8 @@ export async function generateWeeklyContractorPayouts(referenceDate: Date = new 
     const entries: ReturnType<typeof buildEntry>[] = []
     let subtotal = 0
 
-    for (const booking of bookings) {
+    const typedBookings = bookings as typeof completedBookings
+    for (const booking of typedBookings) {
       const bookingId = booking.id
       const total = decimalToNumber(booking.priceAtBooking)
       const travelFee = decimalToNumber(booking.travelFee)
@@ -199,7 +200,7 @@ export async function generateWeeklyContractorPayouts(referenceDate: Date = new 
 
     logger.info(`Generated contractor payout ${payout.id} for notary ${notaryId}`, 'PAYOUT_SERVICE', {
       notaryId,
-      bookingCount: bookings.length,
+      bookingCount: typedBookings.length,
       total: subtotal,
     })
 
@@ -207,7 +208,7 @@ export async function generateWeeklyContractorPayouts(referenceDate: Date = new 
       notaryId,
       payoutId: payout.id,
       totalAmount: roundCurrency(subtotal),
-      bookingCount: bookings.length,
+      bookingCount: typedBookings.length,
     })
   }
 
@@ -247,7 +248,7 @@ export async function getPayoutSummary(options: {
     },
   })
 
-  return payouts.map((payout) => ({
+  return payouts.map((payout: (typeof payouts)[number]) => ({
     id: payout.id,
     notaryId: payout.notaryId,
     notaryName: payout.notary?.name ?? null,

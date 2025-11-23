@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { Role, BookingStatus, LocationType } from '@prisma/client';
+import { Role, BookingStatus, LocationType, NotarizationDocument } from '@/lib/prisma-types';
 
 export async function POST(
   request: Request,
@@ -69,7 +69,7 @@ export async function POST(
         ronBooking.status === BookingStatus.CONFIRMED) {
       
       // Check if this confirmed document is part of the booking's documents
-      const allBookingDocsConfirmed = ronBooking.NotarizationDocument.every(doc => 
+      const allBookingDocsConfirmed = ronBooking.NotarizationDocument.every((doc: NotarizationDocument) => 
         doc.id === documentId || 
         (doc.updatedAt.getTime() > doc.createdAt.getTime()) // A naive check for 'confirmed'
       );

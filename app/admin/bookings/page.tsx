@@ -1,20 +1,70 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { BookingStatus, Role } from '@prisma/client'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import type { Prisma } from '@/lib/prisma-types'
+
+type BookingListItem = Prisma.BookingGetPayload<{
+  select: {
+    id: true
+    customerName: true
+    customerEmail: true
+    scheduledDateTime: true
+    status: true
+    paymentStatus: true
+    paymentMethod: true
+    priceAtBooking: true
+    totalPaid: true
+  }
+}>
+
+type QACandidate = Prisma.BookingGetPayload<{
+  select: {
+    id: true
+    customerName: true
+    scheduledDateTime: true
+    service: {
+      select: {
+        name: true
+      }
+    }
+    User_Booking_notaryIdToUser: {
+      select: {
+        name: true
+        email: true
+      }
+    }
+  }
+}>
+
+type QARecordItem = {
+  bookingId: string
+  qa: {
+    status: string
+    updatedAt: Date
+    journalEntryVerified: boolean
+    sealPhotoVerified: boolean
+    documentCountVerified: boolean
+    clientConfirmationVerified: boolean
+    closeoutFormVerified: boolean
+  } | null
+}
+
+type QAQueueItem = QACandidate & {
+  qaRecord: QARecordItem['qa']
+}
 
 export default async function AdminBookingsPage() {
   const session = await getServerSession(authOptions)
-  const role = (session?.user as any)?.role as Role | undefined
-  if (!session?.user || (role !== Role.ADMIN && role !== Role.STAFF)) {
+  const role = (session?.user as any)?.role as string | undefined
+  if (!session?.user || (role !== 'ADMIN' && role !== 'STAFF')) {
     redirect('/portal')
   }
 
-  const bookings = await prisma.booking.findMany({
+  const bookings: BookingListItem[] = await prisma.booking.findMany({
     orderBy: [{ createdAt: 'desc' }],
     take: 25,
     select: {
@@ -30,9 +80,9 @@ export default async function AdminBookingsPage() {
     }
   })
 
-  const qaCandidates = await prisma.booking.findMany({
+  const qaCandidates: QACandidate[] = await prisma.booking.findMany({
     where: {
-      status: BookingStatus.COMPLETED,
+      status: 'COMPLETED',
     },
     orderBy: [{ scheduledDateTime: 'desc' }],
     take: 25,
@@ -55,10 +105,10 @@ export default async function AdminBookingsPage() {
   })
 
   // Fetch QA records separately using raw query to avoid Prisma type issues
-  const qaRecords = await Promise.all(
-    qaCandidates.map(async (booking) => {
+  const qaRecords: QARecordItem[] = await Promise.all(
+    qaCandidates.map(async (booking: QACandidate): Promise<QARecordItem> => {
       try {
-        const qa = await (prisma as any).bookingQARecord.findUnique({
+        const qa = await prisma.bookingQARecord.findUnique({
           where: { bookingId: booking.id },
           select: {
             status: true,
@@ -77,10 +127,10 @@ export default async function AdminBookingsPage() {
     })
   )
 
-  const qaMap = new Map(qaRecords.map((r) => [r.bookingId, r.qa]))
-  const qaQueue = qaCandidates
-    .map((booking) => ({ ...booking, qaRecord: qaMap.get(booking.id) || null }))
-    .filter((booking) => !booking.qaRecord || booking.qaRecord.status !== 'COMPLETE')
+  const qaMap = new Map(qaRecords.map((r: QARecordItem) => [r.bookingId, r.qa]))
+  const qaQueue: QAQueueItem[] = qaCandidates
+    .map((booking: QACandidate): QAQueueItem => ({ ...booking, qaRecord: qaMap.get(booking.id) || null }))
+    .filter((booking: QAQueueItem) => !booking.qaRecord || booking.qaRecord.status !== 'COMPLETE')
     .slice(0, 10)
 
   return (
@@ -96,7 +146,7 @@ export default async function AdminBookingsPage() {
             <p className="text-sm text-muted-foreground">All completed bookings have passed QA.</p>
           ) : (
             <div className="grid gap-3">
-              {qaQueue.map((booking) => {
+              {qaQueue.map((booking: QAQueueItem) => {
                 const qa = booking.qaRecord
                 const checklistCompleted = qa
                   ? [
@@ -148,7 +198,7 @@ export default async function AdminBookingsPage() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-3">
-            {bookings.map(b => {
+            {bookings.map((b: BookingListItem) => {
               const price = Number(b.priceAtBooking)
               const paid = Number(b.totalPaid ?? 0)
               const remaining = Math.max(price - paid, 0)

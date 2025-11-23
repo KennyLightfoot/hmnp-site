@@ -100,7 +100,7 @@ export class EnhancedBookingService {
           bookingManagementLink: bookingData.bookingManagementLink,
           specialInstructions: bookingData.specialInstructions,
           locationNotes: bookingData.locationNotes,
-          uploadedDocumentNames: uploadedDocs.map(d => d.filename),
+          uploadedDocumentNames: uploadedDocs.map((d: (typeof uploadedDocs)[number]) => d.filename),
           conversationHistory,
           notaryInfo,
         });

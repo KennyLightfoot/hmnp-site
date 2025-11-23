@@ -1,4 +1,4 @@
-import { BookingStatus, Prisma, Role } from '@prisma/client'
+import { BookingStatus, Prisma, Role } from '@/lib/prisma-types'
 import { differenceInMinutes, isSameDay, startOfDay, endOfDay } from 'date-fns'
 
 import { prisma } from '../prisma'
@@ -139,7 +139,7 @@ async function getAssignmentsForDay(userId: string, scheduled: Date): Promise<{ 
     },
   })
 
-  const hasConflict = assignments.some((assignment) => {
+  const hasConflict = assignments.some((assignment: (typeof assignments)[number]) => {
     if (!assignment.scheduledDateTime) return false
     const diff = Math.abs(differenceInMinutes(assignment.scheduledDateTime, scheduled))
     return diff < DISTANCE_CONFLICT_THRESHOLD_MINUTES
@@ -284,7 +284,7 @@ export async function autoDispatchBooking(bookingId: string, options: DispatchOp
     return { assigned: false, candidate: topCandidate, dryRun: true }
   }
 
-  const assignment = await prisma.$transaction(async (tx) => {
+  const assignment = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const updatedBooking = await tx.booking.update({
       where: { id: bookingId },
       data: {

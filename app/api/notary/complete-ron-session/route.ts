@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { BookingStatus, Role } from '@prisma/client';
+import { BookingStatus, Role } from '@/lib/prisma-types';
 
 export async function POST(request: NextRequest) {
   try {
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     const notaryId = userWithRole.id;
 
     // Start transaction to ensure consistency
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0]) => {
       // Update booking to completed
       const updatedBooking = await tx.booking.update({
         where: { id: bookingId },

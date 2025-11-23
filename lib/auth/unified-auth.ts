@@ -20,7 +20,7 @@ import { logger } from '@/lib/logger';
 import { Resend } from 'resend';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { Role } from '@prisma/client';
+import { Role } from '@/lib/prisma-types';
 
 // Initialize Resend only when API key present to avoid build crashes
 const resend = process.env.RESEND_API_KEY

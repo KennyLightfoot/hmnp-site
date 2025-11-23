@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from 'next/navigation';
-import { Role } from "@prisma/client";
+import { Role, NotaryApplicationStatus } from "@/lib/prisma-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,12 +10,36 @@ import Link from "next/link";
 import { formatDateTime } from "@/lib/utils/date-utils";
 import { ArrowLeft } from "lucide-react";
 import NotaryApplicationReviewActions from "@/components/admin/NotaryApplicationReviewActions";
+import type { Prisma } from "@/lib/prisma-types";
+
+type NotaryApplicationPageProps = {
+  params: Promise<{ id: string }>
+}
+
+const applicationInclude = {
+  reviewedBy: {
+    select: {
+      name: true,
+      email: true,
+    },
+  },
+  convertedToUser: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  },
+} satisfies Prisma.NotaryApplicationInclude
+
+type NotaryApplicationDetail = Prisma.NotaryApplicationGetPayload<{
+  include: typeof applicationInclude
+}>
 
 export default async function NotaryApplicationDetailPage({
   params,
-}: {
-  params: { id: string };
-}) {
+}: NotaryApplicationPageProps) {
+  const { id } = await params
   const session = await getServerSession(authOptions);
 
   const userRole = (session?.user as any)?.role
@@ -24,23 +48,9 @@ export default async function NotaryApplicationDetailPage({
   }
 
   const application = await prisma.notaryApplication.findUnique({
-    where: { id: params.id },
-    include: {
-      reviewedBy: {
-        select: {
-          name: true,
-          email: true,
-        },
-      },
-      convertedToUser: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-      },
-    },
-  });
+    where: { id },
+    include: applicationInclude,
+  }) as NotaryApplicationDetail | null;
 
   if (!application) {
     return (
@@ -64,7 +74,15 @@ export default async function NotaryApplicationDetailPage({
           </h1>
           <p className="text-gray-600">{application.email}</p>
         </div>
-        <Badge variant={application.status === 'APPROVED' ? 'default' : application.status === 'REJECTED' ? 'destructive' : 'outline'}>
+        <Badge
+          variant={
+            application.status === NotaryApplicationStatus.APPROVED
+              ? 'default'
+              : application.status === NotaryApplicationStatus.REJECTED
+              ? 'destructive'
+              : 'outline'
+          }
+        >
           {application.status}
         </Badge>
       </div>
@@ -129,16 +147,16 @@ export default async function NotaryApplicationDetailPage({
           <div>
             <label className="text-sm font-medium text-gray-600">States Licensed</label>
             <div className="flex flex-wrap gap-2 mt-1">
-              {application.statesLicensed.map((state) => (
+              {application.statesLicensed.map((state: string) => (
                 <Badge key={state} variant="outline">{state}</Badge>
               ))}
             </div>
           </div>
-          {application.countiesServed && application.countiesServed.length > 0 && (
+          {application.countiesServed.length > 0 && (
             <div>
               <label className="text-sm font-medium text-gray-600">Counties Served</label>
               <div className="flex flex-wrap gap-2 mt-1">
-                {application.countiesServed.map((county) => (
+                {application.countiesServed.map((county: string) => (
                   <Badge key={county} variant="secondary">{county}</Badge>
                 ))}
               </div>
@@ -156,7 +174,7 @@ export default async function NotaryApplicationDetailPage({
           <div>
             <label className="text-sm font-medium text-gray-600">Service Types</label>
             <div className="flex flex-wrap gap-2 mt-1">
-              {application.serviceTypes.map((type) => (
+              {application.serviceTypes.map((type: string) => (
                 <Badge key={type} variant="default">{type}</Badge>
               ))}
             </div>
@@ -171,21 +189,21 @@ export default async function NotaryApplicationDetailPage({
               <p className="mt-1">{application.serviceRadiusMiles || 25} miles</p>
             </div>
           </div>
-          {application.languagesSpoken && application.languagesSpoken.length > 0 && (
+          {application.languagesSpoken.length > 0 && (
             <div>
               <label className="text-sm font-medium text-gray-600">Languages Spoken</label>
               <div className="flex flex-wrap gap-2 mt-1">
-                {application.languagesSpoken.map((lang) => (
+                {application.languagesSpoken.map((lang: string) => (
                   <Badge key={lang} variant="secondary">{lang}</Badge>
                 ))}
               </div>
             </div>
           )}
-          {application.specialCertifications && application.specialCertifications.length > 0 && (
+          {application.specialCertifications.length > 0 && (
             <div>
               <label className="text-sm font-medium text-gray-600">Special Certifications</label>
               <div className="flex flex-wrap gap-2 mt-1">
-                {application.specialCertifications.map((cert) => (
+                {application.specialCertifications.map((cert: string) => (
                   <Badge key={cert} variant="secondary">{cert}</Badge>
                 ))}
               </div>

@@ -2,15 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { Role } from '@prisma/client'
+import { Role } from '@/lib/prisma-types'
 import { createJobOffers } from '@/lib/services/job-offer-service'
 import { logger } from '@/lib/logger'
 
+type SendToNetworkContext = {
+  params: Promise<{ id: string }>
+}
+
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: SendToNetworkContext
 ) {
   try {
+    const { id: bookingId } = await context.params
+
     const session = await getServerSession(authOptions)
     const userRole = (session?.user as any)?.role
 
@@ -23,7 +29,7 @@ export async function POST(
     }
 
     const booking = await prisma.booking.findUnique({
-      where: { id: params.id },
+      where: { id: bookingId },
     })
 
     if (!booking) {
@@ -42,7 +48,7 @@ export async function POST(
 
     // Mark booking for network distribution
     await prisma.booking.update({
-      where: { id: params.id },
+      where: { id: bookingId },
       data: {
         sendToNetwork: true,
         networkOfferExpiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes
@@ -50,11 +56,11 @@ export async function POST(
     })
 
     // Create job offers for eligible notaries
-    const result = await createJobOffers(params.id, 30)
+    const result = await createJobOffers(bookingId, 30)
 
     if (result.errors.length > 0) {
       logger.warn('Some errors occurred creating job offers', {
-        bookingId: params.id,
+        bookingId,
         errors: result.errors,
       })
     }

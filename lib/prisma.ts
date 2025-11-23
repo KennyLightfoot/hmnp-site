@@ -18,4 +18,4 @@ export {
 } from './database-connection';
 
 // Type re-exports for convenience
-export type { PrismaClient } from '@prisma/client';
+export type { PrismaClient } from '@/lib/prisma-types';

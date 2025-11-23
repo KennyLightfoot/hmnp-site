@@ -64,13 +64,13 @@ export const GET = withRateLimit('public', 'health_database')(async () => {
     });
 
     // Check for proper SOP pricing
-    const standardNotary = requiredServices.find(s => 
+    const standardNotary = requiredServices.find((s: typeof requiredServices[number]) => 
       s.serviceType === 'STANDARD_NOTARY' && (s.basePrice?.toNumber() || 0) === 75
     );
-    const extendedHours = requiredServices.find(s => 
+    const extendedHours = requiredServices.find((s: typeof requiredServices[number]) => 
       s.serviceType === 'EXTENDED_HOURS' && (s.basePrice?.toNumber() || 0) === 100
     );
-    const loanSigning = requiredServices.find(s => 
+    const loanSigning = requiredServices.find((s: typeof requiredServices[number]) => 
       s.serviceType === 'LOAN_SIGNING' && (s.basePrice?.toNumber() || 0) === 150
     );
 
@@ -79,8 +79,8 @@ export const GET = withRateLimit('public', 'health_database')(async () => {
       standardNotaryCorrect: !!standardNotary,
       extendedHoursCorrect: !!extendedHours,
       loanSigningCorrect: !!loanSigning,
-      allServicesHaveDeposit: requiredServices.every(s => s.requiresDeposit),
-      standardDepositAmount: requiredServices.every(s => 
+      allServicesHaveDeposit: requiredServices.every((s: typeof requiredServices[number]) => s.requiresDeposit),
+      standardDepositAmount: requiredServices.every((s: typeof requiredServices[number]) => 
         s.depositAmount && (s.depositAmount?.toNumber() || 0) === 25
       )
     };

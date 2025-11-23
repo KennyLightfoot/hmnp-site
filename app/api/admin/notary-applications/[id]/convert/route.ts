@@ -2,16 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { Role } from '@prisma/client'
+import { Role, NotaryApplicationStatus } from '@/lib/prisma-types'
 import { logger } from '@/lib/logger'
 import bcrypt from 'bcrypt'
 import { randomBytes } from 'crypto'
 
+type ConvertContext = {
+  params: Promise<{ id: string }>
+}
+
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: ConvertContext
 ) {
   try {
+    const { id } = await context.params
     const session = await getServerSession(authOptions)
     const userRole = (session?.user as any)?.role
 
@@ -23,7 +28,7 @@ export async function POST(
     }
 
     const application = await prisma.notaryApplication.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!application) {
@@ -33,7 +38,7 @@ export async function POST(
       )
     }
 
-    if (application.status !== 'APPROVED') {
+    if (application.status !== NotaryApplicationStatus.APPROVED) {
       return NextResponse.json(
         { error: 'Application must be approved before converting to user' },
         { status: 400 }
@@ -100,9 +105,9 @@ export async function POST(
 
     // Update application to mark as converted
     await prisma.notaryApplication.update({
-      where: { id: params.id },
+      where: { id },
       data: {
-        status: 'CONVERTED',
+        status: NotaryApplicationStatus.CONVERTED,
         convertedToUserId: user.id,
         convertedAt: new Date(),
         reviewedById: session.user.id,

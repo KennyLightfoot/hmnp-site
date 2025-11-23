@@ -4,7 +4,7 @@
  */
 
 import { prisma } from './prisma';
-import { BookingStatus } from '@prisma/client';
+import { BookingStatus } from '@/lib/prisma-types';
 import { logger, logBookingEvent } from './logger';
 import { getErrorMessage } from './utils/error-utils';
 import * as ghl from './ghl/api';

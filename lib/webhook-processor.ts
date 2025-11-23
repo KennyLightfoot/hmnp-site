@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@/lib/prisma-types';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from './prisma';
 import Stripe from 'stripe';
@@ -166,7 +166,7 @@ export class WebhookProcessor {
       }
 
       // Step 5: Process the event within a transaction
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         try {
           await processor(event.data.object as T, eventId);
           

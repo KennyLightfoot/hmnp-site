@@ -1,4 +1,4 @@
-import { User, Comment } from "@prisma/client";
+import { User, Comment } from "@/lib/prisma-types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getErrorMessage } from '@/lib/utils/error-utils'
-import { PaymentStatus } from '@prisma/client'
+import { PaymentStatus } from '@/lib/prisma-types'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

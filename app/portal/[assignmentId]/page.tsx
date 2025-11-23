@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { redirect, notFound } from 'next/navigation'
-import { User, Assignment, AssignmentStatus, Role, AssignmentDocument, StatusHistory, Comment } from "@prisma/client"
+import { User, Assignment, AssignmentStatus, Role, AssignmentDocument, StatusHistory, Comment } from "@/lib/prisma-types"
 import { Badge } from "@/components/ui/badge" // Re-use badge for status display
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table" // For lists
 import { Button } from "@/components/ui/button" // For download button
@@ -87,15 +87,15 @@ export default async function AssignmentDetailPage({ params }: AssignmentDetailP
       // Transform the data to match AssignmentWithDetails interface
       assignment = {
         ...assignmentData,
-        documents: assignmentData.AssignmentDocument.map(doc => ({
+        documents: assignmentData.AssignmentDocument.map((doc: any) => ({
           ...doc,
           uploadedBy: null // Since the relation doesn't exist in schema
         })),
-        history: assignmentData.StatusHistory.map(history => ({
+        history: assignmentData.StatusHistory.map((history: any) => ({
           ...history,
           changedBy: null // Since the relation doesn't exist in schema
         })),
-        comments: assignmentData.Comment.map(comment => ({
+        comments: assignmentData.Comment.map((comment: any) => ({
           ...comment,
           author: null // Since the relation doesn't exist in schema
         }))
@@ -172,7 +172,7 @@ export default async function AssignmentDetailPage({ params }: AssignmentDetailP
               </TableRow>
             </TableHeader>
             <TableBody>
-              {assignment.documents.map(doc => (
+              {assignment.documents.map((doc: any) => (
                 <TableRow key={doc.id}>
                   <TableCell className="font-medium">{doc.filename}</TableCell>
                   <TableCell>{doc.uploadedBy?.name || 'System'}</TableCell>
@@ -207,7 +207,7 @@ export default async function AssignmentDetailPage({ params }: AssignmentDetailP
               </TableRow>
             </TableHeader>
             <TableBody>
-              {assignment.history.map(hist => (
+              {assignment.history.map((hist: any) => (
                 <TableRow key={hist.id}>
                   <TableCell>
                     {/* Use the new utility function */}

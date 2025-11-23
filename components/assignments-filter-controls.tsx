@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { AssignmentStatus } from '@prisma/client' // Import the enum
+import { AssignmentStatus } from '@/lib/prisma-types' // Import the enum
 import { useDebouncedCallback } from 'use-debounce';
 
 interface AssignmentsFilterControlsProps {
@@ -72,7 +72,7 @@ export default function AssignmentsFilterControls({
 
 
   // Get all enum values for the select dropdown
-  const statusOptions = Object.values(AssignmentStatus);
+  const statusOptions: AssignmentStatus[] = Object.values(AssignmentStatus) as AssignmentStatus[];
 
   return (
     <div className="flex flex-col sm:flex-row gap-4 mb-4">
@@ -91,10 +91,10 @@ export default function AssignmentsFilterControls({
             </SelectTrigger>
             <SelectContent>
                 <SelectItem value="ALL">All Statuses</SelectItem>
-                {statusOptions.map((status) => (
+                {statusOptions.map((status: AssignmentStatus) => (
                 <SelectItem key={status} value={status}>
                     {/* Optional: Format status display */}
-                    {status.replace(/_/g, ' ').toLowerCase().replace(/\w/g, l => l.toUpperCase())}
+                    {status.replace(/_/g, ' ').toLowerCase().replace(/\w/g, (l: string) => l.toUpperCase())}
                 </SelectItem>
                 ))}
             </SelectContent>

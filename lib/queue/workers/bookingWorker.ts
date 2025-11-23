@@ -1,6 +1,6 @@
 import { BookingProcessingJob, JobResult } from '../types';
 import { getErrorMessage } from '@/lib/utils/error-utils';
-import { PrismaClient, BookingStatus, PaymentStatus } from '@prisma/client';
+import { PrismaClient, BookingStatus, PaymentStatus, Prisma } from '@/lib/prisma-types';
 import { NotificationService } from '@/lib/notifications';
 import { logger } from '@/lib/logger';
 import { withRetry } from '@/lib/utils/retry';
@@ -25,7 +25,13 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
         service: true,
         payments: true,
       }
-    }), { maxRetries: 3 });
+    }), { maxRetries: 3 }) as Prisma.BookingGetPayload<{
+      include: {
+        User_Booking_signerIdToUser: true;
+        service: true;
+        payments: true;
+      };
+    }> | null;
     
     if (!booking) {
       throw new Error(`Booking ${job.bookingId} not found`);
@@ -81,7 +87,7 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
             where: { id: job.bookingId },
             data: { 
               status: cancellationStatus,
-              notes: `${booking.notes || ''}\n[CANCELLED] ${cancelReason}`.trim()
+              notes: `${(booking?.notes as string) || ''}\n[CANCELLED] ${cancelReason}`.trim()
             }
           });
           
@@ -124,7 +130,7 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
             data: { 
               scheduledDateTime: newDateTime,
               status: 'CONFIRMED', // Reset to confirmed if it was pending
-              notes: `${booking.notes || ''}\n[RESCHEDULED] From ${oldDateTime?.toISOString() || 'unknown'} to ${newDateTime.toISOString()}`.trim()
+              notes: `${(booking?.notes as string) || ''}\n[RESCHEDULED] From ${oldDateTime?.toISOString() || 'unknown'} to ${newDateTime.toISOString()}`.trim()
             }
           });
           
@@ -216,7 +222,7 @@ export async function processBookingJob(job: BookingProcessingJob): Promise<JobR
             });
             
             // Update booking status if necessary
-            if (booking.status === 'PAYMENT_PENDING') {
+            if (booking?.status === 'PAYMENT_PENDING') {
               await prisma.booking.update({
                 where: { id: job.bookingId },
                 data: { status: BookingStatus.CANCELLED_BY_CLIENT }

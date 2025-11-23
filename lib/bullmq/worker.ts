@@ -1,7 +1,7 @@
 import { Worker } from 'bullmq';
 import type { Job as BullJob } from 'bullmq';
 import { getErrorMessage } from '@/lib/utils/error-utils';
-import { PrismaClient, BookingStatus, NotificationType, NotificationMethod, PaymentStatus, PaymentProvider } from '@prisma/client';
+import { PrismaClient, BookingStatus, NotificationType, NotificationMethod, PaymentStatus, PaymentProvider } from '@/lib/prisma-types';
 import { NotificationJob, BookingProcessingJob, PaymentProcessingJob, JobResult } from '../queue/types';
 import { getQueues } from './config';
 import { logger } from '../logger';

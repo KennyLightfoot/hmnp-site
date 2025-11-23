@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { Role, Prisma } from '@prisma/client';
+import { Role, Prisma } from '@/lib/prisma-types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
 
       const csvContent = [
         csvHeaders.join(','),
-        ...csvRows.map(row => row.map(escapeCsvValue).join(',')),
+        ...csvRows.map((row: unknown[]) => row.map(escapeCsvValue).join(',')),
       ].join('\n');
 
       return new NextResponse(csvContent, {

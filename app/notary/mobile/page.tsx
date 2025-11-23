@@ -18,7 +18,7 @@ import {
   RefreshCw,
   Car
 } from 'lucide-react';
-import { LocationType, BookingStatus } from '@prisma/client';
+import { LocationType, BookingStatus } from '@/lib/prisma-types';
 
 interface MobileBooking {
   id: string;

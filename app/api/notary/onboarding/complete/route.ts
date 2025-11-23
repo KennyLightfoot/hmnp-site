@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { Role } from '@prisma/client'
+import { Role } from '@/lib/prisma-types'
 import { logger } from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
@@ -40,15 +40,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify all required fields are complete
-    const requiredFieldsComplete =
+    const requiredFieldsComplete = Boolean(
       profile.commission_number &&
-      profile.commission_expiry &&
-      profile.eo_insurance_provider &&
-      profile.eo_insurance_policy &&
-      profile.eo_insurance_expiry &&
-      profile.w9_on_file &&
-      profile.base_address &&
-      profile.states_licensed.length > 0
+        profile.commission_expiry &&
+        profile.eo_insurance_provider &&
+        profile.eo_insurance_policy &&
+        profile.eo_insurance_expiry &&
+        profile.w9_on_file &&
+        profile.base_address &&
+        (profile.states_licensed?.length ?? 0) > 0,
+    )
 
     if (!requiredFieldsComplete) {
       return NextResponse.json(

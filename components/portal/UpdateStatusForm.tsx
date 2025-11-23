@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
-import { AssignmentStatus } from "@prisma/client";
+import { AssignmentStatus } from "@/lib/prisma-types";
 import { updateAssignmentStatus } from "@/app/portal/_actions/assignments";
 // import { toast } from "sonner";
 
@@ -23,7 +23,7 @@ type UpdateStatusFormProps = {
 };
 
 // Get all possible enum values
-const statusOptions = Object.values(AssignmentStatus);
+const statusOptions: AssignmentStatus[] = Object.values(AssignmentStatus) as AssignmentStatus[];
 
 export function UpdateStatusForm({ assignmentId, currentStatus }: UpdateStatusFormProps) {
   const router = useRouter();
@@ -72,7 +72,7 @@ export function UpdateStatusForm({ assignmentId, currentStatus }: UpdateStatusFo
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
           <SelectContent>
-            {statusOptions.map((status) => (
+            {statusOptions.map((status: AssignmentStatus) => (
               <SelectItem key={status} value={status}>
                 {status}
               </SelectItem>

@@ -1,4 +1,4 @@
-import { BookingStatus, PaymentStatus, Prisma } from '@prisma/client'
+import { BookingStatus, PaymentStatus, Prisma } from '@/lib/prisma-types'
 import { endOfWeek, startOfWeek, subWeeks } from 'date-fns'
 
 import { prisma } from '@/lib/prisma'
@@ -88,14 +88,14 @@ export async function generateWeeklyOwnerReport(referenceDate: Date = new Date()
   ])
 
   const totalBookings = bookings.length
-  const completedBookings = bookings.filter((booking) => booking.status === BookingStatus.COMPLETED).length
+  const completedBookings = bookings.filter((booking: { status: BookingStatus }) => booking.status === BookingStatus.COMPLETED).length
   const bookingCompletionRate = totalBookings > 0 ? completedBookings / totalBookings : 0
   const averageBookingValue = totalBookings > 0
-    ? bookings.reduce((sum, booking) => sum + decimalToNumber(booking.priceAtBooking), 0) / totalBookings
+    ? bookings.reduce((sum: number, booking: { priceAtBooking: Prisma.Decimal | number | null | undefined }) => sum + decimalToNumber(booking.priceAtBooking), 0) / totalBookings
     : 0
 
   const totalPayments = payments.length
-  const successfulPayments = payments.filter((payment) => payment.status === PaymentStatus.COMPLETED).length
+  const successfulPayments = payments.filter((payment: { status: PaymentStatus }) => payment.status === PaymentStatus.COMPLETED).length
   const paymentSuccessRate = totalPayments > 0 ? successfulPayments / totalPayments : 0
 
   return {

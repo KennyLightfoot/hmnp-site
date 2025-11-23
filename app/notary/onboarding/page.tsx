@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { redirect } from 'next/navigation'
-import { Role, NotaryOnboardingStatus } from '@prisma/client'
+import { Role, NotaryOnboardingStatus } from '@/lib/prisma-types'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import OnboardingChecklist from '@/components/notary/OnboardingChecklist'
@@ -30,6 +30,8 @@ export default async function NotaryOnboardingPage() {
       </div>
     )
   }
+
+  const hasServiceArea = (profile.states_licensed?.length ?? 0) > 0
 
   const onboardingItems = [
     {
@@ -64,7 +66,7 @@ export default async function NotaryOnboardingPage() {
       id: 'profile',
       title: 'Complete Profile',
       description: 'Fill out your service areas, availability, and preferences',
-      completed: !!profile.base_address && profile.states_licensed.length > 0,
+      completed: Boolean(profile.base_address && hasServiceArea),
       required: true,
     },
   ]

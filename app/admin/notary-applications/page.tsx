@@ -2,7 +2,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from 'next/navigation';
-import { Role, NotaryApplicationStatus } from "@prisma/client";
+import { Role, NotaryApplicationStatus } from "@/lib/prisma-types";
+import type { Prisma } from "@/lib/prisma-types";
 import {
   Table,
   TableBody,
@@ -17,6 +18,19 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDateTime } from "@/lib/utils/date-utils";
+
+const applicationInclude = {
+  reviewedBy: {
+    select: {
+      name: true,
+      email: true,
+    },
+  },
+} satisfies Prisma.NotaryApplicationInclude
+
+type NotaryApplicationListItem = Prisma.NotaryApplicationGetPayload<{
+  include: typeof applicationInclude
+}>
 
 const getStatusBadge = (status: NotaryApplicationStatus) => {
   const variants: Record<NotaryApplicationStatus, "default" | "secondary" | "destructive" | "outline"> = {
@@ -37,29 +51,22 @@ export default async function AdminNotaryApplicationsPage() {
     redirect('/portal');
   }
 
-  let applications = [];
+  let applications: NotaryApplicationListItem[] = [];
   try {
     applications = await prisma.notaryApplication.findMany({
       orderBy: {
         createdAt: 'desc',
       },
-      include: {
-        reviewedBy: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
-      },
+      include: applicationInclude,
     });
   } catch (error) {
     console.error("Failed to fetch applications:", error);
     return <p className="text-red-500">Error loading applications. Please try again later.</p>;
   }
 
-  const pendingCount = applications.filter(a => a.status === 'PENDING').length;
-  const approvedCount = applications.filter(a => a.status === 'APPROVED').length;
-  const rejectedCount = applications.filter(a => a.status === 'REJECTED').length;
+  const pendingCount = applications.filter((application) => application.status === NotaryApplicationStatus.PENDING).length;
+  const approvedCount = applications.filter((application) => application.status === NotaryApplicationStatus.APPROVED).length;
+  const rejectedCount = applications.filter((application) => application.status === NotaryApplicationStatus.REJECTED).length;
 
   return (
     <div className="container mx-auto py-6">
@@ -135,7 +142,7 @@ export default async function AdminNotaryApplicationsPage() {
                 <TableCell>{app.phone}</TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
-                    {app.statesLicensed.slice(0, 3).map((state) => (
+                    {app.statesLicensed.slice(0, 3).map((state: string) => (
                       <Badge key={state} variant="outline" className="text-xs">{state}</Badge>
                     ))}
                     {app.statesLicensed.length > 3 && (

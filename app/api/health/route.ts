@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withRateLimit } from '@/lib/security/rate-limiting';
 import { getErrorMessage } from '@/lib/utils/error-utils';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@/lib/prisma-types';
 import { logger, generateRequestId } from '@/lib/logger';
 
 const prisma = new PrismaClient();

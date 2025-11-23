@@ -301,7 +301,7 @@ export class GMBAutomationService {
       const analytics = {
         totalPosts: activities.length,
         postTypes: this.groupBy(activities, 'type'),
-        successRate: activities.length > 0 ? (activities.filter(a => a.status === 'SUCCESS').length / activities.length) * 100 : 0,
+        successRate: activities.length > 0 ? (activities.filter((a: (typeof activities)[number]) => a.status === 'SUCCESS').length / activities.length) * 100 : 0,
         averageEngagement: await this.calculateAverageEngagement(activities),
         topPerformingPosts: await this.getTopPerformingPosts(activities, 5),
         recentActivity: activities.slice(0, 10)

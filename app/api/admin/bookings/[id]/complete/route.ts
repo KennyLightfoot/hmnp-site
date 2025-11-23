@@ -3,7 +3,7 @@ import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { BookingAutomationService } from '@/lib/booking-automation';
-import { Role } from '@prisma/client';
+import { Role } from '@/lib/prisma-types';
 
 export async function POST(
   request: Request,

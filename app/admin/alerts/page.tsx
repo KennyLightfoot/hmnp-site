@@ -2,8 +2,6 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from 'next/navigation';
-import { Role } from "@prisma/client";
-import type { SystemAlert, SystemLog } from "@prisma/client";
 import {
   Table,
   TableBody,
@@ -23,6 +21,9 @@ import {
 } from "lucide-react";
 import { getQueues } from "@/lib/queue/config";
 
+type SystemAlert = Awaited<ReturnType<typeof prisma.systemAlert.findMany>>[number];
+type SystemLog = Awaited<ReturnType<typeof prisma.systemLog.findMany>>[number];
+
 // Helper function to format dates
 const formatDateTime = (date: Date | string | null | undefined) => {
   if (!date) return "-";
@@ -34,7 +35,9 @@ export default async function AdminAlertsPage() {
 
   // Authorization Check: Only Admins allowed (tolerant of NextAuth session typing)
   const userRole = (session?.user as any)?.role;
-  if (!session?.user || userRole !== Role.ADMIN) {
+  // Using string literal 'ADMIN' instead of Role.ADMIN to work around Prisma client type resolution issue
+  // Other admin pages successfully import Role enum, suggesting this might be a build cache issue
+  if (!session?.user || userRole !== 'ADMIN') {
     redirect('/portal'); // Redirect non-admins
   }
 

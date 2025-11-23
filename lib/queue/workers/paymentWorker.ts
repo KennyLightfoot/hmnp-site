@@ -1,6 +1,6 @@
 import { PaymentProcessingJob, JobResult } from '../types';
 import { getErrorMessage } from '@/lib/utils/error-utils';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@/lib/prisma-types';
 import { NotificationService } from '@/lib/notifications';
 import { logger } from '@/lib/logger';
 import { withRetry } from '@/lib/utils/retry';

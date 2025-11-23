@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '@/lib/db';
 import { bookingSchemas } from '@/lib/validation/schemas';
-import { ServiceType } from '@prisma/client';
+import { ServiceType } from '@/lib/prisma-types';
 import { z } from 'zod';
 import { createBookingFromForm } from '@/lib/booking/create';
 import { withRateLimit } from '@/lib/security/rate-limiting';

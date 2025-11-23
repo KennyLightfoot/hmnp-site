@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from 'next/navigation';
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/prisma-types";
 import { prisma } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, Users, CreditCard, Bell, AlertCircle, Activity } from "lucide-react";

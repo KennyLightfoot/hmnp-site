@@ -3,13 +3,12 @@
  * Houston Mobile Notary Pros - Core Business Logic Enforcement
  * 
  * This engine enforces all business rules and integrates seamlessly with existing
- * systems: PricingEngine, UnifiedDistanceService, and GHL automation.
+ * systems: UnifiedDistanceService and GHL automation.
  */
 
 import { logger } from '../logger';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { UnifiedDistanceService } from '../maps/unified-distance-service';
-import { PricingEngine } from '../pricing-engine';
 import * as ghl from '../ghl/management';
 import { 
   BUSINESS_RULES_CONFIG, 
