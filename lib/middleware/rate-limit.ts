@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { logger } from '@/lib/logger'
 
 interface RateLimitConfig {
   windowMs: number // Time window in milliseconds
   maxRequests: number // Maximum requests per window
-  keyGenerator?: (request: NextRequest) => string // Custom key generator
+  keyGenerator?: (request: NextRequest) => string | Promise<string> // Custom key generator
   skipSuccessfulRequests?: boolean // Don't count successful requests
   skipFailedRequests?: boolean // Don't count failed requests
 }
@@ -19,21 +21,29 @@ interface RateLimitStore {
 // In-memory store (for production, use Redis)
 const store: RateLimitStore = {}
 
-function getKey(request: NextRequest, config: RateLimitConfig): string {
+async function getKey(request: NextRequest, config: RateLimitConfig): Promise<string> {
   if (config.keyGenerator) {
     return config.keyGenerator(request)
   }
 
   // Default: use IP address
   const forwarded = request.headers.get('x-forwarded-for')
-  const ip = forwarded ? forwarded.split(',')[0].trim() : request.headers.get('x-real-ip') || 'unknown'
+  const ip =
+    forwarded?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    'unknown'
   return `rate-limit:${ip}`
 }
 
 function cleanupExpiredEntries() {
   const now = Date.now()
   Object.keys(store).forEach((key) => {
-    if (store[key].resetTime < now) {
+    const entry = store[key]
+    if (!entry) {
+      return
+    }
+
+    if (entry.resetTime < now) {
       delete store[key]
     }
   })
@@ -43,7 +53,7 @@ export function createRateLimiter(config: RateLimitConfig) {
   return async (request: NextRequest): Promise<NextResponse | null> => {
     cleanupExpiredEntries()
 
-    const key = getKey(request, config)
+    const key = await getKey(request, config)
     const now = Date.now()
     const windowMs = config.windowMs
 
@@ -105,7 +115,7 @@ export const rateLimiters = {
     maxRequests: 5, // 5 accepts per minute
     keyGenerator: async (request) => {
       // Use user ID if available, otherwise IP
-      const session = await import('next-auth').then((m) => m.getServerSession(await import('@/lib/auth').then((m) => m.authOptions)))
+      const session = await getServerSession(authOptions)
       if (session?.user?.id) {
         return `rate-limit:job-offer:${session.user.id}`
       }
