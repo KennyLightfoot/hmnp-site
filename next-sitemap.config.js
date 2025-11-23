@@ -70,6 +70,6 @@ export default {
     policies: [
       { userAgent: '*', allow: '/' },
     ],
-    additionalSitemaps: [`${siteUrl.replace(/\\/$/, '')}/sitemap.xml`],
+    additionalSitemaps: [`${siteUrl.replace(/\/$/, '')}/sitemap.xml`],
   },
 }

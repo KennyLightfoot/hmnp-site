@@ -1,9 +1,26 @@
 import { prisma } from '@/lib/db'
-import { Booking, User, notary_profiles } from '@prisma/client'
+import {
+  Booking,
+  User,
+  notary_profiles,
+  Prisma,
+  Role,
+  NotaryOnboardingStatus,
+  NotaryAvailabilityStatus,
+  JobOfferStatus,
+} from '@/lib/prisma-types'
 import { logger } from '@/lib/logger'
 
 interface EligibleNotary extends User {
+  id: string;
+  name: string | null;
+  email: string | null;
   notary_profiles: notary_profiles | null
+}
+
+type BookingWithLocation = Booking & {
+  addressZip?: string | null
+  addressState?: string | null
 }
 
 interface JobOfferEligibilityCriteria {
@@ -27,40 +44,46 @@ export async function findEligibleNotaries(
   } = criteria
 
   // Base query for active notaries
-  const where: any = {
-    role: 'NOTARY',
-    notary_profiles: {
-      is_active: true,
-      onboarding_status: 'COMPLETE',
-      availability_status: 'AVAILABLE',
-    },
+  const notaryProfileFilters: Prisma.notary_profilesWhereInput = {
+    is_active: true,
+    onboarding_status: NotaryOnboardingStatus.COMPLETE,
+    availability_status: NotaryAvailabilityStatus.AVAILABLE,
   }
 
   // Filter by commission expiry if required
   if (requireActiveCommission) {
-    where.notary_profiles = {
-      ...where.notary_profiles,
-      OR: [
-        { commission_expiry: null },
-        { commission_expiry: { gte: new Date() } },
-      ],
-    }
+    notaryProfileFilters.OR = [
+      { commission_expiry: null },
+      { commission_expiry: { gte: new Date() } },
+    ]
   }
 
   // Filter by E&O insurance expiry if required
   if (requireEOInsurance) {
-    where.notary_profiles = {
-      ...where.notary_profiles,
-      AND: [
-        { eo_insurance_provider: { not: null } },
-        {
-          OR: [
-            { eo_insurance_expiry: null },
-            { eo_insurance_expiry: { gte: new Date() } },
-          ],
-        },
-      ],
-    }
+    const existingAnd = notaryProfileFilters.AND
+    const andArray = Array.isArray(existingAnd) 
+      ? existingAnd 
+      : existingAnd 
+        ? [existingAnd] 
+        : []
+    
+    notaryProfileFilters.AND = [
+      ...andArray,
+      { eo_insurance_provider: { not: null } },
+      {
+        OR: [
+          { eo_insurance_expiry: null },
+          { eo_insurance_expiry: { gte: new Date() } },
+        ],
+      },
+    ]
+  }
+
+  const where: Prisma.UserWhereInput = {
+    role: Role.NOTARY,
+    notary_profiles: {
+      is: notaryProfileFilters,
+    },
   }
 
   // Get all active notaries
@@ -69,17 +92,19 @@ export async function findEligibleNotaries(
     include: {
       notary_profiles: true,
     },
-  })
+  }) as EligibleNotary[]
+
+  const bookingWithLocation = booking as BookingWithLocation
 
   // Filter by geographic eligibility if booking has location
-  if (booking.addressZip && booking.addressState) {
-    return notaries.filter((notary) => {
+  if (bookingWithLocation.addressZip && bookingWithLocation.addressState) {
+    return notaries.filter((notary: EligibleNotary) => {
       const profile = notary.notary_profiles
       if (!profile) return false
 
       // Check if notary serves this state
       if (profile.states_licensed && profile.states_licensed.length > 0) {
-        if (!profile.states_licensed.includes(booking.addressState!)) {
+        if (!profile.states_licensed.includes(bookingWithLocation.addressState!)) {
           return false
         }
       }
@@ -87,7 +112,7 @@ export async function findEligibleNotaries(
       // Check if notary serves this ZIP code or is within service radius
       if (profile.preferred_zip_codes && profile.preferred_zip_codes.length > 0) {
         // If they have preferred ZIPs, check if booking ZIP is in their list
-        if (!profile.preferred_zip_codes.includes(booking.addressZip!)) {
+        if (!profile.preferred_zip_codes.includes(bookingWithLocation.addressZip!)) {
           // Could add distance calculation here if needed
           // For now, if they have preferred ZIPs and booking ZIP isn't in list, skip
           return false
@@ -95,7 +120,7 @@ export async function findEligibleNotaries(
       }
 
       // Check service radius if base ZIP is available
-      if (profile.base_zip && booking.addressZip) {
+      if (profile.base_zip && bookingWithLocation.addressZip) {
         // Simple ZIP-based check - in production, use actual distance calculation
         // For now, assume if both ZIPs exist and notary has service radius, they're eligible
         // TODO: Implement actual distance calculation using Google Maps API
@@ -140,8 +165,9 @@ export async function createJobOffers(
   }
 
   // Find eligible notaries
+  // The booking from Prisma includes all fields, so we cast it to Booking type
   const eligibleNotaries = await findEligibleNotaries({
-    booking,
+    booking: booking as Booking,
     requireActiveCommission: true,
     requireEOInsurance: true,
   })
@@ -159,7 +185,7 @@ export async function createJobOffers(
   const offers = eligibleNotaries.map((notary) => ({
     bookingId,
     notaryId: notary.id,
-    status: 'PENDING' as const,
+    status: JobOfferStatus.PENDING,
     expiresAt,
   }))
 
@@ -247,7 +273,7 @@ export async function acceptJobOffer(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Use a transaction to ensure atomicity
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Get the offer and verify it belongs to this notary
       const offer = await tx.jobOffer.findUnique({
         where: { id: offerId },
@@ -262,7 +288,7 @@ export async function acceptJobOffer(
         throw new Error('Unauthorized: This offer does not belong to you')
       }
 
-      if (offer.status !== 'PENDING') {
+      if (offer.status !== JobOfferStatus.PENDING) {
         throw new Error(`Offer is no longer available (status: ${offer.status})`)
       }
 
@@ -279,7 +305,7 @@ export async function acceptJobOffer(
       await tx.jobOffer.update({
         where: { id: offerId },
         data: {
-          status: 'ACCEPTED',
+          status: JobOfferStatus.ACCEPTED,
           acceptedAt: new Date(),
         },
       })
@@ -298,10 +324,10 @@ export async function acceptJobOffer(
         where: {
           bookingId: offer.Booking.id,
           id: { not: offerId },
-          status: 'PENDING',
+          status: JobOfferStatus.PENDING,
         },
         data: {
-          status: 'CANCELLED',
+          status: JobOfferStatus.CANCELLED,
         },
       })
 
@@ -345,14 +371,14 @@ export async function declineJobOffer(
       return { success: false, error: 'Unauthorized' }
     }
 
-    if (offer.status !== 'PENDING') {
+    if (offer.status !== JobOfferStatus.PENDING) {
       return { success: false, error: 'Offer is no longer available' }
     }
 
     await prisma.jobOffer.update({
       where: { id: offerId },
       data: {
-        status: 'DECLINED',
+        status: JobOfferStatus.DECLINED,
         declinedAt: new Date(),
       },
     })
