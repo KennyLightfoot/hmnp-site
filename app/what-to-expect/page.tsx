@@ -8,20 +8,20 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "What to Expect | Houston Mobile Notary Pros",
-  description: "Understand the mobile notary process with Houston Mobile Notary Pros. From booking to signing, we ensure a clear, calm, and professional experience.",
-  keywords: "mobile notary process, what to expect notary, Houston notary process, notary appointment steps, HMNP signing experience",
+  title: "What to Expect From Your Mobile Notary Visit",
+  description: "Step-by-step guide to booking, preparing, and completing a Houston Mobile Notary Pros appointment with confidence.",
+  keywords: "mobile notary process, what to expect notary, Houston notary process, notary appointment steps",
   alternates: {
-    canonical: '/what-to-expect',
+    canonical: `${BASE_URL}/what-to-expect`,
   },
   openGraph: {
-    title: "What to Expect During Your Mobile Notary Appointment | Houston Mobile Notary Pros",
-    description: "Learn about our streamlined and professional mobile notary process. We prioritize clarity, care, and precision for every client.",
+    title: "What to Expect From Your Mobile Notary Visit",
+    description: "Learn how Houston Mobile Notary Pros handles booking, ID checks, and signing so you can be ready.",
     url: `${BASE_URL}/what-to-expect`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
       {
-        url: '/og-image.jpg', // Ensure this image exists in /public
+        url: `${BASE_URL}/og-image.jpg`,
         width: 1200,
         height: 630,
         alt: 'Houston Mobile Notary Pros - What to Expect',
@@ -32,8 +32,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "What to Expect | Houston Mobile Notary Pros",
-    description: "Your guide to a smooth and professional mobile notary experience in Houston. We make notarization easy and stress-free.",
+    title: "What to Expect From Your Mobile Notary Visit",
+    description: "Get ready for a smooth Houston mobile notary appointment from booking to final seal.",
     images: [`${BASE_URL}/og-image.jpg`],
   },
 };

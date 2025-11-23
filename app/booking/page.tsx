@@ -7,9 +7,18 @@ import { Metadata } from 'next';
 import BookingForm from '@/components/booking/BookingForm';
 
 export const metadata: Metadata = {
-  title: 'Book Your Notary Appointment | Houston Mobile Notary Pros',
-  description: 'Professional mobile notary services in Houston. Book online with instant pricing and same-day availability.',
-  keywords: 'Houston notary, mobile notary, document notarization, loan signing, same day notary'
+  title: 'Book a Notary Appointment',
+  description:
+    'Schedule mobile notary, loan signing, or remote online notarization appointments anywhere in the Greater Houston area.',
+  alternates: {
+    canonical: 'https://houstonmobilenotarypros.com/booking',
+  },
+  keywords: [
+    'Houston notary',
+    'mobile notary booking',
+    'loan signing appointment',
+    'remote online notarization',
+  ],
 };
 
 // Force dynamic rendering to prevent SSR issues with client components

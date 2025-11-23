@@ -8,22 +8,22 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Reverse Mortgage Signing Houston | Expert Guidance | Houston Mobile Notary Pros",
+  title: "Reverse Mortgage Signing Services in Houston",
   description:
-    "Specialized reverse mortgage signing services in Houston. Our certified agents provide clear, calm, and precise handling of your reverse mortgage documents.",
+    "Certified loan signing agents handle HECM and proprietary reverse mortgage packages with patience, clarity, and on-time document returns.",
   keywords:
-    "reverse mortgage signing Houston, HECM notary, Houston reverse mortgage specialist, mobile notary reverse mortgage, certified reverse mortgage signing agent",
+    "reverse mortgage signing Houston, HECM notary, reverse mortgage specialist, mobile notary reverse mortgage",
   alternates: {
-    canonical: '/services/reverse-mortgage',
+    canonical: `${BASE_URL}/services/reverse-mortgage`,
   },
   openGraph: {
-    title: "Expert Reverse Mortgage Signing Services in Houston | HMNP",
-    description: "Houston Mobile Notary Pros offers specialized, expert handling of reverse mortgage signings with clarity and precision.",
+    title: "Reverse Mortgage Signing Services in Houston",
+    description: "Notaries specially trained for reverse mortgage closings across Greater Houston.",
     url: `${BASE_URL}/services/reverse-mortgage`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
       {
-        url: '/og-image.jpg', 
+        url: `${BASE_URL}/og-image.jpg`,
         width: 1200,
         height: 630,
         alt: 'Reverse Mortgage Signing Services - Houston Mobile Notary Pros',
@@ -34,8 +34,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Houston Reverse Mortgage Signing | Calm, Clear & Precise | HMNP",
-    description: "Navigate your reverse mortgage signing in Houston with confidence. Our certified specialists ensure a smooth process.",
+    title: "Reverse Mortgage Signing Services in Houston",
+    description: "Book experienced reverse mortgage notaries for detailed, patient signings.",
     images: [`${BASE_URL}/og-image.jpg`],
   },
 }

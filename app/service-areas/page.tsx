@@ -1,26 +1,36 @@
 import Link from "next/link"
 import { Metadata } from "next"
-import { MapPin, Clock, DollarSign, Users, Star, Shield, CheckCircle, Zap, Phone, Mail, Map, Calculator } from "lucide-react"
+import dynamic from "next/dynamic"
+import { MapPin, Clock, DollarSign, Users, Star, Shield, CheckCircle, Zap, Phone, Mail, Map, Calculator, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { SERVICE_AREAS } from "@/lib/serviceAreas"
-import TrustBadges from "@/components/ui/TrustBadges"
 import { getBusinessPhoneFormatted, getBusinessTel } from "@/lib/phone"
+
+const TrustBadges = dynamic(() => import("@/components/ui/TrustBadges"), {
+  loading: () => (
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      {Array.from({ length: 6 }).map((_, idx) => (
+        <div key={`trust-skeleton-${idx}`} className="h-20 rounded-2xl bg-white border border-gray-100 animate-pulse" />
+      ))}
+    </div>
+  ),
+})
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://houstonmobilenotarypros.com"
 
 export const metadata: Metadata = {
-  title: "Mobile Notary Service Areas | Houston Mobile Notary Pros",
+  title: "Mobile Notary Service Areas",
   description:
     "Browse all cities and areas we serve for mobile notary and loan signing services throughout Greater Houston and the Gulf Coast. Fast, reliable service in your area.",
   keywords: "Houston mobile notary, service areas, mobile notary near me, notary service areas, Houston metro notary",
   alternates: {
-    canonical: "/service-areas",
+    canonical: `${BASE_URL}/service-areas`,
   },
   openGraph: {
-    url: "/service-areas",
-    title: "Mobile Notary Service Areas | Houston Mobile Notary Pros",
+    url: `${BASE_URL}/service-areas`,
+    title: "Mobile Notary Service Areas",
     description:
       "Browse all cities and areas we serve for mobile notary and loan signing services throughout Greater Houston and the Gulf Coast. Fast, reliable service in your area.",
   },
@@ -71,6 +81,9 @@ const enhancedServiceAreas = [
     specialNotes: "North Houston metro coverage"
   }
 ]
+
+const highlightedSlugs = enhancedServiceAreas.map(area => area.slug)
+const additionalServiceAreas = SERVICE_AREAS.filter(area => !highlightedSlugs.includes(area.slug))
 
 const serviceAreasBreadcrumbSchema = {
   "@context": "https://schema.org",
@@ -225,6 +238,27 @@ export default function ServiceAreasIndexPage() {
               </Card>
             ))}
           </div>
+
+          {additionalServiceAreas.length > 0 && (
+            <div className="mt-12">
+              <h3 className="text-2xl font-bold text-[#002147] mb-4 text-center">More Cities We Cover</h3>
+              <p className="text-gray-600 text-center mb-6 max-w-3xl mx-auto">
+                These additional Greater Houston communities are also within our mobile notary radius. Pick your city to view response times and local highlights.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
+                {additionalServiceAreas.map((area) => (
+                  <Link
+                    key={area.slug}
+                    href={`/service-areas/${area.slug}`}
+                    className="flex items-center justify-between rounded-2xl border border-gray-100 px-4 py-3 hover:bg-gray-50"
+                  >
+                    <span className="text-[#002147] font-medium">{area.cityName}</span>
+                    <ArrowRight className="h-4 w-4 text-[#A52A2A]" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

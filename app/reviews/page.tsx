@@ -13,16 +13,17 @@ import { Star, Award, Users, TrendingUp } from 'lucide-react';
  */
 
 export const metadata: Metadata = {
-  title: 'Customer Reviews - Houston Mobile Notary Pros | 5-Star Rated Service',
-  description: 'Read verified customer reviews for Houston Mobile Notary Pros. See why we\'re the #1 rated mobile notary service in Houston with 4.9/5 stars from over 150+ happy customers.',
+  title: 'Houston Mobile Notary Reviews',
+  description: "Read real client reviews and see why Houston Mobile Notary Pros maintains a 4.9/5 rating across more than 150 appointments.",
   keywords: 'Houston mobile notary reviews, customer testimonials, 5 star notary service, best notary Houston, verified reviews',
   openGraph: {
-    title: 'Customer Reviews - Houston Mobile Notary Pros',
-    description: 'Read verified customer reviews and see why we\'re Houston\'s #1 rated mobile notary service.',
+    title: 'Houston Mobile Notary Reviews',
+    description: "Verified testimonials from homeowners, title companies, and businesses across Greater Houston.",
     type: 'website',
+    url: 'https://houstonmobilenotarypros.com/reviews',
     images: [
       {
-        url: '/og-reviews.jpg',
+        url: 'https://houstonmobilenotarypros.com/og-reviews.jpg',
         width: 1200,
         height: 630,
         alt: 'Houston Mobile Notary Pros Customer Reviews'

@@ -11,22 +11,22 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Loan Signing Agent Houston | Pearland to Galveston | Mobile Mortgage Notary",
+  title: "Loan Signing Services in Houston",
   description:
-    "Certified loan signing agent serving Houston, Pearland, Sugar Land, Galveston. 30-mile travel included; fair travel tiers to 50 miles. Mobile mortgage notary for closings, refinances, HELOCs. Same-day available!",
+    "Certified loan signing agents handle purchases, refinances, HELOCs, reverse mortgages, and scanbacks anywhere in Greater Houston.",
   keywords:
-    "loan signing agent Houston, loan signing agent Pearland, loan signing agent Sugar Land, mortgage notary Houston, mobile loan signing, certified loan signer, loan signing agent near me, Houston closing agent, 77591 loan signing, Galveston loan signing agent",
+    "loan signing agent Houston, mortgage notary Houston, mobile loan signing, certified loan signer",
   alternates: {
-    canonical: '/services/loan-signing-specialist',
+    canonical: `${BASE_URL}/services/loan-signing-specialist`,
   },
   openGraph: {
-    title: "Houston Loan Signing Specialist | Certified & Reliable | HMNP",
-    description: "Houston Mobile Notary Pros: Your certified Loan Signing Specialists for smooth, accurate real estate closings, including RON and reverse mortgages.",
+    title: "Loan Signing Services in Houston",
+    description: "Certified loan signing specialists for accurate, on-time real estate closings across Houston.",
     url: `${BASE_URL}/services/loan-signing-specialist`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
       {
-        url: '/og-image.jpg', 
+        url: `${BASE_URL}/og-image.jpg`,
         width: 1200,
         height: 630,
         alt: 'Loan Signing Specialist Services by Houston Mobile Notary Pros',
@@ -37,8 +37,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Loan Signing Specialist Houston: Certified Pros You Can Trust | HMNP",
-    description: "Need a Loan Signing Specialist in Houston? We handle all loan types, RON, and courier returns with precision. Book with the paperwork pros!",
+    title: "Loan Signing Services in Houston",
+    description: "Book experienced loan signing agents for refinances, purchases, HELOCs, or reverse mortgages throughout Houston.",
     images: [`${BASE_URL}/og-image.jpg`],
   },
 }

@@ -11,22 +11,22 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Remote Online Notarization Texas | RON Services Houston | HMNP",
+  title: "Remote Online Notarization in Texas",
   description:
-    "Secure Remote Online Notarization (RON) services in Texas. 24/7 online notary available statewide. $25/session + $5/seal. KBA verification included. Book now!",
+    "Meet with a Texas-commissioned notary online for fast, secure notarization that includes credential analysis, KBA, and digital journals.",
   keywords:
-    "remote online notarization Texas, RON services Houston, online notary Texas, remote notary Houston, digital notarization, virtual notary, RON Texas law, online notarization 24/7, secure online notary, Texas RON provider",
+    "remote online notarization Texas, RON services Houston, online notary Texas, virtual notary",
   alternates: {
-    canonical: '/services/remote-online-notarization',
+    canonical: `${BASE_URL}/services/remote-online-notarization`,
   },
   openGraph: {
-    title: "Remote Online Notarization Texas | Secure RON Services | HMNP",
-    description: "Professional Remote Online Notarization (RON) services across Texas. Secure, convenient, and available 24/7. After 9pm convenience fee $10. Texas-compliant RON platform.",
+    title: "Remote Online Notarization in Texas",
+    description: "Statewide RON appointments with credential analysis, KBA, and recording included.",
     url: `${BASE_URL}/services/remote-online-notarization`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
       {
-        url: '/og-image.jpg',
+        url: `${BASE_URL}/og-image.jpg`,
         width: 1200,
         height: 630,
         alt: 'Remote Online Notarization Services by Houston Mobile Notary Pros',
@@ -37,8 +37,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Remote Online Notarization Texas | 24/7 RON Services | HMNP",
-    description: "Need documents notarized online in Texas? Our secure RON platform is available 24/7 statewide. $25/session + $5/seal. Book instantly!",
+    title: "Remote Online Notarization in Texas",
+    description: "Book a secure online notary session with credential analysis and KBA in minutes.",
     images: [`${BASE_URL}/og-image.jpg`],
   },
 }

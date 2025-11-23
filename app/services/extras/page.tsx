@@ -11,22 +11,22 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Notary Service Extras & Fees | Transparent Pricing | Houston Mobile Notary Pros",
+  title: "Notary Service Extras & Fees",
   description:
-    "Understand our transparent pricing for additional notary services and fees in Houston, including travel zones, after-hours, and weekend appointments. No surprises.",
+    "See transparent pricing for travel zones, after-hours appointments, weekends, scanbacks, and other add-ons for Houston Mobile Notary Pros.",
   keywords:
-    "notary fees Houston, mobile notary pricing, travel fee notary, after-hours notary fee, weekend notary fee, transparent notary pricing, additional notary services",
+    "notary fees Houston, mobile notary pricing, travel fee notary, after-hours notary fee, weekend notary fee",
   alternates: {
-    canonical: '/services/extras',
+    canonical: `${BASE_URL}/services/extras`,
   },
   openGraph: {
-    title: "Extras & Fees for Houston Mobile Notary Services | HMNP",
-    description: "Clear, transparent pricing for travel zones, after-hours, weekend fees, and other additional notary services at Houston Mobile Notary Pros.",
+    title: "Notary Service Extras & Fees",
+    description: "Transparent list of travel, after-hours, weekend, and specialty fees for Houston Mobile Notary Pros.",
     url: `${BASE_URL}/services/extras`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
       {
-        url: '/og-image.jpg', 
+        url: `${BASE_URL}/og-image.jpg`,
         width: 1200,
         height: 630,
         alt: 'Notary Extras & Fees - Houston Mobile Notary Pros',
@@ -37,8 +37,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Houston Notary Extras & Fees | Transparent & Fair | HMNP",
-    description: "Know your costs upfront. View our clear list of additional notary service fees for travel, weekends, and after-hours in Houston.",
+    title: "Notary Service Extras & Fees",
+    description: "Know every potential travel or after-hours fee before you book.",
     images: [`${BASE_URL}/og-image.jpg`],
   },
 }

@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { Metadata } from "next"
 import dynamic from "next/dynamic"
-import { Calculator, DollarSign, MapPin, Clock, Shield, Star, CheckCircle, Zap, Users, Award, FileText } from "lucide-react"
+import { Calculator, DollarSign, MapPin, Clock, Shield, Star, CheckCircle, Zap, Users, Award, FileText, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -36,11 +36,35 @@ const TrustBadges = dynamic(() => import("@/components/ui/TrustBadges"), {
   )
 })
 
+const pricingServiceLinks = [
+  { href: "/services/mobile-notary", label: "Standard Mobile Notary" },
+  { href: "/services/extended-hours-notary", label: "Extended Hours/Emergency" },
+  { href: "/services/loan-signing-specialist", label: "Loan Signing Specialist" },
+  { href: "/services/remote-online-notarization", label: "Remote Online Notarization" },
+  { href: "/services/business", label: "Business Notary Programs" },
+]
+
+const pricingCityLinks = [
+  { href: "/service-areas/houston", label: "Houston" },
+  { href: "/service-areas/pearland", label: "Pearland" },
+  { href: "/service-areas/league-city", label: "League City" },
+  { href: "/service-areas/galveston", label: "Galveston" },
+  { href: "/service-areas/pasadena", label: "Pasadena" },
+]
+
 export const metadata: Metadata = {
-  title: "Transparent Mobile Notary Pricing | Houston Mobile Notary Pros",
+  title: "Mobile Notary Pricing in Houston",
   description:
-    "Get instant pricing for mobile notary services. Transparent fees, no hidden costs. Standard service from $75, same-day available. Serving Houston metro area.",
-  keywords: "mobile notary pricing, notary fees, Houston notary costs, transparent pricing, same-day notary",
+    "Review transparent pricing for mobile notary, loan signing, extended-hours, and online notarization services across Greater Houston.",
+  keywords: ["mobile notary pricing", "Houston notary costs", "loan signing fees", "notary travel fees"],
+  alternates: {
+    canonical: `${BASE_URL}/pricing`,
+  },
+  openGraph: {
+    title: "Mobile Notary Pricing in Houston",
+    description: "Compare every Houston Mobile Notary Pros package with transparent fees and no surprises.",
+    url: `${BASE_URL}/pricing`,
+  },
 }
 
 export const revalidate = 86400
@@ -358,6 +382,50 @@ export default function PricingPage() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Quick Links to Services & Cities */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4 grid gap-8 md:grid-cols-2">
+          <div className="bg-gray-50 border border-gray-100 rounded-3xl p-8">
+            <h2 className="text-2xl font-bold text-[#002147] mb-4">Jump to Service Pricing</h2>
+            <p className="text-gray-600 mb-6">
+              Go straight to the package that matches your situation—mobile, emergency, loan signing, or RON.
+            </p>
+            <div className="space-y-3">
+              {pricingServiceLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="flex items-center justify-between rounded-2xl border border-white bg-white px-4 py-3 shadow-sm hover:shadow-md transition"
+                >
+                  <span className="font-medium text-[#002147]">{link.label}</span>
+                  <ArrowRight className="h-4 w-4 text-[#A52A2A]" />
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm">
+            <h2 className="text-2xl font-bold text-[#002147] mb-4">Popular Cities We Serve</h2>
+            <p className="text-gray-600 mb-6">
+              Pricing stays transparent no matter where you are in the Houston metro.
+            </p>
+            <ul className="space-y-3">
+              {pricingCityLinks.map((city) => (
+                <li key={city.href}>
+                  <Link
+                    href={city.href}
+                    className="flex items-center justify-between rounded-2xl border border-gray-100 px-4 py-3 hover:bg-gray-50"
+                  >
+                    <span className="text-[#002147] font-medium">{city.label}</span>
+                    <ArrowRight className="h-4 w-4 text-[#A52A2A]" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>

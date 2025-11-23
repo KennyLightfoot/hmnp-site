@@ -14,22 +14,22 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Houston Mobile Notary Services | 24/7 Loan Signing & More | HMNP",
+  title: "Notary Services in Houston",
   description:
-    "Complete mobile notary services in Houston. 24/7 loan signing agent, estate planning, business solutions. Flawless service—or we pay the redraw fee. Book today.",
+    "Browse every mobile notary, loan signing, estate planning, and remote online notarization service we offer across Greater Houston.",
   keywords:
-    "mobile notary, Houston notary, standard notary, extended hours notary, loan signing specialist, specialty notary services, business notary solutions, transparent pricing, notary services, loan signing, priority notary",
+    "mobile notary Houston, loan signing agent, estate planning notary, remote online notarization, emergency notary, business notary solutions",
   alternates: {
-    canonical: '/services',
+    canonical: `${BASE_URL}/services`,
   },
   openGraph: {
-    title: "Notary Services You Can Rely On | Houston Mobile Notary Pros",
-    description: "Our Promise: Fast, precise notary service—every time, no hassle. Discover our range of mobile notary services tailored to your needs.",
+    title: "Notary Services in Houston",
+    description: "Choose the Houston Mobile Notary Pros service that fits your signing—mobile, loan signing, RON, estate planning, or emergency.",
     url: `${BASE_URL}/services`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
       {
-        url: '/og-image.jpg', // Ensure this image exists in /public
+        url: `${BASE_URL}/og-image.jpg`,
         width: 1200,
         height: 630,
         alt: 'Houston Mobile Notary Pros Service Offerings',
@@ -40,13 +40,9 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Notary Services You Can Rely On | Houston Mobile Notary Pros",
-    description: "Need a reliable mobile notary in Houston? We offer fast, precise service for all your notary needs. Our Promise: Fast, precise notary service—every time, no hassle.",
-    // Add your Twitter handle here if you have one
-    // siteId: 'YourTwitterID',
-    // creator: '@YourTwitterHandle',
-    // creatorId: 'YourTwitterCreatorID',
-    images: [`${BASE_URL}/og-image.jpg`], // Must be an absolute URL
+    title: "Notary Services in Houston",
+    description: "See mobile, loan signing, and online notarization options from Houston Mobile Notary Pros.",
+    images: [`${BASE_URL}/og-image.jpg`],
   },
 }
 
@@ -390,6 +386,38 @@ export default function ServicesPage() {
       ),
     },
   ]
+
+const specializedServiceLinks = [
+  {
+    href: "/services/remote-online-notarization",
+    title: "Remote Online Notarization",
+    blurb: "Meet with a Texas-commissioned notary online when travel isn’t an option.",
+  },
+  {
+    href: "/services/reverse-mortgage",
+    title: "Reverse Mortgage Signings",
+    blurb: "Patient, specialized agents for HECM and proprietary reverse mortgage packages.",
+  },
+  {
+    href: "/services/business",
+    title: "Business Notary Programs",
+    blurb: "Recurring or volume notarization with block-booking and account management.",
+  },
+  {
+    href: "/services/extras",
+    title: "Travel & After-Hours Fees",
+    blurb: "Quick reference for mileage tiers, weekend surcharges, and rush add-ons.",
+  },
+]
+
+const featuredCityLinks = [
+  { href: "/service-areas/houston", label: "Mobile Notary in Houston" },
+  { href: "/service-areas/league-city", label: "Mobile Notary in League City" },
+  { href: "/service-areas/pearland", label: "Mobile Notary in Pearland" },
+  { href: "/service-areas/sugar-land", label: "Mobile Notary in Sugar Land" },
+  { href: "/service-areas/galveston", label: "Mobile Notary in Galveston" },
+  { href: "/service-areas/pasadena", label: "Mobile Notary in Pasadena" },
+]
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -763,6 +791,51 @@ export default function ServicesPage() {
           </Table>
         </div>
       </div>
+
+  {/* Specialized Services & Top Cities */}
+  <div className="mb-16 grid gap-8 md:grid-cols-2">
+    <div className="bg-gray-50 border border-gray-100 rounded-3xl p-8">
+      <h2 className="text-2xl font-bold text-[#002147] mb-4">Specialized Services</h2>
+      <p className="text-gray-600 mb-6">
+        Need something beyond a standard notarization? Quick links to deeper service pages.
+      </p>
+      <div className="space-y-4">
+        {specializedServiceLinks.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="flex items-start justify-between rounded-2xl border border-white bg-white px-4 py-3 shadow-sm hover:shadow-md transition"
+          >
+            <div className="pr-4">
+              <p className="font-semibold text-[#002147]">{item.title}</p>
+              <p className="text-sm text-gray-600">{item.blurb}</p>
+            </div>
+            <ArrowRight className="h-4 w-4 text-[#A52A2A] mt-1" />
+          </Link>
+        ))}
+      </div>
+    </div>
+
+    <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm">
+      <h2 className="text-2xl font-bold text-[#002147] mb-4">Popular Service Areas</h2>
+      <p className="text-gray-600 mb-6">
+        Choose your city to see response times, travel details, and local highlights.
+      </p>
+      <ul className="space-y-3">
+        {featuredCityLinks.map((city) => (
+          <li key={city.href}>
+            <Link
+              href={city.href}
+              className="flex items-center justify-between rounded-2xl border border-gray-100 px-4 py-3 hover:bg-gray-50"
+            >
+              <span className="text-[#002147] font-medium">{city.label}</span>
+              <ArrowRight className="h-4 w-4 text-[#A52A2A]" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
 
       {/* Service Area */}
       <div className="grid md:grid-cols-2 gap-12 items-center mb-16">

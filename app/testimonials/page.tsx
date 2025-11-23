@@ -3,15 +3,18 @@ import type { Metadata } from "next"
 import Script from "next/script"
 
 export const metadata: Metadata = {
-  title: "Client Testimonials | Houston Mobile Notary Pros",
+  title: "Mobile Notary Testimonials",
   description:
-    "Read reviews and testimonials from satisfied clients who have used our mobile notary services in Houston and surrounding areas.",
+    "Hear from homeowners, lenders, and businesses who trust Houston Mobile Notary Pros for on-time, professional service.",
   keywords:
     "notary testimonials, mobile notary reviews, Houston notary service reviews, client feedback, notary recommendations",
+  alternates: {
+    canonical: "https://houstonmobilenotarypros.com/testimonials",
+  },
   openGraph: {
-    title: "Client Testimonials | Houston Mobile Notary Pros",
-    description: "Read what our clients say about our professional mobile notary services in Houston.",
-    url: "/testimonials",
+    title: "Mobile Notary Testimonials",
+    description: "Real stories from clients across Houston who rely on Houston Mobile Notary Pros.",
+    url: "https://houstonmobilenotarypros.com/testimonials",
     type: "website",
   },
 }

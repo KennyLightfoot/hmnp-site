@@ -11,21 +11,21 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Essential Mobile Notary Houston | Stress-Free & Professional | Houston Mobile Notary Pros",
+  title: "Standard Mobile Notary in Houston",
   description:
-    "Experience stress-free essential mobile notary services in Houston. We bring calm, clarity, and precision to your wills, POAs, affidavits, and general notarizations. Mon-Fri, 9am-5pm.",
-  keywords: "standard notary Houston, mobile notary, general notarization, power of attorney notary, will notary, affidavit notary, Houston notary service, stress-free notary, clear notary process, precise notarization, peace of mind notary",
+    "Weekday mobile notarization for wills, powers of attorney, affidavits, and business documents anywhere within 20 included miles of 77591.",
+  keywords: "standard notary Houston, mobile notary, power of attorney notary, will notary, affidavit notary",
   alternates: {
-    canonical: '/services/standard-notary',
+    canonical: `${BASE_URL}/services/standard-notary`,
   },
   openGraph: {
-    title: "Essential Mobile Notary Package | Houston Mobile Notary Pros",
-    description: "Get your essential documents (wills, POAs, etc.) notarized in Houston with calm and precision. Our mobile service ensures a stress-free experience.",
+    title: "Standard Mobile Notary in Houston",
+    description: "Mobile notaries for everyday documents, Monday through Friday across Greater Houston.",
     url: `${BASE_URL}/services/standard-notary`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
       {
-        url: '/og-image.jpg', // Ensure this image exists in /public
+        url: `${BASE_URL}/og-image.jpg`,
         width: 1200,
         height: 630,
         alt: 'Essential Mobile Notary Service by Houston Mobile Notary Pros',
@@ -36,13 +36,9 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Essential Mobile Notary Package - Houston Mobile Notary Pros",
-    description: "Houston's choice for essential mobile notary services. We bring calm, clarity, and professional precision to your standard document needs (wills, POAs). Book your stress-free appointment!",
-    // Add your Twitter handle here if you have one
-    // siteId: 'YourTwitterID',
-    // creator: '@YourTwitterHandle',
-    // creatorId: 'YourTwitterCreatorID',
-    images: [`${BASE_URL}/og-image.jpg`], // Must be an absolute URL
+    title: "Standard Mobile Notary in Houston",
+    description: "Schedule weekday mobile notarization for wills, POAs, and affidavits.",
+    images: [`${BASE_URL}/og-image.jpg`],
   },
 }
 

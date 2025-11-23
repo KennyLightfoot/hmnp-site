@@ -10,21 +10,21 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Priority Mobile Notary Houston | Fast, Reliable & Precise | Houston Mobile Notary Pros",
+  title: "Extended Hours Mobile Notary in Houston",
   description:
-    "Urgent notary needs in Houston? Our Priority Service delivers a 2-hour response with calm, clear, and precise notarization. 7am-9pm daily for your peace of mind.",
-  keywords: "extended-hours notary Houston, urgent notary, same day notary, 2 hour notary, emergency notary, mobile notary Houston, fast notary service, Houston urgent notary, fast precise notary, reliable emergency notary, 2-hour mobile notary, calm priority signing",
+    "Book an emergency mobile notary with guaranteed two-hour response windows from 7am–9pm anywhere in Greater Houston.",
+  keywords: "extended-hours notary Houston, urgent notary Houston, same day notary, emergency mobile notary",
   alternates: {
-    canonical: '/services/extended-hours-notary',
+    canonical: `${BASE_URL}/services/extended-hours-notary`,
   },
   openGraph: {
-    title: "Houston Priority Notary: 2-Hour Response, Utmost Precision | HMNP",
-    description: "When time is critical, trust Houston's Priority Mobile Notary. Fast 2-hour response, 7am-9pm, ensuring calm and precise notarization.",
+    title: "Extended Hours Mobile Notary in Houston",
+    description: "Emergency notarization with two-hour response windows across Greater Houston.",
     url: `${BASE_URL}/services/extended-hours-notary`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
       {
-        url: '/og-image.jpg', // Ensure this image exists in /public
+        url: `${BASE_URL}/og-image.jpg`,
         width: 1200,
         height: 630,
         alt: 'Priority Mobile Notary Service by Houston Mobile Notary Pros',
@@ -35,13 +35,9 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Urgent Houston Notary? Get Calm, Precise Service in 2 Hrs | HMNP",
-    description: "Houston's Priority Notary: 2-hour response (7am-9pm daily) for urgent documents. Fast, reliable, and always precise. Book now for peace of mind!",
-    // Add your Twitter handle here if you have one
-    // siteId: 'YourTwitterID',
-    // creator: '@YourTwitterHandle',
-    // creatorId: 'YourTwitterCreatorID',
-    images: [`${BASE_URL}/og-image.jpg`], // Must be an absolute URL
+    title: "Extended Hours Mobile Notary in Houston",
+    description: "Urgent notarization available 7am–9pm with two-hour dispatch windows.",
+    images: [`${BASE_URL}/og-image.jpg`],
   },
 }
 

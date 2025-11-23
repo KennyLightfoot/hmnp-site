@@ -9,21 +9,21 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Mobile Notary Houston | Traveling Notary Near Me | 20-Mile Included + Tiers to 50 mi",
+  title: "Mobile Notary Services in Houston",
   description:
-    "Professional mobile notary services in Houston, Pearland, Sugar Land, Galveston. 20-mile travel included from 77591; fair travel tiers up to 50 miles. We come to you - home, office, hospital. Same-day available.",
-  keywords: "mobile notary Houston, mobile notary near me, traveling notary Houston, mobile notary Pearland, mobile notary Sugar Land, mobile notary Galveston, mobile notary services, notary comes to you, on-site notary, home notary services, 77591 mobile notary",
+    "Certified mobile notaries travel to your home, office, hospital, or public location anywhere in Greater Houston with same-day availability.",
+  keywords: "mobile notary Houston, mobile notary near me, traveling notary Houston, home notary services, hospital notary Houston",
   alternates: {
-    canonical: '/services/mobile-notary',
+    canonical: `${BASE_URL}/services/mobile-notary`,
   },
   openGraph: {
-    title: "Mobile Notary Services Houston | 20-Mile Included • Tiers to 50 mi",
-    description: "Professional mobile notary services in Houston. 20-mile travel included; tiered travel fees up to 50 miles. We travel to your location for convenient, reliable notarization.",
+    title: "Mobile Notary Services in Houston",
+    description: "Same-day mobile notaries who come to you anywhere in Greater Houston.",
     url: `${BASE_URL}/services/mobile-notary`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
       {
-        url: '/og-image.jpg',
+        url: `${BASE_URL}/og-image.jpg`,
         width: 1200,
         height: 630,
         alt: 'Mobile Notary Services by Houston Mobile Notary Pros',
@@ -34,8 +34,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Mobile Notary Services Houston | Traveling Notary | We Come to You",
-    description: "Professional mobile notary services in Houston. We travel to your location for convenient, reliable notarization. Same-day service available.",
+    title: "Mobile Notary Services in Houston",
+    description: "We travel to homes, offices, hospitals, and care facilities across Greater Houston.",
     images: [`${BASE_URL}/og-image.jpg`],
   },
 }

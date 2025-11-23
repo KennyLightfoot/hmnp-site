@@ -1,5 +1,17 @@
 # Changelog
 
+## [2025-11-23] SEO & Performance Enhancements
+
+### Added
+- `public/llms.txt` to document AI/LLM crawler rules (currently permissive) plus supporting note in `SECURITY.md`.
+
+### Changed
+- Shortened and canonicalized metadata on booking, contact, pricing, FAQ, what-to-expect, key service pages, and all service-area routes to eliminate duplicate/overlong titles.
+- Expanded `app/service-areas/page.tsx`, `app/services/page.tsx`, `app/pricing/page.tsx`, and `app/faq/page.tsx` with new internal-link sections that surface specialized services and high-priority cities.
+- Updated sitemap entries to cover the primary service details and city pages while avoiding parameterized URLs.
+- Lazy-loaded heavy components (`BookingForm`, `TrustBadges`) to reduce initial JS/CSS payload on high-traffic routes.
+- Added richer supporting content (additional city links, specialized service callouts, FAQ quick links) to improve text-to-HTML ratios on money pages.
+
 ## [Unreleased] - Notary Network & Hiring System
 
 ### Changed

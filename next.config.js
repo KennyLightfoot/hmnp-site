@@ -65,6 +65,26 @@ const nextConfig = {
   // REMOVED: Turbopack configuration causing build errors
   // The loaders configuration is not supported in current Next.js version
   
+  async redirects() {
+    return [
+      {
+        source: '/privacy-policy',
+        destination: '/privacy',
+        permanent: true,
+      },
+      {
+        source: '/terms-of-service',
+        destination: '/terms',
+        permanent: true,
+      },
+      {
+        source: '/services/extended',
+        destination: '/services/extended-hours-notary',
+        permanent: true,
+      },
+    ]
+  },
+
   // Webpack optimization for production builds
   webpack: (config, { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }) => {
     // Fix module loading race conditions

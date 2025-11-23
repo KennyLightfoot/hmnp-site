@@ -8,22 +8,22 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotar
 
 export const metadata = {
   metadataBase: new URL(BASE_URL),
-  title: "Business Notary Solutions Houston | Corporate & Volume Signings | HMNP",
+  title: "Business Notary Solutions in Houston",
   description:
-    "Tailored Business Notary Solutions in Houston. We offer volume signings, block-booking discounts, corporate accounts, and recurring appointments to keep your business moving.",
+    "Corporate and high-volume mobile notary services with block-booking, recurring appointments, and dedicated account support across Houston.",
   keywords:
-    "business notary solutions Houston, corporate notary services, volume notary signings, block-booking notary, recurring notary appointments, mobile notary for business Houston, Houston notary packages",
+    "business notary Houston, corporate notary services, volume notarization, recurring notary appointments",
   alternates: {
-    canonical: '/services/business',
+    canonical: `${BASE_URL}/services/business`,
   },
   openGraph: {
-    title: "Houston Business Notary Solutions | Keep Your Business Moving | HMNP",
-    description: "Houston Mobile Notary Pros provides tailored notary solutions for businesses, including volume signings and corporate accounts.",
+    title: "Business Notary Solutions in Houston",
+    description: "Volume and recurring notarization programs that keep your business moving.",
     url: `${BASE_URL}/services/business`,
     siteName: 'Houston Mobile Notary Pros',
     images: [
       {
-        url: '/og-image.jpg', 
+        url: `${BASE_URL}/og-image.jpg`,
         width: 1200,
         height: 630,
         alt: 'Business Notary Solutions by Houston Mobile Notary Pros',
@@ -34,8 +34,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Business Notary Solutions in Houston | Corporate & Volume | HMNP",
-    description: "Keep your Houston business moving with our expert notary solutions: volume signings, corporate accounts, and recurring appointments.",
+    title: "Business Notary Solutions in Houston",
+    description: "Corporate, healthcare, and legal teams rely on our mobile notary programs with dedicated support.",
     images: [`${BASE_URL}/og-image.jpg`],
   },
 }

@@ -1,15 +1,23 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Contact Houston Mobile Notary Pros | Get in Touch",
+  title: "Contact Our Notary Team",
   description:
-    "Contact our mobile notary service for appointments, quotes, or questions. Serving Houston, Galveston, Pearland, and surrounding areas with professional notary services.",
-  keywords: "contact notary, Houston notary contact, mobile notary appointment, notary quote, notary questions",
+    "Reach Houston Mobile Notary Pros for questions, quotes, or scheduling help. We respond quickly to inquiries across Houston, Galveston, Pearland, and surrounding areas.",
+  keywords: [
+    "contact mobile notary",
+    "Houston notary support",
+    "notary quote",
+    "loan signing questions",
+  ],
+  alternates: {
+    canonical: "https://houstonmobilenotarypros.com/contact",
+  },
   openGraph: {
-    title: "Contact Houston Mobile Notary Pros | Get in Touch",
+    title: "Contact Our Notary Team",
     description:
-      "Contact our mobile notary service for appointments, quotes, or questions. Serving the greater Houston area.",
-    url: "/contact",
+      "Need help scheduling a mobile or online notarization? Contact Houston Mobile Notary Pros and get a fast reply.",
+    url: "https://houstonmobilenotarypros.com/contact",
     type: "website",
   },
 }

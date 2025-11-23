@@ -28,16 +28,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const resolvedParams = await params;
   const area = getServiceAreaBySlug(resolvedParams.slug)
   if (!area) return { title: "Not Found" }
+  const areaTitle = `Mobile Notary in ${area.cityName}${area.cityName.includes("TX") ? "" : ", TX"}`
+  const canonicalUrl = `${BASE_URL}/service-areas/${area.slug}`
   return {
-    title: area.title,
+    title: areaTitle,
     description: area.description,
     keywords: area.keywords,
     alternates: {
-      canonical: `/service-areas/${area.slug}`,
+      canonical: canonicalUrl,
     },
     openGraph: {
-      url: `/service-areas/${area.slug}`,
-      title: area.title,
+      url: canonicalUrl,
+      title: areaTitle,
       description: area.description,
     },
   }

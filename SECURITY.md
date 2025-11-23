@@ -103,6 +103,11 @@ This document outlines the comprehensive security measures, policies, and proced
 - **Data Minimization**: Collect only necessary information
 - **Right to Deletion**: GDPR-compliant data deletion procedures
 
+### **AI / LLM Crawler Policy**
+- **llms.txt**: Public AI crawlers are guided by `https://houstonmobilenotarypros.com/llms.txt` (currently permissive).
+- **Attribution Requirement**: Crawlers should not imply endorsement without written consent; contact support@houstonmobilenotarypros.com for questions.
+- **Review Cadence**: Policy reviewed quarterly with Security + Marketing to ensure alignment with content strategy.
+
 ---
 
 ## 🚨 Incident Response
