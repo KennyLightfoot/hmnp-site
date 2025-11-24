@@ -6,7 +6,8 @@ const prisma = new PrismaClient()
 const SALT_ROUNDS = 10
 
 // --- HNIC Configuration per SOP ---
-const ADMIN_EMAIL = "contact@houstonmobilenotarypros.com"
+// Default admin email for dashboard access
+const ADMIN_EMAIL = "houstonmobilenotarypros@gmail.com"
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || (() => {
   console.error("ADMIN_PASSWORD environment variable is required");
   process.exit(1);
@@ -28,30 +29,39 @@ async function main() {
       where: { email: ADMIN_EMAIL },
     })
 
+    // Hash the password once
+    console.log("Hashing password...")
+    const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, SALT_ROUNDS)
+
     if (!user) {
-      console.error(`Error: User with email ${ADMIN_EMAIL} not found.`)
-      console.error("Please ensure the user exists in the database.")
+      console.warn(`User with email ${ADMIN_EMAIL} not found. Creating a new ADMIN user...`)
+      const created = await prisma.user.create({
+        data: {
+          email: ADMIN_EMAIL,
+          name: ADMIN_DISPLAY_NAME,
+          role: Role.ADMIN,
+          password: hashedPassword,
+          emailVerified: new Date(),
+        },
+      })
+      console.log(`Successfully created ADMIN user ${ADMIN_DISPLAY_NAME} (${ADMIN_EMAIL}) with id ${created.id}`)
       return
     }
 
     // Optional: Verify the user has the ADMIN role
     if (user.role !== Role.ADMIN) {
-        console.warn(`Warning: User ${ADMIN_EMAIL} does not have the ADMIN role. Their current role is ${user.role}.`);
-        console.warn("Password will be set, but they might not be able to access admin areas.")
-        // You could choose to exit here if desired:
-        // console.error("Exiting: User must have ADMIN role.");
-        // return;
+      console.warn(`Warning: User ${ADMIN_EMAIL} does not have the ADMIN role. Their current role is ${user.role}.`)
+      console.warn("Updating role to ADMIN for dashboard access.")
     }
 
-    // Hash the password
-    console.log("Hashing password...")
-    const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, SALT_ROUNDS)
-
-    // Update the user's password
+    // Update the user's password (and ensure ADMIN role)
     console.log(`Updating password for user ID: ${user.id}`)
     await prisma.user.update({
       where: { id: user.id },
-      data: { password: hashedPassword },
+      data: {
+        password: hashedPassword,
+        role: Role.ADMIN,
+      },
     })
 
     console.log(`Successfully updated password for ${ADMIN_DISPLAY_NAME} (${ADMIN_EMAIL})`)

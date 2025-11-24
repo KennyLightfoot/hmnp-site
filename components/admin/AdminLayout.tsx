@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   Users, Clipboard, Bell, AlertTriangle,
-  Settings, BarChart4, LogOut, Menu, X, FileText
+  Settings, BarChart4, LogOut, Menu, X, FileText,
+  GitBranch, MapPinned, Network
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -21,6 +22,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { name: 'Bookings', href: '/admin/bookings', icon: Clipboard },
     { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Notary Applications', href: '/admin/notary-applications', icon: FileText },
+    { name: 'Network Dashboard', href: '/admin/network', icon: Network },
+    { name: 'Network Jobs', href: '/admin/network/jobs', icon: GitBranch },
+    { name: 'Coverage & Notaries', href: '/admin/network/coverage', icon: MapPinned },
     { name: 'Notifications', href: '/admin/notifications', icon: Bell },
     { name: 'System Alerts', href: '/admin/alerts', icon: AlertTriangle },
     { name: 'Settings', href: '/admin/settings', icon: Settings },

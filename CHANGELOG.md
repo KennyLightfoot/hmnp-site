@@ -48,6 +48,12 @@
   - Admin review interface at `/admin/notary-applications` to review and manage applications
   - Application status workflow: PENDING → UNDER_REVIEW → APPROVED/REJECTED → CONVERTED
   - Ability to convert approved applications directly to user accounts
+- **Network Operations Dashboard**
+  - Dedicated admin pages at `/admin/network`, `/admin/network/jobs`, and `/admin/network/coverage` with live KPIs, job queues, and coverage snapshots
+  - Extended `/admin` overview with network-focused summary cards plus navigation links inside the shared admin layout
+  - Introduced cached API endpoint at `/api/admin/network/dashboard` for reusable network metrics (applications, notaries, offers, coverage)
+- **Database Support for Notary Network**
+  - Added migration `20251123_add_notary_network_tables` to create the `NotaryApplication` and `JobOffer` tables (plus enums) so hiring submissions persist and job offers can be queued.
 
 - **Enhanced Notary Profiles**
   - Extended `notary_profiles` model with onboarding status, E&O insurance details, background check status
