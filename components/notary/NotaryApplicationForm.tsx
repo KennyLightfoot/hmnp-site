@@ -113,8 +113,10 @@ export default function NotaryApplicationForm() {
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Failed to submit application')
+        const errorData = await response.json()
+        // Use message field if available, otherwise fall back to error field
+        const errorMessage = errorData.message || errorData.error || 'Failed to submit application'
+        throw new Error(errorMessage)
       }
 
       toast({
