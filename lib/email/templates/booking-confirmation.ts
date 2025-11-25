@@ -265,6 +265,27 @@ export function bookingConfirmationEmail(
         </div>
       </div>
 
+      <!-- Review Request Section -->
+      <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 30px 0; text-align: center;">
+        <h3 style="color: #1e40af; margin-top: 0;">⭐ Love Your Experience?</h3>
+        <p style="font-size: 16px; color: #1e3a8a; margin-bottom: 20px;">
+          Your feedback helps us serve you better and helps others find our services. Please take a moment to leave us a review!
+        </p>
+        <div style="margin: 20px 0;">
+          <a href="https://g.page/r/YOUR_GBP_REVIEW_LINK" 
+             style="background: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 5px; font-weight: bold;">
+            ⭐ Review on Google
+          </a>
+          <a href="https://www.yelp.com/biz/houston-mobile-notary-pros-houston#reviews" 
+             style="background: #d32323; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 5px; font-weight: bold;">
+            ⭐ Review on Yelp
+          </a>
+        </div>
+        <p style="font-size: 14px; color: #64748b; margin-top: 15px; margin-bottom: 0;">
+          Reviews help us improve and help others find trusted notary services in Houston.
+        </p>
+      </div>
+
       <!-- Contact Information -->
       <div style="margin-top: 30px;">
         <h3>📞 Need Help?</h3>

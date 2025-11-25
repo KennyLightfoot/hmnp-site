@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
  * Complete GBP Update Script
- * Updates categories, service areas, and appointment link for Houston Mobile Notary Pros
+ * Updates categories, service areas, and business description for Houston Mobile Notary Pros
  * 
  * Prerequisites:
  * 1. Run get-gmb-refresh-token.js to get OAuth tokens
  * 2. Run get-gmb-account-location.js to get Account ID and Location ID
- * 3. Set environment variables or tokens will be loaded from temp file
+ * 3. Set environment variables in .env.local or .env files
  * 
  * Usage:
  *   node scripts/update-gbp-complete.js
@@ -15,28 +15,79 @@
 import https from 'https';
 import { URLSearchParams } from 'url';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import { createRequire } from 'module';
+import dotenv from 'dotenv';
+
+// Load environment variables from .env.local and .env files
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const projectRoot = join(__dirname, '..');
+
+// Load .env.local first (higher priority), then .env
+dotenv.config({ path: join(projectRoot, '.env.local') });
+dotenv.config({ path: join(projectRoot, '.env') });
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const require = createRequire(import.meta.url);
+
+// Import local SEO data
+let LOCAL_SEO_ZIP_CODES = [];
+try {
+  // Try to import from lib/local-seo-data.ts (if using TypeScript loader)
+  // Otherwise, we'll use a fallback list
+  const localSeoPath = join(__dirname, '../lib/local-seo-data.ts');
+  // For now, we'll use a comprehensive list based on the data structure
+  LOCAL_SEO_ZIP_CODES = [
+    { city: 'Texas City', zipCode: '77591' },
+    { city: 'Texas City', zipCode: '77590' },
+    { city: 'League City', zipCode: '77573' },
+    { city: 'League City', zipCode: '77574' },
+    { city: 'Friendswood', zipCode: '77546' },
+    { city: 'Pearland', zipCode: '77581' },
+    { city: 'Pearland', zipCode: '77584' },
+    { city: 'Clear Lake', zipCode: '77058' },
+    { city: 'Clear Lake', zipCode: '77059' },
+    { city: 'Webster', zipCode: '77598' },
+    { city: 'Pasadena', zipCode: '77502' },
+    { city: 'Galveston', zipCode: '77550' },
+    { city: 'Sugar Land', zipCode: '77479' },
+    { city: 'Baytown', zipCode: '77520' },
+    { city: 'Baytown', zipCode: '77521' },
+    { city: 'The Woodlands', zipCode: '77380' },
+    { city: 'The Woodlands', zipCode: '77381' },
+    { city: 'Katy', zipCode: '77449' },
+    { city: 'Katy', zipCode: '77450' },
+    { city: 'Houston', zipCode: '77058' },
+  ];
+} catch (error) {
+  console.log('⚠️  Could not load local SEO data, using fallback list');
+}
 
 console.log('🚀 GBP Complete Update Script\n');
 console.log('This will update:');
 console.log('  ✓ Secondary categories (Mobile Notary Service, Loan Signing Agent)');
-console.log('  ✓ Service areas (10 cities)');
-console.log('  ✓ Appointment link (booking page)\n');
+console.log('  ✓ Service areas (all cities from local SEO data)');
+console.log('  ✓ Business description (optimized)\n');
 
 // Configuration
 const PHONE = '(832) 617-4285';
 const APPOINTMENT_URL = 'https://houstonmobilenotarypros.com/booking';
-const SERVICE_AREAS = [
-  'Webster, TX',
-  'League City, TX',
-  'Texas City, TX',
-  'Pearland, TX',
-  'Sugar Land, TX',
-  'Galveston, TX',
-  'Baytown, TX',
-  'The Woodlands, TX',
-  'Katy, TX',
-  'Houston, TX'
-];
+
+// Generate service areas from local SEO data (unique cities with TX suffix)
+const uniqueCities = [...new Set(LOCAL_SEO_ZIP_CODES.map(loc => loc.city))];
+const SERVICE_AREAS = uniqueCities.map(city => `${city}, TX`);
+
+// Enhanced business description (750 chars max, keyword-optimized)
+const BUSINESS_DESCRIPTION = `Houston Mobile Notary Pros provides fast, professional mobile notary services across Greater Houston. We come to you—home, office, hospital, anywhere. Same-day available. Licensed, bonded, and insured.
+
+Services: Mobile Notary ($75+), RON/Online Notary ($25/act), Loan Signing Agent ($175+), After-Hours & Emergency.
+
+Serving: ${uniqueCities.slice(0, 10).join(', ')}, and all of Houston within 25-30 miles.
+
+Transparent pricing. Book online 24/7 or call (832) 617-4285.`;
 
 // Try to load tokens from temp file first, then fall back to environment variables
 let CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN, ACCOUNT_ID, LOCATION_ID;
@@ -274,8 +325,8 @@ async function main() {
           categoryId: 'gcid:mobile_notary_service'
         },
         {
-          displayName: 'Notary public', // Secondary category for broader reach
-          categoryId: 'gcid:notary_public'
+          displayName: 'Loan signing agent',
+          categoryId: 'gcid:notary_public' // Loan signing uses notary category
         }
       ],
       
@@ -290,10 +341,9 @@ async function main() {
         }
       },
       
-      // Set profile details
+      // Set profile details with optimized description
       profile: {
-        description: currentLocation.profile?.description || 
-          'Professional mobile notary services serving Houston and surrounding areas. Remote Online Notarization (RON), loan signing, and mobile notary services available 24/7.'
+        description: BUSINESS_DESCRIPTION
       },
       
       // Update mask - tells Google which fields we're updating
@@ -302,9 +352,10 @@ async function main() {
 
     // Step 4: Update location
     console.log('📝 Updating:');
-    console.log('  ✓ Adding secondary categories: Mobile notary service, Notary public');
+    console.log('  ✓ Adding secondary categories: Mobile notary service, Loan signing agent');
     console.log(`  ✓ Setting service areas: ${SERVICE_AREAS.length} cities`);
-    console.log('  ✓ Updating profile description\n');
+    console.log(`    Cities: ${SERVICE_AREAS.slice(0, 10).join(', ')}${SERVICE_AREAS.length > 10 ? '...' : ''}`);
+    console.log('  ✓ Updating profile description (optimized)\n');
     
     const updatedLocation = await updateLocation(accessToken, updatePayload);
 

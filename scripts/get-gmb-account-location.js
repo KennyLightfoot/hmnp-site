@@ -1,6 +1,18 @@
 import https from 'https';
 import { URLSearchParams } from 'url';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import dotenv from 'dotenv';
+
+// Load environment variables from .env.local and .env files
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const projectRoot = join(__dirname, '..');
+
+// Load .env.local first (higher priority), then .env
+dotenv.config({ path: join(projectRoot, '.env.local') });
+dotenv.config({ path: join(projectRoot, '.env') });
 
 console.log('🚀 GMB Account & Location ID Finder\n');
 

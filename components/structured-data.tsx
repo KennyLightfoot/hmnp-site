@@ -50,18 +50,8 @@ export function StructuredData({ nonce }: StructuredDataProps) {
       },
       {
         "@type": "City",
-        "name": "Missouri City",
-        "sameAs": "https://en.wikipedia.org/wiki/Missouri_City,_Texas"
-      },
-      {
-        "@type": "City",
-        "name": "Galveston",
-        "sameAs": "https://en.wikipedia.org/wiki/Galveston,_Texas"
-      },
-      {
-        "@type": "City",
-        "name": "Stafford",
-        "sameAs": "https://en.wikipedia.org/wiki/Stafford,_Texas"
+        "name": "Texas City",
+        "sameAs": "https://en.wikipedia.org/wiki/Texas_City,_Texas"
       },
       {
         "@type": "City",
@@ -72,6 +62,41 @@ export function StructuredData({ nonce }: StructuredDataProps) {
         "@type": "City",
         "name": "Friendswood",
         "sameAs": "https://en.wikipedia.org/wiki/Friendswood,_Texas"
+      },
+      {
+        "@type": "City",
+        "name": "Clear Lake",
+        "sameAs": "https://en.wikipedia.org/wiki/Clear_Lake_City,_Texas"
+      },
+      {
+        "@type": "City",
+        "name": "Webster",
+        "sameAs": "https://en.wikipedia.org/wiki/Webster,_Texas"
+      },
+      {
+        "@type": "City",
+        "name": "Pasadena",
+        "sameAs": "https://en.wikipedia.org/wiki/Pasadena,_Texas"
+      },
+      {
+        "@type": "City",
+        "name": "Galveston",
+        "sameAs": "https://en.wikipedia.org/wiki/Galveston,_Texas"
+      },
+      {
+        "@type": "City",
+        "name": "Baytown",
+        "sameAs": "https://en.wikipedia.org/wiki/Baytown,_Texas"
+      },
+      {
+        "@type": "City",
+        "name": "The Woodlands",
+        "sameAs": "https://en.wikipedia.org/wiki/The_Woodlands,_Texas"
+      },
+      {
+        "@type": "City",
+        "name": "Katy",
+        "sameAs": "https://en.wikipedia.org/wiki/Katy,_Texas"
       }
     ],
     serviceArea: {
@@ -81,7 +106,11 @@ export function StructuredData({ nonce }: StructuredDataProps) {
         "latitude": 29.3838,
         "longitude": -94.9027
       },
-      "geoRadius": "25 miles"
+      "geoRadius": {
+        "@type": "Distance",
+        "value": 25,
+        "unitCode": "MI"
+      }
     },
     openingHoursSpecification: [
       {

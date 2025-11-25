@@ -463,7 +463,7 @@ export class UnifiedScheduler {
   }
   
   /**
-   * Handle post-service follow-ups
+   * Handle post-service follow-ups and review requests
    */
   private async handlePostServiceFollowups(): Promise<void> {
     const now = new Date();
@@ -487,21 +487,41 @@ export class UnifiedScheduler {
     
     logger.info(`Processing ${needFollowUp.length} follow-ups`, 'UNIFIED_SCHEDULER');
     
+    // Import review automation
+    const { sendReviewRequest } = await import('@/lib/review-automation');
+    
     for (const booking of needFollowUp) {
-      if (booking.User_Booking_signerIdToUser?.email) {
-        await NotificationService.sendNotification({
-          bookingId: booking.id,
-          type: NotificationType.POST_SERVICE_FOLLOWUP,
-          recipient: {
-            email: booking.User_Booking_signerIdToUser.email,
-            firstName: booking.User_Booking_signerIdToUser.name?.split(' ')[0]
-          },
-          content: {
-            subject: `Thank You for Using Houston Mobile Notary Pros`,
-            message: `We hope your recent notary service met your expectations. We'd appreciate your feedback and a review if you were satisfied with our service.`
-          },
-          methods: ['EMAIL']
-        });
+      const customer = booking.User_Booking_signerIdToUser;
+      if (!customer?.email) {
+        continue;
+      }
+
+      try {
+        // Send review request (includes both email and SMS if phone available)
+        await sendReviewRequest(
+          booking.id,
+          customer.email,
+          customer.name || 'Valued Customer',
+          customer.phone || undefined
+        );
+      } catch (error) {
+        logger.error('Failed to send review request', 'UNIFIED_SCHEDULER', error as Error);
+        // Fallback to basic follow-up email
+        if (customer.email) {
+          await NotificationService.sendNotification({
+            bookingId: booking.id,
+            type: NotificationType.POST_SERVICE_FOLLOWUP,
+            recipient: {
+              email: customer.email,
+              firstName: customer.name?.split(' ')[0]
+            },
+            content: {
+              subject: `Thank You for Using Houston Mobile Notary Pros`,
+              message: `We hope your recent notary service met your expectations. We'd appreciate your feedback and a review if you were satisfied with our service.`
+            },
+            methods: ['EMAIL']
+          });
+        }
       }
       
       await prisma.booking.update({

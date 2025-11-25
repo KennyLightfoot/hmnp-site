@@ -1,14 +1,17 @@
 import { NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { BookingAutomationService } from '@/lib/booking-automation';
-import { Role } from '@/lib/prisma-types';
 
 export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
+  const [{ authOptions }, { Role }, { BookingAutomationService }] = await Promise.all([
+    import('@/lib/auth'),
+    import('@/lib/prisma-types'),
+    import('@/lib/booking-automation'),
+  ]);
+
   // Check authentication and authorization
   const session = await getServerSession(authOptions);
   if (!session?.user || (session.user as any).role !== Role.ADMIN) {
