@@ -192,14 +192,18 @@ export async function processReviewRequests(delayHours: number = 24): Promise<{
   const cutoffTime = new Date(now.getTime() - delayMs);
 
   // Find completed bookings that haven't received review requests yet
+  // Use actualEndDateTime instead of completedAt (which doesn't exist in schema)
+  // Check if review already exists instead of reviewRequestSentAt (which doesn't exist)
   const completedBookings = await prisma.booking.findMany({
     where: {
       status: 'COMPLETED',
-      completedAt: {
+      actualEndDateTime: {
         lte: cutoffTime,
         not: null
       },
-      reviewRequestSentAt: null
+      reviews: {
+        none: {} // No reviews exist yet for this booking
+      }
     },
     include: {
       User_Booking_signerIdToUser: {
