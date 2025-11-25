@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Shadcn Select
 
 const privacyPolicyLink = "/privacy-policy";
-const termsOfServiceLink = "/terms";
+const termsOfServiceLink = "/terms-of-service";
 
 const issueCategories = [
   'Technical Issue with Website',

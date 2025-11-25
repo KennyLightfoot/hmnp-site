@@ -6,7 +6,16 @@ const now = new Date().toISOString()
 const serviceRoot = path.join(process.cwd(), 'app', 'services')
 const serviceAreasFile = path.join(process.cwd(), 'lib', 'serviceAreas.ts')
 
-const baseRoutes = ['/', '/services', '/pricing', '/faq', '/contact', '/service-areas']
+const baseRoutes = [
+  '/',
+  '/services',
+  '/pricing',
+  '/faq',
+  '/contact',
+  '/service-areas',
+  '/privacy-policy',
+  '/terms-of-service',
+]
 
 function collectServiceRoutes(dir, prefix) {
   const routes = new Set()

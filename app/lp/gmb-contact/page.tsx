@@ -73,8 +73,8 @@ const GMBContactPage: NextPage = () => {
                 formTitle="Quick Contact Form"
                 formDescription="Fill out your details and we'll get back to you within 1 hour during business hours."
                 successRedirectUrl="/contact/thank-you-gmb"
-                privacyPolicyLink="/privacy"
-                termsOfServiceLink="/terms"
+                privacyPolicyLink="/privacy-policy"
+                termsOfServiceLink="/terms-of-service"
                 trackingOverrides={{
                   lead_source: "google_business_profile",
                   service_type: "mobile-notary",

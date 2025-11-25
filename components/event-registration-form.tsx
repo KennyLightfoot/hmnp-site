@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CalendarDays } from 'lucide-react';
 
 const privacyPolicyLink = "/privacy-policy";
-const termsOfServiceLink = "/terms";
+const termsOfServiceLink = "/terms-of-service";
 
 // Example: Fetch available events from an API or define statically
 // For now, let's use a static list. In a real app, this might come from props or an API.

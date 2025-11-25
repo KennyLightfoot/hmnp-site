@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
 import { validateCalendarMappings } from '@/lib/ghl/calendar-mapping';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 export async function GET() {
+  // Check admin authentication
+  const session = await getServerSession(authOptions);
+  const userRole = (session?.user as any)?.role;
+  if (!session?.user || userRole !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
+  }
   try {
     // Check GHL environment variables
     const ghlToken = process.env.GHL_PRIVATE_INTEGRATION_TOKEN;

@@ -48,6 +48,16 @@ export const SERVICE_REDIRECTS: RedirectMapping[] = [
     destination: '/services/extended-hours-notary/:path*',
     permanent: true,
   },
+  {
+    source: '/services/extended',
+    destination: '/services/extended-hours-notary',
+    permanent: true,
+  },
+  {
+    source: '/services/extended/:path*',
+    destination: '/services/extended-hours-notary/:path*',
+    permanent: true,
+  },
   
   // Basic → Standard Notary
   {

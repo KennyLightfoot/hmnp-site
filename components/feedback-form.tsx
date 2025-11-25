@@ -12,7 +12,7 @@ import { StarIcon } from 'lucide-react'; // Assuming lucide-react for icons
 
 const MAX_RATING = 5;
 const privacyPolicyLink = "/privacy-policy";
-const termsOfServiceLink = "/terms";
+const termsOfServiceLink = "/terms-of-service";
 
 const feedbackFormSchema = z.object({
   name: z.string().min(1, { message: 'Name is required.' }),

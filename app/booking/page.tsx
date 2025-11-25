@@ -3,28 +3,22 @@
  * Advanced booking form with enhanced features and better UX
  */
 
-import { Metadata } from 'next';
+'use client';
+
+import { useState } from 'react';
 import BookingForm from '@/components/booking/BookingForm';
-
-export const metadata: Metadata = {
-  title: 'Book a Notary Appointment',
-  description:
-    'Schedule mobile notary, loan signing, or remote online notarization appointments anywhere in the Greater Houston area.',
-  alternates: {
-    canonical: 'https://houstonmobilenotarypros.com/booking',
-  },
-  keywords: [
-    'Houston notary',
-    'mobile notary booking',
-    'loan signing appointment',
-    'remote online notarization',
-  ],
-};
-
-// Force dynamic rendering to prevent SSR issues with client components
-export const dynamic = 'force-dynamic';
+import ExpressBookingPanel from '@/components/booking/ExpressBookingPanel';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
+import { 
+  Zap, 
+  Calendar,
+  ArrowRight
+} from 'lucide-react';
 
 export default function BookingPage() {
+  const [activeTab, setActiveTab] = useState<'express' | 'full'>('express');
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       <div className="container mx-auto px-4 py-8">
@@ -34,33 +28,108 @@ export default function BookingPage() {
             Book Your Notary Appointment
           </h1>
           <p className="text-xl text-gray-600 mb-6 max-w-2xl mx-auto">
-            Professional mobile notary services in Houston with AI assistance, real-time pricing, 
-            and intelligent scheduling recommendations.
+            Choose your preferred booking method - quick callback or full online scheduling
           </p>
-          
-          {/* Enhanced Benefits */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-              <div className="text-blue-600 text-2xl mb-2">🤖</div>
-              <h3 className="font-semibold text-gray-800 mb-2">AI Assistant</h3>
-              <p className="text-sm text-gray-600">Get intelligent recommendations and instant answers</p>
-            </div>
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-              <div className="text-green-600 text-2xl mb-2">💰</div>
-              <h3 className="font-semibold text-gray-800 mb-2">Real-time Pricing</h3>
-              <p className="text-sm text-gray-600">See exact costs with no hidden fees</p>
-            </div>
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-              <div className="text-purple-600 text-2xl mb-2">⚡</div>
-              <h3 className="font-semibold text-gray-800 mb-2">Smart Scheduling</h3>
-              <p className="text-sm text-gray-600">AI-powered availability recommendations</p>
-            </div>
-          </div>
         </div>
 
-        {/* Enhanced Booking Form */}
-        <div className="max-w-4xl mx-auto">
-          <BookingForm />
+        {/* Booking Options Tabs */}
+        <div className="max-w-6xl mx-auto mb-8">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'express' | 'full')} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 max-w-2xl mx-auto mb-8">
+              <TabsTrigger value="express" className="flex items-center space-x-2">
+                <Zap className="h-4 w-4" />
+                <span>Express (Fast Callback)</span>
+              </TabsTrigger>
+              <TabsTrigger value="full" className="flex items-center space-x-2">
+                <Calendar className="h-4 w-4" />
+                <span>Full Online Booking</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="express" className="mt-0">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <ExpressBookingPanel />
+                </div>
+                <div className="lg:col-span-1">
+                  <Card className="border-blue-100 bg-blue-50 h-full">
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold text-blue-900 mb-3">Why Choose Express?</h3>
+                      <ul className="space-y-2 text-sm text-blue-800">
+                        <li className="flex items-start space-x-2">
+                          <span className="text-blue-600 mt-0.5">✓</span>
+                          <span>Get a callback within 15 minutes</span>
+                        </li>
+                        <li className="flex items-start space-x-2">
+                          <span className="text-blue-600 mt-0.5">✓</span>
+                          <span>No need to pick a time slot now</span>
+                        </li>
+                        <li className="flex items-start space-x-2">
+                          <span className="text-blue-600 mt-0.5">✓</span>
+                          <span>Perfect if you're still deciding</span>
+                        </li>
+                        <li className="flex items-start space-x-2">
+                          <span className="text-blue-600 mt-0.5">✓</span>
+                          <span>We'll help you find the best option</span>
+                        </li>
+                      </ul>
+                      <div className="mt-4 pt-4 border-t border-blue-200">
+                        <button
+                          onClick={() => setActiveTab('full')}
+                          className="text-sm text-blue-700 hover:text-blue-900 flex items-center space-x-1"
+                        >
+                          <span>Prefer to book online?</span>
+                          <ArrowRight className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="full" className="mt-0">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <BookingForm />
+                </div>
+                <div className="lg:col-span-1">
+                  <Card className="border-green-100 bg-green-50 h-full">
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold text-green-900 mb-3">Full Online Booking</h3>
+                      <ul className="space-y-2 text-sm text-green-800">
+                        <li className="flex items-start space-x-2">
+                          <span className="text-green-600 mt-0.5">✓</span>
+                          <span>Pick your exact date and time</span>
+                        </li>
+                        <li className="flex items-start space-x-2">
+                          <span className="text-green-600 mt-0.5">✓</span>
+                          <span>See real-time availability</span>
+                        </li>
+                        <li className="flex items-start space-x-2">
+                          <span className="text-green-600 mt-0.5">✓</span>
+                          <span>Get instant confirmation</span>
+                        </li>
+                        <li className="flex items-start space-x-2">
+                          <span className="text-green-600 mt-0.5">✓</span>
+                          <span>Complete booking in minutes</span>
+                        </li>
+                      </ul>
+                      <div className="mt-4 pt-4 border-t border-green-200">
+                        <button
+                          onClick={() => setActiveTab('express')}
+                          className="text-sm text-green-700 hover:text-green-900 flex items-center space-x-1"
+                        >
+                          <span>Want a quick callback instead?</span>
+                          <ArrowRight className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
         
         {/* Enhanced Trust Footer */}

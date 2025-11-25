@@ -226,7 +226,7 @@
     "webpack-bundle-analyzer": "^4.10.2"
   },
   "engines": {
-    "node": ">=20 <21"
+    "node": ">=20 <25"
   },
   "overrides": {
     "prismjs@<1.30.0": ">=1.30.0",

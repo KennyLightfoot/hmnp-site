@@ -8,17 +8,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { prisma } from '@/lib/database-connection';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 export async function GET() {
   return NextResponse.json({
     message: 'Database Fix Endpoint',
     description: 'POST to this endpoint to check and fix database schema issues',
     usage: 'curl -X POST /api/fix-database',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    note: 'This endpoint requires admin authentication'
   });
 }
 
 export async function POST(request: NextRequest) {
+  // Check admin authentication
+  const session = await getServerSession(authOptions);
+  const userRole = (session?.user as any)?.role;
+  if (!session?.user || userRole !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
+  }
   const diagnostics: any = {
     timestamp: new Date().toISOString(),
     checks: [],

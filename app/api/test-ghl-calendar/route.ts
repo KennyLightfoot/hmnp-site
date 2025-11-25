@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { 
   testCalendarConnection, 
   getCalendars, 
@@ -6,8 +6,16 @@ import {
   getCalendarCacheStats,
   clearCalendarCache 
 } from "@/lib/ghl-calendar";
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 export async function GET() {
+  // Check admin authentication
+  const session = await getServerSession(authOptions);
+  const userRole = (session?.user as any)?.role;
+  if (!session?.user || userRole !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
+  }
   try {
     console.log('🧪 Testing GHL Calendar Integration...');
     
@@ -72,7 +80,14 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Check admin authentication
+  const session = await getServerSession(authOptions);
+  const userRole = (session?.user as any)?.role;
+  if (!session?.user || userRole !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
+  }
+
   try {
     const { action } = await request.json();
     

@@ -485,11 +485,11 @@ export default function ReviewStep({
               />
               <Label htmlFor="terms-accepted" className="text-sm leading-relaxed">
                 I agree to the{' '}
-                <a href="/terms" target="_blank" className="text-blue-600 hover:text-blue-700 underline">
+                <a href="/terms-of-service" target="_blank" className="text-blue-600 hover:text-blue-700 underline">
                   Terms of Service
                 </a>
                 {' '}and{' '}
-                <a href="/privacy" target="_blank" className="text-blue-600 hover:text-blue-700 underline">
+                <a href="/privacy-policy" target="_blank" className="text-blue-600 hover:text-blue-700 underline">
                   Privacy Policy
                 </a>
                 . I understand the cancellation policy and service guarantee.

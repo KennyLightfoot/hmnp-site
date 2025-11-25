@@ -65,7 +65,7 @@ const extrasFaqs = [
     question: "What constitutes 'After-Hours' for the fee?",
     answer: (
       <p>
-        The After-Hours Fee applies to appointments scheduled outside our Standard Notary service hours (9 am – 5 pm, Monday to Friday) but still within the operating window of our <Link href="/services/extended" className="text-[#A52A2A] hover:underline">Extended Hours Notary</Link> service (7 am – 9 pm daily). For example, an appointment at 7:30 pm on a weekday, or at 8 am on a weekday, might incur this fee if not booked as part of the Extended Hours package which has its own pricing structure.
+        The After-Hours Fee applies to appointments scheduled outside our Standard Notary service hours (9 am – 5 pm, Monday to Friday) but still within the operating window of our <Link href="/services/extended-hours-notary" className="text-[#A52A2A] hover:underline">Extended Hours Notary</Link> service (7 am – 9 pm daily). For example, an appointment at 7:30 pm on a weekday, or at 8 am on a weekday, might incur this fee if not booked as part of the Extended Hours package which has its own pricing structure.
       </p>
     ),
   },
@@ -143,7 +143,7 @@ export default function ExtrasAndFeesPage() {
             <CardContent>
               <p className="text-3xl font-bold text-[#002147] mb-2">${PRICING_CONFIG.surcharges.afterHours}</p>
               <p className="text-xs text-gray-600">
-                This fee may apply for services scheduled before 9 am or after 5 pm on weekdays, if not covered by the <Link href="/services/extended" className="text-[#A52A2A] hover:underline">Extended Hours Notary</Link> service pricing.
+                This fee may apply for services scheduled before 9 am or after 5 pm on weekdays, if not covered by the <Link href="/services/extended-hours-notary" className="text-[#A52A2A] hover:underline">Extended Hours Notary</Link> service pricing.
               </p>
             </CardContent>
           </Card>
@@ -159,7 +159,7 @@ export default function ExtrasAndFeesPage() {
             <CardContent>
               <p className="text-3xl font-bold text-[#002147] mb-2">${PRICING_CONFIG.surcharges.weekend}</p>
               <p className="text-xs text-gray-600">
-                Applies to services requested on a weekend. Our <Link href="/services/extended" className="text-[#A52A2A] hover:underline">Extended Hours Notary</Link> service is available on weekends and includes this premium availability in its pricing structure.
+                Applies to services requested on a weekend. Our <Link href="/services/extended-hours-notary" className="text-[#A52A2A] hover:underline">Extended Hours Notary</Link> service is available on weekends and includes this premium availability in its pricing structure.
               </p>
             </CardContent>
           </Card>

@@ -220,7 +220,6 @@ export default function ServiceSelector({
 }: ServiceSelectorProps) {
   const [serviceType, setServiceType] = useState<'mobile' | 'online'>('mobile');
   const [hoveredService, setHoveredService] = useState<string | null>(null);
-  const [showComparison, setShowComparison] = useState(false);
 
   // Filter services based on selected type
   const filteredServices = useMemo(() => {
@@ -736,92 +735,57 @@ export default function ServiceSelector({
         })}
         </div>
 
-      {/* Service Comparison: Mobile (we come to you) vs In-Person (you come to us) */}
-      <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="font-medium text-gray-900">Which in-person option is right for you?</h4>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setShowComparison(!showComparison)}
-          >
-            {showComparison ? 'Hide' : 'Show'} Comparison
-          </Button>
-        </div>
-
-        {showComparison && (
-          <div className="grid md:grid-cols-2 gap-4 mt-4">
-            {/* Mobile In-Person: We come to you */}
-            <div className="bg-white rounded-lg p-4 border border-blue-200">
-              <div className="flex items-center space-x-2 mb-3">
-                <Car className="h-5 w-5 text-blue-600" />
-                <h5 className="font-medium text-blue-900">Mobile In‑Person (We come to you)</h5>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span>Ultimate convenience — home, office, hospital, or any safe location</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span>Great for limited mobility, tight schedules, or multiple signers</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span>Evenings and weekends available with Extended Hours</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <AlertCircle className="h-4 w-4 text-yellow-500" />
-                  <span>Includes travel — fees vary by distance and urgency</span>
-                </div>
-                <div className="pt-2 mt-1 border-t border-blue-100 text-blue-900">
-                  <div className="font-medium mb-1">Choose this if:</div>
-                  <ul className="list-disc ml-5 space-y-1 text-blue-800">
-                    <li>You need us at your location today</li>
-                    <li>You prefer private, on‑site notarization</li>
-                    <li>You have multiple documents/signers to handle</li>
-                  </ul>
-                </div>
-              </div>
+      {/* Service Comparison - Collapsed by default to reduce clutter */}
+      <details className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+        <summary className="cursor-pointer font-medium text-gray-900 mb-3">
+          Need help choosing? Click to compare options
+        </summary>
+        <div className="grid md:grid-cols-2 gap-4 mt-4">
+          {/* Mobile In-Person: We come to you */}
+          <div className="bg-white rounded-lg p-4 border border-blue-200">
+            <div className="flex items-center space-x-2 mb-3">
+              <Car className="h-5 w-5 text-blue-600" />
+              <h5 className="font-medium text-blue-900">Mobile In‑Person (We come to you)</h5>
             </div>
-
-            {/* In-Person: You come to us */}
-            <div className="bg-white rounded-lg p-4 border border-emerald-200">
-              <div className="flex items-center space-x-2 mb-3">
-                <MapPin className="h-5 w-5 text-emerald-600" />
-                <h5 className="font-medium text-emerald-900">In‑Person Visit (You come to us)</h5>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span>Ultimate convenience — home, office, hospital, or any safe location</span>
               </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span>Most budget‑friendly — no travel fees</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span>Fastest when you can travel to a nearby meeting location</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span>Same professional, in‑person notarization</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <AlertCircle className="h-4 w-4 text-yellow-500" />
-                  <span>Requires you to travel and coordinate timing</span>
-                </div>
-                <div className="pt-2 mt-1 border-t border-emerald-100 text-emerald-900">
-                  <div className="font-medium mb-1">Choose this if:</div>
-                  <ul className="list-disc ml-5 space-y-1 text-emerald-800">
-                    <li>You’re close to our meeting location and want the lowest cost</li>
-                    <li>You can step out during business hours</li>
-                    <li>You don’t need on‑site convenience</li>
-                  </ul>
-                </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span>Great for limited mobility, tight schedules, or multiple signers</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span>Evenings and weekends available with Extended Hours</span>
               </div>
             </div>
           </div>
-        )}
-      </div>
+
+          {/* In-Person: You come to us */}
+          <div className="bg-white rounded-lg p-4 border border-emerald-200">
+            <div className="flex items-center space-x-2 mb-3">
+              <MapPin className="h-5 w-5 text-emerald-600" />
+              <h5 className="font-medium text-emerald-900">In‑Person Visit (You come to us)</h5>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span>Most budget‑friendly — no travel fees</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span>Fastest when you can travel to a nearby meeting location</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span>Same professional, in‑person notarization</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
     </div>
   );
 }

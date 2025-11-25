@@ -233,8 +233,8 @@ const FacebookCampaignPage: NextPage = () => {
                   formTitle="Secure Your Facebook Discount"
                   formDescription="Fill in your details below to claim your exclusive 30% savings. Limited time offer!"
                   successRedirectUrl="/thank-you-fb-exclusive"
-                  privacyPolicyLink="/privacy"
-                  termsOfServiceLink="/terms"
+                  privacyPolicyLink="/privacy-policy"
+                  termsOfServiceLink="/terms-of-service"
                 />
               </div>
               

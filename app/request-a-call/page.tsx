@@ -150,7 +150,7 @@ function CallRequestForm() {
       </div>
       <div className="flex items-center">
         <input type="checkbox" name="termsAccepted" id="termsAccepted" checked={form.termsAccepted} onChange={handleChange} required className="mr-2" />
-        <label htmlFor="termsAccepted" className="text-sm">I accept the <a href="/terms" className="text-primary underline">Terms and Conditions</a><span className="text-red-500">*</span></label>
+        <label htmlFor="termsAccepted" className="text-sm">I accept the <a href="/terms-of-service" className="text-primary underline">Terms and Conditions</a><span className="text-red-500">*</span></label>
       </div>
       <button type="submit" className="w-full bg-primary text-white font-semibold py-2 rounded" disabled={status.type === "loading"}>
         {status.type === "loading" ? "Submitting..." : "Request Callback"}

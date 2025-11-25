@@ -384,7 +384,7 @@ export default function LocationStep({
       <Alert className="bg-blue-50 border-blue-100 text-blue-900">
         <Info className="h-4 w-4 mr-2 text-blue-700" />
         <AlertDescription>
-          Just price shopping? Tap “Next” to skip this for now — we&rsquo;ll confirm the exact address when we call you back.
+          Enter at least your city and ZIP code to continue. You can provide the exact street address later if needed — we&rsquo;ll confirm it when we call you back.
         </AlertDescription>
       </Alert>
 

@@ -133,13 +133,13 @@ const NewsletterSignupPage: NextPage = () => {
                     formDescription=""
                     submitButtonText={primaryCtaText}
                     successRedirectUrl="/newsletter-thank-you"
-                    privacyPolicyLink="/privacy"
+                    privacyPolicyLink="/privacy-policy"
                   />
 
                   <div className="mt-6 pt-6 border-t border-gray-100">
                     <p className="text-xs text-gray-500 text-center leading-relaxed">
                       By subscribing, you agree to receive our newsletter and promotional emails. 
-                      You can unsubscribe at any time. Read our <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
+                      You can unsubscribe at any time. Read our <Link href="/privacy-policy" className="text-primary hover:underline">Privacy Policy</Link>.
                     </p>
                   </div>
                 </div>

@@ -419,7 +419,7 @@ export default function LeadForm({
                 />
               </FormControl>
               <FormLabel htmlFor="termsAccepted" className="text-sm font-normal !mt-0">
-                I have read and agree to the <a href={termsOfServiceLink || "/terms"} target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-blue-700">Terms and Conditions</a> and <a href={privacyPolicyLink || "/privacy-policy"} target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-blue-700">Privacy Policy</a>. <span className="text-red-500">*</span>
+                I have read and agree to the <a href={termsOfServiceLink || "/terms-of-service"} target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-blue-700">Terms and Conditions</a> and <a href={privacyPolicyLink || "/privacy-policy"} target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-blue-700">Privacy Policy</a>. <span className="text-red-500">*</span>
               </FormLabel>
             </FormItem>
           )}
@@ -491,7 +491,7 @@ export default function LeadForm({
         <p className="text-xs text-gray-500">
           Your privacy is important to us. By submitting this form, you acknowledge and agree to our
           <a href={privacyPolicyLink || "/privacy-policy"} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-700"> Privacy Policy</a> and
-          <a href={termsOfServiceLink || "/terms"} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-700"> Terms of Service</a>.
+          <a href={termsOfServiceLink || "/terms-of-service"} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-700"> Terms of Service</a>.
           We use your information solely to respond to your request and provide our services. We do not sell or share your personal information with third parties for marketing purposes.
         </p>
       </div>

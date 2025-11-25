@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://houstonmobilenotarypros.com
+Host: http://localhost:3000
 
 # Sitemaps
-Sitemap: https://houstonmobilenotarypros.com/sitemap.xml
+Sitemap: http://localhost:3000/sitemap.xml

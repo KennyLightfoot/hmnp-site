@@ -17,6 +17,10 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#002147" },
+    { media: "(prefers-color-scheme: dark)", color: "#002147" },
+  ],
 }
 
 export const metadata: Metadata = {
@@ -72,10 +76,6 @@ export const metadata: Metadata = {
     google: 'your-google-verification-code',
   },
   manifest: "/manifest.json",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#002147" },
-    { media: "(prefers-color-scheme: dark)", color: "#002147" },
-  ],
   icons: {
     icon: [
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
@@ -200,10 +200,12 @@ export default function RootLayout({
           const gaId = process.env.NEXT_PUBLIC_GA_ID;
           const shouldLoadGtagDirect = (gaId || adsAccountId) && !process.env.NEXT_PUBLIC_GTM_ID;
           if (!shouldLoadGtagDirect) return null;
+          const gtagId = gaId || adsAccountId;
+          if (!gtagId) return null; // Safety check
           return (
           <Suspense fallback={null}>
             <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${gaId || adsAccountId}`}
+              src={`https://www.googletagmanager.com/gtag/js?id=${gtagId}`}
               strategy="afterInteractive"
             />
             <Script id="ga4" strategy="afterInteractive">

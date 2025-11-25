@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertCircle, ShieldCheck } from 'lucide-react'; // Icons for emphasis
 
 const privacyPolicyLink = "/privacy-policy";
-const termsOfServiceLink = "/terms";
+const termsOfServiceLink = "/terms-of-service";
 
 const documentTypes = [
   'Identification Document (ID)',

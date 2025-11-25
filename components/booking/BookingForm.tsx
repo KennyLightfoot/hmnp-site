@@ -50,10 +50,8 @@ import {
 // Import existing step components
 import ServiceSelector from './ServiceSelector';
 import CustomerInfoStep from './steps/CustomerInfoStep';
-import LocationStep from './steps/LocationStep';
-import EnhancedSchedulingStep from './steps/EnhancedSchedulingStep';
+import LocationAndSchedulingStep from './steps/LocationAndSchedulingStep';
 import ReviewStep from './steps/ReviewStep';
-import InPersonDocumentsStep from './steps/InPersonDocumentsStep';
 
 // Import AI Booking Assistant (lazy loaded)
 const AIBookingAssistant = dynamic(() => import('./AIBookingAssistant'), {
@@ -89,9 +87,8 @@ const CreateBookingSchema = z.object({
     email: z.string().email('Valid email required'),
     phone: z.string().optional(),
   }).optional(),
-  // Make location fields optional at the schema level; we enforce requirements
-  // for in-person services in superRefine below. This prevents silent submit
-  // blocking for RON when location is blank but present in defaultValues.
+  // Location is optional at schema level - we allow approximate location (city/ZIP) 
+  // for initial booking and can firm up exact address via phone callback
   location: z.object({
     address: z.string().optional(),
     city: z.string().optional(),
@@ -106,24 +103,25 @@ const CreateBookingSchema = z.object({
     selectedStartIso: z.string().optional(),
     selectedEndIso: z.string().optional(),
     flexibleTiming: z.boolean().optional(),
+    estimatedDuration: z.number().optional(),
   }).optional(),
 }).superRefine((val, ctx) => {
-  // For in-person services, enforce location fields
+  // For in-person services, we prefer full address but allow city/ZIP minimum
+  // This allows users to book with approximate location and firm up via callback
   const inPerson = val.serviceType !== 'RON_SERVICES';
   if (inPerson) {
     const loc = (val as any).location || {};
-    if (!loc.address || String(loc.address).trim().length === 0) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Address is required', path: ['location', 'address'] });
-    }
+    // Require at least city and ZIP for in-person services (address can be approximate)
     if (!loc.city || String(loc.city).trim().length === 0) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'City is required', path: ['location', 'city'] });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'City is required for mobile services', path: ['location', 'city'] });
     }
     if (!loc.state || String(loc.state).trim().length === 0) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'State is required', path: ['location', 'state'] });
     }
     if (!loc.zipCode || String(loc.zipCode).trim().length === 0) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'ZIP code is required', path: ['location', 'zipCode'] });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'ZIP code is required for mobile services', path: ['location', 'zipCode'] });
     }
+    // Address is preferred but not strictly required - we can get exact address via callback
   }
 });
 
@@ -166,18 +164,16 @@ function normalizeTimeTo24h(input: string): string | null {
   return null;
 }
 
-// Step-specific field validation mapping (documents before scheduling)
+// Step-specific field validation mapping - Simplified to 4 steps
 const STEP_FIELD_MAPPING: { [step: number]: string[] } = {
   0: ['serviceType'],
   1: ['customer.name', 'customer.email'],
-  // Step 2: allow address to be skipped so we can capture the lead first
-  2: [],
-  3: [], // documents optional
-  4: ['scheduling.preferredDate', 'scheduling.preferredTime'],
-  5: []
+  // Step 2: Combined location + scheduling - location optional for RON, scheduling required
+  2: ['scheduling.preferredDate', 'scheduling.preferredTime'],
+  3: [] // Review step - no validation needed
 };
 
-// Enhanced step configuration with mobile-optimized data
+// Simplified step configuration - Reduced from 6 to 4 steps
 const BOOKING_STEPS = [
   {
     id: 'service',
@@ -187,7 +183,7 @@ const BOOKING_STEPS = [
     mobileDescription: 'Pick your service',
     component: ServiceSelector,
     icon: FileText,
-    estimatedTime: '2 min',
+    estimatedTime: '1 min',
     tips: ['Most popular: Standard Notary', 'RON available 24/7', 'Loan signing includes expertise']
   },
   {
@@ -202,37 +198,15 @@ const BOOKING_STEPS = [
     tips: ['We\'ll send confirmation to this email', 'Phone for urgent updates', 'Your info is secure']
   },
   {
-    id: 'location',
-    title: 'Location',
-    shortTitle: 'Where',
-    description: 'Where should we meet you?',
-    mobileDescription: 'Meeting location',
-    component: LocationStep,
+    id: 'location-scheduling',
+    title: 'When & Where',
+    shortTitle: 'When & Where',
+    description: 'Select your location and preferred appointment time',
+    mobileDescription: 'Location & time',
+    component: LocationAndSchedulingStep,
     icon: MapPin,
     estimatedTime: '2 min',
-    tips: ['We travel to you', 'RON: No location needed', 'Free travel within radius']
-  },
-  {
-    id: 'documents',
-    title: 'Upload Documents (Optional)',
-    shortTitle: 'Documents',
-    description: 'Upload documents now so your notary can prepare',
-    mobileDescription: 'Optional documents',
-    component: InPersonDocumentsStep,
-    icon: FileText,
-    estimatedTime: '1 min',
-    tips: ['PDF/PNG/JPEG up to 25MB', 'You can also email documents later']
-  },
-  {
-    id: 'scheduling',
-    title: 'Schedule',
-    shortTitle: 'When',
-    description: 'Pick your preferred date and time',
-    mobileDescription: 'Pick date & time',
-    component: EnhancedSchedulingStep,
-    icon: Calendar,
-    estimatedTime: '2 min',
-    tips: ['Same-day available', 'Weekend appointments', 'Flexible timing options']
+    tips: ['We travel to you', 'RON: No location needed', 'Real-time availability shown']
   },
   {
     id: 'review',
@@ -292,6 +266,7 @@ export default function BookingForm({
     trackBookingFunnel('booking_view', {
       serviceType: form.getValues('serviceType'),
       source: 'booking_page',
+      path: 'full', // Distinguish from express path
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -407,11 +382,13 @@ export default function BookingForm({
     
     // Special handling for RON services - skip location validation
     if (currentStep === 2 && watchedValues.serviceType === 'RON_SERVICES') {
-      return true;
+      // For RON, only scheduling is required
+      const scheduling = watchedValues.scheduling as { preferredDate?: string; preferredTime?: string } | undefined;
+      return !!(scheduling?.preferredDate && scheduling?.preferredTime);
     }
     
-    // Special handling for review step (now index 5)
-    if (currentStep === 5) {
+    // Special handling for review step (now index 3)
+    if (currentStep === 3) {
       return true; // Review step doesn't need validation
     }
     
@@ -515,8 +492,10 @@ export default function BookingForm({
         
         // Special handling for RON services - skip location validation
         if (currentStep === 2 && watchedValues.serviceType === 'RON_SERVICES') {
-          currentStepValid = true;
-        } else if (currentStep === 5) {
+          // For RON, only validate scheduling
+          const schedulingFields = ['scheduling.preferredDate', 'scheduling.preferredTime'];
+          currentStepValid = await form.trigger(schedulingFields as any);
+        } else if (currentStep === 3) {
           // Review step doesn't need validation
           currentStepValid = true;
         } else if (currentStepFields && currentStepFields.length > 0) {
@@ -549,6 +528,7 @@ export default function BookingForm({
         if (currentStep === 0) {
           trackBookingFunnel('booking_start', {
             serviceType: watchedValues.serviceType,
+            path: 'full',
           });
         }
 
@@ -608,6 +588,8 @@ export default function BookingForm({
         serviceType: data.serviceType,
         hasDate: !!data?.scheduling?.preferredDate,
         hasTime: !!data?.scheduling?.preferredTime,
+        path: 'full',
+        stepCount: BOOKING_STEPS.length,
       });
       
       // Prepare booking payload for API
@@ -716,16 +698,16 @@ export default function BookingForm({
         bookingData.customerPhone = data.customer.phone;
       }
 
-      // Address only for mobile services and when provided
-      if (data.serviceType !== 'RON_SERVICES' && data.location?.address) {
+      // Address for mobile services - send what we have (city/ZIP minimum, full address preferred)
+      if (data.serviceType !== 'RON_SERVICES' && data.location) {
         Object.assign(bookingData, {
-          // Backend schema expects `locationAddress` (street) as well
-          locationAddress: data.location.address,
+          // Backend schema expects `locationAddress` (street) - use address if available, otherwise city/ZIP
+          locationAddress: data.location.address || `${data.location.city || 'Houston'}, ${data.location.state || 'TX'} ${data.location.zipCode || ''}`.trim(),
           locationType: 'OTHER',
-          addressStreet: data.location.address,
+          addressStreet: data.location.address || '', // Empty string if not provided - GHL will use "Remote/Online Service" fallback
           addressCity: data.location.city || 'Houston',
           addressState: data.location.state || 'TX',
-          addressZip: data.location.zipCode || '77001'
+          addressZip: data.location.zipCode || ''
         });
       }
 
@@ -757,6 +739,7 @@ export default function BookingForm({
         trackBookingFunnel('success', {
           bookingId,
           serviceType: data?.serviceType,
+          path: 'full',
         });
 
         setSuccessMessage('Booking created successfully! Redirecting to confirmation...');
@@ -1038,8 +1021,7 @@ export default function BookingForm({
                       data={watchedValues}
                       onUpdate={handleStepUpdate}
                       errors={formErrors}
-                      // Hide document uploads for RON – Proof.com handles document flow
-                      pricing={watchedValues.serviceType === 'RON_SERVICES' && currentStepData?.id === 'documents' ? undefined : null}
+                      pricing={null}
                     />
                   )}
                 </div>

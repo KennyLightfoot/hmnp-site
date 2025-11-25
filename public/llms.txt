@@ -1,14 +1,32 @@
-# llms.txt - AI crawler guidance for Houston Mobile Notary Pros
-#
-# This file mirrors the role of robots.txt but is focused on large language
-# model crawlers. We currently allow public pages to be used while requesting
-# respectful attribution.
-
-User-Agent: *
+User-agent: *
 Allow: /
+Crawl-delay: 5
+Request-rate: 5/60
+Contact: support@houstonmobilenotarypros.com
+Sitemap: https://houstonmobilenotarypros.com/sitemap.xml
+Usage-policy: https://houstonmobilenotarypros.com/terms-of-service
+Attribution: Required
 
-# Notes:
-# - Public-facing marketing pages may be used for indexing or training.
-# - Do not imply partnership or endorsement without written permission.
-# - For takedown or questions, contact support@houstonmobilenotarypros.com.
+User-agent: GPTBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /dashboard/
+Usage-policy: https://houstonmobilenotarypros.com/terms-of-service
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /dashboard/
+Usage-policy: https://houstonmobilenotarypros.com/terms-of-service
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
 

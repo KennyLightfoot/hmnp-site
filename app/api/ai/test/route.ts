@@ -3,6 +3,8 @@ import { getErrorMessage } from '@/lib/utils/error-utils';
 import { sendChat } from '@/lib/vertex';
 import { withRateLimit } from '@/lib/security/rate-limiting';
 import { z } from 'zod';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 /**
  * Test API route for Gemini AI integration
@@ -15,7 +17,14 @@ import { z } from 'zod';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export const GET = withRateLimit('public', 'ai_test_get')(async () => {
+export const GET = withRateLimit('admin', 'ai_test_get')(async () => {
+  // Check admin authentication
+  const session = await getServerSession(authOptions);
+  const userRole = (session?.user as any)?.role;
+  if (!session?.user || userRole !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
+  }
+
   try {
     const vertexResponse = await sendChat("Hello, I need to schedule a notary appointment in Houston.");
     const testResponse = { response: vertexResponse.text };
@@ -37,7 +46,14 @@ export const GET = withRateLimit('public', 'ai_test_get')(async () => {
 
 const bodySchema = z.object({ message: z.string().min(1), context: z.any().optional() });
 
-export const POST = withRateLimit('public', 'ai_test_post')(async (request: NextRequest) => {
+export const POST = withRateLimit('admin', 'ai_test_post')(async (request: NextRequest) => {
+  // Check admin authentication
+  const session = await getServerSession(authOptions);
+  const userRole = (session?.user as any)?.role;
+  if (!session?.user || userRole !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
+  }
+
   try {
     const parsed = bodySchema.safeParse(await request.json());
     if (!parsed.success) {

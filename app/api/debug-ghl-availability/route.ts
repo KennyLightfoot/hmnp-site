@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCalendarSlots } from '@/lib/ghl/management';
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 /**
  * DEBUG: Test GHL availability fetching with detailed logging
  * GET /api/debug-ghl-availability?serviceType=STANDARD_NOTARY&date=2025-08-08
+ * Requires admin authentication
  */
 export async function GET(request: NextRequest) {
+  // Check admin authentication
+  const session = await getServerSession(authOptions);
+  const userRole = (session?.user as any)?.role;
+  if (!session?.user || userRole !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
+  }
   try {
     const { searchParams } = new URL(request.url);
     const serviceType = searchParams.get('serviceType') || 'STANDARD_NOTARY';

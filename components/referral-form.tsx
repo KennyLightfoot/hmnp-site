@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 
 const privacyPolicyLink = "/privacy-policy";
-const termsOfServiceLink = "/terms";
+const termsOfServiceLink = "/terms-of-service";
 
 const referralFormSchema = z.object({
   referrerName: z.string().min(1, { message: 'Your name is required.' }),
