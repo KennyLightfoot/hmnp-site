@@ -209,8 +209,7 @@ export async function processReviewRequests(delayHours: number = 24): Promise<{
       User_Booking_signerIdToUser: {
         select: {
           email: true,
-          name: true,
-          phone: true
+          name: true
         }
       }
     },
@@ -230,16 +229,10 @@ export async function processReviewRequests(delayHours: number = 24): Promise<{
       const result = await sendReviewRequest(
         booking.id,
         customer.email,
-        customer.name || 'Valued Customer',
-        customer.phone || undefined
+        customer.name || 'Valued Customer'
       );
 
       if (result.emailSent || result.smsSent) {
-        // Mark review request as sent
-        await prisma.booking.update({
-          where: { id: booking.id },
-          data: { reviewRequestSentAt: now }
-        });
         sent++;
       }
 

@@ -497,12 +497,11 @@ export class UnifiedScheduler {
       }
 
       try {
-        // Send review request (includes both email and SMS if phone available)
+        // Send review request (email only – phone field is not stored on User model)
         await sendReviewRequest(
           booking.id,
           customer.email,
-          customer.name || 'Valued Customer',
-          customer.phone || undefined
+          customer.name || 'Valued Customer'
         );
       } catch (error) {
         logger.error('Failed to send review request', 'UNIFIED_SCHEDULER', error as Error);
