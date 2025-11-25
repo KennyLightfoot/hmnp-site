@@ -216,8 +216,12 @@ export async function POST(request: NextRequest) {
     // Handle Prisma validation errors
     if (error instanceof Prisma.PrismaClientValidationError) {
       logger.error('Prisma validation error submitting notary application', {
-        message: error.message,
-        stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined,
+        // `error` is `unknown` in catch, so guard before accessing properties
+        message: error instanceof Error ? error.message : getErrorMessage(error),
+        stack:
+          process.env.NODE_ENV === 'development'
+            ? (error instanceof Error ? error.stack : undefined)
+            : undefined,
       })
       
       return NextResponse.json(
