@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/db'
-import { Role } from '@/lib/prisma-types'
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3'
 
 export const runtime = 'nodejs'
@@ -20,8 +17,14 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ id: st
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string, docId: string }> }) {
+  const [{ authOptions }, { Role }, { prisma }] = await Promise.all([
+    import('@/lib/auth'),
+    import('@/lib/prisma-types'),
+    import('@/lib/db'),
+  ])
+
   const session = await getServerSession(authOptions)
-  const role = (session?.user as any)?.role as Role | undefined
+  const role = (session?.user as any)?.role as (typeof Role)[keyof typeof Role] | undefined
   if (!session?.user || (role !== Role.ADMIN && role !== Role.STAFF)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
