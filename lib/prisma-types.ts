@@ -20,7 +20,9 @@
 import { PrismaClient, Prisma } from '@prisma/client'
 export { PrismaClient, Prisma }
 
-// Import and re-export model types
+// Import and re-export model types from the generated Prisma client.
+// Using the direct '.prisma/client' module avoids any issues with how
+// '@prisma/client' is augmented or bundled in different environments.
 export type {
   User,
   Booking,
@@ -50,7 +52,7 @@ export type {
   StatusHistory,
   Comment,
   AssignmentDocument,
-} from '@prisma/client'
+} from '.prisma/client'
 
 // Re-export enum *types* so they can be used in type positions.
 // These map directly to the underlying Prisma enum types.
