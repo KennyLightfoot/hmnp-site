@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from 'next/navigation';
-import { Role, type NotificationLog } from "@/lib/prisma-types";
+import { Role } from "@/lib/prisma-types";
 import {
   Table,
   TableBody,
@@ -37,9 +37,10 @@ export default async function AdminNotificationsPage() {
   }
 
   // Fetch notification data
-  let scheduledNotifications: NotificationLog[] = [];
-  let sentNotifications: NotificationLog[] = [];
-  let failedNotifications: NotificationLog[] = [];
+  // Use a broad type here to avoid tight coupling to Prisma model typings
+  let scheduledNotifications: any[] = [];
+  let sentNotifications: any[] = [];
+  let failedNotifications: any[] = [];
   
   try {
     // Fetch pending notifications
