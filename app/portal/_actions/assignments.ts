@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { Role, AssignmentStatus, Assignment, Prisma } from "@/lib/prisma-types";
+import { Role, AssignmentStatus, Prisma } from "@/lib/prisma-types";
 import { revalidatePath } from "next/cache";
 import { logger } from '@/lib/logger';
 
@@ -82,12 +82,17 @@ export async function updateAssignmentStatus(
   }
 }
 
-// Re-define or import AssignmentData if it's not globally available
-// For now, defining it here based on its previous definition.
-export type AssignmentData = Pick<
-  Assignment,
-  'id' | 'title' | 'status' | 'closingDate' | 'borrowerName' | 'propertyAddress' | 'updatedAt'
->;
+// Lightweight view model for assignments returned to the portal.
+// This intentionally avoids direct dependency on Prisma's generated model types.
+export type AssignmentData = {
+  id: string;
+  title: string | null;
+  status: AssignmentStatus;
+  closingDate: Date | string | null;
+  borrowerName: string | null;
+  propertyAddress: string | null;
+  updatedAt: Date | string;
+};
 
 interface FetchAssignmentsParams {
   page: number;

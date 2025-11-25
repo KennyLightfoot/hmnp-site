@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect, notFound } from 'next/navigation';
-import { Role, Assignment } from "@/lib/prisma-types";
+import { Role } from "@/lib/prisma-types";
 import { prisma } from "@/lib/db";
 import { AssignmentForm } from "@/components/portal/AssignmentForm";
 
@@ -23,7 +23,7 @@ export default async function EditAssignmentPage({ params }: EditAssignmentPageP
   }
 
   // Fetch the existing assignment data
-  let assignment: Assignment | null = null;
+  let assignment: any | null = null;
   try {
     assignment = await prisma.assignment.findUnique({
       where: { id: assignmentId },

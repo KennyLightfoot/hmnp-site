@@ -17,7 +17,6 @@ import { URLSearchParams } from 'url';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { createRequire } from 'module';
 import dotenv from 'dotenv';
 
 // Load environment variables from .env.local and .env files
@@ -28,10 +27,6 @@ const projectRoot = join(__dirname, '..');
 // Load .env.local first (higher priority), then .env
 dotenv.config({ path: join(projectRoot, '.env.local') });
 dotenv.config({ path: join(projectRoot, '.env') });
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const require = createRequire(import.meta.url);
 
 // Import local SEO data
 let LOCAL_SEO_ZIP_CODES = [];
@@ -105,7 +100,6 @@ try {
   console.log('📝 Using OAuth tokens from environment');
 }
 
-ACCOUNT_ID = process.env.GOOGLE_MY_BUSINESS_ACCOUNT_ID;
 LOCATION_ID = process.env.GOOGLE_MY_BUSINESS_LOCATION_ID;
 
 if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH_TOKEN) {
@@ -114,16 +108,12 @@ if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH_TOKEN) {
   process.exit(1);
 }
 
-if (!ACCOUNT_ID || !LOCATION_ID) {
-  console.log('❌ Missing Account ID or Location ID!\n');
-  console.log('Please run: node scripts/get-gmb-account-location.js first\n');
-  console.log('Then set these environment variables:');
-  console.log('  GOOGLE_MY_BUSINESS_ACCOUNT_ID');
-  console.log('  GOOGLE_MY_BUSINESS_LOCATION_ID\n');
+if (!LOCATION_ID) {
+  console.log('❌ Missing Location ID!\n');
+  console.log('Please set GOOGLE_MY_BUSINESS_LOCATION_ID in your .env.local file.\n');
   process.exit(1);
 }
 
-console.log(`📍 Account ID: ${ACCOUNT_ID}`);
 console.log(`📍 Location ID: ${LOCATION_ID}\n`);
 
 // Function to get fresh access token
@@ -187,7 +177,7 @@ function getAccessToken() {
 // Function to get current location info
 function getLocation(accessToken) {
   return new Promise((resolve, reject) => {
-    const locationName = `accounts/${ACCOUNT_ID}/locations/${LOCATION_ID}`;
+    const locationName = `locations/${LOCATION_ID}`;
     
     const options = {
       hostname: 'mybusinessbusinessinformation.googleapis.com',
@@ -236,7 +226,7 @@ function getLocation(accessToken) {
 // Function to update location
 function updateLocation(accessToken, updateData) {
   return new Promise((resolve, reject) => {
-    const locationName = `accounts/${ACCOUNT_ID}/locations/${LOCATION_ID}`;
+    const locationName = `locations/${LOCATION_ID}`;
     const jsonData = JSON.stringify(updateData);
     
     const options = {

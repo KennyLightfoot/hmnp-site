@@ -11,17 +11,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Assignment } from "@/lib/prisma-types"
+import type { AssignmentData } from "@/app/portal/_actions/assignments"
 import AssignmentsFilterControls from "@/components/assignments-filter-controls"
 import { getStatusBadgeStyle, formatDateShort } from "@/lib/assignmentUtils"
 import { PaginationControls } from "@/components/ui/pagination-controls"
-
-// Type for the assignment data subset passed from the server
-// This should match the select clause in the parent server component
-export type AssignmentData = Pick<
-  Assignment,
-  'id' | 'title' | 'status' | 'closingDate' | 'borrowerName' | 'propertyAddress' | 'updatedAt'
->;
 
 // Props interface for the client component
 interface PortalAssignmentsViewProps {

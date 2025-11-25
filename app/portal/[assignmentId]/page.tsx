@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { redirect, notFound } from 'next/navigation'
-import { Assignment, AssignmentStatus, Role, AssignmentDocument, StatusHistory, Comment } from "@/lib/prisma-types"
+import { AssignmentStatus, Role } from "@/lib/prisma-types"
 import { Badge } from "@/components/ui/badge" // Re-use badge for status display
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table" // For lists
 import { Button } from "@/components/ui/button" // For download button
@@ -38,12 +38,38 @@ const formatDate = (date: Date | string | null | undefined) => {
 }
 */
 
-// Extend the Assignment type to include the relations we will fetch
-// Use generic object shapes here instead of Prisma User model type
-type AssignmentWithDetails = Assignment & {
-  documents: (AssignmentDocument & { uploadedBy: { id: string; name: string | null; email: string | null } | null })[];
-  history: (StatusHistory & { changedBy: { id: string; name: string | null; email: string | null } | null })[];
-  comments: (Comment & { author: { id: string; name: string | null; email: string | null; image?: string | null } | null })[]; // Include comments with author
+// Local view model type for assignments in the portal.
+// This intentionally avoids depending on Prisma's generated model types.
+type AssignmentWithDetails = {
+  id: string;
+  title: string | null;
+  reference: string | null;
+  closingDate: Date | string | null;
+  updatedAt: Date | string;
+  borrowerName: string | null;
+  propertyAddress: string | null;
+  partnerAssignedToId: string | null;
+  status: AssignmentStatus;
+  allowPartnerComments: boolean | null;
+  documents: {
+    id: string;
+    filename: string;
+    uploadedAt: Date | string | null;
+    uploadedBy: { id: string; name: string | null; email: string | null } | null;
+  }[];
+  history: {
+    id: string;
+    status: AssignmentStatus;
+    changedAt: Date | string;
+    changedBy: { id: string; name: string | null; email: string | null } | null;
+    note?: string | null;
+  }[];
+  comments: {
+    id: string;
+    text: string;
+    createdAt: Date | string;
+    author: { id: string; name: string | null; email: string | null; image?: string | null } | null;
+  }[];
 };
 
 type AssignmentDetailPageProps = {
@@ -87,20 +113,20 @@ export default async function AssignmentDetailPage({ params }: AssignmentDetailP
     if (assignmentData) {
       // Transform the data to match AssignmentWithDetails interface
       assignment = {
-        ...assignmentData,
+        ...(assignmentData as any),
         documents: assignmentData.AssignmentDocument.map((doc: any) => ({
           ...doc,
-          uploadedBy: null // Since the relation doesn't exist in schema
+          uploadedBy: null, // Since the relation doesn't exist in schema
         })),
         history: assignmentData.StatusHistory.map((history: any) => ({
           ...history,
-          changedBy: null // Since the relation doesn't exist in schema
+          changedBy: null, // Since the relation doesn't exist in schema
         })),
         comments: assignmentData.Comment.map((comment: any) => ({
           ...comment,
-          author: null // Since the relation doesn't exist in schema
-        }))
-      };
+          author: null, // Since the relation doesn't exist in schema
+        })),
+      } as AssignmentWithDetails;
     }
   } catch (error) {
     console.error(`Failed to fetch assignment ${assignmentId}:`, error);

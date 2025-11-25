@@ -272,7 +272,7 @@ export function bookingConfirmationEmail(
           Your feedback helps us serve you better and helps others find our services. Please take a moment to leave us a review!
         </p>
         <div style="margin: 20px 0;">
-          <a href="https://g.page/r/YOUR_GBP_REVIEW_LINK" 
+          <a href="https://g.page/r/CRcIYPLKzG_5EBM/review" 
              style="background: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 5px; font-weight: bold;">
             ⭐ Review on Google
           </a>

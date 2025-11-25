@@ -1,9 +1,12 @@
-import { Comment } from "@/lib/prisma-types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
-// Define the expected shape of a comment object including the author
-type CommentWithAuthor = Comment & {
+// Define the expected shape of a comment object including the author.
+// This is a local view model type to avoid depending on Prisma model typings.
+type CommentWithAuthor = {
+  id: string;
+  text: string;
+  createdAt: Date | string;
   author: { id: string; name: string | null; email: string | null; image?: string | null } | null; // Author might be null if user is deleted?
 };
 

@@ -22,7 +22,7 @@ const DEFAULT_CONFIG: ReviewRequestConfig = {
   delayHours: 24, // Send review request 24 hours after service completion
   enableEmail: true,
   enableSMS: true,
-  googleReviewLink: 'https://g.page/r/YOUR_GBP_REVIEW_LINK', // TODO: Replace with actual GBP review link
+  googleReviewLink: 'https://g.page/r/CRcIYPLKzG_5EBM/review',
   yelpReviewLink: 'https://www.yelp.com/biz/houston-mobile-notary-pros-houston#reviews'
 };
 
