@@ -5,7 +5,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { Payment, Prisma } from '@/lib/prisma-types';
 
 type BookingContext = {
   params: Promise<{ id: string }>

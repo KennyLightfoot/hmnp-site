@@ -5,7 +5,6 @@ import { clearCalendarCache } from '@/lib/ghl-calendar'
 import { createContact as createGhlContact, findContactByEmail, addTagsToContact } from '@/lib/ghl/contacts'
 import { addContactToWorkflow, createAppointment } from '@/lib/ghl/management'
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping'
-import type { Service } from '@/lib/prisma-types'
 import { PaymentMethod, BookingStatus, ServiceType } from '@/lib/prisma-types'
 import { logger } from '@/lib/logger'
 import { RONService } from '@/lib/proof/api'
@@ -19,7 +18,7 @@ export interface CreateBookingInput {
 export interface CreateBookingResult {
   // Using a widened type here to avoid Prisma type inference drift during Next build
   booking: any
-  service: Service
+  service: any
 }
 
 function normalizePaymentMethod(raw: unknown): PaymentMethod {
