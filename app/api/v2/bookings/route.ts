@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { Role, LocationType, Payment, Prisma } from '@/lib/prisma-types';
+import { Role, LocationType, Prisma } from '@/lib/prisma-types';
 import { withRateLimit } from '@/lib/security/rate-limiting';
 import { z } from 'zod';
 
@@ -116,7 +116,7 @@ export const GET = withRateLimit('public', 'bookings_v2')(async (request: NextRe
           depositAmount: booking.service.depositAmount ? Number(booking.service.depositAmount) : null,
         } : null,
         user: user,
-        payments: booking.payments.map((payment: Payment) => ({
+        payments: booking.payments.map((payment: (typeof booking.payments)[number]) => ({
           ...payment,
           amount: Number(payment.amount),
         })),
