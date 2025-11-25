@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
 import { Role, AlertSeverity } from '@/lib/prisma-types';
 import { getQueues } from '@/lib/queue/config';
 
@@ -26,6 +25,9 @@ export async function POST() {
       storage: true,
       issues: [] as Array<{component: string, message: string, severity: AlertSeverity}>
     };
+
+    // Lazily import Prisma to avoid initialization during build-time data collection
+    const { prisma } = await import('@/lib/db');
 
     // Check database connectivity
     try {

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
 import { Role, AlertStatus } from '@/lib/prisma-types';
 
 export async function POST() {
@@ -14,6 +13,9 @@ export async function POST() {
   }
 
   try {
+    // Lazily import Prisma to avoid initialization during build-time data collection
+    const { prisma } = await import('@/lib/db');
+
     // Update all active alerts to resolved
     const updateResult = await prisma.systemAlert.updateMany({
       where: {
