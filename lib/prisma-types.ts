@@ -52,6 +52,36 @@ export type {
   AssignmentDocument,
 } from '@prisma/client'
 
+// Re-export enum *types* so they can be used in type positions.
+// These map directly to the underlying Prisma enum types.
+export type BookingStatus = Prisma.BookingStatus
+export type ServiceType = Prisma.ServiceType
+export type LocationType = Prisma.LocationType
+export type PaymentStatus = Prisma.PaymentStatus
+export type PaymentProvider = Prisma.PaymentProvider
+export type PaymentMethod = Prisma.PaymentMethod
+export type NotificationType = Prisma.NotificationType
+export type NotificationMethod = Prisma.NotificationMethod
+export type NotificationStatus = Prisma.NotificationStatus
+export type Role = Prisma.Role
+export type ContractorPayoutStatus = Prisma.ContractorPayoutStatus
+export type ContractorPayoutEntryType = Prisma.ContractorPayoutEntryType
+export type QAStatus = Prisma.QAStatus
+export type DiscountType = Prisma.DiscountType
+export type SupportIssueType = Prisma.SupportIssueType
+export type SupportPriority = Prisma.SupportPriority
+export type SupportStatus = Prisma.SupportStatus
+export type AlertSeverity = Prisma.AlertSeverity
+export type AlertStatus = Prisma.AlertStatus
+export type AssignmentStatus = Prisma.AssignmentStatus
+export type LogLevel = Prisma.LogLevel
+export type witness_source = Prisma.witness_source
+export type NotaryApplicationStatus = Prisma.NotaryApplicationStatus
+export type NotaryOnboardingStatus = Prisma.NotaryOnboardingStatus
+export type BackgroundCheckStatus = Prisma.BackgroundCheckStatus
+export type NotaryAvailabilityStatus = Prisma.NotaryAvailabilityStatus
+export type JobOfferStatus = Prisma.JobOfferStatus
+
 // Re-export enums as runtime values via the Prisma namespace.
 // In Prisma 6.x, enums live under `Prisma.<EnumName>` at runtime.
 export const BookingStatus = Prisma.BookingStatus
