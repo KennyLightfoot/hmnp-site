@@ -9,6 +9,7 @@ import {
   JobOfferStatus,
 } from "@/lib/prisma-types";
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@/lib/prisma-types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   CalendarDays,
@@ -167,10 +168,15 @@ export default async function AdminDashboard() {
     }),
   ]);
 
-  const applicationStatusMap = applicationStatusGroups.reduce<Record<string, number>>((acc, group) => {
-    acc[group.status] = group._count._all;
-    return acc;
-  }, {});
+  type ApplicationStatusGroup = { status: NotaryApplicationStatus; _count: { _all: number } };
+  
+  const applicationStatusMap = (applicationStatusGroups as ApplicationStatusGroup[]).reduce<Record<string, number>>(
+    (acc: Record<string, number>, group: ApplicationStatusGroup) => {
+      acc[group.status] = group._count._all;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   const totalApplications = Object.values(applicationStatusMap).reduce((sum, count) => sum + count, 0);
   const pendingApplications = applicationStatusMap[NotaryApplicationStatus.PENDING] || 0;

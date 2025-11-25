@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased] - Build & Type Fixes
+
+### Fixed
+- **Prisma groupBy TypeScript Errors**
+  - Fixed TypeScript TS2345 errors in `app/admin/page.tsx` and `app/api/admin/network/dashboard/route.ts` by removing inline `as Promise<Array<...>>` casts from `prisma.notaryApplication.groupBy()` calls
+  - Prisma's type inference now correctly handles the `groupBy` return type without conflicting generic constraints
+  - The existing `ApplicationStatusGroup` type alias and downstream casts remain for explicit typing in reduce operations
+
+### Technical Notes
+- **Build Warnings**: Next.js build shows `Critical dependency` warnings from `bullmq` (child-processor.js) and `require-in-the-middle` (via OpenTelemetry/Sentry instrumentation). These are expected for server-only dependencies that use dynamic `require()` and do not affect build success or client bundles. No action required.
+
 ## [2025-11-23] SEO & Performance Enhancements
 
 ### Added

@@ -7,6 +7,7 @@ import {
   NotaryAvailabilityStatus,
   NotaryOnboardingStatus,
 } from "@/lib/prisma-types"
+import type { Prisma } from "@/lib/prisma-types"
 import { prisma } from "@/lib/database-connection"
 import { cache, cacheTTL } from "@/lib/cache"
 import { logger } from "@/lib/logger"
@@ -130,7 +131,7 @@ async function getNetworkDashboardData() {
         states_licensed: true,
         languages_spoken: true,
       },
-    }),
+    }) as Promise<Array<{ states_licensed: string[]; languages_spoken: string[] }>>,
     prisma.booking.count({
       where: {
         sendToNetwork: true,
@@ -175,10 +176,15 @@ async function getNetworkDashboardData() {
     }),
   ])
 
-  const applicationStatusMap = applicationGroups.reduce<Record<string, number>>((acc, group) => {
-    acc[group.status] = group._count._all
-    return acc
-  }, {})
+  type ApplicationStatusGroup = { status: NotaryApplicationStatus; _count: { _all: number } };
+  
+  const applicationStatusMap = (applicationGroups as ApplicationStatusGroup[]).reduce<Record<string, number>>(
+    (acc: Record<string, number>, group: ApplicationStatusGroup) => {
+      acc[group.status] = group._count._all
+      return acc
+    },
+    {} as Record<string, number>
+  )
 
   const totalApplications = Object.values(applicationStatusMap).reduce(
     (sum, count) => sum + count,
@@ -188,9 +194,11 @@ async function getNetworkDashboardData() {
   const stateSet = new Set<string>()
   const languageCounts: Record<string, number> = {}
 
-  notaryCoverageRows.forEach((row) => {
-    row.states_licensed.forEach((state) => stateSet.add(state))
-    row.languages_spoken.forEach((language) => {
+  type NotaryCoverageRow = { states_licensed: string[]; languages_spoken: string[] };
+  
+  (notaryCoverageRows as NotaryCoverageRow[]).forEach((row) => {
+    (row.states_licensed as string[]).forEach((state: string) => stateSet.add(state));
+    (row.languages_spoken as string[]).forEach((language: string) => {
       languageCounts[language] = (languageCounts[language] || 0) + 1
     })
   })
