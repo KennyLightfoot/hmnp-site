@@ -5,7 +5,6 @@ import {
   NotaryAvailabilityStatus,
   NotaryOnboardingStatus,
   Role,
-  Prisma,
 } from "@/lib/prisma-types"
 import { prisma } from "@/lib/db"
 import {
@@ -37,36 +36,28 @@ type StateSummary = {
 const formatNumber = (value: number) =>
   new Intl.NumberFormat("en-US").format(value)
 
+// Local view-model type for notary profiles; matches the select clause below.
+type NotaryProfile = {
+  id: string
+  user_id: string
+  onboarding_status: NotaryOnboardingStatus
+  availability_status: NotaryAvailabilityStatus
+  service_radius_miles: number | null
+  states_licensed: any
+  counties_served: any
+  languages_spoken: any
+  years_experience: number | null
+  preferred_service_types: any
+  User: { name: string | null; email: string | null } | null
+  updated_at: Date
+}
+
 export default async function NetworkCoveragePage() {
   const session = await getServerSession(authOptions)
   const userRole = (session?.user as any)?.role
   if (!session?.user || userRole !== Role.ADMIN) {
     redirect("/portal")
   }
-
-  type NotaryProfileSelect = {
-    id: true
-    user_id: true
-    onboarding_status: true
-    availability_status: true
-    service_radius_miles: true
-    states_licensed: true
-    counties_served: true
-    languages_spoken: true
-    years_experience: true
-    preferred_service_types: true
-    User: {
-      select: {
-        name: true
-        email: true
-      }
-    }
-    updated_at: true
-  }
-
-  type NotaryProfile = Prisma.notary_profilesGetPayload<{
-    select: NotaryProfileSelect
-  }>
 
   const notaryProfiles: NotaryProfile[] = await prisma.notary_profiles.findMany({
     orderBy: { updated_at: "desc" },
