@@ -1,8 +1,5 @@
 import { prisma } from '@/lib/db'
 import {
-  Booking,
-  User,
-  notary_profiles,
   Prisma,
   Role,
   NotaryOnboardingStatus,
@@ -11,20 +8,21 @@ import {
 } from '@/lib/prisma-types'
 import { logger } from '@/lib/logger'
 
-interface EligibleNotary extends User {
+interface EligibleNotary {
   id: string;
   name: string | null;
   email: string | null;
-  notary_profiles: notary_profiles | null
+  notary_profiles: any | null
 }
 
-type BookingWithLocation = Booking & {
+type BookingWithLocation = {
+  id: string
   addressZip?: string | null
   addressState?: string | null
 }
 
 interface JobOfferEligibilityCriteria {
-  booking: Booking
+  booking: any
   maxDistanceMiles?: number
   requireActiveCommission?: boolean
   requireEOInsurance?: boolean
