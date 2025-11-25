@@ -3,16 +3,20 @@
  * This provides type safety when working with database objects
  */
 
-import { 
-  BookingStatus, 
-  PaymentStatus, 
-  PaymentProvider, 
-  NotificationType, 
+import {
+  BookingStatus,
+  PaymentStatus,
+  PaymentProvider,
+  NotificationType,
   NotificationMethod,
-  User,
-  Booking,
-  Service as PrismaService
+  Prisma,
 } from '@/lib/prisma-types';
+
+// Derive base model shapes from Prisma's generated types instead of importing
+// model types directly from '@/lib/prisma-types'.
+type Booking = Prisma.BookingGetPayload<{}>;
+type User = Prisma.UserGetPayload<{}>;
+type PrismaService = Prisma.ServiceGetPayload<{}>;
 
 /**
  * Booking model with related entities - matches actual Prisma structure
