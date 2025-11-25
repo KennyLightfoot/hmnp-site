@@ -26,7 +26,11 @@ export async function POST() {
       queueWorkers: true,
       notifications: true,
       storage: true,
-      issues: [] as Array<{component: string, message: string, severity: AlertSeverity}>
+      issues: [] as Array<{
+        component: string;
+        message: string;
+        severity: keyof typeof AlertSeverity;
+      }>
     };
 
     // Lazily import Prisma to avoid initialization during build-time data collection
