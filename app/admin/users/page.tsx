@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from 'next/navigation';
-import { User, Role } from "@/lib/prisma-types";
+import { Role } from "@/lib/prisma-types";
 import {
   Table,
   TableBody,
@@ -39,7 +39,8 @@ export default async function AdminUsersPage() {
   }
 
   // 2. Fetch Users
-  let users: User[] = [];
+  // Use a broad type here to avoid tight coupling to Prisma model typings
+  let users: any[] = [];
   try {
     users = await prisma.user.findMany({
       orderBy: {

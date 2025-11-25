@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { redirect, notFound } from 'next/navigation'
-import { User, Assignment, AssignmentStatus, Role, AssignmentDocument, StatusHistory, Comment } from "@/lib/prisma-types"
+import { Assignment, AssignmentStatus, Role, AssignmentDocument, StatusHistory, Comment } from "@/lib/prisma-types"
 import { Badge } from "@/components/ui/badge" // Re-use badge for status display
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table" // For lists
 import { Button } from "@/components/ui/button" // For download button
@@ -39,10 +39,11 @@ const formatDate = (date: Date | string | null | undefined) => {
 */
 
 // Extend the Assignment type to include the relations we will fetch
+// Use generic object shapes here instead of Prisma User model type
 type AssignmentWithDetails = Assignment & {
-  documents: (AssignmentDocument & { uploadedBy: User | null })[];
-  history: (StatusHistory & { changedBy: User | null })[];
-  comments: (Comment & { author: User | null })[]; // Include comments with author
+  documents: (AssignmentDocument & { uploadedBy: { id: string; name: string | null; email: string | null } | null })[];
+  history: (StatusHistory & { changedBy: { id: string; name: string | null; email: string | null } | null })[];
+  comments: (Comment & { author: { id: string; name: string | null; email: string | null; image?: string | null } | null })[]; // Include comments with author
 };
 
 type AssignmentDetailPageProps = {
