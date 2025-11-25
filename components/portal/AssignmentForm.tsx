@@ -50,11 +50,12 @@ interface AssignmentFormProps {
   onSubmitSuccess?: (assignmentId: string) => void; // Optional callback on success
 }
 
-// Simplified User type for partner list (structural type, not tied to Prisma)
+// Simplified User shape for partner list (structural type, not tied to Prisma)
 type PartnerUser = {
   id: string;
   name: string | null;
   email: string | null;
+  role?: string | null;
 };
 
 export function AssignmentForm({ initialData, onSubmitSuccess }: AssignmentFormProps) {
@@ -90,8 +91,9 @@ export function AssignmentForm({ initialData, onSubmitSuccess }: AssignmentFormP
         if (!response.ok) throw new Error('Failed to fetch users');
         const allUsers: PartnerUser[] = await response.json();
         const partnerUsers = allUsers
-           .filter(user => user.role === Role.PARTNER)
-           .map(p => ({ id: p.id, name: p.name, email: p.email })); // Select only needed fields
+          // Compare against the enum value but keep the shape decoupled from Prisma models
+          .filter(user => user.role === Role.PARTNER)
+          .map(p => ({ id: p.id, name: p.name, email: p.email })); // Select only needed fields
         setPartners(partnerUsers);
       } catch (error) {
         console.error("Failed to fetch partners:", getErrorMessage(error));
