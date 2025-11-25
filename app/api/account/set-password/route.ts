@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 
@@ -16,6 +14,7 @@ const passwordSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const { authOptions } = await import('@/lib/auth');
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -35,6 +34,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const { prisma } = await import('@/lib/db');
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { password: true } });
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
