@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { Role, AlertSeverity } from '@/lib/prisma-types';
-import { getQueues } from '@/lib/queue/config';
 
 export async function POST() {
   // Check authentication and authorization
+  const [{ authOptions }, { Role, AlertSeverity }, { getQueues }] = await Promise.all([
+    import('@/lib/auth'),
+    import('@/lib/prisma-types'),
+    import('@/lib/queue/config'),
+  ]);
+
   const session = await getServerSession(authOptions);
   if (!session?.user || (session.user as any).role !== Role.ADMIN) {
     return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), {
