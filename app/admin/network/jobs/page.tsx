@@ -35,6 +35,8 @@ const FILTERS: { id: JobFilter; label: string; description: string }[] = [
   { id: "expired", label: "Expired", description: "All offers expired" },
 ]
 
+type JobOfferStatusValue = (typeof JobOfferStatus)[keyof typeof JobOfferStatus]
+
 const relativeTime = (date: Date | string | null | undefined) => {
   if (!date) return "-"
   const diffMs = Date.now() - new Date(date).getTime()
@@ -52,7 +54,7 @@ const relativeTime = (date: Date | string | null | undefined) => {
   return `${diffDays}d ${direction}`
 }
 
-const jobOffersSummary = (offers: { status: JobOfferStatus }[]) => {
+const jobOffersSummary = (offers: { status: JobOfferStatusValue }[]) => {
   const pending = offers.filter((offer) => offer.status === JobOfferStatus.PENDING).length
   const accepted = offers.filter((offer) => offer.status === JobOfferStatus.ACCEPTED).length
   const expired = offers.filter((offer) => offer.status === JobOfferStatus.EXPIRED).length
