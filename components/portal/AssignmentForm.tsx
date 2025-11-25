@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { assignmentSchema, AssignmentFormData } from '@/lib/validations';
-import { User, Role, Assignment } from '@/lib/prisma-types';
+import { Role } from '@/lib/prisma-types';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea"; // If needed for description/notes later
@@ -36,12 +36,26 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
 interface AssignmentFormProps {
-  initialData?: Assignment | null; // For editing
+  // Use a structural type here instead of depending on Prisma's Assignment model
+  initialData?: {
+    id: string;
+    title: string | null;
+    borrowerName: string | null;
+    propertyAddress: string | null;
+    closingDate: string | Date | null;
+    partnerAssignedToId: string | null;
+    allowPartnerComments: boolean | null;
+    reference: string | null;
+  } | null; // For editing
   onSubmitSuccess?: (assignmentId: string) => void; // Optional callback on success
 }
 
-// Simplified User type for partner list
-type PartnerUser = Pick<User, 'id' | 'name' | 'email'>;
+// Simplified User type for partner list (structural type, not tied to Prisma)
+type PartnerUser = {
+  id: string;
+  name: string | null;
+  email: string | null;
+};
 
 export function AssignmentForm({ initialData, onSubmitSuccess }: AssignmentFormProps) {
   const router = useRouter();
@@ -74,7 +88,7 @@ export function AssignmentForm({ initialData, onSubmitSuccess }: AssignmentFormP
         // A better approach is an API route like /api/users?role=PARTNER
         const response = await fetch('/api/users'); // Adjust if you have a user API
         if (!response.ok) throw new Error('Failed to fetch users');
-        const allUsers: User[] = await response.json();
+        const allUsers: PartnerUser[] = await response.json();
         const partnerUsers = allUsers
            .filter(user => user.role === Role.PARTNER)
            .map(p => ({ id: p.id, name: p.name, email: p.email })); // Select only needed fields
