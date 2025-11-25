@@ -102,8 +102,8 @@ function getAccessToken() {
   });
 }
 
-// Function to make API calls
-function makeAPICall(path, accessToken) {
+// Function to make API calls with retry logic
+function makeAPICall(path, accessToken, retries = 3, delay = 60000) {
   return new Promise((resolve, reject) => {
     const options = {
       hostname: 'mybusinessaccountmanagement.googleapis.com',
@@ -127,7 +127,26 @@ function makeAPICall(path, accessToken) {
           const response = JSON.parse(data);
           
           if (response.error) {
-            reject(new Error(response.error.message || response.error));
+            const errorMessage = response.error.message || response.error;
+            
+            // Check if it's a quota/rate limit error
+            if (errorMessage.includes('Quota exceeded') || errorMessage.includes('quota') || errorMessage.includes('rate limit')) {
+              if (retries > 0) {
+                const waitTime = delay / 1000;
+                console.log(`\n⚠️  Rate limit hit. Waiting ${waitTime} seconds before retry (${retries} retries left)...`);
+                setTimeout(() => {
+                  makeAPICall(path, accessToken, retries - 1, delay * 2)
+                    .then(resolve)
+                    .catch(reject);
+                }, delay);
+                return;
+              } else {
+                reject(new Error(`${errorMessage}\n\n💡 Tip: Wait 2-3 minutes and try again. Google limits API requests per minute.`));
+                return;
+              }
+            }
+            
+            reject(new Error(errorMessage));
             return;
           }
 
@@ -146,8 +165,8 @@ function makeAPICall(path, accessToken) {
   });
 }
 
-// Function to get locations
-function getLocations(accountId, accessToken) {
+// Function to get locations with retry logic
+function getLocations(accountId, accessToken, retries = 3, delay = 60000) {
   return new Promise((resolve, reject) => {
     const options = {
       hostname: 'mybusinessbusinessinformation.googleapis.com',
@@ -171,7 +190,26 @@ function getLocations(accountId, accessToken) {
           const response = JSON.parse(data);
           
           if (response.error) {
-            reject(new Error(response.error.message || response.error));
+            const errorMessage = response.error.message || response.error;
+            
+            // Check if it's a quota/rate limit error
+            if (errorMessage.includes('Quota exceeded') || errorMessage.includes('quota') || errorMessage.includes('rate limit')) {
+              if (retries > 0) {
+                const waitTime = delay / 1000;
+                console.log(`\n⚠️  Rate limit hit. Waiting ${waitTime} seconds before retry (${retries} retries left)...`);
+                setTimeout(() => {
+                  getLocations(accountId, accessToken, retries - 1, delay * 2)
+                    .then(resolve)
+                    .catch(reject);
+                }, delay);
+                return;
+              } else {
+                reject(new Error(`${errorMessage}\n\n💡 Tip: Wait 2-3 minutes and try again. Google limits API requests per minute.`));
+                return;
+              }
+            }
+            
+            reject(new Error(errorMessage));
             return;
           }
 

@@ -37,15 +37,17 @@ if (CLIENT_ID === 'YOUR_CLIENT_ID_HERE' || CLIENT_SECRET === 'YOUR_CLIENT_SECRET
   process.exit(1);
 }
 
-console.log('📋 IMPORTANT: Before proceeding, you need to add this redirect URI to your Google OAuth client:');
-console.log(`   ${REDIRECT_URI}\n`);
-console.log('Steps:');
+console.log('📋 IMPORTANT: Before proceeding, verify this redirect URI is in your Google OAuth client:');
+console.log(`   http://localhost:8080/callback\n`);
+console.log('Steps to verify:');
 console.log('1. Go to: https://console.cloud.google.com/apis/credentials');
-console.log('2. Make sure you\'re in the CORRECT project (the one with Google My Business API enabled)');
-console.log('3. Click on your OAuth 2.0 Client ID');
-console.log('4. Under "Authorized redirect URIs", click "ADD URI"');
-console.log(`5. Add: ${REDIRECT_URI}`);
-console.log('6. Click "SAVE"\n');
+console.log('2. Make sure you\'re in the CORRECT project');
+console.log('3. Click on your OAuth 2.0 Client ID (the one matching your CLIENT_ID)');
+console.log('4. Under "Authorized redirect URIs", verify this EXACT URI exists:');
+console.log('   http://localhost:8080/callback');
+console.log('5. If it\'s missing, add it and click "SAVE"\n');
+console.log(`📌 Your current CLIENT_ID: ${CLIENT_ID?.substring(0, 30)}...`);
+console.log('   Make sure this matches the OAuth client you\'re checking!\n');
 
 // Start local callback server
 let callbackServer = null;
@@ -134,25 +136,27 @@ function startCallbackServer() {
   });
 }
 
-// Generate authorization URL
-const authParams = new URLSearchParams({
-  client_id: CLIENT_ID,
-  redirect_uri: REDIRECT_URI,
-  scope: SCOPE,
-  response_type: 'code',
-  access_type: 'offline',
-  prompt: 'consent'
-});
-
-const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${authParams.toString()}`;
-
 async function main() {
   try {
-    // Start callback server
+    // Start callback server first (this sets the correct PORT and REDIRECT_URI)
     await startCallbackServer();
+    
+    // Generate authorization URL AFTER server starts (so we have the correct redirect URI)
+    const authParams = new URLSearchParams({
+      client_id: CLIENT_ID,
+      redirect_uri: REDIRECT_URI,
+      scope: SCOPE,
+      response_type: 'code',
+      access_type: 'offline',
+      prompt: 'consent'
+    });
+
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${authParams.toString()}`;
     
     console.log('📋 Step 1: Visit this URL to authorize the application:');
     console.log('\n' + authUrl + '\n');
+    console.log(`📌 Using redirect URI: ${REDIRECT_URI}`);
+    console.log('   Make sure this EXACT URI is in your Google Cloud Console!\n');
     console.log('⚠️  The browser will redirect to localhost after authorization.');
     console.log('   This is normal - the script will automatically capture the code.\n');
     console.log('⏳ Waiting for authorization...\n');
