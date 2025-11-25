@@ -32,8 +32,10 @@ type NotaryApplicationListItem = Prisma.NotaryApplicationGetPayload<{
   include: typeof applicationInclude
 }>
 
-const getStatusBadge = (status: NotaryApplicationStatus) => {
-  const variants: Record<NotaryApplicationStatus, "default" | "secondary" | "destructive" | "outline"> = {
+type NotaryApplicationStatusValue = (typeof NotaryApplicationStatus)[keyof typeof NotaryApplicationStatus]
+
+const getStatusBadge = (status: NotaryApplicationStatusValue) => {
+  const variants: Record<NotaryApplicationStatusValue, "default" | "secondary" | "destructive" | "outline"> = {
     PENDING: "outline",
     UNDER_REVIEW: "secondary",
     APPROVED: "default",
