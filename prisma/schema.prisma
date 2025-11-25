@@ -1,6 +1,9 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../node_modules/.prisma/client"
+  // Use default output location (node_modules/.prisma/client)
+  // to avoid issues with bundlers and serverless deployments.
+  // Custom output paths can cause "@prisma/client did not initialize yet"
+  // errors on platforms like Vercel.
 }
 
 datasource db {
