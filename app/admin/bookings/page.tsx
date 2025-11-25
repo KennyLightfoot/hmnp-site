@@ -5,40 +5,28 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import type { Prisma } from '@/lib/prisma-types'
 
-type BookingListItem = Prisma.BookingGetPayload<{
-  select: {
-    id: true
-    customerName: true
-    customerEmail: true
-    scheduledDateTime: true
-    status: true
-    paymentStatus: true
-    paymentMethod: true
-    priceAtBooking: true
-    totalPaid: true
-  }
-}>
+// Local view-model type for recent bookings list; matches the select clause below.
+type BookingListItem = {
+  id: string
+  customerName: string | null
+  customerEmail: string | null
+  scheduledDateTime: Date | null
+  status: string
+  paymentStatus: string | null
+  paymentMethod: string | null
+  priceAtBooking: unknown
+  totalPaid: unknown
+}
 
-type QACandidate = Prisma.BookingGetPayload<{
-  select: {
-    id: true
-    customerName: true
-    scheduledDateTime: true
-    service: {
-      select: {
-        name: true
-      }
-    }
-    User_Booking_notaryIdToUser: {
-      select: {
-        name: true
-        email: true
-      }
-    }
-  }
-}>
+// Local view-model type for QA candidates; matches the select clause below.
+type QACandidate = {
+  id: string
+  customerName: string | null
+  scheduledDateTime: Date | null
+  service: { name: string | null } | null
+  User_Booking_notaryIdToUser: { name: string | null; email: string | null } | null
+}
 
 type QARecordItem = {
   bookingId: string
