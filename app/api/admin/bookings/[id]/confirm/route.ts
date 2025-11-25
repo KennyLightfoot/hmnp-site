@@ -1,15 +1,24 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { getQueues } from '@/lib/queue/config';
-import { prisma } from '@/lib/db';
-import { Role, BookingStatus } from '@/lib/prisma-types';
-import { triggerStatusChangeFollowUps } from '@/lib/follow-up-automation';
 
 export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
+  const [
+    { authOptions },
+    { getQueues },
+    { prisma },
+    { Role, BookingStatus },
+    { triggerStatusChangeFollowUps },
+  ] = await Promise.all([
+    import('@/lib/auth'),
+    import('@/lib/queue/config'),
+    import('@/lib/db'),
+    import('@/lib/prisma-types'),
+    import('@/lib/follow-up-automation'),
+  ]);
+
   // Check authentication and authorization
   const session = await getServerSession(authOptions);
   if (!session?.user || (session.user as any).role !== Role.ADMIN) {
