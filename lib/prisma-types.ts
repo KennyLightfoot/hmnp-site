@@ -15,43 +15,10 @@
  * directly from @prisma/client once the client is generated.
  */
 
-// Export PrismaClient and Prisma namespace first
-export { PrismaClient, Prisma } from '@prisma/client'
-
-// Import Prisma namespace to access types
-import type { Prisma } from '@prisma/client'
-
-// Import enums as values (they are runtime values in Prisma 6.x)
-// Try importing directly - if this fails, the client hasn't been generated or the shim isn't working
-import {
-  BookingStatus,
-  ServiceType,
-  LocationType,
-  PaymentStatus,
-  PaymentProvider,
-  PaymentMethod,
-  NotificationType,
-  NotificationMethod,
-  NotificationStatus,
-  Role,
-  ContractorPayoutStatus,
-  ContractorPayoutEntryType,
-  QAStatus,
-  DiscountType,
-  SupportIssueType,
-  SupportPriority,
-  SupportStatus,
-  AlertSeverity,
-  AlertStatus,
-  AssignmentStatus,
-  LogLevel,
-  witness_source,
-  NotaryApplicationStatus,
-  NotaryOnboardingStatus,
-  BackgroundCheckStatus,
-  NotaryAvailabilityStatus,
-  JobOfferStatus,
-} from '@prisma/client'
+// Import and then re-export PrismaClient and Prisma namespace
+// so consumers can import from '@/lib/prisma-types'.
+import { PrismaClient, Prisma } from '@prisma/client'
+export { PrismaClient, Prisma }
 
 // Import and re-export model types
 export type {
@@ -85,33 +52,32 @@ export type {
   AssignmentDocument,
 } from '@prisma/client'
 
-// Re-export enums as runtime values (Prisma 6.x exports enums as values)
-export {
-  BookingStatus,
-  ServiceType,
-  LocationType,
-  PaymentStatus,
-  PaymentProvider,
-  PaymentMethod,
-  NotificationType,
-  NotificationMethod,
-  NotificationStatus,
-  Role,
-  ContractorPayoutStatus,
-  ContractorPayoutEntryType,
-  QAStatus,
-  DiscountType,
-  SupportIssueType,
-  SupportPriority,
-  SupportStatus,
-  AlertSeverity,
-  AlertStatus,
-  AssignmentStatus,
-  LogLevel,
-  witness_source,
-  NotaryApplicationStatus,
-  NotaryOnboardingStatus,
-  BackgroundCheckStatus,
-  NotaryAvailabilityStatus,
-  JobOfferStatus,
-}
+// Re-export enums as runtime values via the Prisma namespace.
+// In Prisma 6.x, enums live under `Prisma.<EnumName>` at runtime.
+export const BookingStatus = Prisma.BookingStatus
+export const ServiceType = Prisma.ServiceType
+export const LocationType = Prisma.LocationType
+export const PaymentStatus = Prisma.PaymentStatus
+export const PaymentProvider = Prisma.PaymentProvider
+export const PaymentMethod = Prisma.PaymentMethod
+export const NotificationType = Prisma.NotificationType
+export const NotificationMethod = Prisma.NotificationMethod
+export const NotificationStatus = Prisma.NotificationStatus
+export const Role = Prisma.Role
+export const ContractorPayoutStatus = Prisma.ContractorPayoutStatus
+export const ContractorPayoutEntryType = Prisma.ContractorPayoutEntryType
+export const QAStatus = Prisma.QAStatus
+export const DiscountType = Prisma.DiscountType
+export const SupportIssueType = Prisma.SupportIssueType
+export const SupportPriority = Prisma.SupportPriority
+export const SupportStatus = Prisma.SupportStatus
+export const AlertSeverity = Prisma.AlertSeverity
+export const AlertStatus = Prisma.AlertStatus
+export const AssignmentStatus = Prisma.AssignmentStatus
+export const LogLevel = Prisma.LogLevel
+export const witness_source = Prisma.witness_source
+export const NotaryApplicationStatus = Prisma.NotaryApplicationStatus
+export const NotaryOnboardingStatus = Prisma.NotaryOnboardingStatus
+export const BackgroundCheckStatus = Prisma.BackgroundCheckStatus
+export const NotaryAvailabilityStatus = Prisma.NotaryAvailabilityStatus
+export const JobOfferStatus = Prisma.JobOfferStatus
