@@ -9,6 +9,7 @@ import {
   Role,
 } from "@/lib/prisma-types"
 import { prisma } from "@/lib/db"
+import type { Prisma } from "@/lib/prisma-types"
 import {
   Card,
   CardContent,
@@ -75,6 +76,41 @@ export default async function AdminNetworkDashboard() {
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
   const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
   const fifteenMinutesFromNow = new Date(now.getTime() + 15 * 60 * 1000)
+
+  type OpenJob = Prisma.BookingGetPayload<{
+    select: {
+      id: true
+      customerName: true
+      status: true
+      locationType: true
+      scheduledDateTime: true
+      createdAt: true
+      networkOfferExpiresAt: true
+      service: {
+        select: {
+          name: true
+        }
+      }
+      jobOffers: {
+        orderBy: { createdAt: "desc" }
+        select: {
+          id: true
+          status: true
+          createdAt: true
+          expiresAt: true
+        }
+      }
+    }
+  }>
+
+  type JobOffer = Prisma.JobOfferGetPayload<{
+    select: {
+      id: true
+      status: true
+      createdAt: true
+      expiresAt: true
+    }
+  }>
 
   const [
     pendingApplicationsCount,
@@ -250,7 +286,35 @@ export default async function AdminNetworkDashboard() {
         createdAt: true,
       },
     }),
-  ])
+  ]) as [
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    OpenJob[],
+    Prisma.NotaryApplicationGetPayload<{
+      select: {
+        id: true
+        firstName: true
+        lastName: true
+        email: true
+        statesLicensed: true
+        serviceTypes: true
+        status: true
+        createdAt: true
+      }
+    }>[]
+  ]
 
   const jobOfferAcceptanceRate =
     offersLastSevenDaysCount === 0
@@ -374,7 +438,7 @@ export default async function AdminNetworkDashboard() {
                   </TableHeader>
                   <TableBody>
                     {openJobs.map((job) => {
-                      const pendingOffers = job.jobOffers.filter(
+                      const pendingOffers = (job.jobOffers as JobOffer[]).filter(
                         (offer) => offer.status === JobOfferStatus.PENDING,
                       ).length
                       const totalOffers = job.jobOffers.length

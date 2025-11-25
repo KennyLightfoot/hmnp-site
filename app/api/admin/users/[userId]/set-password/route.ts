@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
 import { Role } from '@/lib/prisma-types';
 import bcrypt from 'bcrypt';
 
@@ -36,6 +35,9 @@ export async function POST(
   // 3. Parse Request Body for the new password
   let password: string;
   try {
+    // Lazily import Prisma to avoid initialization during build-time data collection
+    const { prisma } = await import('@/lib/db');
+
     const body = await request.json();
     password = body.password;
 

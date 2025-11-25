@@ -106,6 +106,54 @@ export default async function NetworkJobsPage({
     ...(jobOfferFilter ? { jobOffers: jobOfferFilter } : {}),
   }
 
+  type JobOfferWithNotary = Prisma.JobOfferGetPayload<{
+    select: {
+      id: true
+      status: true
+      createdAt: true
+      expiresAt: true
+      Notary: {
+        select: {
+          name: true
+          email: true
+        }
+      }
+    }
+  }>
+
+  type BookingWithOffers = Prisma.BookingGetPayload<{
+    select: {
+      id: true
+      status: true
+      customerName: true
+      customerEmail: true
+      scheduledDateTime: true
+      locationType: true
+      networkOfferExpiresAt: true
+      createdAt: true
+      service: {
+        select: {
+          name: true
+        }
+      }
+      jobOffers: {
+        orderBy: { createdAt: "desc" }
+        select: {
+          id: true
+          status: true
+          createdAt: true
+          expiresAt: true
+          Notary: {
+            select: {
+              name: true
+              email: true
+            }
+          }
+        }
+      }
+    }
+  }>
+
   const [
     needsActionCount,
     pendingCount,
@@ -193,7 +241,7 @@ export default async function NetworkJobsPage({
         },
       },
     }),
-  ])
+  ]) as [number, number, number, number, BookingWithOffers[]]
 
   const tabCounts: Record<JobFilter, number> = {
     "needs-action": needsActionCount,
@@ -272,7 +320,7 @@ export default async function NetworkJobsPage({
                 </TableHeader>
                 <TableBody>
                   {bookings.map((booking) => {
-                    const acceptedOffer = booking.jobOffers.find(
+                    const acceptedOffer = (booking.jobOffers as JobOfferWithNotary[]).find(
                       (offer) => offer.status === JobOfferStatus.ACCEPTED,
                     )
                     return (

@@ -5,6 +5,7 @@ import {
   NotaryAvailabilityStatus,
   NotaryOnboardingStatus,
   Role,
+  Prisma,
 } from "@/lib/prisma-types"
 import { prisma } from "@/lib/db"
 import {
@@ -43,7 +44,31 @@ export default async function NetworkCoveragePage() {
     redirect("/portal")
   }
 
-  const notaryProfiles = await prisma.notary_profiles.findMany({
+  type NotaryProfileSelect = {
+    id: true
+    user_id: true
+    onboarding_status: true
+    availability_status: true
+    service_radius_miles: true
+    states_licensed: true
+    counties_served: true
+    languages_spoken: true
+    years_experience: true
+    preferred_service_types: true
+    User: {
+      select: {
+        name: true
+        email: true
+      }
+    }
+    updated_at: true
+  }
+
+  type NotaryProfile = Prisma.notary_profilesGetPayload<{
+    select: NotaryProfileSelect
+  }>
+
+  const notaryProfiles: NotaryProfile[] = await prisma.notary_profiles.findMany({
     orderBy: { updated_at: "desc" },
     where: {
       onboarding_status: {
@@ -92,13 +117,13 @@ export default async function NetworkCoveragePage() {
   const languageCounts: Record<string, number> = {}
 
   notaryProfiles.forEach((profile) => {
-    profile.languages_spoken.forEach((language) => {
+    (profile.languages_spoken as string[]).forEach((language) => {
       languageCounts[language] = (languageCounts[language] || 0) + 1
     })
 
-    const states = profile.states_licensed.length
+    const states = (profile.states_licensed.length
       ? profile.states_licensed
-      : ["Unknown"]
+      : ["Unknown"]) as string[]
 
     states.forEach((state) => {
       if (!stateSummaries[state]) {
@@ -122,7 +147,7 @@ export default async function NetworkCoveragePage() {
         summary.totalRadius += profile.service_radius_miles
         summary.radiusSamples += 1
       }
-      profile.counties_served.forEach((county) => {
+      (profile.counties_served as string[]).forEach((county) => {
         summary.counties[county] = (summary.counties[county] || 0) + 1
       })
     })
