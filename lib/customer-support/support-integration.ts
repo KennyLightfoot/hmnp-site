@@ -8,8 +8,8 @@ import {
   SupportPriority,
   SupportIssueType,
   SupportStatus,
+  Prisma,
 } from '@/lib/prisma-types';
-import type { Prisma, SupportTicket as PrismaSupportTicket } from '@/lib/prisma-types';
 import { supportRequestEmail } from '@/lib/email/templates';
 import { logger } from '@/lib/logger';
 
@@ -17,7 +17,8 @@ type SupportIssueTypeValue = SupportIssueType;
 type SupportPriorityValue = SupportPriority;
 type SupportStatusValue = SupportStatus;
 
-export type SupportTicket = PrismaSupportTicket;
+// Local alias for the SupportTicket model type, using Prisma's generated types
+export type SupportTicket = Prisma.SupportTicketGetPayload<{}>;
 
 export interface SupportRequest {
   bookingId?: string;
