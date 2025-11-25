@@ -163,9 +163,9 @@ export async function createJobOffers(
   }
 
   // Find eligible notaries
-  // The booking from Prisma includes all fields, so we cast it to Booking type
+  // The booking from Prisma includes all fields we need for eligibility checks.
   const eligibleNotaries = await findEligibleNotaries({
-    booking: booking as Booking,
+    booking,
     requireActiveCommission: true,
     requireEOInsurance: true,
   })
