@@ -49,7 +49,7 @@ type NotaryProfile = {
   years_experience: number | null
   preferred_service_types: any
   User: { name: string | null; email: string | null } | null
-  updated_at: Date
+  updated_at: Date | null
 }
 
 export default async function NetworkCoveragePage() {

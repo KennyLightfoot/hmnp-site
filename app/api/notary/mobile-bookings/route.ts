@@ -74,7 +74,8 @@ export async function GET(request: NextRequest) {
     }
 
     if (statusParam && statusParam !== 'all' && isBookingStatus(statusParam)) {
-      whereClause.status = statusParam;
+      // Narrowed via isBookingStatus; safe to assign as BookingStatus enum value
+      whereClause.status = statusParam as BookingStatus;
     }
 
     if (date && date !== 'all') {

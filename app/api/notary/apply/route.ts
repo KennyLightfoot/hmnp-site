@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
 
     // Handle Prisma errors with detailed logging
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      const prismaError = error as Prisma.PrismaClientKnownRequestError
+      const prismaError = error as any
       
       // Log detailed error information for debugging
       logger.error('Prisma error submitting notary application', {

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import type { AlertSeverity as AlertSeverityValue } from '@/lib/prisma-types';
 
 export async function POST() {
   // Check authentication and authorization
@@ -29,7 +30,7 @@ export async function POST() {
       issues: [] as Array<{
         component: string;
         message: string;
-        severity: keyof typeof AlertSeverity;
+        severity: AlertSeverityValue;
       }>
     };
 

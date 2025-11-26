@@ -13,8 +13,10 @@
 
 import * as PrismaModule from '@prisma/client'
 
-export const PrismaClient = PrismaModule.PrismaClient
-export const Prisma = PrismaModule.Prisma
+// Re-export Prisma's client and namespace so callers can use both the runtime
+// client (`new PrismaClient()`) and the namespace types
+// (`Prisma.BookingGetPayload`, `Prisma.Decimal`, error classes, etc.).
+export { PrismaClient, Prisma } from '@prisma/client'
 
 // Convenience handle for the enum container Prisma attaches at runtime.
 // In generated JS, enums live on `exports.$Enums`, e.g. `$Enums.Role.ADMIN`.
