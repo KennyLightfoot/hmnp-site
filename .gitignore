@@ -59,3 +59,14 @@ venv/
 
 # Google Ads config (keep outside repo)
 google-ads.yaml
+
+# Additional secrets and credential dumps (SECURITY)
+client_secret*.json
+*service-account*.json
+*.credentials.json
+vercel-*.env
+*-vars.txt
+cookies.txt
+
+# Agents repo (separate git repository)
+/agents/
