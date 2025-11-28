@@ -54,7 +54,7 @@
 - **CRM**: GoHighLevel (GHL) for contact management and workflows
 - **Payments**: Stripe for payment processing
 - **Calendar**: GHL calendar integration for availability
-- **RON Platform**: Proof.com for remote notarization
+- **RON Platform**: Notary Hub for remote notarization (Proof.com integration has been decommissioned)
 - **Email**: Resend for transactional emails
 - **SMS**: GHL SMS integration
 - **Analytics**: Vercel Analytics + custom tracking

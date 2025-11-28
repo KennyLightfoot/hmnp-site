@@ -34,8 +34,21 @@ class RedisClient {
   }
 
   private async ensureInitialized(): Promise<void> {
+    const isBuildPhase =
+      process.env.NEXT_PHASE === 'phase-production-build' ||
+      process.env.SKIP_REDIS_DURING_BUILD === 'true';
+
+    // During Next.js build/SSG (or when explicitly disabled), do not attempt
+    // to connect to Redis. Callers will see Redis as unavailable and should
+    // degrade gracefully. This keeps `next build` from failing when Redis
+    // is down. See `docs/redis-behavior.md`.
+    if (isBuildPhase) {
+      this.isConnected = false;
+      return;
+    }
+
     if (process.env.SILENCE_SERVER_INIT_LOGS === '1') {
-      // Skip Redis initialization entirely during silenced builds
+      // Skip noisy Redis initialization when server init logs are silenced
       this.isConnected = false;
       return;
     }

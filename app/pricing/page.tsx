@@ -1,13 +1,14 @@
 import Link from "next/link"
 import { Metadata } from "next"
 import dynamic from "next/dynamic"
-import { Calculator, DollarSign, MapPin, Clock, Shield, Star, CheckCircle, Zap, Users, Award, FileText, ArrowRight } from "lucide-react"
+import { Calculator, DollarSign, MapPin, Clock, Shield, Star, CheckCircle, Zap, Users, Award, FileText, ArrowRight, BadgeCent } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import PricingFAQ from "@/components/pricing/PricingFAQ"
 import StickyMobileCTA from "@/components/ui/StickyMobileCTA"
 import PricingFunnelTracker from "@/components/analytics/PricingFunnelTracker"
+import GuaranteeStrip from "@/components/guarantees/GuaranteeStrip"
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://houstonmobilenotarypros.com"
 
@@ -108,19 +109,6 @@ const pricingSchema = {
     itemListElement: [
       {
         "@type": "Offer",
-        name: "Quick-Stamp Local",
-        description: "Fast, single-document notarization within 10 miles.",
-        price: "50.00",
-        priceCurrency: "USD",
-        availability: "https://schema.org/InStock",
-        itemOffered: {
-          "@type": "Service",
-          name: "Quick-Stamp Local Mobile Notary",
-          serviceType: "Mobile Notary",
-        },
-      },
-      {
-        "@type": "Offer",
         name: "Standard Mobile Notary",
         description: "Professional mobile notary with travel up to 20 miles included.",
         price: "75.00",
@@ -136,7 +124,7 @@ const pricingSchema = {
         "@type": "Offer",
         name: "Extended Hours Mobile Notary",
         description: "Evening and weekend availability with 30 miles of travel included.",
-        price: "100.00",
+        price: "125.00",
         priceCurrency: "USD",
         availability: "https://schema.org/LimitedAvailability",
         itemOffered: {
@@ -149,7 +137,7 @@ const pricingSchema = {
         "@type": "Offer",
         name: "Loan Signing Specialist",
         description: "Certified loan signing agent for mortgage packages with FedEx drop included.",
-        price: "150.00",
+        price: "175.00",
         priceCurrency: "USD",
         availability: "https://schema.org/InStock",
         itemOffered: {
@@ -205,7 +193,7 @@ export default function PricingPage() {
             Transparent Pricing
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Clear, upfront pricing with no hidden fees. Get instant quotes and see exactly what you'll pay for professional mobile notary services.
+            Same-day mobile notary, flawlessly executed, or we pay the redraw fee. Clear, upfront pricing with no hidden fees—see exactly what you'll pay before you book.
           </p>
           
           {/* Trust Badges */}
@@ -230,17 +218,6 @@ export default function PricingPage() {
 
           {/* Quick Pricing Overview */}
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
-            <Card className="border-2 border-[#002147]/20 hover:border-[#A52A2A]/30 transition-all duration-300">
-              <CardHeader className="text-center pb-2">
-                <CardTitle className="text-lg text-[#002147]">Quick-Stamp Local</CardTitle>
-              </CardHeader>
-              <CardContent className="text-center">
-                <div className="text-3xl font-bold text-[#A52A2A] mb-2">$50</div>
-                <p className="text-sm text-gray-600">Fast & simple local signings</p>
-                <div className="text-xs text-gray-500 mt-2">≤10 miles • 1 document • 1 signer</div>
-              </CardContent>
-            </Card>
-
             <Card className="border-2 border-[#A52A2A] relative">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                 <Badge className="bg-[#A52A2A] text-white px-3 py-1">Most Popular</Badge>
@@ -260,9 +237,20 @@ export default function PricingPage() {
                 <CardTitle className="text-lg text-[#002147]">Extended Hours</CardTitle>
               </CardHeader>
               <CardContent className="text-center">
-                <div className="text-3xl font-bold text-[#A52A2A] mb-2">$100</div>
+                <div className="text-3xl font-bold text-[#A52A2A] mb-2">$125</div>
                 <p className="text-sm text-gray-600">Flexible scheduling & same-day</p>
                 <div className="text-xs text-gray-500 mt-2">≤30 miles • 4 documents • 2 signers</div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-[#002147]/20 hover:border-[#A52A2A]/30 transition-all duration-300">
+              <CardHeader className="text-center pb-2">
+                <CardTitle className="text-lg text-[#002147]">Loan Signing Specialist</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <div className="text-3xl font-bold text-[#A52A2A] mb-2">$175</div>
+                <p className="text-sm text-gray-600">Certified loan signings</p>
+                <div className="text-xs text-gray-500 mt-2">≤30 miles • Full package • FedEx included</div>
               </CardContent>
             </Card>
           </div>
@@ -281,6 +269,54 @@ export default function PricingPage() {
                 Try Pricing Calculator
               </Link>
             </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Guarantee Strip */}
+      <section className="py-8 bg-white">
+        <div className="container mx-auto px-4">
+          <GuaranteeStrip variant="banner" className="max-w-4xl mx-auto" />
+        </div>
+      </section>
+
+      {/* What to Expect Section */}
+      <section className="py-12 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <Card className="border-2 border-[#002147]/20">
+              <CardContent className="p-6">
+                <h3 className="text-xl font-bold text-[#002147] mb-4 text-center">What to Expect</h3>
+                <div className="grid md:grid-cols-3 gap-4 text-sm mb-4">
+                  <div className="flex items-start space-x-2">
+                    <FileText className="h-5 w-5 text-[#A52A2A] mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-[#002147]">Documents Ready</p>
+                      <p className="text-gray-600">Don't sign beforehand—notary must witness</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <BadgeCent className="h-5 w-5 text-[#A52A2A] mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-[#002147]">Valid ID Required</p>
+                      <p className="text-gray-600">Government-issued photo ID for all signers</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <CheckCircle className="h-5 w-5 text-[#A52A2A] mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-[#002147]">Professional Service</p>
+                      <p className="text-gray-600">On-time arrival, clear guidance, accurate execution</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <Link href="/what-to-expect" className="text-[#A52A2A] hover:underline text-sm font-medium inline-flex items-center gap-1">
+                    Learn more about our process <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
@@ -318,15 +354,27 @@ export default function PricingPage() {
                 <div className="mx-auto w-12 h-12 bg-[#002147]/10 rounded-lg flex items-center justify-center mb-3">
                   <MapPin className="h-6 w-6 text-[#002147]" />
                 </div>
-                <CardTitle className="text-lg text-[#002147]">Travel Fees</CardTitle>
+                <CardTitle className="text-lg text-[#002147]">Travel Zones</CardTitle>
               </CardHeader>
               <CardContent className="text-center">
-                <div className="text-2xl font-bold text-[#A52A2A] mb-2">$0.50/mile</div>
-                <p className="text-sm text-gray-600 mb-3">Beyond included radius</p>
-                <div className="text-xs text-gray-500 space-y-1">
-                  <div>Quick-Stamp: 10 miles included</div>
+                <p className="text-sm text-gray-600 mb-3">Beyond included radius (from ZIP 77591)</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>21–30 miles:</span>
+                    <span className="font-semibold text-[#A52A2A]">+$25</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>31–40 miles:</span>
+                    <span className="font-semibold text-[#A52A2A]">+$45</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>41–50 miles:</span>
+                    <span className="font-semibold text-[#A52A2A]">+$65</span>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-500 mt-3 space-y-1">
                   <div>Standard: 20 miles included</div>
-                  <div>Extended: 30 miles included</div>
+                  <div>Extended/Loan: 30 miles included</div>
                 </div>
               </CardContent>
             </Card>

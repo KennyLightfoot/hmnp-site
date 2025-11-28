@@ -4,15 +4,13 @@
 ⚠️ **SECURITY WARNING:** This documentation contains sensitive API information. Ensure your API keys are never exposed in client-side code or committed to version control. Use proper environment variables and secure storage.
 
 ## 🔐 Authentication
-All API endpoints (except Stripe webhooks) require the `x-api-key` header:
-```
-x-api-key: ${API_KEY}
-```
+Most API endpoints are protected by **NextAuth sessions + role-based access control (RBAC)** rather than a single global API key.
 
-**Environment Variable Required:**
-```bash
-API_KEY=your_secure_api_key_here
-```
+- Browser and internal dashboards use secure cookies and session-based auth (`getServerSession` + `with*Security` wrappers).
+- Admin-only and diagnostic endpoints additionally enforce admin roles (and sometimes IP allowlists or internal headers).
+- A small number of **system-to-system** or legacy endpoints may still accept an `x-api-key` or `x-admin-key` header; those are explicitly documented alongside each endpoint where applicable.
+
+**Important: Never expose secrets in client-side code.** Always load `API_KEY`, `ADMIN_API_KEY`, and other credentials from environment variables or a secrets manager.
 
 ---
 

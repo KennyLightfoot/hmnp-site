@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { Role, Prisma } from '@/lib/prisma-types';
+import { Role } from '@/lib/prisma-types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const month = searchParams.get('month');
 
-    const whereClause: Prisma.notary_journalWhereInput = {};
+    const whereClause: any = {};
 
     if (userWithRole.role === Role.NOTARY) {
       whereClause.notary_id = userWithRole.id;

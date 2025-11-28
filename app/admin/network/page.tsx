@@ -1,23 +1,16 @@
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { redirect } from "next/navigation"
-import {
-  JobOfferStatus,
-  NotaryApplicationStatus,
-  NotaryAvailabilityStatus,
-  NotaryOnboardingStatus,
-  Role,
-} from "@/lib/prisma-types"
-import { prisma } from "@/lib/db"
-import type { Prisma } from "@/lib/prisma-types"
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+
+import { authOptions } from "@/lib/auth";
+import { Role } from "@/lib/prisma-types";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -25,7 +18,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 import {
   Activity,
   ClipboardList,
@@ -33,35 +26,42 @@ import {
   Gauge,
   MapPin,
   UserCheck,
-} from "lucide-react"
-import Link from "next/link"
-import { formatDateTime } from "@/lib/utils/date-utils"
+} from "lucide-react";
+import Link from "next/link";
+import { formatDateTime } from "@/lib/utils/date-utils";
+import { fetchAdminJson } from "@/lib/utils/server-fetch";
+import type { NetworkDashboardMetrics } from "@/lib/services/admin-metrics";
 
 const relativeHours = (date: Date) => {
-  const now = Date.now()
-  const diffMs = now - date.getTime()
-  const diffHours = Math.max(1, Math.round(diffMs / (1000 * 60 * 60)))
+  const now = Date.now();
+  const diffMs = now - date.getTime();
+  const diffHours = Math.max(1, Math.round(diffMs / (1000 * 60 * 60)));
   if (diffHours < 24) {
     return `${diffHours}h ago`
   }
-  const diffDays = Math.round(diffHours / 24)
-  return `${diffDays}d ago`
-}
+  const diffDays = Math.round(diffHours / 24);
+  return `${diffDays}d ago`;
+};
 
 const timeUntil = (date: Date | null | undefined) => {
-  if (!date) return "-"
-  const diffMs = date.getTime() - Date.now()
-  const diffMinutes = Math.round(diffMs / (1000 * 60))
-  if (diffMinutes === 0) return "now"
+  if (!date) return "-";
+  const diffMs = date.getTime() - Date.now();
+  const diffMinutes = Math.round(diffMs / (1000 * 60));
+  if (diffMinutes === 0) return "now";
   if (diffMinutes > 0) {
     return diffMinutes >= 60
       ? `in ${Math.round(diffMinutes / 60)}h`
-      : `in ${diffMinutes}m`
+      : `in ${diffMinutes}m`;
   }
-  const pastMinutes = Math.abs(diffMinutes)
+  const pastMinutes = Math.abs(diffMinutes);
   return pastMinutes >= 60
     ? `${Math.round(pastMinutes / 60)}h ago`
-    : `${pastMinutes}m ago`
+    : `${pastMinutes}m ago`;
+};
+
+interface NetworkApiResponse {
+  success: boolean;
+  data: NetworkDashboardMetrics;
 }
 
 export default async function AdminNetworkDashboard() {
@@ -71,257 +71,26 @@ export default async function AdminNetworkDashboard() {
     redirect("/portal")
   }
 
-  const now = new Date()
-  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
-  const fifteenMinutesFromNow = new Date(now.getTime() + 15 * 60 * 1000)
+  const { data } = await fetchAdminJson<NetworkApiResponse>("/api/admin/network/dashboard");
 
-  type OpenJob = Prisma.BookingGetPayload<{
-    select: {
-      id: true
-      customerName: true
-      status: true
-      locationType: true
-      scheduledDateTime: true
-      createdAt: true
-      networkOfferExpiresAt: true
-      service: {
-        select: {
-          name: true
-        }
-      }
-      jobOffers: {
-        orderBy: { createdAt: "desc" }
-        select: {
-          id: true
-          status: true
-          createdAt: true
-          expiresAt: true
-        }
-      }
-    }
-  }>
-
-  type JobOffer = Prisma.JobOfferGetPayload<{
-    select: {
-      id: true
-      status: true
-      createdAt: true
-      expiresAt: true
-    }
-  }>
-
-  const [
-    pendingApplicationsCount,
-    underReviewApplicationsCount,
-    approvedReadyCount,
-    convertedRecentCount,
-    applicationsSevenDayCount,
-    activeNotariesCount,
-    totalNotariesCount,
-    unavailableNotariesCount,
-    openNetworkJobsCount,
-    pendingJobOffersCount,
-    expiringJobOffersSoonCount,
-    expiredOffersLast24hCount,
-    offersLastSevenDaysCount,
-    acceptedOffersLastSevenDaysCount,
-    openJobs,
-    recentApplications,
-  ] = await Promise.all([
-    prisma.notaryApplication.count({
-      where: { status: NotaryApplicationStatus.PENDING },
-    }),
-    prisma.notaryApplication.count({
-      where: { status: NotaryApplicationStatus.UNDER_REVIEW },
-    }),
-    prisma.notaryApplication.count({
-      where: {
-        status: NotaryApplicationStatus.APPROVED,
-        convertedToUserId: null,
-      },
-    }),
-    prisma.notaryApplication.count({
-      where: {
-        status: NotaryApplicationStatus.CONVERTED,
-        convertedAt: { gte: thirtyDaysAgo },
-      },
-    }),
-    prisma.notaryApplication.count({
-      where: { createdAt: { gte: sevenDaysAgo } },
-    }),
-    prisma.notary_profiles.count({
-      where: {
-        onboarding_status: NotaryOnboardingStatus.COMPLETE,
-        availability_status: NotaryAvailabilityStatus.AVAILABLE,
-        is_active: true,
-      },
-    }),
-    prisma.notary_profiles.count({
-      where: {
-        onboarding_status: NotaryOnboardingStatus.COMPLETE,
-      },
-    }),
-    prisma.notary_profiles.count({
-      where: {
-        onboarding_status: NotaryOnboardingStatus.COMPLETE,
-        availability_status: {
-          in: [
-            NotaryAvailabilityStatus.BUSY,
-            NotaryAvailabilityStatus.UNAVAILABLE,
-            NotaryAvailabilityStatus.ON_LEAVE,
-          ],
-        },
-      },
-    }),
-    prisma.booking.count({
-      where: {
-        sendToNetwork: true,
-        jobOffers: {
-          none: {
-            status: JobOfferStatus.ACCEPTED,
-          },
-        },
-      },
-    }),
-    prisma.jobOffer.count({
-      where: {
-        status: JobOfferStatus.PENDING,
-        expiresAt: {
-          gte: now,
-        },
-      },
-    }),
-    prisma.jobOffer.count({
-      where: {
-        status: JobOfferStatus.PENDING,
-        expiresAt: {
-          gte: now,
-          lte: fifteenMinutesFromNow,
-        },
-      },
-    }),
-    prisma.jobOffer.count({
-      where: {
-        status: JobOfferStatus.EXPIRED,
-        updatedAt: {
-          gte: twentyFourHoursAgo,
-        },
-      },
-    }),
-    prisma.jobOffer.count({
-      where: {
-        createdAt: {
-          gte: sevenDaysAgo,
-        },
-      },
-    }),
-    prisma.jobOffer.count({
-      where: {
-        status: JobOfferStatus.ACCEPTED,
-        createdAt: {
-          gte: sevenDaysAgo,
-        },
-      },
-    }),
-    prisma.booking.findMany({
-      where: {
-        sendToNetwork: true,
-        jobOffers: {
-          none: {
-            status: JobOfferStatus.ACCEPTED,
-          },
-        },
-      },
-      orderBy: [
-        { networkOfferExpiresAt: "asc" },
-        { createdAt: "desc" },
-      ],
-      take: 10,
-      select: {
-        id: true,
-        customerName: true,
-        status: true,
-        locationType: true,
-        scheduledDateTime: true,
-        createdAt: true,
-        networkOfferExpiresAt: true,
-        service: {
-          select: {
-            name: true,
-          },
-        },
-        jobOffers: {
-          orderBy: { createdAt: "desc" },
-          select: {
-            id: true,
-            status: true,
-            createdAt: true,
-            expiresAt: true,
-          },
-        },
-      },
-    }),
-    prisma.notaryApplication.findMany({
-      where: {
-        status: {
-          in: [
-            NotaryApplicationStatus.PENDING,
-            NotaryApplicationStatus.UNDER_REVIEW,
-            NotaryApplicationStatus.APPROVED,
-          ],
-        },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        statesLicensed: true,
-        serviceTypes: true,
-        status: true,
-        createdAt: true,
-      },
-    }),
-  ]) as [
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    OpenJob[],
-    Prisma.NotaryApplicationGetPayload<{
-      select: {
-        id: true
-        firstName: true
-        lastName: true
-        email: true
-        statesLicensed: true
-        serviceTypes: true
-        status: true
-        createdAt: true
-      }
-    }>[]
-  ]
-
-  const jobOfferAcceptanceRate =
-    offersLastSevenDaysCount === 0
-      ? 0
-      : Math.round(
-          (acceptedOffersLastSevenDaysCount / offersLastSevenDaysCount) * 100,
-        )
+  const pendingApplicationsCount = data.applications.statuses["PENDING"] ?? 0;
+  const underReviewApplicationsCount = data.applications.statuses["UNDER_REVIEW"] ?? 0;
+  const approvedReadyCount = data.applications.approvedReady;
+  const convertedRecentCount = data.applications.convertedLast30Days;
+  const applicationsSevenDayCount = data.applications.newLast7Days;
+  const activeNotariesCount = data.notaries.active;
+  const totalNotariesCount = data.notaries.totalOnboarded;
+  const unavailableNotariesCount = data.notaries.unavailable;
+  const openNetworkJobsCount = data.jobs.openNetworkJobs;
+  const pendingJobOffersCount = data.jobs.pendingOffers;
+  const expiringJobOffersSoonCount = data.jobs.expiringSoon;
+  const expiredOffersLast24hCount = data.jobs.expiredLast24h;
+  const jobOfferAcceptanceRate = data.jobs.acceptanceRate7d;
+  const openJobs = data.jobs.open;
+  const recentApplications = data.applications.recent;
+  const automationJobs24hCount = data.automation.jobs24h;
+  const automationJobsPendingCount = data.automation.jobsPending;
+  const recentAutomationJobs = data.automation.recentJobs;
 
   const kpiCards = [
     {
@@ -357,8 +126,14 @@ export default async function AdminNetworkDashboard() {
     {
       title: "Expired Offers (24h)",
       value: expiredOffersLast24hCount.toString(),
-      description: `${acceptedOffersLastSevenDaysCount}/${offersLastSevenDaysCount} accepted (7d)`,
+      description: `${pendingJobOffersCount} offers waiting for action`,
       icon: Gauge,
+    },
+    {
+      title: "Automation Jobs (24h)",
+      value: automationJobs24hCount.toString(),
+      description: `${automationJobsPendingCount} pending in pipeline`,
+      icon: Activity,
     },
   ]
 
@@ -437,62 +212,54 @@ export default async function AdminNetworkDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {openJobs.map((job) => {
-                      const pendingOffers = (job.jobOffers as JobOffer[]).filter(
-                        (offer) => offer.status === JobOfferStatus.PENDING,
-                      ).length
-                      const totalOffers = job.jobOffers.length
-                      return (
-                        <TableRow key={job.id}>
-                          <TableCell className="font-medium">
-                            <Link
-                              href={`/admin/bookings/${job.id}`}
-                              className="text-primary hover:underline"
-                            >
-                              #{job.id.slice(-6)}
-                            </Link>
-                            <p className="text-xs text-muted-foreground">
-                              {relativeHours(job.createdAt)}
-                            </p>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              {job.service?.name ?? "—"}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              {job.status}
-                            </p>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              {formatDateTime(job.scheduledDateTime)}
-                            </div>
-                          </TableCell>
-                          <TableCell className="capitalize">
-                            {job.locationType?.toLowerCase() ?? "—"}
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm font-medium">
-                              {pendingOffers}/{totalOffers} pending
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              Last offer{" "}
-                              {job.jobOffers[0]
-                                ? relativeHours(job.jobOffers[0].createdAt)
-                                : "n/a"}
-                            </p>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm font-medium">
-                              {formatDateTime(job.networkOfferExpiresAt)}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              {timeUntil(job.networkOfferExpiresAt)}
-                            </p>
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })}
+                  {openJobs.map((job) => {
+                    return (
+                      <TableRow key={job.id}>
+                        <TableCell className="font-medium">
+                          <Link
+                            href={`/admin/bookings/${job.id}`}
+                            className="text-primary hover:underline"
+                          >
+                            #{job.id.slice(-6)}
+                          </Link>
+                          <p className="text-xs text-muted-foreground">
+                            {job.customerName || job.status}
+                          </p>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            {job.serviceName ?? "—"}
+                          </div>
+                          <p className="text-xs text-muted-foreground">{job.status}</p>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            {job.scheduledDateTime
+                              ? formatDateTime(new Date(job.scheduledDateTime))
+                              : "—"}
+                          </div>
+                        </TableCell>
+                        <TableCell className="capitalize">
+                          {job.locationType?.toLowerCase() ?? "—"}
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm font-medium">{job.offers} offers</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm font-medium">
+                            {job.networkOfferExpiresAt
+                              ? formatDateTime(new Date(job.networkOfferExpiresAt))
+                              : "—"}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {job.networkOfferExpiresAt
+                              ? timeUntil(new Date(job.networkOfferExpiresAt))
+                              : "n/a"}
+                          </p>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
                   </TableBody>
                 </Table>
               </div>
@@ -566,6 +333,62 @@ export default async function AdminNetworkDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent automation jobs</CardTitle>
+          <CardDescription>
+            Jobs generated by the agents service for monitoring.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {recentAutomationJobs.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No automation jobs have been synced yet.
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Job ID</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Service</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="text-right">Quoted</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentAutomationJobs.map((job) => (
+                  <TableRow key={job.jobId ?? job.createdAt}>
+                    <TableCell>{job.jobId ?? "n/a"}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={
+                          job.status?.includes("FAIL")
+                            ? "border-red-200 text-red-700"
+                            : job.status?.includes("PENDING")
+                            ? "border-amber-200 text-amber-700"
+                            : "border-emerald-200 text-emerald-700"
+                        }
+                      >
+                        {job.status ?? "UNKNOWN"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{job.serviceType ?? "-"}</TableCell>
+                    <TableCell>{formatDateTime(new Date(job.createdAt))}</TableCell>
+                    <TableCell className="text-right">
+                      {job.confirmedPrice
+                        ? `$${Number(job.confirmedPrice).toFixed(2)}`
+                        : "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

@@ -10,6 +10,7 @@ import { ConversationTracker } from '@/lib/conversation-tracker';
 import { redis } from '@/lib/redis';
 import { alertManager } from '@/lib/monitoring/alert-manager';
 import { withRateLimit } from '@/lib/security/rate-limiting';
+import { sendAgentsChat } from '@/lib/agents-client';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -190,40 +191,108 @@ export const POST = withRateLimit('public', 'ai_chat')(async (request: NextReque
       }
     };
     
-    // Get context-specific system prompt
+    // Get context-specific system prompt (used for Vertex backend)
     const systemPrompt = CONTEXT_PROMPTS[context?.type || 'general'];
-    
-    // Call Vertex AI via sendChat with system prompt and context
-    let vertexResult: any;
+
+    // Decide which backend to use: Vertex (default) vs agents service.
+    const backend =
+      (process.env.AI_CHAT_BACKEND || '').toLowerCase() === 'agents'
+        ? 'agents'
+        : 'vertex';
+
+    // Track which backend we used for observability (best-effort).
     try {
-      vertexResult = await sendChat(cleanPrompt, systemPrompt, enhancedContext);
-    } catch (vertexErr: any) {
-      console.error('Vertex AI upstream error:', vertexErr);
-      return NextResponse.json({
-        success: false,
-        error: 'Upstream AI service unavailable. Please retry shortly.'
-      }, {
-        status: 502,
-        headers: {
-          'Retry-After': '30'
-        }
-      });
+      await alertManager.recordMetric('chat.backend_used', 1, { backend });
+    } catch (_) {
+      // ignore metrics errors
     }
-    // If Vertex returns nothing or malformed data, treat as upstream error so we don't 500.
-    if (!vertexResult || typeof vertexResult.text !== 'string' || !vertexResult.text.trim()) {
-      return NextResponse.json({
-        success: false,
-        error: 'Upstream AI service unavailable. Please retry shortly.'
-      }, {
-        status: 502,
-        headers: { 'Retry-After': '30' }
-      });
+
+    let upstreamText: string | null = null;
+    let upstreamIntent: string | undefined;
+    let functionCalls: any[] | undefined;
+
+    if (backend === 'agents') {
+      // Delegate to agents service `/chat` endpoint under feature flag.
+      try {
+        const agentsResult = await sendAgentsChat({
+          message: cleanPrompt,
+          context: enhancedContext,
+          customerId,
+          channel: 'web_chat',
+        });
+
+        if (!agentsResult || !agentsResult.ok || !agentsResult.reply?.trim()) {
+          return NextResponse.json(
+            {
+              success: false,
+              error:
+                'Upstream agents chat service unavailable. Please retry shortly.',
+            },
+            {
+              status: 502,
+              headers: { 'Retry-After': '30' },
+            },
+          );
+        }
+
+        upstreamText = agentsResult.reply;
+        upstreamIntent = agentsResult.intent;
+      } catch (agentsErr: any) {
+        console.error('Agents chat upstream error:', agentsErr);
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              'Upstream agents chat service unavailable. Please retry shortly.',
+          },
+          {
+            status: 502,
+            headers: { 'Retry-After': '30' },
+          },
+        );
+      }
+    } else {
+      // Default: call Vertex AI via sendChat with system prompt and context.
+      let vertexResult: any;
+      try {
+        vertexResult = await sendChat(cleanPrompt, systemPrompt, enhancedContext);
+      } catch (vertexErr: any) {
+        console.error('Vertex AI upstream error:', vertexErr);
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Upstream AI service unavailable. Please retry shortly.',
+          },
+          {
+            status: 502,
+            headers: {
+              'Retry-After': '30',
+            },
+          },
+        );
+      }
+      // If Vertex returns nothing or malformed data, treat as upstream error so we don't 500.
+      if (!vertexResult || typeof vertexResult.text !== 'string' || !vertexResult.text.trim()) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Upstream AI service unavailable. Please retry shortly.',
+          },
+          {
+            status: 502,
+            headers: { 'Retry-After': '30' },
+          },
+        );
+      }
+
+      upstreamText = vertexResult.text;
+      functionCalls = vertexResult.functionCalls;
     }
 
     const aiResponse = {
-      response: vertexResult.text,
+      response: upstreamText as string,
       confidence: 1,
-      intent: 'unknown',
+      intent: upstreamIntent || 'unknown',
       suggestedActions: [],
       escalationRequired: false
     };
@@ -256,9 +325,9 @@ export const POST = withRateLimit('public', 'ai_chat')(async (request: NextReque
     const enhancedResponse = enhanceResponseWithContext(aiResponse, context);
 
     // -------------------------------------------------------------------
-    // 🗄️ Store in cache for 1h (skip if function calls present – naive check)
+    // 🗄️ Store in cache for 1h (skip if Vertex function calls present – naive check)
     // -------------------------------------------------------------------
-    if (!vertexResult?.functionCalls || vertexResult.functionCalls.length === 0) {
+    if (!functionCalls || functionCalls.length === 0) {
       await setCachedChat(cleanPrompt, context?.type, enhancedResponse.response);
     }
     

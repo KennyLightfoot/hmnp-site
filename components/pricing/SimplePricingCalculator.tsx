@@ -18,19 +18,23 @@ export default function SimplePricingCalculator() {
   const [zip, setZip] = useState('')
   const [documents, setDocuments] = useState(1)
   const [urgency, setUrgency] = useState<'standard' | 'same-day' | 'urgent'>('standard')
+  const [distanceBand, setDistanceBand] = useState<'0-20' | '21-30' | '31-40' | '41-50'>('0-20')
   const [pricing, setPricing] = useState<PricingBreakdown>({ base: 75, travel: 0, documents: 0, urgency: 0, total: 75 })
   const [isCalculating, setIsCalculating] = useState(false)
   const [showBreakdown, setShowBreakdown] = useState(false)
 
   const calculatePricing = () => {
     if (!zip || zip.length !== 5) return
-    
     setIsCalculating(true)
     
     // Simulate API call delay
     setTimeout(() => {
       const base = 75
-      const travel = zip ? Math.min(25, Math.floor(Math.random() * 30)) : 0
+      let travel = 0
+      if (distanceBand === '21-30') travel = 25
+      if (distanceBand === '31-40') travel = 45
+      if (distanceBand === '41-50') travel = 65
+
       const extraDocs = Math.max(0, documents - 1) * 10
       const urgencyFee = urgency === 'same-day' ? 25 : urgency === 'urgent' ? 50 : 0
       
@@ -52,7 +56,7 @@ export default function SimplePricingCalculator() {
     if (zip && zip.length === 5) {
       calculatePricing()
     }
-  }, [zip, documents, urgency])
+  }, [zip, documents, urgency, distanceBand])
 
   const urgencyOptions = [
     { key: 'standard', label: 'Standard (2-3 hours)', fee: 0, color: 'bg-green-100 text-green-800' },
@@ -91,6 +95,27 @@ export default function SimplePricingCalculator() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#002147] focus:border-transparent"
               maxLength={5}
             />
+          </div>
+
+          {/* Approximate Distance from 77591 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <MapPin className="inline h-4 w-4 mr-1 text-[#A52A2A]" />
+              Approximate distance from 77591
+            </label>
+            <select
+              value={distanceBand}
+              onChange={(e) => setDistanceBand(e.target.value as any)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#002147] focus:border-transparent"
+            >
+              <option value="0-20">0–20 miles (included)</option>
+              <option value="21-30">21–30 miles (+$25)</option>
+              <option value="31-40">31–40 miles (+$45)</option>
+              <option value="41-50">41–50 miles (+$65)</option>
+            </select>
+            <p className="mt-1 text-xs text-gray-500">
+              We use simple travel zones to estimate your fee. Final pricing follows the same tiers shown on our Extras & Fees page.
+            </p>
           </div>
 
           {/* Document Count */}

@@ -96,14 +96,13 @@ export default function HeroSection() {
               <span className="text-white font-medium">Professional Mobile Notary Services</span>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-              Same‑Day Mobile Notary. No Surprises.
+              Same‑Day Mobile Notary. Flawless Execution Guaranteed. No Surprises.
             </h1>
             
             {/* Removed hard guarantee banner for softer positioning */}
             
             <p className="text-xl text-gray-100">
-              Mobile notarization starts at $75 with the same transparent breakdown you’ll see when you book. Every add-on and
-              travel tier is shown before you pay.
+              Get your documents notarized same-day, flawlessly executed, or we pay the redraw fee. Mobile notarization starts at $75 with transparent pricing—every add-on and travel tier shown before you pay.
             </p>
             {/* Trust bar */}
             <div className="flex flex-wrap gap-2 pt-1">
@@ -136,7 +135,7 @@ export default function HeroSection() {
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link href="/booking">
                 <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white w-full sm:w-auto">
-                  Book Mobile Notary
+                  Book Appointment
                 </Button>
               </Link>
               <Link href={`tel:${getBusinessTel()}`} onClick={() => trackPhoneClick('hero_section_call')}>

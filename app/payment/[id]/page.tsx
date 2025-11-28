@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 
 interface BookingPaymentData {
@@ -29,6 +29,7 @@ interface CheckoutSessionResponse {
 export default function PaymentPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const bookingId = params.id as string;
   
   const [booking, setBooking] = useState<BookingPaymentData | null>(null);
@@ -44,13 +45,17 @@ export default function PaymentPage() {
     }
 
     fetchBooking();
-  }, [bookingId]);
+  }, [bookingId, searchParams]);
 
   const fetchBooking = async () => {
     try {
       console.log('Fetching booking data for ID:', bookingId);
-      
-      const response = await fetch(`/api/v2/bookings/${bookingId}?include=service`);
+      const token = searchParams.get('token');
+      if (!token) {
+        throw new Error('Invalid or expired payment link. Please request a new payment link.');
+      }
+
+      const response = await fetch(`/api/v2/bookings/${bookingId}?token=${encodeURIComponent(token)}`);
       
       if (!response.ok) {
         if (response.status === 404) {

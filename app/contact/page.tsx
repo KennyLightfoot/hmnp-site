@@ -179,7 +179,7 @@ export default function ContactPage() {
                 </div>
                 <div className="flex justify-between pb-2 border-b border-gray-100">
                   <span className="font-medium">Weekend Services:</span>
-                  <span>Available with $50 surcharge</span>
+                  <span>Available with $40 surcharge</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">After-Hours:</span>

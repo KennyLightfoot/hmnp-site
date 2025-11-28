@@ -1,3 +1,7 @@
+// Mark footer as a client component so it can be safely used with `next/dynamic`
+// in `app/layout.tsx` without causing invalid lazy element errors.
+"use client"
+
 // import Image from "next/image"
 import Link from "next/link"
 import { Facebook } from 'lucide-react'

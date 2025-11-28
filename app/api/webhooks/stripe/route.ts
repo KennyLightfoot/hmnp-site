@@ -7,7 +7,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
-import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { stripe, StripeService } from '@/lib/stripe';
 import { webhookProcessor } from '@/lib/webhook-processor';
@@ -39,8 +38,7 @@ const HANDLED_EVENTS = [
 export async function POST(request: NextRequest) {
   try {
     const body = await request.text();
-    const headersList = await headers();
-    const signature = headersList.get('stripe-signature');
+    const signature = request.headers.get('stripe-signature');
 
     if (!signature) {
       logger.error('Stripe webhook missing signature');

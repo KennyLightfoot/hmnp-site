@@ -2,7 +2,6 @@ import type { Job, Worker } from 'bullmq';
 import { prisma } from '../db';
 import { logger } from '../logger';
 import { ghl } from '../ghl';
-import { RONService } from '../proof/api';
 import { EnhancedBookingService } from '../enhanced-booking-service';
 import { createRedisClient } from '../redis';
 
@@ -82,35 +81,7 @@ if (process?.env?.WORKER_MODE === 'true') {
           logger?.error('GHL integration failed', { bookingId, error });
         }
 
-        // 2. Proof?.com RON Session
-        let proofTransaction;
-        if (booking?.service?.serviceType === 'RON_SERVICES') {
-          try {
-            proofTransaction = await RONService?.createRONSession({
-              id: booking?.id || '',
-              customerName: booking?.customerName || '',
-              customerEmail: booking?.customerEmail || '',
-              customerPhone: '', // Phone field not available in booking model
-              documentTypes: ['General Document'],
-              scheduledDateTime: booking?.scheduledDateTime || new Date(),
-            });
-
-            if (proofTransaction?.id) {
-              await prisma?.booking?.update({
-                where: { id: booking?.id },
-                data: {
-                  proofSessionUrl: proofTransaction?.sessionUrl,
-                  kbaStatus: `proof_transaction:${proofTransaction?.id}`,
-                  idVerificationStatus: proofTransaction?.status,
-                },
-              });
-            }
-          } catch (error) {
-            logger?.error('Proof?.com integration failed', { bookingId, error });
-          }
-        }
-
-        // 3. Enhanced Booking Service (Email and Calendar)
+        // 2. Enhanced Booking Service (Email and Calendar)
         try {
           await EnhancedBookingService?.processBooking({
             bookingId: booking?.id || '',
@@ -129,7 +100,6 @@ if (process?.env?.WORKER_MODE === 'true') {
             paymentStatus: booking?.depositStatus || '',
             bookingManagementLink: `${process?.env?.NEXT_PUBLIC_APP_URL}/booking/${booking?.id || ''}`,
             metadata: {
-              ...(proofTransaction?.id && { proofTransactionId: proofTransaction?.id }),
               ...(ghlContactId && { ghlContactId }),
               ...(ghlAppointmentId && { ghlAppointmentId }),
             },

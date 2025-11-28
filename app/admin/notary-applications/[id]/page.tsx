@@ -10,11 +10,52 @@ import Link from "next/link";
 import { formatDateTime } from "@/lib/utils/date-utils";
 import { ArrowLeft } from "lucide-react";
 import NotaryApplicationReviewActions from "@/components/admin/NotaryApplicationReviewActions";
-import type { Prisma } from "@/lib/prisma-types";
 
 type NotaryApplicationPageProps = {
   params: Promise<{ id: string }>
 }
+
+// Local detail type mirroring the selected Prisma fields to avoid depending on
+// the Prisma namespace in this file.
+type NotaryApplicationDetail = {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  phone: string | null;
+  createdAt: Date;
+  status: NotaryApplicationStatus;
+  commissionNumber: string | null;
+  commissionState: string | null;
+  commissionExpiry: Date | null;
+  statesLicensed: string[];
+  countiesServed: string[];
+  serviceTypes: string[];
+  yearsExperience: number | null;
+  serviceRadiusMiles: number | null;
+  languagesSpoken: string[];
+  specialCertifications: string[];
+  eoInsuranceProvider: string | null;
+  eoInsurancePolicy: string | null;
+  eoInsuranceExpiry: Date | null;
+  baseAddress: string | null;
+  baseZip: string | null;
+  whyInterested: string | null;
+  availabilityNotes: string | null;
+  references: string | null;
+  resumeUrl: string | null;
+  reviewedAt: Date | null;
+  reviewNotes: string | null;
+  reviewedBy: {
+    name: string | null;
+    email: string | null;
+  } | null;
+  convertedToUser: {
+    id: string;
+    name: string | null;
+    email: string | null;
+  } | null;
+};
 
 const applicationInclude = {
   reviewedBy: {
@@ -30,11 +71,7 @@ const applicationInclude = {
       email: true,
     },
   },
-} satisfies Prisma.NotaryApplicationInclude
-
-type NotaryApplicationDetail = Prisma.NotaryApplicationGetPayload<{
-  include: typeof applicationInclude
-}>
+}
 
 export default async function NotaryApplicationDetailPage({
   params,

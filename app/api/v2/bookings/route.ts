@@ -21,39 +21,45 @@ const querySchema = z.object({
 export const GET = withRateLimit('public', 'bookings_v2')(async (request: NextRequest) => {
   try {
     const session = await getServerSession(authOptions);
-    
-    // Check authentication for certain operations
+
+    // Require authentication for all v2 bookings access
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userRole = (session.user as any).role as Role | undefined;
+    const userId = (session.user as any).id as string | undefined;
+    const isAdminLike =
+      userRole === Role.ADMIN ||
+      userRole === Role.STAFF ||
+      userRole === Role.NOTARY;
+
+    // Parse and validate query params
     const rawParams = Object.fromEntries(request.nextUrl.searchParams);
     const parsed = querySchema.safeParse({ locationType: rawParams.locationType as any });
     if (!parsed.success) {
       return NextResponse.json({ error: 'Invalid query parameters' }, { status: 400 });
     }
     const locationType = parsed.data.locationType as LocationType;
-    
-    // If requesting RON bookings, require authentication
-    if (locationType === LocationType.REMOTE_ONLINE_NOTARIZATION) {
-      if (!session?.user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-    }
-    
+
     // Build where clause
     const whereClause: any = {};
-    
+
     // Filter by location type if provided
     if (locationType) {
       whereClause.locationType = locationType;
     }
-    
-    // Filter by user for RON bookings (only show user's own bookings)
-    if (locationType === LocationType.REMOTE_ONLINE_NOTARIZATION && session?.user) {
-      const userRole = (session.user as any).role;
-      if (userRole === Role.SIGNER) {
-        whereClause.signerId = (session.user as any).id;
+
+    // Enforce ownership for non-admin-like users:
+    // - ADMIN / STAFF / NOTARY: can see all bookings (subject to filters)
+    // - SIGNER / CLIENT: only see their own bookings
+    if (!isAdminLike) {
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
-      // For NOTARY and ADMIN roles, show all RON bookings
+      whereClause.signerId = userId;
     }
-    
+
     // Fetch bookings with all related data
     const bookings = await prisma.booking.findMany({
       where: whereClause,
@@ -77,7 +83,8 @@ export const GET = withRateLimit('public', 'bookings_v2')(async (request: NextRe
       const customerPhone = 'N/A'; // Phone field doesn't exist in User model
       const user = null; // User relation doesn't exist in this include
       const specialInstructions = booking.notes || '';
-      const internalNotes = booking.notes || '';
+      // Only expose internal notes to admin-like roles; hide for signer/client views
+      const internalNotes = isAdminLike ? booking.notes || '' : '';
       const paymentStatus = booking.paymentStatus;
       const paymentMethod = booking.paymentMethod;
       const totalPaid = booking.totalPaid ? Number(booking.totalPaid) : 0;

@@ -3,7 +3,6 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from 'next/navigation';
 import { Role, NotaryApplicationStatus } from "@/lib/prisma-types";
-import type { Prisma } from "@/lib/prisma-types";
 import {
   Table,
   TableBody,
@@ -19,6 +18,23 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDateTime } from "@/lib/utils/date-utils";
 
+// Local list item type mirroring the selected Prisma fields to avoid direct
+// dependency on the Prisma namespace in this file.
+type NotaryApplicationListItem = {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  phone: string | null;
+  createdAt: Date;
+  status: NotaryApplicationStatus;
+  statesLicensed: string[];
+  reviewedBy: {
+    name: string | null;
+    email: string | null;
+  } | null;
+};
+
 const applicationInclude = {
   reviewedBy: {
     select: {
@@ -26,11 +42,7 @@ const applicationInclude = {
       email: true,
     },
   },
-} satisfies Prisma.NotaryApplicationInclude
-
-type NotaryApplicationListItem = Prisma.NotaryApplicationGetPayload<{
-  include: typeof applicationInclude
-}>
+};
 
 type NotaryApplicationStatusValue = (typeof NotaryApplicationStatus)[keyof typeof NotaryApplicationStatus]
 

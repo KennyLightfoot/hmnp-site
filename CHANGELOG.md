@@ -1,6 +1,61 @@
+- 2025-11-28
+  - Phase 1 cockpit routes now backed by dedicated admin APIs (overview, operations, network, billing, system checks, content stats) and all pages read from those endpoints.
+  - Added system health aggregator (`/api/admin/system-health`) plus refreshed `/admin/system-checks` UI.
+  - Implemented AI autopilot foundation (OutboundMessage + MessageReview models, scheduler engine, `/api/cron/ai-autopilot`, operations metrics, kill-switch env flags).
+  - Delivered review queue UI/actions in `/admin/operations` tied to MessageReview moderation endpoints.
+  - Introduced `ContentJob` pipeline with admin APIs, UI table, and basic performance tracking (views/leads) surfaced on `/admin/content`.
 # Changelog
 
-## [Unreleased] - Build & Type Fixes
+## [Unreleased] - Security Hardening, Build & Tooling Fixes
+
+### Added
+- **Build & Tooling**
+  - Cleaned up npm/pnpm configuration by removing legacy `.npmrc` override syntax in favor of the standard `"overrides"` block in `package.json`.
+  - Documented pnpm behavior, dependency overrides, and hoisting settings in `docs/npm-pnpm-config.md` so local dev and CI use a consistent, supported configuration.
+  - Hardened Redis initialization so `next build` and SSG/ISR do not require a live Redis instance; Redis/cache features degrade gracefully at runtime. See `docs/redis-behavior.md` for the failure policy.
+- **Automation Services**
+  - Added `automation/pm2.ecosystem.config.cjs` plus helper scripts (`pnpm automation:start|restart|status|logs|stop`) so the agents pipeline and n8n workflows can run as always-on background services under PM2.
+  - Created `automation/env.example` and documented the full setup in `docs/AUTOMATION_SERVICES.md`, covering WSL hostname mapping, boot-time auto start, and troubleshooting.
+  - Added WSL helper scripts (`start-automation.sh`, `stop-automation.sh`) plus Windows wrappers (`windows-controls/*.bat`, `setup-automation-shortcuts.ps1`) so automations can be started or stopped from Windows shortcuts without opening a terminal; see `docs/windows-automation-controls.md`.
+- **Agents Webhook Bridge**
+  - Added Prisma models (`AgentBlog`, `AgentLead`, `AgentJob`, `AgentPricingQuote`) and migration `20251128000100_agents_webhooks` so data pushed from the agents service can be stored in Postgres and surfaced in admin dashboards.
+  - Implemented signed webhook endpoints at `/api/webhooks/blog-approved`, `/api/webhooks/lead-created`, `/api/webhooks/job-created`, and `/api/webhooks/pricing-quoted` plus a shared auth helper `lib/security/agents-webhook-auth.ts`.
+  - Added `lib/services/agent-webhook-service.ts` to write blog markdown files under `content/blogs/` and upsert leads/jobs/pricing rows, and created admin proxy endpoints (`/api/admin/agents/*`) that rely on `lib/agents-client` instead of exposing the agents base URL.
+  - Added `pnpm agents:verify` and documented the flow so the entire agents repo (env validation, model checks, build, tests) can be exercised with one command.
+- **Agents Monitoring**
+  - Added `scripts/check-agents-health.ts` (`pnpm agents:health`) so ops can ping the configured `AGENTS_BASE_URL`/`AGENTS_HEALTH_ENDPOINT` without leaving the main repo, mirroring the existing `pnpm n8n:health` workflow check.
+  - Added `scripts/seed-agents-demo.ts` (`pnpm agents:seed-demo`) to quickly populate `AgentLead/AgentJob/AgentPricingQuote` rows and a sample blog so `/admin/operations`, `/admin/network`, and `/admin/content` can be exercised without firing real webhooks.
+- **n8n Monitoring**
+  - Added `scripts/check-n8n-health.ts` (`pnpm n8n:health`) and integrated an `n8n Health` system test so `/api/system-test?type=automations` now reports workflow-engine status alongside queue/webhook checks.
+- **Admin Dashboards**
+  - `/admin/system-checks` now shows quick health, a full-suite summary, and dedicated sections for queues, agents, and automations without making multiple expensive API calls.
+  - `/admin/content` displays synced blog/review stats pulled from the new Prisma tables, while `/admin/operations` and `/admin/network` surface live automation metrics (agent leads/jobs/pricing) alongside existing booking/network KPIs.
+- **Run Book & Security**
+  - Added `docs/OPS_RUNBOOK.md` plus references in `docs/AUTOMATION_SERVICES.md` so on-call staff know exactly how to verify, restart, and audit the automation stack (`pnpm automation:*`, `pnpm agents:verify`, `pnpm n8n:health`).
+  - `lib/env-validation.ts` now validates `AGENTS_WEBHOOK_SECRET`, `N8N_BASIC_AUTH_*`, and the new health-check configuration, with warnings when secrets/basic auth are missing.
+- **Booking API Hardening**
+  - Locked down `GET /api/v2/bookings` to require authentication, enforce role-based behavior (ADMIN/STAFF/NOTARY vs SIGNER/CLIENT), and avoid exposing internal notes to non-admin views.
+  - Tightened `GET /api/v2/bookings/[id]` to return a minimal, payment-focused projection suitable for secret-link access (no user object, internal notes, or full address fields).
+- **Secrets Management**
+  - Removed locally committed credential artifacts (`client_secret*.json`, `local-vars.txt`, `cookies.txt`, `vercel-production.env`, and related env snapshot files) and expanded `.gitignore` to block future commits of raw secrets and env dumps.
+  - Documented the clean-up and required key rotation steps under “Secrets Management & Rotation Log” in `SECURITY.md`.
+- **Chatbot / Agents Integration Strategy**
+  - Updated `/api/ai/chat` to support a feature-flagged backend: defaulting to direct Vertex AI (`AI_CHAT_BACKEND=vertex` or unset) and delegating to the agents service `/chat` endpoint when `AI_CHAT_BACKEND=agents`.
+  - Added a thin agents chat client in `lib/agents-client.ts` (`sendAgentsChat`) so the web app can call the agents service without exposing its base URL to the browser.
+  - Documented the architecture, responsibilities, and `/chat` contract in `docs/chat-architecture.md`, plus a hybrid routing plan + evaluation set in `docs/AI_HYBRID_ROUTING.md` and `automation/evals/hybrid-routing-evals.json`.
+- **Proof.com Decommissioning & RON via Notary Hub**
+  - Replaced the old `lib/proof/api.ts` client with a decommissioned stub and removed inline Proof.com RON session creation from booking flows and workers.
+  - Updated Proof.com routes (`/api/proof/*`, `/api/webhooks/proof`, `/api/debug/proof-connection`) to return 410 responses with clear messaging that RON is now handled via Notary Hub UI.
+  - Cleaned up Proof-related scripts and docs to mark them as legacy and removed `PROOF_*` env references from active launch/env checklists.
+- **Queues, System Tests, and Admin System Checks**
+  - Added a BullMQ queue system test helper (`lib/testing/queue-system-test.ts`) and wired it into `lib/testing/system-tests.ts` plus a `scripts/test-queues.ts` runner for CI/local verification.
+  - Extended `/api/system-test` to support `type=health`, `type=full`, `type=queues`, `type=ai`, and `type=automations` for focused reports, and created an admin dashboard at `/admin/system-checks` to visualize key health signals.
+  - Documented the testing flow (chat, queues, webhooks/cron, and system checks) in `docs/testing.md`.
+- **Database Initialization & Health**
+  - Documented the end-to-end process for wiring `DATABASE_URL` to the new Postgres instance, applying all Prisma migrations, and running seed scripts so a brand-new empty database matches `prisma/schema.prisma` and baseline business data requirements.
+  - Standardized on using the Supabase Postgres instance as the primary database for the web app, with `.env.local` (and `.env` for server/CI) providing the `DATABASE_URL` in `postgresql://user:pass@host:port/db?sslmode=require` format.
+  - Captured recommended smoke-test commands (`pnpm db:migrate`, `pnpm db:seed`, `node test-db-connection.cjs`, `node database-health-check.mjs`, `pnpm db:verify-notary-schema`) to validate schema, seed data, and notary network tables after initializing a new database.
+  - Added provider-level backup and monitoring guidance (how to enable automated backups / PITR and basic alerts in the database provider dashboard) so production databases can be restored and monitored reliably.
 
 ### Fixed
 - **Prisma groupBy TypeScript Errors**

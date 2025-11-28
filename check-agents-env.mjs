@@ -45,7 +45,7 @@ function checkMissing(envObj, required, label) {
 }
 
 // Root (Next.js) must know how to talk to agents and verify webhooks
-const requiredRoot = ['AGENTS_BASE_URL', 'NEXTJS_API_SECRET'];
+const requiredRoot = ['AGENTS_BASE_URL', 'NEXTJS_API_SECRET', 'AGENTS_ADMIN_SECRET'];
 
 // Agents service must have its own runtime + webhook config
 const requiredAgents = [
@@ -55,6 +55,7 @@ const requiredAgents = [
   'PORT',
   'NEXTJS_WEBHOOK_URL',
   'NEXTJS_API_SECRET',
+  'AGENTS_ADMIN_SECRET',
 ];
 
 const missingRoot = checkMissing(rootEnv, requiredRoot, 'ROOT');
@@ -68,6 +69,41 @@ if (rootEnv.NEXTJS_API_SECRET && agentsEnv.NEXTJS_API_SECRET) {
   if (rootEnv.NEXTJS_API_SECRET !== agentsEnv.NEXTJS_API_SECRET) {
     problems.push(
       'NEXTJS_API_SECRET mismatch between root and agents (webhooks will fail).',
+    );
+  }
+}
+
+// Admin/API secret for talking to agents review endpoints should match
+if (rootEnv.AGENTS_ADMIN_SECRET && agentsEnv.AGENTS_ADMIN_SECRET) {
+  if (rootEnv.AGENTS_ADMIN_SECRET !== agentsEnv.AGENTS_ADMIN_SECRET) {
+    problems.push(
+      'AGENTS_ADMIN_SECRET mismatch between root and agents (admin review API calls will fail).',
+    );
+  }
+}
+
+// Webhook secret may be provided via AGENTS_WEBHOOK_SECRET or NEXTJS_API_SECRET. Require at least one.
+const rootWebhookSecret =
+  rootEnv.AGENTS_WEBHOOK_SECRET || rootEnv.NEXTJS_API_SECRET || '';
+const agentsWebhookSecret =
+  agentsEnv.AGENTS_WEBHOOK_SECRET || agentsEnv.NEXTJS_API_SECRET || '';
+
+if (!rootWebhookSecret) {
+  problems.push(
+    'Root project is missing AGENTS_WEBHOOK_SECRET (or NEXTJS_API_SECRET). Webhooks cannot be verified.',
+  );
+}
+
+if (!agentsWebhookSecret) {
+  problems.push(
+    'Agents service is missing NEXTJS_API_SECRET (or AGENTS_WEBHOOK_SECRET). It will not be able to authenticate to Next.js.',
+  );
+}
+
+if (rootWebhookSecret && agentsWebhookSecret) {
+  if (rootWebhookSecret !== agentsWebhookSecret) {
+    problems.push(
+      'Webhook secrets differ between root and agents. Ensure AGENTS_WEBHOOK_SECRET or NEXTJS_API_SECRET share the same value on both sides.',
     );
   }
 }

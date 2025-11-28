@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "ContentJob"
+ADD COLUMN "views" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN "leadsCaptured" INTEGER NOT NULL DEFAULT 0;
+

@@ -11,7 +11,7 @@ const AGENT_BLOGS_DIR = path.join(process.cwd(), 'content', 'blogs')
  * Normalize a slug to kebab-case
  * Ensures slugs are always URL-safe and consistent
  */
-function normalizeSlug(slug: string): string {
+export function normalizeSlug(slug: string): string {
   return slug
     .toLowerCase()
     .trim()

@@ -7,6 +7,7 @@ vi.mock('@/lib/auth', () => ({ authOptions: {} }))
 
 // Mock Vertex AI helper BEFORE route import so the route uses the mocked module
 vi.mock('@/lib/vertex', () => ({ sendChat: vi.fn() }))
+vi.mock('@/lib/agents-client', () => ({ sendAgentsChat: vi.fn(async () => ({ ok: false, reply: '', error: 'agents-down' })) }))
 vi.mock('@/lib/conversation-tracker', () => ({ ConversationTracker: { trackInteraction: vi.fn() } }))
 
 import { POST } from '@/app/api/ai/chat/route'
@@ -28,11 +29,13 @@ beforeEach(() => {
 
 describe('/api/ai/chat route – edge cases', () => {
   it('returns 400 when message is missing', async () => {
+    delete (process.env as any).AI_CHAT_BACKEND
     const res = await POST(buildRequest({}) as any)
     expect(res.status).toBe(400)
   })
 
   it('returns 502 and retry hint when Vertex AI call fails', async () => {
+    ;(process.env as any).AI_CHAT_BACKEND = 'vertex'
     vi.mocked(sendChat).mockRejectedValueOnce(new Error('Vertex unavailable'))
     const res = await POST(buildRequest({ message: 'Hello' }) as any)
     expect(res.status).toBe(502)
@@ -40,6 +43,7 @@ describe('/api/ai/chat route – edge cases', () => {
   })
 
   it('allows anonymous access (no session) and returns 200', async () => {
+    delete (process.env as any).AI_CHAT_BACKEND
     vi.mocked(getServerSession).mockResolvedValueOnce(null as any)
     vi.mocked(sendChat).mockResolvedValueOnce({ text: 'Hi from AI' } as any)
     const res = await POST(buildRequest({ message: 'Hi' }) as any)

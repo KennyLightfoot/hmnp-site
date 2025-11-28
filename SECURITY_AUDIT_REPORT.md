@@ -137,7 +137,7 @@ PUT /api/reviews?id=<any-review-id>
 4. ✅ PII scrubbing in logs
 5. ✅ Environment variable validation
 6. ✅ Rate limiting on critical endpoints
-7. ✅ Authorization checks on ID-based endpoints
+7. ✅ Authorization checks on all authenticated ID-based endpoints (with limited, secret-link style projections for public payment links)
 
 ## Recommendations
 
@@ -167,7 +167,7 @@ PUT /api/reviews?id=<any-review-id>
 - [x] SQL Injection - All queries parameterized ✅
 - [x] XSS - Output encoding verified ✅ (React auto-escapes, sanitizeHtml used where needed)
 - [x] CSRF - All state-changing endpoints protected ✅
-- [x] IDOR - All ID-based endpoints verify ownership/role ✅ (Fixed critical issue in reviews)
+- [x] IDOR - All authenticated ID-based endpoints verify ownership/role ✅ (Fixed critical issue in reviews; payment-link endpoints use unguessable IDs and only expose minimal booking/payment data)
 - [x] Auth Bypass - All protected routes verify authentication ✅
 - [x] Rate Limiting - All public endpoints rate-limited ✅
 - [x] File Upload - Validation and scanning in place ✅

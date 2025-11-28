@@ -7,7 +7,7 @@
  * - Minimal types that mirror the agents HTTP responses
  */
 
-import { buildAgentsUrl } from './agents-config';
+import { buildAgentsUrl, AGENTS_ADMIN_SECRET } from './agents-config';
 
 // ───────────────────────────────── Types ────────────────────────────────
 
@@ -127,6 +127,39 @@ export interface RunAgentsJobResponse {
   meta: Record<string, unknown> | null;
 }
 
+export type AgentsReviewJobStatus =
+  | 'PENDING_REVIEW'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'IN_PROGRESS'
+  | 'FAILED';
+
+export type AgentsReviewJobType = 'BLOG' | 'AD' | 'REPLY' | 'IMAGE' | string;
+
+export interface AgentsReviewJob {
+  id: string;
+  type: AgentsReviewJobType;
+  status: AgentsReviewJobStatus;
+  createdAt: string;
+  updatedAt: string;
+  payload: unknown;
+  result?: unknown | null;
+  reviewerNotes?: string | null;
+}
+
+export interface ListReviewJobsResponse {
+  ok: boolean;
+  count: number;
+  jobs: AgentsReviewJob[];
+  error?: string;
+}
+
+export interface GetReviewJobResponse {
+  ok: boolean;
+  job: AgentsReviewJob;
+  error?: string;
+}
+
 // ────────────────────────────── Internal helper ─────────────────────────
 
 async function fetchFromAgents<T>(
@@ -234,6 +267,131 @@ export async function runAgentsJob(
     method: 'POST',
     body: JSON.stringify(payload),
   });
+}
+
+// ───────────────────────────── Chat adapter (planned) ─────────────────────
+
+/**
+ * Shape of the chat request the web app sends to the agents service.
+ * This intentionally mirrors the core fields of `/api/ai/chat` so the
+ * adapter in the Next.js route can stay thin.
+ */
+export interface AgentsChatRequest {
+  message: string;
+  context?: unknown;
+  customerId?: string;
+  channel?: string;
+}
+
+export interface AgentsChatResponse {
+  ok: boolean;
+  reply: string;
+  intent?: string;
+  metadata?: Record<string, unknown>;
+  error?: string;
+}
+
+/**
+ * Send a chat message to the agents service `/chat` endpoint.
+ *
+ * NOTE: The `/chat` endpoint is part of the agents service and may be
+ * rolled out after this adapter. The web app will only call this when
+ * the `AI_CHAT_BACKEND=agents` feature flag is enabled.
+ */
+export async function sendAgentsChat(
+  payload: AgentsChatRequest,
+): Promise<AgentsChatResponse> {
+  return fetchFromAgents<AgentsChatResponse>('/chat', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+// ───────────────────── Content review helpers (admin-only) ────────────────────
+
+/**
+ * List jobs in the owner review queue, typically filtered to pending BLOG
+ * jobs for the content UI. Uses the protected /review/jobs endpoint and
+ * includes the admin secret when configured.
+ */
+export async function listReviewJobs(params: {
+  status?: AgentsReviewJobStatus;
+  contentType?: AgentsReviewJobType;
+  limit?: number;
+}): Promise<ListReviewJobsResponse> {
+  const search = new URLSearchParams();
+
+  if (params.status) search.set('status', params.status);
+  if (params.contentType) search.set('contentType', String(params.contentType));
+  if (params.limit != null) search.set('limit', String(params.limit));
+
+  const path =
+    search.size > 0
+      ? `/review/jobs?${search.toString()}`
+      : '/review/jobs';
+
+  const headers: Record<string, string> = {};
+  if (AGENTS_ADMIN_SECRET) {
+    headers['x-api-key'] = AGENTS_ADMIN_SECRET;
+  }
+
+  return fetchFromAgents<ListReviewJobsResponse>(path, {
+    headers,
+  });
+}
+
+export async function getReviewJob(
+  id: string,
+): Promise<GetReviewJobResponse> {
+  const headers: Record<string, string> = {};
+  if (AGENTS_ADMIN_SECRET) {
+    headers['x-api-key'] = AGENTS_ADMIN_SECRET;
+  }
+
+  return fetchFromAgents<GetReviewJobResponse>(`/review/jobs/${id}`, {
+    headers,
+  });
+}
+
+export async function approveReviewJob(
+  id: string,
+): Promise<GetReviewJobResponse> {
+  const headers: Record<string, string> = {};
+  if (AGENTS_ADMIN_SECRET) {
+    headers['x-api-key'] = AGENTS_ADMIN_SECRET;
+  }
+
+  return fetchFromAgents<GetReviewJobResponse>(
+    `/review/jobs/${id}/approve`,
+    {
+      method: 'POST',
+      headers,
+    },
+  );
+}
+
+export async function rejectReviewJob(
+  id: string,
+  reviewerNotes?: string,
+): Promise<GetReviewJobResponse> {
+  const headers: Record<string, string> = {};
+  if (AGENTS_ADMIN_SECRET) {
+    headers['x-api-key'] = AGENTS_ADMIN_SECRET;
+  }
+
+  const body =
+    reviewerNotes && reviewerNotes.trim().length > 0
+      ? JSON.stringify({ reviewerNotes })
+      : JSON.stringify({});
+
+  return fetchFromAgents<GetReviewJobResponse>(
+    `/review/jobs/${id}/reject`,
+    {
+      method: 'POST',
+      headers,
+      body,
+    },
+  );
 }
 
 

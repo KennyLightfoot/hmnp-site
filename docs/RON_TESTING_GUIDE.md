@@ -1,38 +1,18 @@
-# RON Integration Testing Guide
-**Houston Mobile Notary Pros - Proof.com Integration**
+# RON Integration Testing Guide (Legacy)
+**Houston Mobile Notary Pros - Proof.com Integration — DECOMMISSIONED (Historical Only)**
 
 ## 🎯 Overview
 This guide covers testing the complete Remote Online Notarization (RON) integration with Proof.com, from customer booking to session completion.
 
-## 🔧 Prerequisites
+> NOTE: The Proof.com-based RON flow described in this document is no longer
+> active in production. RON sessions are now scheduled and handled via Notary
+> Hub UI. This file is kept only as historical reference.
 
-### Environment Setup
-```bash
-# Required environment variables
-PROOF_API_KEY=wVc8ni3bWaEvZNQBBM215h1v
-PROOF_API_URL=https://api.proof.com
-PROOF_ENVIRONMENT=production
-PROOF_ORGANIZATION_ID=caokn9zdg
-```
-
-### Test Credentials
-- **Organization ID**: `caokn9zdg`
-- **API Key**: `wVc8ni3bWaEvZNQBBM215h1v` (Full Access)
-- **Environment**: Production
-
-## 🧪 Automated Testing
+## 🧪 Automated Testing (Historical)
 
 ### Run Complete Test Suite
-```bash
-# Install dependencies if needed
-npm install chalk node-fetch
-
-# Run comprehensive RON test suite
-node scripts/test-ron-flow.js
-
-# View help
-node scripts/test-ron-flow.js --help
-```
+> NOTE: The commands in this section are **no longer supported**. They remain
+> here only as historical documentation of the previous Proof.com-based flow.
 
 ### Expected Test Results
 ```

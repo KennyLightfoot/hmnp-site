@@ -2,77 +2,73 @@
 
 ## Quick Setup Guide
 
+This guide helps you set up your local development environment.
+
 ### Step 1: Create the .env.local file
 
-Run this command in your terminal (from the project root):
+Create the file in the project root:
 
 ```bash
-echo 'DATABASE_URL="postgresql://postgres.czxoxhokegnzfctgnhjo:Hmnp128174Supa@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require"' > .env.local
+touch .env.local
 ```
 
-### Step 2: Verify it was created
+### Step 2: Add Required Variables
 
-Check that the file exists and has the correct content:
+Open `.env.local` in your editor and add the minimum required variables:
 
 ```bash
-cat .env.local
+# Database
+DATABASE_URL="postgresql://user:password@host:port/database?sslmode=require"
+
+# Authentication
+NEXTAUTH_SECRET="your-32-character-minimum-secret-key-here"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Application
+NEXT_PUBLIC_BASE_URL="http://localhost:3000"
+NODE_ENV="development"
+
+# Agents integration
+AGENTS_BASE_URL="http://localhost:4001"
+NEXTJS_API_SECRET="super-strong-shared-secret"
+AGENTS_WEBHOOK_SECRET="super-strong-shared-secret" # keep in sync with NEXTJS_API_SECRET
+AGENTS_ADMIN_SECRET="local-admin-secret"
 ```
 
-You should see:
-```
-DATABASE_URL="postgresql://postgres.czxoxhokegnzfctgnhjo:Hmnp128174Supa@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require"
-```
+> ℹ️ `NEXTJS_API_SECRET` is the fallback secret used by the webhook guards. If you prefer to keep webhook auth separate, still populate `NEXTJS_API_SECRET` and set `AGENTS_WEBHOOK_SECRET` to the same value so both repos stay aligned.
 
-### Step 3: Test Prisma can see it
+### Step 3: Validate Configuration
 
-Verify Prisma can read the environment variable:
+Run the environment checks:
 
 ```bash
-pnpm prisma migrate status
+pnpm env:check          # Validates Next.js vars
+pnpm check:agents-env   # Ensures hmnp ↔ agents secrets match
 ```
 
-If it works, you'll see migration status. If it still says "Environment variable not found", make sure you're in the project root directory.
+This will show you which variables are missing or invalid.
 
-## Alternative: Manual Creation
+### Step 4: Add Additional Variables as Needed
 
-If the echo command doesn't work, you can create the file manually:
+Based on the features you're working on, add:
+- Stripe keys (for payment processing)
+- Supabase keys (for database/auth)
+- GHL keys (for CRM integration)
+- AWS S3 keys (for file uploads)
+- Google Maps keys (for location services)
+- Resend API key (for emails)
 
-1. **Create the file:**
-   ```bash
-   touch .env.local
-   ```
-
-2. **Open it in your editor:**
-   ```bash
-   nano .env.local
-   # or
-   code .env.local
-   # or
-   vim .env.local
-   ```
-
-3. **Add this line:**
-   ```
-   DATABASE_URL="postgresql://postgres.czxoxhokegnzfctgnhjo:Hmnp128174Supa@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require"
-   ```
-
-4. **Save and close** (Ctrl+X then Y then Enter for nano, :wq for vim)
-
-## Verify Everything Works
-
-After creating `.env.local`, test that everything is set up correctly:
-
-```bash
-# Check Prisma can connect
-pnpm prisma migrate status
-
-# If that works, you're ready to run the migration!
-pnpm prisma migrate dev --name add_notary_network_models
-```
+See `ENV_REFERENCE.md` for the complete list.
 
 ## Important Notes
 
 - `.env.local` is in `.gitignore` - it won't be committed to git (this is correct!)
-- Make sure you're in the project root directory (`/Ubuntu/home/kenkarot/dev/hmnp`)
+- Make sure you're in the project root directory
 - The file should be named exactly `.env.local` (with the dot at the beginning)
+- Never commit secrets to git - always use environment variables
+- Use `pnpm env:check` and `pnpm check:agents-env` to validate your configuration
+
+## Complete Reference
+
+For a complete list of all environment variables, see `ENV_REFERENCE.md`.
 

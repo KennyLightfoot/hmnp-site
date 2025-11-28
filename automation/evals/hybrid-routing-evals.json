@@ -1,0 +1,162 @@
+[
+  {
+    "id": "pricing-rush-001",
+    "jobType": "pricing",
+    "input": {
+      "serviceType": "MOBILE_NOTARY",
+      "documents": 6,
+      "distanceMiles": 18,
+      "urgency": "same_day",
+      "notes": "Family needs an estate signing tonight before 9pm."
+    },
+    "expectedRouting": ["classifier:vertex-fast", "pricing_agent:hosted"],
+    "successCriteria": [
+      "Total is between $195 and $245 (base + added docs).",
+      "Rush fee applied because urgency is same_day.",
+      "Explanation references evening arrival window."
+    ]
+  },
+  {
+    "id": "pricing-rural-002",
+    "jobType": "pricing",
+    "input": {
+      "serviceType": "LOAN_SIGNING",
+      "documents": 1,
+      "distanceMiles": 44,
+      "urgency": "next_day",
+      "notes": "South of Pearland, includes a POA set."
+    },
+    "expectedRouting": ["classifier:vertex-fast", "pricing_agent:local"],
+    "successCriteria": [
+      "Travel tier 41-50 applied.",
+      "Loan signing flat fee respected.",
+      "Explains travel fee separately from base."
+    ]
+  },
+  {
+    "id": "classification-chat-101",
+    "jobType": "classification",
+    "input": {
+      "message": "Can you notarize a HELOC closing at my office next week?",
+      "channel": "web_chat"
+    },
+    "expectedRouting": ["classifier:local", "policy_filter"],
+    "successCriteria": [
+      "Must classify as disallowed_HELOC.",
+      "Reply must decline and cite HELOC policy.",
+      "Should escalate to human with proper tag."
+    ]
+  },
+  {
+    "id": "customer-reply-201",
+    "jobType": "customer_reply",
+    "input": {
+      "tone": "friendly_reassuring",
+      "context": "customer rescheduled twice, needs calm follow-up",
+      "message": "I'm so sorry, my dad is still in the hospital. Can we move the appointment again?"
+    },
+    "expectedRouting": ["classifier:local", "reply_agent:local", "human_review_if_low_confidence"],
+    "successCriteria": [
+      "Acknowledges family situation.",
+      "Offers two new windows without sounding annoyed.",
+      "Reminds them gently about cancellation policy."
+    ]
+  },
+  {
+    "id": "review-reply-301",
+    "jobType": "review_reply",
+    "input": {
+      "platform": "Google",
+      "rating": 3,
+      "reviewText": "Notary arrived late but was professional once she got there."
+    },
+    "expectedRouting": ["classifier:local", "review_reply_agent:hosted_if_negative"],
+    "successCriteria": [
+      "Apologizes for delay and thanks them.",
+      "Mentions on-time guarantee reinforcement.",
+      "Keeps response under 75 words."
+    ]
+  },
+  {
+    "id": "blog-ron-401",
+    "jobType": "content_blog",
+    "input": {
+      "topic": "Remote Online Notarization for busy realtors",
+      "tonePreset": "professional_concise",
+      "cta": "Schedule a RON session"
+    },
+    "expectedRouting": ["classifier:vertex-fast", "blog_agent:hosted"],
+    "successCriteria": [
+      "800-1000 words with Houston-specific references.",
+      "Explains security / ID verification steps.",
+      "CTA matches provided prompt."
+    ]
+  },
+  {
+    "id": "sop-followup-501",
+    "jobType": "sop_followup",
+    "input": {
+      "scenario": "booking -> payment pending 6 hours",
+      "data": {
+        "customerName": "Devon Miles",
+        "serviceType": "Extended Hours",
+        "amount": 125
+      }
+    },
+    "expectedRouting": ["router:local", "sop_agent:local"],
+    "successCriteria": [
+      "Returns SMS-ready copy referencing service + amount.",
+      "Keeps under 320 characters.",
+      "Mentions booking is still reserved."
+    ]
+  },
+  {
+    "id": "lead-scoring-601",
+    "jobType": "lead_scoring",
+    "input": {
+      "source": "website_form",
+      "message": "Need 2 witnesses and a notary for a trust signing Thursday afternoon.",
+      "urgency": "two_days",
+      "budget": "unknown"
+    },
+    "expectedRouting": ["classifier:local", "scoring_agent:local"],
+    "successCriteria": [
+      "Scores 0.7 or higher (high intent).",
+      "Flags witness requirement in metadata.",
+      "Suggests dispatch tier 'network_priority'."
+    ]
+  },
+  {
+    "id": "pricing-ron-bulk-701",
+    "jobType": "pricing",
+    "input": {
+      "serviceType": "RON",
+      "documents": 3,
+      "distanceMiles": 0,
+      "urgency": "same_day",
+      "notes": "Title company wants 3 signers in one session."
+    },
+    "expectedRouting": ["classifier:vertex-fast", "pricing_agent:local"],
+    "successCriteria": [
+      "Base RON fee + per-seal added (≥ $40).",
+      "Explains multi-signer workflow briefly.",
+      "No travel fee (RON)."
+    ]
+  },
+  {
+    "id": "customer-reply-urgent-801",
+    "jobType": "customer_reply",
+    "input": {
+      "tone": "urgent_but_calm",
+      "context": "network job awaiting confirmation",
+      "message": "Can you confirm if someone is still coming? It's been 30 minutes."
+    },
+    "expectedRouting": ["classifier:local", "reply_agent:hosted"],
+    "successCriteria": [
+      "Acknowledges delay & apologizes.",
+      "Shares live ETA pulled from context.",
+      "Offers credit or follow-up if ETA cannot be met."
+    ]
+  }
+]
+

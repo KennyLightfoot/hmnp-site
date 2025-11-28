@@ -40,41 +40,41 @@ add_env_var_from_env() {
     add_env_var "$name" "$value"
 }
 
-# Database Configuration (CRITICAL)
-add_env_var "DATABASE_URL" "postgresql://postgres.czxoxhokegnzfctgnhjo:Hmnp128174Supa@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require"
-add_env_var "DATABASE_URL_UNPOOLED" "postgresql://postgres:Hmnp128174Supa@db.czxoxhokegnzfctgnhjo.supabase.co:5432/postgres?sslmode=require"
+# Database Configuration (CRITICAL) - read from environment
+add_env_var_from_env "DATABASE_URL"
+add_env_var_from_env "DATABASE_URL_UNPOOLED"
 
-# Supabase Configuration (CRITICAL)
-add_env_var "NEXT_PUBLIC_SUPABASE_URL" "https://czxoxhokegnzfctgnhjo.supabase.co"
-add_env_var "NEXT_PUBLIC_SUPABASE_ANON_KEY" "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6eG94aG9rZWduemZjdGduaGpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY0NTU5OTIsImV4cCI6MjA1MjAzMTk5Mn0.3r6X85Fp7cCuDI3FeWVdIPd6RBOFBnwec21yRMTghHE"
-add_env_var "SUPABASE_SERVICE_ROLE_KEY" "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6eG94aG9rZWduemZjdGduaGpvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNjQ1NTk5MiwiZXhwIjoyMDUyMDMxOTkyfQ.Sg48MySxw8wwpAHMQIcQboNl-H56ez93cpvKMrmuBJk"
+# Supabase Configuration (CRITICAL) - read from environment
+add_env_var_from_env "NEXT_PUBLIC_SUPABASE_URL"
+add_env_var_from_env "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+add_env_var_from_env "SUPABASE_SERVICE_ROLE_KEY"
 
-# NextAuth Configuration (CRITICAL)
-add_env_var "NEXTAUTH_SECRET" "BoE/DaOyE7XJk2np0rDNmk7qXJq0ssgbsG4qMmCZ1Ic="
-add_env_var "NEXTAUTH_URL" "https://houstonmobilenotarypros.com"
-add_env_var "NEXTAUTH_URL_INTERNAL" "https://houstonmobilenotarypros.com"
+# NextAuth Configuration (CRITICAL) - read from environment
+add_env_var_from_env "NEXTAUTH_SECRET"
+add_env_var "NEXTAUTH_URL" "${NEXTAUTH_URL:-https://houstonmobilenotarypros.com}"
+add_env_var "NEXTAUTH_URL_INTERNAL" "${NEXTAUTH_URL_INTERNAL:-https://houstonmobilenotarypros.com}"
 
-# 🔥 STRIPE CONFIGURATION (CRITICAL FOR BOOKING FIX!)
+# 🔥 STRIPE CONFIGURATION (CRITICAL FOR BOOKING FIX!) - read from environment
 echo "🔥 Adding Stripe configuration - THIS IS CRITICAL FOR THE BOOKING FIX!"
-add_env_var "STRIPE_SECRET_KEY" "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"
-add_env_var "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY" "pk_live_51QMx2aAx8ko8hXd8NSAYNXb4bMcPjIFZF8Gr7GJbrzn9XFxixpxBe07zJsIPgggy7CcpPXfLQY2WIpacZSMoEzfa00k7NSj6r7"
-add_env_var "STRIPE_WEBHOOK_SECRET" "whsec_D1PVCJxGGtjGUmGBCsUtfJGy31n8zRrJ"
+add_env_var_from_env "STRIPE_SECRET_KEY"
+add_env_var_from_env "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"
+add_env_var_from_env "STRIPE_WEBHOOK_SECRET"
 
-# Redis Configuration (CRITICAL for rate limiting)
-add_env_var "REDIS_URL" "redis://default:pnpaQyi2JdOb0GH0SVRGjjXwy0pmapV3@redis-18979.c80.us-east-1-2.ec2.redns.redis-cloud.com:18979"
-add_env_var "REDIS_HOST" "redis-18979.c80.us-east-1-2.ec2.redns.redis-cloud.com"
-add_env_var "REDIS_PORT" "18979"
-add_env_var "REDIS_PASSWORD" "pnpaQyi2JdOb0GH0SVRGjjXwy0pmapV3"
+# Redis Configuration (CRITICAL for rate limiting) - read from environment
+add_env_var_from_env "REDIS_URL"
+add_env_var_from_env "REDIS_HOST"
+add_env_var_from_env "REDIS_PORT"
+add_env_var_from_env "REDIS_PASSWORD"
 
-# API Security (CRITICAL)
-add_env_var "INTERNAL_API_KEY" "mav+PpkGCyAADIyUlTUBGIk194KCa3U4"
-add_env_var "CRON_SECRET" "dSnDygbN3YXCEphCFymKyd0TMfuhjXzu"
-add_env_var "ADMIN_API_KEY" "7k9m2n5p8q1s4t7u0v3w6x9y2z5a8b1c4d7e0f3g6h9i2j5k8l1m4n7o0p3q6r9s2t5u8v1w4x7y0z3"
+# API Security (CRITICAL) - read from environment
+add_env_var_from_env "INTERNAL_API_KEY"
+add_env_var_from_env "CRON_SECRET"
+add_env_var_from_env "ADMIN_API_KEY"
 
-# GoHighLevel Integration (CRITICAL for CRM)
-add_env_var "GHL_API_KEY" "pit-f7f2fad9-fe5a-4c19-86ff-cb3a4177784a"
-add_env_var "GHL_LOCATION_ID" "oUvYNTw2Wvul7JSJplqQ"
-add_env_var "GHL_API_BASE_URL" "https://services.leadconnectorhq.com"
+# GoHighLevel Integration (CRITICAL for CRM) - read from environment
+add_env_var_from_env "GHL_API_KEY"
+add_env_var_from_env "GHL_LOCATION_ID"
+add_env_var "GHL_API_BASE_URL" "${GHL_API_BASE_URL:-https://services.leadconnectorhq.com}"
 
 # Google Maps (CRITICAL for booking location validation)
 # Use values from current environment (loaded from .env.local if present)
@@ -87,20 +87,20 @@ add_env_var_from_env "GOOGLE_PROJECT_ID"
 add_env_var_from_env "GOOGLE_REGION"
 add_env_var_from_env "VERTEX_MODEL_ID"
 
-# Email Services (CRITICAL for notifications)
-add_env_var "RESEND_API_KEY" "re_LisJRVK9_LbaKdMi8gZNafPvWD2H2Myca"
-add_env_var "FROM_EMAIL" "no-reply@houstonmobilenotarypros.com"
-add_env_var "ADMIN_EMAIL" "houstonmobilenotarypros@gmail.com"
+# Email Services (CRITICAL for notifications) - read from environment
+add_env_var_from_env "RESEND_API_KEY"
+add_env_var "FROM_EMAIL" "${FROM_EMAIL:-no-reply@houstonmobilenotarypros.com}"
+add_env_var "ADMIN_EMAIL" "${ADMIN_EMAIL:-houstonmobilenotarypros@gmail.com}"
 
-# AWS S3 (CRITICAL for file uploads)
-add_env_var "AWS_ACCESS_KEY_ID" "AKIAYWBJYUTW5O6XNZ23"
-add_env_var "AWS_SECRET_ACCESS_KEY" "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"
-add_env_var "AWS_REGION" "us-east-1"
-add_env_var "S3_BUCKET" "houston-notary-docs"
+# AWS S3 (CRITICAL for file uploads) - read from environment
+add_env_var_from_env "AWS_ACCESS_KEY_ID"
+add_env_var_from_env "AWS_SECRET_ACCESS_KEY"
+add_env_var "AWS_REGION" "${AWS_REGION:-us-east-1}"
+add_env_var "S3_BUCKET" "${S3_BUCKET:-houston-notary-docs}"
 
-# Monitoring (CRITICAL for error tracking)
-add_env_var "SENTRY_DSN" "https://dcf43018a2b7757b6b3677520acc854f@o4508626800803840.ingest.us.sentry.io/4508626801000448"
-add_env_var "NEXT_PUBLIC_SENTRY_DSN" "https://dcf43018a2b7757b6b3677520acc854f@o4508626800803840.ingest.us.sentry.io/4508626801000448"
+# Monitoring (CRITICAL for error tracking) - read from environment
+add_env_var_from_env "SENTRY_DSN"
+add_env_var_from_env "NEXT_PUBLIC_SENTRY_DSN"
 
 # Feature Flags (CRITICAL for production control)
 add_env_var "ENABLE_GUEST_BOOKINGS" "true"
@@ -121,4 +121,4 @@ echo "   1. Run 'vercel env ls production' to verify all variables are set"
 echo "   2. Deploy your app to test the Stripe booking fix"
 echo "   3. Monitor the logs for any remaining environment variable issues"
 echo ""
-echo "🚨 IMPORTANT: This script contains sensitive data. Delete it after use!" 
+echo "✅ SECURITY: This script now reads from .env.local - no hardcoded secrets!" 

@@ -72,9 +72,120 @@ const requiredEnvVars = {
   'GOOGLE_MAPS_API_KEY': {
     required: false,
     type: 'string',
-    description: 'Google Maps API key for distance calculations',
+    description: 'Google Maps API key for server-side geocoding/distance calculations',
     example: 'AIza...',
     validation: (value) => value.startsWith('AIza')
+  },
+  'NEXT_PUBLIC_GOOGLE_MAPS_API_KEY': {
+    required: false,
+    type: 'string',
+    description: 'Google Maps API key for client-side maps/autocomplete',
+    example: 'AIza...',
+    validation: (value) => value.startsWith('AIza')
+  },
+  // Supabase / Database
+  'NEXT_PUBLIC_SUPABASE_URL': {
+    required: true,
+    type: 'url',
+    description: 'Supabase project URL',
+    example: 'https://xxxxx.supabase.co',
+    validation: (value) => value.startsWith('https://')
+  },
+  'NEXT_PUBLIC_SUPABASE_ANON_KEY': {
+    required: true,
+    type: 'string',
+    description: 'Supabase anonymous/public key',
+    example: 'eyJ...',
+  },
+  'SUPABASE_SERVICE_ROLE_KEY': {
+    required: true,
+    type: 'string',
+    description: 'Supabase service role key (bypasses RLS)',
+    example: 'eyJ...',
+    security: 'SENSITIVE'
+  },
+  // Redis / Caching
+  'REDIS_URL': {
+    required: false,
+    type: 'url',
+    description: 'Redis connection URL (Upstash or self-hosted)',
+    example: 'rediss://default:token@host:port',
+    validation: (value) => value.startsWith('rediss://') || value.startsWith('redis://')
+  },
+  'UPSTASH_REDIS_REST_URL': {
+    required: false,
+    type: 'url',
+    description: 'Upstash REST API URL (alternative to REDIS_URL)',
+    example: 'https://xxxxx.upstash.io',
+    validation: (value) => value.startsWith('https://')
+  },
+  'UPSTASH_REDIS_REST_TOKEN': {
+    required: false,
+    type: 'string',
+    description: 'Upstash REST API token (alternative to REDIS_URL)',
+    example: 'AXxxxxx',
+    security: 'SENSITIVE'
+  },
+  // AWS S3
+  'AWS_ACCESS_KEY_ID': {
+    required: false,
+    type: 'string',
+    description: 'AWS access key ID for S3',
+    example: 'AKIAxxxxx',
+    security: 'SENSITIVE'
+  },
+  'AWS_SECRET_ACCESS_KEY': {
+    required: false,
+    type: 'string',
+    description: 'AWS secret access key for S3',
+    example: 'xxxxx',
+    security: 'SENSITIVE'
+  },
+  'AWS_REGION': {
+    required: false,
+    type: 'string',
+    description: 'AWS region for S3 bucket',
+    example: 'us-east-1',
+    allowedValues: ['us-east-1', 'us-west-2', 'eu-west-1']
+  },
+  'S3_BUCKET': {
+    required: false,
+    type: 'string',
+    description: 'S3 bucket name for file uploads',
+    example: 'houston-notary-docs'
+  },
+  'AWS_S3_BUCKET': {
+    required: false,
+    type: 'string',
+    description: 'S3 bucket name (alternative to S3_BUCKET)',
+    example: 'houston-notary-docs'
+  },
+  // Email
+  'RESEND_API_KEY': {
+    required: false,
+    type: 'string',
+    description: 'Resend API key for transactional emails',
+    example: 're_xxxxx',
+    validation: (value) => value.startsWith('re_'),
+    security: 'SENSITIVE'
+  },
+  'FROM_EMAIL': {
+    required: false,
+    type: 'string',
+    description: 'Default sender email address',
+    example: 'no-reply@houstonmobilenotarypros.com'
+  },
+  'CONTACT_FORM_RECEIVER_EMAIL': {
+    required: false,
+    type: 'string',
+    description: 'Email address to receive contact form submissions',
+    example: 'contact@houstonmobilenotarypros.com'
+  },
+  'CONTACT_FORM_SENDER_EMAIL': {
+    required: false,
+    type: 'string',
+    description: 'Email address to send contact form notifications from',
+    example: 'no-reply@houstonmobilenotarypros.com'
   },
 
   // GHL Integration
@@ -84,12 +195,26 @@ const requiredEnvVars = {
     description: 'GoHighLevel location ID',
     example: 'abc123...'
   },
-  'GHL_API_KEY': {
+  'GHL_PRIVATE_INTEGRATION_TOKEN': {
     required: true,
     type: 'string',
-    description: 'GoHighLevel API key',
+    description: 'GoHighLevel private integration token (preferred over GHL_API_KEY)',
     example: 'eyJ...',
     security: 'SENSITIVE'
+  },
+  'GHL_API_KEY': {
+    required: false,
+    type: 'string',
+    description: 'GoHighLevel API key (legacy, use GHL_PRIVATE_INTEGRATION_TOKEN instead)',
+    example: 'eyJ...',
+    security: 'SENSITIVE'
+  },
+  'GHL_API_BASE_URL': {
+    required: false,
+    type: 'url',
+    description: 'GoHighLevel API base URL',
+    example: 'https://services.leadconnectorhq.com',
+    validation: (value) => value.startsWith('https://')
   },
 
   // Environment Detection
@@ -107,47 +232,8 @@ const requiredEnvVars = {
     allowedValues: ['true', 'false']
   },
 
-  // Proof.com RON Integration
-  'PROOF_API_KEY': {
-    required: true,
-    type: 'string',
-    description: 'Proof.com API key for RON services',
-    example: 'proof_live_...',
-    security: 'SENSITIVE'
-  },
-  'PROOF_API_URL': {
-    required: false,
-    type: 'url',
-    description: 'Proof.com API base URL',
-    example: 'https://api.proof.com',
-    validation: (value) => value.startsWith('https://')
-  },
-  'PROOF_ORGANIZATION_ID': {
-    required: true,
-    type: 'string',
-    description: 'Proof.com organization identifier',
-    example: 'ord123abc456'
-  },
-  'PROOF_ENVIRONMENT': {
-    required: false,
-    type: 'enum',
-    description: 'Proof.com environment (sandbox or production)',
-    allowedValues: ['sandbox', 'production'],
-    validation: (value) => ['sandbox', 'production'].includes(value)
-  },
-  'PROOF_WEBHOOK_SECRET': {
-    required: true,
-    type: 'string',
-    description: 'Proof.com webhook signature verification secret',
-    example: 'whsec_...',
-    security: 'SENSITIVE'
-  },
-  'PROOF_REDIRECT_URL': {
-    required: false,
-    type: 'url',
-    description: 'Redirect URL after RON session completion',
-    example: 'https://houstonmobilenotarypros.com/ron/complete'
-  }
+  // Note: Proof.com RON integration has been removed
+  // RON is now handled via Notary Hub UI with its own environment variables
 };
 
 function checkEnvironmentVariable(key, config) {

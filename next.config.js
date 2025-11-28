@@ -33,7 +33,15 @@ const nextConfig = {
   },
   
   // Modern Next.js 15 features - moved from experimental
-  serverExternalPackages: ['@prisma/client'],
+  // Mark heavy, server-only dependencies as external so Next.js does not try
+  // to analyze their internal dynamic requires (e.g. BullMQ child-processors,
+  // require-in-the-middle via Sentry). See `docs/build-output-map.md`.
+  serverExternalPackages: [
+    '@prisma/client',
+    'bullmq',
+    'ioredis',
+    '@sentry/nextjs',
+  ],
   
   experimental: {
     // Simplified experimental features to prevent conflicts

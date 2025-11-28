@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import MiniFAQ from "@/components/mini-faq"
 import { SERVICES_CONFIG } from "@/lib/services/config"
 import { PRICING_CONFIG } from "@/lib/pricing/base"
+import GuaranteeStrip from "@/components/guarantees/GuaranteeStrip"
 
 // Define Base URL for metadata
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotarypros.com'; // Replace with your actual domain
@@ -343,7 +344,7 @@ export default function ServicesPage() {
       question: "Do you offer weekend services?",
       answer: (
         <p>
-          Yes, we offer weekend services for all our service packages with a $50 weekend surcharge. Our Priority Service
+          Yes, we offer weekend services for all our service packages with a $40 weekend surcharge. Our Priority Service
           is available 7 days a week from 7am-9pm, including weekends. Weekend appointments should be booked at least 48
           hours in advance when possible.
         </p>
@@ -439,18 +440,7 @@ const featuredCityLinks = [
   </p>
   
   {/* Guarantee Banner */}
-  <div className="bg-gradient-to-r from-[#002147] to-[#001a38] border-2 border-[#A52A2A] rounded-lg px-8 py-6 mx-auto max-w-2xl">
-    <div className="flex items-center justify-center">
-      <svg className="w-8 h-8 text-[#A52A2A] mr-4" fill="currentColor" viewBox="0 0 20 20">
-        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-      </svg>
-      <div className="text-center">
-        <div className="text-xl font-bold text-[#A52A2A]">OUR GUARANTEE</div>
-        <div className="text-white font-semibold text-lg">Flawless the first time—or we pay the redraw fee</div>
-        <div className="text-xs text-[#91A3B0] mt-2">*Terms apply. Valid for notarization errors due to our oversight.</div>
-      </div>
-    </div>
-  </div>
+  <GuaranteeStrip variant="banner" className="max-w-2xl mx-auto" />
 </section>
 
       {/* Service Cards */}
@@ -1049,7 +1039,7 @@ const featuredCityLinks = [
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/booking">
             <Button size="lg" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white">
-              Book Now
+              Book Appointment
             </Button>
           </Link>
           <Link href="/contact">

@@ -226,6 +226,12 @@ We welcome security researchers and the community to help us maintain security. 
 - **Database Access**: Principle of least privilege
 - **Third-party Integrations**: Secure API authentication
 
+#### **Secrets Management & Rotation Log**
+- **2025-11-26**:
+  - Removed accidentally committed local credential artifacts from the repository (`client_secret*.json`, `local-vars.txt`, `cookies.txt`, `vercel-production.env`, and related env snapshot files).
+  - Tightened `.gitignore` to prevent future commits of raw secrets and environment snapshots (service-account JSONs, credential dumps, local env mirrors).
+  - **Operator action required**: Rotate any Google, Stripe, Supabase, AWS, GHL, Resend, and other keys referenced in those files in the actual cloud providers and update deployment environments (Vercel, Supabase, etc.) accordingly.
+
 ### **Deployment Security**
 - **CI/CD Pipeline**: Automated security scanning
 - **Container Security**: Secure base images and scanning

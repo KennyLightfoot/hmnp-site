@@ -8,12 +8,34 @@
 console.log('🔍 ENVIRONMENT VARIABLES COMPARISON\n');
 console.log('=' .repeat(80));
 
-// Your local environment variables (from .env.local)
+/**
+ * SECURITY NOTE: This script now reads from environment variables or .env.local
+ * No secrets are hardcoded. Run with: node compare-env-variables.js
+ * Make sure .env.local exists or set environment variables before running.
+ */
+
+import { config } from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load .env.local if it exists
+const envPath = join(__dirname, '.env.local');
+try {
+  config({ path: envPath });
+  console.log('✅ Loaded variables from .env.local');
+} catch (err) {
+  console.warn('⚠️  .env.local not found, using environment variables from shell');
+}
+
+// Your local environment variables (from .env.local or environment)
 const localEnv = {
   // Database & Infrastructure
-  "SENTRY_DSN": "https://dcf43018a2b7757b6b3677520acc854f@o4508626800803840.ingest.us.sentry.io/4508626801000448",
-  "DATABASE_URL": "postgresql://neondb_owner:npg_clS0GqYNbh8d@ep-summer-mode-a4ocsti3-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require",
-  "DATABASE_URL_UNPOOLED": "postgresql://neondb_owner:npg_clS0GqYNbh8d@ep-summer-mode-a4ocsti3.us-east-1.aws.neon.tech/neondb?sslmode=require&options=-c%20lock_timeout=30000",
+  "SENTRY_DSN": process.env.SENTRY_DSN || "[NOT SET]",
+  "DATABASE_URL": process.env.DATABASE_URL || "[NOT SET]",
+  "DATABASE_URL_UNPOOLED": process.env.DATABASE_URL_UNPOOLED || "[NOT SET]",
   "PGHOST": "ep-summer-mode-a4ocsti3-pooler.us-east-1.aws.neon.tech",
 
   // Server Configuration
@@ -21,23 +43,23 @@ const localEnv = {
   "NODE_ENV": "development",
 
   // Email Configuration
-  "ADMIN_EMAIL": "houstonmobilenotarypros@gmail.com",
-  "FROM_EMAIL": "no-reply@houstonmobilenotarypros.com",
-  "RESEND_API_KEY": "re_LisJRVK9_LbaKdMi8gZNafPvWD2H2Myca",
+  "ADMIN_EMAIL": process.env.ADMIN_EMAIL || "[NOT SET]",
+  "FROM_EMAIL": process.env.FROM_EMAIL || "[NOT SET]",
+  "RESEND_API_KEY": process.env.RESEND_API_KEY || "[NOT SET]",
 
   // Admin Credentials
-  "ADMIN_USERNAME": "HMNP",
-  "ADMIN_PASSWORD": "Hmnp128174",
+  "ADMIN_USERNAME": process.env.ADMIN_USERNAME || "[NOT SET]",
+  "ADMIN_PASSWORD": process.env.ADMIN_PASSWORD ? "[REDACTED]" : "[NOT SET]",
 
   // GoHighLevel Configuration
-  "GHL_REDIRECT_URI": "https://houstonmobilenotarypros.com/api/auth/callback/gohighlevel",
-  "GHL_CALL_REQUEST_WORKFLOW_ID": "8fb116ba-1cf8-4241-97b5-d2f424128487",
-  "GHL_NEW_CONTACT_WORKFLOW_ID": "b612c5ea-6ee9-4c8c-b891-412d424653f3",
-  "GHL_CONTACT_FORM_WORKFLOW_ID": "05b9b32e-d240-4599-96fb-994190174204",
-  "GHL_LOCATION_ID": "oUvYNTw2Wvul7JSJplqQ",
-  "GHL_CLIENT_ID": "67e38186c1722c498c0eeca2-m8q5mmfz",
-  "GHL_CLIENT_SECRET": "bb2f7408-44fb-4a3b-8ca7-c92607be71b7",
-  "GHL_API_KEY": "pit-f7f2fad9-fe5a-4c19-86ff-cb3a4177784a",
+  "GHL_REDIRECT_URI": process.env.GHL_REDIRECT_URI || "[NOT SET]",
+  "GHL_CALL_REQUEST_WORKFLOW_ID": process.env.GHL_CALL_REQUEST_WORKFLOW_ID || "[NOT SET]",
+  "GHL_NEW_CONTACT_WORKFLOW_ID": process.env.GHL_NEW_CONTACT_WORKFLOW_ID || "[NOT SET]",
+  "GHL_CONTACT_FORM_WORKFLOW_ID": process.env.GHL_CONTACT_FORM_WORKFLOW_ID || "[NOT SET]",
+  "GHL_LOCATION_ID": process.env.GHL_LOCATION_ID || "[NOT SET]",
+  "GHL_CLIENT_ID": process.env.GHL_CLIENT_ID || "[NOT SET]",
+  "GHL_CLIENT_SECRET": process.env.GHL_CLIENT_SECRET ? "[REDACTED]" : "[NOT SET]",
+  "GHL_API_KEY": process.env.GHL_API_KEY ? "[REDACTED]" : "[NOT SET]",
   "GHL_API_VERSION": "2021-07-28",
   "GHL_API_BASE_URL": "https://services.leadconnectorhq.com",
 
@@ -105,7 +127,7 @@ const localEnv = {
   "NEXT_PUBLIC_BASE_URL": "https://houstonmobilenotarypros.com",
 
   // NextAuth Configuration (LOCAL VALUES)
-  "NEXTAUTH_SECRET": "BoE/DaOyE7XJk2np0rDNmk7qXJq0ssgbsG4qMmCZ1Ic=",
+  "NEXTAUTH_SECRET": process.env.NEXTAUTH_SECRET ? "[REDACTED]" : "[NOT SET]",
   "NEXTAUTH_URL": "http://localhost:3000",
   "NEXTAUTH_URL_INTERNAL": "http://localhost:3000",
   "NEXT_PUBLIC_APP_URL": "https://houstonmobilenotarypros.com",
@@ -118,26 +140,26 @@ const localEnv = {
   "REVALIDATE_TOKEN": "8f2a1e94c7b3d5609e7f2a1c3b5d8e7f9a2c4b6d8e0f2a4c6b8d0e2f4a6c8b0",
 
   // Google Maps
-  "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyBvMhEDQAejT3zt1VHZ8oF-KbufDf0AJkw",
-  "GOOGLE_MAPS_API_KEY": "AIzaSyA5M_i6YGqx8-B5cZ1GFjV_HVUX5CbVZTc",
+  "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY": process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? "[REDACTED]" : "[NOT SET]",
+  "GOOGLE_MAPS_API_KEY": process.env.GOOGLE_MAPS_API_KEY ? "[REDACTED]" : "[NOT SET]",
   "NEXT_PUBLIC_SANITY_PROJECT_ID": "8t38ph2l",
   "NEXT_PUBLIC_SANITY_DATASET": "hmnp-blog",
 
   // AWS / S3 Uploads
-  "AWS_ACCESS_KEY_ID": "AKIAYWBJYUTW5O6XNZ23",
-  "AWS_SECRET_ACCESS_KEY": "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",
-  "AWS_REGION": "us-east-1",
-  "S3_BUCKET_NAME": "houston-notary-docs",
+  "AWS_ACCESS_KEY_ID": process.env.AWS_ACCESS_KEY_ID ? "[REDACTED]" : "[NOT SET]",
+  "AWS_SECRET_ACCESS_KEY": process.env.AWS_SECRET_ACCESS_KEY ? "[REDACTED]" : "[NOT SET]",
+  "AWS_REGION": process.env.AWS_REGION || "[NOT SET]",
+  "S3_BUCKET_NAME": process.env.S3_BUCKET_NAME || "[NOT SET]",
 
   // Stripe
-  "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_51RRbaxPhMv5o5kTlYgpkRCLHpfuNX9EEjA9wGhcQwuSggNoB4utcBEGPXRVchEPRVVxfqdLp2CkAKhAX8Va3ntZ300NgjDT3c7",
-  "STRIPE_SECRET_KEY": "sk_test_51RRbaxPhMv5o5kTlPtwhLoQ93U5uqaap49ljbti7SX6D6bB96A7nTdqCn8IM9G38P6ZQwRM8FWdFIGFcQZFxsbUD00Wnb4p97H",
-  "STRIPE_WEBHOOK_SECRET": "whsec_8e3f40dd8021cf60564f81902ca98851277c6dafcf303d275c78459470ba94fd",
+  "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? "[REDACTED]" : "[NOT SET]",
+  "STRIPE_SECRET_KEY": process.env.STRIPE_SECRET_KEY ? "[REDACTED]" : "[NOT SET]",
+  "STRIPE_WEBHOOK_SECRET": process.env.STRIPE_WEBHOOK_SECRET ? "[REDACTED]" : "[NOT SET]",
   "PAYMENT_EXPIRATION_HOURS": "72",
 
   // API Security Keys
-  "INTERNAL_API_KEY": "mav+PpkGCyAADIyUlTUBGIk194KCa3U4",
-  "CRON_SECRET": "dSnDygbN3YXCEphCFymKyd0TMfuhjXzu",
+  "INTERNAL_API_KEY": process.env.INTERNAL_API_KEY ? "[REDACTED]" : "[NOT SET]",
+  "CRON_SECRET": process.env.CRON_SECRET ? "[REDACTED]" : "[NOT SET]",
 
   // Email Configuration (for notifications)
   "SMTP_HOST": "smtp.gmail.com",

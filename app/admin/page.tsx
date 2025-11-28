@@ -1,15 +1,8 @@
 import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+
 import { authOptions } from "@/lib/auth";
-import { redirect } from 'next/navigation';
-import {
-  Role,
-  NotaryApplicationStatus,
-  NotaryOnboardingStatus,
-  NotaryAvailabilityStatus,
-  JobOfferStatus,
-} from "@/lib/prisma-types";
-import { prisma } from "@/lib/db";
-import type { Prisma } from "@/lib/prisma-types";
+import { Role } from "@/lib/prisma-types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   CalendarDays,
@@ -24,256 +17,122 @@ import {
   Gauge,
 } from "lucide-react";
 import Link from "next/link";
+import { fetchAdminJson } from "@/lib/utils/server-fetch";
+import type { AdminDashboardOverview } from "@/lib/services/admin-metrics";
 
 // Force dynamic rendering to prevent SSR issues with client components
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
+
+interface DashboardApiResponse {
+  success: boolean;
+  data: AdminDashboardOverview;
+}
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
 
   // Authorization Check: Only Admins allowed (tolerate NextAuth typing)
-  const userRole = (session?.user as any)?.role
+  const userRole = (session?.user as any)?.role;
   if (!session?.user || userRole !== Role.ADMIN) {
-    redirect('/portal'); // Redirect non-admins
+    redirect("/portal"); // Redirect non-admins
   }
 
-  const now = new Date();
-  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-  const fifteenMinutesFromNow = new Date(now.getTime() + 15 * 60 * 1000);
-
-  // Fetch summary data for dashboard
-  const [
-    totalBookings,
-    pendingBookings,
-    totalClients,
-    totalRevenue,
-    scheduledNotifications,
-    activeAlerts,
-    applicationStatusGroups,
-    applicationsLast7Days,
-    approvedNotConvertedCount,
-    convertedLast30Days,
-    activeNotariesCount,
-    totalOnboardedNotaries,
-    openNetworkJobs,
-    pendingJobOffers,
-    expiringJobOffersSoon,
-    offersLast7Days,
-    acceptedOffersLast7Days,
-    expiredOffersLast24h,
-  ] = await Promise.all([
-    prisma.booking.count(),
-    prisma.booking.count({
-      where: {
-        status: { in: ['REQUESTED', 'PAYMENT_PENDING'] },
-      },
-    }),
-    prisma.user.count({
-      where: { role: 'SIGNER' },
-    }),
-    prisma.payment.aggregate({
-      where: { status: 'COMPLETED' },
-      _sum: { amount: true },
-    }),
-    prisma.notificationLog.count({
-      where: {
-        status: 'PENDING',
-      },
-    }),
-    prisma.systemAlert.count({
-      where: { status: 'ACTIVE' },
-    }).catch(() => 0), // Handle if this table doesn't exist yet
-    prisma.notaryApplication.groupBy({
-      by: ['status'],
-      _count: { _all: true },
-    }),
-    prisma.notaryApplication.count({
-      where: { createdAt: { gte: sevenDaysAgo } },
-    }),
-    prisma.notaryApplication.count({
-      where: {
-        status: NotaryApplicationStatus.APPROVED,
-        convertedToUserId: null,
-      },
-    }),
-    prisma.notaryApplication.count({
-      where: {
-        status: NotaryApplicationStatus.CONVERTED,
-        convertedAt: { gte: thirtyDaysAgo },
-      },
-    }),
-    prisma.notary_profiles.count({
-      where: {
-        onboarding_status: NotaryOnboardingStatus.COMPLETE,
-        availability_status: NotaryAvailabilityStatus.AVAILABLE,
-        is_active: true,
-      },
-    }),
-    prisma.notary_profiles.count({
-      where: {
-        onboarding_status: NotaryOnboardingStatus.COMPLETE,
-      },
-    }),
-    prisma.booking.count({
-      where: {
-        sendToNetwork: true,
-        jobOffers: {
-          none: {
-            status: JobOfferStatus.ACCEPTED,
-          },
-        },
-      },
-    }),
-    prisma.jobOffer.count({
-      where: {
-        status: JobOfferStatus.PENDING,
-        expiresAt: {
-          gte: now,
-        },
-      },
-    }),
-    prisma.jobOffer.count({
-      where: {
-        status: JobOfferStatus.PENDING,
-        expiresAt: {
-          gte: now,
-          lte: fifteenMinutesFromNow,
-        },
-      },
-    }),
-    prisma.jobOffer.count({
-      where: {
-        createdAt: {
-          gte: sevenDaysAgo,
-        },
-      },
-    }),
-    prisma.jobOffer.count({
-      where: {
-        status: JobOfferStatus.ACCEPTED,
-        createdAt: {
-          gte: sevenDaysAgo,
-        },
-      },
-    }),
-    prisma.jobOffer.count({
-      where: {
-        status: JobOfferStatus.EXPIRED,
-        updatedAt: {
-          gte: twentyFourHoursAgo,
-        },
-      },
-    }),
-  ]);
-
-  type ApplicationStatusGroup = { status: NotaryApplicationStatus; _count: { _all: number } };
-  
-  const applicationStatusMap = (applicationStatusGroups as ApplicationStatusGroup[]).reduce<Record<string, number>>(
-    (acc: Record<string, number>, group: ApplicationStatusGroup) => {
-      acc[group.status] = group._count._all;
-      return acc;
-    },
-    {} as Record<string, number>
-  );
-
-  const totalApplications = Object.values(applicationStatusMap).reduce((sum, count) => sum + count, 0);
-  const pendingApplications = applicationStatusMap[NotaryApplicationStatus.PENDING] || 0;
-  const underReviewApplications = applicationStatusMap[NotaryApplicationStatus.UNDER_REVIEW] || 0;
-  const convertedApplications = applicationStatusMap[NotaryApplicationStatus.CONVERTED] || 0;
-
-  const jobOfferAcceptanceRate = offersLast7Days === 0
-    ? 0
-    : Math.round((acceptedOffersLast7Days / offersLast7Days) * 100);
-
-  // Calculate metrics
-  const totalRevenueFormatted = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(totalRevenue?._sum?.amount?.toNumber() || 0);
+  const { data } = await fetchAdminJson<DashboardApiResponse>("/api/admin/dashboard");
 
   const dashboardItems = [
     {
       title: "Bookings",
       icon: CalendarDays,
-      value: totalBookings.toString(),
-      description: `${pendingBookings} pending`,
+      value: data.totals.totalBookings.toString(),
+      description: `${data.totals.pendingBookings} pending`,
       href: "/admin/bookings",
-      color: "bg-blue-100 text-blue-800"
+      color: "bg-blue-100 text-blue-800",
     },
     {
       title: "Clients",
       icon: Users,
-      value: totalClients.toString(),
+      value: data.totals.totalClients.toString(),
       description: "Total clients",
       href: "/admin/clients",
-      color: "bg-green-100 text-green-800"
+      color: "bg-green-100 text-green-800",
     },
     {
       title: "Revenue",
       icon: CreditCard,
-      value: totalRevenueFormatted,
+      value: new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(data.totals.totalRevenue),
       description: "Total processed",
       href: "/admin/payments",
-      color: "bg-purple-100 text-purple-800"
+      color: "bg-purple-100 text-purple-800",
     },
     {
       title: "Notifications",
       icon: Bell,
-      value: scheduledNotifications.toString(),
+      value: data.notifications.scheduled.toString(),
       description: "Pending to send",
       href: "/admin/notifications",
-      color: "bg-amber-100 text-amber-800"
+      color: "bg-amber-100 text-amber-800",
     },
     {
       title: "System Alerts",
       icon: AlertCircle,
-      value: activeAlerts.toString(),
+      value: data.notifications.activeAlerts.toString(),
       description: "Active alerts",
       href: "/admin/alerts",
-      color: "bg-red-100 text-red-800"
+      color: "bg-red-100 text-red-800",
+    },
+    {
+      title: "Pending content reviews",
+      icon: FileText,
+      value: data.content.pendingReviews.toString(),
+      description: "PENDING_REVIEW jobs in the AI content queue",
+      href: "/admin/content",
+      color: "bg-sky-100 text-sky-800",
     },
     {
       title: "Workers",
       icon: Activity,
-      value: "4",  // This would be dynamic in production
+      value: "4", // Placeholder
       description: "Queue workers",
       href: "/admin/workers",
-      color: "bg-indigo-100 text-indigo-800"
-    }
+      color: "bg-indigo-100 text-indigo-800",
+    },
   ];
 
   const networkDashboardItems = [
     {
       title: "Notary Applications",
       icon: FileText,
-      value: totalApplications.toString(),
-      description: `${pendingApplications} pending • ${approvedNotConvertedCount} ready • ${convertedApplications} converted`,
+      value: data.network.totalApplications.toString(),
+      description: `${data.network.statusCounts["PENDING"] ?? 0} pending • ${
+        data.network.approvedReadyCount
+      } ready • ${data.network.statusCounts["CONVERTED"] ?? 0} converted`,
       href: "/admin/notary-applications",
       color: "bg-slate-100 text-slate-800",
     },
     {
       title: "Active Notaries",
       icon: UserCheck,
-      value: `${activeNotariesCount}`,
-      description: `of ${totalOnboardedNotaries} onboarded • ${convertedLast30Days} converted 30d`,
+      value: `${data.network.activeNotaries}`,
+      description: `of ${data.network.totalOnboardedNotaries} onboarded • ${data.network.convertedLast30Days} converted 30d`,
       href: "/admin/network/coverage",
       color: "bg-emerald-100 text-emerald-800",
     },
     {
       title: "Open Network Jobs",
       icon: MapPin,
-      value: openNetworkJobs.toString(),
-      description: `${expiringJobOffersSoon} offers expiring soon • ${applicationsLast7Days} new apps 7d`,
+      value: data.network.openNetworkJobs.toString(),
+      description: `${data.network.expiringSoonOffers} offers expiring soon • ${data.network.applicationsLast7Days} new apps 7d`,
       href: "/admin/network/jobs",
       color: "bg-cyan-100 text-cyan-800",
     },
     {
       title: "Job Offer Health",
       icon: Gauge,
-      value: `${jobOfferAcceptanceRate}%`,
-      description: `${pendingJobOffers} pending • ${expiredOffersLast24h} expired 24h`,
+      value: `${data.network.jobOfferAcceptanceRate}%`,
+      description: `${data.network.pendingJobOffers} pending • ${data.network.expiredOffersLast24h} expired 24h`,
       href: "/admin/network",
       color: "bg-orange-100 text-orange-800",
     },

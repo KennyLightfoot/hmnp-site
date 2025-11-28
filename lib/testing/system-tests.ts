@@ -3,12 +3,15 @@
  * Verifies all system improvements work together correctly
  */
 
+import { Buffer } from 'node:buffer';
+
 import { prisma } from '@/lib/database-connection';
 import { Prisma } from '@/lib/prisma-types';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { cache } from '@/lib/cache';
 import { getDatabaseHealth } from '@/lib/database/connection-pool';
 import { getActiveServices } from '@/lib/database/query-optimization';
+import { runQueueSystemTest } from '@/lib/testing/queue-system-test';
 
 export interface TestResult {
   name: string;
@@ -48,6 +51,11 @@ export async function runSystemTests(): Promise<SystemTestReport> {
   results.push(await testRedisCaching());
   results.push(await testCacheInvalidation());
   results.push(await testCachePerformance());
+
+  // Queue / BullMQ Tests
+  results.push(await testQueues());
+  results.push(await testAgentsService());
+  results.push(await testN8nHealth());
 
   // API Tests
   results.push(await testServicesAPI());
@@ -90,6 +98,37 @@ export async function runSystemTests(): Promise<SystemTestReport> {
   console.log(`✅ Passed: ${passed} | ❌ Failed: ${failed} | ⚠️  Warnings: ${warnings}`);
 
   return report;
+}
+
+/**
+ * Run a quick health check (lightweight subset of tests)
+ */
+export async function runQuickHealthCheck(): Promise<{
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  database: boolean;
+  cache: boolean;
+  queues: boolean;
+}> {
+  const dbResult = await testDatabaseConnectivity();
+  const cacheResult = await testRedisCaching();
+  const queueCheck = await runQueueSystemTest();
+
+  const databaseOk = dbResult.status === 'PASS';
+  const cacheOk = cacheResult.status !== 'FAIL';
+  const queuesOk = queueCheck.status !== 'FAIL';
+
+  let status: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';
+  if (!databaseOk || !cacheOk || !queuesOk) {
+    status = databaseOk && cacheOk && queuesOk ? 'healthy' : 'degraded';
+    if (!databaseOk) status = 'unhealthy';
+  }
+
+  return {
+    status,
+    database: databaseOk,
+    cache: cacheOk,
+    queues: queuesOk,
+  };
 }
 
 // ============================================================================
@@ -383,6 +422,162 @@ async function testCachePerformance(): Promise<TestResult> {
       message: 'Cache performance test failed',
       details: { error: error instanceof Error ? getErrorMessage(error) : String(error) }
     };
+  }
+}
+
+// ============================================================================
+// QUEUE / BULLMQ TESTS
+// ============================================================================
+
+async function testQueues(): Promise<TestResult> {
+  const startTime = Date.now();
+
+  const result = await runQueueSystemTest();
+  const duration = Date.now() - startTime;
+
+  if (result.status === 'PASS') {
+    return {
+      name: 'BullMQ Queues',
+      status: 'PASS',
+      duration,
+      message: result.message,
+      details: result.details,
+    };
+  }
+
+  if (result.status === 'SKIP') {
+    return {
+      name: 'BullMQ Queues',
+      status: 'WARN',
+      duration,
+      message: result.message,
+      details: result.details,
+    };
+  }
+
+  return {
+    name: 'BullMQ Queues',
+    status: 'FAIL',
+    duration,
+    message: result.message,
+    details: result.details,
+  };
+}
+
+// ============================================================================
+// AUTOMATION / N8N TESTS
+// ============================================================================
+
+async function testAgentsService(): Promise<TestResult> {
+  const startTime = Date.now();
+  const baseUrl = process.env.AGENTS_BASE_URL || 'http://localhost:4001';
+  const healthPath = process.env.AGENTS_HEALTH_ENDPOINT || '/health';
+  const healthUrl = new URL(healthPath, baseUrl);
+  const timeoutMs = Number(process.env.AGENTS_HEALTH_TIMEOUT_MS || 5000);
+  const isRequired = process.env.AGENTS_HEALTH_REQUIRED === 'true';
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const headers: Record<string, string> = { Accept: 'application/json' };
+    if (process.env.AGENTS_ADMIN_SECRET) {
+      headers['x-api-key'] = process.env.AGENTS_ADMIN_SECRET;
+    }
+
+    const response = await fetch(healthUrl, {
+      method: 'GET',
+      headers,
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+    const duration = Date.now() - startTime;
+
+    if (!response.ok) {
+      return {
+        name: 'Agents Service Health',
+        status: isRequired ? 'FAIL' : 'WARN',
+        duration,
+        message: `Agents health endpoint returned ${response.status}`,
+      };
+    }
+
+    const body = await response.json().catch(() => ({}));
+    return {
+      name: 'Agents Service Health',
+      status: 'PASS',
+      duration,
+      message: 'Agents pipeline reachable',
+      details: { url: healthUrl.toString(), body },
+    };
+  } catch (error) {
+    return {
+      name: 'Agents Service Health',
+      status: isRequired ? 'FAIL' : 'WARN',
+      duration: Date.now() - startTime,
+      message: 'Unable to reach agents service',
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error), url: healthUrl.toString() },
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function testN8nHealth(): Promise<TestResult> {
+  const startTime = Date.now();
+  const baseUrl = process.env.N8N_BASE_URL || 'http://localhost:5678';
+  const healthPath = process.env.N8N_HEALTH_ENDPOINT || '/healthz';
+  const healthUrl = new URL(healthPath, baseUrl);
+  const timeoutMs = Number(process.env.N8N_HEALTH_TIMEOUT_MS || 5000);
+  const isRequired = process.env.N8N_HEALTH_REQUIRED === 'true';
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const headers: Record<string, string> = { Accept: 'application/json' };
+    const basicUser = process.env.N8N_BASIC_AUTH_USER;
+    const basicPass = process.env.N8N_BASIC_AUTH_PASSWORD;
+    if (basicUser && basicPass) {
+      const token = Buffer.from(`${basicUser}:${basicPass}`, 'utf8').toString('base64');
+      headers.Authorization = `Basic ${token}`;
+    }
+
+    const response = await fetch(healthUrl, {
+      method: 'GET',
+      headers,
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+    const duration = Date.now() - startTime;
+
+    if (!response.ok) {
+      return {
+        name: 'n8n Health',
+        status: isRequired ? 'FAIL' : 'WARN',
+        duration,
+        message: `n8n health endpoint returned ${response.status}`,
+      };
+    }
+
+    const body = await response.json().catch(() => ({}));
+    return {
+      name: 'n8n Health',
+      status: 'PASS',
+      duration,
+      message: 'n8n workflow engine reachable',
+      details: { url: healthUrl.toString(), body },
+    };
+  } catch (error) {
+    return {
+      name: 'n8n Health',
+      status: isRequired ? 'FAIL' : 'WARN',
+      duration: Date.now() - startTime,
+      message: 'Unable to reach n8n health endpoint',
+      details: { error: error instanceof Error ? getErrorMessage(error) : String(error), url: healthUrl.toString() },
+    };
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -857,37 +1052,4 @@ export async function exportTestReport(report: SystemTestReport, filePath: strin
   const fs = await import('fs/promises');
   await fs.writeFile(filePath, JSON.stringify(report, null, 2));
   console.log(`📊 Test report exported to: ${filePath}`);
-}
-
-/**
- * Run quick health check (subset of full tests)
- */
-export async function runQuickHealthCheck(): Promise<{ status: 'healthy' | 'unhealthy'; details: any }> {
-  try {
-    const [dbHealth, cacheHealth, memoryHealth] = await Promise.all([
-      testDatabaseConnectivity(),
-      testRedisCaching(),
-      testMemoryUsage()
-    ]);
-
-    const allHealthy = [dbHealth, cacheHealth, memoryHealth].every(test => test.status === 'PASS');
-
-    return {
-      status: allHealthy ? 'healthy' : 'unhealthy',
-      details: {
-        database: dbHealth.status,
-        cache: cacheHealth.status,
-        memory: memoryHealth.status,
-        timestamp: new Date().toISOString()
-      }
-    };
-  } catch (error) {
-    return {
-      status: 'unhealthy',
-      details: {
-        error: error instanceof Error ? getErrorMessage(error) : String(error),
-        timestamp: new Date().toISOString()
-      }
-    };
-  }
 }

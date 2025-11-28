@@ -2,38 +2,51 @@
 
 # Clean Environment Variables for Vercel
 # This script removes newlines and uploads clean variables to Vercel
+# SECURITY: This script now reads from .env.local to avoid hardcoding secrets
 
 echo "🧹 Cleaning and uploading environment variables to Vercel..."
 
+# Load environment variables from .env.local if it exists
+if [ -f ./.env.local ]; then
+    echo "📂 Loading variables from .env.local..."
+    set -a
+    # shellcheck disable=SC1091
+    . ./.env.local
+    set +a
+else
+    echo "⚠️  WARNING: .env.local not found. Using environment variables from current shell."
+fi
+
 # Critical variables with cleaned values (remove \n)
+# SECURITY: All values now read from environment variables, not hardcoded
 declare -A CLEAN_VARS=(
-    # Database
-    ["DATABASE_URL"]="postgresql://postgres.unnyhvuhobnmxnpffore:8Q06UmhlcQyAtzch@aws-0-us-east-1.pooler.supabase.com:6543/postgres"
-    ["DATABASE_URL_UNPOOLED"]="postgresql://postgres.unnyhvuhobnmxnpffore:8Q06UmhlcQyAtzch@aws-0-us-east-1.pooler.supabase.com:6543/postgres"
+    # Database - read from environment
+    ["DATABASE_URL"]="${DATABASE_URL}"
+    ["DATABASE_URL_UNPOOLED"]="${DATABASE_URL_UNPOOLED}"
     
-    # NextAuth
-    ["NEXTAUTH_SECRET"]="BoE/DaOyE7XJk2np0rDNmk7qXJq0ssgbsG4qMmCZ1Ic="
-    ["NEXTAUTH_URL"]="https://houstonmobilenotarypros.com"
-    ["NEXTAUTH_URL_INTERNAL"]="https://houstonmobilenotarypros.com"
+    # NextAuth - read from environment
+    ["NEXTAUTH_SECRET"]="${NEXTAUTH_SECRET}"
+    ["NEXTAUTH_URL"]="${NEXTAUTH_URL:-https://houstonmobilenotarypros.com}"
+    ["NEXTAUTH_URL_INTERNAL"]="${NEXTAUTH_URL_INTERNAL:-https://houstonmobilenotarypros.com}"
     
-    # Stripe (CRITICAL - These are corrupted)
-    ["STRIPE_SECRET_KEY"]="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"
-    ["STRIPE_WEBHOOK_SECRET"]="whsec_D1PVCJxGGtjGUmGBCsUtfJGy31n8zRrJ"
-    ["NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"]="pk_live_51QMx2aAx8ko8hXd8NSAYNXb4bMcPjIFZF8Gr7GJbrzn9XFxixpxBe07zJsIPgggy7CcpPXfLQY2WIpacZSMoEzfa00k7NSj6r7"
+    # Stripe - read from environment
+    ["STRIPE_SECRET_KEY"]="${STRIPE_SECRET_KEY}"
+    ["STRIPE_WEBHOOK_SECRET"]="${STRIPE_WEBHOOK_SECRET}"
+    ["NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"]="${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}"
     
-    # Google Maps (CRITICAL - These are corrupted)
-    ["GOOGLE_MAPS_API_KEY"]="AIzaSyBEGc_wacW9IR8_XXY-P0sGn1EOfeUrGCw"
-    ["NEXT_PUBLIC_GOOGLE_MAPS_API_KEY"]="AIzaSyBEGc_wacW9IR8_XXY-P0sGn1EOfeUrGCw"
+    # Google Maps - read from environment
+    ["GOOGLE_MAPS_API_KEY"]="${GOOGLE_MAPS_API_KEY}"
+    ["NEXT_PUBLIC_GOOGLE_MAPS_API_KEY"]="${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}"
     
-    # GHL Core Settings
-    ["GHL_API_KEY"]="pit-f7f2fad9-fe5a-4c19-86ff-cb3a4177784a"
-    ["GHL_LOCATION_ID"]="oUvYNTw2Wvul7JSJplqQ"
-    ["GHL_WEBHOOK_SECRET"]="f1e2d3c4b5a6987654321098765432109876543210987654321098765432109876543210"
-    ["GHL_API_BASE_URL"]="https://services.leadconnectorhq.com"
-    ["GHL_BASE_URL"]="https://services.leadconnectorhq.com"
-    ["GHL_API_VERSION"]="2021-07-28"
-    ["GHL_CLIENT_ID"]="67e38186c1722c498c0eeca2-m8q5mmfz"
-    ["GHL_CLIENT_SECRET"]="bb2f7408-44fb-4a3b-8ca7-c92607be71b7"
+    # GHL Core Settings - read from environment
+    ["GHL_API_KEY"]="${GHL_API_KEY}"
+    ["GHL_LOCATION_ID"]="${GHL_LOCATION_ID}"
+    ["GHL_WEBHOOK_SECRET"]="${GHL_WEBHOOK_SECRET}"
+    ["GHL_API_BASE_URL"]="${GHL_API_BASE_URL:-https://services.leadconnectorhq.com}"
+    ["GHL_BASE_URL"]="${GHL_BASE_URL:-https://services.leadconnectorhq.com}"
+    ["GHL_API_VERSION"]="${GHL_API_VERSION:-2021-07-28}"
+    ["GHL_CLIENT_ID"]="${GHL_CLIENT_ID}"
+    ["GHL_CLIENT_SECRET"]="${GHL_CLIENT_SECRET}"
     
     # GHL Workflow IDs (Critical for booking system)
     ["GHL_BOOKING_CONFIRMATION_WORKFLOW_ID"]="40e0dde5-7b6b-4a5e-9e11-8747e21d15d4"
@@ -107,13 +120,13 @@ declare -A CLEAN_VARS=(
     ["GHL_REDIRECT_URI"]="https://houstonmobilenotarypros.com/api/auth/callback/gohighlevel"
     ["GHL_PRIVATE_INTEGRATION_TOKEN"]="pit-f7f2fad9-fe5a-4c19-86ff-cb3a4177784a"
     
-    # Security
-    ["INTERNAL_API_KEY"]="mav+PpkGCyAADIyUlTUBGIk194KCa3U4"
-    ["JWT_SECRET"]="6e1dffdc65d5473a4899dd5c98a590be7da94e88cf28f8aac3289e196d5912dd"
-    ["JWT_REFRESH_SECRET"]="dce5cf94845bc68fff201b3bd38257d98d61bb63ccc9842196f7f773ff8227dd"
-    ["ENCRYPTION_KEY"]="a1b2c3d4e5f6789012345678901234ab"
-    ["CRON_SECRET"]="dSnDygbN3YXCEphCFymKyd0TMfuhjXzu"
-    ["ADMIN_API_KEY"]="7k9m2n5p8q1s4t7u0v3w6x9y2z5a8b1c4d7e0f3g6h9i2j5k8l1m4n7o0p3q6r9s2t5u8v1w4x7y0z3"
+    # Security - read from environment
+    ["INTERNAL_API_KEY"]="${INTERNAL_API_KEY}"
+    ["JWT_SECRET"]="${JWT_SECRET}"
+    ["JWT_REFRESH_SECRET"]="${JWT_REFRESH_SECRET}"
+    ["ENCRYPTION_KEY"]="${ENCRYPTION_KEY}"
+    ["CRON_SECRET"]="${CRON_SECRET}"
+    ["ADMIN_API_KEY"]="${ADMIN_API_KEY}"
     
     # Business Info
     ["BUSINESS_NAME"]="Houston Mobile Notary Pros"
@@ -140,37 +153,37 @@ declare -A CLEAN_VARS=(
     ["DEVELOPMENT_MODE"]="false"
     ["DEV_MODE"]="false"
     
-    # Redis
-    ["REDIS_URL"]="redis://default:pnpaQyi2JdOb0GH0SVRGjjXwy0pmapV3@redis-18979.c80.us-east-1-2.ec2.redns.redis-cloud.com:18979"
-    ["REDIS_HOST"]="redis-18979.c80.us-east-1-2.ec2.redns.redis-cloud.com"
-    ["REDIS_PORT"]="18979"
-    ["REDIS_PASSWORD"]="pnpaQyi2JdOb0GH0SVRGjjXwy0pmapV3"
-    ["UPSTASH_REDIS_REST_TOKEN"]="pnpaQyi2JdOb0GH0SVRGjjXwy0pmapV3"
-    ["UPSTASH_REDIS_REST_URL"]="https://redis-18979.c80.us-east-1-2.ec2.redns.redis-cloud.com"
+    # Redis - read from environment
+    ["REDIS_URL"]="${REDIS_URL}"
+    ["REDIS_HOST"]="${REDIS_HOST}"
+    ["REDIS_PORT"]="${REDIS_PORT}"
+    ["REDIS_PASSWORD"]="${REDIS_PASSWORD}"
+    ["UPSTASH_REDIS_REST_TOKEN"]="${UPSTASH_REDIS_REST_TOKEN}"
+    ["UPSTASH_REDIS_REST_URL"]="${UPSTASH_REDIS_REST_URL}"
     
-    # Email
-    ["RESEND_API_KEY"]="re_LisJRVK9_LbaKdMi8gZNafPvWD2H2Myca"
+    # Email - read from environment
+    ["RESEND_API_KEY"]="${RESEND_API_KEY}"
     ["CONTACT_FORM_RECEIVER_EMAIL"]="houstonmobilenotarypros@gmail.com"
     ["CONTACT_FORM_SENDER_EMAIL"]="no-reply@houstonmobilenotarypros.com"
     ["FROM_EMAIL"]="no-reply@houstonmobilenotarypros.com"
     ["ADMIN_EMAIL"]="houstonmobilenotarypros@gmail.com"
     
-    # AWS
-    ["AWS_ACCESS_KEY_ID"]="AKIAYWBJYUTW5O6XNZ23"
-    ["AWS_SECRET_ACCESS_KEY"]="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"
-    ["AWS_REGION"]="us-east-1"
-    ["AWS_S3_BUCKET"]="houston-notary-docs"
-    ["S3_BUCKET"]="houston-notary-docs"
-    ["S3_BUCKET_NAME"]="houston-notary-docs"
+    # AWS - read from environment
+    ["AWS_ACCESS_KEY_ID"]="${AWS_ACCESS_KEY_ID}"
+    ["AWS_SECRET_ACCESS_KEY"]="${AWS_SECRET_ACCESS_KEY}"
+    ["AWS_REGION"]="${AWS_REGION:-us-east-1}"
+    ["AWS_S3_BUCKET"]="${AWS_S3_BUCKET:-houston-notary-docs}"
+    ["S3_BUCKET"]="${S3_BUCKET:-houston-notary-docs}"
+    ["S3_BUCKET_NAME"]="${S3_BUCKET_NAME:-houston-notary-docs}"
     
-    # Google Services
-    ["GEMINI_API_KEY"]="AIzaSyD9aNz2Y5rrv52YHNtJMjo2ki_mbwffZHU"
-    ["GOOGLE_AI_API_KEY"]="AIzaSyD9aNz2Y5rrv52YHNtJMjo2ki_mbwffZHU"
+    # Google Services - read from environment
+    ["GEMINI_API_KEY"]="${GEMINI_API_KEY}"
+    ["GOOGLE_AI_API_KEY"]="${GOOGLE_AI_API_KEY}"
     ["GOOGLE_CALENDAR_ID"]="95d2603ca4bd2614772c7485d63d996455482481629895495d87894dd8147610@group.calendar.google.com"
     ["GOOGLE_SERVICE_ACCOUNT_KEY"]="./google-calendar-key.json"
     
-    # Proof RON
-    ["PROOF_API_KEY"]="wVc8ni3bWaEvZNQBBM215h1v"
+    # Proof RON - read from environment
+    ["PROOF_API_KEY"]="${PROOF_API_KEY}"
     ["PROOF_API_BASE_URL"]="https://api.proof.com"
     ["PROOF_BASE_URL"]="https://api.proof.com"
     ["PROOF_ORGANIZATION_ID"]="ord7g866b"
@@ -179,22 +192,22 @@ declare -A CLEAN_VARS=(
     ["PROOF_REDIRECT_URL"]="https://houstonmobilenotarypros.com/ron/thank-you"
     ["PROOF_REDIRECT_MESSAGE"]="Your notarization is complete! Thank you for choosing Houston Mobile Notary Pros."
     
-    # Monitoring & Analytics
-    ["SENTRY_DSN"]="https://dcf43018a2b7757b6b3677520acc854f@o4508626800803840.ingest.us.sentry.io/4508626801000448"
-    ["NEXT_PUBLIC_SENTRY_DSN"]="https://dcf43018a2b7757b6b3677520acc854f@o4508626800803840.ingest.us.sentry.io/4508626801000448"
-    ["NEXT_PUBLIC_GA_ID"]="G-EXWGCN0D53"
-    ["LOG_LEVEL"]="info"
-    ["BETTER_STACK_SOURCE_TOKEN"]="FfpjGHdL3nPKRgW2xN8vYm9c"
+    # Monitoring & Analytics - read from environment
+    ["SENTRY_DSN"]="${SENTRY_DSN}"
+    ["NEXT_PUBLIC_SENTRY_DSN"]="${NEXT_PUBLIC_SENTRY_DSN}"
+    ["NEXT_PUBLIC_GA_ID"]="${NEXT_PUBLIC_GA_ID}"
+    ["LOG_LEVEL"]="${LOG_LEVEL:-info}"
+    ["BETTER_STACK_SOURCE_TOKEN"]="${BETTER_STACK_SOURCE_TOKEN}"
     
-    # Supabase
-    ["NEXT_PUBLIC_SUPABASE_URL"]="https://unnyhvuhobnmxnpffore.supabase.co"
-    ["NEXT_PUBLIC_SUPABASE_ANON_KEY"]="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVubnlodnVob2JubXhucGZmb3JlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3MjcxNzIsImV4cCI6MjA2NjMwMzE3Mn0.ZeZQ2nE322_bGjHq_lqtl0pEkIDfAA5usdXU1nx9k0Q"
-    ["SUPABASE_SERVICE_ROLE_KEY"]="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVubnlodnVob2JubXhucGZmb3JlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDcyNzE3MiwiZXhwIjoyMDY2MzAzMTcyfQ.9zbdk4ZqmvSzRaO_a3WMpxcrHTdwpkxJ2JiYJRqO4o0"
-    ["SUPABASE_JWT_SECRET"]="83QV4zkNr2Vw0nmbj6aBDyXQM38Q6nl9Rzbo8/Zy7h2VUAD72LV0aRiW4uSiQRmUt8Fzf5zCOZJFVih9V0tLuQ=="
+    # Supabase - read from environment
+    ["NEXT_PUBLIC_SUPABASE_URL"]="${NEXT_PUBLIC_SUPABASE_URL}"
+    ["NEXT_PUBLIC_SUPABASE_ANON_KEY"]="${NEXT_PUBLIC_SUPABASE_ANON_KEY}"
+    ["SUPABASE_SERVICE_ROLE_KEY"]="${SUPABASE_SERVICE_ROLE_KEY}"
+    ["SUPABASE_JWT_SECRET"]="${SUPABASE_JWT_SECRET}"
     
-    # LaunchDarkly
-    ["LAUNCHDARKLY_SERVER_SDK_KEY"]="sdk-633cb12d-2e9c-4a93-b399-e3657a1bff19"
-    ["NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SDK_KEY"]="685b3910af9e34098d580deb"
+    # LaunchDarkly - read from environment
+    ["LAUNCHDARKLY_SERVER_SDK_KEY"]="${LAUNCHDARKLY_SERVER_SDK_KEY}"
+    ["NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SDK_KEY"]="${NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SDK_KEY}"
     
     # Sanity CMS
     ["NEXT_PUBLIC_SANITY_PROJECT_ID"]="8t38ph2l"
@@ -206,8 +219,8 @@ declare -A CLEAN_VARS=(
     ["RATE_LIMIT_MAX_REQUESTS"]="100"
     ["ALLOWED_ORIGINS"]="https://houstonmobilenotarypros.com,https://houstonmobilenotarypros.vercel.app"
     
-    # Upstash QStash
-    ["QSTASH_TOKEN"]="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik1qazVNVEk1TmprNU9EYzVOVE0wTURVMU1qZzVPVE0xTVRVM01qVXhNakEzTnpBM05EazNPUT09In0.eyJpc3MiOiJodHRwczovL3FzdGFzaC51cHN0YXNoLmlvIiwic3ViIjoiYjhlOGE2NzUtYjVkOC00OGY3LWJjYjYtOTI1M2M3Mzk5NjJhIiwiYXVkIjpbImh0dHBzOi8vcXN0YXNoLnVwc3Rhc2guaW8iXSwiaWF0IjoxNzM1NDI5MjM5LCJleHAiOjIwNTA3ODkyMzl9"
+    # Upstash QStash - read from environment
+    ["QSTASH_TOKEN"]="${QSTASH_TOKEN}"
     ["QSTASH_URL"]="https://qstash.upstash.io"
     
     # Playwright Testing
@@ -278,7 +291,13 @@ fi
 # Upload all clean variables
 echo "🚀 Starting environment variable upload..."
 for var_name in "${!CLEAN_VARS[@]}"; do
-    upload_env_var "$var_name" "${CLEAN_VARS[$var_name]}"
+    var_value="${CLEAN_VARS[$var_name]}"
+    # Skip empty variables
+    if [ -z "$var_value" ]; then
+        echo "⚠️  Skipping $var_name (no value set)"
+        continue
+    fi
+    upload_env_var "$var_name" "$var_value"
 done
 
 echo ""

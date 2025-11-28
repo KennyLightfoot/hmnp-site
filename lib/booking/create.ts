@@ -7,7 +7,6 @@ import { addContactToWorkflow, createAppointment } from '@/lib/ghl/management'
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping'
 import { PaymentMethod, BookingStatus, ServiceType } from '@/lib/prisma-types'
 import { logger } from '@/lib/logger'
-import { RONService } from '@/lib/proof/api'
 import { autoDispatchBooking } from '@/lib/dispatch/auto-dispatch'
 
 export interface CreateBookingInput {
@@ -196,24 +195,21 @@ export async function createBookingFromForm({ validatedData, rawBody }: CreateBo
     await convertToBooking(reservationId, booking.id)
   }
 
-  // Inline RON session creation on Vercel (no worker). If WORKER_MODE=true, the worker will handle it.
+  // RON sessions are now handled via Notary Hub UI, not via Proof.com.
+  // We intentionally do NOT create any external RON session here. This branch
+  // is kept as a reminder that RON bookings exist, and as a future hook for
+  // Notary Hub integration.
   try {
-    const workerEnabled = String(process.env.WORKER_MODE || 'false').toLowerCase() === 'true'
     const isRON = String(service.serviceType || '') === 'RON_SERVICES'
-    if (isRON && !workerEnabled) {
-      try { console.info('[RON] Creating Proof.com RON session inline (WORKER_MODE=false)') } catch {}
-      await RONService.createRONSession({
-        id: booking.id,
-        customerName: booking.customerName || '',
-        customerEmail: booking.customerEmail || '',
-        customerPhone: undefined,
-        documentTypes: ['General Document'],
-        scheduledDateTime: booking.scheduledDateTime as Date,
-      })
-      // Optionally persist session URL/ids if available – handled inside RONService/worker in prod
+    if (isRON) {
+      try {
+        console.info(
+          '[RON] Booking created for RON_SERVICES. External RON session must be scheduled via Notary Hub UI; no Proof.com session is created by the site.',
+        )
+      } catch {}
     }
-  } catch (e) {
-    try { console.warn('[RON] Inline creation failed (continuing):', (e as any)?.message || String(e)) } catch {}
+  } catch {
+    // Best-effort logging only; never break booking creation.
   }
 
   // Always create or link GHL contact and trigger configured workflow/tags (independent of calendar)

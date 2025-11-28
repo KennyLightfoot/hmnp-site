@@ -8,7 +8,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // Use a dedicated Prisma DB URL (non-pooling Supabase URL on port 5432)
+  url      = env("PRISMA_DB_URL")
 }
 
 model Service {
@@ -106,6 +107,7 @@ model Booking {
   reviews                     Review[]
   contractorPayoutEntries     ContractorPayoutEntry[]
   auditLogs                   AuditLog[]
+  outboundMessages            OutboundMessage[] @relation("BookingOutboundMessages")
   jobOffers                   JobOffer[]
   stripeSessionId             String?                @unique // AC-5
   proofSessionUrl             String?                @db.Text
@@ -363,6 +365,125 @@ model User {
   notaryApplications             NotaryApplication[]
   notaryApplicationsReviewedBy   NotaryApplication[]      @relation("NotaryApplicationReviewedBy")
   jobOffers                      JobOffer[]               @relation("JobOfferNotary")
+  messageReviews                 MessageReview[]          @relation("UserMessageReviews")
+  contentJobs                    ContentJob[]
+}
+
+enum OutboundMessageType {
+  APPOINTMENT_REMINDER
+  PAYMENT_REMINDER
+  MISSED_CALL_FOLLOWUP
+  BOOKING_CONFIRMATION
+  BOOKING_NUDGE
+}
+
+enum OutboundChannel {
+  SMS
+  EMAIL
+}
+
+enum OutboundMessageStatus {
+  PENDING
+  SENT
+  FAILED
+  REVIEW_REQUIRED
+  CANCELLED
+}
+
+enum MessageRiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum MessageReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ContentJobType {
+  BLOG
+  AD
+  REVIEW_REPLY
+  CUSTOMER_REPLY
+  DOCUMENT_SUMMARY
+}
+
+enum ContentJobStatus {
+  NEW
+  IN_PROGRESS
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  PUBLISHED
+}
+
+model OutboundMessage {
+  id               String               @id @default(cuid())
+  messageType      OutboundMessageType
+  riskLevel        MessageRiskLevel     @default(LOW)
+  templateKey      String
+  bookingId        String?
+  recipientEmail   String?
+  recipientPhone   String?
+  channel          OutboundChannel
+  subject          String?
+  body             String
+  metadata         Json?
+  sendAt           DateTime             @default(now())
+  sentAt           DateTime?
+  status           OutboundMessageStatus @default(PENDING)
+  errorMessage     String?
+  requiresReview   Boolean              @default(false)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  booking          Booking?             @relation("BookingOutboundMessages", fields: [bookingId], references: [id])
+  review           MessageReview?
+
+  @@index([bookingId])
+  @@index([messageType])
+  @@index([status])
+  @@index([sendAt])
+}
+
+model MessageReview {
+  id             String               @id @default(cuid())
+  messageId      String               @unique
+  scenario       OutboundMessageType
+  riskLevel      MessageRiskLevel
+  status         MessageReviewStatus  @default(PENDING)
+  reviewerId     String?
+  reviewedAt     DateTime?
+  resolutionNotes String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  reviewer       User?                @relation("UserMessageReviews", fields: [reviewerId], references: [id])
+  message        OutboundMessage      @relation(fields: [messageId], references: [id])
+}
+
+model ContentJob {
+  id             String           @id @default(cuid())
+  type           ContentJobType
+  status         ContentJobStatus @default(NEW)
+  title          String?
+  instructions   String?
+  targetCity     String?
+  serviceType    String?
+  tonePreset     String?
+  agentJobId     String?
+  draft          Json?
+  approvedContent Json?
+  publishedAt    DateTime?
+  createdById    String?
+  views          Int              @default(0)
+  leadsCaptured  Int              @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  createdBy      User?           @relation(fields: [createdById], references: [id])
+
+  @@index([status])
+  @@index([agentJobId])
 }
 
 model UserTwoFactor {
@@ -1099,6 +1220,82 @@ model service_areas {
   Booking                Booking[]
 
   @@index([active], map: "idx_service_areas_active")
+}
+
+model AgentBlog {
+  id              String   @id @default(cuid())
+  jobId           String?  @unique
+  title           String
+  slug            String   @unique
+  summary         String?
+  metaDescription String?
+  author          String?
+  publishedAt     DateTime?
+  filePath        String
+  source          String   @default("agents")
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([publishedAt])
+  @@index([createdAt])
+}
+
+model AgentLead {
+  id            String   @id @default(cuid())
+  correlationId String   @unique
+  name          String?
+  phone         String?
+  email         String?
+  message       String?
+  serviceType   String?
+  urgency       String?
+  status        String?
+  source        String?
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status])
+  @@index([source])
+  @@index([createdAt])
+}
+
+model AgentJob {
+  id                  String    @id @default(cuid())
+  jobId               String    @unique
+  correlationId       String?
+  customerName        String?
+  phone               String?
+  email               String?
+  serviceType         String?
+  status              String?
+  appointmentDateTime DateTime?
+  confirmedPrice      Decimal?  @db.Decimal(10, 2)
+  metadata            Json?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([status])
+  @@index([appointmentDateTime])
+  @@index([createdAt])
+}
+
+model AgentPricingQuote {
+  id             String   @id @default(cuid())
+  correlationId  String   @unique
+  total          Decimal  @db.Decimal(10, 2)
+  baseFee        Decimal? @db.Decimal(10, 2)
+  travelFee      Decimal? @db.Decimal(10, 2)
+  rushFee        Decimal? @db.Decimal(10, 2)
+  metadata       Json?
+  pricingVersion String?
+  needsReview    Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([needsReview])
+  @@index([createdAt])
 }
 
 enum ServiceType {

@@ -1,11 +1,32 @@
 #!/bin/sh
 
-# Skip gitleaks scan if binary not available (CI has it, local dev may not)
-if command -v gitleaks >/dev/null 2>&1; then
-  gitleaks protect --staged --verbose || exit 1
-else
-  echo "[husky] gitleaks not installed – skipping secret scan"
+# Pre-commit hook for security and code quality
+
+# 1. Check for .env files being committed
+if git diff --cached --name-only | grep -E '\.env$|\.env\.local$|\.env\.production$|\.env\.development$'; then
+  echo "❌ ERROR: Attempting to commit .env file!"
+  echo "   .env files should never be committed to git."
+  echo "   Use .env.example as a template instead."
+  exit 1
 fi
 
-# Basic code quality gate (fast)
+# 2. Secret scanning with gitleaks
+if command -v gitleaks >/dev/null 2>&1; then
+  # Use custom config if available
+  if [ -f "gitleaks.toml" ]; then
+    # Try --config-path first (newer versions), fall back to -c (older versions)
+    if gitleaks protect --help 2>&1 | grep -q "config-path"; then
+      gitleaks protect --staged --verbose --config-path=gitleaks.toml || exit 1
+    else
+      gitleaks protect --staged --verbose -c gitleaks.toml || exit 1
+    fi
+  else
+  gitleaks protect --staged --verbose || exit 1
+  fi
+else
+  echo "⚠️  [husky] gitleaks not installed – skipping secret scan"
+  echo "   Install with: brew install gitleaks (macOS) or see https://github.com/gitleaks/gitleaks"
+fi
+
+# 3. Basic code quality gate (fast)
 pnpm lint 

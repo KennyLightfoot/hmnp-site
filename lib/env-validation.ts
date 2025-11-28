@@ -38,11 +38,6 @@ const envSchema = z.object({
   // Email (Resend)
   RESEND_API_KEY: z.string().startsWith('re_', 'RESEND_API_KEY must start with re_').optional(),
   
-  // SMS (Twilio) - Added for comprehensive validation
-  TWILIO_ACCOUNT_SID: z.string().startsWith('AC', 'TWILIO_ACCOUNT_SID must start with AC').optional(),
-  TWILIO_AUTH_TOKEN: z.string().min(32, 'TWILIO_AUTH_TOKEN must be at least 32 characters').optional(),
-  TWILIO_PHONE_NUMBER: z.string().regex(/^\+1\d{10}$/, 'TWILIO_PHONE_NUMBER must be valid US number (+1xxxxxxxxxx)').optional(),
-  
   // Security
   ENCRYPTION_KEY: z.string().min(32, 'ENCRYPTION_KEY must be at least 32 characters').optional(),
   
@@ -58,6 +53,17 @@ const optionalEnvSchema = z.object({
   REDIS_URL: z.string().url().optional(),
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+  
+  // Agents service (Next.js -> agents integration)
+  AGENTS_BASE_URL: z.string().url().optional(),
+  AGENTS_ADMIN_SECRET: z.string().optional(),
+  AGENTS_WEBHOOK_SECRET: z.string().optional(),
+  AGENTS_HEALTH_ENDPOINT: z.string().optional(),
+  AGENTS_HEALTH_TIMEOUT_MS: z.string().optional(),
+  AGENTS_HEALTH_REQUIRED: z.enum(['true', 'false']).optional(),
+
+  // Deployment environment
+  VERCEL_ENV: z.enum(['development', 'preview', 'production']).optional(),
   
   // Google Maps
   GOOGLE_MAPS_API_KEY: z.string().optional(),
@@ -76,10 +82,29 @@ const optionalEnvSchema = z.object({
   
   // Monitoring
   SENTRY_DSN: z.string().url().optional(),
+  N8N_BASE_URL: z.string().url().optional(),
+  N8N_HEALTH_ENDPOINT: z.string().optional(),
+  N8N_HEALTH_TIMEOUT_MS: z.string().optional(),
+  N8N_HEALTH_REQUIRED: z.enum(['true', 'false']).optional(),
+  N8N_BASIC_AUTH_USER: z.string().optional(),
+  N8N_BASIC_AUTH_PASSWORD: z.string().optional(),
+  N8N_BASIC_AUTH_ACTIVE: z.string().optional(),
   
   // Development
   ANALYZE: z.string().optional(),
   SKIP_ENV_VALIDATION: z.string().optional(),
+
+  // Marketing / analytics (optional-by-design)
+  // GHL custom UTM fields used for campaign attribution
+  GHL_CF_ID_UTM_SOURCE: z.string().optional(),
+  GHL_CF_ID_UTM_MEDIUM: z.string().optional(),
+  GHL_CF_ID_UTM_CAMPAIGN: z.string().optional(),
+  GHL_CF_ID_UTM_TERM: z.string().optional(),
+  GHL_CF_ID_UTM_CONTENT: z.string().optional(),
+
+  // GMB posting controls
+  GMB_POSTING_ENABLED: z.enum(['true', 'false']).optional(),
+  GOOGLE_MY_BUSINESS_LOCATION_ID: z.string().optional(),
 });
 
 interface ValidationResult {
@@ -124,6 +149,14 @@ function checkSecurityConfiguration(): string[] {
       warnings.push(`⚠️ SECURITY: Potentially sensitive data in client-side variable: ${varName}`);
     }
   });
+
+  if (!process.env.AGENTS_WEBHOOK_SECRET && !process.env.NEXTJS_API_SECRET) {
+    warnings.push('⚠️ SECURITY: Agents webhooks are not protected by AGENTS_WEBHOOK_SECRET/NEXTJS_API_SECRET');
+  }
+
+  if (process.env.N8N_BASIC_AUTH_ACTIVE !== 'true') {
+    warnings.push('⚠️ SECURITY: n8n basic auth is disabled. Set N8N_BASIC_AUTH_ACTIVE=true with user/password.');
+  }
   
   return warnings;
 }
@@ -158,6 +191,17 @@ function validateProductionRequirements(): string[] {
         errors.push(`❌ CRITICAL: ${varName} is required for Vertex AI in production`);
       }
     });
+
+    // Agents service base URL is required in production so the web app can
+    // talk to the external agents pipeline for content, analytics, and chat.
+    if (!process.env.AGENTS_BASE_URL) {
+      errors.push('❌ CRITICAL: AGENTS_BASE_URL is required in production for agents service integration');
+    }
+
+    // Admin secret is strongly recommended when AGENTS_BASE_URL is set.
+    if (process.env.AGENTS_BASE_URL && !process.env.AGENTS_ADMIN_SECRET) {
+      errors.push('❌ CRITICAL: AGENTS_ADMIN_SECRET is required in production so the admin review UI can authenticate to the agents service');
+    }
   }
   
   return errors;
@@ -205,6 +249,11 @@ export function validateEnvironment(): ValidationResult {
     const securityWarnings = checkSecurityConfiguration();
     warnings.push(...securityWarnings);
     
+    const nodeEnv = requiredEnv.NODE_ENV;
+    const vercelEnv = optionalEnv.VERCEL_ENV;
+    const isProductionStage =
+      nodeEnv === 'production' || vercelEnv === 'production';
+
     // Warn about missing optional but recommended variables
     if (!requiredEnv.RESEND_API_KEY) {
       warnings.push('RESEND_API_KEY not set - email functionality may be limited');
@@ -216,6 +265,52 @@ export function validateEnvironment(): ValidationResult {
     
     if (!optionalEnv.REDIS_URL && !optionalEnv.UPSTASH_REDIS_REST_URL) {
       warnings.push('No Redis configuration found - queue functionality may be limited');
+    }
+
+    // Marketing / analytics fields (UTM + GMB). These are explicitly optional:
+    // missing values should never break the app, only reduce attribution depth.
+    const marketingFields: Array<{ key: keyof typeof optionalEnv; label: string }> = [
+      { key: 'GHL_CF_ID_UTM_SOURCE', label: 'GHL UTM source custom field' },
+      { key: 'GHL_CF_ID_UTM_MEDIUM', label: 'GHL UTM medium custom field' },
+      { key: 'GHL_CF_ID_UTM_CAMPAIGN', label: 'GHL UTM campaign custom field' },
+      { key: 'GHL_CF_ID_UTM_TERM', label: 'GHL UTM term custom field' },
+      { key: 'GHL_CF_ID_UTM_CONTENT', label: 'GHL UTM content custom field' },
+    ];
+
+    marketingFields.forEach(({ key, label }) => {
+      if (!optionalEnv[key]) {
+        warnings.push(
+          `${String(key)} not set - ${label} tracking is disabled. This is safe but reduces marketing analytics depth.`
+        );
+      }
+    });
+
+    // GMB posting: treated as an optional, feature-flag style capability.
+    // When disabled, log a clear message so ops know it's intentional.
+    if (optionalEnv.GMB_POSTING_ENABLED !== 'true') {
+      warnings.push(
+        'GMB posting is disabled by config (GMB_POSTING_ENABLED !== "true"). ' +
+          'This is expected unless you are actively running GMB posting campaigns. ' +
+          'See GMB docs for enabling and required GOOGLE_MY_BUSINESS_* credentials.'
+      );
+    } else {
+      // If GMB posting is explicitly enabled, surface missing credentials as warnings
+      const gmbCreds = [
+        'GOOGLE_MY_BUSINESS_CLIENT_ID',
+        'GOOGLE_MY_BUSINESS_CLIENT_SECRET',
+        'GOOGLE_MY_BUSINESS_REFRESH_TOKEN',
+        'GOOGLE_MY_BUSINESS_LOCATION_ID',
+        'GOOGLE_MY_BUSINESS_ACCOUNT_ID',
+      ] as const;
+
+      const missingCreds = gmbCreds.filter((cred) => !process.env[cred]);
+      if (missingCreds.length > 0) {
+        warnings.push(
+          `GMB_POSTING_ENABLED=true but some GOOGLE_MY_BUSINESS_* credentials are missing: ${missingCreds.join(
+            ', '
+          )}. GMB posting may be partially or fully disabled.`
+        );
+      }
     }
 
     return {

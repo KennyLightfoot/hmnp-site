@@ -24,6 +24,14 @@ const rawBaseUrl =
 export const AGENTS_BASE_URL = rawBaseUrl.replace(/\/+$/, '');
 
 /**
+ * Optional shared secret used for protected admin/review endpoints on the
+ * agents service (e.g. /review/jobs). When set, calls that mutate review
+ * queue state should include this as an API key.
+ */
+export const AGENTS_ADMIN_SECRET =
+  process.env.AGENTS_ADMIN_SECRET || process.env.AGENTS_API_SECRET || '';
+
+/**
  * Convenience helper to build full agent URLs.
  */
 export function buildAgentsUrl(path: string): string {

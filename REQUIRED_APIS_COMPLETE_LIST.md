@@ -161,17 +161,10 @@
   - `FROM_EMAIL`
 - **Status:** ✅ Already in use
 
-### 12. **Proof.com API** 📄 CRITICAL
-- **Purpose:** Remote Online Notarization (RON) platform
-- **What it does:**
-  - Create RON sessions
-  - Manage RON transactions
-  - Handle RON webhooks
-  - Document management
-- **Environment Variables:**
-  - `PROOF_API_KEY` (or similar)
-  - `PROOF_WEBHOOK_SECRET`
-- **Status:** ✅ Already in use
+### 12. **Proof.com API** 📄 LEGACY (Removed)
+- **Purpose:** Remote Online Notarization (RON) platform (legacy)
+- **Status:** ❌ **REMOVED** - RON is now handled via Notary Hub UI with its own environment variables
+- **Note:** All `PROOF_*` environment variables have been removed from the codebase
 
 ### 13. **AWS S3 API** 📦 CRITICAL
 - **Purpose:** File storage for uploaded documents
@@ -222,16 +215,9 @@
   - `NEXT_PUBLIC_SENTRY_DSN`
 - **Status:** ✅ Already configured
 
-### 17. **LaunchDarkly API** 🚩 FEATURE FLAGS
-- **Purpose:** Feature flag management
-- **What it does:**
-  - Toggle features on/off
-  - A/B testing
-  - Gradual rollouts
-- **Environment Variables:**
-  - `LAUNCHDARKLY_SDK_KEY`
-  - `LAUNCHDARKLY_CLIENT_ID`
-- **Status:** ✅ Already configured
+### 17. **LaunchDarkly API** 🚩 LEGACY (Removed)
+- **Purpose:** Feature flag management (legacy)
+- **Status:** ❌ **REMOVED** - No longer in use, all `LAUNCHDARKLY_*` environment variables have been removed
 
 ### 18. **Vercel Analytics API** 📊 ANALYTICS
 - **Purpose:** Web vitals and analytics
@@ -363,17 +349,19 @@ Add all credentials to `.env.local` from the "HMNP" project.
 6. Stripe API ⭐
 7. GoHighLevel API ⭐
 8. Resend API ⭐
-9. Proof.com API ⭐
-10. AWS S3 API ⭐
-11. Supabase API ⭐
-12. Redis/Upstash API ⭐
+9. AWS S3 API ⭐
+10. Supabase API ⭐
+11. Redis/Upstash API ⭐
 
 ### Important (Should Have)
-13. Google Analytics (GA4) 📊
-14. Google Tag Manager 📊
-15. Google Ads 📊
-16. Sentry 🐛
-17. LaunchDarkly 🚩
+12. Google Analytics (GA4) 📊
+13. Google Tag Manager 📊
+14. Google Ads 📊
+15. Sentry 🐛
+
+### Legacy (Removed)
+- Proof.com API ❌ (replaced by Notary Hub UI)
+- LaunchDarkly ❌ (no longer in use)
 
 ### Optional (Nice to Have)
 18. Vercel Analytics 📊 (built-in)

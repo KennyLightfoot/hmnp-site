@@ -49,7 +49,10 @@ export class GMBAutomationService {
   constructor() {
     this.postingEnabled = process.env.GMB_POSTING_ENABLED === 'true';
     if (!this.postingEnabled) {
-      logger.warn('GMB posting is disabled - set GMB_POSTING_ENABLED=true to enable');
+      logger.warn(
+        'GMB posting is disabled by config (GMB_POSTING_ENABLED is not "true"). ' +
+          'This is expected in most environments; set GMB_POSTING_ENABLED=true and configure GOOGLE_MY_BUSINESS_* vars to enable automated posting.'
+      );
     }
   }
 

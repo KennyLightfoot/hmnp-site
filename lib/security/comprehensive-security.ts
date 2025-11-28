@@ -10,6 +10,7 @@ import { withAPISecurity, withSecurityValidation } from './headers';
 import { withEnhancedCSRF } from './csrf';
 import { withErrorHandling } from '@/lib/monitoring/api-error-handler';
 import { withValidation, ValidationConfig } from '@/lib/validation/middleware';
+import { UnifiedAuth, Auth } from '@/lib/auth/unified-auth';
 
 export interface SecurityConfig {
   // Rate limiting
@@ -293,7 +294,18 @@ export const withAdminSecurity = <T extends any[]>(
   customConfig?: Partial<SecurityConfig>
 ) => {
   const config = { ...SecurityLevels.ADMIN, ...customConfig };
-  return withComprehensiveSecurity(config, handler);
+
+  // Wrap the handler with an admin-only auth check so that ALL admin endpoints
+  // using this helper are properly protected by authentication and roles.
+  const withAuth = async (request: NextRequest, ...args: T): Promise<NextResponse> => {
+    const { response } = await UnifiedAuth.authenticate(request, Auth.adminOnly());
+    if (response) {
+      return response;
+    }
+    return handler(request, ...args);
+  };
+
+  return withComprehensiveSecurity(config, withAuth);
 };
 
 export const withWebhookSecurity = <T extends any[]>(

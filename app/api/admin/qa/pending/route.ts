@@ -5,7 +5,6 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { getErrorMessage } from '@/lib/utils/error-utils'
 import { BookingStatus, QAStatus, Role } from '@/lib/prisma-types'
-import type { Prisma } from '@/lib/prisma-types'
 
 function ensureAdmin(session: Session | null) {
   const role = (session?.user as any)?.role as Role | undefined
@@ -13,6 +12,32 @@ function ensureAdmin(session: Session | null) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   return null
+}
+
+// Local view-model types mirroring the selected Prisma fields to avoid depending
+// on the Prisma namespace in this route.
+type CompletedBooking = {
+  id: string
+  customerName: string | null
+  scheduledDateTime: Date | null
+  service: {
+    name: string | null
+  } | null
+  User_Booking_notaryIdToUser: {
+    id: string
+    name: string | null
+    email: string | null
+  } | null
+}
+
+type QARecord = {
+  status: QAStatus
+  journalEntryVerified: boolean
+  sealPhotoVerified: boolean
+  documentCountVerified: boolean
+  clientConfirmationVerified: boolean
+  closeoutFormVerified: boolean
+  updatedAt: Date | null
 }
 
 const bookingSelect = {
@@ -31,9 +56,7 @@ const bookingSelect = {
       email: true,
     },
   },
-} satisfies Prisma.BookingSelect
-
-type CompletedBooking = Prisma.BookingGetPayload<{ select: typeof bookingSelect }>
+}
 
 const qaSelect = {
   status: true,
@@ -43,9 +66,7 @@ const qaSelect = {
   clientConfirmationVerified: true,
   closeoutFormVerified: true,
   updatedAt: true,
-} satisfies Prisma.BookingQARecordSelect
-
-type QARecord = Prisma.BookingQARecordGetPayload<{ select: typeof qaSelect }>
+}
 
 export async function GET(request: NextRequest) {
   try {

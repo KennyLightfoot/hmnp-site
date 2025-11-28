@@ -1,20 +1,16 @@
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { redirect } from "next/navigation"
-import {
-  JobOfferStatus,
-  Role,
-} from "@/lib/prisma-types"
-import { prisma } from "@/lib/db"
-import type { Prisma } from "@/lib/prisma-types"
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+
+import { authOptions } from "@/lib/auth";
+import { Role } from "@/lib/prisma-types";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -22,9 +18,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import Link from "next/link"
-import { formatDateTime } from "@/lib/utils/date-utils"
+} from "@/components/ui/table";
+import Link from "next/link";
+import { formatDateTime } from "@/lib/utils/date-utils";
+import { fetchAdminJson } from "@/lib/utils/server-fetch";
+import type { NetworkJobFilter, NetworkJobsPayload } from "@/lib/services/admin-metrics";
 
 type JobFilter = "needs-action" | "pending" | "assigned" | "expired"
 
@@ -35,7 +33,34 @@ const FILTERS: { id: JobFilter; label: string; description: string }[] = [
   { id: "expired", label: "Expired", description: "All offers expired" },
 ]
 
-type JobOfferStatusValue = (typeof JobOfferStatus)[keyof typeof JobOfferStatus]
+type JobOfferStatusValue = string;
+
+// Local view-model types to avoid direct dependency on Prisma namespace types.
+type JobOfferWithNotary = {
+  id: string
+  status: JobOfferStatusValue
+  createdAt: Date
+  expiresAt: Date | null
+  Notary: {
+    name: string | null
+    email: string | null
+  } | null
+}
+
+type BookingWithOffers = {
+  id: string
+  status: string
+  customerName: string | null
+  customerEmail: string | null
+  scheduledDateTime: Date | null
+  locationType: string | null
+  networkOfferExpiresAt: Date | null
+  createdAt: Date
+  service: {
+    name: string | null
+  } | null
+  jobOffers: JobOfferWithNotary[]
+}
 
 const relativeTime = (date: Date | string | null | undefined) => {
   if (!date) return "-"
@@ -55,11 +80,16 @@ const relativeTime = (date: Date | string | null | undefined) => {
 }
 
 const jobOffersSummary = (offers: { status: JobOfferStatusValue }[]) => {
-  const pending = offers.filter((offer) => offer.status === JobOfferStatus.PENDING).length
-  const accepted = offers.filter((offer) => offer.status === JobOfferStatus.ACCEPTED).length
-  const expired = offers.filter((offer) => offer.status === JobOfferStatus.EXPIRED).length
-  const declined = offers.filter((offer) => offer.status === JobOfferStatus.DECLINED).length
+  const pending = offers.filter((offer) => offer.status === "PENDING").length
+  const accepted = offers.filter((offer) => offer.status === "ACCEPTED").length
+  const expired = offers.filter((offer) => offer.status === "EXPIRED").length
+  const declined = offers.filter((offer) => offer.status === "DECLINED").length
   return `${pending} pending • ${accepted} accepted • ${expired} expired • ${declined} declined`
+}
+
+interface NetworkJobsApiResponse {
+  success: boolean;
+  data: NetworkJobsPayload;
 }
 
 export default async function NetworkJobsPage({
@@ -81,175 +111,17 @@ export default async function NetworkJobsPage({
       ? (filterValue as JobFilter)
       : "needs-action"
 
-  const baseWhere: Prisma.BookingWhereInput = {
-    sendToNetwork: true,
-  }
+  const response = await fetchAdminJson<NetworkJobsApiResponse>(
+    `/api/admin/network/jobs?filter=${currentFilter}`,
+  )
 
-  const jobOfferFilter: Prisma.BookingWhereInput["jobOffers"] = (() => {
-    switch (currentFilter) {
-      case "pending":
-        return { some: { status: JobOfferStatus.PENDING } }
-      case "assigned":
-        return { some: { status: JobOfferStatus.ACCEPTED } }
-      case "expired":
-        return { some: { status: JobOfferStatus.EXPIRED } }
-      case "needs-action":
-      default:
-        return {
-          none: {
-            status: JobOfferStatus.ACCEPTED,
-          },
-        }
-    }
-  })()
-
-  const where: Prisma.BookingWhereInput = {
-    ...baseWhere,
-    ...(jobOfferFilter ? { jobOffers: jobOfferFilter } : {}),
-  }
-
-  type JobOfferWithNotary = Prisma.JobOfferGetPayload<{
-    select: {
-      id: true
-      status: true
-      createdAt: true
-      expiresAt: true
-      Notary: {
-        select: {
-          name: true
-          email: true
-        }
-      }
-    }
-  }>
-
-  type BookingWithOffers = Prisma.BookingGetPayload<{
-    select: {
-      id: true
-      status: true
-      customerName: true
-      customerEmail: true
-      scheduledDateTime: true
-      locationType: true
-      networkOfferExpiresAt: true
-      createdAt: true
-      service: {
-        select: {
-          name: true
-        }
-      }
-      jobOffers: {
-        orderBy: { createdAt: "desc" }
-        select: {
-          id: true
-          status: true
-          createdAt: true
-          expiresAt: true
-          Notary: {
-            select: {
-              name: true
-              email: true
-            }
-          }
-        }
-      }
-    }
-  }>
-
-  const [
-    needsActionCount,
-    pendingCount,
-    assignedCount,
-    expiredCount,
-    bookings,
-  ] = await Promise.all([
-    prisma.booking.count({
-      where: {
-        ...baseWhere,
-        jobOffers: {
-          none: {
-            status: JobOfferStatus.ACCEPTED,
-          },
-        },
-      },
-    }),
-    prisma.booking.count({
-      where: {
-        ...baseWhere,
-        jobOffers: {
-          some: {
-            status: JobOfferStatus.PENDING,
-          },
-        },
-      },
-    }),
-    prisma.booking.count({
-      where: {
-        ...baseWhere,
-        jobOffers: {
-          some: {
-            status: JobOfferStatus.ACCEPTED,
-          },
-        },
-      },
-    }),
-    prisma.booking.count({
-      where: {
-        ...baseWhere,
-        jobOffers: {
-          some: {
-            status: JobOfferStatus.EXPIRED,
-          },
-        },
-      },
-    }),
-    prisma.booking.findMany({
-      where,
-      orderBy: [
-        currentFilter === "assigned"
-          ? { scheduledDateTime: "asc" }
-          : { networkOfferExpiresAt: "asc" },
-        { createdAt: "desc" },
-      ],
-      take: 50,
-      select: {
-        id: true,
-        status: true,
-        customerName: true,
-        customerEmail: true,
-        scheduledDateTime: true,
-        locationType: true,
-        networkOfferExpiresAt: true,
-        createdAt: true,
-        service: {
-          select: {
-            name: true,
-          },
-        },
-        jobOffers: {
-          orderBy: { createdAt: "desc" },
-          select: {
-            id: true,
-            status: true,
-            createdAt: true,
-            expiresAt: true,
-            Notary: {
-              select: {
-                name: true,
-                email: true,
-              },
-            },
-          },
-        },
-      },
-    }),
-  ]) as [number, number, number, number, BookingWithOffers[]]
-
+  const payload = response.data
+  const bookings = payload.jobs
   const tabCounts: Record<JobFilter, number> = {
-    "needs-action": needsActionCount,
-    pending: pendingCount,
-    assigned: assignedCount,
-    expired: expiredCount,
+    "needs-action": payload.counts["needs-action"],
+    pending: payload.counts.pending,
+    assigned: payload.counts.assigned,
+    expired: payload.counts.expired,
   }
 
   return (
@@ -323,8 +195,8 @@ export default async function NetworkJobsPage({
                 <TableBody>
                   {bookings.map((booking) => {
                     const acceptedOffer = (booking.jobOffers as JobOfferWithNotary[]).find(
-                      (offer) => offer.status === JobOfferStatus.ACCEPTED,
-                    )
+                      (offer) => offer.status === "ACCEPTED",
+                    );
                     return (
                       <TableRow key={booking.id}>
                         <TableCell className="font-medium">
@@ -335,7 +207,8 @@ export default async function NetworkJobsPage({
                             #{booking.id.slice(-6)}
                           </Link>
                           <p className="text-xs text-muted-foreground">
-                            Created {relativeTime(booking.createdAt)}
+                            Created{" "}
+                            {booking.createdAt ? relativeTime(new Date(booking.createdAt)) : "n/a"}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {booking.customerName || booking.customerEmail || "Unknown customer"}
@@ -351,11 +224,15 @@ export default async function NetworkJobsPage({
                         </TableCell>
                         <TableCell>
                           <div className="text-sm font-medium">
-                            {formatDateTime(booking.scheduledDateTime)}
+                            {booking.scheduledDateTime
+                              ? formatDateTime(new Date(booking.scheduledDateTime))
+                              : "—"}
                           </div>
                           <p className="text-xs text-muted-foreground">
                             Expires{" "}
-                            {formatDateTime(booking.networkOfferExpiresAt)}
+                            {booking.networkOfferExpiresAt
+                              ? formatDateTime(new Date(booking.networkOfferExpiresAt))
+                              : "—"}
                           </p>
                         </TableCell>
                         <TableCell className="capitalize">
@@ -368,7 +245,7 @@ export default async function NetworkJobsPage({
                           <p className="text-xs text-muted-foreground">
                             Last offer{" "}
                             {booking.jobOffers[0]
-                              ? relativeTime(booking.jobOffers[0].createdAt)
+                              ? relativeTime(new Date(booking.jobOffers[0].createdAt))
                               : "n/a"}
                           </p>
                         </TableCell>
@@ -377,18 +254,15 @@ export default async function NetworkJobsPage({
                             <Badge variant="outline">{booking.status}</Badge>
                             {acceptedOffer ? (
                               <p className="text-xs text-muted-foreground">
-                                Assigned to {acceptedOffer.Notary?.name ?? "Unknown"}{" "}
-                                ({acceptedOffer.Notary?.email ?? "n/a"})
+                                Assigned to {acceptedOffer.Notary?.name ?? "Unknown"} ({acceptedOffer.Notary?.email ?? "n/a"})
                               </p>
                             ) : (
-                              <p className="text-xs text-muted-foreground">
-                                Awaiting acceptance
-                              </p>
+                              <p className="text-xs text-muted-foreground">Awaiting acceptance</p>
                             )}
                           </div>
                         </TableCell>
                       </TableRow>
-                    )
+                    );
                   })}
                 </TableBody>
               </Table>

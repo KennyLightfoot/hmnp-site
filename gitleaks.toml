@@ -1,0 +1,144 @@
+# Gitleaks Configuration for HMNP Project
+# Custom rules for detecting secrets in the codebase
+
+title = "HMNP Gitleaks Config"
+
+[extend]
+# Use default gitleaks rules
+useDefault = true
+
+# Custom rules for project-specific patterns
+[[rules]]
+id = "hmnp-stripe-live-key"
+description = "Stripe Live Secret Key"
+regex = '''sk_live_[0-9a-zA-Z]{24,}'''
+tags = ["key", "stripe", "payment"]
+entropy = 3.5
+
+[[rules]]
+id = "hmnp-stripe-test-key"
+description = "Stripe Test Secret Key"
+regex = '''sk_test_[0-9a-zA-Z]{24,}'''
+tags = ["key", "stripe", "payment", "test"]
+entropy = 3.5
+
+[[rules]]
+id = "hmnp-stripe-webhook-secret"
+description = "Stripe Webhook Secret"
+regex = '''whsec_[0-9a-zA-Z]{32,}'''
+tags = ["key", "stripe", "webhook"]
+entropy = 3.5
+
+[[rules]]
+id = "hmnp-aws-access-key"
+description = "AWS Access Key ID"
+regex = '''AKIA[0-9A-Z]{16}'''
+tags = ["key", "aws"]
+entropy = 3.0
+
+[[rules]]
+id = "hmnp-aws-secret-key"
+description = "AWS Secret Access Key"
+regex = '''[A-Za-z0-9/+=]{40}'''
+tags = ["key", "aws", "secret"]
+entropy = 4.0
+path = '''(.*\.(sh|js|ts|json|yaml|yml)$)'''
+
+[[rules]]
+id = "hmnp-ghl-api-key"
+description = "GoHighLevel API Key"
+regex = '''pit-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'''
+tags = ["key", "ghl", "api"]
+entropy = 3.0
+
+[[rules]]
+id = "hmnp-ghl-client-secret"
+description = "GoHighLevel Client Secret"
+regex = '''[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'''
+tags = ["key", "ghl", "secret"]
+entropy = 3.5
+path = '''(.*\.(sh|js|ts|json)$)'''
+
+[[rules]]
+id = "hmnp-google-api-key"
+description = "Google API Key"
+regex = '''AIza[0-9A-Za-z_-]{35}'''
+tags = ["key", "google", "api"]
+entropy = 3.0
+
+[[rules]]
+id = "hmnp-redis-password"
+description = "Redis Password in Connection String"
+regex = '''redis://[^:]+:([^@]+)@'''
+tags = ["password", "redis"]
+entropy = 3.5
+
+[[rules]]
+id = "hmnp-database-password"
+description = "Database Password in Connection String"
+regex = '''postgresql://[^:]+:([^@]+)@'''
+tags = ["password", "database", "postgres"]
+entropy = 3.5
+
+[[rules]]
+id = "hmnp-nextauth-secret"
+description = "NextAuth Secret"
+regex = '''NEXTAUTH_SECRET\s*=\s*['"]([^'"]{32,})['"]'''
+tags = ["secret", "nextauth", "auth"]
+entropy = 3.5
+
+[[rules]]
+id = "hmnp-jwt-secret"
+description = "JWT Secret"
+regex = '''JWT_SECRET\s*=\s*['"]([^'"]{32,})['"]'''
+tags = ["secret", "jwt", "auth"]
+entropy = 3.5
+
+[[rules]]
+id = "hmnp-resend-api-key"
+description = "Resend API Key"
+regex = '''re_[0-9A-Za-z_-]{40,}'''
+tags = ["key", "resend", "email"]
+entropy = 3.0
+
+[[rules]]
+id = "hmnp-supabase-service-key"
+description = "Supabase Service Role Key"
+regex = '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[0-9A-Za-z_-]{100,}'''
+tags = ["key", "supabase", "service"]
+entropy = 3.5
+
+# Allowlist patterns (false positives)
+[allowlist]
+description = "Allowlist for known false positives"
+paths = [
+  '''\.git/''',
+  '''node_modules/''',
+  '''\.next/''',
+  '''coverage/''',
+  '''playwright-report/''',
+  '''test-results/''',
+  '''\.env\.example''',
+  '''\.env\.template''',
+  '''SECURITY_REMEDIATION\.md''',
+  '''CHANGELOG\.md''',
+  '''README\.md''',
+  '''\.md$''',
+]
+
+commits = [
+  # Add commit hashes here if you need to allowlist specific commits
+]
+
+regexes = [
+  '''example\.com''',
+  '''test.*key''',
+  '''placeholder''',
+  '''REDACTED''',
+  '''NOT SET''',
+  # CSP (Content Security Policy) hashes - these are not secrets
+  '''sha256-[A-Za-z0-9+/=]{43}''',
+  ''''sha256-[^']+'''',
+  '''"sha256-[^"]+"''',
+]
+

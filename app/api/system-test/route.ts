@@ -43,11 +43,59 @@ export const GET = withAdminSecurity(async (request: NextRequest) => {
         timestamp: new Date().toISOString(),
         testType: 'health'
       });
-      
+    } else if (testType === 'queues') {
+      console.log('📦 Running queue-only system test...');
+      const report = await runSystemTests();
+      const queueResults = report.results.filter(r => r.name.toLowerCase().includes('bullmq'));
+      return NextResponse.json({
+        ...report,
+        results: queueResults,
+        totalTests: queueResults.length,
+        passed: queueResults.filter(r => r.status === 'PASS').length,
+        failed: queueResults.filter(r => r.status === 'FAIL').length,
+        warnings: queueResults.filter(r => r.status === 'WARN').length,
+        testType: 'queues'
+      });
+    } else if (testType === 'ai') {
+      console.log('🤖 Running AI/chat system test (via existing tests)...');
+      const report = await runSystemTests();
+      const aiResults = report.results.filter(r =>
+        r.name.toLowerCase().includes('ai') || r.name.toLowerCase().includes('chat'),
+      );
+      return NextResponse.json({
+        ...report,
+        results: aiResults,
+        totalTests: aiResults.length,
+        passed: aiResults.filter(r => r.status === 'PASS').length,
+        failed: aiResults.filter(r => r.status === 'FAIL').length,
+        warnings: aiResults.filter(r => r.status === 'WARN').length,
+        testType: 'ai'
+      });
+    } else if (testType === 'automations') {
+      console.log('🔁 Running automations system test (webhooks/cron)...');
+      const report = await runSystemTests();
+      const automationsResults = report.results.filter(r => {
+        const name = r.name.toLowerCase();
+        return (
+          name.includes('webhook') ||
+          name.includes('cron') ||
+          name.includes('automation') ||
+          name.includes('n8n')
+        );
+      });
+      return NextResponse.json({
+        ...report,
+        results: automationsResults,
+        totalTests: automationsResults.length,
+        passed: automationsResults.filter(r => r.status === 'PASS').length,
+        failed: automationsResults.filter(r => r.status === 'FAIL').length,
+        warnings: automationsResults.filter(r => r.status === 'WARN').length,
+        testType: 'automations'
+      });
     } else {
       return NextResponse.json({
         error: 'Invalid test type',
-        validTypes: ['health', 'full']
+        validTypes: ['health', 'full', 'queues', 'ai', 'automations']
       }, { status: 400 });
     }
     

@@ -15,6 +15,7 @@ import CommonDocuments from "@/components/CommonDocuments"
 import StickyBookBar from "@/components/StickyBookBar"
 import LocationReassurance from "@/components/LocationReassurance"
 import ReviewsModal from "@/components/ReviewsModal"
+import GuaranteeStrip from "@/components/guarantees/GuaranteeStrip"
 
 export const metadata: Metadata = {
   title: "Mobile Notary Houston | Notary Near Me | 24/7 Loan Signing Agent",
@@ -54,6 +55,11 @@ export default function HomePage() {
       <StructuredData />
       {/* Simple Hero Section - restored from commit f05266 */}
       <HeroSection />
+      
+      {/* Guarantee Strip */}
+      <div className="container mx-auto px-4 py-8">
+        <GuaranteeStrip variant="banner" className="max-w-4xl mx-auto" />
+      </div>
       
       {/* Rest of the homepage content */}
       <SocialProof />

@@ -7,33 +7,6 @@ import { Button } from '@/components/ui/button'
 
 const services = [
   {
-    name: 'Quick-Stamp Local',
-    price: '$50',
-    description: 'Fast & simple local signings',
-    basePrice: 50,
-    includedRadius: 10,
-    maxDocuments: 1,
-    maxSigners: 1,
-    hours: '9am-5pm weekdays',
-    features: [
-      '≤1 document notarization',
-      '≤2 stamps included',
-      '1 signer included',
-      '≤10 miles travel included',
-      '9am-5pm weekdays',
-      'Perfect for simple documents'
-    ],
-    addOns: [
-      'Extra stamp: $5 each',
-      'Extra signer: $10 each',
-      'Extended travel: $0.50/mile beyond 10 miles'
-    ],
-    bestFor: 'Single acknowledgments, simple affidavits, local Houston metro clients',
-    popular: false,
-    color: 'border-gray-300',
-    buttonColor: 'bg-gray-600 hover:bg-gray-700'
-  },
-  {
     name: 'Standard Mobile Notary',
     price: '$75',
     description: 'Professional document notarization',
@@ -53,7 +26,7 @@ const services = [
     addOns: [
       'Extra document: $10 each',
       'Extra signer: $5 each',
-      'Extended travel: $0.50/mile beyond 20 miles',
+      'Travel beyond included radius: see travel tiers',
       'Weekend service: +$40'
     ],
     bestFor: 'Real estate documents, power of attorney, loan modifications, business agreements',
@@ -63,9 +36,9 @@ const services = [
   },
   {
     name: 'Extended Hours Mobile',
-    price: '$100',
+    price: '$125',
     description: 'Flexible scheduling & same-day service',
-    basePrice: 100,
+    basePrice: 125,
     includedRadius: 30,
     maxDocuments: 4,
     maxSigners: 2,
@@ -83,7 +56,7 @@ const services = [
       'Night service (9pm-7am): +$50',
       'Extra document: $10 each',
       'Extra signer: $5 each',
-      'Extended travel: $0.50/mile beyond 30 miles'
+      'Travel beyond included radius: see travel tiers'
     ],
     bestFor: 'Urgent documents, after-hours needs, weekend signings, business clients',
     popular: false,
@@ -92,9 +65,9 @@ const services = [
   },
   {
     name: 'Loan Signing Specialist',
-    price: '$150',
+    price: '$175',
     description: 'Expert real estate closings',
-    basePrice: 150,
+    basePrice: 175,
     includedRadius: 30,
     maxDocuments: 'Unlimited',
     maxSigners: 4,
@@ -112,7 +85,7 @@ const services = [
     addOns: [
       'Rush print: +$20',
       'Scan-back: +$15',
-      'Extended travel: $0.50/mile beyond 30 miles'
+      'Travel beyond included radius: see travel tiers'
     ],
     bestFor: 'Mortgage closings, refinancing, HELOC documents, reverse mortgages',
     popular: false,

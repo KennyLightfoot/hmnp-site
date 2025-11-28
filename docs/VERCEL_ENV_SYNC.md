@@ -27,9 +27,9 @@ GHL (GoHighLevel)
 - GHL_LOCATION_ID
 - (Optional) GHL_API_BASE_URL, GHL_* IDs used by tracking/workflows (see code comments)
 
-Proof.com (RON)
-- PROOF_API_KEY
-- PROOF_API_URL: https://api.proof.com (or provider URL)
+Proof.com (RON) - REMOVED
+// All PROOF_* variables have been removed. RON is now handled via Notary Hub UI
+// with its own environment variables.
 
 S3/Uploads
 - S3_BUCKET

@@ -2,12 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping';
 import { withRateLimit } from '@/lib/security/rate-limiting';
+import { UnifiedAuth, Auth } from '@/lib/auth/unified-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export const GET = withRateLimit('public', 'debug_env_vars')(async (request: NextRequest) => {
   try {
+    // Admin-only guard: even in non-production environments, require an
+    // authenticated admin before exposing any debug information.
+    const { response } = await UnifiedAuth.authenticate(request, Auth.adminOnly());
+    if (response) {
+      return response;
+    }
+
     // Check if we're in development mode
     if (process.env.NODE_ENV === 'production') {
       return NextResponse.json({ error: 'Debug endpoint disabled in production' }, { status: 403 });

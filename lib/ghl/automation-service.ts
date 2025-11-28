@@ -2,6 +2,7 @@ import { addTagsToContact, createContact, findContactByEmail, findContactByPhone
 import { sendGHLSMS } from '@/lib/ghl-messaging'
 import { sendSms } from '@/lib/sms'
 import { getErrorMessage } from '@/lib/utils/error-utils'
+import { createBookingPaymentToken } from '@/lib/security/payment-link-tokens'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || 'https://houstonmobilenotarypros.com'
 
@@ -111,7 +112,12 @@ export function buildBookingLinks(booking: any) {
   const bookingId = booking?.id || ''
   const rescheduleLink = `${BASE_URL}/request-a-call?intent=reschedule${bookingId ? `&bookingId=${encodeURIComponent(bookingId)}` : ''}`
   const cancelLink = `${BASE_URL}/request-a-call?intent=cancel${bookingId ? `&bookingId=${encodeURIComponent(bookingId)}` : ''}`
-  const paymentLink = booking?.stripePaymentUrl || `${BASE_URL}/payment/${bookingId}`
+  const token = bookingId ? createBookingPaymentToken(bookingId) : null
+  const paymentLink = booking?.stripePaymentUrl || (
+    token
+      ? `${BASE_URL}/payment/${bookingId}?token=${encodeURIComponent(token)}`
+      : `${BASE_URL}/payment/${bookingId}`
+  )
   const reviewLink = process.env.NEXT_PUBLIC_REVIEW_LINK || `${BASE_URL}/reviews`
   return {
     rescheduleLink,

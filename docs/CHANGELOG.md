@@ -92,9 +92,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improved booking success rate to 100%
   - Enhanced error handling and validation
 
-- **RON (Remote Online Notarization)**
-  - Complete RON system implementation
-  - Proof.com integration for secure sessions
+- **RON (Remote Online Notarization)** *(legacy implementation)*
+  - Original RON system implementation used Proof.com for secure sessions
+  - This integration has since been decommissioned in favor of Notary Hub UI
   - 24/7 availability with automated workflows
   - Texas-compliant pricing and documentation
 

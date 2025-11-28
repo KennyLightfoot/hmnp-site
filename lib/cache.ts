@@ -33,6 +33,20 @@ class CacheService {
   private maxRetries = 3;
 
   constructor() {
+    const isBuildPhase =
+      process.env.NEXT_PHASE === 'phase-production-build' ||
+      process.env.SKIP_REDIS_DURING_BUILD === 'true';
+
+    // During Next.js build/SSG (or when explicitly disabled), skip Redis
+    // initialization entirely so `next build` cannot fail due to Redis being
+    // unavailable. Cache operations will simply behave as no-ops in this phase.
+    if (isBuildPhase || process.env.SILENCE_SERVER_INIT_LOGS === '1') {
+      if (!process.env.SILENCE_SERVER_INIT_LOGS) {
+        logger.info('Skipping Redis cache initialization during build/CI phase');
+      }
+      return;
+    }
+
     this.initializeClient();
   }
 
