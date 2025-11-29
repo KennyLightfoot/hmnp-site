@@ -18,11 +18,11 @@ export const GET = withAdminSecurity(async () => {
     logger.error("Admin dashboard API error", "ADMIN_DASHBOARD", error as Error);
     return NextResponse.json(
       {
-        success: false,
+      success: false,
         error: "Failed to fetch dashboard data",
         message: error instanceof Error ? getErrorMessage(error) : "Unknown error",
       },
       { status: 500 },
     );
-  }
+      }
 });

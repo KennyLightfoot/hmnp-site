@@ -470,34 +470,34 @@ export async function getOperationsMetricsData(): Promise<AdminOperationsMetrics
     lastAutopilotMessage,
     reviewQueueRaw,
   ] = await Promise.all([
-    prisma.agentLead.count(),
-    prisma.agentLead.count({
+    (prisma as any).agentLead.count(),
+    (prisma as any).agentLead.count({
       where: {
         createdAt: {
           gte: twentyFourHoursAgo,
         },
       },
     }),
-    prisma.agentJob.count({
+    (prisma as any).agentJob.count({
       where: {
         createdAt: {
           gte: twentyFourHoursAgo,
         },
       },
     }),
-    prisma.agentJob.count({
+    (prisma as any).agentJob.count({
       where: {
         status: {
           in: ["PENDING", "PENDING_REVIEW", "IN_PROGRESS"],
         },
       },
     }),
-    prisma.agentPricingQuote.count({
+    (prisma as any).agentPricingQuote.count({
       where: {
         needsReview: true,
       },
     }),
-    prisma.agentJob.findMany({
+    (prisma as any).agentJob.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
       select: {
@@ -509,7 +509,7 @@ export async function getOperationsMetricsData(): Promise<AdminOperationsMetrics
         createdAt: true,
       },
     }),
-    prisma.outboundMessage.count({
+    (prisma as any).outboundMessage.count({
       where: {
         status: "SENT",
         updatedAt: {
@@ -517,7 +517,7 @@ export async function getOperationsMetricsData(): Promise<AdminOperationsMetrics
         },
       },
     }),
-    prisma.outboundMessage.count({
+    (prisma as any).outboundMessage.count({
       where: {
         status: "FAILED",
         updatedAt: {
@@ -525,16 +525,16 @@ export async function getOperationsMetricsData(): Promise<AdminOperationsMetrics
         },
       },
     }),
-    prisma.messageReview.count({
+    (prisma as any).messageReview.count({
       where: {
         status: "PENDING",
       },
     }),
-    prisma.outboundMessage.findFirst({
+    (prisma as any).outboundMessage.findFirst({
       orderBy: { updatedAt: "desc" },
       select: { updatedAt: true },
     }),
-    prisma.messageReview.findMany({
+    (prisma as any).messageReview.findMany({
       where: { status: "PENDING" },
       orderBy: { createdAt: "desc" },
       take: 5,
@@ -557,7 +557,7 @@ export async function getOperationsMetricsData(): Promise<AdminOperationsMetrics
     }),
   ]);
 
-  const latestAutomationJobs = latestAutomationJobsRaw.map((job) => ({
+  const latestAutomationJobs = latestAutomationJobsRaw.map((job: any) => ({
     jobId: job.jobId,
     serviceType: job.serviceType,
     status: job.status,
@@ -582,7 +582,7 @@ export async function getOperationsMetricsData(): Promise<AdminOperationsMetrics
       pendingReview: pendingReviews,
       lastRunAt: lastAutopilotMessage?.updatedAt?.toISOString() ?? null,
     },
-    reviewQueue: reviewQueueRaw.map((review) => ({
+    reviewQueue: reviewQueueRaw.map((review: any) => ({
       id: review.id,
       scenario: review.scenario,
       riskLevel: review.riskLevel,
@@ -775,21 +775,21 @@ export async function getNetworkDashboardData(): Promise<NetworkDashboardMetrics
         createdAt: true,
       },
     }),
-    prisma.agentJob.count({
+    (prisma as any).agentJob.count({
       where: {
         createdAt: {
           gte: twentyFourHoursAgo,
         },
       },
     }),
-    prisma.agentJob.count({
+    (prisma as any).agentJob.count({
       where: {
         status: {
           in: ["PENDING", "PENDING_REVIEW", "IN_PROGRESS"],
         },
       },
     }),
-    prisma.agentJob.findMany({
+    (prisma as any).agentJob.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
       select: {
@@ -875,7 +875,7 @@ export async function getNetworkDashboardData(): Promise<NetworkDashboardMetrics
     automation: {
       jobs24h: automationJobs24hCount,
       jobsPending: automationJobsPendingCount,
-      recentJobs: recentAutomationJobsRaw.map((job) => ({
+      recentJobs: recentAutomationJobsRaw.map((job: any) => ({
         jobId: job.jobId,
         serviceType: job.serviceType,
         status: job.status,
@@ -1079,7 +1079,6 @@ export async function getSystemHealthSummary(): Promise<SystemHealthSummary> {
           database: health.value?.database,
           cache: health.value?.cache,
           queues: health.value?.queues,
-          error: health.value?.error,
         }
       : {
           status: "error",
@@ -1156,8 +1155,8 @@ export async function getContentStats(): Promise<ContentStatsPayload> {
   };
 
   const [syncedBlogCount, publishedTodayCount] = await Promise.all([
-    prisma.agentBlog.count(),
-    prisma.agentBlog.count({
+    (prisma as any).agentBlog.count(),
+    (prisma as any).agentBlog.count({
       where: {
         publishedAt: {
           gte: startOfDay,

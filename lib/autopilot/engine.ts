@@ -36,7 +36,8 @@ async function ensureOutboundMessage(
   subject: string,
   body: string,
 ) {
-  return prisma.outboundMessage.create({
+  // Cast prisma to any to work around typegen lag for the new OutboundMessage model
+  return (prisma as any).outboundMessage.create({
     data: {
       bookingId,
       messageType,
@@ -54,7 +55,7 @@ async function ensureOutboundMessage(
 }
 
 async function updateOutboundStatus(id: string, status: "SENT" | "FAILED", errorMessage?: string) {
-  await prisma.outboundMessage.update({
+  await (prisma as any).outboundMessage.update({
     where: { id },
     data: {
       status,
@@ -66,7 +67,7 @@ async function updateOutboundStatus(id: string, status: "SENT" | "FAILED", error
 
 async function hasRecentMessage(bookingId: string, messageType: AutopilotScenario) {
   const twentyFourHoursAgo = addHours(new Date(), -24);
-  const existing = await prisma.outboundMessage.findFirst({
+  const existing = await (prisma as any).outboundMessage.findFirst({
     where: {
       bookingId,
       messageType,
@@ -307,7 +308,7 @@ async function processBookingNudges(): Promise<AutopilotRunSummary> {
       serviceName: booking.service?.name,
     });
 
-    const outbound = await prisma.outboundMessage.create({
+    const outbound = await (prisma as any).outboundMessage.create({
       data: {
         bookingId: booking.id,
         messageType: "BOOKING_NUDGE",
@@ -323,7 +324,7 @@ async function processBookingNudges(): Promise<AutopilotRunSummary> {
       },
     });
 
-    await prisma.messageReview.create({
+    await (prisma as any).messageReview.create({
       data: {
         messageId: outbound.id,
         scenario: "BOOKING_NUDGE",

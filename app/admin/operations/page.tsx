@@ -191,7 +191,7 @@ export default async function AdminOperationsOverviewPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {latestAutomationJobs.length === 0 ? (
+            {data.latestJobs.length === 0 ? (
               <p className="text-sm text-muted-foreground">No jobs have been synced yet.</p>
             ) : (
               <Table>

@@ -1,6 +1,6 @@
 import { cookies, headers } from "next/headers";
 
-function buildInternalBaseUrl(): string {
+async function buildInternalBaseUrl(): Promise<string> {
   const envBase =
     process.env.INTERNAL_ADMIN_BASE_URL ||
     process.env.NEXTAUTH_URL ||
@@ -15,7 +15,7 @@ function buildInternalBaseUrl(): string {
     return `https://${envBase.replace(/\/$/, "")}`;
   }
 
-  const headerList = headers();
+  const headerList = await headers();
   const host = headerList.get("host") || "localhost:3000";
   const protocolHeader = headerList.get("x-forwarded-proto");
   const protocol =
@@ -25,8 +25,8 @@ function buildInternalBaseUrl(): string {
   return `${protocol}://${host}`;
 }
 
-function buildInternalUrl(path: string): string {
-  const base = buildInternalBaseUrl();
+async function buildInternalUrl(path: string): Promise<string> {
+  const base = await buildInternalBaseUrl();
   if (path.startsWith("http")) {
     return path;
   }
@@ -35,7 +35,8 @@ function buildInternalUrl(path: string): string {
 
 export async function fetchAdminJson<T>(path: string, init?: RequestInit): Promise<T> {
   const cookieStore = cookies();
-  const response = await fetch(buildInternalUrl(path), {
+  const url = await buildInternalUrl(path);
+  const response = await fetch(url, {
     cache: "no-store",
     ...init,
     headers: {

@@ -10,7 +10,8 @@ import { getErrorMessage } from "@/lib/utils/error-utils";
 export const dynamic = "force-dynamic";
 
 export const GET = withAdminSecurity(async () => {
-  const jobs = await prisma.contentJob.findMany({
+  // Cast prisma to any to work around typegen lag for the new ContentJob model
+  const jobs = await (prisma as any).contentJob.findMany({
     orderBy: { createdAt: "desc" },
     take: 50,
   });
@@ -31,7 +32,7 @@ export const POST = withAdminSecurity(async (request: NextRequest) => {
       return NextResponse.json({ error: "Missing instructions or content type" }, { status: 400 });
     }
 
-    const job = await prisma.contentJob.create({
+    const job = await (prisma as any).contentJob.create({
       data: {
         type: contentType,
         title,
@@ -56,7 +57,7 @@ export const POST = withAdminSecurity(async (request: NextRequest) => {
       enqueue: true,
     });
 
-    await prisma.contentJob.update({
+    await (prisma as any).contentJob.update({
       where: { id: job.id },
       data: {
         agentJobId: agentResponse.jobId ?? agentResponse.correlationId,

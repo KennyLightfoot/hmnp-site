@@ -120,11 +120,11 @@ export async function persistAgentBlog(payload: AgentBlogPayload) {
   const jobMetadata = payload.job ? (payload.job as JsonValue) : undefined;
 
   if (payload.jobId) {
-    const existing = await prisma.agentBlog.findUnique({
+    const existing = await (prisma as any).agentBlog.findUnique({
       where: { jobId: payload.jobId },
     });
     if (existing) {
-      await prisma.agentBlog.update({
+      await (prisma as any).agentBlog.update({
         where: { id: existing.id },
         data: {
           title: blogData.title,
@@ -142,7 +142,7 @@ export async function persistAgentBlog(payload: AgentBlogPayload) {
     }
   }
 
-  await prisma.agentBlog.upsert({
+  await (prisma as any).agentBlog.upsert({
     where: { slug },
     update: {
       title: blogData.title,
@@ -172,7 +172,7 @@ export async function persistAgentBlog(payload: AgentBlogPayload) {
 }
 
 export async function upsertAgentLead(payload: AgentLeadPayload) {
-  return prisma.agentLead.upsert({
+  return (prisma as any).agentLead.upsert({
     where: { correlationId: payload.correlationId },
     update: {
       name: payload.name ?? undefined,
@@ -202,7 +202,7 @@ export async function upsertAgentLead(payload: AgentLeadPayload) {
 }
 
 export async function upsertAgentJob(payload: AgentJobPayload) {
-  return prisma.agentJob.upsert({
+  return (prisma as any).agentJob.upsert({
     where: { jobId: payload.jobId },
     update: {
       correlationId: payload.correlationId ?? undefined,
@@ -236,7 +236,7 @@ export async function upsertAgentJob(payload: AgentJobPayload) {
 }
 
 export async function upsertAgentPricingQuote(payload: AgentPricingPayload) {
-  return prisma.agentPricingQuote.upsert({
+  return (prisma as any).agentPricingQuote.upsert({
     where: { correlationId: payload.correlationId },
     update: {
       total: new Prisma.Decimal(payload.total),

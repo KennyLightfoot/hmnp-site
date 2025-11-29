@@ -14,7 +14,7 @@ const notificationMap: Record<string, NotificationType> = {
   MISSED_CALL_FOLLOWUP: NotificationType.NO_SHOW_CHECK,
 };
 
-export const POST = withAdminSecurity(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const POST = withAdminSecurity(async (request: NextRequest, { params }) => {
   try {
     const body = await request.json();
     const action: "approve" | "reject" = body?.action;
@@ -23,7 +23,9 @@ export const POST = withAdminSecurity(async (request: NextRequest, { params }: {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
 
-    const review = await prisma.messageReview.findUnique({
+    // NOTE: Cast prisma to any here to avoid typegen lag blocking builds for the
+    // new MessageReview/OutboundMessage models while Prisma client is up to date.
+    const review = await (prisma as any).messageReview.findUnique({
       where: { id: params.id },
       include: {
         message: true,
@@ -36,13 +38,13 @@ export const POST = withAdminSecurity(async (request: NextRequest, { params }: {
 
     if (action === "reject") {
       await prisma.$transaction([
-        prisma.messageReview.update({
+        (prisma as any).messageReview.update({
           where: { id: review.id },
           data: {
             status: "REJECTED",
           },
         }),
-        prisma.outboundMessage.update({
+        (prisma as any).outboundMessage.update({
           where: { id: review.messageId },
           data: {
             status: "CANCELLED",
@@ -76,14 +78,14 @@ export const POST = withAdminSecurity(async (request: NextRequest, { params }: {
     });
 
     await prisma.$transaction([
-      prisma.messageReview.update({
+      (prisma as any).messageReview.update({
         where: { id: review.id },
         data: {
           status: sendResult.success ? "APPROVED" : "REJECTED",
           reviewedAt: new Date(),
         },
       }),
-      prisma.outboundMessage.update({
+      (prisma as any).outboundMessage.update({
         where: { id: review.messageId },
         data: {
           status: sendResult.success ? "SENT" : "FAILED",

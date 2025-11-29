@@ -2,8 +2,8 @@
 
 # Pre-commit hook for security and code quality
 
-# 1. Check for .env files being committed
-if git diff --cached --name-only | grep -E '\.env$|\.env\.local$|\.env\.production$|\.env\.development$'; then
+# 1. Check for .env files being committed (exclude deleted files)
+if git diff --cached --diff-filter=ACMR --name-only | grep -E '\.env$|\.env\.local$|\.env\.production$|\.env\.development$'; then
   echo "❌ ERROR: Attempting to commit .env file!"
   echo "   .env files should never be committed to git."
   echo "   Use .env.example as a template instead."

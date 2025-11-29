@@ -307,9 +307,10 @@ describe('Booking Validation - Uncovered Lines', () => {
         const date = new Date();
         date.setDate(date.getDate() + 1); // Tomorrow
         date.setHours(14, 0, 0, 0); // 2 PM
-        // Ensure it's a weekday
-        if (date.getDay() === 0) date.setDate(date.getDate() + 1);
-        if (date.getDay() === 6) date.setDate(date.getDate() + 1);
+        // Ensure it's a weekday (Mon–Fri)
+        while (date.getDay() === 0 || date.getDay() === 6) {
+          date.setDate(date.getDate() + 1);
+        }
 
         const result = validateServiceAvailability('STANDARD_NOTARY', date.toISOString());
         expect(result.available).toBe(true);
@@ -331,8 +332,10 @@ describe('Booking Validation - Uncovered Lines', () => {
         const date = new Date();
         date.setDate(date.getDate() + 1);
         date.setHours(8, 0, 0, 0); // 8 AM
-        if (date.getDay() === 0) date.setDate(date.getDate() + 1);
-        if (date.getDay() === 6) date.setDate(date.getDate() + 1);
+        // Ensure it's a weekday (Mon–Fri)
+        while (date.getDay() === 0 || date.getDay() === 6) {
+          date.setDate(date.getDate() + 1);
+        }
 
         const result = validateServiceAvailability('STANDARD_NOTARY', date.toISOString());
         expect(result.available).toBe(false);
@@ -343,8 +346,10 @@ describe('Booking Validation - Uncovered Lines', () => {
         const date = new Date();
         date.setDate(date.getDate() + 1);
         date.setHours(17, 0, 0, 0); // 5 PM (should be unavailable)
-        if (date.getDay() === 0) date.setDate(date.getDate() + 1);
-        if (date.getDay() === 6) date.setDate(date.getDate() + 1);
+        // Ensure it's a weekday (Mon–Fri)
+        while (date.getDay() === 0 || date.getDay() === 6) {
+          date.setDate(date.getDate() + 1);
+        }
 
         const result = validateServiceAvailability('STANDARD_NOTARY', date.toISOString());
         expect(result.available).toBe(false);

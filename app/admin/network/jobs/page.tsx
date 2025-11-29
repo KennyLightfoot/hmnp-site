@@ -35,33 +35,6 @@ const FILTERS: { id: JobFilter; label: string; description: string }[] = [
 
 type JobOfferStatusValue = string;
 
-// Local view-model types to avoid direct dependency on Prisma namespace types.
-type JobOfferWithNotary = {
-  id: string
-  status: JobOfferStatusValue
-  createdAt: Date
-  expiresAt: Date | null
-  Notary: {
-    name: string | null
-    email: string | null
-  } | null
-}
-
-type BookingWithOffers = {
-  id: string
-  status: string
-  customerName: string | null
-  customerEmail: string | null
-  scheduledDateTime: Date | null
-  locationType: string | null
-  networkOfferExpiresAt: Date | null
-  createdAt: Date
-  service: {
-    name: string | null
-  } | null
-  jobOffers: JobOfferWithNotary[]
-}
-
 const relativeTime = (date: Date | string | null | undefined) => {
   if (!date) return "-"
   const diffMs = Date.now() - new Date(date).getTime()
@@ -194,7 +167,7 @@ export default async function NetworkJobsPage({
                 </TableHeader>
                 <TableBody>
                   {bookings.map((booking) => {
-                    const acceptedOffer = (booking.jobOffers as JobOfferWithNotary[]).find(
+                    const acceptedOffer = booking.jobOffers.find(
                       (offer) => offer.status === "ACCEPTED",
                     );
                     return (
@@ -216,7 +189,7 @@ export default async function NetworkJobsPage({
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            {booking.service?.name ?? "—"}
+                            {booking.serviceName ?? "—"}
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {booking.jobOffers.length} offers generated
@@ -254,7 +227,7 @@ export default async function NetworkJobsPage({
                             <Badge variant="outline">{booking.status}</Badge>
                             {acceptedOffer ? (
                               <p className="text-xs text-muted-foreground">
-                                Assigned to {acceptedOffer.Notary?.name ?? "Unknown"} ({acceptedOffer.Notary?.email ?? "n/a"})
+                                Assigned to {acceptedOffer.notaryName ?? "Unknown"} ({acceptedOffer.notaryEmail ?? "n/a"})
                               </p>
                             ) : (
                               <p className="text-xs text-muted-foreground">Awaiting acceptance</p>

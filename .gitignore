@@ -148,6 +148,7 @@ backup*/
 *clean*env*.sh
 *sync*env*.sh
 compare-env-variables.js
+gitleaks-report*.json
 
 # Temporary data files (uncomment if you want to ignore these)
 # *.csv
