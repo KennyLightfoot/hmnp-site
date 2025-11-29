@@ -815,9 +815,14 @@ export async function getNetworkDashboardData(): Promise<NetworkDashboardMetrics
   const stateSet = new Set<string>();
   const languageCounts: Record<string, number> = {};
 
-  notaryCoverageRows.forEach((row) => {
-    row.states_licensed?.forEach((state) => stateSet.add(state));
-    row.languages_spoken?.forEach((language) => {
+  type NotaryCoverageRow = {
+    states_licensed?: string[] | null;
+    languages_spoken?: string[] | null;
+  };
+
+  notaryCoverageRows.forEach((row: NotaryCoverageRow) => {
+    row.states_licensed?.forEach((state: string) => stateSet.add(state));
+    row.languages_spoken?.forEach((language: string) => {
       languageCounts[language] = (languageCounts[language] || 0) + 1;
     });
   });
