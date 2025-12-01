@@ -840,16 +840,7 @@ export async function getNetworkDashboardData(): Promise<NetworkDashboardMetrics
       newLast7Days: applicationsLast7Days,
       approvedReady: approvedReadyCount,
       convertedLast30Days: convertedRecentCount,
-      recent: recentApplicationsRaw.map((app: {
-        id: string;
-        firstName: string | null;
-        lastName: string | null;
-        email: string | null;
-        statesLicensed: string[];
-        serviceTypes: string[];
-        status: string;
-        createdAt: Date;
-      }) => ({
+      recent: recentApplicationsRaw.map((app) => ({
         id: app.id,
         firstName: app.firstName,
         lastName: app.lastName,
@@ -875,16 +866,29 @@ export async function getNetworkDashboardData(): Promise<NetworkDashboardMetrics
       expiringSoon: expiringJobOffersSoonCount,
       expiredLast24h: expiredOffersLast24hCount,
       acceptanceRate7d: jobOfferAcceptanceRate,
-      open: openJobsRaw.map((job) => ({
-        id: job.id,
-        customerName: job.customerName,
-        status: job.status,
-        locationType: job.locationType,
-        scheduledDateTime: job.scheduledDateTime ? job.scheduledDateTime.toISOString() : null,
-        networkOfferExpiresAt: job.networkOfferExpiresAt ? job.networkOfferExpiresAt.toISOString() : null,
-        serviceName: job.service?.name ?? null,
-        offers: job.jobOffers.length,
-      })),
+      open: openJobsRaw.map(
+        (job: {
+          id: string;
+          customerName: string | null;
+          status: string;
+          locationType: string | null;
+          scheduledDateTime: Date | null;
+          networkOfferExpiresAt: Date | null;
+          service: { name: string | null } | null;
+          jobOffers: { id: string }[];
+        }) => ({
+          id: job.id,
+          customerName: job.customerName,
+          status: job.status,
+          locationType: job.locationType,
+          scheduledDateTime: job.scheduledDateTime ? job.scheduledDateTime.toISOString() : null,
+          networkOfferExpiresAt: job.networkOfferExpiresAt
+            ? job.networkOfferExpiresAt.toISOString()
+            : null,
+          serviceName: job.service?.name ?? null,
+          offers: job.jobOffers.length,
+        }),
+      ),
     },
     automation: {
       jobs24h: automationJobs24hCount,
