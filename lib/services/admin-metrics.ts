@@ -1076,7 +1076,7 @@ export async function getBillingMetricsData(): Promise<AdminBillingMetrics> {
       pendingCount,
       failedCount,
     },
-    payments: recentPayments.map((payment) => ({
+    payments: recentPayments.map((payment: any) => ({
       id: payment.id,
       bookingId: payment.bookingId,
       status: payment.status,
