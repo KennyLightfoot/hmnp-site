@@ -1021,7 +1021,7 @@ export async function getNetworkJobsData(filter: NetworkJobFilter): Promise<Netw
       assigned: assignedCount,
       expired: expiredCount,
     },
-    jobs: bookings.map((booking) => ({
+    jobs: bookings.map((booking: any) => ({
       id: booking.id,
       status: booking.status,
       customerName: booking.customerName,
@@ -1031,7 +1031,7 @@ export async function getNetworkJobsData(filter: NetworkJobFilter): Promise<Netw
       networkOfferExpiresAt: booking.networkOfferExpiresAt ? booking.networkOfferExpiresAt.toISOString() : null,
       createdAt: booking.createdAt.toISOString(),
       serviceName: booking.service?.name ?? null,
-      jobOffers: booking.jobOffers.map((offer) => ({
+      jobOffers: booking.jobOffers.map((offer: any) => ({
         id: offer.id,
         status: offer.status,
         createdAt: offer.createdAt.toISOString(),
