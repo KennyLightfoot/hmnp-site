@@ -840,7 +840,7 @@ export async function getNetworkDashboardData(): Promise<NetworkDashboardMetrics
       newLast7Days: applicationsLast7Days,
       approvedReady: approvedReadyCount,
       convertedLast30Days: convertedRecentCount,
-      recent: recentApplicationsRaw.map((app) => ({
+      recent: recentApplicationsRaw.map((app: any) => ({
         id: app.id,
         firstName: app.firstName,
         lastName: app.lastName,
