@@ -23,22 +23,37 @@ export default function LocationReassurance() {
       <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row items-center gap-4">
         <div className="flex-1">
           <p className="text-sm text-[#0F1419]/80">
-            Serving {city ? <strong>{city}</strong> : 'Webster & League City'}, 25‑mile radius
+            Serving{" "}
+            {city ? <strong>{city}</strong> : <strong>Webster &amp; League City</strong>} and nearby
+            Houston suburbs (25‑mile radius)
           </p>
         </div>
-        {/* Simple inline map (SVG pins for Webster/League City) */}
+        {/* Simple inline map (SVG pins for Webster/League City) – decorative only */}
         <div className="w-full md:w-auto">
-          <svg width="260" height="120" viewBox="0 0 260 120" aria-label="Map of Webster and League City" className="rounded-lg border border-black/10 bg-gray-50">
+          <svg
+            width="260"
+            height="120"
+            viewBox="0 0 260 120"
+            aria-hidden="true"
+            role="presentation"
+            className="rounded-lg border border-black/10 bg-gray-50"
+          >
             <rect x="0" y="0" width="260" height="120" fill="#f8fafc" />
             {/* Webster pin */}
             <circle cx="90" cy="60" r="6" fill="#ef4444" />
-            <text x="100" y="64" fontSize="10" fill="#374151">Webster</text>
+            <text x="100" y="64" fontSize="10" fill="#374151">
+              Webster
+            </text>
             {/* League City pin */}
             <circle cx="160" cy="80" r="6" fill="#ef4444" />
-            <text x="170" y="84" fontSize="10" fill="#374151">League City</text>
+            <text x="170" y="84" fontSize="10" fill="#374151">
+              League City
+            </text>
             {/* Houston marker (context) */}
             <circle cx="40" cy="40" r="3" fill="#94a3b8" />
-            <text x="48" y="44" fontSize="9" fill="#6b7280">Houston</text>
+            <text x="48" y="44" fontSize="9" fill="#6b7280">
+              Houston
+            </text>
           </svg>
         </div>
       </div>

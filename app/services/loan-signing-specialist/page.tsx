@@ -340,7 +340,11 @@ export default function LoanSigningPage() {
             </Button>
           </Link>
           <Link href="/contact?subject=Loan%20Signing%20Partnership">
-            <Button size="lg" variant="outline" className="border-white text-white bg-transparent hover:bg-white hover:text-[#002147]">
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-white text-white bg-transparent hover:bg-white hover:text-[#002147]"
+            >
               Title Company Partnerships
             </Button>
           </Link>

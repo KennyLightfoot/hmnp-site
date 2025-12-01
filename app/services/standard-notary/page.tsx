@@ -78,7 +78,11 @@ export default function EssentialServicePage() {
               </Button>
             </Link>
             <Link href="/contact">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-secondary">
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-white text-white bg-transparent hover:bg-white hover:text-secondary"
+            >
                 Get Quote
               </Button>
             </Link>

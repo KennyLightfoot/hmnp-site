@@ -2089,7 +2089,7 @@ export default function FAQClientPage() {
                 </Link>
                 <a
                   href={`tel:${require('@/lib/phone').getBusinessTel()}`}
-                  className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-11 px-8 border-white text-white hover:bg-white hover:text-[#002147]"
+                  className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-transparent hover:bg-accent hover:text-accent-foreground h-11 px-8 border-white text-white hover:bg-white hover:text-[#002147]"
                 >
                   <Phone className="mr-2 h-5 w-5" />
                   (832) 617-4285

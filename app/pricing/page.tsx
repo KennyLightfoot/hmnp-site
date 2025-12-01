@@ -512,7 +512,12 @@ export default function PricingPage() {
                 Book Appointment Now
               </Link>
             </Button>
-            <Button size="lg" variant="outline" className="h-12 px-8 border-white text-white hover:bg-white hover:text-[#002147]" asChild>
+            <Button
+              size="lg"
+              variant="outline"
+              className="h-12 px-8 border-white text-white bg-transparent hover:bg-white hover:text-[#002147]"
+              asChild
+            >
               <Link href="/contact">
                 <Users className="h-5 w-5 mr-2" />
                 Contact Us

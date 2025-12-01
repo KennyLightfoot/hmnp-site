@@ -216,7 +216,11 @@ export default function ExtrasAndFeesPage() {
             </Button>
           </Link>
           <Link href="/booking">
-            <Button size="lg" variant="outline" className="border-white text-white bg-transparent hover:bg-white hover:text-[#002147]">
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-white text-white bg-transparent hover:bg-white hover:text-[#002147]"
+            >
               Book a Notary Service
             </Button>
           </Link>

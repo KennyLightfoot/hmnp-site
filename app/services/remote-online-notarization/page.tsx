@@ -363,7 +363,11 @@ export default function RemoteOnlineNotarizationPage() {
               </Button>
             </Link>
             <Link href="/ron/how-it-works">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#A52A2A]">
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-white text-white bg-transparent hover:bg-white hover:text-[#A52A2A]"
+            >
                 Learn How It Works
                 <ExternalLink className="ml-2 h-5 w-5" />
               </Button>

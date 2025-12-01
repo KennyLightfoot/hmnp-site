@@ -149,7 +149,11 @@ export default function PriorityServicePage() {
               </Button>
             </Link>
             <Link href="/contact">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-white text-white bg-transparent hover:bg-white hover:text-primary"
+            >
                 Emergency Contact
               </Button>
             </Link>

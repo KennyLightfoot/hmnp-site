@@ -160,7 +160,25 @@ export default function ServicesPage() {
     return `${to12h(hours.start)}–${to12h(hours.end)} ${dayLabel}`
   }
   // Move services array inside the component
-  const services = [
+  type ServiceConfig = {
+    slug: string
+    name: string
+    price: string
+    tagline: string
+    description: string
+    link: string
+    icon: React.ComponentType<any>
+    features?: string[]
+    bgColor: string
+    borderColor: string
+    buttonVariant: "outline" | "default"
+    textColor?: string
+    hoverBgColor?: string
+    hoverTextColor?: string
+    isPopular?: boolean
+  }
+
+  const services: ServiceConfig[] = [
     {
       slug: "standard-notary",
       name: "Standard Notary Services",
@@ -178,9 +196,8 @@ export default function ServicesPage() {
       bgColor: "bg-[#002147]",
       borderColor: "border-t-[#002147]",
       buttonVariant: "outline" as "outline" | "default",
-      textColor: "text-[#002147]",
-      hoverBgColor: "hover:bg-[#002147]",
-      hoverTextColor: "hover:text-white",
+      textColor: "text-white",
+      hoverBgColor: "hover:bg-[#001a38]",
     },
     {
       slug: "extended-hours-notary",
@@ -220,9 +237,8 @@ export default function ServicesPage() {
       bgColor: "bg-[#002147]",
       borderColor: "border-t-[#002147]",
       buttonVariant: "outline" as "outline" | "default",
-      textColor: "text-[#002147]",
-      hoverBgColor: "hover:bg-[#002147]",
-      hoverTextColor: "hover:text-white",
+      textColor: "text-white",
+      hoverBgColor: "hover:bg-[#001a38]",
     },
     {
       slug: "estate-planning",
@@ -241,9 +257,8 @@ export default function ServicesPage() {
       bgColor: "bg-[#002147]",
       borderColor: "border-t-[#002147]",
       buttonVariant: "outline" as "outline" | "default",
-      textColor: "text-[#002147]",
-      hoverBgColor: "hover:bg-[#002147]",
-      hoverTextColor: "hover:text-white",
+      textColor: "text-white",
+      hoverBgColor: "hover:bg-[#001a38]",
     },
     {
       slug: "specialty",
@@ -262,9 +277,8 @@ export default function ServicesPage() {
       bgColor: "bg-[#002147]",
       borderColor: "border-t-[#002147]",
       buttonVariant: "outline" as "outline" | "default",
-      textColor: "text-[#002147]",
-      hoverBgColor: "hover:bg-[#002147]",
-      hoverTextColor: "hover:text-white",
+      textColor: "text-white",
+      hoverBgColor: "hover:bg-[#001a38]",
     },
     {
       slug: "business",
@@ -283,9 +297,8 @@ export default function ServicesPage() {
       bgColor: "bg-[#002147]",
       borderColor: "border-t-[#002147]",
       buttonVariant: "outline" as "outline" | "default",
-      textColor: "text-[#002147]",
-      hoverBgColor: "hover:bg-[#002147]",
-      hoverTextColor: "hover:text-white",
+      textColor: "text-white",
+      hoverBgColor: "hover:bg-[#001a38]",
     },
     {
       slug: "extras",
@@ -304,9 +317,8 @@ export default function ServicesPage() {
       bgColor: "bg-[#002147]",
       borderColor: "border-t-[#002147]",
       buttonVariant: "outline" as "outline" | "default",
-      textColor: "text-[#002147]",
-      hoverBgColor: "hover:bg-[#002147]",
-      hoverTextColor: "hover:text-white",
+      textColor: "text-white",
+      hoverBgColor: "hover:bg-[#001a38]",
     },
   ];
 
@@ -966,7 +978,11 @@ const featuredCityLinks = [
                     )}
                     <div className="mt-6">
                       <Link href={service.link}>
-                        <Button className={`${service.bgColor} ${service.textColor || 'text-white'} ${service.hoverBgColor || 'hover:bg-[#001a38]'}`}>
+                        <Button
+                          className={`${service.bgColor} ${service.textColor || "text-white"} ${
+                            service.hoverBgColor || "hover:bg-[#001a38]"
+                          } ${service.hoverTextColor || ""}`}
+                        >
                           Learn More About {service.name.replace(" Notary", "").replace(" Services", "")}
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>

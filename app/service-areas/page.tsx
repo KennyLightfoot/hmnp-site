@@ -376,13 +376,23 @@ export default function ServiceAreasIndexPage() {
                 We're happy to provide service beyond our standard coverage area. Contact us for a custom quote.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147]" asChild>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-white text-white bg-transparent hover:bg-white hover:text-[#002147]"
+                  asChild
+                >
                   <Link href="/contact">
                     <Mail className="h-5 w-5 mr-2" />
                     Request Custom Quote
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#002147]" asChild>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-white text-white bg-transparent hover:bg-white hover:text-[#002147]"
+                  asChild
+                >
                   <Link href={`tel:${getBusinessTel()}`}>
                     <Phone className="h-5 w-5 mr-2" />
                     Call {getBusinessPhoneFormatted()}
