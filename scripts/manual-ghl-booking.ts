@@ -17,7 +17,8 @@
  */
 
 import 'dotenv/config'
-import { DateTime } from 'luxon'
+import { parseISO, addHours, addMinutes, isValid } from 'date-fns'
+import { toZonedTime, formatInTimeZone } from 'date-fns-tz'
 import { findContactByEmail, createContact } from '@/lib/ghl/contacts'
 import { createAppointment } from '@/lib/ghl/appointments-adapter'
 import { getCalendarIdForService } from '@/lib/ghl/calendar-mapping'
@@ -59,21 +60,26 @@ async function main() {
   const args = parseArgs(process.argv)
   const tz = process.env.BUSINESS_TIMEZONE || 'America/Chicago'
 
-  const startDT = args.start
-    ? DateTime.fromISO(args.start)
-    : DateTime.now().setZone(tz).plus({ hours: 2 })
+  let startDT: Date;
+  if (args.start) {
+    startDT = parseISO(args.start);
+  } else {
+    const now = new Date();
+    const zonedNow = toZonedTime(now, tz);
+    startDT = addHours(zonedNow, 2);
+  }
 
-  if (!startDT.isValid) {
+  if (!isValid(startDT)) {
     console.error(`Invalid --start datetime: ${args.start}`)
     process.exit(1)
   }
 
-  const endDT = startDT.plus({ minutes: 60 })
+  const endDT = addMinutes(startDT, 60);
 
   console.log('Preparing test booking...')
   console.log(`- Service: ${args.service}`)
-  console.log(`- Start:   ${startDT.toISO()}`)
-  console.log(`- End:     ${endDT.toISO()}`)
+  console.log(`- Start:   ${startDT.toISOString()}`)
+  console.log(`- End:     ${endDT.toISOString()}`)
 
   const calendarId = getCalendarIdForService(args.service)
 
@@ -112,8 +118,8 @@ async function main() {
       contactId: contact?.id,
       title: `${args.service.replace(/_/g, ' ')} – ${args.name}`,
       description: 'Manual test appointment to verify workflow triggers',
-      startTime: startDT.toUTC().toISO(),
-      endTime: endDT.toUTC().toISO(),
+      startTime: startDT.toISOString(),
+      endTime: endDT.toISOString(),
       locationId: process.env.GHL_LOCATION_ID,
       // Helpful defaults commonly required by GHL
       selectedTimezone: tz,

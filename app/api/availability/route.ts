@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { DateTime } from "luxon";
+import { parseISO, startOfDay, endOfDay, setHours, setMinutes, addMinutes } from "date-fns";
+import { toZonedTime, formatInTimeZone } from "date-fns-tz";
 import type { TimeSlot } from "@/lib/types/booking";
 import { getAvailableSlots, getCalendars, testCalendarConnection } from "@/lib/ghl-calendar";
 import { getCalendarIdForService } from "@/lib/ghl/calendar-mapping";
@@ -7,30 +8,31 @@ import { withRateLimit } from '@/lib/security/rate-limiting';
 import { z } from 'zod';
 
 // Fallback mock function if GHL is not available
-function generateMockSlots(date: DateTime): TimeSlot[] {
+function generateMockSlots(date: Date): TimeSlot[] {
   const slots: TimeSlot[] = [];
   const startHour = 9;
   const endHour = 17;
-  
-  console.log(`🎲 Starting mock generation for ${date.toISODate()}`);
-  
+
+  const dateStr = formatInTimeZone(date, "America/Chicago", "yyyy-MM-dd");
+  console.log(`🎲 Starting mock generation for ${dateStr}`);
+
   // Generate slots for all future dates
   for (let hour = startHour; hour < endHour; hour++) {
     for (let minute = 0; minute < 60; minute += 30) { // 30-minute intervals
-      const startTime = date.set({ hour, minute, second: 0, millisecond: 0 });
+      const startTime = setMinutes(setHours(date, hour), minute);
       const demandLevels = ["low", "moderate", "high"] as const;
-      
+
       slots.push({
-        startTime: startTime.toISO(),
-        endTime: startTime.plus({ minutes: 60 }).toISO(),
+        startTime: startTime.toISOString(),
+        endTime: addMinutes(startTime, 60).toISOString(),
         duration: 60,
         demand: demandLevels[Math.floor(Math.random() * 3)],
         available: true
       } as TimeSlot);
     }
   }
-  
-  console.log(`🎲 Generated ${slots.length} mock slots for ${date.toISODate()}`);
+
+  console.log(`🎲 Generated ${slots.length} mock slots for ${dateStr}`);
   return slots;
 }
 
@@ -71,9 +73,12 @@ export const GET = withRateLimit('public', 'availability')(async (request: NextR
   }
   
   // Force timezone to business timezone (Houston = America/Chicago)
-  const requestedDate = DateTime.fromISO(dateStr, { zone: "America/Chicago" });
-  if (!requestedDate.isValid)
+  let requestedDate: Date;
+  try {
+    requestedDate = toZonedTime(parseISO(dateStr), "America/Chicago");
+  } catch (error) {
     return NextResponse.json({ error: "Invalid date format. Use YYYY-MM-DD." }, { status: 400 });
+  }
   
     try {
     let availableSlots: TimeSlot[] = [];
@@ -99,16 +104,16 @@ export const GET = withRateLimit('public', 'availability')(async (request: NextR
           // Get the specific calendar ID for this service type
           const calendarId = getCalendarIdForService(serviceType);
           console.log(`📅 Using calendar ID for ${serviceType}: ${calendarId}`);
-          
+
           // Get start and end of the requested date
-          const startOfDay = requestedDate.startOf('day');
-          const endOfDay = requestedDate.endOf('day');
-          
+          const dayStart = startOfDay(requestedDate);
+          const dayEnd = endOfDay(requestedDate);
+
           // Get available slots from GHL with timeout
           const slotsPromise = getAvailableSlots(
             calendarId,
-            startOfDay.toISO(),
-            endOfDay.toISO(),
+            dayStart.toISOString(),
+            dayEnd.toISOString(),
             60 // 60-minute duration
           );
           

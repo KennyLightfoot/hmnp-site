@@ -1,5 +1,6 @@
 import { ghlApiRequest } from './error-handler'
-import { DateTime } from 'luxon'
+import { parseISO, format } from 'date-fns'
+import { toZonedTime } from 'date-fns-tz'
 import { getErrorMessage } from '@/lib/utils/error-utils'
 import { getCalendarSlots } from './management'
 import { redis } from '@/lib/redis'
@@ -38,8 +39,8 @@ export async function createAppointment(appointmentData: any, locationId?: strin
   const BYPASS_PREFLIGHT = (process.env.BOOKING_BYPASS_PREFLIGHT || '').toLowerCase() === 'true'
   if (!BYPASS_PREFLIGHT) {
     const startIso = String(payload.startTime)
-    const startDT = DateTime.fromISO(startIso, { zone: BUSINESS_TIMEZONE })
-    const dayStr = startDT.toFormat('yyyy-LL-dd')
+    const startDT = toZonedTime(parseISO(startIso), BUSINESS_TIMEZONE)
+    const dayStr = format(startDT, 'yyyy-MM-dd')
     const teamMemberId = process.env.GHL_DEFAULT_TEAM_MEMBER_ID || undefined
     let slotsResponse: any = []
     try {

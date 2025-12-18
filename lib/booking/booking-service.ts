@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 // Stripe removed – payment will be handled later
-import { DateTime } from 'luxon';
+import { parseISO, isBefore } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 
 interface CreateBookingParams {
   customerEmail: string;
@@ -52,7 +53,7 @@ export class BookingService {
       data: {
         serviceId,
         customerEmail,
-        scheduledDateTime: appointmentTime.toJSDate(),
+        scheduledDateTime: appointmentTime,
         status: 'PAYMENT_PENDING',
         priceAtBooking: basePrice,
         notes: `confirmationCode:${confirmationCode}`,
@@ -73,11 +74,11 @@ export class BookingService {
     };
   }
 
-  async checkAvailability(serviceId: string, appointmentTime: DateTime): Promise<boolean> {
+  async checkAvailability(serviceId: string, appointmentTime: Date): Promise<boolean> {
     const existing = await prisma.booking.findFirst({
       where: {
         serviceId,
-        scheduledDateTime: appointmentTime.toJSDate(),
+        scheduledDateTime: appointmentTime,
         status: {
           in: ['CONFIRMED', 'PAYMENT_PENDING'],
         },
@@ -109,15 +110,22 @@ export class BookingService {
     });
   }
 
-  private parseDateTime(input: string, timezone: string): DateTime {
-    const dt = DateTime.fromISO(input, { zone: timezone });
-    if (!dt.isValid) {
+  private parseDateTime(input: string, timezone: string): Date {
+    let dt: Date;
+    try {
+      dt = parseISO(input);
+    } catch (error) {
       throw new Error('Invalid date/time format');
     }
-    if (dt <= DateTime.now().setZone(timezone)) {
+
+    // Convert to the target timezone
+    const zonedDt = toZonedTime(dt, timezone);
+    const now = toZonedTime(new Date(), timezone);
+
+    if (isBefore(zonedDt, now) || zonedDt.getTime() === now.getTime()) {
       throw new Error('Appointment must be in the future');
     }
-    return dt;
+    return zonedDt;
   }
 
   private generateConfirmationCode(): string {
