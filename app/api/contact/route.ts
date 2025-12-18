@@ -108,7 +108,7 @@ async function sendEmailNotification(formData: any) {
     from: `Contact Form <${emailFrom}>`,
     to: [notificationEmailTo],
     subject: `New Contact Form Submission: ${subject}`,
-    reply_to: email,
+    replyTo: email,
     html: `
         <h1>New Contact Form Submission</h1>
         <p><strong>Name:</strong> ${firstName} ${lastName}</p>

@@ -1,4 +1,5 @@
-import { DateTime } from "luxon";
+import { setHours, setMinutes, getMinutes, addMinutes, isBefore, isAfter } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 
 interface BusinessHours { startTime: string; endTime: string }
 const DEFAULT_DURATION_MINS = 60;
@@ -7,10 +8,10 @@ const SLOT_INTERVAL_MINS = 15;
 
 type SlotGenerationParams = {
   businessHours: BusinessHours;
-  requestedDate: DateTime;
+  requestedDate: Date;
   serviceId: string;
   existingBookings: any[];
-  minimumBookingTime: DateTime;
+  minimumBookingTime: Date;
   businessTimezone: string;
 };
 
@@ -18,31 +19,36 @@ export async function generateAvailableSlots(params: SlotGenerationParams) {
   const { businessHours, requestedDate, existingBookings, minimumBookingTime, businessTimezone } = params;
   const durationMins = DEFAULT_DURATION_MINS;
   const bufferMins = DEFAULT_BUFFER_MINS;
-  const startOfDay = requestedDate.set({
-    hour: Number.parseInt(businessHours.startTime.split(':')[0]!),
-    minute: Number.parseInt(businessHours.startTime.split(':')[1]!),
-  });
-  const endOfDay = requestedDate.set({
-    hour: Number.parseInt(businessHours.endTime.split(':')[0]!),
-    minute: Number.parseInt(businessHours.endTime.split(':')[1]!),
-  });
+
+  // Set start and end of business day
+  let startOfDay = setHours(requestedDate, Number.parseInt(businessHours.startTime.split(':')[0]!));
+  startOfDay = setMinutes(startOfDay, Number.parseInt(businessHours.startTime.split(':')[1]!));
+
+  let endOfDay = setHours(requestedDate, Number.parseInt(businessHours.endTime.split(':')[0]!));
+  endOfDay = setMinutes(endOfDay, Number.parseInt(businessHours.endTime.split(':')[1]!));
+
   const slots: any[] = [];
-  let currentTime = startOfDay > minimumBookingTime ? startOfDay : minimumBookingTime;
-  const remainder = currentTime.minute % SLOT_INTERVAL_MINS;
-  if (remainder !== 0) currentTime = currentTime.plus({ minutes: SLOT_INTERVAL_MINS - remainder });
-  while (currentTime.plus({ minutes: durationMins }) <= endOfDay) {
-    const slotEnd = currentTime.plus({ minutes: durationMins });
+  let currentTime = isAfter(startOfDay, minimumBookingTime) ? startOfDay : minimumBookingTime;
+
+  // Round up to next slot interval
+  const remainder = getMinutes(currentTime) % SLOT_INTERVAL_MINS;
+  if (remainder !== 0) {
+    currentTime = addMinutes(currentTime, SLOT_INTERVAL_MINS - remainder);
+  }
+
+  while (!isAfter(addMinutes(currentTime, durationMins), endOfDay)) {
+    const slotEnd = addMinutes(currentTime, durationMins);
     const isOverlapping = existingBookings.some((booking) => {
-      const bookingStart = DateTime.fromJSDate(booking.scheduledDateTime, { zone: businessTimezone });
-      const bookingEnd = bookingStart.plus({ minutes: (booking.service.durationMinutes || 60) + (booking.service.bufferMinutes || 15) });
-      return currentTime < bookingEnd && slotEnd > bookingStart;
+      const bookingStart = toZonedTime(booking.scheduledDateTime, businessTimezone);
+      const bookingEnd = addMinutes(bookingStart, (booking.service.durationMinutes || 60) + (booking.service.bufferMinutes || 15));
+      return isBefore(currentTime, bookingEnd) && isAfter(slotEnd, bookingStart);
     });
     slots.push({
-      startTime: currentTime.toISO(),
-      endTime: slotEnd.toISO(),
+      startTime: currentTime.toISOString(),
+      endTime: slotEnd.toISOString(),
       available: !isOverlapping,
     });
-    currentTime = currentTime.plus({ minutes: SLOT_INTERVAL_MINS });
+    currentTime = addMinutes(currentTime, SLOT_INTERVAL_MINS);
   }
   return slots;
 }

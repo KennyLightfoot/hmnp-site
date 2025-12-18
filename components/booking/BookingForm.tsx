@@ -17,7 +17,8 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import { DateTime } from 'luxon';
+import { parseISO } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 import { getErrorMessage } from '@/lib/utils/error-utils';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -600,7 +601,7 @@ export default function BookingForm({
       const normalizedTime = hasTime ? normalizeTimeTo24h(hasTime) : null;
       const combinedDateTimeIso = selectedStartIso
         || (hasDate && normalizedTime
-            ? DateTime.fromISO(`${hasDate}T${normalizedTime}`, { zone: 'America/Chicago' }).toUTC().toISO()
+            ? toZonedTime(parseISO(`${hasDate}T${normalizedTime}`), 'America/Chicago').toISOString()
             : null);
 
       // Ensure CSRF token is present
