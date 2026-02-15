@@ -165,3 +165,26 @@ gitleaks-report*.json
 *.key
 *.cert
 *.crt
+
+# Business documents
+*.docx
+
+# Python
+venv-ads/
+__pycache__/
+
+# Sensitive files
+*.p12
+*-calendar-*.json
+
+# IDE/editor files
+@New Notepad
+.obsidian/
+
+# Build artifacts (already in gitignore but reinforcing)
+dev.log
+
+
+
+
+
