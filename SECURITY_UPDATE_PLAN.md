@@ -112,3 +112,17 @@ After updating these dependencies, we'll need to run another security audit to c
    ```bash
    pnpm build:safe
    ```
+
+## Remaining Issues
+
+After the update, we still have two low-severity issues related to webpack in the @sentry/webpack-plugin:
+
+1. **webpack buildHttp: allowedUris allow-list bypass** (GHSA-8fgc-7cc6-rx7x)
+   - Affected versions: >=5.49.0 <=5.104.0
+   - Fix version: >=5.104.1
+
+2. **webpack buildHttp HttpUriPlugin allowedUris bypass** (GHSA-38r7-794h-5758)
+   - Affected versions: >=5.49.0 <5.104.0
+   - Fix version: >=5.104.0
+
+We attempted to fix these by adding an override for `@sentry/nextjs>@sentry/webpack-plugin>webpack`, but they persist. Since these are low-severity issues, they can be addressed in a follow-up update that might require more comprehensive changes to the @sentry integration.
