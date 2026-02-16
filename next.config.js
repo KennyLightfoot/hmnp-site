@@ -3,6 +3,13 @@ import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
 
 const nextConfig = {
+  typescript: {
+    // Type checking done locally/CI - skip on Vercel to prevent 45min timeout
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   webpack: (config, { isServer }) => {
     // Fix ioredis/net/tls being bundled for client side
     if (!isServer) {
