@@ -5,6 +5,13 @@
 
 'use client';
 
+export const metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 import { useState } from 'react';
 import BookingForm from '@/components/booking/BookingForm';
 import ExpressBookingPanel from '@/components/booking/ExpressBookingPanel';
