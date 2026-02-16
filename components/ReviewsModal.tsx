@@ -9,9 +9,9 @@ export default function ReviewsModal() {
     <div className="container mx-auto px-4 py-6">
       <Dialog open={open} onOpenChange={setOpen}>
         <div className="flex items-center gap-3">
-          <a href="https://www.google.com/maps/search/?api=1&query=Houston+Mobile+Notary+Pros" target="_blank" rel="noopener noreferrer" className="text-secondary underline underline-offset-4 hover:text-secondary/80 transition-colors">
+          <button className="text-secondary underline underline-offset-4" onClick={() => setOpen(true)}>
             Read 100+ Google reviews
-          </a>
+          </button>
         </div>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
