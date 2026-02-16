@@ -557,7 +557,7 @@ export const faqs: FAQ[] = [
     answer: (
       <div>
         <p>
-          RON sessions start at <strong>$25 per notarial act</strong> with no travel fee. Additional notarial acts within the same session are $25 each. Additional signers are $15 each.
+          RON sessions start at <strong>$35 per session</strong> — includes 1 notarial seal, no travel fee. Additional seals are $10 each. Additional signers are $15 each. Remote witness (if needed) is $25 flat.
         </p>
         <p className="mt-2">
           Most standard documents (POA, affidavit, acknowledgment) require one notarial act. Loan signings or packages with multiple seals will be quoted before you confirm.

@@ -69,7 +69,7 @@ const remoteOnlineSchema = {
   ],
   offers: {
     "@type": "Offer",
-    price: "25.00",
+    price: "35.00",
     priceCurrency: "USD",
     description: "RON session includes credential analysis, KBA, and digital journal entry.",
     availability: "https://schema.org/InStock",
@@ -150,7 +150,7 @@ const ronFaqs = [
     question: "How does RON pricing work?",
     answer: (
       <p>
-        Our RON pricing is transparent: $25 per session + $5 per notarial seal. A session covers the entire notarization process regardless of how many documents you have. Each document requiring notarization gets one seal ($5). For example: 3 documents = $25 session + $15 for seals = $40 total. Additional signers are $10 each. No hidden fees, no travel charges, no rush fees.
+        Our RON pricing is transparent: $35 per session includes 1 notarial seal. Each additional seal is $10. Additional signers are $15 each. A remote witness (if needed) is $25 flat. For example: 3 documents = $35 session + $20 for 2 extra seals = $55 total. No hidden fees, no travel charges, no rush fees.
       </p>
     ),
   },
@@ -175,7 +175,7 @@ export default function RemoteOnlineNotarizationPage() {
             Upload. Verify. Notarized — often in 15–30 minutes.
           </h1>
           <p className="text-lg text-gray-700 max-w-3xl mx-auto mb-4">
-            Built on Proof.com. From $25 online. Texas‑compliant with credential analysis, KBA, and recording.
+            Built on Proof.com. From $35 online. Texas‑compliant with credential analysis, KBA, and recording.
           </p>
           <div className="flex flex-wrap justify-center gap-2 text-sm mb-6">
             <span className="inline-flex items-center rounded-full bg-[#002147]/5 border border-[#002147]/10 text-[#002147] px-3 py-1">Credential analysis</span>
@@ -239,7 +239,7 @@ export default function RemoteOnlineNotarizationPage() {
                 <span className="text-3xl font-bold text-[#A52A2A]">${SERVICES_CONFIG.RON_SERVICES.sealPrice}</span>
                 <span className="text-lg text-gray-600">/seal</span>
               </div>
-              <p className="text-sm text-gray-600 mb-4">Session fee covers the entire notarization process. Each document requiring notarization gets one seal. Additional signers: $10 each. No hidden fees, travel charges, or rush fees.</p>
+              <p className="text-sm text-gray-600 mb-4">Session fee covers the entire notarization process and includes 1 seal. Additional seals: +$10 each. Additional signers: +$15 each. Remote witness: +$25 flat. No hidden fees, travel charges, or rush fees.</p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link href="/ron/dashboard">
                   <Button size="lg" className="w-full sm:w-auto bg-[#A52A2A] hover:bg-[#8B0000] text-white">
