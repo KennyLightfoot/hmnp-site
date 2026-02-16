@@ -69,7 +69,7 @@ const remoteOnlineSchema = {
   ],
   offers: {
     "@type": "Offer",
-    price: "35.00",
+    price: "25.00",
     priceCurrency: "USD",
     description: "RON session includes credential analysis, KBA, and digital journal entry.",
     availability: "https://schema.org/InStock",
@@ -175,7 +175,7 @@ export default function RemoteOnlineNotarizationPage() {
             Upload. Verify. Notarized — often in 15–30 minutes.
           </h1>
           <p className="text-lg text-gray-700 max-w-3xl mx-auto mb-4">
-            Built on Proof.com. From $35 online. Texas‑compliant with credential analysis, KBA, and recording.
+            Built on Proof.com. From $25 online. Texas‑compliant with credential analysis, KBA, and recording.
           </p>
           <div className="flex flex-wrap justify-center gap-2 text-sm mb-6">
             <span className="inline-flex items-center rounded-full bg-[#002147]/5 border border-[#002147]/10 text-[#002147] px-3 py-1">Credential analysis</span>
