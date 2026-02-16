@@ -141,6 +141,30 @@ export const faqs: FAQ[] = [
     popular: true,
   },
   {
+    id: "what-is-ron",
+    question: "What is Remote Online Notarization (RON)?",
+    answer: (
+      <div>
+        <p>
+          Remote Online Notarization (RON) allows you to get documents notarized entirely online via a secure video call — no in-person meeting required. You can complete the process from your phone, tablet, or computer.
+        </p>
+        <p className="mt-2">
+          Texas law (HB 1217) authorizes RON for most standard notarial acts. The process uses knowledge-based authentication (KBA) to verify your identity and requires an audio-visual recording of the signing session for compliance.
+        </p>
+        <p className="mt-2">RON is ideal for:</p>
+        <ul className="list-disc list-inside mt-2 space-y-1">
+          <li>Clients outside the Houston area who need Texas-notarized documents</li>
+          <li>Time-sensitive documents needing same-day notarization</li>
+          <li>Anyone unable to meet in person due to health, distance, or schedule</li>
+          <li>Real estate closings with out-of-state buyers or sellers</li>
+        </ul>
+      </div>
+    ),
+    category: "services",
+    keywords: ["ron", "remote", "online", "notarization", "video", "kba"],
+    popular: true,
+  },
+  {
     id: "ron-service",
     question: "Do you offer Remote Online Notarization (RON)?",
     answer: (
@@ -171,6 +195,27 @@ export const faqs: FAQ[] = [
     keywords: ["RON", "remote", "online", "notarization", "digital", "virtual", "internet"],
     relatedQuestions: ["ron-requirements", "ron-pricing"],
     popular: true,
+  },
+  {
+    id: "ron-requirements",
+    question: "What do I need for a remote online notarization session?",
+    answer: (
+      <div>
+        <p>To complete a RON session you will need:</p>
+        <ul className="list-disc list-inside mt-2 space-y-1">
+          <li>A phone, tablet, or computer with a working camera and microphone</li>
+          <li>A valid government-issued photo ID (driver's license or passport)</li>
+          <li>The document(s) ready to upload or share digitally</li>
+          <li>A stable internet connection</li>
+        </ul>
+        <p className="mt-2">
+          You'll also complete a short knowledge-based authentication (KBA) quiz — typically questions about your address history, past vehicles, or other public records — to verify your identity before the session begins.
+        </p>
+      </div>
+    ),
+    category: "services",
+    keywords: ["ron", "requirements", "id", "camera", "kba", "identity"],
+    popular: false,
   },
 
   // Documents
@@ -507,6 +552,23 @@ export const faqs: FAQ[] = [
   },
 
   {
+    id: "ron-pricing",
+    question: "How much does remote online notarization cost?",
+    answer: (
+      <div>
+        <p>
+          RON sessions start at <strong>$25 per notarial act</strong> with no travel fee. Additional notarial acts within the same session are $25 each. Additional signers are $15 each.
+        </p>
+        <p className="mt-2">
+          Most standard documents (POA, affidavit, acknowledgment) require one notarial act. Loan signings or packages with multiple seals will be quoted before you confirm.
+        </p>
+      </div>
+    ),
+    category: "pricing",
+    keywords: ["ron", "price", "cost", "online", "fee"],
+    popular: true,
+  },
+  {
     id: "pricing-notary-vs-service-fees",
     question: "What's the difference between notary fees and service fees?",
     answer: (
@@ -628,7 +690,24 @@ export const faqs: FAQ[] = [
     keywords: ["legal advice", "attorney", "interpretation", "documents", "unauthorized practice", "law"],
     relatedQuestions: ["what-notary-does", "document-preparation"],
     popular: true,
-  }
+  },
+  {
+    id: "ron-texas-valid",
+    question: "Is remote online notarization legally valid in Texas?",
+    answer: (
+      <div>
+        <p> 
+          Yes. Texas HB 1217, effective January 1, 2020, authorizes remote online notarization by Texas-commissioned notaries. RON sessions comply with all Texas notary law requirements and produce legally binding notarized documents.
+        </p>
+        <p className="mt-2"> 
+          Each RON session includes an audio-visual recording stored securely for a minimum of 5 years, a digital notary certificate, and a tamper-evident seal — all meeting Texas Secretary of State requirements.
+        </p>
+      </div>
+    ),
+    category: "legal",
+    keywords: ["ron", "legal", "valid", "texas", "hb 1217", "law"],
+    popular: false,
+  },
 ];
 
 // Helper function to get FAQs by category

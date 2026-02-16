@@ -106,9 +106,9 @@ export default function HeroSection() {
             </p>
             {/* Trust bar */}
             <div className="flex flex-wrap gap-2 pt-1">
-              <Badge className="bg-white/10 text-white border-white/20">Credential analysis</Badge>
-              <Badge className="bg-white/10 text-white border-white/20">KBA</Badge>
-              <Badge className="bg-white/10 text-white border-white/20">AV recording</Badge>
+              <Badge className="bg-white/10 text-white border-white/20">NNA Certified</Badge>
+              <Badge className="bg-white/10 text-white border-white/20">$100K E&O Insured</Badge>
+              <Badge className="bg-white/10 text-white border-white/20">RON Available</Badge>
               <Badge className="bg-white/10 text-white border-white/20">Transparent pricing</Badge>
             </div>
             <div className="bg-white/10 border border-white/15 rounded-xl p-4 text-sm text-gray-100">
@@ -125,6 +125,10 @@ export default function HeroSection() {
                 <div className="flex items-center justify-between gap-3">
                   <dt>Loan signing specialist</dt>
                   <dd className="font-semibold text-white">$175 base · 30 mi included</dd>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <dt>Remote online (RON)</dt>
+                  <dd className="font-semibold text-white">$25/act · no travel fee</dd>
                 </div>
                 <div className="text-xs text-gray-200 pt-2">
                   Travel tiers: +$25 (21–30 mi), +$45 (31–40 mi), +$65 (41–50 mi). Extras like rush arrival or additional

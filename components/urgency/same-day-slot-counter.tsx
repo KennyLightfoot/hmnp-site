@@ -110,8 +110,7 @@ export default function SameDaySlotCounter({
       <span className={`inline-flex h-2.5 w-2.5 rounded-full ${displayCount !== null ? 'bg-green-500' : 'bg-amber-400'}`}></span>
       {displayCount !== null ? (
         <span>
-          Same-day mobile slots left today: <strong>{displayCount}</strong>
-          {source ? <span className="ml-1 text-xs text-gray-500">({source})</span> : null}
+          Same-day appointments available
           {relativeTimestamp ? (
             <span className="ml-1 text-xs text-gray-500">
               {isStale ? `Last checked ${relativeTimestamp}` : `Updated ${relativeTimestamp}`}

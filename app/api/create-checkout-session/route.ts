@@ -23,6 +23,11 @@ const CheckoutSessionRequestSchema = z.object({
   customerId: z.string().trim().optional(),
   customerEmail: z.string().trim().email().max(254),
   customerName: z.string().trim().min(1).max(100),
+  // RON specific fields
+  serviceType: z.string().trim().optional(),
+  customerPhone: z.string().trim().optional(),
+  documentType: z.string().trim().optional(),
+  notes: z.string().trim().optional(),
   // amount/description are no longer accepted from client unless no bookingId is present
   amount: z.number().positive().max(100000, 'Amount too large').optional(),
   currency: z.string().trim().default('usd').optional(),
@@ -116,8 +121,15 @@ export const POST = withPaymentSecurity(
     let amountCents: number;
     let description: string;
     const currency = clientCurrency || 'usd';
+    let isRON = false;
 
-    if (bookingId) {
+    // Special handling for RON services
+    if (validatedData.serviceType === 'RON_SERVICES') {
+      // Set RON pricing (Base price + 1 seal)
+      amountCents = 3500; // $35 = $25 session + $10 for one seal
+      description = 'Remote Online Notarization (RON)';
+      isRON = true;
+    } else if (bookingId) {
       const booking = await prisma.booking.findUnique({ where: { id: bookingId }, include: { service: true } });
       if (!booking || !booking.priceAtBooking) {
         return NextResponse.json({ success: false, error: 'Invalid booking' }, { status: 400 });
@@ -166,10 +178,19 @@ export const POST = withPaymentSecurity(
         bookingId: bookingId || '',
         paymentId: paymentId || '',
         customerEmail,
+        customerName,
         source: 'hmnp_booking_system',
         ...metadata
       }
     };
+
+    // Add RON specific metadata if this is a RON service
+    if (isRON) {
+      sessionParams.metadata.isRON = 'true';
+      sessionParams.metadata.documentType = validatedData.documentType || 'GENERAL';
+      sessionParams.metadata.customerPhone = validatedData.customerPhone || '';
+      sessionParams.metadata.notes = validatedData.notes || '';
+    }
 
     // Add invoice creation if enabled
     if (invoiceCreation?.enabled) {

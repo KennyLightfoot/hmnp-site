@@ -25,7 +25,7 @@ export default function LocationReassurance() {
           <p className="text-sm text-[#0F1419]/80">
             Serving{" "}
             {city ? <strong>{city}</strong> : <strong>Webster &amp; League City</strong>} and nearby
-            Houston suburbs (25‑mile radius)
+            Texas City, Webster & League City and nearby Houston suburbs (20‑mile radius)
           </p>
         </div>
         {/* Simple inline map (SVG pins for Webster/League City) – decorative only */}

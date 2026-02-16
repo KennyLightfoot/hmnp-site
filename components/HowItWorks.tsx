@@ -14,7 +14,7 @@ export default function HowItWorks() {
           <div className="bg-white rounded-xl border border-black/10 p-6">
             <ConciergeBell className="mx-auto h-6 w-6 text-secondary mb-3" />
             <div className="font-medium text-secondary mb-1">We come to you</div>
-            <p className="text-sm text-secondary/70">Same‑day availability. 25‑mile radius included.</p>
+            <p className="text-sm text-secondary/70">Same‑day availability. 20‑mile radius included.</p>
           </div>
           <div className="bg-white rounded-xl border border-black/10 p-6">
             <CheckCircle className="mx-auto h-6 w-6 text-secondary mb-3" />
