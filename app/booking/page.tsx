@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 
 export default function BookingPage() {
-  const [activeTab, setActiveTab] = useState<'express' | 'full'>('express');
+  const [activeTab, setActiveTab] = useState<'express' | 'full' | 'remote'>('express');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
