@@ -101,7 +101,6 @@ export async function POST(request: NextRequest) {
       } catch (webhookError: any) {
         logger.error('Webhook handler failed', { error: webhookError.message });
         webhookResult = { 
-          error: true,
           message: 'Webhook handler failed: ' + webhookError.message 
         };
       }
