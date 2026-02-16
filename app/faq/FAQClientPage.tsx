@@ -403,11 +403,11 @@ const faqs: FAQ[] = [
           <li>
             <strong>Additional Training & Certification:</strong> LSAs typically complete specialized training programs
             and hold certifications from recognized organizations like the National Notary Association (NNA) or Loan
-            Signing System (LSS). {/* TODO: Confirm and list specific certifications held */}
+            Signing System (LSS). Our notaries are active members of the National Notary Association (NNA), ensuring ongoing education and adherence to the highest professional standards.
           </li>
           <li>
             <strong>Enhanced Insurance:</strong> Due to the high value of transactions, professional LSAs carry
-            significant Errors & Omissions (E&O) insurance. We maintain comprehensive E&O coverage. {/* TODO: Specify E&O level ($1M Recommended) */}
+            significant Errors & Omissions (E&O) insurance. We maintain $100,000 in E&O coverage, protecting you against financial loss due to unintentional errors during the notarization process.
           </li>
           <li>
             <strong>Industry Relationships:</strong> Experienced LSAs maintain relationships with title companies,
@@ -1738,7 +1738,7 @@ const faqs: FAQ[] = [
         </p>
         <p className="mt-2">
           Furthermore, for your protection and ours, Houston Mobile Notary Pros carries Errors & Omissions (E&O)
-          insurance coverage. {/* TODO: Update E&O level mentioned here. */}\n E&O insurance helps protect consumers against financial loss due
+          insurance coverage of $100,000. E&O insurance helps protect consumers against financial loss due
           to unintentional notary errors or omissions during the notarization process.
         </p>
         <p className="mt-2">

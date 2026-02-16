@@ -273,6 +273,82 @@ export default function PricingPage() {
         </div>
       </section>
 
+      {/* RON Pricing Section */}
+      <section id="ron-pricing" className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-10">
+              <Badge className="bg-[#002147] text-white mb-4">Remote Online Notarization</Badge>
+              <h2 className="text-3xl font-bold text-[#002147] mb-3">RON Pricing — Notarize From Anywhere</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">Secure, legally binding notarization via video session. No travel. No waiting room. Available 24/7 from any device.</p>
+            </div>
+            <div className="grid md:grid-cols-2 gap-8 mb-10">
+              <div className="bg-gray-50 rounded-xl p-6 border-2 border-[#002147]/20">
+                <h3 className="text-xl font-bold text-[#002147] mb-1">Standard Online Session</h3>
+                <p className="text-sm text-gray-500 mb-4">Build your own — pay only for what you need</p>
+                <div className="text-4xl font-bold text-[#A52A2A] mb-1">$35</div>
+                <p className="text-sm text-gray-600 mb-5">Includes biometric ID verification, encrypted video session and 1 notarized seal</p>
+                <div className="space-y-3 border-t pt-4">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-700">Additional seal / stamp</span>
+                    <span className="font-semibold text-[#002147]">+$10 each</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-700">Additional signer</span>
+                    <span className="font-semibold text-[#002147]">+$15 each</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-700">Remote witness (we provide)</span>
+                    <span className="font-semibold text-[#002147]">+$25 flat</span>
+                  </div>
+                </div>
+                <Button className="w-full mt-5 bg-[#A52A2A] hover:bg-[#8B0000]" asChild>
+                  <Link href="/booking?service=RON_SERVICES">Book RON Session</Link>
+                </Button>
+              </div>
+              <div className="space-y-4">
+                <div className="bg-[#002147] text-white rounded-xl p-5 relative">
+                  <div className="absolute -top-3 right-4">
+                    <Badge className="bg-[#A52A2A] text-white px-3 py-1">Best Value for Families</Badge>
+                  </div>
+                  <h3 className="text-lg font-bold mb-1">Estate Planning Package</h3>
+                  <p className="text-sm text-white/70 mb-3">Wills, Trusts and Power of Attorney</p>
+                  <div className="text-3xl font-bold text-white mb-1">$75</div>
+                  <p className="text-xs text-white/60 mb-3">Save ~$15 vs. building individually</p>
+                  <ul className="text-sm text-white/80 space-y-1 mb-4">
+                    <li>Up to 2 signers included</li>
+                    <li>Up to 5 notarized seals included</li>
+                    <li>Encrypted video session</li>
+                    <li>Biometric ID verification</li>
+                  </ul>
+                  <Button className="w-full bg-white text-[#002147] hover:bg-gray-100" asChild>
+                    <Link href="/booking?service=RON_SERVICES&package=estate">Book Estate Package</Link>
+                  </Button>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-5 border-2 border-[#A52A2A]/30">
+                  <h3 className="text-lg font-bold text-[#002147] mb-1">Real Estate Seller Package</h3>
+                  <p className="text-sm text-gray-500 mb-3">Complete Closing Package for Home Sellers</p>
+                  <div className="text-3xl font-bold text-[#A52A2A] mb-1">$125</div>
+                  <ul className="text-sm text-gray-600 space-y-1 mb-4">
+                    <li>Up to 2 signers included</li>
+                    <li>Unlimited seals for single transaction</li>
+                    <li>Priority scheduling</li>
+                    <li>Encrypted video session</li>
+                  </ul>
+                  <Button className="w-full bg-[#A52A2A] hover:bg-[#8B0000] text-white" asChild>
+                    <Link href="/booking?service=RON_SERVICES&package=realestate">Book Real Estate Package</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div className="bg-[#A52A2A]/5 border border-[#A52A2A]/20 rounded-lg p-5 text-center">
+              <p className="text-sm font-semibold text-[#002147] mb-2">First-Time Client? Use code TEXAS5 for $5 off your first RON session.</p>
+              <p className="text-xs text-gray-500">Senior (65+) or Veteran? Ask about our 10% discount at checkout.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Guarantee Strip */}
       <section className="py-8 bg-white">
         <div className="container mx-auto px-4">

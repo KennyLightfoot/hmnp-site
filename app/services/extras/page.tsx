@@ -179,7 +179,7 @@ export default function ExtrasAndFeesPage() {
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
                 <h3 className="font-semibold text-[#002147] mb-2 flex items-center"><Users className="h-5 w-5 mr-2 text-[#A52A2A]" /> Additional Signers/Witnesses</h3>
-                <p className="text-sm text-gray-600">Base service fees typically include a set number of signers. If more signers are involved than quoted, or if we are requested to provide witnesses, additional fees may apply (e.g., $10 per additional signer/witness). Please inform us of all participants during booking.</p>
+                <p className="text-sm text-gray-600">Base service fees include one signer. For Remote Online Notarization sessions, additional signers are $15 each. If you need a remote witness provided by us, that is an additional $25 flat. For in-person mobile notary, please inform us of all participants during booking so we can quote accurately.</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
                 <h3 className="font-semibold text-[#002147] mb-2 flex items-center"><FileText className="h-5 w-5 mr-2 text-[#A52A2A]" /> Document Printing/Scanning</h3>
