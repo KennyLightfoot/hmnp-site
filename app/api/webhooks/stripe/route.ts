@@ -534,12 +534,89 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session):
       });
     }
     
+    // Check if this is a RON service payment by looking at metadata
+    if (session.metadata?.isRON === 'true') {
+      try {
+        await createBlueNotarySessionAfterPayment(session);
+      } catch (ronError) {
+        logger.error('Failed to create BlueNotary session after payment', {
+          sessionId: session.id,
+          error: getErrorMessage(ronError)
+        });
+        // Continue processing - we'll handle this failure separately
+        // The payment is still valid, we just need to retry creating the RON session
+      }
+    }
+    
     return { success: true, sessionId: session.id };
 
   } catch (error: any) {
     logger.error('Error handling checkout session completed', { 
       sessionId: session.id, 
       error: getErrorMessage(error) 
+    });
+    throw error;
+  }
+}
+
+/**
+ * Create BlueNotary session after successful payment
+ * Following the Payment Gate Rule: No BlueNotary session until after payment
+ */
+async function createBlueNotarySessionAfterPayment(session: Stripe.Checkout.Session): Promise<void> {
+  try {
+    const { 
+      customerEmail, 
+      customerName, 
+      customerPhone, 
+      documentType 
+    } = session.metadata || {};
+    
+    if (!customerEmail || !customerName) {
+      throw new Error('Missing required customer information');
+    }
+    
+    // Import RON service only when needed
+    const { RONService } = await import('@/lib/ron/bluenotary');
+    
+    // Check if RON service is available
+    if (!RONService.isRONAvailable()) {
+      throw new Error('RON service is not available');
+    }
+    
+    // Create a BlueNotary session
+    const ronSession = await RONService.createRONSession({
+      id: `ron_${Date.now()}`,
+      customerName,
+      customerEmail,
+      customerPhone: customerPhone || '',
+      documentTypes: documentType ? [documentType] : ['GENERAL'],
+      scheduledDateTime: undefined, // No scheduled date for now
+    });
+    
+    if (!ronSession) {
+      throw new Error('Failed to create BlueNotary session');
+    }
+    
+    logger.info('BlueNotary RON session created after payment', {
+      stripeSessionId: session.id,
+      ronSessionId: ronSession.id,
+      customerEmail,
+      status: ronSession.status
+    });
+    
+    // Send email notification with session details
+    // This would typically use your email service, but for now we'll just log it
+    logger.info('RON session notification would be sent to customer', {
+      to: customerEmail,
+      subject: 'Your Remote Online Notarization Session is Ready',
+      sessionUrl: ronSession.sessionUrl
+    });
+    
+  } catch (error) {
+    logger.error('Error creating BlueNotary session', {
+      sessionId: session.id,
+      error: getErrorMessage(error)
     });
     throw error;
   }

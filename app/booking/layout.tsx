@@ -13,6 +13,10 @@ export const metadata: Metadata = {
     'loan signing appointment',
     'remote online notarization',
   ],
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function BookingLayout({

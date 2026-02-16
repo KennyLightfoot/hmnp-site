@@ -21,7 +21,7 @@ export default function SocialProof() {
               <Star className="h-4 w-4 fill-current" />
               <Star className="h-4 w-4 fill-current" />
             </div>
-            <span className="text-sm text-[#0F1419]/80">4.9 average • 500+ jobs • 25‑mile radius</span>
+            <span className="text-sm text-[#0F1419]/80">4.9 average • 500+ jobs • 20‑mile radius</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 md:gap-3">

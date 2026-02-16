@@ -137,7 +137,7 @@ export default function HeroBooking() {
                 <div className="space-y-3 text-sm text-[#0F1419]">
                   <div className="flex items-center justify-between"><span>Mobile notarization (first seal)</span><span>$10</span></div>
                   <div className="flex items-center justify-between"><span>Each additional seal</span><span>$10</span></div>
-                  <div className="flex items-center justify-between"><span>Travel up to 25 miles</span><span>Included</span></div>
+                  <div className="flex items-center justify-between"><span>Travel up to 20 miles</span><span>Included</span></div>
                   <div className="flex items-center justify-between"><span>Evenings/weekends</span><span>+$25</span></div>
                   <div className="flex items-center justify-between"><span>Loan signing (package)</span><span>From $125</span></div>
                   <p className="text-xs text-[#0F1419]/70">Final price depends on distance, time, and document count. You’ll see your estimate instantly.</p>
@@ -148,7 +148,7 @@ export default function HeroBooking() {
           <div className="flex flex-wrap gap-3 text-sm text-white/70 mb-8">
             <span className="px-3 py-1 rounded-full bg-white/10">4.9★ Rated</span>
             <span className="px-3 py-1 rounded-full bg-white/10">500+ jobs</span>
-            <span className="px-3 py-1 rounded-full bg-white/10">25‑mile radius</span>
+            <span className="px-3 py-1 rounded-full bg-white/10">20‑mile radius</span>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>

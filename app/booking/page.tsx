@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import BookingForm from '@/components/booking/BookingForm';
 import ExpressBookingPanel from '@/components/booking/ExpressBookingPanel';
+import RONBookingForm from '@/components/booking/RONBookingForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import GuaranteeStrip from '@/components/guarantees/GuaranteeStrip';
@@ -18,7 +19,9 @@ import {
   ArrowRight,
   CheckCircle,
   FileText,
-  BadgeCent
+  BadgeCent,
+  Monitor,
+  Video
 } from 'lucide-react';
 
 export default function BookingPage() {
@@ -44,8 +47,8 @@ export default function BookingPage() {
 
         {/* Booking Options Tabs */}
         <div className="max-w-6xl mx-auto mb-8">
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'express' | 'full')} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 max-w-2xl mx-auto mb-8">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'express' | 'full' | 'remote')} className="w-full">
+            <TabsList className="grid w-full grid-cols-3 max-w-3xl mx-auto mb-8">
               <TabsTrigger value="express" className="flex flex-col items-center space-y-1 py-3">
                 <Zap className="h-5 w-5" />
                 <span className="font-semibold">Express Callback</span>
@@ -55,6 +58,11 @@ export default function BookingPage() {
                 <Calendar className="h-5 w-5" />
                 <span className="font-semibold">Full Online Booking</span>
                 <span className="text-xs opacity-75">Ready to lock a time?</span>
+              </TabsTrigger>
+              <TabsTrigger value="remote" className="flex flex-col items-center space-y-1 py-3">
+                <Video className="h-5 w-5" />
+                <span className="font-semibold">Remote Online</span>
+                <span className="text-xs opacity-75">Notarize from anywhere</span>
               </TabsTrigger>
             </TabsList>
 
@@ -143,6 +151,50 @@ export default function BookingPage() {
                           <span>Want a quick callback instead?</span>
                           <ArrowRight className="h-3 w-3" />
                         </button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Remote Online Notarization Tab */}
+            <TabsContent value="remote" className="mt-0">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <RONBookingForm />
+                </div>
+                <div className="lg:col-span-1">
+                  <Card className="border-blue-100 bg-blue-50 h-full">
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold text-blue-900 mb-3">Remote Online Notarization</h3>
+                      <ul className="space-y-2 text-sm text-blue-800 mb-4">
+                        <li className="flex items-start space-x-2">
+                          <span className="text-blue-600 mt-0.5">✓</span>
+                          <span>Notarize from anywhere with internet</span>
+                        </li>
+                        <li className="flex items-start space-x-2">
+                          <span className="text-blue-600 mt-0.5">✓</span>
+                          <span>Available 24/7 with minimal wait time</span>
+                        </li>
+                        <li className="flex items-start space-x-2">
+                          <span className="text-blue-600 mt-0.5">✓</span>
+                          <span>Secure ID verification included</span>
+                        </li>
+                        <li className="flex items-start space-x-2">
+                          <span className="text-blue-600 mt-0.5">✓</span>
+                          <span>Valid in all 50 states</span>
+                        </li>
+                      </ul>
+                      <div className="bg-blue-100 rounded-lg p-3 mb-4">
+                        <p className="text-xs text-blue-900 font-medium">Payment required to create session</p>
+                        <p className="text-xs text-blue-700">From $35 including one notarial seal</p>
+                      </div>
+                      <div className="pt-4 border-t border-blue-200">
+                        <Link href="/ron/how-it-works" className="text-sm text-blue-700 hover:text-blue-900 flex items-center">
+                          <span>Learn how RON works</span>
+                          <ArrowRight className="h-3 w-3 ml-1" />
+                        </Link>
                       </div>
                     </CardContent>
                   </Card>

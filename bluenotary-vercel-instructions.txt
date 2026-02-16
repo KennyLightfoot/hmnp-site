@@ -1,0 +1,41 @@
+# BlueNotary Integration - Vercel Setup Instructions
+
+## Variables Added Successfully
+The following environment variables have been successfully added to your Vercel production environment:
+
+1. BLUENOTARY_BASE_URL = https://api.bluenotary.us
+2. NEXT_PUBLIC_ENABLE_RON = true
+
+## Variables Requiring Your Input
+You need to add these sensitive variables manually using your BlueNotary account credentials:
+
+```bash
+# Add your BlueNotary API key
+cd ~/development/hmnp-site && vercel env add BLUENOTARY_API_KEY production --token vcp_14vkljgQj01Sx46NnpCzG6vQi8H4csgfEcKPIAvlD8rFOE2LZZ40nral
+# [Enter your actual BlueNotary API key when prompted]
+
+# Add your notary email
+cd ~/development/hmnp-site && vercel env add BLUENOTARY_NOTARY_EMAIL production --token vcp_14vkljgQj01Sx46NnpCzG6vQi8H4csgfEcKPIAvlD8rFOE2LZZ40nral
+# [Enter your notary's email address when prompted]
+
+# Add your webhook secret
+cd ~/development/hmnp-site && vercel env add BLUENOTARY_WEBHOOK_SECRET production --token vcp_14vkljgQj01Sx46NnpCzG6vQi8H4csgfEcKPIAvlD8rFOE2LZZ40nral
+# [Enter your BlueNotary webhook secret when prompted]
+```
+
+## Verification
+After adding all variables, verify they're correctly set with:
+
+```bash
+cd ~/development/hmnp-site && vercel env ls production --token vcp_14vkljgQj01Sx46NnpCzG6vQi8H4csgfEcKPIAvlD8rFOE2LZZ40nral
+```
+
+## Deployment
+After setting all environment variables, deploy your application for the changes to take effect:
+
+```bash
+cd ~/development/hmnp-site && vercel deploy --prod --token vcp_14vkljgQj01Sx46NnpCzG6vQi8H4csgfEcKPIAvlD8rFOE2LZZ40nral
+```
+
+## Legacy Variables
+No legacy PROOF variables were found in your environment, so no cleanup is needed.

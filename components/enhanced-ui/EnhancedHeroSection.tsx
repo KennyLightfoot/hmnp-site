@@ -200,7 +200,7 @@ export default function EnhancedHeroSection() {
                   <div className="space-y-3 text-sm text-[#0F1419]">
                     <div className="flex items-center justify-between"><span>Mobile notarization (first seal)</span><span>$10</span></div>
                     <div className="flex items-center justify-between"><span>Each additional seal</span><span>$10</span></div>
-                    <div className="flex items-center justify-between"><span>Travel up to 25 miles</span><span>Included</span></div>
+                    <div className="flex items-center justify-between"><span>Travel up to 20 miles</span><span>Included</span></div>
                     <div className="flex items-center justify-between"><span>Evenings/weekends</span><span>+$25</span></div>
                     <div className="flex items-center justify-between"><span>Loan signing (package)</span><span>From $125</span></div>
                     <p className="text-xs text-[#0F1419]/70">Final price depends on distance, time, and document count. You'll see your estimate instantly.</p>

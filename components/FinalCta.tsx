@@ -15,7 +15,7 @@ export default function FinalCta() {
             <Button className="bg-white text-secondary hover:bg-white/90 h-12 px-6">Book Appointment</Button>
           </Link>
           <TelLink className="inline-flex" location="final_cta">
-            <Button className="bg-primary hover:bg-primary/90 h-12 px-6">Call {"(dynamic)"}</Button>
+            <Button className="bg-primary hover:bg-primary/90 h-12 px-6">Call / Text Now</Button>
           </TelLink>
         </div>
         <p className="mt-6 text-sm text-white/80">
