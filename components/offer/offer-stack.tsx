@@ -44,7 +44,7 @@ const OFFERS: Offer[] = [
   },
   {
     name: "Remote Online Notarization (RON)",
-    priceFrom: "$35",
+    priceFrom: "$25",
     points: [
       "Texas-compliant: credential analysis, KBA, recording",
       "Up to 10 docs included",

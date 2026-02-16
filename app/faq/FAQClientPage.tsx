@@ -471,9 +471,9 @@ const faqs: FAQ[] = [
           <strong>RON Pricing (Texas Law Compliant):</strong>
         </p>
         <ul className="mt-2 ml-4 list-disc space-y-1">
-          <li>Standard Acknowledgment: $35 ($25 RON fee + $10 first signature)</li>
+          <li>Standard Acknowledgment: $25 per notarial act · no travel fee</li>
           <li>Additional Signers: +$1 each</li>
-          <li>Oath/Affirmation: $35 ($25 RON fee + $10 oath fee)</li>
+          <li>Oath/Affirmation: $25 per notarial act · no travel fee</li>
         </ul>
         <p className="mt-2">
           All RON services comply with Texas Government Code §406.111 and §406.024. We provide identity verification, 

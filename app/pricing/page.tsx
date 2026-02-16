@@ -286,7 +286,7 @@ export default function PricingPage() {
               <div className="bg-gray-50 rounded-xl p-6 border-2 border-[#002147]/20">
                 <h3 className="text-xl font-bold text-[#002147] mb-1">Standard Online Session</h3>
                 <p className="text-sm text-gray-500 mb-4">Build your own — pay only for what you need</p>
-                <div className="text-4xl font-bold text-[#A52A2A] mb-1">$35</div>
+                <div className="text-4xl font-bold text-[#A52A2A] mb-1">$25</div>
                 <p className="text-sm text-gray-600 mb-5">Includes biometric ID verification, encrypted video session and 1 notarized seal</p>
                 <div className="space-y-3 border-t pt-4">
                   <div className="flex justify-between text-sm">

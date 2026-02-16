@@ -271,7 +271,7 @@ export const faqs: FAQ[] = [
           </div>
           <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
             <span>Remote Online Notarization</span>
-            <span className="font-semibold">$35</span>
+            <span className="font-semibold">$25</span>
           </div>
         </div>
         <p className="mt-4 text-sm text-gray-600">

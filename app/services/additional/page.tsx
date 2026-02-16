@@ -153,7 +153,7 @@ export default function AdditionalServicesPage() {
             <ul className="space-y-2 mb-6">
               <li className="flex items-start">
                 <span className="text-[#A52A2A] mr-2">•</span>
-                <span>Overnight Document Handling: $35</span>
+                <span>Overnight Document Handling: $25</span>
               </li>
             </ul>
             <div className="mt-6">
