@@ -188,7 +188,7 @@ export default function BookingPage() {
                       </ul>
                       <div className="bg-blue-100 rounded-lg p-3 mb-4">
                         <p className="text-xs text-blue-900 font-medium">Payment required to create session</p>
-                        <p className="text-xs text-blue-700">From $35 including one notarial seal</p>
+                        <p className="text-xs text-blue-700">From $25 per notarial act · no travel fee</p>
                       </div>
                       <div className="pt-4 border-t border-blue-200">
                         <Link href="/ron/how-it-works" className="text-sm text-blue-700 hover:text-blue-900 flex items-center">
