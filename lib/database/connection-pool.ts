@@ -59,6 +59,9 @@ class DatabaseConnectionPool {
   private buildDatabaseUrl(): string {
     const baseUrl = process?.env?.DATABASE_URL;
     if (!baseUrl) {
+      if (process.env.NEXT_PHASE === 'phase-production-build' || process.env.SKIP_ENV_VALIDATION === 'true') {
+        return 'postgresql://placeholder:placeholder@localhost:5432/placeholder';
+      }
       throw new Error('DATABASE_URL environment variable is required');
     }
 
@@ -311,7 +314,7 @@ export interface DatabaseMetrics {
 }
 
 // Export singleton instance
-export const dbPool = DatabaseConnectionPool?.getInstance();
+export const dbPool = process.env.DATABASE_URL ? DatabaseConnectionPool?.getInstance() : null;
 
 // Export the Prisma client from the pool
 export const prisma = dbPool?.getClient();
@@ -326,7 +329,7 @@ if (process?.env?.NODE_ENV !== 'test') {
 }
 
 // Export utilities
-export const executeWithRetry = dbPool?.executeWithRetry?.bind(dbPool);
-export const transaction = dbPool?.transaction?.bind(dbPool);
-export const getDatabaseMetrics = dbPool?.getMetrics?.bind(dbPool);
-export const getDatabaseHealth = dbPool?.healthCheck?.bind(dbPool);
+export const executeWithRetry = dbPool?.executeWithRetry?.bind(dbPool) ?? (async () => { throw new Error('Database not available'); });
+export const transaction = dbPool?.transaction?.bind(dbPool) ?? (async () => { throw new Error('Database not available'); });
+export const getDatabaseMetrics = dbPool?.getMetrics?.bind(dbPool) ?? (() => ({ responseTime: 0, uptime: 0, connectionCount: 0, queryCount: 0, errorCount: 0, poolConfig: {}, timestamp: new Date().toISOString() }));
+export const getDatabaseHealth = dbPool?.healthCheck?.bind(dbPool) ?? (async () => ({ status: 'unhealthy', metrics: { responseTime: 0, uptime: 0, connectionCount: 0, queryCount: 0, errorCount: 0, poolConfig: {}, timestamp: new Date().toISOString() } }));
