@@ -64,7 +64,7 @@ export default function RonPageClient() {
               Remote Online Notarization — Often Completed in 15–30 Minutes.
             </h1>
             <p className="mt-3 text-base md:text-lg text-white/90">
-              From $35. Credential analysis + KBA + audio/video recording included. After-hours
+              From $25. Credential analysis + KBA + audio/video recording included. After-hours
               coverage available with quick deposit checkout.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -127,7 +127,7 @@ export default function RonPageClient() {
           <div className="p-5 border rounded-xl shadow-sm">
             <h3 className="font-semibold text-secondary">Pricing &amp; Deposits</h3>
             <p className="text-sm text-black/70 mt-2">
-              From $35 (session + first seal). Additional seals $5. After-hours surcharge $50.
+              From $25 (session + first seal). Additional seals $5. After-hours surcharge $50.
               Deposit required for packages ≥$100 or after-hours.
             </p>
           </div>

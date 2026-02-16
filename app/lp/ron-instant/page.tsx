@@ -3,7 +3,7 @@ import SameDaySlotCounter from "@/components/urgency/same-day-slot-counter"
 import ServiceSchema from "@/components/schema/ServiceSchema"
 
 export const metadata = {
-  title: "Remote Online Notarization in Texas – Often 15–30 Minutes | From $35",
+  title: "Remote Online Notarization in Texas – Often 15–30 Minutes | From $25",
   description: "Upload. Verify. Notarized — often in 15–30 minutes. Built on Proof.com. Texas‑compliant RON with credential analysis, KBA, and recording.",
 }
 
@@ -22,7 +22,7 @@ export default function RonInstantPage() {
               Upload. Verify. Notarized — often in 15–30 minutes.
             </h1>
             <p className="mt-4 text-lg text-gray-100">
-              Built on Proof.com. From $35 online. Texas‑compliant with credential analysis, KBA, and recording.
+              Built on Proof.com. From $25 online. Texas‑compliant with credential analysis, KBA, and recording.
             </p>
             <div className="mt-6 flex flex-wrap gap-3 items-center">
               <Link href="/ron/dashboard" className="inline-flex items-center justify-center bg-primary hover:bg-primary/90 text-white rounded-md px-5 py-3">
@@ -71,7 +71,7 @@ export default function RonInstantPage() {
             <div>
               <h3 className="text-lg font-semibold text-secondary mb-2">Pricing</h3>
               <ul className="text-sm text-gray-700 space-y-2">
-                <li>• From $35 (session + first notarial)</li>
+                <li>• From $25 (session + first notarial)</li>
                 <li>• $5 per additional seal</li>
                 <li>• After 9pm convenience fee may apply</li>
               </ul>
@@ -148,7 +148,7 @@ export default function RonInstantPage() {
         <ServiceSchema
           serviceName="Remote Online Notarization (RON)"
           description="Texas‑compliant RON with credential analysis, KBA, and recording. Built on Proof.com."
-          price="$35"
+          price="$25"
           serviceType="ProfessionalService"
           serviceUrl="/lp/ron-instant"
           areaServed={["Texas"]}
