@@ -10,12 +10,7 @@ import dynamic from 'next/dynamic'
 import Analytics from '@/components/Analytics'
 import SchemaInitializer from '@/components/SchemaInitializer'
 import AttributionInit from '@/components/analytics/AttributionInit'
-import dynamic from 'next/dynamic'
-
-const AIChatWidget = dynamic(() => import('@/components/ai/AIChatWidget'), {
-  ssr: false,
-  loading: () => null,
-})
+import ChatWidgetWrapper from '@/components/ai/ChatWidgetWrapper'
 
 // Fonts now provided via CSS variables for Tailwind
 
@@ -249,11 +244,7 @@ export default function RootLayout({
           <Suspense fallback={<div className="h-64 bg-gray-900 animate-pulse" />}>
             <LazyFooter />
           </Suspense>
-        <AIChatWidget
-          enableProactive={true}
-          enableVoice={true}
-          proactiveDelay={30000}
-        />
+        <ChatWidgetWrapper />
         </Providers>
       </body>
     </html>
