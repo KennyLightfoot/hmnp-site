@@ -27,8 +27,12 @@ export interface ServiceConfig {
   defaultDurationMinutes: number;
   businessHours: BusinessHours;
   // RON-specific fields (ignored for non-RON services)
-  ronNotarialFee?: number; // default additional fee for notarial (itemized)
-  sealPrice?: number; // per-seal fee for RON
+  sealPrice?: number;           // per additional seal fee
+  signerFee?: number;           // per additional signer fee
+  witnessFee?: number;          // optional witness service fee
+  estatePackagePrice?: number;  // estate planning bundle price
+  realEstatePackagePrice?: number; // real estate seller package price
+  bufferMinutes?: number;       // buffer between sessions
 }
 
 export const SERVICES_CONFIG: Record<ServiceId, ServiceConfig> = {
@@ -65,13 +69,17 @@ export const SERVICES_CONFIG: Record<ServiceId, ServiceConfig> = {
   RON_SERVICES: {
     id: 'RON_SERVICES',
     displayName: 'Remote Online Notarization',
-    basePrice: 25, // base session
-    ronNotarialFee: 10, // default notarial fee (itemized to reach $35)
-    sealPrice: 5, // per seal
-    maxDocuments: 10,
+    basePrice: 35,           // Standard Online Notarization (1 seal included)
+    sealPrice: 10,           // Each additional seal/stamp
+    signerFee: 15,           // Each additional signer beyond first
+    witnessFee: 25,          // Optional remote witness service
+    estatePackagePrice: 75,  // Estate Planning Bundle (2 signers + 5 seals)
+    realEstatePackagePrice: 125, // Real Estate Seller Package (2 signers + unlimited seals)
+    maxDocuments: 20,
     includedRadius: 0,
     feePerMile: 0,
     defaultDurationMinutes: 30,
+    bufferMinutes: 15,       // Buffer between sessions
     businessHours: { start: 0, end: 24, days: [0, 1, 2, 3, 4, 5, 6] }
   },
   BUSINESS_ESSENTIALS: {

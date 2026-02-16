@@ -63,8 +63,8 @@ async function main() {
         id: 'ron-services-005',
         name: 'Remote Online Notarization',
         serviceType: ServiceType.RON_SERVICES,
-        description: 'Secure remote notarization from anywhere, available 24/7',
-        basePrice: 25.00,
+        description: 'Secure remote notarization from anywhere. Includes biometric ID verification, encrypted video session, and 1 notarized seal.',
+        basePrice: 35.00,
         requiresDeposit: false,
         depositAmount: 0.00,
         durationMinutes: 30,
@@ -154,9 +154,70 @@ async function main() {
       console.log(`✅ Upserted business setting: ${setting.key}`);
     }
 
+    // ================================================================
+    // PROMO CODES - RON Services
+    // ================================================================
+    console.log('🏷️  Seeding promo codes...');
+    const promoCodes = [
+      {
+        code: 'TEXAS5',
+        description: 'First-time client discount',
+        discountType: 'FIXED_AMOUNT',
+        discountValue: 5.00,
+        minimumAmount: 35.00,
+        usageLimit: null,
+        perCustomerLimit: 1,
+        isActive: true,
+        applicableServices: ['RON_SERVICES'],
+      },
+      {
+        code: 'WELCOME5',
+        description: 'Welcome discount for new clients',
+        discountType: 'FIXED_AMOUNT',
+        discountValue: 5.00,
+        minimumAmount: 35.00,
+        usageLimit: null,
+        perCustomerLimit: 1,
+        isActive: true,
+        applicableServices: ['RON_SERVICES'],
+      },
+      {
+        code: 'SENIOR10',
+        description: 'Senior (65+) or Veteran discount - 10% off',
+        discountType: 'PERCENTAGE',
+        discountValue: 10.00,
+        minimumAmount: 35.00,
+        maxDiscountAmount: 50.00,
+        usageLimit: null,
+        perCustomerLimit: null,
+        isActive: true,
+        applicableServices: ['RON_SERVICES'],
+      },
+      {
+        code: 'INTERNAL_USE_ONLY',
+        description: 'Internal - waive witness fee for client goodwill',
+        discountType: 'FIXED_AMOUNT',
+        discountValue: 25.00,
+        minimumAmount: 0.00,
+        usageLimit: null,
+        perCustomerLimit: null,
+        isActive: true,
+        applicableServices: ['RON_SERVICES'],
+      },
+    ];
+
+    for (const promo of promoCodes) {
+      await prisma.promoCode.upsert({
+        where: { code: promo.code },
+        update: promo,
+        create: promo,
+      });
+      console.log(`✅ Upserted promo code: ${promo.code}`);
+    }
+
+    console.log('🌱 Database seeding completed successfully!');
 
 
-    console.log(`🌱 Database seeding completed successfully!`);
     
   } catch (error) {
     console.error('❌ Error during seeding:', error);
