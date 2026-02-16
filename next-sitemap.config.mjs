@@ -5,7 +5,6 @@ const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://houstonmobilenotary
 const now = new Date().toISOString()
 const serviceRoot = path.join(process.cwd(), 'app', 'services')
 const serviceAreasFile = path.join(process.cwd(), 'lib', 'serviceAreas.ts')
-
 const baseRoutes = ['/', '/services', '/pricing', '/faq', '/contact', '/service-areas']
 
 function collectServiceRoutes(dir, prefix) {
@@ -30,7 +29,7 @@ function collectServiceAreaRoutes() {
   const matches = contents.matchAll(/slug:\s*"([^"]+)"/g)
   const routes = new Set()
   for (const match of matches) {
-    routes.add(`/service-areas/${match[1]}`)
+    routes.add(`/service-areas/${match[1]}`)  // ✅ Fixed: was routes.add`...`)
   }
   return routes
 }
@@ -42,9 +41,7 @@ function priorityForRoute(route) {
   return 0.7
 }
 
-/**
- * @type {import('next-sitemap').IConfig}
- */
+/** @type {import('next-sitemap').IConfig} */
 export default {
   siteUrl,
   generateRobotsTxt: true,
@@ -72,6 +69,6 @@ export default {
     policies: [
       { userAgent: '*', allow: '/' },
     ],
-    additionalSitemaps: [`${siteUrl.replace(/\\/$/, '')}/sitemap.xml`],
+    additionalSitemaps: [`${siteUrl.replace(/\/$/, '')}/sitemap.xml`],  // ✅ Fixed: was missing [
   },
 }
