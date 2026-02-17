@@ -147,15 +147,15 @@ export class PricingEngine {
       
       // Return fallback pricing to prevent complete failure
       const fallbackResult: PricingResult = {
-        basePrice: 75,
+        basePrice: 85,
         travelFee: 0,
         surcharges: 0,
         discounts: 0,
-        total: 75,
+        total: 85,
         breakdown: {
           lineItems: [{
             description: 'Standard Notary Service (Fallback)',
-            amount: 75,
+            amount: 85,
             type: 'base'
           }],
           transparency: {

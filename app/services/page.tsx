@@ -99,7 +99,7 @@ const servicesSchema = {
         serviceType: "Remote Online Notarization",
         offers: {
           "@type": "Offer",
-          price: "35.00",
+          price: "25.00",
           priceCurrency: "USD",
           availability: "https://schema.org/InStock",
         },

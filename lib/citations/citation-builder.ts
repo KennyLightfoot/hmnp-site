@@ -286,7 +286,7 @@ export class CitationBuilder {
       {
         name: 'Remote Online Notarization (RON)',
         description: 'Secure video-based notarization available 24/7 from anywhere',
-        price: '$35-$50 per document',
+        price: 'From $25 per session',
         duration: '10-20 minutes',
         availability: '24/7 online availability'
       },

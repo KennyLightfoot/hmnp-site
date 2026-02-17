@@ -424,7 +424,7 @@ export function generateLocalFAQSchema(location: string): any {
         name: `What is the cost for mobile notary service in ${location}?`,
         acceptedAnswer: {
           '@type': 'Answer',
-          text: `Our mobile notary service in ${location} starts at $75 for basic document notarization. Pricing varies based on document complexity and service type. Call 832-617-4285 for a quote.`
+          text: `Our mobile notary service in ${location} starts at $85 for standard document notarization. Pricing varies based on document complexity and service type. Call 832-617-4285 for a quote.`
         }
       },
       {

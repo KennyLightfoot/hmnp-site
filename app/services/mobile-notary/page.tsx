@@ -77,7 +77,7 @@ const mobileNotarySchema = {
         "@type": "Offer",
         name: "Standard Mobile Notary",
         description: "Up to 4 documents, 2 signers, and 20 miles of travel included.",
-        price: "75.00",
+        price: "85.00",
         priceCurrency: "USD",
         availability: "https://schema.org/InStock",
       },

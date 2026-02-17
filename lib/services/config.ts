@@ -70,7 +70,7 @@ export const SERVICES_CONFIG: Record<ServiceId, ServiceConfig> = {
   RON_SERVICES: {
     id: 'RON_SERVICES',
     displayName: 'Remote Online Notarization',
-    basePrice: 35,           // Standard Online Notarization (1 seal included)
+    basePrice: 25,           // Standard Online Notarization (1 seal included)
     sealPrice: 10,           // Each additional seal/stamp
     signerFee: 15,           // Each additional signer beyond first
     witnessFee: 25,          // Optional remote witness service

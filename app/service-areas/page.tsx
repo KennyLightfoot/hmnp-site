@@ -286,16 +286,20 @@ export default function ServiceAreasIndexPage() {
                     <h3 className="font-semibold text-gray-800 mb-4">Service Radius from ZIP 77591:</h3>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                        <span className="text-sm font-medium">0-20 miles</span>
+                        <span className="text-sm font-medium">0–20 miles</span>
                         <Badge className="bg-green-100 text-green-800">Included</Badge>
                       </div>
                       <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                        <span className="text-sm font-medium">20-30 miles</span>
-                        <Badge className="bg-yellow-100 text-yellow-800">$0.50/mile</Badge>
+                        <span className="text-sm font-medium">21–30 miles</span>
+                        <Badge className="bg-yellow-100 text-yellow-800">+$25</Badge>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+                        <span className="text-sm font-medium">31–40 miles</span>
+                        <Badge className="bg-orange-100 text-orange-800">+$45</Badge>
                       </div>
                       <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                        <span className="text-sm font-medium">30+ miles</span>
-                        <Badge className="bg-red-100 text-red-800">Custom Quote</Badge>
+                        <span className="text-sm font-medium">41–50 miles</span>
+                        <Badge className="bg-red-100 text-red-800">+$65</Badge>
                       </div>
                     </div>
                   </div>
@@ -337,10 +341,24 @@ export default function ServiceAreasIndexPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold text-[#002147] mb-6">Service Coverage Map</h2>
-            <p className="text-xl text-gray-600 mb-8">
+            <p className="text-xl text-gray-600 mb-6">
               We serve the entire Greater Houston Metropolitan Area and beyond
             </p>
-            
+
+            {/* Live Google Maps embed */}
+            <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm mb-8 w-full" style={{ height: 360 }}>
+              <iframe
+                title="Houston Mobile Notary Pros service coverage map"
+                width="100%"
+                height="360"
+                style={{ border: 0, display: 'block' }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                src="https://maps.google.com/maps?width=100%25&height=360&hl=en&q=Texas+City,+TX+77591&t=&z=9&ie=UTF8&iwloc=B&output=embed"
+                aria-label="Map of Houston Mobile Notary Pros service coverage area centered on Texas City, TX 77591"
+              />
+            </div>
+
             <div className="grid md:grid-cols-3 gap-6 mb-8">
               <div className="bg-white p-6 rounded-lg border border-gray-200">
                 <div className="w-12 h-12 bg-[#002147]/10 rounded-lg flex items-center justify-center mx-auto mb-4">

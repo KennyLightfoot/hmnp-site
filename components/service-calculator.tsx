@@ -94,9 +94,9 @@ export default function ServiceCalculator() {
         console.error('Pricing calculation failed:', error)
         // Set default pricing on error
         setPricing({
-          price: 75,
+          price: 85,
           discount: 0,
-          finalPrice: 75,
+          finalPrice: 85,
           promoCodeDiscount: 0,
           depositAmount: 19,
           depositRequired: false,

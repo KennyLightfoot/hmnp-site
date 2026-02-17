@@ -65,13 +65,13 @@ export const GET = withRateLimit('public', 'health_database')(async () => {
 
     // Check for proper SOP pricing
     const standardNotary = requiredServices.find((s: typeof requiredServices[number]) => 
-      s.serviceType === 'STANDARD_NOTARY' && (s.basePrice?.toNumber() || 0) === 75
+      s.serviceType === 'STANDARD_NOTARY' && (s.basePrice?.toNumber() || 0) === 85
     );
     const extendedHours = requiredServices.find((s: typeof requiredServices[number]) => 
-      s.serviceType === 'EXTENDED_HOURS' && (s.basePrice?.toNumber() || 0) === 100
+      s.serviceType === 'EXTENDED_HOURS' && (s.basePrice?.toNumber() || 0) === 125
     );
     const loanSigning = requiredServices.find((s: typeof requiredServices[number]) => 
-      s.serviceType === 'LOAN_SIGNING' && (s.basePrice?.toNumber() || 0) === 150
+      s.serviceType === 'LOAN_SIGNING' && (s.basePrice?.toNumber() || 0) === 175
     );
 
     const compliance = {

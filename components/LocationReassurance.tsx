@@ -25,45 +25,26 @@ export default function LocationReassurance() {
           <p className="text-sm text-[#0F1419]/80">
             Serving{" "}
             {city ? <strong>{city}</strong> : <strong>Webster &amp; League City</strong>} and nearby
-            Texas City, Webster & League City and nearby Houston suburbs (20‑mile radius)
+            Texas City, Webster & League City and nearby Houston suburbs (20&#8209;mile radius)
           </p>
         </div>
-        {/* Simple inline map (SVG pins for Webster/League City) – decorative only */}
-        <div className="w-full md:w-auto">
-          <svg
+        {/* Google Maps embed centered on Texas City / Webster service area */}
+        <div
+          className="w-full md:w-auto rounded-lg overflow-hidden border border-black/10 shadow-sm flex-shrink-0"
+          style={{ width: 260, height: 160 }}
+        >
+          <iframe
+            title="Houston Mobile Notary Pros service area map"
             width="260"
-            height="120"
-            viewBox="0 0 260 120"
-            aria-hidden="true"
-            role="presentation"
-            className="rounded-lg border border-black/10 bg-gray-50"
-          >
-            <rect x="0" y="0" width="260" height="120" fill="#f8fafc" />
-            {/* Webster pin */}
-            <circle cx="90" cy="60" r="6" fill="#ef4444" />
-            <text x="100" y="64" fontSize="10" fill="#374151">
-              Webster
-            </text>
-            {/* League City pin */}
-            <circle cx="160" cy="80" r="6" fill="#ef4444" />
-            <text x="170" y="84" fontSize="10" fill="#374151">
-              League City
-            </text>
-            {/* Houston marker (context) */}
-            <circle cx="40" cy="40" r="3" fill="#94a3b8" />
-            <text x="48" y="44" fontSize="9" fill="#6b7280">
-              Houston
-            </text>
-          </svg>
+            height="160"
+            style={{ border: 0, display: 'block' }}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            src="https://maps.google.com/maps?width=260&height=160&hl=en&q=Texas+City,+TX+77591&t=&z=10&ie=UTF8&iwloc=B&output=embed"
+            aria-label="Map showing service area centered on Texas City, TX"
+          />
         </div>
       </div>
     </section>
   )
 }
-
-
-
-
-
-
-

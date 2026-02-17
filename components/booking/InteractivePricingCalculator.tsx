@@ -212,7 +212,7 @@ export default function InteractivePricingCalculator({
 
   // Calculate pricing breakdown
   const pricingBreakdown = useMemo((): PricingBreakdown => {
-    const basePrice = BASE_PRICES[serviceType as keyof typeof BASE_PRICES] ?? 75;
+    const basePrice = BASE_PRICES[serviceType as keyof typeof BASE_PRICES] ?? 85;
     
     // DISABLED: Travel fee calculation (for mobile services)
     // Travel fee calculation temporarily disabled to simplify booking system

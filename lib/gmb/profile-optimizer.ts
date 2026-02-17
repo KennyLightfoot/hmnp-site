@@ -279,7 +279,7 @@ export class GMBProfileOptimizer {
       },
       {
         question: 'How much do your services cost?',
-        answer: 'Our standard notary services start at $15 per signature. Loan signing services range from $100-$200 per signing. Remote Online Notarization (RON) is $35-$50 per document. Emergency and after-hours services have additional fees. We accept cash, credit cards, and checks.',
+        answer: 'Mobile notary services start at $85 (standard) or $125 (extended hours). Loan signing starts at $175. Remote Online Notarization (RON) starts at $25 per session. Travel within 20 miles is included; tiered travel fees apply beyond that. We accept cash and credit cards.',
         keywords: ['pricing', 'cost', 'notary fees', 'loan signing', 'RON pricing']
       },
       {

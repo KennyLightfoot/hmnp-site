@@ -40,7 +40,7 @@ export const FRONTEND_TO_PRISMA_SERVICE_MAP: Record<FrontendServiceType, PrismaS
 
 // SOP COMPLIANT: Display names (FORBIDDEN TYPES REMOVED)
 export const SERVICE_DISPLAY_NAMES: Record<FrontendServiceType, string> = {
-  "standard-notary": "Standard Notary Services",           // SOP: $75, 15-mile radius, 9am-5pm Mon-Fri
+  "standard-notary": "Standard Notary Services",           // SOP: $85, 20-mile radius, 9am-5pm Mon-Fri
   "extended-hours-notary": "Extended Hours Notary",       // SOP: $125, 30-mile radius, 7am-9pm Daily
   "loan-signing-specialist": "Loan Signing Specialist",   // SOP: $175 flat fee, unlimited docs, 4 signers
   "specialty-notary-service": "Specialty Notary Service",
@@ -50,7 +50,7 @@ export const SERVICE_DISPLAY_NAMES: Record<FrontendServiceType, string> = {
 
 // SOP COMPLIANT: Service descriptions with exact specifications
 export const SERVICE_DESCRIPTIONS: Record<FrontendServiceType, string> = {
-  "standard-notary": "Standard mobile notary services. Base: up to 2 documents, 1-2 signers, 15-mile travel included. Monday-Friday, 9am-5pm. Starting at $75.",
+  "standard-notary": "Standard mobile notary services. Base: up to 4 documents, 1 signer, 20-mile travel included. Monday-Friday, 9am-5pm. Starting at $85.",
   "extended-hours-notary": "Extended hours notary services. Base: up to 4 documents, 2 signers, 30-mile travel included. 7am-9pm Daily. Also for urgent/same-day needs. $125 flat fee.",
   "loan-signing-specialist": "Expert loan signing agent services. $175 flat fee includes unlimited documents for single signing session, up to 4 signers, 90-minute session. By appointment.",
   "specialty-notary-service": "Specialized notarization for complex documents and unique requirements",

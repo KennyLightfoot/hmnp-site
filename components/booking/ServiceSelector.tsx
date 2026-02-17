@@ -144,7 +144,7 @@ const SERVICES: ServiceOption[] = [
   {
     id: 'RON_SERVICES',
     name: 'Remote Online Notarization',
-    price: 35,
+    price: 25,
     description: 'Secure remote notarization from anywhere, available 24/7',
     hours: '24/7 Availability',
     included: [

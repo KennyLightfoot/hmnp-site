@@ -114,10 +114,10 @@ export const POST = withPublicSecurity(async (request: NextRequest) => {
       // Return a fallback pricing response instead of failing completely
       pricingResult = {
         serviceType,
-        basePrice: 75, // Default base price
-        totalPrice: 75,
+        basePrice: 85, // Default base price
+        totalPrice: 85,
         breakdown: {
-          serviceBase: { amount: 75, label: 'Standard Notary Service' },
+          serviceBase: { amount: 85, label: 'Standard Notary Service' },
           travelFee: { amount: 0, label: 'Travel Fee' },
           extraDocuments: { amount: 0, label: 'Additional Documents' },
           timeBasedFees: [],

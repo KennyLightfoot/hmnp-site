@@ -124,11 +124,11 @@ export class GMBAutomationSystem {
    */
   private generateServiceHighlightPost(date: Date, location: any, keywords: string[]): GMBPost {
     const services = [
-      { name: 'Mobile Notary', price: '$15/signature', description: 'Professional notarization at your location' },
-      { name: 'Loan Signing', price: '$100-$200', description: 'Certified loan signing agent services' },
-      { name: 'RON Services', price: '$35-$50', description: 'Remote Online Notarization available 24/7' },
-      { name: 'Estate Planning', price: '$15-$25', description: 'Wills, trusts, and power of attorney' },
-      { name: 'Emergency Services', price: '$50-$100', description: '24/7 urgent notarization' }
+      { name: 'Mobile Notary', price: 'From $85', description: 'Professional notarization at your location' },
+      { name: 'Loan Signing', price: 'From $175', description: 'Certified loan signing agent services' },
+      { name: 'RON Services', price: 'From $25/session', description: 'Remote Online Notarization available 24/7' },
+      { name: 'Estate Planning', price: 'From $75 (RON bundle)', description: 'Wills, trusts, and power of attorney' },
+      { name: 'Emergency Services', price: 'From $125', description: '24/7 urgent notarization' }
     ];
 
     const service = services[Math?.floor(Math?.random() * services?.length)];
@@ -260,7 +260,7 @@ export class GMBAutomationSystem {
    */
   private generatePromotionalPost(date: Date, location: any, keywords: string[]): GMBPost {
     const promotions = [
-      { title: 'New Customer Discount', offer: '10% off first service', code: 'NEWCLIENT10' },
+      { title: 'New Client Discount', offer: '$15 off first service', code: 'NEWCLIENT15' },
       { title: 'Multiple Document Discount', offer: '15% off 3+ documents', code: 'MULTI15' },
       { title: 'Senior Citizen Special', offer: '20% off all services', code: 'SENIOR20' },
       { title: 'Same-Day Service', offer: 'No rush fees this week', code: 'SAMEDAY' },

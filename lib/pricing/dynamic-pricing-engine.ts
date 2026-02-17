@@ -536,13 +536,13 @@ export class DynamicPricingEngine {
   private async getBasePrice(serviceType: string, documentCount: number, signerCount: number, estimatedDuration: number): Promise<number> {
     // Integration with existing pricing engine
     const basePrices = {
-      'STANDARD_NOTARY': 75,
-      'EXTENDED_HOURS': 100,
-      'LOAN_SIGNING': 150,
-      'RON_SERVICES': 125
+      'STANDARD_NOTARY': 85,
+      'EXTENDED_HOURS': 125,
+      'LOAN_SIGNING': 175,
+      'RON_SERVICES': 25
     };
     
-    let basePrice = basePrices[serviceType as keyof typeof basePrices] || 75;
+    let basePrice = basePrices[serviceType as keyof typeof basePrices] || 85;
     
     // Add document count surcharge
     if (documentCount > 1) {

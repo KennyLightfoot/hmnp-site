@@ -117,7 +117,7 @@ class AIAssistant {
   }> {
     try {
       // Simple optimization logic
-      const basePrice = 75;
+      const basePrice = 85;
       let adjustment = 0;
       
       // Urgency pricing

@@ -111,7 +111,7 @@ const pricingSchema = {
         "@type": "Offer",
         name: "Standard Mobile Notary",
         description: "Professional mobile notary with travel up to 20 miles included.",
-        price: "75.00",
+        price: "85.00",
         priceCurrency: "USD",
         availability: "https://schema.org/InStock",
         itemOffered: {

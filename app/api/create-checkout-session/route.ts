@@ -125,7 +125,7 @@ export const POST = withPaymentSecurity(
 
     // Special handling for RON services
     if (validatedData.serviceType === 'RON_SERVICES') {
-      // Set RON pricing (Base price + 1 seal)
+      // Set RON pricing (Base session $25 + 1 notarial seal $10 = $35 for standard RON)
       amountCents = 3500; // $35 = $25 session + $10 for one seal
       description = 'Remote Online Notarization (RON)';
       isRON = true;

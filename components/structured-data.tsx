@@ -141,7 +141,7 @@ export function StructuredData({ nonce }: StructuredDataProps) {
         "@type": "Offer", 
         "name": "Standard Mobile Notary",
         "description": "Professional mobile notary service for standard documents",
-        "price": "75.00",
+        "price": "85.00",
         "priceCurrency": "USD",
         "availability": "https://schema.org/InStock",
         "validFrom": new Date().toISOString()
@@ -269,7 +269,7 @@ export function StructuredData({ nonce }: StructuredDataProps) {
     },
     "offers": {
       "@type": "Offer",
-      "price": "75",
+      "price": "85",
       "priceCurrency": "USD",
       "description": "Starting price for mobile notary services including travel within 20 miles; tiered travel beyond"
     },
