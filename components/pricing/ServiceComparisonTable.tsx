@@ -8,9 +8,9 @@ import { Button } from '@/components/ui/button'
 const services = [
   {
     name: 'Standard Mobile Notary',
-    price: '$75',
+    price: '$85',
     description: 'Professional document notarization',
-    basePrice: 75,
+    basePrice: 85,
     includedRadius: 20,
     maxDocuments: 4,
     maxSigners: 2,

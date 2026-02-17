@@ -167,7 +167,7 @@ export default function FacebookSpringPromoLandingPage() {
                   Starting at $56.25
                 </div>
                 <div className="text-sm text-gray-500 line-through mb-1">
-                  Regular price: $75
+                  Regular price: $85
                 </div>
                 <div className="text-xs text-gray-600">
                   *25% discount applied

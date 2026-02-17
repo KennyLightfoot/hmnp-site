@@ -60,7 +60,7 @@ export default function MobileNotaryPageClient() {
               Mobile Notary Near You — Transparent, On-Time, Professional.
             </h1>
             <p className="mt-4 text-white/90 text-base md:text-lg">
-              From $75. 20-mile radius included, tiered travel beyond. Same-day & after-hours options
+              From $85. 20-mile radius included, tiered travel beyond. Same-day & after-hours options
               with guaranteed deposit to hold your slot.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -112,7 +112,7 @@ export default function MobileNotaryPageClient() {
           <div className="p-5 border rounded-xl shadow-sm">
             <h3 className="font-semibold text-secondary">Pricing &amp; Deposits</h3>
             <p className="mt-2 text-sm text-black/70">
-              Standard $75 base. 50% deposit for bookings ≥$100, same-day, after-hours, or loan
+              Standard $85 base. 50% deposit for bookings ≥$100, same-day, after-hours, or loan
               signing requests. Clear add-ons for witnesses, printing, and scanning.
             </p>
           </div>

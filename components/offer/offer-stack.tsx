@@ -13,7 +13,7 @@ type Offer = {
 const OFFERS: Offer[] = [
   {
     name: "Mobile Standard",
-    priceFrom: "$75",
+    priceFrom: "$85",
     points: [
       "Flat rate: ≤4 docs, ≤2 signers, 20‑mile included",
       "Priority arrival windows all day",

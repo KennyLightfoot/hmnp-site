@@ -351,7 +351,7 @@ export default function AIBookingAssistant({
     
     // Simple keyword-based responses (in production, this would use your AI service)
     const responses = {
-      'cost': 'Our services range from $50-$250 depending on complexity. Standard Mobile Notary is $75 and most popular.',
+      'cost': 'Our services start at $85 for Standard Mobile Notary (most popular). Extended Hours is $125, Loan Signing is $175, and RON starts from $25. Business partner subscriptions start at $199/month.',
       'same-day': 'Yes! Extended Hours Mobile guarantees same-day service if booked before 3pm.',
       'travel': 'We travel to you at no extra cost within 30 miles. Further distances may have small travel fees.',
       'secure': 'Your information is encrypted and secure. We never share your data and only use email for booking confirmations.',

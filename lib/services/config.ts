@@ -9,7 +9,8 @@ export type ServiceId =
   | 'LOAN_SIGNING'
   | 'RON_SERVICES'
   | 'BUSINESS_ESSENTIALS'
-  | 'BUSINESS_GROWTH';
+  | 'BUSINESS_GROWTH'
+  | 'ENTERPRISE_PARTNER';
 
 export interface BusinessHours {
   start: number; // hour in 24h
@@ -39,7 +40,7 @@ export const SERVICES_CONFIG: Record<ServiceId, ServiceConfig> = {
   STANDARD_NOTARY: {
     id: 'STANDARD_NOTARY',
     displayName: 'Standard Mobile Notary',
-    basePrice: 75,
+    basePrice: 85,
     maxDocuments: 4,
     includedRadius: 20,
     feePerMile: 0.5,
@@ -84,23 +85,33 @@ export const SERVICES_CONFIG: Record<ServiceId, ServiceConfig> = {
   },
   BUSINESS_ESSENTIALS: {
     id: 'BUSINESS_ESSENTIALS',
-    displayName: 'Business Subscription - Essentials',
-    basePrice: 125,
-    maxDocuments: 10,
-    includedRadius: 30,
+    displayName: 'Starter Partner Subscription',
+    basePrice: 199,
+    maxDocuments: 15,
+    includedRadius: 20,
     feePerMile: 0.5,
     defaultDurationMinutes: 60,
     businessHours: { start: 9, end: 17, days: [1, 2, 3, 4, 5] }
   },
   BUSINESS_GROWTH: {
     id: 'BUSINESS_GROWTH',
-    displayName: 'Business Subscription - Growth',
-    basePrice: 349,
+    displayName: 'Growth Partner Subscription',
+    basePrice: 499,
     maxDocuments: 50,
-    includedRadius: 50,
-    feePerMile: 0.25,
+    includedRadius: 30,
+    feePerMile: 0.5,
     defaultDurationMinutes: 60,
-    businessHours: { start: 9, end: 17, days: [1, 2, 3, 4, 5] }
+    businessHours: { start: 7, end: 21, days: [0, 1, 2, 3, 4, 5, 6] }
+  },
+  ENTERPRISE_PARTNER: {
+    id: 'ENTERPRISE_PARTNER',
+    displayName: 'Enterprise Partner Subscription',
+    basePrice: 1199,
+    maxDocuments: 150,
+    includedRadius: 40,
+    feePerMile: 0.5,
+    defaultDurationMinutes: 60,
+    businessHours: { start: 0, end: 24, days: [0, 1, 2, 3, 4, 5, 6] }
   }
 };
 

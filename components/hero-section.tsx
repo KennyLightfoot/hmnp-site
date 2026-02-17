@@ -102,7 +102,7 @@ export default function HeroSection() {
             {/* Removed hard guarantee banner for softer positioning */}
             
             <p className="text-xl text-gray-100">
-              Get your documents notarized same-day, flawlessly executed, or we pay the redraw fee. Mobile notarization starts at $75 with transparent pricing—every add-on and travel tier shown before you pay.
+              Get your documents notarized same-day, flawlessly executed, or we pay the redraw fee. Mobile notarization starts at $85 with transparent pricing—every add-on and travel tier shown before you pay.
             </p>
             {/* Trust bar */}
             <div className="flex flex-wrap gap-2 pt-1">
@@ -116,7 +116,7 @@ export default function HeroSection() {
               <dl className="mt-2 space-y-1">
                 <div className="flex items-center justify-between gap-3">
                   <dt>Standard mobile notary</dt>
-                  <dd className="font-semibold text-white">$75 base · 20 mi included</dd>
+                  <dd className="font-semibold text-white">$85 base · 20 mi included</dd>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <dt>Evening / weekend mobile</dt>
@@ -375,7 +375,7 @@ export default function HeroSection() {
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-sm text-gray-500">Starting at</p>
-                      <p className="text-2xl font-bold text-[#002147]">$75</p>
+                      <p className="text-2xl font-bold text-[#002147]">$85</p>
                     </div>
                     <div className="bg-[#002147] text-white px-3 py-1 rounded-full">
                       <span className="text-sm font-medium">Same-day available</span>

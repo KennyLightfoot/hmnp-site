@@ -17,7 +17,7 @@ const faqs = [
   },
   {
     question: "Do you charge extra for multiple documents?",
-    answer: "Yes, additional documents beyond what's included in your service tier are $10 each. For example, if you choose Standard Mobile Notary ($75), you get up to 4 documents included. A 5th document would add $10, making your total $85.",
+    answer: "Yes, additional documents beyond what's included in your service tier are $10 each. For example, if you choose Standard Mobile Notary ($85), you get up to 4 documents included. A 5th document would add $10, making your total $95.",
     icon: FileText
   },
   {

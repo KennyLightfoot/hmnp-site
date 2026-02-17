@@ -133,7 +133,7 @@ export default function MobileNotaryServicesPage() {
             Notary near you today — mobile to your door
           </h1>
           <p className="text-xl md:text-2xl mb-4 text-blue-100">
-            From $75. Same‑day available. 20–30 mi included.
+            From $85. Same‑day available. 20–30 mi included.
           </p>
           <p className="text-lg mb-8 text-blue-100 max-w-3xl mx-auto">
             We come to homes, offices, hospitals, and more across Greater Houston.
@@ -141,7 +141,7 @@ export default function MobileNotaryServicesPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/booking?service=mobile-notary">
               <Button size="lg" className="bg-primary hover:bg-primary/90 text-white">
-                Book Mobile Notary Now - $75+
+                Book Mobile Notary Now - $85+
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
@@ -403,7 +403,7 @@ export default function MobileNotaryServicesPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-700">Standard Mobile</span>
-                    <span className="font-semibold text-secondary">$75+ <Link href="/services/extras#travel-tiers" className="underline text-sm ml-1">See travel tiers</Link></span>
+                    <span className="font-semibold text-secondary">$85+ <Link href="/services/extras#travel-tiers" className="underline text-sm ml-1">See travel tiers</Link></span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-700">Extended Hours</span>

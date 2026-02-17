@@ -259,7 +259,7 @@ export const faqs: FAQ[] = [
         <div className="mt-2 space-y-2">
           <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
             <span>Standard Mobile Notary</span>
-            <span className="font-semibold">$75</span>
+            <span className="font-semibold">$85</span>
           </div>
           <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
             <span>Loan Signing Specialist</span>
@@ -293,10 +293,10 @@ export const faqs: FAQ[] = [
   // Additional Pricing Questions
   {
     id: "pricing-whats-included",
-    question: "What's included in your $75 base fee?",
+    question: "What's included in your $85 base fee?",
     answer: (
       <div>
-        <p>Our $75 Standard Mobile Notary service includes:</p>
+        <p>Our $85 Standard Mobile Notary service includes:</p>
         <div className="mt-2 space-y-2">
           <div className="flex items-center p-2 bg-green-50 rounded">
             <span className="text-green-600 mr-2">✓</span>
@@ -330,7 +330,7 @@ export const faqs: FAQ[] = [
       </div>
     ),
     category: "pricing",
-    keywords: ["included", "base fee", "$75", "standard mobile", "what's included", "service package"],
+    keywords: ["included", "base fee", "$85", "standard mobile", "what's included", "service package"],
     relatedQuestions: ["pricing-standard", "travel-fees", "extra-documents"],
     popular: true,
   },
@@ -427,7 +427,7 @@ export const faqs: FAQ[] = [
         <p>Choose the service that best fits your needs and schedule:</p>
         <div className="mt-3 space-y-4">
           <div className="p-3 border border-blue-200 rounded bg-blue-50">
-            <h4 className="font-semibold text-blue-800">Standard Mobile Notary ($75)</h4>
+            <h4 className="font-semibold text-blue-800">Standard Mobile Notary ($85)</h4>
             <p className="text-sm text-blue-700 mt-1">Best for routine documents during business hours</p>
             <ul className="mt-2 text-sm space-y-1">
               <li>• Up to 2 documents, 1-2 signers</li>
@@ -483,8 +483,8 @@ export const faqs: FAQ[] = [
           <div className="p-3 border border-red-200 rounded bg-red-50">
             <h4 className="font-semibold text-red-800">Alternative Cost Comparison</h4>
             <ul className="mt-2 text-sm space-y-1">
-              <li>• Standard service: $75 base + $5 per extra document</li>
-              <li>• 100 documents would cost: $75 + $490 = $565</li>
+              <li>• Standard service: $85 base + $10 per extra document</li>
+              <li>• 100 documents would cost: $85 + $960 = $1,045</li>
               <li>• <strong>Loan signing saves you $415!</strong></li>
             </ul>
           </div>
@@ -598,7 +598,7 @@ export const faqs: FAQ[] = [
           </div>
         </div>
         <p className="mt-4 text-sm text-gray-600">
-          <strong>Example:</strong> Our $75 standard service includes $6-10 in notary fees plus $65-69 in service fees.
+          <strong>Example:</strong> Our $85 standard service includes $6-10 in notary fees plus $75-79 in service fees.
         </p>
         <div className="mt-4 p-3 bg-green-50 rounded-md">
           <p className="text-sm text-green-800">

@@ -212,7 +212,7 @@ export default function BusinessSolutionsPage() {
                         Title Company Partnership
                       </h4>
                       <p className="text-sm text-gray-700">Guaranteed priority scheduling, dedicated communication, volume pricing tiers.</p>
-                      <p className="text-sm font-semibold text-[#A52A2A]">From $125/month + per-signing fees</p>
+                      <p className="text-sm font-semibold text-[#A52A2A]">Partner plans from $199/month</p>
                     </div>
                     <div className="border-l-4 border-[#A52A2A] pl-4">
                       <h4 className="font-semibold text-[#002147] mb-2 flex items-center">

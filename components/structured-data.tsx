@@ -210,7 +210,7 @@ export function StructuredData({ nonce }: StructuredDataProps) {
         name: "How much does mobile notary service cost in Houston?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Mobile notary costs in Houston start at $75 for standard service, $125 for extended hours, and $175 for loan signing specialist services. Remote Online Notarization (RON) starts at $25 per notarial act with no travel fee. Transparent pricing with no hidden fees."
+          text: "Mobile notary costs in Houston start at $85 for standard service, $125 for extended hours, and $175 for loan signing specialist services. Remote Online Notarization (RON) starts at $25 per notarial act with no travel fee. Transparent pricing with no hidden fees."
         }
       },
       {

@@ -193,7 +193,7 @@ export default function HoustonMobileNotaryLandingPage() {
                       <Zap className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
                       <div>
                         <h3 className="font-bold text-lg text-[#002147] mb-1">Transparent Pricing</h3>
-                        <p className="text-gray-700">Upfront pricing starting at $75 with no hidden fees. You know exactly what you'll pay before we arrive at your location.</p>
+                        <p className="text-gray-700">Upfront pricing starting at $85 with no hidden fees. You know exactly what you'll pay before we arrive at your location.</p>
                       </div>
                     </div>
                   </div>
@@ -260,7 +260,7 @@ export default function HoustonMobileNotaryLandingPage() {
                   <div className="bg-secondary text-white px-4 py-2 rounded-full inline-block mb-4 font-bold">
                     📋 PROFESSIONAL NOTARY SERVICE
                   </div>
-                  <div className="text-2xl font-bold text-secondary mb-2">Starting at $75</div>
+                  <div className="text-2xl font-bold text-secondary mb-2">Starting at $85</div>
                   <div className="text-gray-600">Mobile service • Same-day available • No hidden fees</div>
                 </div>
 

@@ -84,7 +84,7 @@ const realEstateFaqs = [
     question: "How much do real estate notary services cost?",
     answer: (
       <p>
-        Real estate notary pricing starts at $75 for basic property documents (deeds, affidavits, etc.) with standard travel included. Complex transactions or multiple-property deals may require additional fees. For comprehensive loan signing packages, pricing starts at $200+. We offer volume discounts for real estate professionals and title companies with recurring needs.
+        Real estate notary pricing starts at $85 for basic property documents (deeds, affidavits, etc.) with standard travel included. Complex transactions or multiple-property deals may require additional fees. For comprehensive loan signing packages, pricing starts at $200+. We offer volume discounts for real estate professionals and title companies with recurring needs.
       </p>
     ),
   },

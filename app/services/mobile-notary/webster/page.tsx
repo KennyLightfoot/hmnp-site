@@ -4,7 +4,7 @@ import Script from 'next/script'
 
 export const metadata: Metadata = {
   title: 'Mobile Notary Webster TX | Same‑Day Near 77598 | HMNP',
-  description: 'Same‑day mobile notary in Webster (77598) and Clear Lake area. From $75, transparent travel tiers, NNA certified & insured. On‑time or we discount.',
+  description: 'Same‑day mobile notary in Webster (77598) and Clear Lake area. From $85, transparent travel tiers, NNA certified & insured. On‑time or we discount.',
 }
 
 export default function WebsterMobileNotaryPage() {
@@ -37,7 +37,7 @@ export default function WebsterMobileNotaryPage() {
       <section className="bg-secondary text-white">
         <div className="container mx-auto px-4 py-12 md:py-16">
           <h1 className="text-3xl md:text-5xl font-bold">Mobile Notary in Webster — Book Today</h1>
-          <p className="mt-3 text-white/90">From $75 • 25‑mile radius • NNA certified • On‑time or we discount</p>
+          <p className="mt-3 text-white/90">From $85 • 25‑mile radius • NNA certified • On‑time or we discount</p>
           <div className="mt-3 flex flex-wrap gap-2 text-xs">
             <span className="bg-white/10 border border-white/20 rounded-full px-3 py-1">Same‑day windows</span>
             <span className="bg-white/10 border border-white/20 rounded-full px-3 py-1">Transparent pricing</span>

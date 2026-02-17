@@ -304,7 +304,7 @@ const faqs: FAQ[] = [
           <div className="p-3 border border-gray-200 rounded-md">
             <h3 className="font-semibold text-[#002147]">Standard Notary Services</h3>
             <p className="mt-1">
-              General notarization for wills, POAs, affidavits, and other standard documents. Starting at $75 for one
+              General notarization for wills, POAs, affidavits, and other standard documents. Starting at $85 for one
               signer with 1-2 documents. Available Monday-Friday, 9am-5pm.
             </p>
             <Link href="/services/standard-notary" className="text-sm text-[#A52A2A] hover:underline">
@@ -360,7 +360,7 @@ const faqs: FAQ[] = [
             <h3 className="font-semibold text-[#002147]">Business Packages</h3>
             <p className="mt-1">
               Tailored solutions for businesses with regular notary needs, including title companies, healthcare
-              providers, and educational institutions. Starting at $125/month.
+              providers, and educational institutions. Starting at $199/month.
             </p>
             <Link href="/services/business" className="text-sm text-[#A52A2A] hover:underline">
               Learn more about Business Packages →
@@ -841,7 +841,7 @@ const faqs: FAQ[] = [
           <div className="p-3 border border-gray-200 rounded-md">
             <h3 className="font-semibold text-[#002147]">Standard Notary Services</h3>
             <p className="mt-1">
-              <strong>Starting at $75</strong> for one signer with 1-2 documents. Available Monday-Friday, 9am-5pm.
+              <strong>Starting at $85</strong> for one signer with 1-2 documents. Available Monday-Friday, 9am-5pm.
             </p>
             <ul className="list-disc list-inside mt-1 space-y-1 text-sm">
               <li>Two Signers: $85 (up to 3 documents per signer)</li>
@@ -885,7 +885,7 @@ const faqs: FAQ[] = [
               <li>Background Check Verification: $55</li>
               <li>Wedding Certificate Expediting: $75</li>
               <li>Apostille Services: $75 + state fees</li>
-              <li>Medallion Signature: $95</li>
+              <li>Medallion Signature: $150</li>
             </ul>
           </div>
 

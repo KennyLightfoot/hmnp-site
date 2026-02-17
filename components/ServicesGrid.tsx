@@ -18,7 +18,7 @@ export default function ServicesGrid() {
       <div className="container mx-auto px-4 py-14">
         <div className="grid md:grid-cols-4 gap-6">
           {[
-            { title: "Mobile Notary", sub: "from $75", desc: "We travel to you, same-day available.", href: "/booking?mode=MOBILE" },
+            { title: "Mobile Notary", sub: "from $85", desc: "We travel to you, same-day available.", href: "/booking?mode=MOBILE" },
             { title: "After-Hours Mobile", sub: "from $125", desc: "Evenings, weekends, urgent.", href: "/booking?mode=MOBILE" },
             { title: "Loan Signing", sub: "from $175", desc: "Title-friendly, error-free packages.", href: "/booking?mode=MOBILE" },
             { title: "Online Notary", sub: "$25/act", desc: "Secure RON with ID check & recording.", href: "/booking?mode=RON", learnMore: "/services/remote-online-notarization" },

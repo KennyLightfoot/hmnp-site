@@ -39,7 +39,7 @@ export default function ServicesOverview() {
               </CardHeader>
               <CardContent className="pt-6">
                 <div className="flex items-baseline mb-6">
-                  <p className="text-3xl font-bold text-[#002147]">$75</p>
+                  <p className="text-3xl font-bold text-[#002147]">$85</p>
                   <span className="ml-2 text-gray-500">starting at</span>
                 </div>
                 <ul className="space-y-3">

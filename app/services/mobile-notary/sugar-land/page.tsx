@@ -199,7 +199,7 @@ export default function SugarLandMobileNotaryPage() {
               </h1>
               
               <p className="text-xl mb-6 text-blue-100">
-                From $75. Same‑day available. 20–30 mi included around Sugar Land.
+                From $85. Same‑day available. 20–30 mi included around Sugar Land.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">

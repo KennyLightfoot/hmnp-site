@@ -201,7 +201,7 @@ export default function HoustonMobileNotaryPage() {
       <div className="bg-secondary text-white">
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-3xl md:text-4xl font-bold">Mobile Notary in Houston — Book Today</h1>
-          <p className="mt-2 text-white/90">From $75 • 25‑mile radius • NNA certified • On‑time or we discount</p>
+          <p className="mt-2 text-white/90">From $85 • 25‑mile radius • NNA certified • On‑time or we discount</p>
         </div>
       </div>
       <section className="container mx-auto px-4 -mt-6">
@@ -227,7 +227,7 @@ export default function HoustonMobileNotaryPage() {
               </h1>
               
               <p className="text-xl mb-6 text-blue-100">
-                From $75. Same‑day available. 20–30 mi included across Houston.
+                From $85. Same‑day available. 20–30 mi included across Houston.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">

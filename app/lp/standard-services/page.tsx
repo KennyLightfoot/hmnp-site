@@ -59,7 +59,7 @@ export default function StandardServicesLandingPage() {
       <ServiceSchema
         serviceName="Houston Notary Services"
         description="Certified mobile notary, loan signing, and online notarization (RON). Same‑day appointments in Greater Houston."
-        price="$75"
+        price="$85"
         serviceType="ProfessionalService"
         serviceUrl="/lp/standard-services"
         areaServed={["Houston, TX", "Pearland, TX", "Sugar Land, TX", "Greater Houston Area"]}
@@ -132,7 +132,7 @@ export default function StandardServicesLandingPage() {
         {/* Compact Pricing Anchor */}
         <section className="py-6 bg-amber-50 border-y border-amber-100">
           <div className="container mx-auto px-4 flex flex-wrap items-center justify-between gap-4 text-sm">
-            <div className="flex items-center gap-2 text-amber-900"><Rocket className="h-4 w-4" /> From $75 • 20–30 mi included • After‑hours +$25 • Priority arrival available</div>
+            <div className="flex items-center gap-2 text-amber-900"><Rocket className="h-4 w-4" /> From $85 • 20–30 mi included • After‑hours +$25 • Priority arrival available</div>
             <div className="flex items-center gap-3">
               <a href="#form" className="bg-[#A52A2A] hover:bg-[#8B0000] text-white px-4 py-2 rounded-md font-semibold">Get a fast quote</a>
               <a href={`tel:${getBusinessTel()}`} className="text-[#002147] underline" onClick={() => trackPhoneClick('lp_standard_services_pricing_bar')}>Click to call</a>

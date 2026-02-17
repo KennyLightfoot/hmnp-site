@@ -74,7 +74,7 @@ Looking for transparent pricing on mobile notary services in Houston? You've com
 
 ---
 
-### 📝 **Standard Mobile Notary - $75**
+### 📝 **Standard Mobile Notary - $85**
 *Our most popular service for routine notarizations*
 
 **What's Included:**
@@ -187,14 +187,14 @@ Understanding travel fees is crucial for calculating your total cost. Here's exa
 **Example Calculations:**
 
 **Houston Downtown (20 miles from 77591):**
-- Standard Mobile Notary: $75 (no travel fee - within 20 miles)
+- Standard Mobile Notary: $85 (no travel fee - within 20 miles)
 - Quick-Stamp Local: $50 + $5 travel fee = $55 total
 
 **Sugar Land (15 miles from 77591):**
 - All services: No travel fee (within all free zones)
 
 **Galveston (35 miles from 77591):**
-- Standard Mobile Notary: $75 + $7.50 travel fee = $82.50 total
+- Standard Mobile Notary: $85 + $7.50 travel fee = $82.50 total
 - (35 miles - 20 mile free zone = 15 miles × $0.50 = $7.50)
 
 **Katy (40 miles from 77591):**
@@ -257,7 +257,7 @@ Understanding travel fees is crucial for calculating your total cost. Here's exa
 - You can schedule during business hours
 - You want the most affordable option
 
-### **Choose Standard Mobile ($75) If:**
+### **Choose Standard Mobile ($85) If:**
 - You have 1-4 documents
 - You need flexible scheduling
 - You want professional service
@@ -303,7 +303,7 @@ First-time customer (10% off), referral discount, etc.
 ### **Real Example Calculations:**
 
 **Client in Sugar Land needs 3 documents signed on Saturday:**
-- Base Service (Standard Mobile): $75
+- Base Service (Standard Mobile): $85
 - Travel Fee: $0 (Sugar Land is 15 miles - within free zone)
 - Extra Document: $10 (3rd document)
 - Weekend Fee: $40

@@ -226,7 +226,7 @@ export default function PricingPage() {
                 <CardTitle className="text-lg text-[#002147]">Standard Mobile Notary</CardTitle>
               </CardHeader>
               <CardContent className="text-center">
-                <div className="text-3xl font-bold text-[#A52A2A] mb-2">$75</div>
+                <div className="text-3xl font-bold text-[#A52A2A] mb-2">$85</div>
                 <p className="text-sm text-gray-600">Professional document notarization</p>
                 <div className="text-xs text-gray-500 mt-2">≤20 miles • 4 documents • 2 signers</div>
               </CardContent>

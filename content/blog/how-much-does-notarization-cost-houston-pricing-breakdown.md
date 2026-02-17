@@ -42,11 +42,11 @@ Let's look at actual scenarios to see how costs add up:
 
 ### **Scenario 1: Simple Power of Attorney**
 **Client:** Sarah in Sugar Land needs 1 POA document notarized
-- **Service:** Standard Mobile Notary ($75)
+- **Service:** Standard Mobile Notary ($85)
 - **Documents:** 1 (included)
 - **Travel:** Sugar Land is 15 miles from our base (free)
 - **Timing:** Wednesday at 2pm (standard hours)
-- **Total Cost:** $75
+- **Total Cost:** $85
 
 ### **Scenario 2: Real Estate Closing Documents**
 **Client:** Mike in Downtown Houston needs 3 documents for property sale
@@ -66,7 +66,7 @@ Let's look at actual scenarios to see how costs add up:
 
 ### **Scenario 4: Business Contract Signing**
 **Client:** Tech startup in The Woodlands needs 2 contracts notarized
-- **Service:** Standard Mobile Notary ($75)
+- **Service:** Standard Mobile Notary ($85)
 - **Documents:** 2 (included)
 - **Travel:** The Woodlands is 32 miles (2 miles × $0.50 = $1.00)
 - **Timing:** Thursday at 3pm (standard hours)
@@ -83,7 +83,7 @@ Let's look at actual scenarios to see how costs add up:
 - 10-mile free travel zone
 - Business hours only
 
-**Standard Mobile ($75):**
+**Standard Mobile ($85):**
 - 2 documents, 1-2 signers
 - 30-mile free travel zone
 - Business hours
@@ -213,7 +213,7 @@ Let's look at actual scenarios to see how costs add up:
 
 **Mobile Notary Route:**
 - 1 appointment at your home
-- Standard Mobile service: $75
+- Standard Mobile service: $85
 - 4 extra documents: $20
 - **Total Cost:** $95 + 30 minutes of time
 

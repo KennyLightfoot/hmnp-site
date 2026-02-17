@@ -4,7 +4,7 @@ import Script from 'next/script'
 
 export const metadata: Metadata = {
   title: 'Mobile Notary League City TX | Same‑Day Service | HMNP',
-  description: 'Same‑day mobile notary in League City. From $75, 25‑mile radius, NNA certified & insured. Clear Lake • League City • Webster.',
+  description: 'Same‑day mobile notary in League City. From $85, 25‑mile radius, NNA certified & insured. Clear Lake • League City • Webster.',
 }
 
 export default function LeagueCityMobileNotaryPage() {
@@ -37,7 +37,7 @@ export default function LeagueCityMobileNotaryPage() {
       <section className="bg-secondary text-white">
         <div className="container mx-auto px-4 py-12 md:py-16">
           <h1 className="text-3xl md:text-5xl font-bold">League City Mobile Notary — Book Today</h1>
-          <p className="mt-3 text-white/90">From $75 • 25‑mile radius • NNA certified • On‑time or we discount</p>
+          <p className="mt-3 text-white/90">From $85 • 25‑mile radius • NNA certified • On‑time or we discount</p>
           <div className="mt-3 flex flex-wrap gap-2 text-xs">
             <span className="bg-white/10 border border-white/20 rounded-full px-3 py-1">Same‑day windows</span>
             <span className="bg-white/10 border border-white/20 rounded-full px-3 py-1">Transparent pricing</span>

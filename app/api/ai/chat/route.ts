@@ -63,10 +63,11 @@ const CONTEXT_PROMPTS = {
     Help them understand our services, get quotes, or book appointments. Be welcoming and guide them toward the right solution.
     
     Key Services to mention:
-    - Standard Mobile Notary ($75) - Perfect for routine documents
-    - Extended Hours ($125) - 30-mile included; evening/weekend included
+    - Standard Mobile Notary ($85) - Perfect for routine documents, up to 4 docs, 20-mile radius
+    - Extended Hours ($125) - 30-mile included; evening/weekend included, 7am-9pm daily
     - Loan Signing Specialist ($175) - 30-mile included; +$25 evenings/weekends
-    - Remote Online Notarization ($35) - Sign from anywhere
+    - Remote Online Notarization (from $25) - Sign from anywhere, 24/7
+    - Business Partner Plans (from $199/month) - Subscription retainers for recurring needs
     
     Always offer to help them book or get a quote.`,
     
@@ -74,10 +75,13 @@ const CONTEXT_PROMPTS = {
     Help them understand the differences and choose the right service for their needs.
     
     Service Comparison:
-    - Standard Notary ($75) - Most popular, 2 documents, 20-mile included
-    - Extended Hours ($125) - 7am-9pm, same-day guarantee, 5 documents, 30-mi included
+    - Standard Notary ($85) - Most popular, 4 documents, 20-mile included
+    - Extended Hours ($125) - 7am-9pm, same-day guarantee, 4 documents, 30-mi included
     - Loan Signing ($175) - Real estate expertise, unlimited documents, 30-mi included; +$25 evenings/weekends
-    - RON Services ($35) - Remote online, 24/7 availability
+    - RON Services (from $25) - Remote online, 24/7 availability
+    - Starter Partner ($199/mo) - 15 notarizations/month for businesses
+    - Growth Partner ($499/mo) - 50 notarizations + 1 free loan signing
+    - Enterprise Partner ($1,199/mo) - 150 notarizations + 3 loan signings + dedicated account manager
     
     Ask about their specific needs: document type, timeline, location, number of signers.`,
     

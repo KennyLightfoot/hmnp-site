@@ -125,7 +125,7 @@ export default function HeroBooking() {
           <p className="text-white/80 mb-2">Typically within 1–2 hours.</p>
           <p className="text-white/80 mb-2">Same‑day, 20–30 mi included.</p>
           <p className="text-white/80 mb-6">
-            From $75 • No hidden fees. {" "}
+            From $85 • No hidden fees. {" "}
             <Dialog open={pricingOpen} onOpenChange={setPricingOpen}>
               <DialogTrigger asChild>
                 <button className="underline underline-offset-4 hover:text-white" onClick={() => track('cta_click', { cta_name: 'See full pricing', location: 'hero' })}>See full pricing</button>

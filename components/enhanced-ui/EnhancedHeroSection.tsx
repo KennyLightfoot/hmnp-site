@@ -167,7 +167,7 @@ export default function EnhancedHeroSection() {
               {[
                 { icon: Clock, text: "Typically within 1–2 hours", color: "text-green-400" },
                 { icon: Zap, text: "Same‑day, 20–30 mi included", color: "text-blue-400" },
-                { icon: Shield, text: "From $75 • No hidden fees", color: "text-yellow-400" }
+                { icon: Shield, text: "From $85 • No hidden fees", color: "text-yellow-400" }
               ].map((item, index) => (
                 <motion.div
                   key={index}
